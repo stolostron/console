@@ -311,11 +311,17 @@ function AddUsersModal(props: {
                                     value={userGroup}
                                     onChange={(userGroup) => setUserGroup(userGroup)}
                                 >
-                                    {(type === 'User' ? filteredUsers : filteredGroups).map((item: User | Group) => (
-                                        <SelectOption key={item.metadata.uid} value={item.metadata.name}>
-                                            {item.metadata.name}
-                                        </SelectOption>
-                                    ))}
+                                    {type === 'User'
+                                        ? filteredUsers.map((item: User) => (
+                                              <SelectOption key={item.metadata.uid} value={item.metadata.name}>
+                                                  {item.metadata.name}
+                                              </SelectOption>
+                                          ))
+                                        : filteredGroups.map((item: Group) => (
+                                              <SelectOption key={item.metadata.uid} value={item.metadata.name}>
+                                                  {item.metadata.name}
+                                              </SelectOption>
+                                          ))}
                                 </AcmSelect>
                                 <ToggleGroup>
                                     <ToggleGroupItem

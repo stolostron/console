@@ -20,13 +20,9 @@ const mockCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
+        isManagedOpenShift: false,
     },
     labels: undefined,
-    nodes: {
-        nodeList: [],
-        active: 0,
-        inactive: 0,
-    },
     kubeApiServer: '',
     consoleURL: '',
     hive: {
@@ -40,6 +36,8 @@ const mockCluster: Cluster = {
     },
     isHive: true,
     isManaged: true,
+    isCurator: false,
+    owner: {},
 }
 
 describe('ClusterMachinePools', () => {
@@ -51,7 +49,7 @@ describe('ClusterMachinePools', () => {
                     snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
                 }}
             >
-                <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined, importCommand: undefined }}>
+                <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                     <MachinePoolsPageContent />
                 </ClusterContext.Provider>
             </RecoilRoot>

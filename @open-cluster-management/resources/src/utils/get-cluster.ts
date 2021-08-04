@@ -106,30 +106,30 @@ export type Nodes = {
 export type UpgradeInfo = {
     isUpgrading: boolean
     isReadyUpdates: boolean
-    upgradePercentage: string
-    upgradeFailed: boolean
-    hooksInProgress: boolean
-    hookFailed: boolean
+    upgradePercentage?: string
+    upgradeFailed?: boolean
+    hooksInProgress?: boolean
+    hookFailed?: boolean
     latestJob: {
-        conditionMessage: string
-        step: CuratorCondition | undefined
+        conditionMessage?: string
+        step?: CuratorCondition | undefined
     }
     currentVersion?: string
     desiredVersion?: string
     availableUpdates: string[]
     isReadySelectChannels: boolean
-    isSelectingChannel: boolean
-    isUpgradeCuration: boolean
+    isSelectingChannel?: boolean
+    isUpgradeCuration?: boolean
     currentChannel?: string
     desiredChannel?: string
-    availableChannels: string[]
-    prehooks: {
+    availableChannels?: string[]
+    prehooks?: {
         hasHooks: boolean
         inProgress: boolean
         success: boolean
         failed: boolean
     }
-    posthooks: {
+    posthooks?: {
         hasHooks: boolean
         inProgress: boolean
         success: boolean

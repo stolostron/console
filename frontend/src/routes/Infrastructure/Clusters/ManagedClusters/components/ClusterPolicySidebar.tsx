@@ -24,7 +24,8 @@ import { configMapsState } from '../../../../../atoms'
 import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { makeStyles } from '@material-ui/styles'
-import { useTranslation, TFunction } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
+import { TFunction } from 'i18next'
 import { PolicyReport, PolicyReportResults } from '../../../../../resources/policy-report'
 
 const useStyles = makeStyles({
@@ -32,9 +33,6 @@ const useStyles = makeStyles({
         position: 'relative',
         top: '-35px',
         padding: '0 8px',
-        '& h2, h4, p, span, thead': {
-            fontFamily: 'RedHatText-Regular',
-        },
         '& section': {
             paddingTop: 'var(--pf-global--spacer--lg)',
         },
@@ -52,9 +50,6 @@ const useStyles = makeStyles({
     },
     tableTitle: {
         paddingBottom: 'var(--pf-global--spacer--md)',
-        '& h4': {
-            fontFamily: 'RedHatText-Medium',
-        },
     },
     backAction: {
         paddingBottom: 'var(--pf-global--spacer--lg)',
@@ -62,7 +57,6 @@ const useStyles = makeStyles({
     subDetailComponents: {
         paddingBottom: 'var(--pf-global--spacer--xl)',
         '& small': {
-            fontFamily: 'RedHatText-Medium',
             color: 'inherit',
             paddingBottom: 'var(--pf-global--spacer--sm)',
         },
@@ -76,7 +70,7 @@ const useStyles = makeStyles({
     },
 })
 
-function renderDonutChart(data: PolicyReport, t: TFunction<string[]>) {
+function renderDonutChart(data: PolicyReport, t: TFunction) {
     const clusterRiskScores = data.results.map((issue) => issue.properties.total_risk)
     const formattedData = [
         {

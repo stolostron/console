@@ -3,15 +3,14 @@
 /* istanbul ignore file */
 
 import {
-    getResourceApiPath,
+    ClusterRoleBinding, getResourceApiPath,
     getResourceNameApiPath,
-    IResource,
-    ResourceAttributes,
+    IResource, ResourceAttributes,
     SelfSubjectAccessReview,
     SelfSubjectAccessReviewApiVersion,
     SelfSubjectAccessReviewKind,
     StatusApiVersion,
-    StatusKind,
+    StatusKind
 } from '@open-cluster-management/resources'
 import { isEqual } from 'lodash'
 import nock from 'nock'
@@ -154,7 +153,7 @@ export function nockNamespacedList<Resource extends IResource>(
     return finalNetworkMock
 }
 
-export function nockCreate(resource: IResource, response?: IResource, statusCode = 201) {
+export function nockCreate(resource: IResource | ClusterRoleBinding, response?: IResource, statusCode = 201) {
     const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .post(getResourceApiPath(resource), (body) => {
             // if (!isEqual(body, resource)) {

@@ -22,6 +22,7 @@ const mockCluster: Cluster = {
             upgradeFailed: false,
         },
         displayVersion: '4.6',
+        isManagedOpenShift: false,
     },
     labels: undefined,
     nodes: undefined,
@@ -38,6 +39,8 @@ const mockCluster: Cluster = {
     },
     isHive: true,
     isManaged: true,
+    isCurator: false,
+    owner: {},
 }
 
 const mockKubeadminSecret = {

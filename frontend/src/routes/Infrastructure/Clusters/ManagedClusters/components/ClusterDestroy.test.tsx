@@ -12,11 +12,14 @@ const mockDestroyCluster: Cluster = {
     displayName: 'test-cluster',
     namespace: 'test-cluster',
     provider: undefined,
+    isCurator: false,
+    owner: {},
     status: ClusterStatus.destroying,
     distribution: {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
+        isManagedOpenShift: false,
     },
     labels: undefined,
     nodes: undefined,
@@ -44,6 +47,7 @@ const mockDetachCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
+        isManagedOpenShift: false,
     },
     labels: undefined,
     nodes: undefined,
@@ -60,6 +64,8 @@ const mockDetachCluster: Cluster = {
     },
     isHive: false,
     isManaged: true,
+    isCurator: false,
+    owner: {},
 }
 
 describe('ClusterDestroy', () => {

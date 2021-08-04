@@ -14,6 +14,7 @@ import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { useHistory, useLocation } from 'react-router-dom'
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
+//import TemplateEditor from 'C:/Users/jswanke/git2/temptifly/src' //'temptifly'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
@@ -191,7 +192,7 @@ export default function CreateClusterPage() {
 
     // setup translation
     const { t } = useTranslation(['create'])
-    const i18n = (key: any, arg: any) => {
+    const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
 

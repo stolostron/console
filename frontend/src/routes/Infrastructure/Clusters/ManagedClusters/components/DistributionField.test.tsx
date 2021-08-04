@@ -32,8 +32,10 @@ const mockDistributionInfo: DistributionInfo = {
         upgradeFailed: false,
         isUpgrading: false,
         isReadyUpdates: true,
+        isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
         currentVersion: '1.2.3',
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -50,8 +52,10 @@ const mockDistributionInfoUpgrading: DistributionInfo = {
         upgradeFailed: false,
         isUpgrading: true,
         isReadyUpdates: false,
+        isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.5'],
         currentVersion: '1.2.3',
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -68,8 +72,10 @@ const mockDistributionInfoWithoutUpgrades: DistributionInfo = {
         upgradeFailed: false,
         isUpgrading: false,
         isReadyUpdates: false,
+        isReadySelectChannels: false,
         availableUpdates: [],
         currentVersion: '1.2.3',
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -86,8 +92,10 @@ const mockDistributionInfoFailedUpgrade: DistributionInfo = {
         upgradeFailed: true,
         isUpgrading: false,
         isReadyUpdates: false,
+        isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -104,8 +112,10 @@ const mockDistributionInfoFailedInstall: DistributionInfo = {
         upgradeFailed: false,
         isUpgrading: false,
         isReadyUpdates: true,
+        isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -122,8 +132,10 @@ const mockManagedOpenShiftDistributionInfo: DistributionInfo = {
         upgradeFailed: false,
         isUpgrading: false,
         isReadyUpdates: false,
+        isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
+        latestJob: {},
     },
     k8sVersion: '1.11',
     displayVersion: 'openshift',
@@ -143,6 +155,7 @@ const mockManagedAnsibleDistributionInfo: DistributionInfo = {
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
         isUpgradeCuration: true,
+        isReadySelectChannels: false,
         hooksInProgress: true,
         hookFailed: false,
         latestJob: {
@@ -172,6 +185,7 @@ const mockManagedAnsibleFailedDistributionInfo: DistributionInfo = {
         upgradeFailed: false,
         isUpgrading: false,
         isReadyUpdates: false,
+        isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
         currentVersion: '1.2.3',
         isUpgradeCuration: true,
@@ -214,7 +228,7 @@ const clusterCuratorUpgrade: ClusterCurator = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '2021-01-04T18:23:30Z',
+                lastTransitionTime: new Date('2021-01-04T18:23:30Z'),
                 message:
                     'curator-job-5snl7 DesiredCuration: upgrade - AnsibleJob rbrunopi-ana-test-004/prehookjob-qqxgr',
                 reason: 'Job_has_finished',
@@ -222,7 +236,7 @@ const clusterCuratorUpgrade: ClusterCurator = {
                 type: 'prehook-ansiblejob',
             },
             {
-                lastTransitionTime: '2021-01-04T18:23:37Z',
+                lastTransitionTime: new Date('2021-01-04T18:23:37Z'),
                 message: 'Invalid GCP project ID',
                 reason: 'GCPInvalidProjectID',
                 status: 'True',
@@ -253,7 +267,7 @@ const clusterCuratorUpgradeFailed: ClusterCurator = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '2021-06-28T19:23:23Z',
+                lastTransitionTime: new Date('2021-06-28T19:23:23Z'),
                 message:
                     'curator-job-5snl7 DesiredCuration: upgrade Failed - AnsibleJob rbrunopi-ana-test-004/prehookjob-qqxgr',
                 reason: 'Job_failed',
@@ -261,7 +275,7 @@ const clusterCuratorUpgradeFailed: ClusterCurator = {
                 type: 'clustercurator-job',
             },
             {
-                lastTransitionTime: '2021-06-28T19:23:23Z',
+                lastTransitionTime: new Date('2021-06-28T19:23:23Z'),
                 message: 'AnsibleJob rbrunopi-ana-test-004/prehookjob-qqxgr exited with an error',
                 reason: 'Job_has_finished',
                 status: 'False',
@@ -338,6 +352,8 @@ describe('DistributionField', () => {
             },
             isHive: false,
             isManaged: true,
+            isCurator: true,
+            owner: {},
         }
 
         const retResource = render(
@@ -399,9 +415,7 @@ describe('DistributionField', () => {
     })
 
     it('should display ansible hook status', async () => {
-        await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgrade, [
-            ansibleJob,
-        ])
+        await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgrade)
         await waitForText('upgrade.ansible.prehookjob.title')
     })
 
@@ -410,8 +424,7 @@ describe('DistributionField', () => {
             mockManagedAnsibleFailedDistributionInfo,
             false,
             false,
-            clusterCuratorUpgradeFailed,
-            [ansibleJob]
+            clusterCuratorUpgradeFailed
         )
         await waitForText('upgrade.ansible.prehookjob.title')
         await clickByText('upgrade.ansible.prehookjob.title')
@@ -419,9 +432,7 @@ describe('DistributionField', () => {
     })
 
     it('should open to ansible logs', async () => {
-        await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgrade, [
-            ansibleJob,
-        ])
+        await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgrade)
         window.open = jest.fn()
         await waitForText('upgrade.ansible.prehookjob.title')
         await clickByText('upgrade.ansible.prehookjob.title')

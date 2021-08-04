@@ -91,7 +91,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             key: t('table.channel'),
             value: (
                 <span>
-                    {cluster?.distribution?.upgradeInfo.isSelectingChannel ? (
+                    {cluster?.distribution?.upgradeInfo?.isSelectingChannel ? (
                         <AcmInlineStatus
                             type={StatusType.progress}
                             status={t('upgrade.selecting.channel', {
@@ -99,7 +99,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                             })}
                         ></AcmInlineStatus>
                     ) : (
-                        cluster!.distribution?.upgradeInfo.currentChannel || ''
+                        cluster!.distribution?.upgradeInfo?.currentChannel || ''
                     )}
                     <Popover
                         bodyContent={
@@ -115,7 +115,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     </Popover>
                 </span>
             ),
-            keyAction: cluster?.isManaged && cluster.distribution?.upgradeInfo.isReadySelectChannels && (
+            keyAction: cluster?.isManaged && cluster.distribution?.upgradeInfo?.isReadySelectChannels && (
                 <RbacButton
                     onClick={() => {
                         if (cluster) {
