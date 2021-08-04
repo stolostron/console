@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSubmit, AcmTextInput } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, Chip, ChipGroup, Flex, FlexItem, ModalVariant } from '@patternfly/react-core'
+import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit, AcmTextInput } from '@open-cluster-management/ui-components'
+import { ActionGroup, Button, Chip, ChipGroup, Flex, FlexItem, ModalVariant, SelectOption, SelectVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
@@ -10,7 +10,7 @@ import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
-import { createResource, replaceResource } from '../../../lib/resource-request'
+import { createResource, listAnsibleTowerJobs , replaceResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import { FeatureGates } from '../../../FeatureGates'
 import {
@@ -23,6 +23,8 @@ import {
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
 import { IResource } from '../../../resources/resource'
 import { validateKubernetesDnsName } from '../../../lib/validation'
+import { AnsibleTowerJobTemplateList } from '../../../resources/ansible-job'
+import _ from 'lodash'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -457,6 +459,7 @@ export function AnsibleAutomationsForm(props: {
             <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
             <EditAnsibleJobModal
                 ansibleJob={editAnsibleJob}
+                ansibleSelection={ansibleSelection}
                 setAnsibleJob={updateAnsibleJob}
                 ansibleJobList={editAnsibleJobList?.jobs}
             />
@@ -466,15 +469,39 @@ export function AnsibleAutomationsForm(props: {
 
 function EditAnsibleJobModal(props: {
     ansibleJob?: AnsibleJob
+    ansibleSelection?: string
     setAnsibleJob: (ansibleJob?: AnsibleJob, old?: AnsibleJob) => void
     ansibleJobList?: AnsibleJob[]
 }) {
     const { t } = useTranslation(['common', 'cluster'])
     const [ansibleJob, setAnsibleJob] = useState<AnsibleJob | undefined>()
+    const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<AnsibleTowerJobTemplateList>()
+    
     let ansibleJobList: string[]
     if (props.ansibleJobList)
         ansibleJobList = props.ansibleJobList.filter((job) => ansibleJob !== job).map((ansibleJob) => ansibleJob.name)
+
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
+    
+    // need to fix the error where it keeps fetching listAnsibleTowerJobs after selecting the Ansible Automation Platform credential
+
+    if(props.ansibleSelection){
+
+        // needs a way to fetch host and token for the selected ansibleSelection
+        const host = ''
+        const token = ''
+        
+        listAnsibleTowerJobs(
+            host,
+            token
+        ).promise.then((response) => {
+            if(response){
+                const AnsibleTowerJobTemplateList = response
+                setAnsibleTowerJobTemplateList(AnsibleTowerJobTemplateList)
+            } 
+        })
+    }
+
     return (
         <AcmModal
             variant={ModalVariant.medium}
@@ -487,6 +514,33 @@ function EditAnsibleJobModal(props: {
             onClose={() => props.setAnsibleJob()}
         >
             <AcmForm>
+                <AcmForm>
+                    <AcmSelect 
+                        label={t('cluster:template.modal.name.label')}
+                        id="select"
+                        value={ansibleJob?.name}
+                        helperText={t('cluster:template.modal.name.helper.text')}
+                        onChange={(name) => {
+                            if (ansibleJob) {
+                                const copy = { ...ansibleJob }
+                                setAnsibleJob(copy)
+                            }
+                        }}
+                        variant={SelectVariant.typeahead}
+                        placeholder={t('cluster:template.modal.name.placeholder')}
+                        isRequired
+                        >
+
+                        <AnsibleTowerJobTemplates 
+                            AnsibleTowerJobTemplateList={AnsibleTowerJobTemplateList}
+                        />
+                        {/* Will need to find a way to remove it */}
+                        <SelectOption key="option-1" value="">
+                        </SelectOption>
+
+                    </AcmSelect>
+                </AcmForm>
+
                 <AcmTextInput
                     id="job-name"
                     label={t('cluster:template.modal.name.label')}
@@ -539,4 +593,36 @@ function EditAnsibleJobModal(props: {
             </AcmForm>
         </AcmModal>
     )
+}
+
+function AnsibleTowerJobTemplates(props: {
+    AnsibleTowerJobTemplateList?: AnsibleTowerJobTemplateList
+}){
+    if(props.AnsibleTowerJobTemplateList){
+        // need to return array of the given AnsibleTowerJobTemplateList
+        // using pseudo code for now
+        return(
+            <Fragment>
+                <SelectOption key="option-1" value="option-1">
+                Option 1
+                </SelectOption>
+                <SelectOption key="option-2" value="option-2">
+                    Option 2
+                </SelectOption>
+                <SelectOption key="option-3" value="option-3">
+                    Option 3
+                </SelectOption> 
+            </Fragment>
+        )
+
+        // _.each(props.AnsibleTowerJobTemplateList, (k, v) => {
+        //     return (
+        //         <SelectOption key={_.get(k, 'name')} value={_.get(k, 'name')}>
+        //             {_.get(k, 'name')}
+        //         </SelectOption>
+        //     )
+        // })
+
+    }
+    return;
 }

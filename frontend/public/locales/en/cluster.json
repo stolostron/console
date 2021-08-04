@@ -610,6 +610,7 @@
     "template.modal.title.add": "Add Ansible job",
     "template.modal.title.edit": "Edit Ansible job",
     "template.modal.name.label": "Ansible job template name",
+    "template.modal.name.placeholder": "Enter or selecr Ansible job template name",
     "template.modal.name.helper.text": "The Ansible job template name must match the name of the job on the Ansible Tower. If the names are not the same, the hook cannot run the job.",
     "template.modal.settings.label": "Extra variables",
     "template.modal.settings.placeholder": "Enter key=value pairs",

@@ -31,41 +31,6 @@ export const CREATE_AUTOMATION_TEMPLATE = {
     id: 'add-automation-template',
     icon: <OpenNewTab />,
 }
-
-export const loadExistingTemplates = async() => {
-    // get existing Red Hat Ansible Automation Platforms
-
-
-    // get host and token for each
-    // temp
-    const oneCred = {
-        host:'',
-        token:''   
-    }
-    
-    // render the template for each credential
-
-    // const agent = new Agent({ rejectUnauthorized: false })
-    // const response = await fetchRetry(oneCred.host + '/api/v2', {
-    //     headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${oneCred.token}` },
-    //     agent,
-    // })
-    
-    // need to figure out how to use json-request from back-end
-    function test(){
-        // should we create a new route for this behavior?
-        fetch(`${process.env.REACT_APP_BACKEND_PATH}/SOME_NEW_ROUTE`, {
-            credentials: 'include',
-            headers: { accept: 'application/json' },
-        })
-
-    }
-
-    test()
-    debugger;
-    return;
-}
-
 export const LOAD_OCP_IMAGES = (provider) => {
     return {
         query: () => {
@@ -333,7 +298,6 @@ export const automationControlData = [
         id: 'templateName',
         type: 'combobox',
         placeholder: 'template.clusterCreate.select.placeholder',
-        fetchAvailable: loadExistingTemplates(),
         validation: {
             required: false,
         },
