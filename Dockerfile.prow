@@ -18,6 +18,6 @@ ENV NODE_ENV production
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/backend/node_modules ./backend/node_modules
 COPY --from=builder /app/backend/build ./backend
-COPY --from=builder /app/frontend/build ./backend/public
+COPY --from=builder /app/frontend/build ./public
 USER 1001
 CMD ["node", "backend/lib/main.js"]
