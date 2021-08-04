@@ -44,10 +44,11 @@ import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../../../atoms'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
-import discoveryVersions from '../../../../../components/discoveryVersions.json'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
+
+const discoveryVersions = ['4.6', '4.7', '4.8']
 
 export default function DiscoveryConfigPage() {
     const { t } = useTranslation(['discovery'])
