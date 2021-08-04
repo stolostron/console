@@ -4,7 +4,7 @@
     "private": true,
     "homepage": "/multicloud/",
     "proxy": "https://localhost:4000",
-    "dependencies": {
+    "devDependencies": {
         "@open-cluster-management/resources": "^1.0.0",
         "@kubernetes/client-node": "^0.15.0",
         "@open-cluster-management/ui-components": "^0.180.0",
@@ -12,11 +12,9 @@
         "@patternfly/react-table": "^4.29.5",
         "@redhat-cloud-services/rule-components": "^3.2.1",
         "@types/lodash": "^4.14.170",
-        "@types/moment": "^2.13.0",
         "@types/react": "^17.0.13",
         "@types/react-dom": "^17.0.8",
         "@types/react-router-dom": "^5.1.7",
-        "@types/yaml": "^1.9.7",
         "eslint-plugin-react": "^7.24.0",
         "handlebars": "^4.7.7",
         "i18next": "^20.3.2",
@@ -37,9 +35,7 @@
         "recoil": "^0.3.1",
         "temptifly": "^0.3.60",
         "typescript": "^4.2.4",
-        "yaml": "^1.10.2"
-    },
-    "devDependencies": {
+        "yaml": "^1.10.2",
         "@testing-library/jest-dom": "^5.14.1",
         "@testing-library/react": "^11.2.7",
         "@testing-library/user-event": "^12.8.3",

@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/V1CustomResourceDefinitionCondition'
+import { V1CustomResourceDefinitionCondition, V1ObjectMeta } from '@kubernetes/client-node'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ManagedClusterAddOnApiVersion = 'addon.open-cluster-management.io/v1alpha1'
