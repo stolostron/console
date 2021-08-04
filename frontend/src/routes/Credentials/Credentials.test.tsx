@@ -8,6 +8,7 @@ import {
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
     ResourceAttributes,
+    Secret,
 } from '@open-cluster-management/resources'
 import { Provider } from '@open-cluster-management/ui-components'
 import { render, waitFor } from '@testing-library/react'
@@ -28,7 +29,6 @@ import {
 } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import CredentialsPage from './Credentials'
-import { Secret } from '../../resources/secret'
 
 const mockProviderConnection1: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
