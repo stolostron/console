@@ -10,7 +10,8 @@
     "scripts": {
         "build": "tsc",
         "watch": "tsc --watch --preserveWatchOutput",
-        "test": "tsc --noEmit"
+        "test": "tsc --noEmit",
+        "lint": "echo no lint"
     },
     "devDependencies": {
         "@kubernetes/client-node": "^0.15.0",
