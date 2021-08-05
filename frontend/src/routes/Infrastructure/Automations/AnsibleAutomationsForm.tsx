@@ -532,13 +532,14 @@ function EditAnsibleJobModal(props: {
                         placeholder={t('cluster:template.modal.name.placeholder')}
                         isRequired
                         >
-                        <AnsibleTowerJobTemplates 
-                            AnsibleTowerJobTemplateList={AnsibleTowerJobTemplateList}
-                        />
-                        {/* Will need to find a way to remove it */}
-                        <SelectOption key="option-1" value="">
-                        </SelectOption>
-
+                            {AnsibleTowerJobTemplateList ? 
+                                _.values(AnsibleTowerJobTemplateList).map((option) => (
+                                    <SelectOption key={_.get(option, 'name')} value={_.get(option, 'name')}>
+                                        {_.get(option, 'name')}
+                                    </SelectOption>
+            
+                                ))
+                             : undefined }
                     </AcmSelect>
                 </AcmForm>
 
@@ -574,25 +575,4 @@ function EditAnsibleJobModal(props: {
             </AcmForm>
         </AcmModal>
     )
-}
-
-function AnsibleTowerJobTemplates(props: {
-    AnsibleTowerJobTemplateList?: AnsibleTowerJobTemplateList
-}){
-    if(props.AnsibleTowerJobTemplateList){
-        const AnsibleList = _.values(props.AnsibleTowerJobTemplateList)
-        return(
-            <Fragment>
-                {
-                    AnsibleList.map((option) => (
-                        <SelectOption key={_.get(option, 'name')} value={_.get(option, 'name')}>
-                            {_.get(option, 'name')}
-                        </SelectOption>
-
-                    ))
-                }
-            </Fragment>
-        )
-    }
-    return null;
 }
