@@ -12,8 +12,8 @@
         "watch": "tsc --watch --preserveWatchOutput",
         "test": "tsc --noEmit",
         "lint": "echo no lint",
-        "check": "prettier --check **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
-        "check:fix": "prettier --write **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json"
+        "check": "prettier --check **/*.ts **/*.json !coverage/** !lib/** !**/package-lock.json",
+        "check:fix": "prettier --write **/*.ts **/*.json !coverage/** !lib/** !**/package-lock.json"
     },
     "devDependencies": {
         "@kubernetes/client-node": "^0.15.0",
