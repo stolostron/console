@@ -2,17 +2,18 @@
 
 import {
     BareMetalAsset,
-    ImportedBareMetalAsset,
     createBareMetalAssetResource,
     createBareMetalAssetSecret,
+    createProject,
+    getSecret,
+    ImportedBareMetalAsset,
+    IResource,
     listBareMetalAssets,
-} from '../resources/bare-metal-asset'
-import { IResource } from '../resources/resource'
-import { Secret, getSecret } from '../resources/secret'
-import { createProject } from '../resources/project'
-import { patchResource } from '../lib/resource-request'
-import { set, get, keyBy } from 'lodash'
+    patchResource,
+    Secret,
+} from '@open-cluster-management/resources'
 import yaml from 'js-yaml'
+import { get, keyBy, set } from 'lodash'
 
 const INSTALL_CONFIG = 'install-config.yaml'
 const BMC_USERNAME = 'bmc.username'

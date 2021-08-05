@@ -1,18 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    AnsibleJob,
+    Cluster,
+    ClusterCurator,
+    ClusterCuratorDefinition,
+    ClusterStatus,
+    CuratorCondition,
+    getLatestAnsibleJob,
+} from '@open-cluster-management/resources'
 import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RbacButton } from '../../../../../components/Rbac'
-import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../lib/get-cluster'
-import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
-import { AnsibleJob, getLatestAnsibleJob } from '../../../../../resources/ansible-job'
-import { ClusterCurator, ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
-import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { useRecoilState } from 'recoil'
 import { ansibleJobState } from '../../../../../atoms'
+import { RbacButton } from '../../../../../components/Rbac'
+import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
+import { BatchUpgradeModal } from './BatchUpgradeModal'
 
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 

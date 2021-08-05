@@ -1,16 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    AnsibleJob,
+    AnsibleJobApiVersion,
+    AnsibleJobKind,
+    Cluster,
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    ClusterStatus,
+    CuratorCondition,
+    DistributionInfo,
+    ResourceAttributes,
+} from '@open-cluster-management/resources'
 import { render, waitFor } from '@testing-library/react'
-import { nockRBAC } from '../../../../../lib/nock-util'
-import { Cluster, DistributionInfo, ClusterStatus, CuratorCondition } from '../../../../../lib/get-cluster'
-import { DistributionField } from './DistributionField'
-import { ResourceAttributes } from '../../../../../resources/self-subject-access-review'
 import * as nock from 'nock'
-import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
-import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../../resources/cluster-curator'
-import { AnsibleJob, AnsibleJobApiVersion, AnsibleJobKind } from '../../../../../resources/ansible-job'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState } from '../../../../../atoms'
+import { nockRBAC } from '../../../../../lib/nock-util'
+import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
+import { DistributionField } from './DistributionField'
 
 const mockDistributionInfo: DistributionInfo = {
     ocp: {

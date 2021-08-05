@@ -1,34 +1,23 @@
 # Copyright Contributors to the Open Cluster Management project
 
 FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as builder
-
-FROM builder as backend
 USER root
+RUN npm i -g npm@7
 RUN mkdir -p /app
-WORKDIR /app/backend
-COPY backend/package.json backend/package-lock.json ./
-RUN npm ci --no-optional
-RUN npm run postinstall
-COPY backend ./
+WORKDIR /app
+COPY . ./
+RUN npm ci --no-optional --legacy-peer-deps
 RUN npm run build
-RUN npm ci --only=production --no-optional
-
-FROM builder as frontend
-USER root
-RUN mkdir -p /app
-WORKDIR /app/frontend
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci --no-optional
-COPY frontend ./
-RUN npm run build
+RUN npm ci --only=production --no-optional --legacy-peer-deps
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
-COPY --from=backend /usr/bin/node /usr/bin/node
+COPY --from=builder /usr/bin/node /usr/bin/node
 RUN mkdir -p /app
 WORKDIR /app
 ENV NODE_ENV production
-COPY --from=backend /app/backend/node_modules ./node_modules
-COPY --from=backend /app/backend/build ./
-COPY --from=frontend /app/frontend/build ./public
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/backend/node_modules ./backend/node_modules
+COPY --from=builder /app/backend/build ./backend
+COPY --from=builder /app/frontend/build ./public
 USER 1001
-CMD ["node", "lib/main.js"]
+CMD ["node", "backend/lib/main.js"]

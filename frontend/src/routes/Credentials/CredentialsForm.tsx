@@ -1,5 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+    createResource,
+    getSecret,
+    IResource,
+    patchResource,
+    ProviderConnection,
+    Secret,
+    SecretDefinition,
+    unpackProviderConnection,
+} from '@open-cluster-management/resources'
+import {
     AcmEmptyState,
     AcmIcon,
     AcmPage,
@@ -21,10 +31,11 @@ import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
-import { createResource, patchResource } from '../../lib/resource-request'
 import {
+    validateBareMetalOSImageURL,
     validateBaseDomain,
     validateCertificate,
+    validateCloudsYaml,
     validateGCProjectID,
     validateImageMirror,
     validateJSON,
@@ -32,13 +43,8 @@ import {
     validateLibvirtURI,
     validatePrivateSshKey,
     validatePublicSshKey,
-    validateCloudsYaml,
-    validateBareMetalOSImageURL,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
-import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
-import { IResource } from '../../resources/resource'
-import { getSecret, Secret, SecretDefinition } from '../../resources/secret'
 
 const credentialProviders: Provider[] = [
     Provider.openstack,

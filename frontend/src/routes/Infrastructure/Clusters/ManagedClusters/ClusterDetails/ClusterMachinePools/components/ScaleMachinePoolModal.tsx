@@ -1,19 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useEffect } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { MachinePool, patchResource } from '@open-cluster-management/resources'
 import {
-    AcmForm,
-    AcmSubmit,
-    AcmButton,
-    AcmModal,
-    AcmAlertGroup,
     AcmAlertContext,
+    AcmAlertGroup,
+    AcmButton,
+    AcmForm,
+    AcmModal,
     AcmNumberInput,
+    AcmSubmit,
 } from '@open-cluster-management/ui-components'
-import { ModalVariant, ActionGroup } from '@patternfly/react-core'
-import { MachinePool } from '../../../../../../../resources/machine-pool'
-import { patchResource } from '../../../../../../../lib/resource-request'
+import { ActionGroup, ModalVariant } from '@patternfly/react-core'
+import { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 
 export type ScaleMachinePoolModalProps = {
     machinePool?: MachinePool

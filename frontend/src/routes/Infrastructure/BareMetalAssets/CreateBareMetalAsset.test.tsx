@@ -1,17 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    BareMetalAsset,
+    BareMetalAssetApiVersion,
+    BareMetalAssetKind,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    ResourceAttributes,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+} from '@open-cluster-management/resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import CreateBareMetalAssetPage from './CreateBareMetalAsset'
-import { nockGet, nockPatch, nockOptions, nockCreate, nockRBAC, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../resources/bare-metal-asset'
-import { Secret, SecretKind, SecretApiVersion } from '../../../resources/secret'
-import { ResourceAttributes } from '../../../resources/self-subject-access-review'
-import { NavigationPath } from '../../../NavigationPath'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { namespacesState } from '../../../atoms'
+import { nockCreate, nockGet, nockIgnoreRBAC, nockOptions, nockPatch, nockRBAC } from '../../../lib/nock-util'
+import { NavigationPath } from '../../../NavigationPath'
+import CreateBareMetalAssetPage from './CreateBareMetalAsset'
 
 const bmaNamespace: ResourceAttributes = {
     namespace: 'test-namespace',

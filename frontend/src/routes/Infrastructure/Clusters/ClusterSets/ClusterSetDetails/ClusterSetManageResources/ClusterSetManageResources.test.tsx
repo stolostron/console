@@ -1,45 +1,41 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
-import { MemoryRouter, Switch, Route } from 'react-router-dom'
-import { RecoilRoot } from 'recoil'
-import { mockManagedClusterSet } from '../../../../../../lib/test-metadata'
-import { mapClusters } from '../../../../../../lib/get-cluster'
-import { managedClusterSetLabel } from '../../../../../../resources/managed-cluster-set'
-import {
-    ManagedCluster,
-    ManagedClusterApiVersion,
-    ManagedClusterKind,
-} from '../../../../../../resources/managed-cluster'
-import {
-    ManagedClusterSet,
-    ManagedClusterSetApiVersion,
-    ManagedClusterSetKind,
-} from '../../../../../../resources/managed-cluster-set'
 import {
     ClusterDeployment,
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
-} from '../../../../../../resources/cluster-deployment'
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+    ManagedClusterSet,
+    ManagedClusterSetApiVersion,
+    ManagedClusterSetKind,
+    managedClusterSetLabel,
+    mapClusters,
+} from '@open-cluster-management/resources'
+import { render } from '@testing-library/react'
+import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
 import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
     managedClusterInfosState,
-    managedClustersState,
     managedClusterSetsState,
+    managedClustersState,
 } from '../../../../../../atoms'
-import { NavigationPath } from '../../../../../../NavigationPath'
-import { ClusterSetManageResourcesPage } from './ClusterSetManageResources'
-import { ClusterSetContext } from '../ClusterSetDetails'
-import { nockPatch, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
+import { nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
+import { mockManagedClusterSet } from '../../../../../../lib/test-metadata'
 import {
-    waitForText,
-    waitForTestId,
     clickByLabel,
     clickByText,
     waitForNocks,
     waitForNotText,
+    waitForTestId,
+    waitForText,
 } from '../../../../../../lib/test-util'
+import { NavigationPath } from '../../../../../../NavigationPath'
+import { ClusterSetContext } from '../ClusterSetDetails'
+import { ClusterSetManageResourcesPage } from './ClusterSetManageResources'
 
 const mockManagedClusterAdd: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,

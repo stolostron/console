@@ -1,19 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    Cluster,
+    ClusterDeployment,
+    ClusterPool,
+    ManagedCluster,
+    ManagedClusterSet,
+    managedClusterSetLabel,
+    mapClusters,
+} from '@open-cluster-management/resources'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
     certificateSigningRequestsState,
+    clusterClaimsState,
     clusterDeploymentsState,
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClustersState,
-    clusterClaimsState,
 } from '../../../../../atoms'
-import { ManagedClusterSet, managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
-import { ManagedCluster } from '../../../../../resources/managed-cluster'
-import { ClusterDeployment } from '../../../../../resources/cluster-deployment'
-import { ClusterPool } from '../../../../../resources/cluster-pool'
-import { Cluster, mapClusters } from '../../../../../lib/get-cluster'
 
 // returns the clusters assigned to a ManagedClusterSet
 export function useClusters(managedClusterSet: ManagedClusterSet | undefined, clusterPool?: ClusterPool | undefined) {

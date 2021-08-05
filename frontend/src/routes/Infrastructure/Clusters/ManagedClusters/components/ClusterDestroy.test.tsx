@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Cluster, ClusterStatus } from '@open-cluster-management/resources'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { render, screen } from '@testing-library/react'
-import { ClusterDestroy } from './ClusterDestroy'
-import { ClusterStatus, Cluster } from '../../../../../lib/get-cluster'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import { ClusterDestroy } from './ClusterDestroy'
 
 const mockDestroyCluster: Cluster = {
     name: 'test-cluster',

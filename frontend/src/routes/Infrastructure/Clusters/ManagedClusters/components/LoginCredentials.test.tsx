@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, waitFor, screen, waitForElementToBeRemoved } from '@testing-library/react'
+import { Cluster, ClusterStatus } from '@open-cluster-management/resources'
+import { render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { LoginCredentials } from './LoginCredentials'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { ClusterStatus, Cluster } from '../../../../../lib/get-cluster'
-import { nockGet, mockBadRequestStatus } from '../../../../../lib/nock-util'
+import { mockBadRequestStatus, nockGet } from '../../../../../lib/nock-util'
 import { waitForNocks } from '../../../../../lib/test-util'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { LoginCredentials } from './LoginCredentials'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',

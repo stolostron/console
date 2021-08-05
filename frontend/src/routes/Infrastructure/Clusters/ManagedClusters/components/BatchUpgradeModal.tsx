@@ -1,20 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    Cluster,
+    ClusterCurator,
+    ClusterCuratorDefinition,
+    ClusterStatus,
+    createResource,
+    IRequestResult,
+    patchResource,
+    ResourceError,
+    ResourceErrorCode,
+} from '@open-cluster-management/resources'
 import { AcmSelect } from '@open-cluster-management/ui-components'
-import { SelectOption, TextContent, Text, TextVariants } from '@patternfly/react-core'
+import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel } from '../../../../../components/BulkActionModel'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
-import {
-    IRequestResult,
-    patchResource,
-    createResource,
-    ResourceError,
-    ResourceErrorCode,
-} from '../../../../../lib/resource-request'
-import { ClusterCurator, ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
 import './style.css'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 

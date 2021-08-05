@@ -18,7 +18,7 @@ import {
     VALIDATE_ALPHANUMERIC_PERIOD,
     VALIDATE_MAC_ADDRESS,
 } from 'temptifly'
-import { listBareMetalAssets } from '../../../../../../resources/bare-metal-asset'
+import { listBareMetalAssets } from '@open-cluster-management/resources'
 import { withTranslation } from 'react-i18next'
 import WrappedImportBareMetalAssetsButton from '../components/WrappedImportBareMetalAssetsButton'
 import _ from 'lodash'

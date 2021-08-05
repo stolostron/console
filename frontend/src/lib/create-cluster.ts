@@ -1,12 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { createResource } from './resource-request'
-import { syncBMAs, attachBMAs } from './bare-metal-assets'
-import { createProject } from '../resources/project'
+import {
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+    createProject,
+    createResource,
+    IResource,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+} from '@open-cluster-management/resources'
 import { get, keyBy } from 'lodash'
-import { IResource } from '../resources/resource'
-import { ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../resources/cluster-deployment'
-import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
+import { attachBMAs, syncBMAs } from './bare-metal-assets'
 import { deleteResources } from './delete-resources'
 
 export async function createCluster(resources: any[]) {

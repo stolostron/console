@@ -9,10 +9,10 @@
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=security_rating&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=vulnerabilities&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
 
-
 ## What is console?
 
 The console provides a user interface for cluster related items such as:
+
 - Credentials management (For example, Cloud Providers)
 - Cluster management
   - Creating
@@ -26,6 +26,25 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 ## Prerequisites
 
 - Node.js v14.x
+  - `node -v`
+- NPM 7 (npm 6 ships with node 14)
+  - `npm install --global npm@7`
+  - `npm -v`
+
+## Workspaces
+
+The console repository is setup to use NPM 7 [workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces).
+This allows the projects with the console repository to reference each other.
+This enables the easy sharing of a common libraries.
+It also enables the decoupling of different projects but allows them to pulled together into a final product.
+
+Notes:
+
+- Workspaces are defined in the `package.json` at the root
+- While workspaces allow the sequential running of commands across all workspaces, console is using a project `workspaces-run` to run command across all workspaces concurrently.
+- Installing a new dependency for a workspace must be done at the root using the `--workspace` parameter.
+  - `npm install some-lib --workspace frontend`
+  - This is because npm hoists up the dependencies and updates the root package-lock.json.
 
 ## Running
 
@@ -92,7 +111,7 @@ To develop with self signed certificates goto `chrome://flags/`and enable
 
 - Allow invalid certificates for resources loaded from localhost.
 - Insecure origins treated as secure.
-  - http://localhost
+  - <http://localhost>
 
 ### Authentication
 
@@ -116,4 +135,5 @@ Enabling this feature will allow the user to create a cluster that only contains
 To enable this feature, `oc apply -f features/single-node-openshift.yaml`.  
 
 ## References
+
 `console` is part of the open-cluster-management community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io)

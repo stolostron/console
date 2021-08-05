@@ -1,15 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    AnsibleJob,
+    AnsibleJobApiVersion,
+    AnsibleJobKind,
+    Cluster,
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    ClusterStatus,
+} from '@open-cluster-management/resources'
 import { render } from '@testing-library/react'
-import { ProgressStepBar } from './ProgressStepBar'
-import { clickByText, waitForCalled, waitForText } from '../../../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, clusterCuratorsState } from '../../../../../atoms'
-import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../../resources/cluster-curator'
+import { clickByText, waitForCalled, waitForText } from '../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
-import { AnsibleJob, AnsibleJobApiVersion, AnsibleJobKind } from '../../../../../resources/ansible-job'
+import { ProgressStepBar } from './ProgressStepBar'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',

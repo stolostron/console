@@ -1,5 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    ProviderConnectionStringData,
+} from '@open-cluster-management/resources'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -7,13 +16,6 @@ import { namespacesState } from '../../atoms'
 import { nockCreate, nockIgnoreRBAC } from '../../lib/nock-util'
 import { clickByTestId, clickByText, selectByText, typeByTestId, waitForNock } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../resources/namespace'
-import {
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-    ProviderConnectionStringData,
-} from '../../resources/provider-connection'
 import AddCredentialPage2 from './CredentialsForm'
 
 const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({

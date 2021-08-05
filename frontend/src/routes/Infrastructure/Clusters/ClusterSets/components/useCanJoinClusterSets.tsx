@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useEffect } from 'react'
+import { ManagedClusterSet, ManagedClusterSetDefinition } from '@open-cluster-management/resources'
+import { useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { managedClusterSetsState } from '../../../../../atoms'
-import { ManagedClusterSet, ManagedClusterSetDefinition } from '../../../../../resources/managed-cluster-set'
 import { canUser, checkAdminAccess } from '../../../../../lib/rbac-util'
 
 // returns a list of cluster sets that the user is authorized to attach managed clusters to

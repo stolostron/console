@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Cluster, ClusterStatus } from '@open-cluster-management/resources'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
-import { nockPatch, nockDelete, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
-import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
-import { Cluster, ClusterStatus } from '../../../../../../lib/get-cluster'
-import { MachinePoolsPageContent } from './ClusterMachinePools'
 import { machinePoolsState } from '../../../../../../atoms'
+import { nockDelete, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
+import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails'
-import { clusterName, mockMachinePoolManual, mockMachinePoolAuto } from '../ClusterDetails.test'
+import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from '../ClusterDetails.test'
+import { MachinePoolsPageContent } from './ClusterMachinePools'
 
 const mockCluster: Cluster = {
     name: clusterName,

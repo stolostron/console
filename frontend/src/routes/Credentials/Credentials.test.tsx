@@ -1,5 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    DiscoveryConfig,
+    DiscoveryConfigApiVersion,
+    DiscoveryConfigKind,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    ResourceAttributes,
+    Secret,
+} from '@open-cluster-management/resources'
 import { Provider } from '@open-cluster-management/ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
@@ -18,15 +28,7 @@ import {
     waitForText,
 } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
-import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../../resources/discovery-config'
-import {
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-} from '../../resources/provider-connection'
-import { ResourceAttributes } from '../../resources/self-subject-access-review'
 import CredentialsPage from './Credentials'
-import { Secret } from '../../resources/secret'
 
 const mockProviderConnection1: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,

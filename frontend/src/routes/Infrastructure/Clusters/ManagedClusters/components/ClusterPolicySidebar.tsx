@@ -1,32 +1,32 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
-import _ from 'lodash'
+import { makeStyles } from '@material-ui/styles'
+import { PolicyReport, PolicyReportResults } from '@open-cluster-management/resources'
+import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
+import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import {
-    Tabs,
-    Tab,
-    TabTitleText,
-    Grid,
-    GridItem,
+    Button,
     Flex,
     FlexItem,
+    Grid,
+    GridItem,
+    Tab,
+    Tabs,
+    TabTitleText,
     Text,
     TextContent,
     TextVariants,
-    Button,
 } from '@patternfly/react-core'
+import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
-import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
+import { TFunction } from 'i18next'
+import _ from 'lodash'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
-import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
-import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
-import { makeStyles } from '@material-ui/styles'
-import { useTranslation } from 'react-i18next'
-import { TFunction } from 'i18next'
-import { PolicyReport, PolicyReportResults } from '../../../../../resources/policy-report'
+import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
 
 const useStyles = makeStyles({
     body: {

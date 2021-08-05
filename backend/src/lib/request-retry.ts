@@ -40,7 +40,7 @@ export function requestRetry(options: {
     let delay = 10000
     let retries = 0
 
-    function requestAttempt(url: string, requestOptions: RequestOptions): void {
+    function requestAttempt(url?: string, requestOptions?: RequestOptions): void {
         function handleError(err: Error) {
             let retry = false
             if (err instanceof Error) {

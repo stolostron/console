@@ -1,5 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    DiscoveredCluster,
+    DiscoveredClusterApiVersion,
+    DiscoveredClusterKind,
+    KlusterletAddonConfig,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+    managedClusterSetLabel,
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+    ProjectRequest,
+    ProjectRequestApiVersion,
+    ProjectRequestKind,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+} from '@open-cluster-management/resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -21,27 +42,6 @@ import {
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import {
-    DiscoveredCluster,
-    DiscoveredClusterApiVersion,
-    DiscoveredClusterKind,
-} from '../../../../../resources/discovered-cluster'
-import {
-    KlusterletAddonConfig,
-    KlusterletAddonConfigApiVersion,
-    KlusterletAddonConfigKind,
-} from '../../../../../resources/klusterlet-add-on-config'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
-import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
-import {
-    Project,
-    ProjectApiVersion,
-    ProjectKind,
-    ProjectRequest,
-    ProjectRequestApiVersion,
-    ProjectRequestKind,
-} from '../../../../../resources/project'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
 

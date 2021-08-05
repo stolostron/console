@@ -1,29 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useEffect } from 'react'
 import {
-    AcmForm,
-    AcmSubmit,
-    AcmButton,
-    AcmModal,
-    AcmAlertGroup,
+    ClusterClaim,
+    ClusterClaimApiVersion,
+    ClusterClaimKind,
+    ClusterPool,
+    createResource,
+    getResource,
+    managedClusterSetLabel,
+} from '@open-cluster-management/resources'
+import {
     AcmAlertContext,
+    AcmAlertGroup,
+    AcmButton,
+    AcmForm,
+    AcmModal,
+    AcmSubmit,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { useTranslation, Trans } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
 import {
-    ModalVariant,
     ActionGroup,
     DescriptionList,
-    DescriptionListTerm,
-    DescriptionListGroup,
     DescriptionListDescription,
+    DescriptionListGroup,
+    DescriptionListTerm,
+    ModalVariant,
 } from '@patternfly/react-core'
-import { ClusterPool } from '../../../../../resources/cluster-pool'
-import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
-import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../../../../../resources/cluster-claim'
-import { createResource, getResource } from '../../../../../lib/resource-request'
+import { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import { createImportResources } from '../../../../../lib/import-cluster'
 import { NavigationPath } from '../../../../../NavigationPath'
 

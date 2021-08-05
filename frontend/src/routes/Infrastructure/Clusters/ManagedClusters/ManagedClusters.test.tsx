@@ -1,5 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    CertificateSigningRequest,
+    CertificateSigningRequestApiVersion,
+    CertificateSigningRequestKind,
+    ClusterDeployment,
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterDefinition,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
+    ManagedClusterKind,
+    managedClusterSetLabel,
+    ResourceAttributes,
+} from '@open-cluster-management/resources'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
@@ -25,29 +42,6 @@ import {
     waitForNotText,
     waitForText,
 } from '../../../../lib/test-util'
-import {
-    CertificateSigningRequest,
-    CertificateSigningRequestApiVersion,
-    CertificateSigningRequestKind,
-} from '../../../../resources/certificate-signing-requests'
-import {
-    ClusterDeployment,
-    ClusterDeploymentApiVersion,
-    ClusterDeploymentKind,
-} from '../../../../resources/cluster-deployment'
-import {
-    ManagedCluster,
-    ManagedClusterApiVersion,
-    ManagedClusterDefinition,
-    ManagedClusterKind,
-} from '../../../../resources/managed-cluster'
-import {
-    ManagedClusterInfo,
-    ManagedClusterInfoApiVersion,
-    ManagedClusterInfoKind,
-} from '../../../../resources/managed-cluster-info'
-import { managedClusterSetLabel } from '../../../../resources/managed-cluster-set'
-import { ResourceAttributes } from '../../../../resources/self-subject-access-review'
 import ClustersPage from './ManagedClusters'
 
 const mockManagedCluster0: ManagedCluster = {
