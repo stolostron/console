@@ -24,9 +24,10 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
         try {
             const secret = await getSecret({ name: map[id], namespace }).promise
             const { stringData } = unpackSecret(secret)
+            const extention = id === 'kubeconfig' ? '.yaml' : ''
             /* istanbul ignore next */
             const yaml = stringData?.[`${id}`] ?? ''
-            createDownloadFile(`${clusterName}-${id}`, yaml)
+            createDownloadFile(`${clusterName}-${id}${extention}`, yaml)
         } catch (err) {
             console.error(err)
         }
