@@ -26,7 +26,7 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
             const { stringData } = unpackSecret(secret)
             /* istanbul ignore next */
             const yaml = stringData?.[`${id}`] ?? ''
-            createDownloadFile(`${clusterName}-${id}.yaml`, yaml)
+            createDownloadFile(`${clusterName}-${id}`, yaml)
         } catch (err) {
             console.error(err)
         }
