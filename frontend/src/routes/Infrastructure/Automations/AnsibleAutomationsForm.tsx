@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit, AcmTextInput } from '@open-cluster-management/ui-components'
+import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, Chip, ChipGroup, Flex, FlexItem, ModalVariant, SelectOption, SelectVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -462,6 +462,7 @@ export function AnsibleAutomationsForm(props: {
                 ansibleSelection={ansibleSelection}
                 setAnsibleJob={updateAnsibleJob}
                 ansibleJobList={editAnsibleJobList?.jobs}
+                ansibleCredentials={ansibleCredentials}
             />
         </Fragment>
     )
@@ -472,7 +473,9 @@ function EditAnsibleJobModal(props: {
     ansibleSelection?: string
     setAnsibleJob: (ansibleJob?: AnsibleJob, old?: AnsibleJob) => void
     ansibleJobList?: AnsibleJob[]
+    ansibleCredentials: ProviderConnection[]
 }) {
+    const { ansibleCredentials, ansibleSelection } = props
     const { t } = useTranslation(['common', 'cluster'])
     const [ansibleJob, setAnsibleJob] = useState<AnsibleJob | undefined>()
     const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<AnsibleTowerJobTemplateList>()
@@ -482,25 +485,23 @@ function EditAnsibleJobModal(props: {
         ansibleJobList = props.ansibleJobList.filter((job) => ansibleJob !== job).map((ansibleJob) => ansibleJob.name)
 
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
-    
-    // need to fix the error where it keeps fetching listAnsibleTowerJobs after selecting the Ansible Automation Platform credential
-
-    if(props.ansibleSelection){
-
-        // needs a way to fetch host and token for the selected ansibleSelection
-        const host = ''
-        const token = ''
-        
-        listAnsibleTowerJobs(
-            host,
-            token
-        ).promise.then((response) => {
-            if(response){
-                const AnsibleTowerJobTemplateList = response
-                setAnsibleTowerJobTemplateList(AnsibleTowerJobTemplateList)
-            } 
-        })
-    }
+    useEffect(() => {
+        if(ansibleSelection){
+            const selectCredentials = _.find(ansibleCredentials, (obj) => {
+                const name = _.get(obj, 'metadata.name')
+                return name === ansibleSelection
+            })
+            listAnsibleTowerJobs(
+                _.get(selectCredentials, 'stringData.host'),
+                _.get(selectCredentials, 'stringData.token')
+            ).promise.then((response) => {
+                if(response){
+                    const AnsibleTowerJobTemplateList = response
+                    setAnsibleTowerJobTemplateList(AnsibleTowerJobTemplateList)
+                } 
+            })
+        }
+    }, [ansibleSelection])
 
     return (
         <AcmModal
@@ -517,12 +518,13 @@ function EditAnsibleJobModal(props: {
                 <AcmForm>
                     <AcmSelect 
                         label={t('cluster:template.modal.name.label')}
-                        id="select"
+                        id="job-name"
                         value={ansibleJob?.name}
                         helperText={t('cluster:template.modal.name.helper.text')}
                         onChange={(name) => {
                             if (ansibleJob) {
                                 const copy = { ...ansibleJob }
+                                copy.name = name
                                 setAnsibleJob(copy)
                             }
                         }}
@@ -530,7 +532,6 @@ function EditAnsibleJobModal(props: {
                         placeholder={t('cluster:template.modal.name.placeholder')}
                         isRequired
                         >
-
                         <AnsibleTowerJobTemplates 
                             AnsibleTowerJobTemplateList={AnsibleTowerJobTemplateList}
                         />
@@ -541,26 +542,6 @@ function EditAnsibleJobModal(props: {
                     </AcmSelect>
                 </AcmForm>
 
-                <AcmTextInput
-                    id="job-name"
-                    label={t('cluster:template.modal.name.label')}
-                    value={ansibleJob?.name}
-                    helperText={t('cluster:template.modal.name.helper.text')}
-                    onChange={(name) => {
-                        if (ansibleJob) {
-                            const copy = { ...ansibleJob }
-                            copy.name = name
-                            setAnsibleJob(copy)
-                        }
-                    }}
-                    validation={(name: string) => {
-                        if (ansibleJobList.includes(name)) {
-                            // no duplicate job names can be added
-                            return t('cluster:template.job.duplicate.error')
-                        }
-                    }}
-                    isRequired
-                />
                 <AcmLabelsInput
                     id="job-settings"
                     label={t('cluster:template.modal.settings.label')}
@@ -599,30 +580,19 @@ function AnsibleTowerJobTemplates(props: {
     AnsibleTowerJobTemplateList?: AnsibleTowerJobTemplateList
 }){
     if(props.AnsibleTowerJobTemplateList){
-        // need to return array of the given AnsibleTowerJobTemplateList
-        // using pseudo code for now
+        const AnsibleList = _.values(props.AnsibleTowerJobTemplateList)
         return(
             <Fragment>
-                <SelectOption key="option-1" value="option-1">
-                Option 1
-                </SelectOption>
-                <SelectOption key="option-2" value="option-2">
-                    Option 2
-                </SelectOption>
-                <SelectOption key="option-3" value="option-3">
-                    Option 3
-                </SelectOption> 
+                {
+                    AnsibleList.map((option) => (
+                        <SelectOption key={_.get(option, 'name')} value={_.get(option, 'name')}>
+                            {_.get(option, 'name')}
+                        </SelectOption>
+
+                    ))
+                }
             </Fragment>
         )
-
-        // _.each(props.AnsibleTowerJobTemplateList, (k, v) => {
-        //     return (
-        //         <SelectOption key={_.get(k, 'name')} value={_.get(k, 'name')}>
-        //             {_.get(k, 'name')}
-        //         </SelectOption>
-        //     )
-        // })
-
     }
-    return;
+    return null;
 }
