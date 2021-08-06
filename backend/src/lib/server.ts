@@ -169,6 +169,7 @@ export async function stopServer(): Promise<void> {
     if (server?.listening) {
         logger.debug({ msg: 'closing server' })
         if (process.env.NODE_ENV === 'production') {
+            logger.info({ msg: 'waiting 25 seconds before closing the server' })
             await new Promise<void>((resolve) =>
                 setTimeout(
                     () =>
