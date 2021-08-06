@@ -204,12 +204,13 @@ export function listAnsibleTowerJobs(
     const ansibleJobsUrl = ansibleHostUrl + '/api/v2/job_templates/'
     const abortController = new AbortController()
     return {
-        promise: fetchGetAnsibleJobs(backendURLPath, ansibleJobsUrl, token, abortController.signal).then(
-            (item) =>
-                item.data.results?.map((job) => {
+        promise: fetchGetAnsibleJobs(backendURLPath, ansibleJobsUrl, token, abortController.signal).then((item) => {
+            return {
+                results: item.data.results?.map((job) => {
                     return { type: job.type, name: job.name }
-                }) as AnsibleTowerJobTemplateList
-        ),
+                }),
+            } as AnsibleTowerJobTemplateList
+        }),
         abort: () => abortController.abort(),
     }
 }
@@ -409,7 +410,7 @@ export async function fetchRetry<T>(options: {
                 case 401: // 401 is returned from the backend if no token cookie is on request
                     if (process.env.NODE_ENV === 'production') {
                         window.location.reload()
-                    } else {
+                    } else if (options.url !== '/multicloud/ansibletower') {
                         window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)

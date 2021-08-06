@@ -1,6 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, Chip, ChipGroup, Flex, FlexItem, ModalVariant, SelectOption, SelectVariant } from '@patternfly/react-core'
+import {
+    ActionGroup,
+    Button,
+    Chip,
+    ChipGroup,
+    Flex,
+    FlexItem,
+    ModalVariant,
+    SelectOption,
+    SelectVariant,
+} from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
@@ -10,7 +20,7 @@ import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
-import { createResource, listAnsibleTowerJobs , replaceResource } from '../../../lib/resource-request'
+import { createResource, listAnsibleTowerJobs, replaceResource, ResourceError } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
 import { FeatureGates } from '../../../FeatureGates'
 import {
@@ -23,8 +33,6 @@ import {
 import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
 import { IResource } from '../../../resources/resource'
 import { validateKubernetesDnsName } from '../../../lib/validation'
-import { AnsibleTowerJobTemplateList } from '../../../resources/ansible-job'
-import _ from 'lodash'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -104,6 +112,8 @@ export function AnsibleAutomationsForm(props: {
         useState<{ jobs: AnsibleJob[]; setJobs: (jobs: AnsibleJob[]) => void }>()
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
+    const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
+    const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
 
     const [installPreJobs, setInstallPreJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.install?.prehook ?? [])
     const [installPostJobs, setInstallPostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.install?.posthook ?? [])
@@ -115,6 +125,27 @@ export function AnsibleAutomationsForm(props: {
     const [destroyPostJobs, setDestroyPostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.destroy?.posthook ?? [])
 
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
+
+    useEffect(() => {
+        if (ansibleSelection) {
+            const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
+            listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
+                .promise.then((response) => {
+                    if (response) {
+                        let templateList: string[] = []
+                        if (response?.results) templateList = response.results!.map((job) => job.name!)
+                        setAnsibleTowerJobTemplateList(templateList)
+                        setAnsibleTowerAuthError('')
+                    }
+                })
+                .catch((err: ResourceError) => {
+                    if (err.code === 401) setAnsibleTowerAuthError(t('credentials:validate.ansible.host'))
+                    else setAnsibleTowerAuthError(err.message)
+
+                    setAnsibleTowerJobTemplateList([])
+                })
+        }
+    }, [ansibleSelection, ansibleCredentials, t])
 
     function updateAnsibleJob(ansibleJob?: AnsibleJob, replaceJob?: AnsibleJob) {
         if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {
@@ -232,6 +263,9 @@ export function AnsibleAutomationsForm(props: {
                             text: t('create:creation.ocp.cloud.add.connection'),
                             linkType: LinkType.internalNewTab,
                             callback: () => history.push(NavigationPath.addCredentials),
+                        },
+                        validation: () => {
+                            if (AnsibleTowerAuthError) return AnsibleTowerAuthError
                         },
                     },
                 ],
@@ -461,8 +495,8 @@ export function AnsibleAutomationsForm(props: {
                 ansibleJob={editAnsibleJob}
                 ansibleSelection={ansibleSelection}
                 setAnsibleJob={updateAnsibleJob}
-                ansibleJobList={editAnsibleJobList?.jobs}
                 ansibleCredentials={ansibleCredentials}
+                ansibleTowerTemplateList={AnsibleTowerJobTemplateList}
             />
         </Fragment>
     )
@@ -472,37 +506,13 @@ function EditAnsibleJobModal(props: {
     ansibleJob?: AnsibleJob
     ansibleSelection?: string
     setAnsibleJob: (ansibleJob?: AnsibleJob, old?: AnsibleJob) => void
-    ansibleJobList?: AnsibleJob[]
     ansibleCredentials: ProviderConnection[]
+    ansibleTowerTemplateList: string[] | undefined
 }) {
-    const { ansibleCredentials, ansibleSelection } = props
     const { t } = useTranslation(['common', 'cluster'])
     const [ansibleJob, setAnsibleJob] = useState<AnsibleJob | undefined>()
-    const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<AnsibleTowerJobTemplateList>()
-    
-    let ansibleJobList: string[]
-    if (props.ansibleJobList)
-        ansibleJobList = props.ansibleJobList.filter((job) => ansibleJob !== job).map((ansibleJob) => ansibleJob.name)
 
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
-    useEffect(() => {
-        if(ansibleSelection){
-            const selectCredentials = _.find(ansibleCredentials, (obj) => {
-                const name = _.get(obj, 'metadata.name')
-                return name === ansibleSelection
-            })
-            listAnsibleTowerJobs(
-                _.get(selectCredentials, 'stringData.host'),
-                _.get(selectCredentials, 'stringData.token')
-            ).promise.then((response) => {
-                if(response){
-                    const AnsibleTowerJobTemplateList = response
-                    setAnsibleTowerJobTemplateList(AnsibleTowerJobTemplateList)
-                } 
-            })
-        }
-    }, [ansibleSelection])
-
     return (
         <AcmModal
             variant={ModalVariant.medium}
@@ -516,7 +526,7 @@ function EditAnsibleJobModal(props: {
         >
             <AcmForm>
                 <AcmForm>
-                    <AcmSelect 
+                    <AcmSelect
                         label={t('cluster:template.modal.name.label')}
                         id="job-name"
                         value={ansibleJob?.name}
@@ -531,15 +541,14 @@ function EditAnsibleJobModal(props: {
                         variant={SelectVariant.typeahead}
                         placeholder={t('cluster:template.modal.name.placeholder')}
                         isRequired
-                        >
-                            {AnsibleTowerJobTemplateList ? 
-                                _.values(AnsibleTowerJobTemplateList).map((option) => (
-                                    <SelectOption key={_.get(option, 'name')} value={_.get(option, 'name')}>
-                                        {_.get(option, 'name')}
-                                    </SelectOption>
-            
-                                ))
-                             : undefined }
+                    >
+                        {props.ansibleTowerTemplateList
+                            ? props.ansibleTowerTemplateList?.map((name) => (
+                                  <SelectOption key={name} value={name}>
+                                      {name}
+                                  </SelectOption>
+                              ))
+                            : undefined}
                     </AcmSelect>
                 </AcmForm>
 
