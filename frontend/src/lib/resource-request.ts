@@ -410,7 +410,7 @@ export async function fetchRetry<T>(options: {
                 case 401: // 401 is returned from the backend if no token cookie is on request
                     if (process.env.NODE_ENV === 'production') {
                         window.location.reload()
-                    } else if (options.url != '/multicloud/ansibletower') {
+                    } else if (options.url !== '/multicloud/ansibletower') {
                         window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
