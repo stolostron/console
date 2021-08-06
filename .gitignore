@@ -1,6 +1,6 @@
 # Copyright Contributors to the Open Cluster Management project
 
-
+**/certs/
 **/node_modules/
 **/coverage/
 **/lib/
@@ -8,6 +8,7 @@
 **/build/
 **/.eslintcache
 **/tsconfig.tsbuildinfo
+**/.env
 
 .build-harness
 .build-harness-bootstrap
