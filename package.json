@@ -13,19 +13,19 @@
         "backend"
     ],
     "scripts": {
-        "start": "workspaces-run --parallel -- yarn run watch",
+        "start": "workspaces-run --parallel -- NODE_OPTIONS=--max_old_space_size=8192 npm run watch",
         "clean": "workspaces-run --parallel -- rm -rf build dist lib coverage *.tsbuildinfo test-report.xml",
-        "build": "workspaces-run --parallel --order-by-deps -- NODE_OPTIONS=--max_old_space_size=8192 yarn run build",
-        "test": "workspaces-run --parallel -- yarn test",
-        "lint": "workspaces-run --parallel -- yarn run lint",
-        "check": "workspaces-run --parallel -- yarn run check",
+        "build": "workspaces-run --parallel --order-by-deps -- NODE_OPTIONS=--max_old_space_size=8192 npm run build",
+        "test": "workspaces-run --parallel -- NODE_OPTIONS=--max_old_space_size=8192 npm test",
+        "lint": "workspaces-run --parallel -- npm run lint",
+        "check": "workspaces-run --parallel -- npm run check",
         "setup": "./setup.sh",
         "copyright:check": "ts-node --skip-project util/copyright-check",
         "copyright:fix": "ts-node --skip-project util/copyright-fix",
         "docker:build": "docker build --file Dockerfile.prow --tag console .",
-        "docker:run": "yarn run docker:build && docker run --rm --name console -p 3000:3000 -e LOG_MEMORY=true -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./node_modules/.bin/pino-zen -i time && docker rm -f console",
-        "docker:deploy": "yarn run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
-        "reinstall": "yarn run clean && workspaces-run --parallel -- rm -rf node_modules && rm -rf yarn.lock node_modules && yarn install && yarn run build"
+        "docker:run": "npm run docker:build && docker run --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./node_modules/.bin/pino-zen -i time && docker rm -f console",
+        "docker:deploy": "npm run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
+        "reinstall": "npm run clean && workspaces-run --parallel -- rm -rf node_modules && rm -rf yarn.lock node_modules && yarn install && npm run build"
     },
     "devDependencies": {
         "@types/jest": "^26.0.24",

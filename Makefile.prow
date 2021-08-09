@@ -4,6 +4,8 @@
 
 .PHONY: install
 install:
+	npm i -g yarn
+	yarn -v
 	yarn --frozen-lockfile --ignore-optional
 
 .PHONY: build
