@@ -139,13 +139,12 @@ export function AnsibleAutomationsForm(props: {
                     }
                 })
                 .catch((err: ResourceError) => {
-                    if (err.code === 401) setAnsibleTowerAuthError(t('credentials:validate.ansible.host'))
+                    if (err.code === 401) setAnsibleTowerAuthError('credentials:validate.ansible.host')
                     else setAnsibleTowerAuthError(err.message)
-
                     setAnsibleTowerJobTemplateList([])
                 })
         }
-    }, [ansibleSelection, ansibleCredentials, t])
+    }, [ansibleSelection, ansibleCredentials])
 
     function updateAnsibleJob(ansibleJob?: AnsibleJob, replaceJob?: AnsibleJob) {
         if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {
@@ -265,7 +264,7 @@ export function AnsibleAutomationsForm(props: {
                             callback: () => history.push(NavigationPath.addCredentials),
                         },
                         validation: () => {
-                            if (AnsibleTowerAuthError) return AnsibleTowerAuthError
+                            if (AnsibleTowerAuthError) return t(AnsibleTowerAuthError)
                         },
                     },
                 ],
@@ -511,7 +510,6 @@ function EditAnsibleJobModal(props: {
 }) {
     const { t } = useTranslation(['common', 'cluster'])
     const [ansibleJob, setAnsibleJob] = useState<AnsibleJob | undefined>()
-
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
     return (
         <AcmModal

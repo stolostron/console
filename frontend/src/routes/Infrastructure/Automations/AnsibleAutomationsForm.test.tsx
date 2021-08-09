@@ -5,15 +5,10 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, namespacesState, secretsState } from '../../../atoms'
-import { nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
-import {
-    clickByPlaceholderText,
-    clickByText,
-    typeByPlaceholderText,
-    typeByTestId,
-    waitForNock,
-} from '../../../lib/test-util'
+import { nockAnsibleTower, nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { clickByPlaceholderText, clickByText, typeByPlaceholderText, waitForNock } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
+import { AnsibleTowerJobTemplateList } from '../../../resources/ansible-job'
 import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../resources/cluster-curator'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
 import { Secret, SecretApiVersion, SecretKind } from '../../../resources/secret'
@@ -37,6 +32,10 @@ const mockSecret: Secret = {
             'cluster.open-cluster-management.io/type': Provider.ansible,
             'cluster.open-cluster-management.io/credentials': '',
         },
+    },
+    stringData: {
+        host: 'https://ansible-tower-web-svc-tower.com',
+        token: 'abcd',
     },
 }
 
@@ -66,13 +65,13 @@ const mockClusterCurator: ClusterCurator = {
     spec: {
         install: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job-pre-install', extra_vars: {} }],
-            posthook: [{ name: 'test-job-post-install', extra_vars: {} }],
+            prehook: [{ name: 'job_1', extra_vars: {} }],
+            posthook: [{ name: 'job_1', extra_vars: {} }],
         },
         upgrade: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'test-job-pre-upgrade', extra_vars: {} }],
-            posthook: [{ name: 'test-job-post-upgrade', extra_vars: {} }],
+            prehook: [{ name: 'job_1', extra_vars: {} }],
+            posthook: [{ name: 'job_1', extra_vars: {} }],
         },
         scale: {
             towerAuthSecret: 'ansible-test-secret',
@@ -87,13 +86,30 @@ const mockClusterCurator: ClusterCurator = {
     },
 }
 
+const mockAnsibleCredential = {
+    towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/job_templates/',
+    token: 'abcd',
+}
+
+const mockTemplateList: AnsibleTowerJobTemplateList = {
+    results: [
+        {
+            name: 'job_1',
+            type: 'job_template',
+        },
+    ],
+}
+
 describe('add ansible job template page', () => {
-    beforeEach(() => nockIgnoreRBAC())
+    beforeEach(() => {
+        nockIgnoreRBAC()
+    })
 
     it('should create a curator template', async () => {
         render(<AddAnsibleTemplateTest />)
 
         // template information
+        nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
         await typeByPlaceholderText('template.create.placeholder', mockClusterCurator.metadata.name!)
         await clickByPlaceholderText('credentials:credentialsForm.ansibleCredentials.placeholder')
         await clickByText(mockSecret.metadata.name!)
@@ -101,42 +117,29 @@ describe('add ansible job template page', () => {
 
         // install templates
         await clickByText('template.job.placeholder', 0)
-        await typeByTestId('job-name', mockClusterCurator.spec!.install!.prehook![0].name)
+        await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
+        await clickByText(mockTemplateList.results![0].name!, 0)
         await clickByText('common:save')
         await clickByText('template.job.placeholder', 1)
-        await typeByTestId('job-name', mockClusterCurator.spec!.install!.posthook![0].name)
+        await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
+        await clickByText(mockTemplateList.results![0].name!, 1)
         await clickByText('common:save')
         await clickByText('common:next')
 
         // upgrade templates
         await clickByText('template.job.placeholder', 0)
-        await typeByTestId('job-name', mockClusterCurator.spec!.upgrade!.prehook![0].name)
+        await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
+        await clickByText(mockTemplateList.results![0].name!, 0)
         await clickByText('common:save')
         await clickByText('template.job.placeholder', 1)
-        await typeByTestId('job-name', mockClusterCurator.spec!.upgrade!.posthook![0].name)
+        await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
+        await clickByText(mockTemplateList.results![0].name!, 1)
         await clickByText('common:save')
         await clickByText('common:next')
 
-        // scale templates
-        // await clickByText('template.job.placeholder', 0)
-        // await typeByTestId('job-name', mockClusterCurator.spec!.scale!.prehook![0].name)
-        // await clickByText('common:save')
-        // await clickByText('template.job.placeholder', 1)
-        // await typeByTestId('job-name', mockClusterCurator.spec!.scale!.posthook![0].name)
-        // await clickByText('common:save')
-        // await clickByText('common:next')
-
-        // destroy templates
-        // await clickByText('template.job.placeholder', 0)
-        // await typeByTestId('job-name', mockClusterCurator.spec!.destroy!.prehook![0].name)
-        // await clickByText('common:save')
-        // await clickByText('template.job.placeholder', 1)
-        // await typeByTestId('job-name', mockClusterCurator.spec!.destroy!.posthook![0].name)
-        // await clickByText('common:save')
-        // await clickByText('common:next')
-
         // add template
         const createNock = nockCreate(mockClusterCurator)
+        nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
         await clickByText('common:add')
         await waitForNock(createNock)
     })
