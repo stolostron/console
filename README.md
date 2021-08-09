@@ -27,9 +27,7 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 - Node.js v14.x
   - `node -v`
-- NPM 7 (npm 6 ships with node 14)
-  - `npm install --global npm@7`
-  - `npm -v`
+- yarn
 
 ## Workspaces
 
@@ -42,9 +40,6 @@ Notes:
 
 - Workspaces are defined in the `package.json` at the root
 - While workspaces allow the sequential running of commands across all workspaces, console is using a project `workspaces-run` to run command across all workspaces concurrently.
-- Installing a new dependency for a workspace must be done at the root using the `--workspace` parameter.
-  - `npm install some-lib --workspace frontend`
-  - This is because npm hoists up the dependencies and updates the root package-lock.json.
 
 ## Running
 
@@ -53,7 +48,7 @@ Notes:
 2. Install dependencies
 
    ```
-   npm ci
+   yarn install --frozen-lockfile
    ```
 
 3. Setup environment
@@ -63,7 +58,7 @@ Notes:
    - to have Advanced Cluster Management installed on the cluster
 
    ```
-   npm run setup
+   yarn run setup
    ```
 
    This will create a `.env` file in the backend directory containing the environment variables.
@@ -71,7 +66,7 @@ Notes:
 4. Start the development services
 
    ```
-   npm start
+   yarn start
    ```
 
    This will start the frontend and the backend in parallel.  (It may take up to 30 seconds for the UI to appear)

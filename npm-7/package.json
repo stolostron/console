@@ -1,8 +1,0 @@
-{
-    "name": "@open-cluster-management/npm-7",
-    "version": "1.0.0",
-    "description": "Local install of npm-7 for downstream builds",
-    "dependencies": {
-        "npm": "^7.20.5"
-    }
-}
