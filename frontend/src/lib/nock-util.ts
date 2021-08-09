@@ -4,6 +4,7 @@
 
 import { isEqual } from 'lodash'
 import nock from 'nock'
+import { AnsibleCredential, AnsibleTowerJobTemplateList } from '../resources/ansible-job'
 import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
 import {
     ResourceAttributes,
@@ -209,6 +210,20 @@ export function nockRBAC(resourceAttributes: ResourceAttributes, allowed = true)
             status: { allowed },
         } as SelfSubjectAccessReview
     )
+}
+
+export function nockAnsibleTower(
+    data: AnsibleCredential | unknown,
+    response: AnsibleTowerJobTemplateList,
+    statusCode = 200
+) {
+    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+        .post('/ansibletower', (body) => isEqual(body, data))
+        .reply(statusCode, response, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
 }
 
 export function nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource, statusCode = 204) {
