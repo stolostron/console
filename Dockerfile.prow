@@ -2,12 +2,12 @@
 
 # Setup NPM 7
 FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as npm7
-WORKDIR /console
+WORKDIR /app
 COPY ./npm-7 ./npm-7
-WORKDIR /console/npm-7
+WORKDIR /app/npm-7
 RUN npm ci
-ENV PATH=/console/npm-7/node_modules/.bin:$PATH
-WORKDIR /console
+ENV PATH=/app/npm-7/node_modules/.bin:$PATH
+WORKDIR /app
 
 # Setup package files
 FROM npm7 as package-files
@@ -28,11 +28,11 @@ RUN npm clean-install --only=production --no-optional --legacy-peer-deps
 # Use ubi-minimal to create small final image
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 COPY --from=builder /usr/bin/node /usr/bin/node
-WORKDIR /console
+WORKDIR /app
 ENV NODE_ENV production
-COPY --from=production-packages /console/node_modules ./node_modules
-COPY --from=production-packages /console/backend/node_modules ./backend/node_modules
-COPY --from=builder /console/backend/build ./backend
-COPY --from=builder /console/frontend/build ./public
+COPY --from=production-packages /app/node_modules ./node_modules
+COPY --from=production-packages /app/backend/node_modules ./backend/node_modules
+COPY --from=builder /app/backend/build ./backend
+COPY --from=builder /app/frontend/build ./public
 USER 1001
 CMD ["node", "backend/lib/main.js"]
