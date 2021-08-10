@@ -1,58 +1,66 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
-import { MemoryRouter, Switch, Route } from 'react-router-dom'
-import { RecoilRoot } from 'recoil'
-import ClusterSetDetailsPage from './ClusterSetDetails'
 import {
-    waitForText,
-    clickByText,
-    clickByLabel,
-    waitForNocks,
-    clickByPlaceholderText,
-    typeByTestId,
-    waitForTestId,
-    waitForNotTestId,
-} from '../../../../../lib/test-util'
-import { nockIgnoreRBAC, nockDelete, nockCreate, nockPatch } from '../../../../../lib/nock-util'
-import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
-import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
-import {
-    ManagedClusterInfo,
-    ManagedClusterInfoApiVersion,
-    ManagedClusterInfoKind,
-} from '../../../../../resources/managed-cluster-info'
-import { ClusterRoleBinding, ClusterRoleBindingKind, RbacApiVersion } from '../../../../../resources/rbac'
-import {
+    ClusterRoleBinding,
+    ClusterRoleBindingKind,
+    ManagedCluster,
     ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
     ManagedClusterAddOnKind,
-} from '../../../../../resources/managed-cluster-add-on'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
-import {
+    ManagedClusterApiVersion,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
+    ManagedClusterKind,
+    managedClusterSetLabel,
+    RbacApiVersion,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
-    SubmarinerConfigKind,
     submarinerConfigDefault,
-} from '../../../../../resources/submariner-config'
+    SubmarinerConfigKind,
+} from '@open-cluster-management/resources'
+import { render } from '@testing-library/react'
+import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
 import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
-    managedClusterInfosState,
-    managedClustersState,
-    managedClusterSetsState,
-    managedClusterAddonsState,
     clusterPoolsState,
+    managedClusterAddonsState,
+    managedClusterInfosState,
+    managedClusterSetsState,
+    managedClustersState,
     submarinerConfigsState,
 } from '../../../../../atoms'
+import {
+    nockClusterList,
+    nockCreate,
+    nockDelete,
+    nockIgnoreRBAC,
+    nockNamespacedList,
+    nockPatch,
+} from '../../../../../lib/nock-util'
+import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
+import {
+    clickByLabel,
+    clickByPlaceholderText,
+    clickByText,
+    typeByTestId,
+    waitForNocks,
+    waitForNotTestId,
+    waitForTestId,
+    waitForText,
+} from '../../../../../lib/test-util'
+import { NavigationPath } from '../../../../../NavigationPath'
 import {
     mockClusterDeployments,
     mockManagedClusterInfos,
     mockManagedClusters,
 } from '../../ManagedClusters/ManagedClusters.test'
-import { NavigationPath } from '../../../../../NavigationPath'
-import { nockClusterList, nockNamespacedList } from '../../../../../lib/nock-util'
+import ClusterSetDetailsPage from './ClusterSetDetails'
 
 const clusterSetCluster: ManagedCluster = mockManagedClusters.find(
     (mc: ManagedCluster) => mc.metadata.labels?.[managedClusterSetLabel] === mockManagedClusterSet.metadata.name!

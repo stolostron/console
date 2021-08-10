@@ -1,25 +1,27 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useEffect } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import {
+    createResource,
+    deleteResource,
+    ManagedClusterSet,
+    ManagedClusterSetBinding,
+    ManagedClusterSetBindingApiVersion,
+    ManagedClusterSetBindingKind,
+    resultsSettled,
+} from '@open-cluster-management/resources'
 import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmForm,
-    AcmSubmit,
     AcmModal,
     AcmMultiSelect,
+    AcmSubmit,
 } from '@open-cluster-management/ui-components'
+import { ActionGroup, Button, ModalVariant, SelectOption, SelectVariant } from '@patternfly/react-core'
+import { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
-import { ActionGroup, Button, ModalVariant, SelectVariant, SelectOption } from '@patternfly/react-core'
-import { ManagedClusterSet } from '../../../../../resources/managed-cluster-set'
-import {
-    ManagedClusterSetBinding,
-    ManagedClusterSetBindingApiVersion,
-    ManagedClusterSetBindingKind,
-} from '../../../../../resources/managed-cluster-set-binding'
 import { managedClusterSetBindingsState, namespacesState } from '../../../../../atoms'
-import { createResource, deleteResource, resultsSettled } from '../../../../../lib/resource-request'
 
 export function useClusterSetBindings(clusterSet?: ManagedClusterSet) {
     const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)

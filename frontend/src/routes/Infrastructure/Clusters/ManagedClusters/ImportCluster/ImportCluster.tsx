@@ -1,6 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    createKlusterletAddonConfig,
+    createManagedCluster,
+    createProject,
+    createResource,
+    IResource,
+    managedClusterSetLabel,
+    ResourceError,
+    ResourceErrorCode,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+} from '@open-cluster-management/resources'
+import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
@@ -22,14 +35,7 @@ import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { createResource, ResourceError, ResourceErrorCode } from '../../../../../lib/resource-request'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { createKlusterletAddonConfig } from '../../../../../resources/klusterlet-add-on-config'
-import { createManagedCluster } from '../../../../../resources/managed-cluster'
-import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
-import { createProject } from '../../../../../resources/project'
-import { IResource } from '../../../../../resources/resource'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 

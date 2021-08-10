@@ -1,11 +1,54 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    ClusterDeployment,
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+    ClusterManagementAddOn,
+    ClusterProvision,
+    ClusterProvisionApiVersion,
+    ClusterProvisionKind,
+    MachinePool,
+    MachinePoolApiVersion,
+    MachinePoolKind,
+    ManagedCluster,
+    ManagedClusterAddOn,
+    ManagedClusterAddOnApiVersion,
+    ManagedClusterAddOnKind,
+    ManagedClusterApiVersion,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
+    ManagedClusterKind,
+    PodApiVersion,
+    PodKind,
+    PodList,
+    SelfSubjectAccessReview,
+} from '@open-cluster-management/resources'
+import { AcmRoute } from '@open-cluster-management/ui-components'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { AcmRoute } from '@open-cluster-management/ui-components'
-import { nockCreate, nockDelete, nockNamespacedList, nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import {
+    acmRouteState,
+    certificateSigningRequestsState,
+    clusterCuratorsState,
+    clusterDeploymentsState,
+    clusterManagementAddonsState,
+    clusterProvisionsState,
+    configMapsState,
+    machinePoolsState,
+    managedClusterAddonsState,
+    managedClusterInfosState,
+    managedClusterSetsState,
+    managedClustersState,
+} from '../../../../../atoms'
+import { nockCreate, nockDelete, nockIgnoreRBAC, nockNamespacedList } from '../../../../../lib/nock-util'
+import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
     clickByLabel,
     clickByText,
@@ -13,52 +56,11 @@ import {
     waitForCalled,
     waitForNock,
     waitForNocks,
-    waitForText,
     waitForNotText,
+    waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import {
-    ClusterDeployment,
-    ClusterDeploymentApiVersion,
-    ClusterDeploymentKind,
-} from '../../../../../resources/cluster-deployment'
-import { ClusterManagementAddOn } from '../../../../../resources/cluster-management-add-on'
-import {
-    ClusterProvision,
-    ClusterProvisionApiVersion,
-    ClusterProvisionKind,
-} from '../../../../../resources/cluster-provision'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
-import {
-    ManagedClusterAddOn,
-    ManagedClusterAddOnApiVersion,
-    ManagedClusterAddOnKind,
-} from '../../../../../resources/managed-cluster-add-on'
-import {
-    ManagedClusterInfo,
-    ManagedClusterInfoApiVersion,
-    ManagedClusterInfoKind,
-} from '../../../../../resources/managed-cluster-info'
-import { MachinePool, MachinePoolApiVersion, MachinePoolKind } from '../../../../../resources/machine-pool'
-import { PodApiVersion, PodKind, PodList } from '../../../../../resources/pod'
-import { SelfSubjectAccessReview } from '../../../../../resources/self-subject-access-review'
 import ClusterDetails from './ClusterDetails'
-import {
-    managedClustersState,
-    managedClusterInfosState,
-    clusterDeploymentsState,
-    certificateSigningRequestsState,
-    clusterManagementAddonsState,
-    managedClusterAddonsState,
-    configMapsState,
-    managedClusterSetsState,
-    acmRouteState,
-    clusterProvisionsState,
-    machinePoolsState,
-    clusterCuratorsState,
-} from '../../../../../atoms'
-import { mockOpenShiftConsoleConfigMap, mockManagedClusterSet } from '../../../../../lib/test-metadata'
-import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../../resources/cluster-curator'
 
 export const clusterName = 'test-cluster'
 
@@ -262,7 +264,7 @@ const mockManagedClusterAddOnApp: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Progressing',
                 reason: 'Progressing',
                 status: 'True',
@@ -291,7 +293,7 @@ const mockManagedClusterAddOnWork: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Degraded',
                 reason: 'Degraded',
                 status: 'True',
@@ -320,7 +322,7 @@ const mockManagedClusterAddOnCert: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Available',
                 reason: 'Available',
                 status: 'True',
@@ -350,7 +352,7 @@ const mockManagedClusterAddOnPolicy: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Progressing',
                 reason: 'Progressing',
                 status: 'False',
@@ -380,7 +382,7 @@ const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Unknown',
                 reason: 'Unknown',
                 status: 'True',
@@ -550,7 +552,6 @@ const mockClusterProvisions: ClusterProvision = {
     status: {
         conditions: [
             {
-                lastProbeTime: '2021-01-04T18:23:30Z',
                 lastTransitionTime: '2021-01-04T18:23:30Z',
                 message: 'Install job has been created',
                 reason: 'JobCreated',
@@ -558,7 +559,6 @@ const mockClusterProvisions: ClusterProvision = {
                 type: 'ClusterProvisionJobCreated',
             },
             {
-                lastProbeTime: '2021-01-04T18:23:37Z',
                 lastTransitionTime: '2021-01-04T18:23:37Z',
                 message: 'Invalid GCP project ID',
                 reason: 'GCPInvalidProjectID',

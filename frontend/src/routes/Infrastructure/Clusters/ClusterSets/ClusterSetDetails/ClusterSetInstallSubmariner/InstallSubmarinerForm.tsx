@@ -1,45 +1,47 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useEffect, useState, useContext } from 'react'
-import { useHistory } from 'react-router'
-import { Link } from 'react-router-dom'
 import {
-    Provider,
-    AcmPage,
-    AcmPageHeader,
-    AcmEmptyState,
-    AcmAlert,
-    AcmButton,
-    AcmExpandableSection,
-    ProviderLongTextMap,
-} from '@open-cluster-management/ui-components'
-import { PageSection, List, ListItem } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { useTranslation, Trans } from 'react-i18next'
-import { AcmDataFormPage } from '../../../../../../components/AcmDataForm'
-import { FormData, Section } from '../../../../../../components/AcmFormData'
-import { NavigationPath } from '../../../../../../NavigationPath'
-import { ClusterSetContext } from '../ClusterSetDetails'
-import { RbacButton } from '../../../../../../components/Rbac'
-import { Cluster } from '../../../../../../lib/get-cluster'
-import { rbacCreate } from '../../../../../../lib/rbac-util'
-import { DOC_LINKS } from '../../../../../../lib/doc-util'
-import {
-    SubmarinerConfig,
-    SubmarinerConfigApiVersion,
-    SubmarinerConfigKind,
-    submarinerConfigDefault,
     CableDriver,
-} from '../../../../../../resources/submariner-config'
-import {
+    Cluster,
+    createResource,
+    listNamespaceSecrets,
     ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
     ManagedClusterAddOnKind,
-} from '../../../../../../resources/managed-cluster-add-on'
-import { Secret, SecretApiVersion, SecretKind, listNamespaceSecrets } from '../../../../../../resources/secret'
-import { ManagedClusterSetDefinition } from '../../../../../../resources/managed-cluster-set'
-import { createResource, resultsSettled } from '../../../../../../lib/resource-request'
+    ManagedClusterSetDefinition,
+    resultsSettled,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+    SubmarinerConfig,
+    SubmarinerConfigApiVersion,
+    submarinerConfigDefault,
+    SubmarinerConfigKind,
+} from '@open-cluster-management/resources'
+import {
+    AcmAlert,
+    AcmButton,
+    AcmEmptyState,
+    AcmExpandableSection,
+    AcmPage,
+    AcmPageHeader,
+    Provider,
+    ProviderLongTextMap,
+} from '@open-cluster-management/ui-components'
+import { List, ListItem, PageSection } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { useContext, useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router'
+import { Link } from 'react-router-dom'
+import { AcmDataFormPage } from '../../../../../../components/AcmDataForm'
+import { FormData, Section } from '../../../../../../components/AcmFormData'
+import { RbacButton } from '../../../../../../components/Rbac'
+import { DOC_LINKS } from '../../../../../../lib/doc-util'
+import { rbacCreate } from '../../../../../../lib/rbac-util'
 import { validateJSON } from '../../../../../../lib/validation'
+import { NavigationPath } from '../../../../../../NavigationPath'
+import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function InstallSubmarinerFormPage() {
     const { t } = useTranslation(['cluster'])

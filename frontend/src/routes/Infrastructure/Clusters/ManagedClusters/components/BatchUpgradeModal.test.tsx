@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
-import { BatchUpgradeModal } from './BatchUpgradeModal'
+import { Cluster, ClusterCuratorDefinition, ClusterStatus } from '@open-cluster-management/resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
 import { nockCreate, nockPatch } from '../../../../../lib/nock-util'
-import { ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
+import { BatchUpgradeModal } from './BatchUpgradeModal'
 const mockClusterNoAvailable: Cluster = {
     name: 'cluster-0-no-available',
     displayName: 'cluster-0-no-available',
@@ -16,13 +15,16 @@ const mockClusterNoAvailable: Cluster = {
     distribution: {
         k8sVersion: '1.19',
         displayVersion: 'Openshift 1.2.3',
+        isManagedOpenShift: false,
         upgradeInfo: {
             upgradeFailed: false,
             isUpgrading: false,
             isReadyUpdates: false,
+            isReadySelectChannels: false,
             availableUpdates: [],
             currentVersion: '1.2.3',
             desiredVersion: '1.2.3',
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -39,6 +41,8 @@ const mockClusterNoAvailable: Cluster = {
         },
     },
     isManaged: true,
+    isCurator: false,
+    owner: {},
 }
 const mockClusterReady1: Cluster = {
     name: 'cluster-1-ready1',
@@ -49,13 +53,16 @@ const mockClusterReady1: Cluster = {
     distribution: {
         k8sVersion: '1.19',
         displayVersion: 'Openshift 1.2.3',
+        isManagedOpenShift: false,
         upgradeInfo: {
             upgradeFailed: false,
             isUpgrading: false,
             isReadyUpdates: true,
+            isReadySelectChannels: false,
             availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2.9', '1.2'],
             currentVersion: '1.2.3',
             desiredVersion: '1.2.3',
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -72,6 +79,8 @@ const mockClusterReady1: Cluster = {
         },
     },
     isManaged: true,
+    isCurator: false,
+    owner: {},
 }
 const mockClusterReady2: Cluster = {
     name: 'cluster-2-ready2',
@@ -82,13 +91,16 @@ const mockClusterReady2: Cluster = {
     distribution: {
         k8sVersion: '1.19',
         displayVersion: 'Openshift 2.2.3',
+        isManagedOpenShift: false,
         upgradeInfo: {
             upgradeFailed: false,
             isUpgrading: false,
             isReadyUpdates: true,
+            isReadySelectChannels: false,
             availableUpdates: ['2.2.4', '2.2.5', '2.2.6', '2.2'],
             currentVersion: '2.2.3',
             desiredVersion: '2.2.3',
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -105,6 +117,8 @@ const mockClusterReady2: Cluster = {
         },
     },
     isManaged: true,
+    isCurator: false,
+    owner: {},
 }
 const mockClusterOffline: Cluster = {
     name: 'cluster-3-offline',
@@ -115,13 +129,16 @@ const mockClusterOffline: Cluster = {
     distribution: {
         k8sVersion: '1.19',
         displayVersion: 'Openshift 1.2.3',
+        isManagedOpenShift: false,
         upgradeInfo: {
             upgradeFailed: false,
             isUpgrading: false,
             isReadyUpdates: true,
+            isReadySelectChannels: false,
             availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
             currentVersion: '1.2.3',
             desiredVersion: '1.2.3',
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -138,6 +155,8 @@ const mockClusterOffline: Cluster = {
         },
     },
     isManaged: true,
+    isCurator: false,
+    owner: {},
 }
 const mockClusterFailedUpgrade: Cluster = {
     name: 'cluster-4-failedupgrade',
@@ -148,13 +167,16 @@ const mockClusterFailedUpgrade: Cluster = {
     distribution: {
         k8sVersion: '1.19',
         displayVersion: 'Openshift 1.2.3',
+        isManagedOpenShift: false,
         upgradeInfo: {
             upgradeFailed: true,
             isUpgrading: false,
             isReadyUpdates: false,
+            isReadySelectChannels: false,
             availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
             currentVersion: '1.2.3',
             desiredVersion: '1.2.4',
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -171,6 +193,8 @@ const mockClusterFailedUpgrade: Cluster = {
         },
     },
     isManaged: true,
+    isCurator: false,
+    owner: {},
 }
 const allClusters: Array<Cluster> = [
     mockClusterNoAvailable,

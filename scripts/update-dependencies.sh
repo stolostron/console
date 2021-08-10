@@ -13,8 +13,7 @@ cd $SCRIPT_DIR/..
 rm -rf node_modules
 rm -f package-lock.json
 npx npm-check-updates --target minor --doctor --upgrade
-npm dedup
-npm audit fix
+yarn audit fix
 
 # Frontend
 pushd frontend
@@ -23,8 +22,7 @@ rm -f package-lock.json
 npx npm-check-updates \
     --reject handlebars-loader,monaco-editor,monaco-editor-webpack-plugin,react-monaco-editor,typescript \
     --target minor --doctor --upgrade
-npm dedup
-npm audit fix
+yarn audit fix
 popd
 
 # Backend
@@ -32,6 +30,5 @@ pushd backend
 rm -rf node_modules
 rm -f package-lock.json
 npx npm-check-updates --target minor --doctor --upgrade
-npm dedup
-npm audit fix
+yarn audit fix
 popd

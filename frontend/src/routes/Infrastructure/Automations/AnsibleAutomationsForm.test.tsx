@@ -1,5 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+} from '@open-cluster-management/resources'
 import { Provider } from '@open-cluster-management/ui-components/lib/AcmProvider'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -8,10 +19,7 @@ import { clusterCuratorsState, namespacesState, secretsState } from '../../../at
 import { nockAnsibleTower, nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { clickByPlaceholderText, clickByText, typeByPlaceholderText, waitForNock } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { AnsibleTowerJobTemplateList } from '../../../resources/ansible-job'
-import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../resources/cluster-curator'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../resources/namespace'
-import { Secret, SecretApiVersion, SecretKind } from '../../../resources/secret'
+import { AnsibleTowerJobTemplateList } from '@open-cluster-management/resources/src/ansible-job'
 import AnsibleAutomationsFormPage from './AnsibleAutomationsForm'
 
 const mockNamespaces: Namespace[] = [
@@ -95,7 +103,6 @@ const mockTemplateList: AnsibleTowerJobTemplateList = {
     results: [
         {
             name: 'job_1',
-            type: 'job_template',
         },
     ],
 }

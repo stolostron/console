@@ -1,22 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useEffect, useCallback } from 'react'
+import {
+    CableDriver,
+    Cluster,
+    patchResource,
+    SubmarinerConfig,
+    submarinerConfigDefault,
+} from '@open-cluster-management/resources'
 import {
     AcmAlertContext,
     AcmAlertGroup,
-    AcmForm,
-    AcmSubmit,
-    AcmModal,
-    AcmTextInput,
-    AcmSelect,
     AcmButton,
+    AcmForm,
+    AcmModal,
+    AcmSelect,
+    AcmSubmit,
+    AcmTextInput,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { ModalVariant, SelectOption, ActionGroup } from '@patternfly/react-core'
-import { useTranslation, Trans } from 'react-i18next'
-import { SubmarinerConfig, CableDriver, submarinerConfigDefault } from '../../../../../resources/submariner-config'
-import { Cluster } from '../../../../../lib/get-cluster'
-import { patchResource } from '../../../../../lib/resource-request'
+import { ActionGroup, ModalVariant, SelectOption } from '@patternfly/react-core'
+import { useCallback, useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
 
 export type EditSubmarinerConfigModalProps = {
@@ -83,7 +87,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                             placeholder={t('submariner.install.form.cabledriver.placeholder')}
                             labelHelp={t('submariner.install.form.cabledriver.labelHelp')}
                             value={cableDriver}
-                            onChange={(driver: CableDriver) => setCableDriver(driver)}
+                            onChange={(driver) => setCableDriver(CableDriver[driver as keyof typeof CableDriver])}
                         >
                             {Object.values(CableDriver).map((cb) => (
                                 <SelectOption key={cb} value={cb}>

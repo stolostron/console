@@ -1,6 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    Addon,
+    Cluster,
+    ClusterCurator,
+    ClusterStatus,
+    getCluster,
+    mapAddons,
+    ResourceError,
+    SecretDefinition,
+} from '@open-cluster-management/resources'
+import {
     AcmActionGroup,
     AcmButton,
     AcmLaunchLink,
@@ -20,22 +30,17 @@ import {
     acmRouteState,
     certificateSigningRequestsState,
     clusterClaimsState,
+    clusterCuratorsState,
     clusterDeploymentsState,
     clusterManagementAddonsState,
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClustersState,
-    clusterCuratorsState,
 } from '../../../../../atoms'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
-import { Addon, mapAddons } from '../../../../../lib/get-addons'
-import { Cluster, ClusterStatus, getCluster } from '../../../../../lib/get-cluster'
 import { canUser } from '../../../../../lib/rbac-util'
-import { ResourceError } from '../../../../../lib/resource-request'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { ClusterCurator } from '../../../../../resources/cluster-curator'
-import { SecretDefinition } from '../../../../../resources/secret'
 import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'

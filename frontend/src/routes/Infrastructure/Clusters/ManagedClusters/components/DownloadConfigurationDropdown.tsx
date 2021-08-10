@@ -1,10 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { createDownloadFile, getSecret, unpackSecret } from '@open-cluster-management/resources'
 import { AcmDropdown } from '@open-cluster-management/ui-components'
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import { createDownloadFile } from '../../../../../lib/utils'
-import { getSecret, unpackSecret } from '../../../../../resources/secret'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) {
@@ -24,9 +23,10 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
         try {
             const secret = await getSecret({ name: map[id], namespace }).promise
             const { stringData } = unpackSecret(secret)
+            const extention = id === 'kubeconfig' ? '.yaml' : ''
             /* istanbul ignore next */
             const yaml = stringData?.[`${id}`] ?? ''
-            createDownloadFile(`${clusterName}-${id}.yaml`, yaml)
+            createDownloadFile(`${clusterName}-${id}${extention}`, yaml)
         } catch (err) {
             console.error(err)
         }

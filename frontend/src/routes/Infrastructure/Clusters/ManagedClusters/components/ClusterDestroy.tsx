@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useHistory } from 'react-router-dom'
+import { Cluster, ClusterStatus } from '@open-cluster-management/resources'
 import { AcmButton, AcmPageProcess } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { useTranslation, Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { NavigationPath } from '../../../../../NavigationPath'
-import { launchLogs } from './HiveNotification'
-import { AddCluster } from './AddCluster'
-import { ClusterStatus, Cluster } from '../../../../../lib/get-cluster'
 import { configMapsState } from '../../../../../atoms'
+import { NavigationPath } from '../../../../../NavigationPath'
+import { AddCluster } from './AddCluster'
+import { launchLogs } from './HiveNotification'
 
 export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster }) {
     const { t } = useTranslation(['cluster'])

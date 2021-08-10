@@ -1,33 +1,60 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import {
+    AnsibleJob,
+    AnsibleJobKind,
+    BareMetalAsset,
+    BareMetalAssetKind,
+    CertificateSigningRequest,
+    CertificateSigningRequestKind,
+    ClusterClaim,
+    ClusterClaimKind,
+    ClusterCurator,
+    ClusterCuratorKind,
+    ClusterDeployment,
+    ClusterDeploymentKind,
+    ClusterImageSet,
+    ClusterImageSetKind,
+    ClusterManagementAddOn,
+    ClusterManagementAddOnKind,
+    ClusterPool,
+    ClusterPoolKind,
+    ClusterProvision,
+    ClusterProvisionKind,
+    ConfigMap,
+    ConfigMapKind,
+    DiscoveredCluster,
+    DiscoveredClusterKind,
+    DiscoveryConfig,
+    DiscoveryConfigKind,
+    FeatureGate,
+    FeatureGateKind,
+    MachinePool,
+    MachinePoolKind,
+    ManagedCluster,
+    ManagedClusterAddOn,
+    ManagedClusterAddOnKind,
+    ManagedClusterInfo,
+    ManagedClusterInfoKind,
+    ManagedClusterKind,
+    ManagedClusterSet,
+    ManagedClusterSetBinding,
+    ManagedClusterSetBindingKind,
+    ManagedClusterSetKind,
+    MultiClusterHub,
+    MultiClusterHubKind,
+    Namespace,
+    NamespaceKind,
+    PolicyReport,
+    PolicyReportKind,
+    Secret,
+    SecretKind,
+    SubmarinerConfig,
+    SubmarinerConfigKind,
+} from '@open-cluster-management/resources'
+import { AcmRoute } from '@open-cluster-management/ui-components'
 import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
-import { AcmRoute } from '@open-cluster-management/ui-components'
-import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset'
-import { AnsibleJob, AnsibleJobKind } from './resources/ansible-job'
-import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
-import { ClusterClaim, ClusterClaimKind } from './resources/cluster-claim'
-import { ClusterCurator, ClusterCuratorKind } from './resources/cluster-curator'
-import { ClusterDeployment, ClusterDeploymentKind } from './resources/cluster-deployment'
-import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-set'
-import { ClusterPool, ClusterPoolKind } from './resources/cluster-pool'
-import { ClusterProvision, ClusterProvisionKind } from './resources/cluster-provision'
-import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/cluster-management-add-on'
-import { ConfigMap, ConfigMapKind } from './resources/configmap'
-import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
-import { DiscoveredCluster, DiscoveredClusterKind } from './resources/discovered-cluster'
-import { FeatureGate, FeatureGateKind } from './resources/feature-gate'
-import { MachinePool, MachinePoolKind } from './resources/machine-pool'
-import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
-import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/managed-cluster-add-on'
-import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
-import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
-import { ManagedClusterSetBinding, ManagedClusterSetBindingKind } from './resources/managed-cluster-set-binding'
-import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
-import { Namespace, NamespaceKind } from './resources/namespace'
-import { PolicyReport, PolicyReportKind } from './resources/policy-report'
-import { Secret, SecretKind } from './resources/secret'
-import { SubmarinerConfig, SubmarinerConfigKind } from './resources/submariner-config'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
