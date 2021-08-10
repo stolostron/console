@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
-        "watch": "yarn run start",
+        "watch": "echo",
         "postinstall": "[ ! -d ./certs ] && yarn run generate-certs || true",
         "build": "tsc --sourceMap false --declaration false",
         "clean": "rm -rf coverage build",
