@@ -22,6 +22,8 @@ import {
     ProviderConnection,
     replaceResource,
     unpackProviderConnection,
+    listAnsibleTowerJobs,
+    ResourceError
 } from '@open-cluster-management/resources'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -32,7 +34,6 @@ import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
-import { listAnsibleTowerJobs, ResourceError } from '@open-cluster-management/resources/src/utils/resource-request'
 import { FeatureGates } from '../../../FeatureGates'
 import { validateKubernetesDnsName } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
@@ -526,14 +527,9 @@ function EditAnsibleJobModal(props: {
     ansibleTowerTemplateList: string[] | undefined
     ansibleJob?: ClusterCuratorAnsibleJob
     setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
-    ansibleJobList?: ClusterCuratorAnsibleJob[]
 }) {
     const { t } = useTranslation(['common', 'cluster'])
     const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
-    let ansibleJobList: string[]
-    if (props.ansibleJobList)
-        ansibleJobList = props.ansibleJobList.filter((job) => ansibleJob !== job).map((ansibleJob) => ansibleJob.name)
-    useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
     return (
         <AcmModal
             variant={ModalVariant.medium}
@@ -555,7 +551,7 @@ function EditAnsibleJobModal(props: {
                         onChange={(name) => {
                             if (ansibleJob) {
                                 const copy = { ...ansibleJob }
-                                copy.name = name
+                                copy.name = name as string
                                 setAnsibleJob(copy)
                             }
                         }}
