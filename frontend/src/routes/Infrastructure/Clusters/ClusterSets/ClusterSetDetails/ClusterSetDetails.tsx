@@ -1,6 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    Cluster,
+    ClusterPool,
+    ManagedClusterAddOn,
+    ManagedClusterSet,
+    ManagedClusterSetBinding,
+    managedClusterSetLabel,
+    ResourceError,
+} from '@open-cluster-management/resources'
+import {
     AcmButton,
     AcmPage,
     AcmPageHeader,
@@ -17,28 +26,22 @@ import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import {
     acmRouteState,
     clusterPoolsState,
-    managedClusterSetsState,
     managedClusterAddonsState,
+    managedClusterSetsState,
 } from '../../../../../atoms'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
-import { Cluster } from '../../../../../lib/get-cluster'
-import { ResourceError } from '../../../../../lib/resource-request'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { ClusterPool } from '../../../../../resources/cluster-pool'
-import { ManagedClusterSet, managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
-import { ManagedClusterAddOn } from '../../../../../resources/managed-cluster-add-on'
-import { ManagedClusterSetBinding } from '../../../../../resources/managed-cluster-set-binding'
 import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
+import { useClusterSetBindings } from '../components/ManagedClusterSetBindingModal'
 import { useClusters } from '../components/useClusters'
 import { ClusterSetAccessManagement } from './ClusterSetAccessManagement/ClusterSetAccessManagement'
 import { ClusterSetClusterPoolsPageContent } from './ClusterSetClusterPools/ClusterSetClusterPools'
 import { ClusterSetClustersPageContent } from './ClusterSetClusters/ClusterSetClusters'
+import { InstallSubmarinerFormPage } from './ClusterSetInstallSubmariner/InstallSubmarinerForm'
 import { ClusterSetManageResourcesPage } from './ClusterSetManageResources/ClusterSetManageResources'
 import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
 import { ClusterSetSubmarinerPageContent } from './ClusterSetSubmariner/ClusterSetSubmariner'
-import { InstallSubmarinerFormPage } from './ClusterSetInstallSubmariner/InstallSubmarinerForm'
-import { useClusterSetBindings } from '../components/ManagedClusterSetBindingModal'
 
 export const ClusterSetContext = createContext<{
     readonly clusterSet: ManagedClusterSet | undefined

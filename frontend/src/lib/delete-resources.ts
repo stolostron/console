@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { IResource } from '../resources/resource'
-import { deleteResource, IRequestResult } from './resource-request'
+import { deleteResource, IRequestResult, IResource } from '@open-cluster-management/resources'
 
 export function deleteResources(resources: IResource[]): IRequestResult<PromiseSettledResult<unknown>[]> {
     const results = resources.map((resource) => deleteResource(resource))

@@ -1,3 +1,8 @@
+.husky
+.triggerbuild
+
+/build
+
 /backend/.vscode/
 /backend/certs/
 /backend/coverage/
@@ -21,6 +26,7 @@
 /.dockerignore
 /.gitignore
 /Dockerfile
+/Dockerfile.prow
 /console.code-workspace
 /*.md
 

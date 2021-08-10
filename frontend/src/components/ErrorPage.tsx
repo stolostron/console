@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ResourceError, ResourceErrorCode } from '@open-cluster-management/resources'
 import { AcmAlertInfo } from '@open-cluster-management/ui-components'
 import {
     Card,
@@ -11,7 +12,6 @@ import {
     Title,
 } from '@patternfly/react-core'
 import { ReactNode } from 'react'
-import { ResourceError, ResourceErrorCode } from '../lib/resource-request'
 
 export function getErrorInfo(error: unknown): AcmAlertInfo {
     let title = 'Error'

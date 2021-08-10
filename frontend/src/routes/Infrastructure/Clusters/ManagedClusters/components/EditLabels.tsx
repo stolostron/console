@@ -1,19 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { IResource, patchResource } from '@open-cluster-management/resources'
 import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmForm,
     AcmLabelsInput,
-    AcmSubmit,
     AcmModal,
+    AcmSubmit,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
 import { useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
-import { patchResource } from '../../../../../lib/resource-request'
-import { IResource } from '../../../../../resources/resource'
 
 export function EditLabels(props: { resource?: IResource; displayName?: string; close: () => void }) {
     const { t } = useTranslation(['cluster', 'common'])

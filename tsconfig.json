@@ -1,0 +1,37 @@
+{
+    "compilerOptions": {
+        // "jsx": "react-jsxdev",
+
+        "jsx": "react-jsx",
+        "esModuleInterop": true,
+        "types": ["node", "jest"],
+
+        "lib": ["ES2020", "DOM"],
+        "module": "ES2020",
+        "moduleResolution": "node",
+        "target": "ES5",
+
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": false,
+
+        "alwaysStrict": true,
+        "noImplicitThis": true,
+        "noImplicitAny": true,
+        "strict": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": true,
+
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+
+        "removeComments": true,
+
+        "skipLibCheck": true,
+        "composite": true
+    }
+}

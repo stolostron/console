@@ -1,6 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    Cluster,
+    deleteResource,
+    ManagedClusterSet,
+    ManagedClusterSetDefinition,
+    managedClusterSetLabel,
+    mapAddons,
+    mapClusters,
+    ResourceErrorCode,
+} from '@open-cluster-management/resources'
+import {
     AcmAlertContext,
     AcmButton,
     AcmEmptyState,
@@ -24,28 +34,20 @@ import {
     clusterPoolsState,
     managedClusterAddonsState,
     managedClusterInfosState,
+    managedClusterSetBindingsState,
     managedClusterSetsState,
     managedClustersState,
-    managedClusterSetBindingsState,
 } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
-import { mapAddons } from '../../../../lib/get-addons'
-import { Cluster, mapClusters } from '../../../../lib/get-cluster'
 import { canUser } from '../../../../lib/rbac-util'
-import { deleteResource, ResourceErrorCode } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
-import {
-    ManagedClusterSet,
-    ManagedClusterSetDefinition,
-    managedClusterSetLabel,
-} from '../../../../resources/managed-cluster-set'
 import { usePageContext } from '../Clusters'
-import { MultiClusterNetworkStatus } from './components/MultiClusterNetworkStatus'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
+import { MultiClusterNetworkStatus } from './components/MultiClusterNetworkStatus'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
-import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 
 export default function ClusterSetsPage() {
     const { t } = useTranslation(['cluster', 'common'])

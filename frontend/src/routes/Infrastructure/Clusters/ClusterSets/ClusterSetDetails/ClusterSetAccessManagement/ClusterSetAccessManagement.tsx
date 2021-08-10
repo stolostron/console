@@ -2,6 +2,20 @@
 
 import { makeStyles } from '@material-ui/styles'
 import {
+    ClusterRoleBinding,
+    ClusterRoleBindingKind,
+    ClusterRoleKind,
+    createResource,
+    deleteResource,
+    Group,
+    listClusterRoleBindings,
+    listGroups,
+    listUsers,
+    RbacApiVersion,
+    ResourceErrorCode,
+    User,
+} from '@open-cluster-management/resources'
+import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmButton,
@@ -31,19 +45,7 @@ import { useCallback, useContext, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
-import { createResource, deleteResource, ResourceErrorCode } from '../../../../../../lib/resource-request'
 import { useQuery } from '../../../../../../lib/useQuery'
-import {
-    ClusterRoleBinding,
-    ClusterRoleBindingKind,
-    ClusterRoleKind,
-    Group,
-    listClusterRoleBindings,
-    listGroups,
-    listUsers,
-    RbacApiVersion,
-    User,
-} from '../../../../../../resources/rbac'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetAccessManagement() {
@@ -309,11 +311,17 @@ function AddUsersModal(props: {
                                     value={userGroup}
                                     onChange={(userGroup) => setUserGroup(userGroup)}
                                 >
-                                    {(type === 'User' ? filteredUsers : filteredGroups).map((item: User | Group) => (
-                                        <SelectOption key={item.metadata.uid} value={item.metadata.name}>
-                                            {item.metadata.name}
-                                        </SelectOption>
-                                    ))}
+                                    {type === 'User'
+                                        ? filteredUsers.map((item: User) => (
+                                              <SelectOption key={item.metadata.uid} value={item.metadata.name}>
+                                                  {item.metadata.name}
+                                              </SelectOption>
+                                          ))
+                                        : filteredGroups.map((item: Group) => (
+                                              <SelectOption key={item.metadata.uid} value={item.metadata.name}>
+                                                  {item.metadata.name}
+                                              </SelectOption>
+                                          ))}
                                 </AcmSelect>
                                 <ToggleGroup>
                                     <ToggleGroupItem

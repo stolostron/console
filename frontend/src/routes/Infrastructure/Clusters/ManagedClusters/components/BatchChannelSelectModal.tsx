@@ -1,19 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmSelect } from '@open-cluster-management/ui-components'
-import { SelectOption, TextContent, Text, TextVariants } from '@patternfly/react-core'
-import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { BulkActionModel } from '../../../../../components/BulkActionModel'
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
 import {
+    Cluster,
+    ClusterCurator,
+    ClusterCuratorDefinition,
+    ClusterStatus,
+    createResource,
     IRequestResult,
     patchResource,
     ResourceError,
-    createResource,
     ResourceErrorCode,
-} from '../../../../../lib/resource-request'
-import { ClusterCurator, ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
+} from '@open-cluster-management/resources'
+import { AcmSelect } from '@open-cluster-management/ui-components'
+import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { BulkActionModel } from '../../../../../components/BulkActionModel'
 import './style.css'
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -31,8 +33,8 @@ const setCurrentChannel = (
     clusters?.forEach((cluster: Cluster) => {
         if (cluster.name) {
             const clusterName = cluster.name
-            const currentChannel = cluster.distribution?.upgradeInfo.currentChannel || ''
-            const availableChannels = cluster.distribution?.upgradeInfo.availableChannels || []
+            const currentChannel = cluster.distribution?.upgradeInfo?.currentChannel || ''
+            const availableChannels = cluster.distribution?.upgradeInfo?.availableChannels || []
             let defaultChannel = availableChannels.length > 0 ? availableChannels[0] : ''
             if (availableChannels.filter((c) => !!c && c === currentChannel).length > 0) {
                 defaultChannel = currentChannel
@@ -95,7 +97,7 @@ export function BatchChannelSelectModal(props: {
                 {
                     header: t('upgrade.table.currentchannel'),
                     cell: (item: Cluster) => {
-                        const currentChannel = item?.distribution?.upgradeInfo.currentChannel || ''
+                        const currentChannel = item?.distribution?.upgradeInfo?.currentChannel || ''
                         return <span>{currentChannel}</span>
                     },
                 },
@@ -139,7 +141,7 @@ export function BatchChannelSelectModal(props: {
                 if (
                     !cluster.name ||
                     !selectChannels[cluster.name] ||
-                    selectChannels[cluster.name] === cluster.distribution?.upgradeInfo.currentChannel
+                    selectChannels[cluster.name] === cluster.distribution?.upgradeInfo?.currentChannel
                 ) {
                     const emptyRes: IRequestResult<string> = {
                         promise: new Promise((resolve) => resolve('')),

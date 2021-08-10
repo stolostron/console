@@ -1,12 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../resources/cluster-deployment'
-import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
-import { ClusterClaimApiVersion, ClusterClaimKind } from '../resources/cluster-claim'
+import {
+    Cluster,
+    ClusterClaimApiVersion,
+    ClusterClaimKind,
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+    deleteResource,
+    IResource,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+    ResourceError,
+    ResourceErrorCode,
+} from '@open-cluster-management/resources'
 import { deleteResources } from './delete-resources'
-import { deleteResource, ResourceError, ResourceErrorCode } from './resource-request'
-import { Cluster } from '../lib/get-cluster'
-import { IResource } from '../resources/resource'
 
 export function deleteCluster(cluster: Cluster, ignoreClusterDeploymentNotFound = false) {
     const resources: IResource[] = [

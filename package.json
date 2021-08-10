@@ -2,47 +2,46 @@
     "name": "@open-cluster-management/console",
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE",
-    "scripts": {
-        "setup": "./setup.sh",
-        "postinstall": "concurrently npm:*:ci",
-        "frontend:ci": "cd frontend && npm ci",
-        "backend:ci": "cd backend && npm ci",
-        "test": "npm run frontend:test && npm run backend:test",
-        "frontend:test": "cd frontend && npm test",
-        "backend:test": "cd backend && npm test",
-        "lint": "npm run frontend:lint && npm run backend:lint",
-        "frontend:lint": "cd frontend && npm run lint",
-        "backend:lint": "cd backend && npm run lint",
-        "check": "npm run frontend:check && npm run backend:check && npm run copyright:check",
-        "frontend:check": "cd frontend && npm run check",
-        "backend:check": "cd backend && npm run check",
-        "check:fix": "npm run frontend:fix && npm run backend:fix && npm run copyright:fix",
-        "frontend:fix": "cd frontend && npm run check:fix",
-        "backend:fix": "cd backend && npm run check:fix",
-        "copyright:check": "ts-node util/copyright-check",
-        "copyright:fix": "ts-node util/copyright-fix",
-        "start": "concurrently npm:frontend npm:backend -n 'frontend, backend' -c blue,cyan",
-        "backend": "cd backend && npm start",
-        "frontend": "cd frontend && npm start",
-        "build": "concurrently npm:*:build",
-        "backend:build": "cd backend && npm run build",
-        "frontend:build": "cd frontend && npm run build",
-        "update": "./scripts/update-dependencies.sh",
-        "backend:update": "cd backend && npm run update",
-        "frontend:update": "cd frontend && npm run update",
-        "clean": "concurrently npm:*:clean",
-        "backend:clean": "cd backend && npm run clean",
-        "frontend:clean": "cd frontend && npm run clean",
-        "docker:build": "docker build -t console .",
-        "docker:run": "npm run docker:build && docker run --rm --name console -p 3000:3000 -e LOG_MEMORY=true -e PORT=3000 -v $PWD/backend/certs:/app/certs --env-file=backend/.env console | ./backend/node_modules/.bin/pino-zen -i time && docker rm -f console",
-        "docker:deploy": "npm run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
-        "prepare": "husky install"
+    "private": "true",
+    "engines": {
+        "npm": ">=7"
     },
-    "dependencies": {
-        "@types/node": "^14.17.4",
+    "workspaces": [
+        "@open-cluster-management/*",
+        "routes/*",
+        "frontend",
+        "backend"
+    ],
+    "scripts": {
+        "start": "workspaces-run --parallel -- NODE_OPTIONS=--max_old_space_size=8192 npm run watch",
+        "clean": "workspaces-run --parallel -- rm -rf build dist lib coverage *.tsbuildinfo test-report.xml",
+        "build": "workspaces-run --parallel --order-by-deps -- NODE_OPTIONS=--max_old_space_size=8192 npm run build",
+        "test": "workspaces-run --parallel -- NODE_OPTIONS=--max_old_space_size=8192 npm test",
+        "lint": "workspaces-run --parallel -- npm run lint",
+        "check": "workspaces-run --parallel -- npm run check",
+        "setup": "./setup.sh",
+        "copyright:check": "ts-node --skip-project util/copyright-check",
+        "copyright:fix": "ts-node --skip-project util/copyright-fix",
+        "docker:build": "docker build --file Dockerfile.prow --tag console .",
+        "docker:run": "npm run docker:build && docker run --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./node_modules/.bin/pino-zen -i time && docker rm -f console",
+        "docker:deploy": "npm run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
+        "reinstall": "npm run clean && workspaces-run --parallel -- rm -rf node_modules && rm -rf yarn.lock node_modules && yarn install && npm run build"
+    },
+    "devDependencies": {
+        "@types/jest": "^26.0.24",
+        "@types/node": "^16.4.3",
         "concurrently": "^6.2.0",
-        "husky": "^6.0.0",
-        "ts-node": "^9.1.1",
-        "typescript": "^4.3.5"
+        "husky": "^7.0.1",
+        "jest": "^26.6.3",
+        "npm": "^7.20.3",
+        "ts-node": "^10.1.0",
+        "typescript": "^4.3.5",
+        "workspaces-run": "^1.0.1"
+    },
+    "jest": {
+        "projects": [
+            "<rootDir>/backend",
+            "<rootDir>/frontend"
+        ]
     }
 }

@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Cluster, ClusterStatus } from '@open-cluster-management/resources'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
-import { nockPatch, nockDelete, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
-import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
-import { Cluster, ClusterStatus } from '../../../../../../lib/get-cluster'
-import { MachinePoolsPageContent } from './ClusterMachinePools'
 import { machinePoolsState } from '../../../../../../atoms'
+import { nockDelete, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
+import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails'
-import { clusterName, mockMachinePoolManual, mockMachinePoolAuto } from '../ClusterDetails.test'
+import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from '../ClusterDetails.test'
+import { MachinePoolsPageContent } from './ClusterMachinePools'
 
 const mockCluster: Cluster = {
     name: clusterName,
@@ -20,13 +20,9 @@ const mockCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
+        isManagedOpenShift: false,
     },
     labels: undefined,
-    nodes: {
-        nodeList: [],
-        active: 0,
-        inactive: 0,
-    },
     kubeApiServer: '',
     consoleURL: '',
     hive: {
@@ -40,6 +36,8 @@ const mockCluster: Cluster = {
     },
     isHive: true,
     isManaged: true,
+    isCurator: false,
+    owner: {},
 }
 
 describe('ClusterMachinePools', () => {
@@ -51,7 +49,7 @@ describe('ClusterMachinePools', () => {
                     snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
                 }}
             >
-                <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined, importCommand: undefined }}>
+                <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                     <MachinePoolsPageContent />
                 </ClusterContext.Provider>
             </RecoilRoot>

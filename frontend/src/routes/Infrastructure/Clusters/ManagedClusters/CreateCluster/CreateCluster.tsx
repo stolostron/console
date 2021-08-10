@@ -2,22 +2,19 @@
 
 import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
-import fs from 'fs'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
-import path from 'path'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
-import 'monaco-editor/esm/vs/editor/standalone/browser/quickOpen/quickCommand.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { useHistory, useLocation } from 'react-router-dom'
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
+//import TemplateEditor from 'C:/Users/jswanke/git2/temptifly/src' //'temptifly'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
@@ -26,39 +23,15 @@ import { controlData } from './controlData/ControlData'
 import { setAvailableConnections, setAvailableTemplates } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
+import endpointTemplate from './templates/endpoints.hbs'
 import { featureGatesState, secretsState, managedClustersState, clusterCuratorsState } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
-import {
-    ClusterCurator,
-    filterForTemplatedCurators,
-    createClusterCurator,
-} from '../../../../../resources/cluster-curator'
+import { ClusterCurator, filterForTemplatedCurators, createClusterCurator } from '@open-cluster-management/resources'
 import { createCluster } from '../../../../../lib/create-cluster'
-import { ProviderConnection, unpackProviderConnection } from '../../../../../resources/provider-connection'
-import { Secret } from '../../../../../resources/secret'
-import { createResource as createResourceTool } from '../../../../../lib/resource-request'
+import { ProviderConnection, unpackProviderConnection } from '@open-cluster-management/resources'
+import { Secret } from '@open-cluster-management/resources'
+import { createResource as createResourceTool } from '@open-cluster-management/resources'
 import { FeatureGates } from '../../../../../FeatureGates'
-
-declare const window: any
-if (window.monaco) {
-    window.monaco.editor.defineTheme('console', {
-        base: 'vs-dark',
-        inherit: true,
-        rules: [
-            // avoid pf tokens for `rules` since tokens are opaque strings that might not be hex values
-            { token: 'number', foreground: 'ace12e' },
-            { token: 'type', foreground: '73bcf7' },
-            { token: 'string', foreground: 'f0ab00' },
-            { token: 'keyword', foreground: 'cbc0ff' },
-        ],
-        colors: {
-            'editor.background': editorBackground.value,
-            'editorGutter.background': '#292e34', // no pf token defined
-            'editorLineNumber.activeForeground': '#fff',
-            'editorLineNumber.foreground': '#f0f0f0',
-        },
-    })
-}
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -115,7 +88,7 @@ export default function CreateClusterPage() {
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
-    const createResource = async (resourceJSON: { createResources: any[] }, control: any) => {
+    const createResource = async (resourceJSON: { createResources: any[] }) => {
         if (resourceJSON) {
             const { createResources } = resourceJSON
             const map = keyBy(createResources, 'kind')
@@ -220,19 +193,13 @@ export default function CreateClusterPage() {
 
     // setup translation
     const { t } = useTranslation(['create'])
-    const i18n = (key: any, arg: any) => {
+    const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
 
-    let template = hiveTemplate
-    // react-scripts HATE jest transforms so we got to load the templates ourselves
-    if (typeof hiveTemplate === 'string') {
-        template = Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/hive-template.hbs'), 'utf8'))
-        Handlebars.registerPartial(
-            'endpoints',
-            Handlebars.compile(fs.readFileSync(path.resolve(__dirname, './templates/endpoints.hbs'), 'utf8'))
-        )
-    }
+    //compile templates
+    const template = Handlebars.compile(hiveTemplate)
+    Handlebars.registerPartial('endpoints', Handlebars.compile(endpointTemplate))
 
     // if openned from bma page, pass selected bma's to editor
     const urlParams = new URLSearchParams(location.search.substring(1))

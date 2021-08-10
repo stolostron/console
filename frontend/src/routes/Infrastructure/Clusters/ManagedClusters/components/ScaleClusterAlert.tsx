@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Fragment, useContext } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
+import { NodeInfo } from '@open-cluster-management/resources'
 import { AcmAlert, Provider } from '@open-cluster-management/ui-components'
-import { useRecoilState } from 'recoil'
-import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { machinePoolsState, submarinerConfigsState } from '../../../../../atoms'
-import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { Fragment, useContext } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useRecoilState } from 'recoil'
+import { machinePoolsState, submarinerConfigsState } from '../../../../../atoms'
+import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function ScaleClusterAlert() {
     const { t } = useTranslation(['cluster', 'common'])

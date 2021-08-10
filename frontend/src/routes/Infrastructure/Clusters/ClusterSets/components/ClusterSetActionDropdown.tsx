@@ -1,15 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    deleteResource,
+    ManagedClusterSet,
+    ManagedClusterSetDefinition,
+    ResourceErrorCode,
+} from '@open-cluster-management/resources'
 import { useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'
-import { ManagedClusterSet, ManagedClusterSetDefinition } from '../../../../../resources/managed-cluster-set'
-import { deleteResource, ResourceErrorCode } from '../../../../../lib/resource-request'
-import { ClusterStatuses } from './ClusterStatuses'
 import { rbacCreate, rbacDelete } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
+import { ClusterStatuses } from './ClusterStatuses'
 import { ManagedClusterSetBindingModal } from './ManagedClusterSetBindingModal'
 
 export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClusterSet; isKebab?: boolean }) {

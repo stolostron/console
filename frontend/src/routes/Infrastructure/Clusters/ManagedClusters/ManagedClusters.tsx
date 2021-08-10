@@ -1,6 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    addonPathKey,
+    addonTextKey,
+    Cluster,
+    ClusterDeployment,
+    ClusterDeploymentDefinition,
+    ClusterStatus,
+    ManagedClusterDefinition,
+    patchResource,
+    ResourceErrorCode,
+} from '@open-cluster-management/resources'
+import {
     AcmAlertContext,
     AcmEmptyState,
     AcmInlineProvider,
@@ -11,31 +22,26 @@ import {
     AcmTable,
     IAcmTableAction,
 } from '@open-cluster-management/ui-components'
-import { ButtonVariant, PageSection, Stack, StackItem, TextContent, Text, TextVariants } from '@patternfly/react-core'
+import { ButtonVariant, PageSection, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
-import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
+import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { clusterCuratorsState, clusterManagementAddonsState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
-import { addonPathKey, addonTextKey } from '../../../../lib/get-addons'
-import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { canUser } from '../../../../lib/rbac-util'
-import { patchResource, ResourceErrorCode } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
-import { ClusterDeployment, ClusterDeploymentDefinition } from '../../../../resources/cluster-deployment'
-import { ManagedClusterDefinition } from '../../../../resources/managed-cluster'
 import { usePageContext } from '../Clusters'
+import { DiscoveryBanner } from '../DiscoveredClusters/DiscoveryComponents/Banner'
 import { AddCluster } from './components/AddCluster'
+import { BatchChannelSelectModal } from './components/BatchChannelSelectModal'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
-import { DiscoveryBanner } from '../DiscoveredClusters/DiscoveryComponents/Banner'
-import { BatchChannelSelectModal } from './components/BatchChannelSelectModal'
 
 export default function ClustersPage() {
     const { t } = useTranslation(['cluster', 'discovery'])

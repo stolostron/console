@@ -1,5 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    Secret,
+} from '@open-cluster-management/resources'
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -15,13 +24,6 @@ import {
     waitForText,
 } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../resources/cluster-curator'
-import {
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-} from '../../../resources/provider-connection'
-// import { ResourceAttributes } from '../../../resources/self-subject-access-review'
 import AnsibleAutomationsPage from './AnsibleAutomations'
 
 const mockAnsibleConnection1: ProviderConnection = {
@@ -108,7 +110,7 @@ function TestIntegrationPage(props: { providerConnections: ProviderConnection[];
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
-                snapshot.set(secretsState, props.providerConnections)
+                snapshot.set(secretsState, props.providerConnections as Secret[])
                 snapshot.set(clusterCuratorsState, props.clusterCurators || [])
             }}
         >

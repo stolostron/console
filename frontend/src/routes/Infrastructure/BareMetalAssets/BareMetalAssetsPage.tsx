@@ -1,6 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    BareMetalAsset,
+    BareMetalAssetConditionReasons,
+    BareMetalAssetConditionTypes,
+    createBareMetalAssetNamespaces,
+    deleteResource,
+    importBareMetalAsset,
+    ImportedBareMetalAsset,
+    IRequestResult,
+    ManagedClusterDefinition,
+} from '@open-cluster-management/resources'
+import {
     AcmButton,
     AcmEmptyState,
     AcmPage,
@@ -9,7 +20,7 @@ import {
     AcmRoute,
     AcmTable,
 } from '@open-cluster-management/ui-components'
-import { ActionList, ActionListItem, Bullseye, PageSection, ButtonVariant } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -22,17 +33,7 @@ import { importBMAs } from '../../../lib/bare-metal-assets'
 import { deleteResources } from '../../../lib/delete-resources'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { canUser, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
-import { deleteResource, IRequestResult } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
-import {
-    BareMetalAsset,
-    BareMetalAssetConditionReasons,
-    BareMetalAssetConditionTypes,
-    createBareMetalAssetNamespaces,
-    importBareMetalAsset,
-    ImportedBareMetalAsset,
-} from '../../../resources/bare-metal-asset'
-import { ManagedClusterDefinition } from '../../../resources/managed-cluster'
 
 export default function BareMetalAssetsPage() {
     const [, setRoute] = useRecoilState(acmRouteState)

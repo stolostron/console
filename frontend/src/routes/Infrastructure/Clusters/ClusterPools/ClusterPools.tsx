@@ -2,6 +2,14 @@
 
 import { makeStyles } from '@material-ui/styles'
 import {
+    Cluster,
+    ClusterClaimDefinition,
+    ClusterPool,
+    ClusterStatus,
+    deleteResource,
+    ResourceErrorCode,
+} from '@open-cluster-management/resources'
+import {
     AcmAlertContext,
     AcmButton,
     AcmEmptyState,
@@ -22,20 +30,16 @@ import { useRecoilValue, waitForAll } from 'recoil'
 import { clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
+import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
-import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
-import { deleteResource, ResourceErrorCode } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
-import { ClusterClaimDefinition } from '../../../../resources/cluster-claim'
-import { ClusterPool } from '../../../../resources/cluster-pool'
+import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 import { StatusField } from '../ManagedClusters/components/StatusField'
 import { useAllClusters } from '../ManagedClusters/components/useAllClusters'
-import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterClaimModal'
 import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
 import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './components/UpdateReleaseImageModal'
-import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)

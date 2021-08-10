@@ -1,18 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 /* istanbul ignore file */
-
-import { isEqual } from 'lodash'
-import nock from 'nock'
-import { AnsibleCredential, AnsibleTowerJobTemplateList } from '../resources/ansible-job'
-import { getResourceApiPath, getResourceNameApiPath, IResource } from '../resources/resource'
+import { AnsibleTowerJobTemplateList } from '@open-cluster-management/resources/src/ansible-job'
 import {
+    ClusterRoleBinding,
+    getResourceApiPath,
+    getResourceNameApiPath,
+    IResource,
     ResourceAttributes,
     SelfSubjectAccessReview,
     SelfSubjectAccessReviewApiVersion,
     SelfSubjectAccessReviewKind,
-} from '../resources/self-subject-access-review'
-import { StatusApiVersion, StatusKind } from '../resources/status'
+    StatusApiVersion,
+    StatusKind,
+} from '@open-cluster-management/resources'
+import { isEqual } from 'lodash'
+import nock from 'nock'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
 export function nockGet<Resource extends IResource>(
@@ -152,7 +155,7 @@ export function nockNamespacedList<Resource extends IResource>(
     return finalNetworkMock
 }
 
-export function nockCreate(resource: IResource, response?: IResource, statusCode = 201) {
+export function nockCreate(resource: IResource | ClusterRoleBinding, response?: IResource, statusCode = 201) {
     const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .post(getResourceApiPath(resource), (body) => {
             // if (!isEqual(body, resource)) {
@@ -212,8 +215,13 @@ export function nockRBAC(resourceAttributes: ResourceAttributes, allowed = true)
     )
 }
 
+interface AnsibleCredentialPostBody {
+    towerHost: string
+    token: string
+}
+
 export function nockAnsibleTower(
-    data: AnsibleCredential | unknown,
+    data: AnsibleCredentialPostBody  | unknown,
     response: AnsibleTowerJobTemplateList,
     statusCode = 200
 ) {

@@ -2,7 +2,7 @@
 import { lstat, readdir, readFile } from "fs/promises";
 import { join } from "path";
 
-const ignoreDirectories = [".git", "node_modules", "coverage"];
+const ignoreDirectories = [".git", "node_modules", "coverage", "build", "lib"];
 
 export async function checkCopyright(
     directory: string,

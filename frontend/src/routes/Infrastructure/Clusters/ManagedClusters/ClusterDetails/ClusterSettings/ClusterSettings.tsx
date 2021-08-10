@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Addon, AddonStatus } from '@open-cluster-management/resources'
 import { AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Addon, AddonStatus } from '../../../../../../lib/get-addons'
 import { ClusterContext } from '../ClusterDetails'
 
 export function ClustersSettingsPageContent() {
