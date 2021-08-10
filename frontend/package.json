@@ -7,7 +7,7 @@
     "devDependencies": {
         "@kubernetes/client-node": "^0.15.0",
         "@open-cluster-management/resources": "^1.0.0",
-        "@open-cluster-management/ui-components": "^0.180.0",
+        "@open-cluster-management/ui-components": "^1.1.0",
         "@patternfly/react-core": "^4.135.5",
         "@patternfly/react-table": "^4.29.5",
         "@redhat-cloud-services/rule-components": "^3.2.1",
