@@ -23,7 +23,7 @@ import {
     replaceResource,
     unpackProviderConnection,
     listAnsibleTowerJobs,
-    ResourceError
+    ResourceError,
 } from '@open-cluster-management/resources'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

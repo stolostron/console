@@ -224,7 +224,7 @@ export function fetchGetAnsibleJobs(
             token: token,
         },
         retries: process.env.NODE_ENV === 'production' ? 2 : 0,
-        disableRedirectUnauthorizedLogin: true
+        disableRedirectUnauthorizedLogin: true,
     })
 }
 

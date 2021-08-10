@@ -221,7 +221,7 @@ interface AnsibleCredentialPostBody {
 }
 
 export function nockAnsibleTower(
-    data: AnsibleCredentialPostBody  | unknown,
+    data: AnsibleCredentialPostBody | unknown,
     response: AnsibleTowerJobTemplateList,
     statusCode = 200
 ) {
