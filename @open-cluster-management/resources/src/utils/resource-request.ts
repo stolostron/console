@@ -201,7 +201,7 @@ export function listAnsibleTowerJobs(
         promise: fetchGetAnsibleJobs(backendURLPath, ansibleJobsUrl, token, abortController.signal).then((item) => {
             return {
                 results: item.data.results?.map((job) => {
-                    return { type: job.type, name: job.name }
+                    return { name: job.name }
                 }),
             } as AnsibleTowerJobTemplateList
         }),
@@ -224,6 +224,7 @@ export function fetchGetAnsibleJobs(
             token: token,
         },
         retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+        disableRedirectUnauthorizedLogin: true
     })
 }
 
@@ -311,6 +312,7 @@ export async function fetchRetry<T>(options: {
     retries?: number
     delay?: number
     headers?: Record<string, string>
+    disableRedirectUnauthorizedLogin?: boolean
 }): Promise<{ headers: Headers; status: number; data: T }> {
     let retries = options?.retries && Number.isInteger(options.retries) && options.retries >= 0 ? options.retries : 0
     let delay = options?.delay && Number.isInteger(options.delay) && options.delay > 0 ? options.delay : 100
@@ -414,10 +416,12 @@ export async function fetchRetry<T>(options: {
             switch (response.status) {
                 case 302: // 302 is returned when token is valid but logged out
                 case 401: // 401 is returned from the backend if no token cookie is on request
-                    if (process.env.NODE_ENV === 'production') {
-                        window.location.reload()
-                    } else if (options.url !== '/multicloud/ansibletower') {
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                    if (!options.disableRedirectUnauthorizedLogin) {
+                        if (process.env.NODE_ENV === 'production') {
+                            window.location.reload()
+                        } else {
+                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                        }
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
 

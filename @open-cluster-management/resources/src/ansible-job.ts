@@ -55,6 +55,5 @@ export interface AnsibleTowerJobTemplateList {
     results?: Array<AnsibleTowerJobTemplate>
 }
 export interface AnsibleTowerJobTemplate {
-    type?: string
     name?: string
 }

@@ -103,7 +103,6 @@ const mockTemplateList: AnsibleTowerJobTemplateList = {
     results: [
         {
             name: 'job_1',
-            type: 'job_template',
         },
     ],
 }
