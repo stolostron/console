@@ -4,24 +4,25 @@
 
 .PHONY: install
 install:
-	npm install --global npm@7
-	npm ci --no-optional --legacy-peer-deps
+	npm i -g yarn
+	yarn -v
+	yarn --frozen-lockfile --ignore-optional
 
 .PHONY: build
 build:
-	npm run build
+	yarn run build
 
 .PHONY: check
 check:
-	npm run check
+	yarn run check
 
 .PHONY: lint
 lint:
-	npm run lint
+	yarn run lint
 
 .PHONY: unit-tests
 unit-tests:
 	if [ ! -d "test-output" ]; then \
 		mkdir test-output; \
 	fi
-	npm run test
+	yarn run test

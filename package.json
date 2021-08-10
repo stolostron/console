@@ -13,26 +13,19 @@
         "backend"
     ],
     "scripts": {
-        "check:env": "npm run check:node && npm run check:npm",
-        "check:node": "version=`node -v | head -c 3 | tail -c 2` && if [ $version != '14' ]; then echo node version 14 required; exit 1; fi",
-        "check:npm": "version=`npm -v | head -c 1`  && if [ $version != '7' ]; then echo npm version 7 required; exit 1; fi",
-        "preinstall": "npm run check:env",
-        "prestart": "npm run check:env",
-        "pretest": "npm run check:env",
-        "start": "workspaces-run --parallel -- npm run watch",
-        "clean": "workspaces-run --parallel -- rm -rf node_modules package-lock.json build dist lib coverage *.tsbuildinfo test-report.xml",
-        "build": "npm run check:env && workspaces-run --parallel --order-by-deps -- npm run build",
-        "test": "workspaces-run --parallel -- npm test",
+        "start": "workspaces-run --parallel -- NODE_OPTIONS=--max_old_space_size=8192 npm run watch",
+        "clean": "workspaces-run --parallel -- rm -rf build dist lib coverage *.tsbuildinfo test-report.xml",
+        "build": "workspaces-run --parallel --order-by-deps -- NODE_OPTIONS=--max_old_space_size=8192 npm run build",
+        "test": "workspaces-run --parallel -- NODE_OPTIONS=--max_old_space_size=8192 npm test",
         "lint": "workspaces-run --parallel -- npm run lint",
         "check": "workspaces-run --parallel -- npm run check",
-        "update": "npm run update:doctor && npm run clean && npm install && npm dedup && npm audit fix",
-        "update:doctor": "workspaces-run --parallel -- npx npm-check-updates --legacy-peer-deps --upgrade --target minor --doctor",
         "setup": "./setup.sh",
         "copyright:check": "ts-node --skip-project util/copyright-check",
         "copyright:fix": "ts-node --skip-project util/copyright-fix",
         "docker:build": "docker build --file Dockerfile.prow --tag console .",
-        "docker:run": "npm run docker:build && docker run --rm --name console -p 3000:3000 -e LOG_MEMORY=true -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./node_modules/.bin/pino-zen -i time && docker rm -f console",
-        "docker:deploy": "npm run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console"
+        "docker:run": "npm run docker:build && docker run --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./node_modules/.bin/pino-zen -i time && docker rm -f console",
+        "docker:deploy": "npm run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
+        "reinstall": "npm run clean && workspaces-run --parallel -- rm -rf node_modules && rm -rf yarn.lock node_modules && yarn install && npm run build"
     },
     "devDependencies": {
         "@types/jest": "^26.0.24",

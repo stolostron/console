@@ -1,16 +1,16 @@
 [comment]: # ( Copyright Contributors to the Open Cluster Management project )
 
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [Contributing guidelines](#contributing-guidelines)
-    - [Contributions](#contributions)
-    - [Certificate of Origin](#certificate-of-origin)
-    - [Contributing A Patch](#contributing-a-patch)
-    - [Issue and Pull Request Management](#issue-and-pull-request-management)
-    - [Pre-check before submitting a PR](#pre-check-before-submitting-a-pr)
+- [Contributions](#contributions)
+- [Certificate of Origin](#certificate-of-origin)
+- [Contributing A Patch](#contributing-a-patch)
+- [Issue and Pull Request Management](#issue-and-pull-request-management)
+- [Pre-check before submitting a PR](#pre-check-before-submitting-a-pr)
+  - [Testing your change](#testing-your-change)
+    - [Start local version of console](#start-local-version-of-console)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -46,31 +46,37 @@ Repo maintainers can assign you an issue or pull request by leaving a
 ## Pre-check before submitting a PR
 
 After your PR is ready to commit, please run following commands to check your code.
+
 ```bash
-npm run check
+yarn run check
 ```
 
 If the check results in prettier or lint errors, you can have them automatically fixed by running:  
+
 ```bash
-npm run check:fix
+yarn run check:fix
 ```
 
 After checking your code for prettier and lint errors, run the following command to unit test your code:  
-```bash
-npm run test
-```
 
+```bash
+yarn run test
+```
 
 ### Testing your change
+
 Make sure your `kubectl` context is set to your target cluster and have Red Hat Advanced Cluster Management installed on the target cluster.
 This will run the code locally:
-#### Start local version of console
-*WARNING: Running this script will update some parts of the cluster specified in your `KUBECONFIG` context.*
-```bash
-npm run setup
-npm start
-```
-A new console will launch and after approximately 30 seconds you will see the RHACM console.
 
+#### Start local version of console
+
+*WARNING: Running this script will update some parts of the cluster specified in your `KUBECONFIG` context.*
+
+```bash
+yarn run setup
+yarn start
+```
+
+A new console will launch and after approximately 30 seconds you will see the RHACM console.
 
 Now, you can follow the [getting started guide](./README.md#getting-started) to work with the open-cluster-management cluster-curator-controller repository.
