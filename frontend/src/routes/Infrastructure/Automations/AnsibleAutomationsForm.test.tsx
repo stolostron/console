@@ -73,13 +73,13 @@ const mockClusterCurator: ClusterCurator = {
     spec: {
         install: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'pre-job', extra_vars: {} }],
-            posthook: [{ name: 'post-job', extra_vars: {} }],
+            prehook: [{ name: 'test-job-pre-install', extra_vars: {} }],
+            posthook: [{ name: 'test-job-post-install', extra_vars: {} }],
         },
         upgrade: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'pre-job', extra_vars: {} }],
-            posthook: [{ name: 'post-job', extra_vars: {} }],
+            prehook: [{ name: 'test-job-pre-upgrade', extra_vars: {} }],
+            posthook: [{ name: 'test-job-post-upgrade', extra_vars: {} }],
         },
         scale: {
             towerAuthSecret: 'ansible-test-secret',
@@ -102,10 +102,16 @@ const mockAnsibleCredential = {
 const mockTemplateList: AnsibleTowerJobTemplateList = {
     results: [
         {
-            name: 'pre-job',
+            name: 'test-job-pre-install',
         },
         {
-            name: 'post-job',
+            name: 'test-job-post-install',
+        },
+        {
+            name: 'test-job-pre-upgrade',
+        },
+        {
+            name: 'test-job-post-upgrade',
         },
     ],
 }
@@ -139,11 +145,11 @@ describe('add ansible job template page', () => {
         // upgrade templates
         await clickByText('template.job.placeholder', 0)
         await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
-        await clickByText(mockTemplateList.results![0].name!, 0)
+        await clickByText(mockTemplateList.results![2].name!, 0)
         await clickByText('common:save')
         await clickByText('template.job.placeholder', 1)
         await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
-        await clickByText(mockTemplateList.results![1].name!, 0)
+        await clickByText(mockTemplateList.results![3].name!, 0)
         await clickByText('common:save')
         await clickByText('common:next')
 
