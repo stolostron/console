@@ -31,27 +31,27 @@ module.exports = function (_env, argv) {
             rules: [
                 {
                     test: /\.hbs$/,
+                    exclude: /node_modules/,
                     loader: 'raw-loader',
                 },
                 {
                     test: /\.jsx?$/,
-                    loader: 'babel-loader',
                     exclude: /node_modules/,
+                    loader: 'babel-loader',
                     options: {
-                        cacheDirectory: true,
-                        cacheCompression: false,
-                        envName: isProduction ? 'production' : 'development',
-                        presets: [['@babel/preset-react', { runtime: 'automatic' }]],
+                        presets: ['@babel/env', ['@babel/preset-react', { runtime: 'automatic' }]],
                     },
                 },
                 {
                     test: /\.tsx?$/,
+                    exclude: /node_modules/,
                     loader: 'babel-loader',
                     options: {
-                        cacheDirectory: true,
-                        cacheCompression: false,
-                        envName: isProduction ? 'production' : 'development',
-                        presets: [['@babel/preset-react', { runtime: 'automatic' }], '@babel/preset-typescript'],
+                        presets: [
+                            '@babel/env',
+                            ['@babel/preset-react', { runtime: 'automatic' }],
+                            '@babel/preset-typescript',
+                        ],
                     },
                 },
                 {

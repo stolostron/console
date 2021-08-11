@@ -9,6 +9,7 @@ import ReactDOM from 'react-dom'
 import App from './App'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router'
+import 'regenerator-runtime/runtime'
 
 ReactDOM.render(
     <StrictMode>
