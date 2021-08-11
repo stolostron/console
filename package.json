@@ -25,6 +25,9 @@
         "docker:build": "docker build --file Dockerfile.prow --tag console .",
         "docker:run": "npm run docker:build && docker run --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./node_modules/.bin/pino-zen -i time && docker rm -f console",
         "docker:deploy": "npm run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
+        "podman:build": "podman build --file Dockerfile.prow --tag console .",
+        "podman:run": "npm run podman:build && podman run --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./node_modules/.bin/pino-zen -i time && podman rm -f console",
+        "podman:deploy": "npm run podman:build && podman tag console quay.io/$USER/console:latest && podman push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
         "reinstall": "npm run clean && workspaces-run --parallel -- rm -rf node_modules && rm -rf yarn.lock node_modules && yarn install && npm run build"
     },
     "devDependencies": {
