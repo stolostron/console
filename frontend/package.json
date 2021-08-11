@@ -106,7 +106,6 @@
             "@typescript-eslint/ban-types": "off",
             "no-empty": "off",
             "no-constant-condition": "off",
-            "no-debugger": "off",
             "jest/no-export": "off",
             "@typescript-eslint/no-extra-semi": "off"
         }

@@ -73,6 +73,7 @@ const mockClusterCurator: ClusterCurator = {
     spec: {
         install: {
             towerAuthSecret: 'ansible-test-secret',
+
             prehook: [{ name: 'pre-job-install', extra_vars: {} }],
             posthook: [{ name: 'post-job-install', extra_vars: {} }],
         },
