@@ -357,6 +357,8 @@ export async function fetchRetry<T>(options: {
                                 throw new ResourceError('Request timeout.', ResourceErrorCode.Timeout)
                             case 'ECONNRESET':
                                 throw new ResourceError('Request connection reset.', ResourceErrorCode.ConnectionReset)
+                            case 'ENOTFOUND':
+                                throw new ResourceError('Resource not found.', ResourceErrorCode.NotFound)
                             default:
                                 throw new ResourceError(
                                     `Unknown error. code: ${(err as any)?.code}`,
@@ -424,7 +426,8 @@ export async function fetchRetry<T>(options: {
                         }
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
-
+                case 404:
+                    throw new ResourceError('Unauthorized', ResourceErrorCode.NotFound)
                 case 408: // Request Timeout
                 case 429: // Too Many Requests
                 case 500: // Internal Server Error
