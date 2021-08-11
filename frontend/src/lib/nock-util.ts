@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 /* istanbul ignore file */
-
+import { AnsibleTowerJobTemplateList } from '@open-cluster-management/resources/src/ansible-job'
 import {
     ClusterRoleBinding,
     getResourceApiPath,
@@ -213,6 +213,25 @@ export function nockRBAC(resourceAttributes: ResourceAttributes, allowed = true)
             status: { allowed },
         } as SelfSubjectAccessReview
     )
+}
+
+interface AnsibleCredentialPostBody {
+    towerHost: string
+    token: string
+}
+
+export function nockAnsibleTower(
+    data: AnsibleCredentialPostBody | unknown,
+    response: AnsibleTowerJobTemplateList,
+    statusCode = 200
+) {
+    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+        .post('/ansibletower', (body) => isEqual(body, data))
+        .reply(statusCode, response, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+        })
 }
 
 export function nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource, statusCode = 204) {

@@ -1,4 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@open-cluster-management/ui-components'
+import {
+    ActionGroup,
+    Button,
+    Chip,
+    ChipGroup,
+    Flex,
+    FlexItem,
+    ModalVariant,
+    SelectOption,
+    SelectVariant,
+} from '@patternfly/react-core'
 import {
     ClusterCurator,
     ClusterCuratorAnsibleJob,
@@ -10,9 +22,8 @@ import {
     ProviderConnection,
     replaceResource,
     unpackProviderConnection,
+    listAnsibleTowerJobs,
 } from '@open-cluster-management/resources'
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSubmit, AcmTextInput } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, Chip, ChipGroup, Flex, FlexItem, ModalVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
@@ -104,6 +115,8 @@ export function AnsibleAutomationsForm(props: {
         useState<{ jobs: ClusterCuratorAnsibleJob[]; setJobs: (jobs: ClusterCuratorAnsibleJob[]) => void }>()
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
+    const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
+    const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
 
     const [installPreJobs, setInstallPreJobs] = useState<ClusterCuratorAnsibleJob[]>(
         clusterCurator?.spec?.install?.prehook ?? []
@@ -131,6 +144,25 @@ export function AnsibleAutomationsForm(props: {
     )
 
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
+
+    useEffect(() => {
+        if (ansibleSelection) {
+            const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
+            listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
+                .promise.then((response) => {
+                    if (response) {
+                        let templateList: string[] = []
+                        if (response?.results) templateList = response.results!.map((job) => job.name!)
+                        setAnsibleTowerJobTemplateList(templateList)
+                        setAnsibleTowerAuthError('')
+                    }
+                })
+                .catch(() => {
+                    setAnsibleTowerAuthError('credentials:validate.ansible.host')
+                    setAnsibleTowerJobTemplateList([])
+                })
+        }
+    }, [ansibleSelection, ansibleCredentials])
 
     function updateAnsibleJob(ansibleJob?: ClusterCuratorAnsibleJob, replaceJob?: ClusterCuratorAnsibleJob) {
         if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {
@@ -248,6 +280,9 @@ export function AnsibleAutomationsForm(props: {
                             text: t('create:creation.ocp.cloud.add.connection'),
                             linkType: LinkType.internalNewTab,
                             callback: () => history.push(NavigationPath.addCredentials),
+                        },
+                        validation: () => {
+                            if (AnsibleTowerAuthError) return t(AnsibleTowerAuthError)
                         },
                     },
                 ],
@@ -475,23 +510,24 @@ export function AnsibleAutomationsForm(props: {
             <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
             <EditAnsibleJobModal
                 ansibleJob={editAnsibleJob}
+                ansibleSelection={ansibleSelection}
                 setAnsibleJob={updateAnsibleJob}
-                ansibleJobList={editAnsibleJobList?.jobs}
+                ansibleCredentials={ansibleCredentials}
+                ansibleTowerTemplateList={AnsibleTowerJobTemplateList}
             />
         </Fragment>
     )
 }
 
 function EditAnsibleJobModal(props: {
+    ansibleSelection?: string
+    ansibleCredentials: ProviderConnection[]
+    ansibleTowerTemplateList: string[] | undefined
     ansibleJob?: ClusterCuratorAnsibleJob
     setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
-    ansibleJobList?: ClusterCuratorAnsibleJob[]
 }) {
     const { t } = useTranslation(['common', 'cluster'])
     const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
-    let ansibleJobList: string[]
-    if (props.ansibleJobList)
-        ansibleJobList = props.ansibleJobList.filter((job) => ansibleJob !== job).map((ansibleJob) => ansibleJob.name)
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
     return (
         <AcmModal
@@ -505,26 +541,33 @@ function EditAnsibleJobModal(props: {
             onClose={() => props.setAnsibleJob()}
         >
             <AcmForm>
-                <AcmTextInput
-                    id="job-name"
-                    label={t('cluster:template.modal.name.label')}
-                    value={ansibleJob?.name}
-                    helperText={t('cluster:template.modal.name.helper.text')}
-                    onChange={(name) => {
-                        if (ansibleJob) {
-                            const copy = { ...ansibleJob }
-                            copy.name = name
-                            setAnsibleJob(copy)
-                        }
-                    }}
-                    validation={(name: string) => {
-                        if (ansibleJobList.includes(name)) {
-                            // no duplicate job names can be added
-                            return t('cluster:template.job.duplicate.error')
-                        }
-                    }}
-                    isRequired
-                />
+                <AcmForm>
+                    <AcmSelect
+                        label={t('cluster:template.modal.name.label')}
+                        id="job-name"
+                        value={ansibleJob?.name}
+                        helperText={t('cluster:template.modal.name.helper.text')}
+                        onChange={(name) => {
+                            if (ansibleJob) {
+                                const copy = { ...ansibleJob }
+                                copy.name = name as string
+                                setAnsibleJob(copy)
+                            }
+                        }}
+                        variant={SelectVariant.typeahead}
+                        placeholder={t('cluster:template.modal.name.placeholder')}
+                        isRequired
+                    >
+                        {props.ansibleTowerTemplateList
+                            ? props.ansibleTowerTemplateList?.map((name) => (
+                                  <SelectOption key={name} value={name}>
+                                      {name}
+                                  </SelectOption>
+                              ))
+                            : undefined}
+                    </AcmSelect>
+                </AcmForm>
+
                 <AcmLabelsInput
                     id="job-settings"
                     label={t('cluster:template.modal.settings.label')}

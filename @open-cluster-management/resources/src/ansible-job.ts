@@ -50,3 +50,10 @@ export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string
         posthook: posthookJobs,
     }
 }
+
+export interface AnsibleTowerJobTemplateList {
+    results?: Array<AnsibleTowerJobTemplate>
+}
+export interface AnsibleTowerJobTemplate {
+    name?: string
+}
