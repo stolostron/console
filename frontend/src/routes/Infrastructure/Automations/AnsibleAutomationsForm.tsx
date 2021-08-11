@@ -530,6 +530,7 @@ function EditAnsibleJobModal(props: {
 }) {
     const { t } = useTranslation(['common', 'cluster'])
     const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
+    useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
     return (
         <AcmModal
             variant={ModalVariant.medium}
