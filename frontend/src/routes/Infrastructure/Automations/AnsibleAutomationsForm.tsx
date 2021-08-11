@@ -23,7 +23,6 @@ import {
     replaceResource,
     unpackProviderConnection,
     listAnsibleTowerJobs,
-    ResourceError,
 } from '@open-cluster-management/resources'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -158,9 +157,8 @@ export function AnsibleAutomationsForm(props: {
                         setAnsibleTowerAuthError('')
                     }
                 })
-                .catch((err: ResourceError) => {
-                    if (err.code === 401) setAnsibleTowerAuthError('credentials:validate.ansible.host')
-                    else setAnsibleTowerAuthError(err.message)
+                .catch(() => {
+                    setAnsibleTowerAuthError('credentials:validate.ansible.host')
                     setAnsibleTowerJobTemplateList([])
                 })
         }
