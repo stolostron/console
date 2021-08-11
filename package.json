@@ -13,7 +13,7 @@
         "backend"
     ],
     "scripts": {
-        "start": "cd frontend && NODE_OPTIONS=--max_old_space_size=8192 yarn start",
+        "start": "concurrently yarn:frontend yarn:watch yarn:backend -n front,watch,'back ' -c green,magenta,blue",
         "watch": "workspaces-run --parallel -- NODE_OPTIONS=--max_old_space_size=8192 yarn run watch",
         "clean": "workspaces-run --parallel -- rm -rf build dist lib coverage *.tsbuildinfo test-report.xml",
         "build": "workspaces-run --parallel --order-by-deps -- NODE_OPTIONS=--max_old_space_size=8192 yarn run build",
@@ -28,17 +28,16 @@
         "docker:deploy": "npm run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
         "reinstall": "npm run clean && workspaces-run --parallel -- rm -rf node_modules && rm -rf node_modules && yarn install --frozen-lockfile",
         "frontend": "cd frontend && NODE_OPTIONS=--max_old_space_size=8192 yarn start",
-        "backend": "cd backend && NODE_OPTIONS=--max_old_space_size=8192 yarn start",
-        "t": "concurrently yarn:start yarn:watch yarn:backend"
+        "backend": "cd backend && NODE_OPTIONS=--max_old_space_size=8192 yarn start"
     },
     "devDependencies": {
-        "@types/jest": "^26.0.24",
-        "@types/node": "^16.4.3",
-        "concurrently": "^6.2.0",
+        "@types/jest": "^27.0.0",
+        "@types/node": "^16.4.14",
+        "concurrently": "^6.2.1",
         "husky": "^7.0.1",
-        "jest": "^26.6.3",
-        "npm": "^7.20.3",
-        "ts-node": "^10.1.0",
+        "jest": "^27.0.6",
+        "npm": "^7.20.5",
+        "ts-node": "^10.2.0",
         "typescript": "^4.3.5",
         "workspaces-run": "^1.0.1"
     },
