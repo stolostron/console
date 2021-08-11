@@ -73,13 +73,13 @@ const mockClusterCurator: ClusterCurator = {
     spec: {
         install: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'job_1', extra_vars: {} }],
-            posthook: [{ name: 'job_1', extra_vars: {} }],
+            prehook: [{ name: 'pre-job', extra_vars: {} }],
+            posthook: [{ name: 'post-job', extra_vars: {} }],
         },
         upgrade: {
             towerAuthSecret: 'ansible-test-secret',
-            prehook: [{ name: 'job_1', extra_vars: {} }],
-            posthook: [{ name: 'job_1', extra_vars: {} }],
+            prehook: [{ name: 'pre-job', extra_vars: {} }],
+            posthook: [{ name: 'post-job', extra_vars: {} }],
         },
         scale: {
             towerAuthSecret: 'ansible-test-secret',
@@ -102,7 +102,10 @@ const mockAnsibleCredential = {
 const mockTemplateList: AnsibleTowerJobTemplateList = {
     results: [
         {
-            name: 'job_1',
+            name: 'pre-job',
+        },
+        {
+            name: 'post-job',
         },
     ],
 }
@@ -129,7 +132,7 @@ describe('add ansible job template page', () => {
         await clickByText('common:save')
         await clickByText('template.job.placeholder', 1)
         await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
-        await clickByText(mockTemplateList.results![0].name!, 1)
+        await clickByText(mockTemplateList.results![1].name!, 0)
         await clickByText('common:save')
         await clickByText('common:next')
 
@@ -140,7 +143,7 @@ describe('add ansible job template page', () => {
         await clickByText('common:save')
         await clickByText('template.job.placeholder', 1)
         await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
-        await clickByText(mockTemplateList.results![0].name!, 1)
+        await clickByText(mockTemplateList.results![1].name!, 0)
         await clickByText('common:save')
         await clickByText('common:next')
 
