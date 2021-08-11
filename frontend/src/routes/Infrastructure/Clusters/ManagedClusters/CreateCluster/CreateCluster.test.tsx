@@ -29,7 +29,7 @@ import {
     SecretApiVersion,
     SecretKind,
 } from '@open-cluster-management/resources'
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -37,10 +37,12 @@ import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, managedClusterSetsState, managedClustersState, secretsState } from '../../../../../atoms'
 import { nockCreate, nockGet, nockIgnoreRBAC, nockList, nockPatch } from '../../../../../lib/nock-util'
 import {
+    clickByLabel,
     clickByPlaceholderText,
     clickByTestId,
     clickByText,
     typeByTestId,
+    waitForLabelText,
     waitForNocks,
     waitForText,
 } from '../../../../../lib/test-util'
@@ -929,6 +931,7 @@ describe('CreateCluster', () => {
         await clickByText('Next')
 
         // step 3 -- the hosts
+        await waitFor(() => expect(container.querySelector('[name="check-all"]')).not.toBeNull())
         const checkAll = container.querySelector('[name="check-all"]')
         if (checkAll) {
             userEvent.click(checkAll)
@@ -1019,10 +1022,8 @@ describe('CreateCluster', () => {
         await clickByText('Next')
 
         // step 3 -- the hosts
-        const checkAll = container.querySelector('[name="check-all"]')
-        if (checkAll) {
-            userEvent.click(checkAll)
-        }
+        await waitForLabelText('Select all rows')
+        await clickByLabel('Select all rows')
         await clickByText('Next')
 
         // step 4 -- the network

@@ -5,6 +5,7 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
 const webpack = require('webpack')
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
+const path = require('path')
 
 module.exports = function (_env, argv) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
@@ -20,6 +21,10 @@ module.exports = function (_env, argv) {
                 stream: require.resolve('stream-browserify'),
                 util: require.resolve('node-util'),
                 crypto: require.resolve('crypto-browserify'),
+                process: require.resolve('process/browser'),
+            },
+            alias: {
+                handlebars: 'handlebars/dist/handlebars.js',
             },
         },
         module: {
@@ -29,7 +34,7 @@ module.exports = function (_env, argv) {
                     loader: 'raw-loader',
                 },
                 {
-                    test: /\.(js|jsx)$/,
+                    test: /\.jsx?$/,
                     loader: 'babel-loader',
                     exclude: /node_modules/,
                     options: {
@@ -42,7 +47,6 @@ module.exports = function (_env, argv) {
                 {
                     test: /\.tsx?$/,
                     loader: 'babel-loader',
-                    exclude: /node_modules/,
                     options: {
                         cacheDirectory: true,
                         cacheCompression: false,
@@ -56,7 +60,7 @@ module.exports = function (_env, argv) {
                         loader: 'file-loader',
                         options: {
                             outputPath: 'assets',
-                            name: isProduction ? '[name].[contenthash:8].[ext]' : '[name].[ext]',
+                            name: '[name].[contenthash:8].[ext]',
                         },
                     },
                 },

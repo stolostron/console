@@ -28,7 +28,8 @@
         "docker:deploy": "npm run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
         "reinstall": "npm run clean && workspaces-run --parallel -- rm -rf node_modules && rm -rf node_modules && yarn install --frozen-lockfile",
         "frontend": "cd frontend && NODE_OPTIONS=--max_old_space_size=8192 yarn start",
-        "backend": "cd backend && NODE_OPTIONS=--max_old_space_size=8192 yarn start"
+        "backend": "cd backend && NODE_OPTIONS=--max_old_space_size=8192 yarn start",
+        "t": "concurrently yarn:start yarn:watch yarn:backend"
     },
     "devDependencies": {
         "@types/jest": "^26.0.24",

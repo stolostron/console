@@ -1,5 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+// eslint-disable-next-line no-use-before-define
+import React from 'react'
+
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
 

@@ -12,7 +12,7 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
     const dataRef = useRef<{
         ismounted: boolean
         polling: number
-        timeout?: NodeJS.Timeout
+        timeout?: ReturnType<typeof setTimeout>
         requestResult?: IRequestResult<T | T[]>
     }>({
         ismounted: false,

@@ -39,7 +39,6 @@ export default function AnsibleAutomationsPage() {
     useEffect(() => setRoute(AcmRoute.Automation), [setRoute])
 
     const alertContext = useContext(AcmAlertContext)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
     const { t } = useTranslation(['cluster', 'common'])
 

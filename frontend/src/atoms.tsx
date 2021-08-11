@@ -279,8 +279,6 @@ export function LoadData(props: { children?: ReactNode }) {
         return () => {
             if (evtSource) evtSource.close()
         }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {

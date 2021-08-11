@@ -338,7 +338,6 @@ export function DiscoveryConfigPageContent(props: {
                 canCreateDiscoveryConfig.abort()
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editing, discoveryConfig.metadata.namespace])
 
     return (

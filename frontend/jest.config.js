@@ -3,13 +3,21 @@
 module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'jsdom',
+    automock: false,
     rootDir: './src',
     testResultsProcessor: 'jest-sonar-reporter',
     setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
     moduleNameMapper: {
-        '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/css.mock.js',
-        '\\.(css|less)$': '<rootDir>/css.mock.js',
+        '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/file.mock.js',
+        '\\.(css|less)$': 'identity-obj-proxy',
+        'monaco-editor': '<rootDir>/../../node_modules/react-monaco-editor',
     },
     watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
     moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx'],
+    transform: {
+        '^.+\\.jsx?$': 'babel-jest',
+        '^.+\\.hbs$': 'jest-raw-loader',
+        '\\.(css|less)$': 'jest-raw-loader',
+    },
+    coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
 }

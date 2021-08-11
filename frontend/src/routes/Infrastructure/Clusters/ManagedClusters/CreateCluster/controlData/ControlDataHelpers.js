@@ -1,4 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+// eslint-disable-next-line no-use-before-define
+import React from 'react'
 import { VALIDATE_CIDR, VALIDATE_NUMERIC, VALIDATE_BASE_DNS_NAME_REQUIRED, VALID_DNS_LABEL } from 'temptifly'
 import { listClusterImageSets } from '@open-cluster-management/resources'
 import { unpackProviderConnection } from '@open-cluster-management/resources'

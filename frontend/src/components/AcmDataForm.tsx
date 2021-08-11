@@ -930,7 +930,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                         isReadOnly={isReadOnly}
                         type={'number'}
                         onChange={(value) => {
-                            input.onChange(Number(value))
+                            onChange(Number(value))
                         }}
                     />
                 </InputGroup>
@@ -978,6 +978,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         case 'GroupedSelect':
         case 'Multiselect':
         case 'GroupedMultiselect': {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { onChange, placeholder, ...inputProps } = input
             const onSelect = (_event: unknown, selection: string | SelectOptionObject) => {
                 switch (input.type) {

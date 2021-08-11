@@ -45,7 +45,6 @@ export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const { t } = useTranslation(['cluster', 'common'])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
     const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))

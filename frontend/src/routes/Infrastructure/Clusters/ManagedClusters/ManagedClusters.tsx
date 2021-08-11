@@ -57,7 +57,6 @@ export default function ClustersPage() {
         }
     })
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
     usePageContext(clusters.length > 0, PageActions)
