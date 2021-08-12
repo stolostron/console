@@ -71,6 +71,9 @@ module.exports = function (_env, argv) {
             ],
         },
         plugins: [
+            new webpack.ProvidePlugin({
+                Buffer: ['buffer', 'Buffer'],
+            }),
             new MonacoWebpackPlugin({
                 languages: ['yaml'],
             }),
