@@ -24,7 +24,9 @@
         "docker:deploy": "yarn run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
         "reinstall": "yarn run clean && workspaces-run --parallel -- rm -rf node_modules && rm -rf node_modules && yarn install --frozen-lockfile",
         "frontend": "cd frontend && NODE_OPTIONS=--max_old_space_size=8192 yarn start",
-        "backend": "cd backend && NODE_OPTIONS=--max_old_space_size=8192 yarn start"
+        "backend": "cd backend && NODE_OPTIONS=--max_old_space_size=8192 yarn start",
+        "prettier": "prettier --check **/*.ts **/*.tsx **/*.json !**/coverage/** !**/lib/* !**/lib/** !**/build/** !**/package-lock.json",
+        "prettier:fix": "prettier --write **/*.ts **/*.tsx **/*.json !**/coverage/** !**/lib/* !**/lib/** !**/build/** !**/package-lock.json"
     },
     "devDependencies": {
         "@types/jest": "^27.0.0",
@@ -33,6 +35,7 @@
         "husky": "^7.0.1",
         "jest": "^27.0.6",
         "npm": "^7.20.5",
+        "prettier": "^2.3.2",
         "ts-node": "^10.2.0",
         "typescript": "^4.3.5",
         "workspaces-run": "^1.0.1"

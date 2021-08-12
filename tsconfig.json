@@ -6,8 +6,9 @@
         "esModuleInterop": true,
         "types": ["node", "jest"],
 
-        "lib": ["ES2020", "DOM"],
-        "module": "ES2020",
+        "lib": ["dom", "dom.iterable", "esnext"],
+
+        "module": "esnext",
         "moduleResolution": "node",
         "target": "ES5",
 
@@ -32,7 +33,13 @@
         "removeComments": true,
 
         "skipLibCheck": true,
-        "composite": true
+        "composite": true,
+
+        "allowJs": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true
     },
     "references": [{ "path": "./@open-cluster-management/resources" }]
 }
