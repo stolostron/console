@@ -2,7 +2,14 @@
 import { lstat, readdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 
-const ignoreDirectories = [".git", "node_modules", "coverage", "build", "lib"];
+const ignoreDirectories = [
+    ".git",
+    "node_modules",
+    "coverage",
+    "build",
+    "lib",
+    "dist",
+];
 
 export async function fixCopyright(
     directory: string,
