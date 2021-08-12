@@ -41,7 +41,7 @@ router.get(`/*`, serve)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     if (process.env.NODE_ENV !== 'production') {
-        cors(req, res)
+        if (cors(req, res)) return
         await delay(req, res)
     }
 

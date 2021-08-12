@@ -41,5 +41,5 @@
         "resolveJsonModule": true,
         "isolatedModules": true
     },
-    "references": [{ "path": "./@open-cluster-management/resources" }]
+    "references": [{ "path": "./@open-cluster-management/**" }]
 }
