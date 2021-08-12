@@ -107,6 +107,12 @@ export function requestRetry(options: {
                             options.onResponse(response)
                     }
                 })
+                .on('error', (err) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    if ((err as any).code !== 'ABORT_ERR') {
+                        throw err
+                    }
+                })
                 .on('timeout', () => {
                     // Emitted when the underlying socket times out from inactivity.
                     // This only notifies that the socket has been idle.

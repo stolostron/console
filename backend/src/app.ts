@@ -74,6 +74,7 @@ export function start(): Promise<Http2Server | undefined> {
 export async function stop(): Promise<void> {
     if (process.env.NODE_ENV === 'development') {
         setTimeout(() => {
+            logger.warn('process stop timeout. exiting...')
             process.exit(1)
         }, 0.5 * 1000).unref()
     }
