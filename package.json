@@ -3,9 +3,6 @@
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE",
     "private": "true",
-    "engines": {
-        "npm": ">=7"
-    },
     "workspaces": [
         "@open-cluster-management/*",
         "routes/*",
@@ -13,8 +10,7 @@
         "backend"
     ],
     "scripts": {
-        "start": "concurrently yarn:frontend yarn:watch yarn:backend -n front,watch,'back ' -c green,magenta,blue",
-        "watch": "workspaces-run --parallel -- NODE_OPTIONS=--max_old_space_size=8192 yarn run watch",
+        "start": "concurrently yarn:frontend yarn:backend -n frontend,backend -c green,blue",
         "clean": "workspaces-run --parallel -- rm -rf build dist lib coverage *.tsbuildinfo test-report.xml",
         "build": "workspaces-run --parallel --order-by-deps -- NODE_OPTIONS=--max_old_space_size=8192 yarn run build",
         "test": "workspaces-run --parallel -- NODE_OPTIONS=--max_old_space_size=8192 yarn test",
@@ -24,15 +20,15 @@
         "copyright:check": "ts-node --skip-project util/copyright-check",
         "copyright:fix": "ts-node --skip-project util/copyright-fix",
         "docker:build": "docker build --file Dockerfile.prow --tag console .",
-        "docker:run": "npm run docker:build && docker run --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./node_modules/.bin/pino-zen -i time && docker rm -f console",
-        "docker:deploy": "npm run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
-        "reinstall": "npm run clean && workspaces-run --parallel -- rm -rf node_modules && rm -rf node_modules && yarn install --frozen-lockfile",
+        "docker:run": "yarn run docker:build && docker run --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./node_modules/.bin/pino-zen -i time && docker rm -f console",
+        "docker:deploy": "yarn run docker:build && docker tag console quay.io/$USER/console:latest && docker push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
+        "reinstall": "yarn run clean && workspaces-run --parallel -- rm -rf node_modules && rm -rf node_modules && yarn install --frozen-lockfile",
         "frontend": "cd frontend && NODE_OPTIONS=--max_old_space_size=8192 yarn start",
         "backend": "cd backend && NODE_OPTIONS=--max_old_space_size=8192 yarn start"
     },
     "devDependencies": {
         "@types/jest": "^27.0.0",
-        "@types/node": "^16.4.14",
+        "@types/node": "^16.6.0",
         "concurrently": "^6.2.1",
         "husky": "^7.0.1",
         "jest": "^27.0.6",
@@ -44,7 +40,15 @@
     "jest": {
         "projects": [
             "<rootDir>/backend",
-            "<rootDir>/frontend"
+            "<rootDir>/frontend",
+            "<rootDir>/@open-cluster-management/**",
+            "<rootDir>/routes/**"
         ]
+    },
+    "prettier": {
+        "printWidth": 120,
+        "tabWidth": 4,
+        "semi": false,
+        "singleQuote": true
     }
 }

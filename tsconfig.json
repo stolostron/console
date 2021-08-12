@@ -33,5 +33,6 @@
 
         "skipLibCheck": true,
         "composite": true
-    }
+    },
+    "references": [{ "path": "./@open-cluster-management/resources" }]
 }
