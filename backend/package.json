@@ -2,6 +2,11 @@
     "name": "@open-cluster-management/console-backend",
     "version": "0.0.1",
     "private": true,
+    "engines": {
+        "npm": "please-use-yarn",
+        "yarn": ">= 1.17.3",
+        "node": ">= 14"
+    },
     "scripts": {
         "watch": "echo",
         "postinstall": "[ ! -d ./certs ] && yarn run generate-certs || true",

@@ -2,8 +2,11 @@
     "name": "@open-cluster-management/console-frontend",
     "version": "0.0.1",
     "private": true,
-    "homepage": "/multicloud/",
-    "proxy": "https://localhost:4000",
+    "engines": {
+        "npm": "please-use-yarn",
+        "yarn": ">= 1.17.3",
+        "node": ">= 14"
+    },
     "scripts": {
         "start": "webpack serve --mode development",
         "build": "webpack --mode production",

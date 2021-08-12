@@ -115,7 +115,9 @@ module.exports = function (_env, argv) {
                   publicPath: '/multicloud',
                   clean: true,
               }
-            : undefined,
+            : {
+                  publicPath: '/',
+              },
         devtool: isDevelopment && 'inline-source-map',
         devServer: {
             port: 3000,

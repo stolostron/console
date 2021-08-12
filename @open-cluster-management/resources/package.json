@@ -3,6 +3,11 @@
     "version": "1.0.0",
     "main": "src",
     "private": "true",
+    "engines": {
+        "npm": "please-use-yarn",
+        "yarn": ">= 1.17.3",
+        "node": ">= 14"
+    },
     "scripts": {
         "build": "tsc",
         "watch": "tsc --watch --preserveWatchOutput",

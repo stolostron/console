@@ -3,6 +3,11 @@
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE",
     "private": "true",
+    "engines": {
+        "npm": "please-use-yarn",
+        "yarn": ">= 1.17.3",
+        "node": ">= 14"
+    },
     "workspaces": [
         "@open-cluster-management/*",
         "routes/*",
