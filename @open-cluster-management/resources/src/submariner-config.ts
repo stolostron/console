@@ -19,6 +19,7 @@ export enum CableDriver {
     libreswan = 'libreswan',
     strongswan = 'strongswan',
     wireguard = 'wireguard',
+    vxlan = 'vxlan',
 }
 
 export interface SubmarinerConfig extends IResource {
