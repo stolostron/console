@@ -4,7 +4,7 @@ import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
-import { notFound } from '../lib/respond'
+import { notFound, respondBadRequest } from '../lib/respond'
 
 interface AnsibleCredential {
     towerHost: string
@@ -25,7 +25,7 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
         try {
             towerUrl = new URL(ansibleCredential.towerHost.toString())
         } catch (err) {
-            return notFound(req, res)
+            return respondBadRequest(req, res)
         }
 
         const options: RequestOptions = {
