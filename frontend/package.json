@@ -8,8 +8,8 @@
         "node": ">= 14"
     },
     "scripts": {
-        "start": "webpack serve --mode development",
-        "build": "webpack --mode production",
+        "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development",
+        "build": "TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
         "watch": "echo",
         "test": "jest",
         "lint": "eslint src --ext .ts,.tsx --max-warnings=0",
@@ -44,6 +44,7 @@
         "@types/react-dom": "^17.0.9",
         "@types/react-router-dom": "^5.1.8",
         "@types/testing-library__jest-dom": "^5.14.1",
+        "@types/webpack": "^5.28.0",
         "babel-jest": "^27.0.6",
         "babel-loader": "^8.2.2",
         "browserify-fs": "^1.0.0",
@@ -91,6 +92,8 @@
         "temptifly": "^0.4.6",
         "ts-jest": "^27.0.4",
         "ts-loader": "^9.2.5",
+        "tsconfig-paths": "^3.10.1",
+        "type-fest": "^2.0.0",
         "typescript": "^4.3.5",
         "v8-compile-cache": "^2.3.0",
         "webpack": "^5.50.0",

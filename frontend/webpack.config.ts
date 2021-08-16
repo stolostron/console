@@ -1,13 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable @typescript-eslint/no-var-requires */
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CompressionPlugin = require('compression-webpack-plugin')
-const CopyPlugin = require('copy-webpack-plugin')
-const webpack = require('webpack')
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
-const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+import CompressionPlugin from 'compression-webpack-plugin'
+import CopyPlugin from 'copy-webpack-plugin'
+import * as webpack from 'webpack'
+import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
+import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
+import 'webpack-dev-server'
 
-module.exports = function (_env, argv) {
+module.exports = function (_env: any, argv: { mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
     const isDevelopment = !isProduction
 
@@ -90,6 +91,7 @@ module.exports = function (_env, argv) {
             isProduction && new CopyPlugin({ patterns: [{ from: 'public', globOptions: { ignore: ['**/*.html'] } }] }),
             isProduction && new CompressionPlugin({ algorithm: 'gzip' }),
             isProduction && new CompressionPlugin({ algorithm: 'brotliCompress', filename: '[path][base].br' }),
+            new ConsoleRemotePlugin(),
             isDevelopment && new webpack.HotModuleReplacementPlugin(),
             isDevelopment && new ReactRefreshWebpackPlugin(),
         ].filter(Boolean),
