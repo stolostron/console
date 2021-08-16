@@ -5,7 +5,6 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
 const webpack = require('webpack')
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
-const path = require('path')
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
 
 module.exports = function (_env, argv) {

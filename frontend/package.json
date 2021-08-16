@@ -34,6 +34,8 @@
         "@testing-library/jest-dom": "^5.14.1",
         "@testing-library/react": "^11.2.7",
         "@testing-library/user-event": "^12.8.3",
+        "@types/compression-webpack-plugin": "^6.0.6",
+        "@types/copy-webpack-plugin": "^8.0.1",
         "@types/get-value": "^3.0.2",
         "@types/jest": "^27.0.0",
         "@types/lodash": "^4.14.172",
