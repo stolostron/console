@@ -21,7 +21,13 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
     req.on('end', () => {
         const body = chucks.join()
         ansibleCredential = JSON.parse(body) as AnsibleCredential
-        const towerUrl = new URL(ansibleCredential.towerHost.toString())
+        let towerUrl = null
+        try {
+            towerUrl = new URL(ansibleCredential.towerHost.toString())
+        } catch (err) {
+            return notFound(req, res)
+        }
+
         const options: RequestOptions = {
             protocol: towerUrl.protocol,
             hostname: towerUrl.hostname,
