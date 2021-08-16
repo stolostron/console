@@ -319,7 +319,7 @@ describe('add credentials page', () => {
         const providerConnection = createProviderConnection(
             'ans',
             {
-                host: 'ansibleHost',
+                host: 'https://ansiblehost.com',
                 token: 'ansibleToken',
             },
             false
