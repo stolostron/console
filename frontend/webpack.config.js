@@ -6,6 +6,7 @@ const CopyPlugin = require('copy-webpack-plugin')
 const webpack = require('webpack')
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 const path = require('path')
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
 
 module.exports = function (_env, argv) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
@@ -40,6 +41,10 @@ module.exports = function (_env, argv) {
                     loader: 'babel-loader',
                     options: {
                         presets: ['@babel/env', ['@babel/preset-react', { runtime: 'automatic' }]],
+                        plugins: [
+                            // ... other plugins
+                            isDevelopment && 'react-refresh/babel',
+                        ].filter(Boolean),
                     },
                 },
                 {
@@ -52,6 +57,10 @@ module.exports = function (_env, argv) {
                             ['@babel/preset-react', { runtime: 'automatic' }],
                             '@babel/preset-typescript',
                         ],
+                        plugins: [
+                            // ... other plugins
+                            isDevelopment && 'react-refresh/babel',
+                        ].filter(Boolean),
                     },
                 },
                 {
@@ -71,43 +80,20 @@ module.exports = function (_env, argv) {
             ],
         },
         plugins: [
-            new webpack.ProvidePlugin({
-                Buffer: ['buffer', 'Buffer'],
-            }),
-            new MonacoWebpackPlugin({
-                languages: ['yaml'],
-            }),
-            new webpack.ProvidePlugin({
-                process: 'process',
-            }),
             new webpack.DefinePlugin({
                 'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development'),
                 'process.env.REACT_APP_BACKEND_HOST': JSON.stringify('https://localhost:4000'),
                 'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
             }),
-            ...[new HtmlWebpackPlugin({ template: './public/index.html' })],
-            ...(isProduction
-                ? [
-                      new CopyPlugin({
-                          patterns: [
-                              {
-                                  from: 'public',
-                                  globOptions: {
-                                      ignore: ['**/*.html'],
-                                  },
-                              },
-                          ],
-                      }),
-                      new CompressionPlugin({
-                          algorithm: 'gzip',
-                      }),
-                      new CompressionPlugin({
-                          algorithm: 'brotliCompress',
-                          filename: '[path][base].br',
-                      }),
-                  ]
-                : []),
-        ],
+            new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
+            new MonacoWebpackPlugin({ languages: ['yaml'] }),
+            new HtmlWebpackPlugin({ template: './public/index.html' }),
+            isProduction && new CopyPlugin({ patterns: [{ from: 'public', globOptions: { ignore: ['**/*.html'] } }] }),
+            isProduction && new CompressionPlugin({ algorithm: 'gzip' }),
+            isProduction && new CompressionPlugin({ algorithm: 'brotliCompress', filename: '[path][base].br' }),
+            isDevelopment && new webpack.HotModuleReplacementPlugin(),
+            isDevelopment && new ReactRefreshWebpackPlugin(),
+        ].filter(Boolean),
         output: isProduction
             ? {
                   chunkFilename: 'js/[contenthash:12].js',
@@ -115,9 +101,7 @@ module.exports = function (_env, argv) {
                   publicPath: '/multicloud',
                   clean: true,
               }
-            : {
-                  publicPath: '/',
-              },
+            : { publicPath: '/' },
         devtool: isDevelopment && 'inline-source-map',
         devServer: {
             port: 3000,
@@ -128,9 +112,10 @@ module.exports = function (_env, argv) {
                 '/multicloud/proxy/search': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/authenticated': { target: 'https://localhost:4000', secure: false },
             },
-            contentBase: __dirname + '/public/',
+            contentBase: './public/',
             contentBasePublicPath: '/multicloud',
             open: true,
+            inline: true,
             historyApiFallback: true,
             compress: true,
             https: true,
