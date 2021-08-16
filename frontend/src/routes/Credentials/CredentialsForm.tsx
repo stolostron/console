@@ -43,6 +43,7 @@ import {
     validateLibvirtURI,
     validatePrivateSshKey,
     validatePublicSshKey,
+    validateURL,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
 
@@ -250,6 +251,15 @@ export function CredentialsForm(props: {
     // Red Hat Cloud
     const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.stringData?.ocmAPIToken ?? '')
 
+    function removeTrailingChar(url: string, char: string): string {
+        let newUrl = url
+        if (newUrl.charAt(newUrl.length - 1) === char) {
+            newUrl = newUrl.substr(0, newUrl.length - 1)
+            return removeTrailingChar(newUrl, char)
+        }
+        return newUrl
+    }
+
     function stateToData() {
         const secret: ProviderConnection = {
             apiVersion: 'v1',
@@ -340,7 +350,7 @@ export function CredentialsForm(props: {
                 secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.ansible:
-                secret.stringData!.host = ansibleHost
+                secret.stringData!.host = removeTrailingChar(ansibleHost, '/')
                 secret.stringData!.token = ansibleToken
                 break
 
@@ -871,6 +881,7 @@ export function CredentialsForm(props: {
                         value: ansibleHost,
                         onChange: setAnsibleHost,
                         isRequired: true,
+                        validation: (host) => validateURL(host, t)
                     },
                     {
                         id: 'ansibleToken',

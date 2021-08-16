@@ -211,3 +211,12 @@ export function validateBareMetalOSImageURL(value: string, t: TFunction) {
 
     return undefined
 }
+
+export function validateURL(url: string, t: TFunction) {
+    const regex = /^(?:\w+:)?\/\/([^\s.]+\.\S{2}|localhost[:?\d]*)\S*$/
+    if (!regex.test(url)) {
+        return t('validate.ansible.url.not.valid')
+    } else {
+        return undefined
+    }
+}
