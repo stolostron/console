@@ -20,6 +20,7 @@ import {
     ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
+import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router'
@@ -252,12 +253,15 @@ export function CredentialsForm(props: {
     const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.stringData?.ocmAPIToken ?? '')
 
     function removeTrailingChar(url: string, char: string): string {
-        let newUrl = url
-        if (newUrl.charAt(newUrl.length - 1) === char) {
-            newUrl = newUrl.substr(0, newUrl.length - 1)
-            return removeTrailingChar(newUrl, char)
-        }
-        return newUrl
+        return _.trimEnd(url, char)
+    }
+
+    function removeLeadingTrailingSpaces(url: string): string {
+        return _.trimEnd(_.trimStart(url))
+    }
+
+    function cleanAnsibleUrl(url: string): string {
+        return removeTrailingChar(removeLeadingTrailingSpaces(url), '/')
     }
 
     function stateToData() {
@@ -350,10 +354,9 @@ export function CredentialsForm(props: {
                 secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.ansible:
-                secret.stringData!.host = removeTrailingChar(ansibleHost, '/')
+                secret.stringData!.host = cleanAnsibleUrl(ansibleHost)
                 secret.stringData!.token = ansibleToken
                 break
-
             case Provider.redhatcloud:
                 secret.stringData!.ocmAPIToken = ocmAPIToken
                 break

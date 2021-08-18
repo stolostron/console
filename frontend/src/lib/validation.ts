@@ -213,10 +213,17 @@ export function validateBareMetalOSImageURL(value: string, t: TFunction) {
 }
 
 export function validateURL(url: string, t: TFunction) {
-    const regex = /(http|https):\/\/(www.)?(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?((\/|\/)?([\w#!:.?+=&%@!\-/]))\S*$/
-    if (!regex.test(url)) {
+    const regex_injected_spaces = /(\S)*(\s)(\S)*/
+    let towerUrl = null
+
+    try {
+        towerUrl = new URL(url)
+    } catch (err) {
         return t('validate.ansible.url.not.valid')
-    } else {
-        return undefined
     }
+
+    if (towerUrl.protocol.toString() === 'https:' || towerUrl.protocol.toString() === 'http:')
+        if (!regex_injected_spaces.test(url)) return undefined
+
+    return t('validate.ansible.url.not.valid')
 }
