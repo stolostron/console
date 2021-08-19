@@ -257,7 +257,7 @@ export function CredentialsForm(props: {
     }
 
     function removeLeadingTrailingSpaces(url: string): string {
-        return _.trimEnd(_.trimStart(url))
+        return _.trim(url)
     }
 
     function cleanAnsibleUrl(url: string): string {
