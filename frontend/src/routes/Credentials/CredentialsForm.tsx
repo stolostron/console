@@ -252,16 +252,8 @@ export function CredentialsForm(props: {
     // Red Hat Cloud
     const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.stringData?.ocmAPIToken ?? '')
 
-    function removeTrailingChar(url: string, char: string): string {
-        return _.trimEnd(url, char)
-    }
-
-    function removeLeadingTrailingSpaces(url: string): string {
-        return _.trim(url)
-    }
-
     function cleanAnsibleUrl(url: string): string {
-        return removeTrailingChar(removeLeadingTrailingSpaces(url), '/')
+        return _.trimEnd(_.trim(url), '/')
     }
 
     function stateToData() {
