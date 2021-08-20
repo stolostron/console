@@ -525,7 +525,10 @@ function EditAnsibleJobModal(props: {
                     <AcmSubmit
                         variant="primary"
                         onClick={() => {
-                            if (ansibleJob) props.setAnsibleJob({ ...ansibleJob }, props.ansibleJob)
+                            if (ansibleJob) props.setAnsibleJob({
+                                name: ansibleJob.name.trim(),
+                                extra_vars: ansibleJob.extra_vars,
+                            }, props.ansibleJob)
                             props.setAnsibleJob()
                         }}
                     >
