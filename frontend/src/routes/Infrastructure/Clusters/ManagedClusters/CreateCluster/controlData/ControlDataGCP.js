@@ -243,6 +243,11 @@ const GCPworkerInstanceTypes = [
     },
 ]
 
+export const getControlDataGCP = (includeAutomation = true) => {
+    if (includeAutomation) return [...controlDataGCP, ...automationControlData]
+    return [...controlDataGCP]
+}
+
 const controlDataGCP = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -431,7 +436,6 @@ const controlDataGCP = [
         title: 'Networking',
     },
     ...networkingControlData,
-    ...automationControlData,
 ]
 
-export default controlDataGCP
+export default getControlDataGCP
