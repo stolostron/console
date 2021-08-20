@@ -543,7 +543,7 @@ function EditAnsibleJobModal(props: {
             <AcmForm>
                 <AcmForm>
                     <AcmSelect
-                        maxHeight="24em"
+                        maxHeight="18em"
                         menuAppendTo="parent"
                         label={t('cluster:template.modal.name.label')}
                         id="job-name"
