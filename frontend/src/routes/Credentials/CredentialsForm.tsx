@@ -252,10 +252,6 @@ export function CredentialsForm(props: {
     // Red Hat Cloud
     const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.stringData?.ocmAPIToken ?? '')
 
-    function cleanAnsibleUrl(url: string): string {
-        return _.trimEnd(_.trim(url), '/')
-    }
-
     function stateToData() {
         const secret: ProviderConnection = {
             apiVersion: 'v1',
@@ -346,7 +342,7 @@ export function CredentialsForm(props: {
                 secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.ansible:
-                secret.stringData!.host = cleanAnsibleUrl(ansibleHost)
+                secret.stringData!.host = ansibleHost
                 secret.stringData!.token = ansibleToken
                 break
             case Provider.redhatcloud:
