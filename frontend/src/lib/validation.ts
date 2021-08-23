@@ -213,7 +213,7 @@ export function validateBareMetalOSImageURL(value: string, t: TFunction) {
     return undefined
 }
 
-export function validateURL(url: string, t: TFunction) {
+export function validateWebURL(url: string, t: TFunction) {
     if (
         validator.isURL(url, {
             require_protocol: true,
