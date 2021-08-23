@@ -155,5 +155,9 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
+    },
+    "dependencies": {
+        "@types/validator": "^13.6.3",
+        "validator": "^13.6.0"
     }
 }

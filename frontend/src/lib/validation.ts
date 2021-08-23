@@ -3,6 +3,7 @@
 import YAML from 'yaml'
 
 import { TFunction } from 'i18next'
+import validator from 'validator'
 
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
 export function validateKubernetesDnsName(value: string, t: TFunction) {
@@ -213,17 +214,15 @@ export function validateBareMetalOSImageURL(value: string, t: TFunction) {
 }
 
 export function validateURL(url: string, t: TFunction) {
-    const regex_injected_spaces = /(\S)*(\s)(\S)*/
-    let towerUrl = null
-
-    try {
-        towerUrl = new URL(url)
-    } catch (err) {
-        return t('validate.ansible.url.not.valid')
-    }
-
-    if (towerUrl.protocol.toString() === 'https:' || towerUrl.protocol.toString() === 'http:')
-        if (!regex_injected_spaces.test(url)) return undefined
+    if (
+        validator.isURL(url, {
+            require_protocol: true,
+            require_valid_protocol: true,
+            protocols: ['http', 'https'],
+            require_host: true,
+        })
+    )
+        return undefined
 
     return t('validate.ansible.url.not.valid')
 }
