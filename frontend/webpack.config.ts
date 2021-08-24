@@ -91,7 +91,6 @@ module.exports = function (_env: any, argv: { mode: string | undefined }) {
             isProduction && new CopyPlugin({ patterns: [{ from: 'public', globOptions: { ignore: ['**/*.html'] } }] }),
             isProduction && new CompressionPlugin({ algorithm: 'gzip' }),
             isProduction && new CompressionPlugin({ algorithm: 'brotliCompress', filename: '[path][base].br' }),
-            new ConsoleRemotePlugin(),
             isDevelopment && new webpack.HotModuleReplacementPlugin(),
             isDevelopment && new ReactRefreshWebpackPlugin(),
         ].filter(Boolean),
