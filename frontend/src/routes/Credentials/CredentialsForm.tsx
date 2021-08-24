@@ -20,6 +20,7 @@ import {
     ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
+import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router'
@@ -43,6 +44,7 @@ import {
     validateLibvirtURI,
     validatePrivateSshKey,
     validatePublicSshKey,
+    validateWebURL,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
 
@@ -340,10 +342,9 @@ export function CredentialsForm(props: {
                 secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.ansible:
-                secret.stringData!.host = ansibleHost
+                secret.stringData!.host = _.trimEnd(ansibleHost, '/')
                 secret.stringData!.token = ansibleToken
                 break
-
             case Provider.redhatcloud:
                 secret.stringData!.ocmAPIToken = ocmAPIToken
                 break
@@ -871,6 +872,7 @@ export function CredentialsForm(props: {
                         value: ansibleHost,
                         onChange: setAnsibleHost,
                         isRequired: true,
+                        validation: (host) => validateWebURL(host, t),
                     },
                     {
                         id: 'ansibleToken',

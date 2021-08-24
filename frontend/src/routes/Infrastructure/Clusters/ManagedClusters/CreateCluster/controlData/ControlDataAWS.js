@@ -589,6 +589,11 @@ export const AWSworkerInstanceTypes = [
     },
 ]
 
+export const getControlDataAWS = (includeAutomation = true) => {
+    if (includeAutomation) return [...controlDataAWS, ...automationControlData]
+    return [...controlDataAWS]
+}
+
 const controlDataAWS = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -821,7 +826,6 @@ const controlDataAWS = [
         title: 'Networking',
     },
     ...networkingControlData,
-    ...automationControlData,
 ]
 
-export default controlDataAWS
+export default getControlDataAWS

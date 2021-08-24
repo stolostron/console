@@ -17,6 +17,11 @@ import {
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
+export const getControlDataOST = (includeAutomation = true) => {
+    if (includeAutomation) return [...controlDataOST, ...automationControlData]
+    return [...controlDataOST]
+}
+
 const controlDataOST = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -223,7 +228,6 @@ const controlDataOST = [
         validation: VALIDATE_IP_OPTIONAL,
     },
     ...networkingControlData,
-    ...automationControlData,
 ]
 
-export default controlDataOST
+export default getControlDataOST

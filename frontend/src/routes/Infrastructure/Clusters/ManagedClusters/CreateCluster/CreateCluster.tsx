@@ -71,6 +71,7 @@ export default function CreateClusterPage() {
     const [selectedTemplate, setSelectedTemplate] = useState('')
     const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
     const classes = useStyles()
+
     // create portals for buttons in header
     const switches = (
         <div className="switch-controls">

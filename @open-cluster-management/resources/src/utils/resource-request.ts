@@ -2,6 +2,7 @@
 
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
+import { AnsibleTowerJobTemplateList } from '../ansible-job'
 
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}` + `${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -187,6 +188,45 @@ export function listNamespacedResources<Resource extends IResource>(
         abort: result.abort,
     }
 }
+// TODO: validation for URL input
+// Code assumes protocol is present & ansiblehosturl ends without a /
+export function listAnsibleTowerJobs(
+    ansibleHostUrl: string,
+    token: string
+): IRequestResult<AnsibleTowerJobTemplateList> {
+    const backendURLPath = backendUrl + '/ansibletower'
+    const ansibleJobsUrl = ansibleHostUrl + '/api/v2/job_templates/'
+    const abortController = new AbortController()
+    return {
+        promise: fetchGetAnsibleJobs(backendURLPath, ansibleJobsUrl, token, abortController.signal).then((item) => {
+            return {
+                results: item.data.results?.map((job) => {
+                    return { name: job.name }
+                }),
+            } as AnsibleTowerJobTemplateList
+        }),
+        abort: () => abortController.abort(),
+    }
+}
+
+export function fetchGetAnsibleJobs(
+    backendUrlPath: string,
+    ansibleJobsUrl: string,
+    token: string,
+    signal: AbortSignal
+) {
+    return fetchRetry<AnsibleTowerJobTemplateList>({
+        method: 'POST',
+        url: backendUrlPath,
+        signal,
+        data: {
+            towerHost: ansibleJobsUrl,
+            token: token,
+        },
+        retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+        disableRedirectUnauthorizedLogin: true,
+    })
+}
 
 export function getRequest<ResultT>(url: string): IRequestResult<ResultT> {
     const abortController = new AbortController()
@@ -272,6 +312,7 @@ export async function fetchRetry<T>(options: {
     retries?: number
     delay?: number
     headers?: Record<string, string>
+    disableRedirectUnauthorizedLogin?: boolean
 }): Promise<{ headers: Headers; status: number; data: T }> {
     let retries = options?.retries && Number.isInteger(options.retries) && options.retries >= 0 ? options.retries : 0
     let delay = options?.delay && Number.isInteger(options.delay) && options.delay > 0 ? options.delay : 100
@@ -316,6 +357,8 @@ export async function fetchRetry<T>(options: {
                                 throw new ResourceError('Request timeout.', ResourceErrorCode.Timeout)
                             case 'ECONNRESET':
                                 throw new ResourceError('Request connection reset.', ResourceErrorCode.ConnectionReset)
+                            case 'ENOTFOUND':
+                                throw new ResourceError('Resource not found.', ResourceErrorCode.NotFound)
                             default:
                                 throw new ResourceError(
                                     `Unknown error. code: ${(err as any)?.code}`,
@@ -376,13 +419,16 @@ export async function fetchRetry<T>(options: {
             switch (response.status) {
                 case 302: // 302 is returned when token is valid but logged out
                 case 401: // 401 is returned from the backend if no token cookie is on request
-                    if (process.env.NODE_ENV === 'production') {
-                        window.location.reload()
-                    } else {
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                    if (!options.disableRedirectUnauthorizedLogin) {
+                        if (process.env.NODE_ENV === 'production') {
+                            window.location.reload()
+                        } else {
+                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                        }
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
-
+                case 404:
+                    throw new ResourceError('Unauthorized', ResourceErrorCode.NotFound)
                 case 408: // Request Timeout
                 case 429: // Too Many Requests
                 case 500: // Internal Server Error

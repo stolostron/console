@@ -173,6 +173,11 @@ const getHostsTitle = (control, controlData, i18n) => {
     }
 }
 
+export const getControlDataBMC = (includeAutomation = true) => {
+    if (includeAutomation) return [...controlDataBMC, ...automationControlData]
+    return [...controlDataBMC]
+}
+
 const controlDataBMC = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -398,7 +403,5 @@ const controlDataBMC = [
         validation: VALIDATE_IP_AGAINST_MACHINE_CIDR_OPTIONAL,
     },
     ...networkingControlData,
-    ...automationControlData,
 ]
-
-export default controlDataBMC
+export default getControlDataBMC

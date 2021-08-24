@@ -430,6 +430,11 @@ const ApplicationCreationPage = [
     },
 ]
 
+export const getControlDataAZR = (includeAutomation = true) => {
+    if (includeAutomation) return [...controlDataAZR, ...automationControlData]
+    return [...controlDataAZR]
+}
+
 const controlDataAZR = [
     ///////////////////////  connection  /////////////////////////////////////
     {
@@ -651,7 +656,6 @@ const controlDataAZR = [
         title: 'Networking',
     },
     ...networkingControlData,
-    ...automationControlData,
 ]
 
-export default controlDataAZR
+export default getControlDataAZR

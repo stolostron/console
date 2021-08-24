@@ -1528,10 +1528,10 @@
     node-gyp "^7.1.0"
     read-package-json-fast "^2.0.1"
 
-"@open-cluster-management/ui-components@^0.180.0":
-  version "0.180.0"
-  resolved "https://registry.yarnpkg.com/@open-cluster-management/ui-components/-/ui-components-0.180.0.tgz#9f6a5324ebc8e1e2c6346ebdebae57b76a9ebbf3"
-  integrity sha512-RMCmQfpeu4PhtiktMCN0Ze2FGLeQoj4QTHw7s8ot8/pilnAwEexRbI/Jw8GOi8T/FswCQVdAOmz1KRoVjj0i+g==
+"@open-cluster-management/ui-components@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@open-cluster-management/ui-components/-/ui-components-1.1.0.tgz#aeac9f51569e97e00f4850408c901352f17b8721"
+  integrity sha512-Nfn5m6ky9NBy6wUYlZCMDzWeDikeEE2aNtdB5PamAsMedvJ6ipnWWMb2QCZdgO2x51F+DpywPd8sU5yJkyJK8g==
   dependencies:
     "@material-ui/core" "^4.11.4"
     "@material-ui/styles" "^4.11.4"
@@ -1545,7 +1545,7 @@
     moment "^2.29.1"
     nock "^13.1.0"
     react-router-dom "^5.2.0"
-    react-tag-autocomplete "^6.1.0"
+    react-tag-autocomplete "6.1.0"
 
 "@panva/asn1.js@^1.0.0":
   version "1.0.0"
@@ -2276,6 +2276,11 @@
   version "1.11.3"
   resolved "https://registry.yarnpkg.com/@types/underscore/-/underscore-1.11.3.tgz#d6734f3741ce41b2630018c6b61c6745f6188c07"
   integrity sha512-Fl1TX1dapfXyDqFg2ic9M+vlXRktcPJrc4PR7sRc7sdVrjavg/JHlbUXBt8qWWqhJrmSqg3RNAkAPRiOYw6Ahw==
+
+"@types/validator@^13.6.3":
+  version "13.6.3"
+  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.6.3.tgz#31ca2e997bf13a0fffca30a25747d5b9f7dbb7de"
+  integrity sha512-fWG42pMJOL4jKsDDZZREnXLjc3UE0R8LOJfARWYg6U966rxDT7TYejYzLnUF5cvSObGg34nd0+H2wHHU5Omdfw==
 
 "@types/webpack-sources@*":
   version "3.2.0"
@@ -9737,10 +9742,10 @@ react-style-proptype@^3.2.2:
   dependencies:
     prop-types "^15.5.4"
 
-react-tag-autocomplete@^6.1.0:
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/react-tag-autocomplete/-/react-tag-autocomplete-6.2.0.tgz#f5aefaa4ff972c8163d5340d2e6ad20e31391f46"
-  integrity sha512-sBBwYoBVdJFQffhqOjjvcN2/1M92cG1YRKeyFgXEN44xxlTIUyneqzkw8l096pA3DSmUmgNc9z3JFG26xZRnbg==
+react-tag-autocomplete@6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/react-tag-autocomplete/-/react-tag-autocomplete-6.1.0.tgz#9fb70149a69b33379013e5255bcd7ad97d8ec06b"
+  integrity sha512-AMhVqxEEIrOfzH0A9XrpsTaLZCVYgjjxp3DSTuSvx91LBSFI6uYcKe38ltR/H/TQw4aytofVghQ1hR9sKpXRQA==
 
 react-transition-group@^4.4.0:
   version "4.4.2"
@@ -11614,6 +11619,11 @@ validate-npm-package-name@^3.0.0, validate-npm-package-name@~3.0.0:
   integrity sha1-X6kS2B630MdK/BQN5zF/DKffQ34=
   dependencies:
     builtins "^1.0.3"
+
+validator@^13.6.0:
+  version "13.6.0"
+  resolved "https://registry.yarnpkg.com/validator/-/validator-13.6.0.tgz#1e71899c14cdc7b2068463cb24c1cc16f6ec7059"
+  integrity sha512-gVgKbdbHgtxpRyR8K0O6oFZPhhB5tT1jeEHZR0Znr9Svg03U0+r9DXWMrnRAB+HtCStDQKlaIZm42tVsVjqtjg==
 
 value-equal@^1.0.1:
   version "1.0.1"

@@ -33,7 +33,6 @@ export const CREATE_AUTOMATION_TEMPLATE = {
     id: 'add-automation-template',
     icon: <OpenNewTab />,
 }
-
 export const LOAD_OCP_IMAGES = (provider) => {
     return {
         query: () => {
@@ -299,9 +298,8 @@ export const automationControlData = [
     {
         name: 'template.clusterCreate.name',
         id: 'templateName',
-        type: 'singleselect',
+        type: 'combobox',
         placeholder: 'template.clusterCreate.select.placeholder',
-        available: [],
         validation: {
             required: false,
         },
