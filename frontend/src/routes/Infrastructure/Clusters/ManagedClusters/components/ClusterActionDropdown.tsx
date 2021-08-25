@@ -10,10 +10,11 @@ import {
     patchResource,
     ResourceErrorCode,
 } from '@open-cluster-management/resources'
-import { AcmInlineProvider } from '@open-cluster-management/ui-components'
+import { AcmInlineProvider, Provider } from '@open-cluster-management/ui-components'
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
@@ -26,6 +27,7 @@ import { StatusField } from './StatusField'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
     const { t } = useTranslation(['cluster'])
+    const history = useHistory()
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
@@ -272,6 +274,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             isDisabled: true,
             rbac: destroyRbac,
         },
+        {
+            id: 'ai-edit',
+            text: t('managed.editAI'),
+            click: (cluster: Cluster) => history.push(`/multicloud/cluster/edit/${cluster.namespace}/${cluster.name}`),
+        },
     ]
 
     // ClusterCurator
@@ -342,6 +349,10 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     if (!cluster.isHive || (cluster.hive.clusterPool && !cluster.hive.clusterClaimName)) {
         actions = actions.filter((a) => a.id !== 'destroy-cluster')
+    }
+
+    if (cluster.provider !== Provider.hybrid) {
+        actions = actions.filter((a) => a.id !== 'ai-edit')
     }
 
     return (

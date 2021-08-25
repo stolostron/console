@@ -61,6 +61,12 @@ export interface ClusterDeployment {
         pullSecretRef: {
             name: string
         }
+        clusterInstallRef?: {
+            group: string
+            kind: string
+            version: string
+            name: string
+        }
     }
     status?: {
         apiURL?: string
@@ -100,5 +106,6 @@ export interface ClusterDeployment {
             name: string
         }
         webConsoleURL?: string
+        installVersion?: string
     }
 }

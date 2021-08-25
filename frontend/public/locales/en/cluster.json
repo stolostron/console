@@ -60,6 +60,7 @@
     "managed.clusterSets.submariner.addons.config.notSupported": "One or more of the selected clusters are deployed on a provider that does not support configuration by a <bold>SubmarinerConfig</bold> resource. The Submariner add-on can still be installed, but you may need to follow a few manual configuration steps, view the <button>Submariner documentation</button> for more information.",
     "managed.clusterSets.submariner.addons.config.notSupported.view": "View unsupported clusters ({{number}})",
     "managed.clusterSets.submariner.addons.config.notSupported.provider": "{{clusterName}} (Provider not supported)",
+    "managed.editAI": "Edit cluster",
 
     "submariner.title.tooltip": "Submariner enables direct networking between Pods and Services in different Kubernetes clusters, either on-premises or in the cloud.",
     "submariner.clusters.empty.title": "No available clusters found",
@@ -297,6 +298,7 @@
     "status.posthookfailed": "Failed",
     "status.importfailed": "Failed",
     "status.upgradefailed": "Failed",
+    "status.draft": "Draft",
     "status.stepbar.title": "Creating cluster",
     "status.stepbar.subtitle": "{{stepsDone}} of {{steps}} steps completed",
     "status.prehook.text": "Prehook",

@@ -87,10 +87,13 @@ export function startWatching(): void {
             'metadata.name': 'insight-content-data',
         },
     })
+    watchResource(token, 'extensions.hive.openshift.io/v1beta1', 'agentclusterinstalls')
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clustercurators')
     watchResource(token, 'wgpolicyk8s.io/v1alpha2', 'policyreports')
     watchResource(token, 'submarineraddon.open-cluster-management.io/v1alpha1', 'submarinerconfigs')
     watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs')
+    watchResource(token, 'agent-install.openshift.io/v1beta1', 'agents')
+    watchResource(token, 'agent-install.openshift.io/v1beta1', 'infraenvs')
 }
 
 export function watchResource(

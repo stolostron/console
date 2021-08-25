@@ -1,3 +1,5 @@
+@import '~openshift-assisted-ui-lib/dist/index.css';
+
 .pf-c-toolbar__content-section {
     row-gap: 16px !important;
 }

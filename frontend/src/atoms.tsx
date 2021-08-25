@@ -50,10 +50,14 @@ import {
     SecretKind,
     SubmarinerConfig,
     SubmarinerConfigKind,
+    AgentClusterInstallKind,
+    AgentKind,
+    InfraEnvKind,
 } from '@open-cluster-management/resources'
 import { AcmRoute } from '@open-cluster-management/ui-components'
 import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
+import { CIM } from 'openshift-assisted-ui-lib'
 import { LoadingPage } from './components/LoadingPage'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
@@ -92,6 +96,12 @@ export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 export const submarinerConfigsState = atom<SubmarinerConfig[]>({ key: 'submarinerconfigs', default: [] })
 export const ansibleJobState = atom<AnsibleJob[]>({ key: 'ansiblejobs', default: [] })
+export const agentClusterInstallsState = atom<CIM.AgentClusterInstallK8sResource[]>({
+    key: 'agentclusterinstalls',
+    default: [],
+})
+export const agentsState = atom<CIM.AgentK8sResource[]>({ key: 'agents', default: [] })
+export const infraEnvironmentsState = atom<CIM.InfraEnvK8sResource[]>({ key: 'infraenvs', default: [] })
 
 interface Settings {
     LOG_LEVEL?: string
@@ -145,8 +155,13 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setSettings] = useRecoilState(settingsState)
     const [, setSubmarinerConfigs] = useRecoilState(submarinerConfigsState)
     const [, setAnsibleJobs] = useRecoilState(ansibleJobState)
+    const [, setAgentClusterInstalls] = useRecoilState(agentClusterInstallsState)
+    const [, setAgents] = useRecoilState(agentsState)
+    const [, setInfraEnvironments] = useRecoilState(infraEnvironmentsState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
+        [AgentKind]: setAgents,
+        [AgentClusterInstallKind]: setAgentClusterInstalls,
         [AnsibleJobKind]: setAnsibleJobs,
         [BareMetalAssetKind]: setBareMetalAssets,
         [CertificateSigningRequestKind]: setCertificateSigningRequests,
@@ -161,6 +176,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [DiscoveryConfigKind]: setDiscoveryConfigs,
         [DiscoveredClusterKind]: setDiscoveredClusters,
         [FeatureGateKind]: setFeatureGates,
+        [InfraEnvKind]: setInfraEnvironments,
         [MachinePoolKind]: setMachinePools,
         [ManagedClusterKind]: setManagedClusters,
         [ManagedClusterAddOnKind]: setManagedClusterAddons,

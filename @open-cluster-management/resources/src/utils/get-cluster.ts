@@ -2,6 +2,7 @@
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { Provider } from '@open-cluster-management/ui-components'
+import { CIM } from 'openshift-assisted-ui-lib'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../certificate-signing-requests'
 import { ClusterClaim } from '../cluster-claim'
 import { ClusterCurator } from '../cluster-curator'
@@ -12,6 +13,9 @@ import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo } from '../mana
 import { managedClusterSetLabel } from '../managed-cluster-set'
 import { AddonStatus } from './get-addons'
 import { getLatest } from './utils'
+import { AgentClusterInstallKind } from '../agent-cluster-install'
+
+const { isDraft } = CIM
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -38,6 +42,7 @@ export enum ClusterStatus {
     'posthookjob' = 'posthookjob',
     'posthookfailed' = 'posthookfailed',
     'importfailed' = 'importfailed',
+    'draft' = 'draft',
 }
 
 export const clusterDangerStatuses = [
@@ -144,7 +149,8 @@ export function mapClusters(
     managedClusters: ManagedCluster[] = [],
     managedClusterAddOns: ManagedClusterAddOn[] = [],
     clusterClaims: ClusterClaim[] = [],
-    clusterCurators: ClusterCurator[] = []
+    clusterCurators: ClusterCurator[] = [],
+    agentClusterInstalls: CIM.AgentClusterInstallK8sResource[] = []
 ) {
     const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
     const uniqueClusterNames = Array.from(
@@ -161,6 +167,13 @@ export function mapClusters(
         const addons = managedClusterAddOns.filter((mca) => mca.metadata.namespace === cluster)
         const clusterClaim = clusterClaims.find((clusterClaim) => clusterClaim.spec?.namespace === cluster)
         const clusterCurator = clusterCurators.find((cc) => cc.metadata.namespace === cluster)
+        const agentClusterInstall =
+            clusterDeployment?.spec?.clusterInstallRef &&
+            agentClusterInstalls.find(
+                (aci) =>
+                    aci.metadata.namespace === clusterDeployment.metadata.namespace &&
+                    aci.metadata.name === clusterDeployment?.spec?.clusterInstallRef?.name
+            )
         return getCluster(
             managedClusterInfo,
             clusterDeployment,
@@ -168,7 +181,8 @@ export function mapClusters(
             managedCluster,
             addons,
             clusterClaim,
-            clusterCurator
+            clusterCurator,
+            agentClusterInstall
         )
     })
 }
@@ -180,7 +194,8 @@ export function getCluster(
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[],
     clusterClaim: ClusterClaim | undefined,
-    clusterCurator: ClusterCurator | undefined
+    clusterCurator: ClusterCurator | undefined,
+    agentClusterInstall: CIM.AgentClusterInstallK8sResource | undefined
 ): Cluster {
     const { status, statusMessage } = getClusterStatus(
         clusterDeployment,
@@ -188,7 +203,8 @@ export function getCluster(
         certificateSigningRequests,
         managedCluster,
         managedClusterAddOns,
-        clusterCurator
+        clusterCurator,
+        agentClusterInstall
     )
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
@@ -313,6 +329,11 @@ export function getProvider(
     managedCluster?: ManagedCluster,
     clusterDeployment?: ClusterDeployment
 ) {
+    const clusterInstallRef = clusterDeployment?.spec?.clusterInstallRef
+    if (clusterInstallRef?.kind === AgentClusterInstallKind) {
+        return Provider.hybrid
+    }
+
     const cloudLabel = managedClusterInfo?.metadata?.labels?.['cloud']
     const platformClusterClaim = managedCluster?.status?.clusterClaims?.find(
         (claim) => claim.name === 'platform.open-cluster-management.io'
@@ -621,7 +642,8 @@ export function getClusterStatus(
     certificateSigningRequests: CertificateSigningRequest[] | undefined,
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[],
-    clusterCurator: ClusterCurator | undefined
+    clusterCurator: ClusterCurator | undefined,
+    agentClusterInstall: CIM.AgentClusterInstallK8sResource | undefined
 ) {
     let statusMessage: string | undefined
 
@@ -757,6 +779,8 @@ export function getClusterStatus(
                 } else {
                     cdStatus = ClusterStatus.creating
                 }
+            } else if (isDraft(agentClusterInstall)) {
+                cdStatus = ClusterStatus.draft
             } else {
                 cdStatus = ClusterStatus.creating
             }
