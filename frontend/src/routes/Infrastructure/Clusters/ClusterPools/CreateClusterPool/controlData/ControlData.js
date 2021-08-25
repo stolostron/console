@@ -6,9 +6,9 @@ import Handlebars from 'handlebars'
 import installConfigHbs from '../../../ManagedClusters/CreateCluster/templates/install-config.hbs'
 import { keyBy, cloneDeep } from 'lodash'
 
-import controlDataAWS from '../../../ManagedClusters/CreateCluster/controlData/ControlDataAWS'
-import controlDataGCP from '../../../ManagedClusters/CreateCluster/controlData/ControlDataGCP'
-import controlDataAZR from '../../../ManagedClusters/CreateCluster/controlData/ControlDataAZR'
+import getControlDataAWS from '../../../ManagedClusters/CreateCluster/controlData/ControlDataAWS'
+import getControlDataGCP from '../../../ManagedClusters/CreateCluster/controlData/ControlDataGCP'
+import getControlDataAZR from '../../../ManagedClusters/CreateCluster/controlData/ControlDataAZR'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo } from '../../../ManagedClusters/CreateCluster/controlData/Logos'
 
 const installConfig =
@@ -80,9 +80,9 @@ const fixupControlsForClusterPool = (controlData) => {
 
     return controlData
 }
-const fixedUpAWS = fixupControlsForClusterPool(cloneDeep(controlDataAWS))
-const fixedUpGCP = fixupControlsForClusterPool(cloneDeep(controlDataGCP))
-const fixedUpAZR = fixupControlsForClusterPool(cloneDeep(controlDataAZR))
+const fixedUpAWS = fixupControlsForClusterPool(cloneDeep(getControlDataAWS(false)))
+const fixedUpGCP = fixupControlsForClusterPool(cloneDeep(getControlDataGCP(false)))
+const fixedUpAZR = fixupControlsForClusterPool(cloneDeep(getControlDataAZR(false)))
 
 export const controlData = [
     ///////////////////////  container platform  /////////////////////////////////////
