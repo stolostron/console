@@ -4,7 +4,6 @@ import { Cluster, mapClusters } from '@open-cluster-management/resources'
 import { useMemo } from 'react'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
-    ansibleJobState,
     certificateSigningRequestsState,
     clusterClaimsState,
     clusterCuratorsState,
@@ -12,6 +11,7 @@ import {
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClustersState,
+    agentClusterInstallsState,
 } from '../../../../../atoms'
 
 export function useAllClusters() {
@@ -23,6 +23,7 @@ export function useAllClusters() {
         managedClusterAddons,
         clusterClaims,
         clusterCurators,
+        agentClusterInstalls,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -32,7 +33,7 @@ export function useAllClusters() {
             managedClusterAddonsState,
             clusterClaimsState,
             clusterCuratorsState,
-            ansibleJobState,
+            agentClusterInstallsState,
         ])
     )
     const clusters = useMemo(
@@ -44,7 +45,8 @@ export function useAllClusters() {
                 managedClusters,
                 managedClusterAddons,
                 clusterClaims,
-                clusterCurators
+                clusterCurators,
+                agentClusterInstalls
             ),
         [
             clusterDeployments,
@@ -54,6 +56,7 @@ export function useAllClusters() {
             managedClusterAddons,
             clusterClaims,
             clusterCurators,
+            agentClusterInstalls,
         ]
     )
     return clusters as Cluster[]

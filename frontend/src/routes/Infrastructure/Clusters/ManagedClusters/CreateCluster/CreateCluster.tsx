@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
@@ -26,12 +25,18 @@ import hiveTemplate from './templates/hive-template.hbs'
 import endpointTemplate from './templates/endpoints.hbs'
 import { featureGatesState, secretsState, managedClustersState, clusterCuratorsState } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
-import { ClusterCurator, filterForTemplatedCurators, createClusterCurator } from '@open-cluster-management/resources'
+import {
+    ClusterCurator,
+    filterForTemplatedCurators,
+    createClusterCurator,
+    patchResource,
+} from '@open-cluster-management/resources'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { ProviderConnection, unpackProviderConnection } from '@open-cluster-management/resources'
 import { Secret } from '@open-cluster-management/resources'
 import { createResource as createResourceTool } from '@open-cluster-management/resources'
 import { FeatureGates } from '../../../../../FeatureGates'
+import { getNetworkingPatches } from '../components/cim/utils'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -56,6 +61,7 @@ export default function CreateClusterPage() {
     const history = useHistory()
     const location = useLocation()
     const [secrets] = useRecoilState(secretsState)
+    const [readOnly, setReadOnly] = useState(false)
 
     const providerConnections = secrets.map(unpackProviderConnection)
     const ansibleCredentials = providerConnections.filter(
@@ -88,7 +94,7 @@ export default function CreateClusterPage() {
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
-    const createResource = async (resourceJSON: { createResources: any[] }) => {
+    const createResource = async (resourceJSON: { createResources: any[] }, noRedirect: boolean) => {
         if (resourceJSON) {
             const { createResources } = resourceJSON
             const map = keyBy(createResources, 'kind')
@@ -175,9 +181,11 @@ export default function CreateClusterPage() {
 
                 // redirect to created cluster
                 if (status === 'DONE') {
-                    setTimeout(() => {
-                        history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
-                    }, 2000)
+                    if (!noRedirect) {
+                        setTimeout(() => {
+                            history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
+                        }, 2000)
+                    }
                 }
             }
         }
@@ -260,6 +268,27 @@ export default function CreateClusterPage() {
         }
     }
 
+    const onStepChange = (step: any, prevStep: any) => {
+        if (step.control && !!step.control.disableEditor !== readOnly) {
+            setReadOnly(step.control.disableEditor)
+        }
+        if (prevStep?.id === 'aiNetworkStep' && prevStep?.control?.active) {
+            const values = prevStep.control.active
+            const agentClusterInstall = prevStep.control.agentClusterInstall
+            const patches = getNetworkingPatches(agentClusterInstall, values)
+            const patch = async () => {
+                try {
+                    if (patches.length > 0) {
+                        await patchResource(agentClusterInstall, patches).promise
+                    }
+                } catch (e) {
+                    throw new Error(`Failed to patch the AgentClusterInstall resource: ${e.message}`)
+                }
+            }
+            patch()
+        }
+    }
+
     return (
         <AcmPage
             header={
@@ -295,6 +324,7 @@ export default function CreateClusterPage() {
                             type={'cluster'}
                             title={'Cluster YAML'}
                             monacoEditor={<MonacoEditor />}
+                            editorReadOnly={readOnly}
                             controlData={controlData}
                             template={template}
                             portals={Portals}
@@ -310,6 +340,8 @@ export default function CreateClusterPage() {
                             i18n={i18n}
                             onControlInitialize={onControlInitialize}
                             onControlChange={onControlChange}
+                            onStepChange={onStepChange}
+                            controlProps={selectedConnection}
                         />
                     </PageSection>
                 </AcmPageContent>

@@ -1,0 +1,82 @@
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  name: {{{ai.name}}}
+  namespace: {{{ai.name}}}
+spec:
+  baseDomain: {{{ai.baseDnsDomain}}}
+  clusterInstallRef:
+    group: extensions.hive.openshift.io
+    kind: AgentClusterInstall
+    name: {{{ai.name}}}
+    version: v1beta1
+  clusterName: {{{ai.name}}}
+  platform:
+    agentBareMetal:
+      agentSelector:
+        matchLabels: {}
+    pullSecretRef:
+      name: pullsecret-{{{ai.name}}}
+
+---
+apiVersion: extensions.hive.openshift.io/v1beta1
+kind: AgentClusterInstall
+metadata:
+  name: {{{ai.name}}}
+  namespace: {{{ai.name}}}
+spec:
+  clusterDeploymentRef:
+    name: {{{ai.name}}}
+  apiVIP: {{{aiNetwork.apiVip}}}
+  ingressVIP: {{{aiNetwork.ingressVip}}}
+  networking: {}
+  provisionRequirements:
+    controlPlaneAgents: 0
+    imageSetRef:
+      name: {{{ai.openshiftVersion}}}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pullsecret-{{{ai.name}}}
+  namespace: {{{ai.name}}}
+data:
+  '.dockerconfigjson': {{{ai.pullSecret}}}
+type: kubernetes.io/dockerconfigjson
+
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  labels:
+    cloud: Hybrid
+    name: {{{ai.name}}}
+    {{#if clusterSet}}
+    cluster.open-cluster-management.io/clusterset: '{{{clusterSet}}}'
+    {{/if}}
+  name: {{{ai.name}}}
+spec:
+  hubAcceptsClient: true
+
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: {{{ai.name}}}
+  namespace: {{{ai.name}}}
+spec:
+  clusterName: {{{ai.name}}}
+  clusterNamespace: {{{ai.name}}}
+  clusterLabels:
+    cloud: Hybrid
+    applicationManager:
+      enabled: true
+    policyController:
+      enabled: true
+    searchCollector:
+      enabled: true
+    certPolicyController:
+      enabled: true
+    iamPolicyController:
+      enabled: true
