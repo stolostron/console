@@ -184,11 +184,11 @@ export function AnsibleAutomationsForm(props: {
     }
 
     const formData: FormData = {
-        title: t('create:template.create.title'),
-        titleTooltip: t('create:template.create.tooltip'),
+        title: isEditing ? t('create:template.edit.title') : t('create:template.create.title'),
+        titleTooltip: isEditing ? t('create:template.edit.tooltip') : t('create:template.create.tooltip'),
         breadcrumb: [
             { text: t('template.title'), to: NavigationPath.ansibleAutomations },
-            { text: t('create:template.create.title') },
+            { text: isEditing ? t('create:template.edit.title') : t('create:template.create.title') },
         ],
         reviewDescription: t('template.create.review.description'),
         reviewTitle: t('template.create.review.title'),
