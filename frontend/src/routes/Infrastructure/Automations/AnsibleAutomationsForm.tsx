@@ -188,7 +188,7 @@ export function AnsibleAutomationsForm(props: {
         titleTooltip: isEditing ? t('create:template.edit.tooltip') : t('create:template.create.tooltip'),
         breadcrumb: [
             { text: t('template.title'), to: NavigationPath.ansibleAutomations },
-            { text: isEditing ? t('create:template.edit.title') : t('create:template.create.title') }
+            { text: isEditing ? t('create:template.edit.title') : t('create:template.create.title') },
         ],
         reviewDescription: t('template.create.review.description'),
         reviewTitle: t('template.create.review.title'),
