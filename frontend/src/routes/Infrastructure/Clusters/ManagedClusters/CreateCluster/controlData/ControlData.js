@@ -5,12 +5,12 @@ import path from 'path'
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
 
-import controlDataAWS from './ControlDataAWS'
-import controlDataGCP from './ControlDataGCP'
-import controlDataAZR from './ControlDataAZR'
-import controlDataVMW from './ControlDataVMW'
-import controlDataBMC from './ControlDataBMC'
-import controlDataOST from './ControlDataOST'
+import getControlDataAWS from './ControlDataAWS'
+import getControlDataGCP from './ControlDataGCP'
+import getControlDataAZR from './ControlDataAZR'
+import getControlDataVMW from './ControlDataVMW'
+import getControlDataBMC from './ControlDataBMC'
+import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo, BaremetalLogo } from './Logos'
 
 const installConfig =
@@ -92,7 +92,7 @@ export const controlData = [
                 logo: <AwsLogo />,
                 title: 'cluster.create.aws.subtitle',
                 change: {
-                    insertControlData: controlDataAWS,
+                    insertControlData: getControlDataAWS(),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -103,7 +103,7 @@ export const controlData = [
                 logo: <GoogleLogo />,
                 title: 'cluster.create.google.subtitle',
                 change: {
-                    insertControlData: controlDataGCP,
+                    insertControlData: getControlDataGCP(),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -114,7 +114,7 @@ export const controlData = [
                 logo: <AzureLogo />,
                 title: 'cluster.create.azure.subtitle',
                 change: {
-                    insertControlData: controlDataAZR,
+                    insertControlData: getControlDataAZR(),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -125,7 +125,7 @@ export const controlData = [
                 logo: <VMwareLogo />,
                 title: 'cluster.create.vmware.subtitle',
                 change: {
-                    insertControlData: controlDataVMW,
+                    insertControlData: getControlDataVMW(),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -136,7 +136,7 @@ export const controlData = [
                 logo: <RedHatLogo />,
                 title: 'cluster.create.redhat.subtitle',
                 change: {
-                    insertControlData: controlDataOST,
+                    insertControlData: getControlDataOST(),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -147,7 +147,7 @@ export const controlData = [
                 logo: <BaremetalLogo />,
                 title: 'cluster.create.baremetal.subtitle',
                 change: {
-                    insertControlData: controlDataBMC,
+                    insertControlData: getControlDataBMC(),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },

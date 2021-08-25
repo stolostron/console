@@ -14,6 +14,11 @@ import {
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
+export const getControlDataVMW = (includeAutomation = true) => {
+    if (includeAutomation) return [...controlDataVMW, ...automationControlData]
+    return [...controlDataVMW]
+}
+
 const controlDataVMW = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -256,7 +261,6 @@ const controlDataVMW = [
         active: '',
         validation: VALIDATE_IP,
     },
-    ...automationControlData,
 ]
 
-export default controlDataVMW
+export default getControlDataVMW
