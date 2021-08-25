@@ -117,7 +117,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             historyApiFallback: true,
             compress: true,
             https: true,
-            hot: 'only',
+            hot: true,
             static: {
                 publicPath: '/multicloud',
             },
