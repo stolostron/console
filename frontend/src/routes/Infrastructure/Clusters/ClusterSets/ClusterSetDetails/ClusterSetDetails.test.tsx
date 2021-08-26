@@ -202,6 +202,7 @@ const mockManagedClusterNoCredentialsSubmarinerConfig: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
             name: mockManagedClusterNoCredentialsSecret.metadata.name!,
@@ -236,6 +237,7 @@ const mockManagedClusterExtraSubmarinerConfig: SubmarinerConfig = {
             },
         },
         IPSecNATTPort: submarinerConfigDefault.nattPort,
+        NATTEnable: submarinerConfigDefault.nattEnable,
         cableDriver: submarinerConfigDefault.cableDriver,
         credentialsSecret: {
             name: mockManagedClusterExtraSecret.metadata.name!,
@@ -451,6 +453,11 @@ describe('ClusterSetDetails page', () => {
                 op: 'replace',
                 path: '/spec/IPSecNATTPort',
                 value: submarinerConfigDefault.nattPort,
+            },
+            {
+                op: 'replace',
+                path: '/spec/NATTEnable',
+                value: submarinerConfigDefault.nattEnable,
             },
             {
                 op: 'replace',
