@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import React from 'react'
 import DetailsForm from '../components/assisted-installer/DetailsForm'
 import NetworkForm from '../components/assisted-installer/NetworkForm'
 import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
