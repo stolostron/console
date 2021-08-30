@@ -3,9 +3,8 @@
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import CompressionPlugin from 'compression-webpack-plugin'
 import CopyPlugin from 'copy-webpack-plugin'
-import * as webpack from 'webpack'
+import webpack from 'webpack'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
-import { Configuration, WebpackPluginInstance } from 'webpack'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 import * as path from 'path'
 
@@ -18,30 +17,30 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development'),
             'process.env.REACT_APP_BACKEND_HOST': JSON.stringify('https://localhost:4000'),
             'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
-        }) as unknown as WebpackPluginInstance,
+        }) as unknown as webpack.WebpackPluginInstance,
         new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
         new MonacoWebpackPlugin({ languages: ['yaml'] }),
         new HtmlWebpackPlugin({ template: './public/index.html' }),
-    ].filter(Boolean) as WebpackPluginInstance[]
+    ].filter(Boolean) as webpack.WebpackPluginInstance[]
 
     if (isProduction) {
         plugins.push(
             new CopyPlugin({
                 patterns: [{ from: 'public', globOptions: { ignore: ['**/*.html'] } }],
-            }) as unknown as WebpackPluginInstance
+            }) as unknown as webpack.WebpackPluginInstance
         )
-        plugins.push(new CompressionPlugin({ algorithm: 'gzip' }) as unknown as WebpackPluginInstance)
+        plugins.push(new CompressionPlugin({ algorithm: 'gzip' }) as unknown as webpack.WebpackPluginInstance)
         plugins.push(
             new CompressionPlugin({
                 algorithm: 'brotliCompress',
                 filename: '[path][base].br',
-            }) as unknown as WebpackPluginInstance
+            }) as unknown as webpack.WebpackPluginInstance
         )
     } else {
         plugins.push(new webpack.HotModuleReplacementPlugin())
     }
 
-    const config: Configuration & { devServer: DevServerConfiguration } = {
+    const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
         entry: ['react-hot-loader/patch', './src/index.tsx'],
         resolve: {
             extensions: ['.ts', '.tsx', '.js', '.jsx'],
