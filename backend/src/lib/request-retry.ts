@@ -108,7 +108,7 @@ export function requestRetry(options: {
                     }
                 })
                 .on('error', (err) => {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
                     if ((err as any).code !== 'ABORT_ERR') {
                         throw err
                     }
