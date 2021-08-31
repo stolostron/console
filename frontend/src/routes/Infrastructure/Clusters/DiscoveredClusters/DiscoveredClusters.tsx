@@ -1,11 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    DiscoveredCluster,
-    DiscoveryConfig,
-    ProviderConnection,
-    unpackProviderConnection,
-} from '@open-cluster-management/resources'
+import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
 import {
     AcmButton,
     AcmDropdown,

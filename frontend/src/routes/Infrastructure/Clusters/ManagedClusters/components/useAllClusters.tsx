@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, mapClusters } from '@open-cluster-management/resources'
+import { Cluster, mapClusters } from '../../../../../resources'
 import { useMemo } from 'react'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterPool, ClusterStatus, ManagedClusterSet } from '@open-cluster-management/resources'
+import { ClusterPool, ClusterStatus, ManagedClusterSet } from '../../../../../resources'
 import { AcmInlineStatusGroup } from '@open-cluster-management/ui-components'
 import { useClusters } from './useClusters'
 

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterCuratorDefinition, ClusterStatus, ManagedClusterDefinition } from '@open-cluster-management/resources'
+import { ClusterCuratorDefinition, ClusterStatus, ManagedClusterDefinition } from '../../../../../../resources'
 import {
     AcmButton,
     AcmDescriptionList,

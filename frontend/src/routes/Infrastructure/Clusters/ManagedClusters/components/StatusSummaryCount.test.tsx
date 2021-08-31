@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterStatus, PolicyReport } from '@open-cluster-management/resources'
+import { Cluster, ClusterStatus, PolicyReport } from '../../../../../resources'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'

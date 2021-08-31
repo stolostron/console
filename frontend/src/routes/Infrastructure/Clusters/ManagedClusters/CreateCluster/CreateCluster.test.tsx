@@ -28,7 +28,7 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'

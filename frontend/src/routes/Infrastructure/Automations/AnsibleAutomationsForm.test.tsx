@@ -10,7 +10,7 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
-} from '@open-cluster-management/resources'
+} from '../../../resources'
 import { Provider } from '@open-cluster-management/ui-components/lib/AcmProvider'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -19,7 +19,7 @@ import { clusterCuratorsState, namespacesState, secretsState } from '../../../at
 import { nockAnsibleTower, nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { clickByPlaceholderText, clickByText, typeByPlaceholderText, waitForNock } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { AnsibleTowerJobTemplateList } from '@open-cluster-management/resources/src/ansible-job'
+import { AnsibleTowerJobTemplateList } from '../../../resources'
 import AnsibleAutomationsFormPage from './AnsibleAutomationsForm'
 
 const mockNamespaces: Namespace[] = [

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import { getSecret, unpackSecret } from '@open-cluster-management/resources'
+import { getSecret, unpackSecret } from '../../../../../resources'
 import {
     AcmButton,
     AcmIcon,

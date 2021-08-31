@@ -12,7 +12,7 @@ import {
     CuratorCondition,
     DistributionInfo,
     ResourceAttributes,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import * as nock from 'nock'
 import { RecoilRoot } from 'recoil'

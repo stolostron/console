@@ -4,7 +4,7 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'
 import isMatch from 'lodash/isMatch'
-import { patchResource } from '@open-cluster-management/resources'
+import { patchResource } from '../../../../../../resources'
 import {
     agentClusterInstallsState,
     agentsState,

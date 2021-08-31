@@ -34,7 +34,18 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             rules: [
                 { test: /\.hbs$/, loader: 'raw-loader', exclude: /node_modules/ },
                 { test: /\.css$/, use: ['style-loader', 'css-loader'] },
-                { test: /\.(svg|ttf|eot|woff|woff2|jpg|jpeg|png|gif)$/, use: 'file-loader' },
+                {
+                    test: /\.(svg|ttf|eot|woff|woff2)$/,
+                    include: [
+                        path.resolve(__dirname, 'node_modules/patternfly/dist/fonts'),
+                        path.resolve(__dirname, 'node_modules/@patternfly/react-core/dist/styles/assets/fonts'),
+                        path.resolve(__dirname, 'node_modules/@patternfly/react-core/dist/styles/assets/pficon'),
+                        path.resolve(__dirname, 'node_modules/@patternfly/patternfly/assets/fonts'),
+                        path.resolve(__dirname, 'node_modules/@patternfly/patternfly/assets/pficon'),
+                    ],
+                    use: { loader: 'file-loader', options: { limit: 5000, outputPath: 'fonts', name: '[name].[ext]' } },
+                },
+                { test: /\.(svg|jpg|jpeg|png|gif)$/, loader: 'file-loader' },
                 {
                     test: /\.(ts|tsx|js|jsx)$/,
                     include: path.join(__dirname, 'src'),

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { NodeInfo } from '@open-cluster-management/resources'
+import { NodeInfo } from '../../../../../resources'
 import { AcmAlert, Provider } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext } from 'react'

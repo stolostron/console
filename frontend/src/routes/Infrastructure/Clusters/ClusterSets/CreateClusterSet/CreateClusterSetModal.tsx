@@ -5,7 +5,7 @@ import {
     ManagedClusterSet,
     ManagedClusterSetApiVersion,
     ManagedClusterSetKind,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import {
     AcmAlertContext,
     AcmAlertGroup,

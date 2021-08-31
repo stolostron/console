@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    IResource,
-    ManagedClusterAddOn,
-    ResourceError,
-    ResourceErrorCode,
-    SubmarinerConfig,
-} from '@open-cluster-management/resources'
+import { IResource, ManagedClusterAddOn, ResourceError, ResourceErrorCode, SubmarinerConfig } from '../resources'
 import { deleteResources } from './delete-resources'
 
 export function deleteSubmarinerAddon(managedClusterAddon: ManagedClusterAddOn, submarinerConfig?: SubmarinerConfig) {

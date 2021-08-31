@@ -5,7 +5,7 @@ import {
     ManagedClusterSet,
     ManagedClusterSetDefinition,
     ResourceErrorCode,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'

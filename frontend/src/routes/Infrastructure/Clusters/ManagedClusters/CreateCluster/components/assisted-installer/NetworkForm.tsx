@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { NetworkConfigurationValues } from 'openshift-assisted-ui-lib/dist/src/common/types/clusters'
-import { patchResource, ClusterDeploymentKind } from '@open-cluster-management/resources'
+import { patchResource, ClusterDeploymentKind } from '../../../../../../../resources'
 
 import { agentClusterInstallsState, agentsState, clusterDeploymentsState } from '../../../../../../../atoms'
 

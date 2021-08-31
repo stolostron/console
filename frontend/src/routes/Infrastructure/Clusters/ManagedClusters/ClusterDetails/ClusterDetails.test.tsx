@@ -27,7 +27,7 @@ import {
     PodKind,
     PodList,
     SelfSubjectAccessReview,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { AcmRoute } from '@open-cluster-management/ui-components'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterPool, patchResource } from '@open-cluster-management/resources'
+import { ClusterPool, patchResource } from '../../../../../resources'
 import {
     AcmAlertContext,
     AcmAlertGroup,

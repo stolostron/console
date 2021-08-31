@@ -9,7 +9,7 @@ import {
     mapAddons,
     mapClusters,
     ResourceErrorCode,
-} from '@open-cluster-management/resources'
+} from '../../../../resources'
 import {
     AcmAlertContext,
     AcmButton,

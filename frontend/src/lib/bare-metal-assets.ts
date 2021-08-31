@@ -11,7 +11,7 @@ import {
     listBareMetalAssets,
     patchResource,
     Secret,
-} from '@open-cluster-management/resources'
+} from '../resources'
 import yaml from 'js-yaml'
 import { get, keyBy, set } from 'lodash'
 

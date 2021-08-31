@@ -8,7 +8,7 @@ import {
     SecretApiVersion,
     SecretKind,
     SelfSubjectAccessReview,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { Provider } from '@open-cluster-management/ui-components'
 
 export const mockDiscoveredClusters: DiscoveredCluster[] = [

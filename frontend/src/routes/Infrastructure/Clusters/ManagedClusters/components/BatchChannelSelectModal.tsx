@@ -10,7 +10,7 @@ import {
     patchResource,
     ResourceError,
     ResourceErrorCode,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { AcmSelect } from '@open-cluster-management/ui-components'
 import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'

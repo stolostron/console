@@ -14,7 +14,7 @@ import {
     SecretApiVersion,
     SecretKind,
     unpackSecret,
-} from '@open-cluster-management/resources'
+} from '../../../resources'
 import {
     AcmAlertContext,
     AcmAlertGroup,

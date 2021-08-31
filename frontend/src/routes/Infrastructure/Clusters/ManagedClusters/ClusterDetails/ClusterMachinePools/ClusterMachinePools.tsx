@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterStatus, deleteResource, MachinePool } from '@open-cluster-management/resources'
+import { ClusterStatus, deleteResource, MachinePool } from '../../../../../../resources'
 import {
     AcmEmptyState,
     AcmPageContent,

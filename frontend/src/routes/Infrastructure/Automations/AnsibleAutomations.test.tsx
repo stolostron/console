@@ -8,7 +8,7 @@ import {
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
     Secret,
-} from '@open-cluster-management/resources'
+} from '../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'

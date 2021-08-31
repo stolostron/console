@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '@open-cluster-management/resources'
+import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../resources'
 import {
     AcmAlert,
     AcmForm,

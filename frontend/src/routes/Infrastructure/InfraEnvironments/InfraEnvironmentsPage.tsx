@@ -21,10 +21,10 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { acmRouteState, agentsState, infraEnvironmentsState } from '../../../atoms'
 import { NavigationPath } from '../../../NavigationPath'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { deleteResource } from '@open-cluster-management/resources'
 import { fitContent } from '@patternfly/react-table'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { RbacDropdown } from '../../../components/Rbac'
+import { deleteResource } from '../../../resources'
 
 const InfraEnvironmentsPage: React.FC = () => {
     const [, setRoute] = useRecoilState(acmRouteState)

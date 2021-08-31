@@ -9,7 +9,7 @@ import {
     ManagedClusterDefinition,
     patchResource,
     ResourceErrorCode,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { AcmInlineProvider, Provider } from '@open-cluster-management/ui-components'
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'

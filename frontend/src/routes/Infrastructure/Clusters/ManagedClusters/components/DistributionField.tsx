@@ -8,7 +8,7 @@ import {
     ClusterStatus,
     CuratorCondition,
     getLatestAnsibleJob,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'

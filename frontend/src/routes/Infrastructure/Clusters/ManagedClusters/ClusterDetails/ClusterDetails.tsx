@@ -10,7 +10,7 @@ import {
     mapAddons,
     ResourceError,
     SecretDefinition,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import {
     AcmActionGroup,
     AcmButton,

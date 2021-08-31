@@ -9,7 +9,7 @@ import {
     ProviderConnectionKind,
     ResourceAttributes,
     Secret,
-} from '@open-cluster-management/resources'
+} from '../../resources'
 import { Provider } from '@open-cluster-management/ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'

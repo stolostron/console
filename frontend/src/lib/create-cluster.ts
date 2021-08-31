@@ -8,7 +8,7 @@ import {
     IResource,
     ManagedClusterApiVersion,
     ManagedClusterKind,
-} from '@open-cluster-management/resources'
+} from '../resources'
 import { get, keyBy } from 'lodash'
 import { attachBMAs, syncBMAs } from './bare-metal-assets'
 import { deleteResources } from './delete-resources'

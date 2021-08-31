@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import { createSubjectAccessReview, ResourceAttributes } from '@open-cluster-management/resources'
+import { createSubjectAccessReview, ResourceAttributes } from '../resources'
 import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
 import { ButtonProps } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'

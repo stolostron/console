@@ -11,7 +11,7 @@ import {
     ManagedClusterApiVersion,
     ManagedClusterDefinition,
     ManagedClusterKind,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'

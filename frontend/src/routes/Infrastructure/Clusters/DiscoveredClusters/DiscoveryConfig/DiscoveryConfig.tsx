@@ -10,7 +10,7 @@ import {
     replaceDiscoveryConfig,
     ResourceError,
     Secret,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import {
     AcmAlertContext,
     AcmButton,

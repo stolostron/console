@@ -1,14 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import {
-    Cluster,
-    ClusterProvision,
-    ClusterStatus,
-    ConfigMap,
-    getHivePod,
-    getLatest,
-} from '@open-cluster-management/resources'
+import { Cluster, ClusterProvision, ClusterStatus, ConfigMap, getHivePod, getLatest } from '../../../../../resources'
 import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'

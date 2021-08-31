@@ -9,7 +9,7 @@ import {
     patchResource,
     ResourceError,
     ResourceErrorCode,
-} from '@open-cluster-management/resources'
+} from '../resources'
 
 export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add' | 'replace', value?: string) {
     const patch: { op: 'remove' | 'add' | 'replace'; path: string; value?: string } = {

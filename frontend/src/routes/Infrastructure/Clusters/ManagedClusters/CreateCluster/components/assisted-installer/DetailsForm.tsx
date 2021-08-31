@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useCallback, useEffect, useState } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { ClusterImageSet, listClusterImageSets, Secret } from '@open-cluster-management/resources'
+import { ClusterImageSet, listClusterImageSets, Secret } from '../../../../../../../resources'
 import { ClusterDetailsValues } from 'openshift-assisted-ui-lib/dist/src/common'
 
 const { ACMClusterDeploymentDetailsStep } = CIM

@@ -1,17 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    addonPathKey,
-    addonTextKey,
-    Cluster,
-    ClusterDeployment,
-    ClusterDeploymentDefinition,
-    ClusterStatus,
-    ManagedClusterDefinition,
-    patchResource,
-    ResourceErrorCode,
-} from '@open-cluster-management/resources'
-import {
     AcmAlertContext,
     AcmEmptyState,
     AcmInlineProvider,
@@ -33,6 +22,17 @@ import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
+import {
+    addonPathKey,
+    addonTextKey,
+    Cluster,
+    ClusterDeployment,
+    ClusterDeploymentDefinition,
+    ClusterStatus,
+    ManagedClusterDefinition,
+    patchResource,
+    ResourceErrorCode,
+} from '../../../../resources'
 import { usePageContext } from '../Clusters'
 import { DiscoveryBanner } from '../DiscoveredClusters/DiscoveryComponents/Banner'
 import { AddCluster } from './components/AddCluster'

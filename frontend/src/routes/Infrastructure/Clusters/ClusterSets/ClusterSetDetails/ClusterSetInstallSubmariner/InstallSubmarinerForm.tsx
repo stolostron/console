@@ -17,7 +17,7 @@ import {
     SubmarinerConfigApiVersion,
     submarinerConfigDefault,
     SubmarinerConfigKind,
-} from '@open-cluster-management/resources'
+} from '../../../../../../resources'
 import {
     AcmAlert,
     AcmButton,

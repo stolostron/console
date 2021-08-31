@@ -30,11 +30,11 @@ import {
     filterForTemplatedCurators,
     createClusterCurator,
     patchResource,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { createCluster } from '../../../../../lib/create-cluster'
-import { ProviderConnection, unpackProviderConnection } from '@open-cluster-management/resources'
-import { Secret } from '@open-cluster-management/resources'
-import { createResource as createResourceTool } from '@open-cluster-management/resources'
+import { ProviderConnection, unpackProviderConnection } from '../../../../../resources'
+import { Secret } from '../../../../../resources'
+import { createResource as createResourceTool } from '../../../../../resources'
 import { FeatureGates } from '../../../../../FeatureGates'
 import { getNetworkingPatches } from '../components/cim/utils'
 interface CreationStatus {

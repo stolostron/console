@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next'
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory } from 'react-router'
 import TemplateEditor from 'temptifly'
-import { createResource, createProject } from '@open-cluster-management/resources'
 
 import { NavigationPath } from '../../../NavigationPath'
 import infraEnvTemplate from './infraenv-template.hbs'
@@ -19,6 +18,7 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import '../Clusters/ManagedClusters/CreateCluster/style.css'
 import 'temptifly/dist/styles.css'
+import { createProject, createResource } from '../../../resources'
 
 const controlData = [
     {
