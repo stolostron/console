@@ -62,8 +62,8 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             rules: [
                 {
                     test: /\.hbs$/,
-                    exclude: /node_modules/,
                     loader: 'raw-loader',
+                    exclude: /node_modules/,
                 },
                 {
                     test: /\.(css)$/,
@@ -71,13 +71,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 },
                 {
                     test: /\.(svg|ttf|eot|woff|woff2|jpg|jpeg|png|gif)$/,
-                    use: {
-                        loader: 'file-loader',
-                        options: {
-                            outputPath: 'assets',
-                            name: '[name].[contenthash:8].[ext]',
-                        },
-                    },
+                    use: 'file-loader',
                 },
                 {
                     test: /\.(ts|tsx|js|jsx)$/,
@@ -93,14 +87,14 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             path: path.resolve(__dirname, 'dist'),
             clean: true,
         },
-        optimization: {
-            runtimeChunk: 'single',
-            splitChunks: {
-                cacheGroups: {
-                    vendor: { test: /[\\/]node_modules[\\/]/, name: 'vendors', chunks: 'all' },
-                },
-            },
-        },
+        // optimization: {
+        //     runtimeChunk: 'single',
+        //     splitChunks: {
+        //         cacheGroups: {
+        //             vendor: { test: /[\\/]node_modules[\\/]/, name: 'vendors', chunks: 'all' },
+        //         },
+        //     },
+        // },
         devServer: {
             port: 3000,
             proxy: {
