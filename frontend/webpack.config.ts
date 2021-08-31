@@ -82,7 +82,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         ].filter(Boolean) as webpack.WebpackPluginInstance[],
         output: {
             publicPath: isProduction ? '/multicloud' : '/',
-            path: path.resolve(__dirname, 'dist'),
+            path: path.resolve(__dirname, 'build'),
             clean: true,
         },
         // optimization: {
