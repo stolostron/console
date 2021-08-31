@@ -61,6 +61,7 @@
         "css-loader": "^6.2.0",
         "eslint-plugin-jest": "^24.4.0",
         "eslint-plugin-react": "^7.24.0",
+        "eslint-plugin-react-hooks": "^4.2.0",
         "file-loader": "^6.2.0",
         "handlebars": "^4.7.7",
         "handlebars-loader": "^1.7.1",
@@ -119,6 +120,10 @@
         "yup": "^0.28.3"
     },
     "eslintConfig": {
+        "parser": "@typescript-eslint/parser",
+        "parserOptions": {
+            "project": "./tsconfig.json"
+        },
         "extends": [
             "eslint:recommended",
             "plugin:@typescript-eslint/recommended",
@@ -127,12 +132,9 @@
         "plugins": [
             "react",
             "@typescript-eslint",
-            "jest"
+            "jest",
+            "react-hooks"
         ],
-        "parser": "@typescript-eslint/parser",
-        "parserOptions": {
-            "project": "./tsconfig.json"
-        },
         "rules": {
             "@typescript-eslint/no-non-null-assertion": "off",
             "react/react-in-jsx-scope": "off",
