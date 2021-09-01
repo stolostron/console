@@ -5,6 +5,7 @@
 .PHONY: install
 install:
 	npm ci --no-optional
+	npm run postinstall
 
 .PHONY: build
 build:
