@@ -187,5 +187,8 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
+    },
+    "dependencies": {
+        "@types/js-yaml": "^4.0.3"
     }
 }
