@@ -15,7 +15,7 @@
         "eslint:fix": "eslint src test --ext .ts --fix",
         "prettier": "prettier --check src test",
         "prettier:fix": "prettier --write src test",
-        "update": "npx npm-check-updates --doctor --update && npm audit fix && npm dedup"
+        "update": "npx npm-check-updates --doctor --upgrade && npm audit fix && npm dedup"
     },
     "dependencies": {
         "abort-controller": "^3.0.0",

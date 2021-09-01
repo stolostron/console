@@ -13,7 +13,7 @@
         "eslint:fix": "eslint src test --ext .ts --fix",
         "prettier": "prettier --check src public",
         "prettier:fix": "prettier --write src public",
-        "update": "npx npm-check-updates --doctor --update && npm audit fix && npm dedup"
+        "update": "npx npm-check-updates --doctor --upgrade && npm audit fix && npm dedup"
     },
     "devDependencies": {
         "@babel/core": "^7.15.0",
