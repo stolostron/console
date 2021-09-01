@@ -52,7 +52,7 @@ export function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
                 if (response.headers[header]) responseHeaders[header] = response.headers[header]
             }
             res.writeHead(response.statusCode ?? 500, responseHeaders)
-            pipeline(response, (res as unknown) as NodeJS.WritableStream, () => logger.error)
+            pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
         }),
         (err) => {
             if (err) logger.error(err)
