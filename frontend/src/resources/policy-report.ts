@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta } from '@kubernetes/client-node/dist'
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 
 export const PolicyReportApiVersion = 'wgpolicyk8s.io/v1alpha2'
 export type PolicyReportApiVersionType = 'wgpolicyk8s.io/v1alpha2'

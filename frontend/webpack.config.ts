@@ -1,16 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable @typescript-eslint/no-var-requires */
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
-import HtmlWebpackPlugin from 'html-webpack-plugin'
 import CompressionPlugin from 'compression-webpack-plugin'
 import CopyPlugin from 'copy-webpack-plugin'
-import webpack from 'webpack'
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
-import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 import * as path from 'path'
 import ReactRefreshTypeScript from 'react-refresh-typescript'
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
+import TsImportPlugin from 'ts-import-plugin'
+import webpack from 'webpack'
+import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 
 module.exports = function (_env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
@@ -47,10 +48,16 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                     options: {
                         configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
                         transpileOnly: true,
-                        ...(isDevelopment && {
-                            getCustomTransformers: () => ({
-                                before: [ReactRefreshTypeScript()],
-                            }),
+                        getCustomTransformers: () => ({
+                            before: [
+                                TsImportPlugin([
+                                    {
+                                        libraryName: '@patternfly/react-icons',
+                                        libraryDirectory: 'dist/js/icons',
+                                    },
+                                ]),
+                                isDevelopment && ReactRefreshTypeScript(),
+                            ].filter(Boolean),
                         }),
                     },
                     type: 'javascript/auto',
