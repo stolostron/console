@@ -7,14 +7,14 @@
         "postinstall": "[ ! -d ./certs ] && yarn run generate-certs || true",
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt",
         "build": "tsc --sourceMap false --declaration false",
-        "build:noEmit": "tsc --noEmit",
+        "tsc:noEmit": "tsc --noEmit",
         "clean": "rm -rf coverage build",
-        "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:build:noEmit -c green,blue,cyan,magenta",
+        "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc:noEmit -c green,blue,cyan,magenta",
         "jest": "jest",
         "eslint": "eslint src test --ext .ts --max-warnings=0",
         "eslint:fix": "eslint src test --ext .ts --fix",
-        "prettier": "prettier --check **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
-        "prettier:fix": "prettier --write **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
+        "prettier": "prettier --check src test",
+        "prettier:fix": "prettier --write src test",
         "update": "npx npm-check-updates --doctor --update && npm audit fix && npm dedup"
     },
     "dependencies": {

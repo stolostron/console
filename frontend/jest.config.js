@@ -15,9 +15,12 @@ module.exports = {
     watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
     moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx'],
     transform: {
+        '^.+\\.jsx?$': 'babel-jest',
+        '^.+\\.tsx?$': 'ts-jest',
         '^.+\\.hbs$': 'jest-raw-loader',
         '\\.(css|less)$': 'jest-raw-loader',
     },
+    transformIgnorePatterns: ['node_modules/(?!d3-interpolate|d3-color)'],
     coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
     bail: true,
 }

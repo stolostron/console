@@ -5,14 +5,14 @@
     "scripts": {
         "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children",
         "build": "TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
-        "build:noEmit": "tsc --noEmit",
+        "tsc:noEmit": "tsc --noEmit",
         "clean": "rm -rf coverage build",
-        "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:build:noEmit -c green,blue,cyan,magenta",
-        "jest": "jest",
+        "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc:noEmit -c green,blue,cyan,magenta",
+        "jest": "jest --runInBand",
         "eslint": "eslint src --ext .ts --max-warnings=0",
         "eslint:fix": "eslint src test --ext .ts --fix",
-        "prettier": "prettier --check **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
-        "prettier:fix": "prettier --write **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
+        "prettier": "prettier --check src public",
+        "prettier:fix": "prettier --write src public",
         "update": "npx npm-check-updates --doctor --update && npm audit fix && npm dedup"
     },
     "devDependencies": {
