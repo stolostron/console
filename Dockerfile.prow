@@ -2,21 +2,21 @@
 
 FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as frontend
 WORKDIR /app/frontend
-COPY ./frontend/package.json .
+COPY ./frontend/package-lock.json ./frontend/package.json ./
 RUN npm ci --no-optional
 COPY ./frontend .
-RUN npm build
+RUN npm run build
 
 FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as backend
 WORKDIR /app/backend
-COPY ./backend/package.json .
+COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --no-optional
 COPY ./backend .
-RUN npm build
+RUN npm run build
 
 FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as production
 WORKDIR /app/backend
-COPY ./backend/package.json .
+COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --no-optional --only=production
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal

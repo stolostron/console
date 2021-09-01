@@ -38,6 +38,7 @@
         "@types/css-minimizer-webpack-plugin": "^3.0.2",
         "@types/get-value": "^3.0.2",
         "@types/jest": "^27.0.1",
+        "@types/js-yaml": "^4.0.3",
         "@types/lodash": "^4.14.172",
         "@types/mini-css-extract-plugin": "^2.2.0",
         "@types/node": "^16.7.10",
@@ -112,6 +113,7 @@
         "ts-import-plugin": "^1.6.7",
         "ts-jest": "^27.0.5",
         "ts-loader": "^9.2.5",
+        "ts-node": "^10.2.1",
         "tsconfig-paths": "^3.11.0",
         "type-fest": "^2.1.0",
         "typescript": "^4.4.2",
@@ -188,8 +190,5 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
-    },
-    "dependencies": {
-        "@types/js-yaml": "^4.0.3"
     }
 }
