@@ -9,6 +9,8 @@ import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 import * as path from 'path'
 import ReactRefreshTypeScript from 'react-refresh-typescript'
+import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 
 module.exports = function (_env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
@@ -33,24 +35,11 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         module: {
             rules: [
                 { test: /\.hbs$/, loader: 'raw-loader', exclude: /node_modules/ },
+                { test: /\.(jpg|jpeg|png|gif|svg|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
-                    test: /\.(svg|ttf|eot|woff|woff2)$/,
-                    loader: 'file-loader',
-                    include: [
-                        path.resolve(__dirname, 'node_modules/patternfly/dist/fonts'),
-                        path.resolve(__dirname, 'node_modules/@patternfly/react-core/dist/styles/assets/fonts'),
-                        path.resolve(__dirname, 'node_modules/@patternfly/react-core/dist/styles/assets/pficon'),
-                        path.resolve(__dirname, 'node_modules/@patternfly/patternfly/assets/fonts'),
-                        path.resolve(__dirname, 'node_modules/@patternfly/patternfly/assets/pficon'),
-                    ],
-                    options: { name: '[name].[contenthash:8].[ext]' },
+                    test: /\.css$/,
+                    use: isDevelopment ? ['style-loader', 'css-loader'] : [MiniCssExtractPlugin.loader, 'css-loader'],
                 },
-                {
-                    test: /\.(svg|jpg|jpeg|png|gif)$/,
-                    loader: 'file-loader',
-                    options: { name: '[name].[contenthash:8].[ext]' },
-                },
-                { test: /\.css$/, use: ['style-loader', 'css-loader'] },
                 {
                     test: /\.(ts|tsx|js|jsx)$/,
                     exclude: /node_modules/,
@@ -64,6 +53,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                             }),
                         }),
                     },
+                    type: 'javascript/auto',
                 },
             ],
         },
@@ -84,23 +74,29 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             isDevelopment && new ReactRefreshWebpackPlugin(),
             // new HtmlWebpackPlugin({ title: 'test', favicon: 'public/favicon.svg' }),
             new HtmlWebpackPlugin({ template: './public/index.html' }),
+            new MiniCssExtractPlugin({
+                filename: '[name].[contenthash:8].css',
+                chunkFilename: '[id].[contenthash:8].css',
+                ignoreOrder: false, // Enable to remove warnings about conflicting order
+            }),
         ].filter(Boolean) as webpack.WebpackPluginInstance[],
         output: {
-            assetModuleFilename: '[name].[contenthash:8].[ext]',
+            assetModuleFilename: 'assets/[name].[contenthash:8][ext][query]',
             filename: '[name].[contenthash:8].js',
             chunkFilename: '[name].[contenthash:8].js',
             publicPath: isProduction ? '/multicloud/' : '/',
             path: path.resolve(__dirname, 'build'),
             clean: true,
         },
-        // optimization: {
-        //     runtimeChunk: 'single',
-        //     splitChunks: {
-        //         cacheGroups: {
-        //             vendor: { test: /[\\/]node_modules[\\/]/, name: 'vendors', chunks: 'all' },
-        //         },
-        //     },
-        // },
+        optimization: {
+            //     runtimeChunk: 'single',
+            //     splitChunks: {
+            //         cacheGroups: {
+            //             vendor: { test: /[\\/]node_modules[\\/]/, name: 'vendors', chunks: 'all' },
+            //         },
+            //     },
+            minimizer: [`...`, new CssMinimizerPlugin()],
+        },
         devServer: {
             port: 3000,
             proxy: {
@@ -127,7 +123,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             client: {},
         },
         // devtool: isDevelopment && 'inline-source-map',
-        devtool: isDevelopment && 'eval-cheap-module-source-map',
+        devtool: isDevelopment ? 'eval-cheap-module-source-map' : 'source-map',
     }
 
     return config

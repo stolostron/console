@@ -1,15 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { createReadStream } from 'fs'
+import { createReadStream, Stats } from 'fs'
+import { stat } from 'fs/promises'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { extname } from 'path'
 import { pipeline } from 'stream'
-import { parseCookies } from '../lib/cookies'
 import { logger } from '../lib/logger'
-import { redirect } from '../lib/respond'
 
 const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=604800' : 'no-store'
 
-export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
+export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     try {
         let url = req.url
 
@@ -41,15 +40,25 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
             logger.debug('unknown content type', `ext=${ext}`)
             return res.writeHead(404).end()
         }
-        if (/\bgzip\b/.test(acceptEncoding)) {
+
+        const filePath = './public' + url
+        let stats: Stats
+        try {
+            stats = await stat(filePath)
+        } catch {
+            return res.writeHead(404).end()
+        }
+
+        if (/\bbr\b/.test(acceptEncoding)) {
             try {
-                const readStream = createReadStream('./public' + url + '.gz', { autoClose: true })
+                const brStats = await stat(filePath + '.br')
+                const readStream = createReadStream('./public' + url + '.br', { autoClose: true })
                 readStream
                     .on('open', () => {
                         res.writeHead(200, {
-                            [constants.HTTP2_HEADER_CONTENT_ENCODING]: 'gzip',
+                            [constants.HTTP2_HEADER_CONTENT_ENCODING]: 'br',
                             [constants.HTTP2_HEADER_CONTENT_TYPE]: contentType,
-                            // [constants.HTTP2_HEADER_CONTENT_LENGTH]: stats.size.toString(),
+                            [constants.HTTP2_HEADER_CONTENT_LENGTH]: brStats.size.toString(),
                         })
                     })
                     .on('error', (err) => {
@@ -59,27 +68,52 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
                 pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
                     // if (err) logger.error(err)
                 })
-            } catch (err) {
-                logger.error(err)
-                return res.writeHead(404).end()
+                return
+            } catch {
+                // Do nothing
             }
-        } else {
-            const readStream = createReadStream('./public' + url, { autoClose: true })
-            readStream
-                .on('open', () => {
-                    res.writeHead(200, {
-                        [constants.HTTP2_HEADER_CONTENT_TYPE]: contentType,
-                    })
-                })
-                .on('error', (err) => {
-                    // logger.error(err)
-                    res.writeHead(404).end()
-                })
-            pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
-                // if (err) logger.error(err)
-            })
         }
-        return
+
+        if (/\bgzip\b/.test(acceptEncoding)) {
+            try {
+                const gzStats = await stat(filePath + '.gz')
+                const readStream = createReadStream('./public' + url + '.gz', { autoClose: true })
+                readStream
+                    .on('open', () => {
+                        res.writeHead(200, {
+                            [constants.HTTP2_HEADER_CONTENT_ENCODING]: 'gzip',
+                            [constants.HTTP2_HEADER_CONTENT_TYPE]: contentType,
+                            [constants.HTTP2_HEADER_CONTENT_LENGTH]: gzStats.size.toString(),
+                        })
+                    })
+                    .on('error', (err) => {
+                        // logger.error(err)
+                        res.writeHead(404).end()
+                    })
+                pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
+                    // if (err) logger.error(err)
+                })
+                return
+            } catch {
+                // Do nothing
+            }
+        }
+
+        const readStream = createReadStream('./public' + url, { autoClose: true })
+        readStream
+            .on('open', () => {
+                res.writeHead(200, {
+                    [constants.HTTP2_HEADER_CONTENT_TYPE]: contentType,
+                    [constants.HTTP2_HEADER_CONTENT_LENGTH]: stats.size.toString(),
+                })
+            })
+            .on('error', (err) => {
+                // logger.error(err)
+                res.writeHead(404).end()
+            })
+        pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
+            // if (err) logger.error(err)
+        })
     } catch (err) {
         logger.error(err)
         return res.writeHead(404).end()
