@@ -48,19 +48,7 @@ Repo maintainers can assign you an issue or pull request by leaving a
 After your PR is ready to commit, please run following commands to check your code.
 
 ```bash
-yarn run check
-```
-
-If the check results in prettier or lint errors, you can have them automatically fixed by running:  
-
-```bash
-yarn run check:fix
-```
-
-After checking your code for prettier and lint errors, run the following command to unit test your code:  
-
-```bash
-yarn run test
+npm test
 ```
 
 ### Testing your change
@@ -73,8 +61,8 @@ This will run the code locally:
 *WARNING: Running this script will update some parts of the cluster specified in your `KUBECONFIG` context.*
 
 ```bash
-yarn run setup
-yarn start
+npm run setup
+npm start
 ```
 
 A new console will launch and after approximately 30 seconds you will see the RHACM console.

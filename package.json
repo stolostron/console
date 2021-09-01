@@ -3,25 +3,27 @@
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE",
     "private": "true",
-    "engines": {
-        "npm": "please-use-yarn",
-        "yarn": ">= 1.17.3",
-        "node": ">= 14"
-    },
-    "workspaces": [
-        "@open-cluster-management/*",
-        "routes/*",
-        "frontend",
-        "backend"
-    ],
     "scripts": {
-        "start": "concurrently yarn:frontend yarn:backend -n frontend,backend -c green,blue",
-        "clean": "workspaces-run --parallel -- rm -rf build dist lib coverage *.tsbuildinfo test-report.xml",
-        "build": "workspaces-run --parallel --order-by-deps -- NODE_OPTIONS=--max_old_space_size=8192 yarn run build",
-        "test": "workspaces-run --parallel -- NODE_OPTIONS=--max_old_space_size=8192 yarn test",
-        "lint": "workspaces-run --parallel -- yarn run lint",
-        "check": "workspaces-run --parallel -- yarn run check",
-        "setup": "./setup.sh",
+        "postinstall": "concurrently npm:frontend:ci npm:backend:ci -n frontend,backend -c green,blue",
+        "frontend:ci": "cd frontend && npm ci",
+        "backend:ci": "cd backend && npm ci",
+        "frontend:reinstall": "cd frontend && npm reinstall",
+        "backend:reinstall": "cd backend && npm reinstall",
+        "start": "concurrently npm:frontend npm:backend -n frontend,backend -c green,blue",
+        "backend": "cd backend && npm start",
+        "frontend": "cd frontend && npm start",
+        "test": "concurrently --kill-others-on-fail npm:frontend:test npm:backend:test -n frontend,backend -c green,blue",
+        "frontend:test": "cd frontend && npm test",
+        "backend:test": "cd backend && npm test",
+        "build": "concurrently npm:frontend:build npm:backend:build -n frontend,backend -c green,blue",
+        "backend:build": "cd backend && npm run build",
+        "frontend:build": "cd frontend && npm run build",
+        "clean": "concurrently npm:frontend:clean npm:backend:clean -n frontend,backend -c green,blue",
+        "backend:clean": "cd backend && npm run clean",
+        "frontend:clean": "cd frontend && npm run clean",
+        "update": "concurrently npm:frontend:update npm:backend:update -n frontend,backend -c green,blue",
+        "backend:update": "cd backend && npm run update",
+        "frontend:update": "cd frontend && npm run update",
         "copyright:check": "ts-node --skip-project util/copyright-check",
         "copyright:fix": "ts-node --skip-project util/copyright-fix",
         "docker:build": "docker build --file Dockerfile.prow --tag console .",
@@ -30,35 +32,14 @@
         "podman:build": "podman build --file Dockerfile.prow --tag console .",
         "podman:run": "npm run podman:build && podman run --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./node_modules/.bin/pino-zen -i time && podman rm -f console",
         "podman:deploy": "npm run podman:build && podman tag console quay.io/$USER/console:latest && podman push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
-        "reinstall": "yarn run clean && workspaces-run --parallel -- rm -rf node_modules && rm -rf node_modules && yarn install --frozen-lockfile",
-        "frontend": "cd frontend && NODE_OPTIONS=--max_old_space_size=8192 yarn start",
-        "backend": "cd backend && NODE_OPTIONS=--max_old_space_size=8192 yarn start",
-        "prettier": "prettier --check **/*.ts **/*.tsx **/*.json !**/coverage/** !**/lib/* !**/lib/** !**/build/** !**/package-lock.json",
-        "prettier:fix": "prettier --write **/*.ts **/*.tsx **/*.json !**/coverage/** !**/lib/* !**/lib/** !**/build/** !**/package-lock.json"
+        "setup": "./setup.sh",
+        "prepare": "husky install"
     },
     "devDependencies": {
-        "@types/jest": "^27.0.0",
         "@types/node": "^16.6.0",
         "concurrently": "^6.2.1",
         "husky": "^7.0.1",
-        "jest": "^27.0.6",
-        "prettier": "^2.3.2",
         "ts-node": "^10.2.0",
-        "typescript": "^4.3.5",
-        "workspaces-run": "^1.0.1"
-    },
-    "jest": {
-        "projects": [
-            "<rootDir>/backend",
-            "<rootDir>/frontend",
-            "<rootDir>/@open-cluster-management/**",
-            "<rootDir>/routes/**"
-        ]
-    },
-    "prettier": {
-        "printWidth": 120,
-        "tabWidth": 4,
-        "semi": false,
-        "singleQuote": true
+        "typescript": "^4.3.5"
     }
 }

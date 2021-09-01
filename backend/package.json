@@ -1,26 +1,21 @@
 {
-    "name": "@open-cluster-management/console-backend",
+    "name": "backend",
     "version": "0.0.1",
     "private": true,
-    "engines": {
-        "npm": "please-use-yarn",
-        "yarn": ">= 1.17.3",
-        "node": ">= 14"
-    },
     "scripts": {
-        "watch": "echo",
-        "postinstall": "[ ! -d ./certs ] && yarn run generate-certs || true",
-        "build": "tsc --sourceMap false --declaration false",
-        "clean": "rm -rf coverage build",
-        "test": "jest --verbose",
-        "test:update": "LOG_LEVEL=NONE yarn test -- -u",
-        "lint": "eslint src test --ext .ts --max-warnings=0",
-        "lint:fix": "eslint src test --ext .ts --fix",
-        "check": "prettier --check **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
-        "check:fix": "prettier --write **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
         "start": "source .env && PORT=4000 NODE_ENV=development ts-node-dev --no-notify --no-deps --respawn --transpile-only src/lib/main.ts | pino-zen -i time",
-        "update": "rm -rf package-lock.json node_modules && npx npm-check-updates --doctor -u && yarn install && yarn audit fix && yarn test && yarn run lint:fix && yarn run lint && yarn run check:fix",
-        "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt"
+        "postinstall": "[ ! -d ./certs ] && yarn run generate-certs || true",
+        "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt",
+        "build": "tsc --sourceMap false --declaration false",
+        "build:noEmit": "tsc --noEmit",
+        "clean": "rm -rf coverage build",
+        "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:build:noEmit -c green,blue,cyan,magenta",
+        "jest": "jest",
+        "eslint": "eslint src test --ext .ts --max-warnings=0",
+        "eslint:fix": "eslint src test --ext .ts --fix",
+        "prettier": "prettier --check **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
+        "prettier:fix": "prettier --write **/*.ts **/*.json !coverage/** !build/** !**/package-lock.json",
+        "update": "npx npm-check-updates --doctor --update && npm audit fix && npm dedup"
     },
     "dependencies": {
         "abort-controller": "^3.0.0",
@@ -41,6 +36,7 @@
         "@types/raw-body": "^2.3.0",
         "@typescript-eslint/eslint-plugin": "^4.29.1",
         "@typescript-eslint/parser": "^4.29.1",
+        "concurrently": "^6.2.1",
         "eslint": "^7.32.0",
         "jest": "^27.x.x",
         "nock": "^13.1.1",

@@ -4,25 +4,23 @@
 
 .PHONY: install
 install:
-	npm i -g yarn
-	yarn -v
-	yarn --frozen-lockfile --ignore-optional
+	npm ci --no-optional
 
 .PHONY: build
 build:
-	yarn run build
+	npm run build
 
 .PHONY: check
 check:
-	yarn run check
+	echo skip
 
 .PHONY: lint
 lint:
-	yarn run lint
+	echo skip
 
 .PHONY: unit-tests
 unit-tests:
 	if [ ! -d "test-output" ]; then \
 		mkdir test-output; \
 	fi
-	yarn run test
+	npm run test
