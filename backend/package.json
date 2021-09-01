@@ -2,6 +2,11 @@
     "name": "backend",
     "version": "0.0.1",
     "private": true,
+    "engines": {
+        "npm": "please-use-yarn",
+        "yarn": ">= 1.17.3",
+        "node": ">= 14"
+    },
     "scripts": {
         "start": "source .env && PORT=4000 NODE_ENV=development ts-node-dev --no-notify --no-deps --respawn --transpile-only src/lib/main.ts | pino-zen -i time",
         "postinstall": "[ ! -d ./certs ] && npm run generate-certs || true",

@@ -1,20 +1,20 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM packages as frontend
+FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as frontend
 WORKDIR /app/frontend
 COPY ./frontend/package.json .
 RUN npm ci --no-optional
 COPY ./frontent .
 RUN npm build
 
-FROM packages as backend
+FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as backend
 WORKDIR /app/backend
 COPY ./backend/package.json .
 RUN npm ci --no-optional
 COPY ./backend .
 RUN npm build
 
-FROM packages as production
+FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as production
 WORKDIR /app/backend
 COPY ./backend/package.json .
 RUN npm ci --no-optional --only=production
