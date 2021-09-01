@@ -33,9 +33,9 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         module: {
             rules: [
                 { test: /\.hbs$/, loader: 'raw-loader', exclude: /node_modules/ },
-                { test: /\.css$/, use: ['style-loader', 'css-loader'] },
                 {
                     test: /\.(svg|ttf|eot|woff|woff2)$/,
+                    loader: 'file-loader',
                     include: [
                         path.resolve(__dirname, 'node_modules/patternfly/dist/fonts'),
                         path.resolve(__dirname, 'node_modules/@patternfly/react-core/dist/styles/assets/fonts'),
@@ -43,12 +43,17 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                         path.resolve(__dirname, 'node_modules/@patternfly/patternfly/assets/fonts'),
                         path.resolve(__dirname, 'node_modules/@patternfly/patternfly/assets/pficon'),
                     ],
-                    use: { loader: 'file-loader', options: { limit: 5000, outputPath: 'fonts', name: '[name].[ext]' } },
+                    options: { name: '[name].[contenthash:8].[ext]' },
                 },
-                { test: /\.(svg|jpg|jpeg|png|gif)$/, loader: 'file-loader' },
+                {
+                    test: /\.(svg|jpg|jpeg|png|gif)$/,
+                    loader: 'file-loader',
+                    options: { name: '[name].[contenthash:8].[ext]' },
+                },
+                { test: /\.css$/, use: ['style-loader', 'css-loader'] },
                 {
                     test: /\.(ts|tsx|js|jsx)$/,
-                    include: path.join(__dirname, 'src'),
+                    exclude: /node_modules/,
                     loader: 'ts-loader',
                     options: {
                         configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
@@ -81,7 +86,10 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             new HtmlWebpackPlugin({ template: './public/index.html' }),
         ].filter(Boolean) as webpack.WebpackPluginInstance[],
         output: {
-            publicPath: isProduction ? '/multicloud' : '/',
+            assetModuleFilename: '[name].[contenthash:8].[ext]',
+            filename: '[name].[contenthash:8].js',
+            chunkFilename: '[name].[contenthash:8].js',
+            publicPath: isProduction ? '/multicloud/' : '/',
             path: path.resolve(__dirname, 'build'),
             clean: true,
         },
@@ -116,6 +124,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
             },
+            client: {},
         },
         // devtool: isDevelopment && 'inline-source-map',
         devtool: isDevelopment && 'eval-cheap-module-source-map',

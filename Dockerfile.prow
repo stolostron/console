@@ -1,19 +1,34 @@
 # Copyright Contributors to the Open Cluster Management project
-
-FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as builder
+FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as packages
 WORKDIR /app
-COPY . .
+COPY package.json yarn.lock ./
+COPY ./backend/package.json /app/backend/package.json
+COPY ./frontend/package.json /app/frontend/package.json
+
+FROM packages as builder
 RUN yarn install --frozen-lockfile --ignore-optional
+COPY . .
+
+FROM packages as prod-deps
+RUN yarn install --production --frozen-lockfile --ignore-optional
+
+FROM builder as backend
+COPY ./backend ./backend
+WORKDIR /app/backend
 RUN yarn run build
-RUN rm -rf node_modules && yarn install --frozen-lockfile --production --ignore-optional
+
+FROM builder as frontend
+COPY ./frontend ./frontend
+WORKDIR /app/frontend
+RUN yarn run build
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 COPY --from=builder /usr/bin/node /usr/bin/node
 WORKDIR /app
 ENV NODE_ENV production
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/backend/node_modules ./backend/node_modules
-COPY --from=builder /app/backend/build ./backend
-COPY --from=builder /app/frontend/build ./public
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=prod-deps /app/backend/node_modules ./backend/node_modules
+COPY --from=backend /app/backend/build ./backend
+COPY --from=frontend /app/frontend/build ./public
 USER 1001
 CMD ["node", "backend/lib/main.js"]

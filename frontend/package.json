@@ -47,7 +47,7 @@
         "@types/react-dom": "^17.0.9",
         "@types/react-router-dom": "^5.1.8",
         "@types/testing-library__jest-dom": "^5.14.1",
-        "@types/webpack": "^5.27.0",
+        "@types/validator": "^13.6.3",
         "@types/webpack-dev-server": "^4.0.0",
         "axios": "^0.19.2",
         "babel-jest": "^27.0.6",
@@ -112,6 +112,7 @@
         "typescript": "^4.3.5",
         "uuid": "8.1.0",
         "v8-compile-cache": "^2.3.0",
+        "validator": "^13.6.0",
         "webpack": "^5.51.1",
         "webpack-cli": "^4.8.0",
         "webpack-dev-server": "^4.0.0",
@@ -182,9 +183,5 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
-    },
-    "dependencies": {
-        "@types/validator": "^13.6.3",
-        "validator": "^13.6.0"
     }
 }
