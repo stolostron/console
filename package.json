@@ -21,7 +21,7 @@
         "clean": "concurrently npm:frontend:clean npm:backend:clean -n frontend,backend -c green,blue",
         "backend:clean": "cd backend && npm run clean",
         "frontend:clean": "cd frontend && npm run clean",
-        "update": "concurrently npm:frontend:update npm:backend:update -n frontend,backend -c green,blue",
+        "update": "npx npm-check-updates --upgrade && npm install && npm run backend:update && npm run frontend:update",
         "backend:update": "cd backend && npm run update",
         "frontend:update": "cd frontend && npm run update",
         "copyright:check": "ts-node --skip-project util/copyright-check",
