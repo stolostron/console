@@ -4,7 +4,7 @@ FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as
 WORKDIR /app/frontend
 COPY ./frontend/package.json .
 RUN npm ci --no-optional
-COPY ./frontent .
+COPY ./frontend .
 RUN npm build
 
 FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as backend
