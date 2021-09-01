@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterStatus, getSecret, ResourceError, Secret } from '@open-cluster-management/resources'
+import { ClusterStatus, getSecret, ResourceError, Secret } from '../../../../../resources'
 import { AcmAlert, AcmButton, AcmInlineCopy } from '@open-cluster-management/ui-components'
 import { onCopy } from '@open-cluster-management/ui-components/lib/utils'
 import {

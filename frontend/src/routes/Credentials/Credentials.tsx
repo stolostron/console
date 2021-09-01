@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    deleteResource,
-    DiscoveryConfig,
-    ProviderConnection,
-    Secret,
-    unpackProviderConnection,
-} from '@open-cluster-management/resources'
+import { deleteResource, DiscoveryConfig, ProviderConnection, Secret, unpackProviderConnection } from '../../resources'
 import {
     AcmButton,
     AcmEmptyState,

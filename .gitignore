@@ -3,7 +3,6 @@
 **/certs/
 **/node_modules/
 **/coverage/
-**/lib/
 **/dist/
 **/build/
 **/.eslintcache

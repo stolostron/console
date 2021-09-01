@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
+import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { Provider } from '@open-cluster-management/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../certificate-signing-requests'

@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    DiscoveredCluster,
-    DiscoveryConfig,
-    ProviderConnection,
-    unpackProviderConnection,
-} from '@open-cluster-management/resources'
-import {
     AcmButton,
     AcmDropdown,
     AcmEmptyState,
@@ -21,7 +15,7 @@ import {
     Provider,
 } from '@open-cluster-management/ui-components'
 import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
-import ExternalLinkIcon from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import * as moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -31,6 +25,7 @@ import { discoveredClusterState, discoveryConfigState, secretsState } from '../.
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { NavigationPath } from '../../../../NavigationPath'
+import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
 
 export default function DiscoveredClustersPage() {
     return (
@@ -228,7 +223,7 @@ export function DiscoveredClustersTable(props: {
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcName">
                     <a target="_blank" rel="noreferrer" href={discoveredCluster.spec.console} key="dcConsoleURL">
-                        <ExternalLinkIcon />
+                        <ExternalLinkAltIcon />
                         <span key="dcNamelink" style={{ marginLeft: '16px' }}>
                             {discoveredCluster.spec.displayName}
                         </span>

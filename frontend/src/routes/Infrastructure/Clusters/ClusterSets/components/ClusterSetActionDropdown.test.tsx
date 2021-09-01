@@ -7,7 +7,7 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetBindingsState, namespacesState } from '../../../../../atoms'

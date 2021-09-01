@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterImageSet, ClusterPool, patchResource } from '@open-cluster-management/resources'
+import { ClusterImageSet, ClusterPool, patchResource } from '../../../../../resources'
 import { AcmSelect } from '@open-cluster-management/ui-components'
 import { SelectOption } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'

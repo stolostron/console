@@ -6,7 +6,7 @@ import {
     managedClusterSetLabel,
     patchResource,
     ResourceErrorCode,
-} from '@open-cluster-management/resources'
+} from '../../../../../../resources'
 import {
     AcmAlertGroup,
     AcmButton,

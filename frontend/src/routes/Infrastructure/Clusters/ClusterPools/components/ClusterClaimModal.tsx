@@ -8,7 +8,7 @@ import {
     createResource,
     getResource,
     managedClusterSetLabel,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import {
     AcmAlertContext,
     AcmAlertGroup,

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterStatus } from '@open-cluster-management/resources'
+import { Cluster, ClusterStatus } from '../../../../../resources'
 import { AcmButton, AcmPageProcess } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from 'react-i18next'

@@ -40,8 +40,9 @@ process.on('SIGTERM', () => {
 })
 
 process.on('uncaughtException', (err) => {
-    logger.error({ msg: `process uncaughtException`, error: err.message })
-    console.log(err.stack)
+    // console.error(err)
+    // logger.error({ msg: `process uncaughtException`, error: err.message })
+    // console.log(err.stack)
 })
 
 process.on('multipleResolves', (type, _promise, reason) => {

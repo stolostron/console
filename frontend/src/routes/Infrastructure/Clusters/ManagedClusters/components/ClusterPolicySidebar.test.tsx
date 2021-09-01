@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ConfigMap, PolicyReport } from '@open-cluster-management/resources'
+import { ConfigMap, PolicyReport } from '../../../../../resources'
 import { act, render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { configMapsState } from '../../../../../atoms'

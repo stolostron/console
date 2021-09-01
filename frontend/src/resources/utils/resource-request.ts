@@ -4,7 +4,7 @@ import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource,
 import { Status, StatusKind } from '../status'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 
-export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
+export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}` + `${process.env.REACT_APP_BACKEND_PATH}`
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -378,6 +378,7 @@ export async function fetchRetry<T>(options: {
                         throw new ResourceError('Network error', ResourceErrorCode.NetworkError)
                     }
                 }
+                console.log(err)
                 throw new ResourceError(`Unknown error. code: ${(err as any)?.code}`, ResourceErrorCode.Unknown)
             }
         }

@@ -8,7 +8,7 @@ import {
     ClusterStatus,
     PodApiVersion,
     PodKind,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { clusterProvisionsState, configMapsState } from '../../../../../atoms'

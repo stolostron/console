@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 /* istanbul ignore file */
-import { AnsibleTowerJobTemplateList } from '@open-cluster-management/resources/src/ansible-job'
+import { AnsibleTowerJobTemplateList } from '../resources'
 import {
     ClusterRoleBinding,
     getResourceApiPath,
@@ -13,7 +13,7 @@ import {
     SelfSubjectAccessReviewKind,
     StatusApiVersion,
     StatusKind,
-} from '@open-cluster-management/resources'
+} from '../resources'
 import { isEqual } from 'lodash'
 import nock from 'nock'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'

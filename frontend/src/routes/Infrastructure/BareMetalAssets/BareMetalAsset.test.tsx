@@ -14,7 +14,7 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
-} from '@open-cluster-management/resources'
+} from '../../../resources'
 import { fireEvent, render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'

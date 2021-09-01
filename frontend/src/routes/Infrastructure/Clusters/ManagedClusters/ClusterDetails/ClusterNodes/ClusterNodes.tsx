@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { NodeInfo } from '@open-cluster-management/resources'
+import { NodeInfo } from '../../../../../../resources'
 import {
     AcmInlineStatus,
     AcmPageContent,

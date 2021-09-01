@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ManagedClusterSetDefinition } from '@open-cluster-management/resources'
+import { ManagedClusterSetDefinition } from '../../../../../../resources'
 import { AcmEmptyState, AcmPageContent } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useContext } from 'react'

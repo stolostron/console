@@ -6,7 +6,7 @@ import {
     patchResource,
     SubmarinerConfig,
     submarinerConfigDefault,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import {
     AcmAlertContext,
     AcmAlertGroup,

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useEffect, useState } from 'react'
-import { getResource, Secret, SecretApiVersion, SecretKind } from '@open-cluster-management/resources'
+import { getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 
 const { ClusterCredentials } = CIM
 

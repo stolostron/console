@@ -19,7 +19,7 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
-} from '@open-cluster-management/resources'
+} from '../resources'
 import { Provider } from '@open-cluster-management/ui-components'
 
 export const mockOpenShiftConsoleConfigMap: ConfigMap = {

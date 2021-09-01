@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta, V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { createResource, getResource, listResources, replaceResource } from './utils/resource-request'
 import { IResourceDefinition } from './resource'
 

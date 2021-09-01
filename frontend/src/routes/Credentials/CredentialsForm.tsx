@@ -8,7 +8,7 @@ import {
     Secret,
     SecretDefinition,
     unpackProviderConnection,
-} from '@open-cluster-management/resources'
+} from '../../resources'
 import {
     AcmEmptyState,
     AcmIcon,

@@ -10,7 +10,7 @@ import {
     ClusterPool,
     ClusterPoolApiVersion,
     ClusterPoolKind,
-} from '@open-cluster-management/resources'
+} from '../../../../resources'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'

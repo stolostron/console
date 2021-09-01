@@ -23,7 +23,7 @@ import {
     replaceResource,
     unpackProviderConnection,
     listAnsibleTowerJobs,
-} from '@open-cluster-management/resources'
+} from '../../../resources'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'

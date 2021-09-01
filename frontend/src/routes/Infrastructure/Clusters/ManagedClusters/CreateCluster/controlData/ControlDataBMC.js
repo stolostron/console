@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
+// eslint-disable-next-line no-use-before-define
+import React from 'react'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
@@ -18,7 +19,7 @@ import {
     VALIDATE_ALPHANUMERIC_PERIOD,
     VALIDATE_MAC_ADDRESS,
 } from 'temptifly'
-import { listBareMetalAssets } from '@open-cluster-management/resources'
+import { listBareMetalAssets } from '../../../../../../resources'
 import { withTranslation } from 'react-i18next'
 import WrappedImportBareMetalAssetsButton from '../components/WrappedImportBareMetalAssetsButton'
 import _ from 'lodash'

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ManagedClusterAddOn, ManagedClusterSetDefinition, ResourceErrorCode } from '@open-cluster-management/resources'
+import { ManagedClusterAddOn, ManagedClusterSetDefinition, ResourceErrorCode } from '../../../../../../resources'
 import {
     AcmButton,
     AcmEmptyState,

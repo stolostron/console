@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterStatus, Secret, SecretApiVersion, SecretKind } from '@open-cluster-management/resources'
+import { Cluster, ClusterStatus, Secret, SecretApiVersion, SecretKind } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { mockBadRequestStatus, nockGet } from '../../../../../lib/nock-util'

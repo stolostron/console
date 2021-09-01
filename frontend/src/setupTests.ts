@@ -9,6 +9,12 @@
 import '@testing-library/jest-dom/extend-expect'
 import nock from 'nock'
 import { configure } from '@testing-library/dom'
+import JestFetchMock from 'jest-fetch-mock'
+
+require('react')
+
+JestFetchMock.enableMocks()
+fetchMock.dontMock()
 
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(30 * 1000)
@@ -78,6 +84,7 @@ expect.extend({
     },
 })
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 console.warn = (message?: any, ..._optionalParams: any[]) => {
     if (typeof message === 'string') {
         if (message.startsWith('You are using a beta component feature (isAriaDisabled).')) return
@@ -85,6 +92,7 @@ console.warn = (message?: any, ..._optionalParams: any[]) => {
     consoleWarnings.push(message)
 }
 // const originalConsoleError = console.error
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 console.error = (message?: any, ..._optionalParams: any[]) => {
     consoleErrors.push(message)
     // originalConsoleError(message, optionalParams)

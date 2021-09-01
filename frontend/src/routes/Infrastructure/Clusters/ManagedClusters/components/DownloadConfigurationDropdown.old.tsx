@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterStatus, createDownloadFile } from '@open-cluster-management/resources'
+import { Cluster, ClusterStatus, createDownloadFile } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { mockBadRequestStatus, nockGet } from '../../../../../lib/nock-util'

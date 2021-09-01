@@ -12,7 +12,7 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import {
     AcmAlertContext,
     AcmAlertGroup,
@@ -29,7 +29,7 @@ import {
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, Label, PageSection, SelectOption, Text } from '@patternfly/react-core'
-import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
+import { CheckCircleIcon } from '@patternfly/react-icons'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'

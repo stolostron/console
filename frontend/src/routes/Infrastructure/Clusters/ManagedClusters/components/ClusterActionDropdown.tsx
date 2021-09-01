@@ -9,7 +9,7 @@ import {
     ManagedClusterDefinition,
     patchResource,
     ResourceErrorCode,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { AcmInlineProvider, Provider } from '@open-cluster-management/ui-components'
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
@@ -89,6 +89,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         {
             id: 'upgrade-cluster',
             text: t('managed.upgrade'),
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             click: (_cluster: Cluster) => setShowUpgradeModal(true),
             isDisabled: true,
             rbac: [
@@ -99,6 +100,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         {
             id: 'select-channel',
             text: t('managed.selectChannel'),
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             click: (_cluster: Cluster) => setShowChannelSelectModal(true),
             isDisabled: true,
             rbac: [

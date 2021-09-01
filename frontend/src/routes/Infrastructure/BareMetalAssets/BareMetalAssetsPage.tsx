@@ -10,7 +10,7 @@ import {
     ImportedBareMetalAsset,
     IRequestResult,
     ManagedClusterDefinition,
-} from '@open-cluster-management/resources'
+} from '../../../resources'
 import {
     AcmButton,
     AcmEmptyState,

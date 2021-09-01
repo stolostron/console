@@ -9,7 +9,7 @@ import {
     mapAddons,
     mapClusters,
     ResourceErrorCode,
-} from '@open-cluster-management/resources'
+} from '../../../../resources'
 import {
     AcmAlertContext,
     AcmButton,
@@ -53,7 +53,6 @@ import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 export default function ClusterSetsPage() {
     const { t } = useTranslation(['cluster', 'common'])
     const alertContext = useContext(AcmAlertContext)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
     const [

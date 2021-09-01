@@ -8,7 +8,7 @@ import {
     ManagedClusterSetBinding,
     managedClusterSetLabel,
     ResourceError,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import {
     AcmButton,
     AcmPage,

@@ -53,7 +53,7 @@ import {
     AgentClusterInstallKind,
     AgentKind,
     InfraEnvKind,
-} from '@open-cluster-management/resources'
+} from './resources'
 import { AcmRoute } from '@open-cluster-management/ui-components'
 import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
@@ -295,8 +295,6 @@ export function LoadData(props: { children?: ReactNode }) {
         return () => {
             if (evtSource) evtSource.close()
         }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {

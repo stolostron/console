@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { IResource, ManagedClusterApiVersion, ManagedClusterKind } from '@open-cluster-management/resources'
+import { IResource, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { mockBadRequestStatus, nockPatch } from '../../../../../lib/nock-util'

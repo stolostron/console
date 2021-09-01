@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { clusterDangerStatuses } from '@open-cluster-management/resources'
+import { clusterDangerStatuses } from '../../../../../../resources'
 import {
     AcmButton,
     AcmCountCardSection,

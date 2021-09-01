@@ -8,7 +8,7 @@ import {
     ManagedClusterSet,
     managedClusterSetLabel,
     mapClusters,
-} from '@open-cluster-management/resources'
+} from '../../../../../resources'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
     certificateSigningRequestsState,

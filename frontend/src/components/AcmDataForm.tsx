@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmPageHeader, AcmIcon, AcmIconVariant, AcmButton } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmIcon, AcmIconVariant, AcmPageHeader } from '@open-cluster-management/ui-components'
 import {
     ActionGroup,
     ActionList,
@@ -63,28 +63,30 @@ import {
     WizardStep,
 } from '@patternfly/react-core'
 import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
-import ExclamationCircleIcon from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
-import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
-import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
-import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
-import PasteIcon from '@patternfly/react-icons/dist/js/icons/paste-icon'
-import PlusIcon from '@patternfly/react-icons/dist/js/icons/plus-icon'
-import TrashIcon from '@patternfly/react-icons/dist/js/icons/trash-icon'
-import EditIcon from '@patternfly/react-icons/dist/js/icons/edit-icon'
-import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
+import {
+    EditIcon,
+    ExclamationCircleIcon,
+    ExternalLinkAltIcon,
+    EyeIcon,
+    EyeSlashIcon,
+    HelpIcon,
+    PasteIcon,
+    PlusIcon,
+    TimesCircleIcon,
+    TrashIcon,
+} from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
     FormData,
-    SectionGroup,
+    FormDataOrderedInput,
     Input,
     InputBase,
-    Section,
-    SelectOptionInput,
-    FormDataOrderedInput,
     LinkType,
+    Section,
+    SectionGroup,
+    SelectOptionInput,
 } from './AcmFormData'
 
 export interface AcmDataFormProps {
@@ -930,7 +932,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                         isReadOnly={isReadOnly}
                         type={'number'}
                         onChange={(value) => {
-                            input.onChange(Number(value))
+                            onChange(Number(value))
                         }}
                     />
                 </InputGroup>
@@ -978,6 +980,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         case 'GroupedSelect':
         case 'Multiselect':
         case 'GroupedMultiselect': {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { onChange, placeholder, ...inputProps } = input
             const onSelect = (_event: unknown, selection: string | SelectOptionObject) => {
                 switch (input.type) {

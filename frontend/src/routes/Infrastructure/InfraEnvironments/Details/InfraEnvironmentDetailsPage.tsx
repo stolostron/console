@@ -14,12 +14,12 @@ import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { ResourceError } from '@open-cluster-management/resources'
 import { acmRouteState, infraEnvironmentsState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
+import { ResourceError } from '../../../../resources'
 
 const { DownloadIsoModal } = CIM
 

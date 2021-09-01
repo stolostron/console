@@ -9,7 +9,7 @@ import {
     IResource,
     Namespace,
     ResourceAttributes,
-} from '@open-cluster-management/resources'
+} from '../resources'
 
 export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
     return new Promise<string[]>(async (resolve, reject) => {

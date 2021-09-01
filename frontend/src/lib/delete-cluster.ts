@@ -12,7 +12,7 @@ import {
     ManagedClusterKind,
     ResourceError,
     ResourceErrorCode,
-} from '@open-cluster-management/resources'
+} from '../resources'
 import { deleteResources } from './delete-resources'
 
 export function deleteCluster(cluster: Cluster, ignoreClusterDeploymentNotFound = false) {
