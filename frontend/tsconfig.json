@@ -1,9 +1,10 @@
 {
     "compilerOptions": {
         "lib": ["dom", "dom.iterable", "esnext"],
-        "module": "esnext",
+        "module": "commonjs",
         "target": "es5",
         "jsx": "react-jsx",
+        "types": ["node", "jest"],
 
         "sourceMap": true,
         "declaration": true,
@@ -31,8 +32,7 @@
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "isolatedModules": true,
-        "noEmit": true,
-        "composite": true
+        "noEmit": true
     },
     "include": ["src", "webpack.config.ts"]
 }

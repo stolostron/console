@@ -20,5 +20,4 @@
     "bulk.message.delete": "You are about to delete infrastructure environments. The infrastructure environments will no longer be available.",
     "action.title.delete": "Delete infrastructure environment?",
     "action.message.delete": "You are about to delete infrastructure environment. The infrastructure environment will no longer be available."
-
 }

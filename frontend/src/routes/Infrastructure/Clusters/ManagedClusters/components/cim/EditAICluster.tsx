@@ -78,7 +78,8 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                             await patchResource(agentClusterInstall, patches).promise
                         }
                     } catch (e) {
-                        throw Error(`Failed to patch the AgentClusterInstall resource: ${e.message}`)
+                        if (e instanceof Error)
+                            throw Error(`Failed to patch the AgentClusterInstall resource: ${e.message}`)
                     }
                 }}
                 canEditHost={() => true}
