@@ -71,10 +71,10 @@ export async function createCluster(resources: any[]) {
     try {
         await createProject(namespace).promise
     } catch (err) {
-        if (err.code !== 409) {
+        if ((err as unknown as { code: number }).code !== 409) {
             return {
                 status: 'ERROR',
-                messages: [{ message: err.message }],
+                messages: [{ message: (err as Error).message }],
             }
         }
     }

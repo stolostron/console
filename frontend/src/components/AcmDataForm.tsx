@@ -360,12 +360,12 @@ export function AcmDataFormDefault(props: {
                                                 if ((result as unknown) instanceof Promise) {
                                                     setSubmitText(formData.submittingText)
                                                     ;(result as unknown as Promise<void>).catch((err) => {
-                                                        setSubmitError(err.message)
+                                                        if (err instanceof Error) setSubmitError(err.message)
                                                         setSubmitText(formData.submitText)
                                                     })
                                                 }
                                             } catch (err) {
-                                                setSubmitError(err.message)
+                                                if (err instanceof Error) setSubmitError(err.message)
                                             }
                                         }
                                     }}
@@ -552,12 +552,13 @@ export function AcmDataFormWizard(props: {
                                                             if ((result as unknown) instanceof Promise) {
                                                                 setSubmitText(formData.submittingText)
                                                                 ;(result as unknown as Promise<void>).catch((err) => {
-                                                                    setSubmitError(err.message)
+                                                                    if (err instanceof Error)
+                                                                        setSubmitError(err.message)
                                                                     setSubmitText(formData.submitText)
                                                                 })
                                                             }
                                                         } catch (err) {
-                                                            setSubmitError(err.message)
+                                                            if (err instanceof Error) setSubmitError(err.message)
                                                         }
                                                     }
                                                 }}

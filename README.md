@@ -27,7 +27,7 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 - Node.js v14.x
   - `node -v`
-- yarn
+- NPM
 
 ## Workspaces
 
@@ -48,7 +48,7 @@ Notes:
 2. Install dependencies
 
    ```
-   yarn install --frozen-lockfile
+   npm ci
    ```
 
 3. Setup environment
@@ -58,7 +58,7 @@ Notes:
    - to have Advanced Cluster Management installed on the cluster
 
    ```
-   yarn run setup
+   npm run setup
    ```
 
    This will create a `.env` file in the backend directory containing the environment variables.
@@ -66,7 +66,7 @@ Notes:
 4. Start the development services
 
    ```
-   yarn start
+   npm start
    ```
 
    This will start the frontend and the backend in parallel.  (It may take up to 30 seconds for the UI to appear)

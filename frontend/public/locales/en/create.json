@@ -7,6 +7,8 @@
     "clusters": "Managed clusters",
     "clusterPools": "Cluster pools",
     "managed.createCluster": "Create cluster",
+    "edit.yaml.on.ro": "YAML (read only): On",
+    "editor.bar.readonly": "The resource has been saved and the YAML is now read only.",
     "cluster.create.title": "Create cluster",
     "cluster.create.select.cloudprovider": "Select a provider",
     "cluster.create.select.cloudprovider.description": "Select a managed service.",
@@ -386,11 +388,11 @@
     "validation.number.value": "Number is not valid",
 
     "template.create.title": "Create Ansible template",
-    "template.clusterCreate.name":"Ansible Automation Template",
-    "template.clusterCreate.title":"Automation",
-    "template.clusterCreate.info":"(Optional) Choose an automation job template to automatically run Ansible jobs at different stages of a cluster's life cycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed.",
-    "template.clusterCreate.select.placeholder":"Select an Ansible job template",
-    "template.create.tooltip":"Create a job template to automatically run Ansible jobs at different stages of a cluster's life cycle",
+    "template.clusterCreate.name": "Ansible Automation Template",
+    "template.clusterCreate.title": "Automation",
+    "template.clusterCreate.info": "(Optional) Choose an automation job template to automatically run Ansible jobs at different stages of a cluster's life cycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed.",
+    "template.clusterCreate.select.placeholder": "Select an Ansible job template",
+    "template.create.tooltip": "Create a job template to automatically run Ansible jobs at different stages of a cluster's life cycle",
     "template.edit.title": "Edit Ansible template",
-    "template.edit.tooltip":"Edit a job template to alter the order of Ansible jobs that run at different stages of a cluster's life cycle"
+    "template.edit.tooltip": "Edit a job template to alter the order of Ansible jobs that run at different stages of a cluster's life cycle"
 }

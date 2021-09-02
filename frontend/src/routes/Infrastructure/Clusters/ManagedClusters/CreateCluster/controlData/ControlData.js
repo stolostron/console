@@ -105,6 +105,17 @@ export const controlData = [
                 section: 'Providers',
             },
             {
+                id: 'AI',
+                logo: <AcmIcon icon={AcmIconVariant.hybrid} />,
+                title: 'cluster.create.ai.subtitle',
+                change: {
+                    insertControlData: controlDataAI,
+                    replacements: {},
+                    replaceTemplate: aiTemplate,
+                },
+                section: 'Centrally managed',
+            },
+            {
                 id: 'BMC',
                 logo: <BaremetalLogo />,
                 title: 'cluster.create.baremetal.subtitle',
@@ -113,17 +124,6 @@ export const controlData = [
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
-                },
-                section: 'Providers',
-            },
-            {
-                id: 'AI',
-                logo: <AcmIcon icon={AcmIconVariant.hybrid} />,
-                title: 'cluster.create.ai.subtitle',
-                change: {
-                    insertControlData: controlDataAI,
-                    replacements: {},
-                    replaceTemplate: aiTemplate,
                 },
                 section: 'Centrally managed',
             },

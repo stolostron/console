@@ -88,10 +88,10 @@ const CreateInfraEnv: React.FC = () => {
             try {
                 await createProject(infraEnv.metadata.namespace).promise
             } catch (err) {
-                if (err.code !== 409) {
+                if ((err as unknown as { code: number }).code !== 409) {
                     setCreationStatus({
                         status: 'ERROR',
-                        messages: [{ message: err.message }],
+                        messages: [{ message: (err as unknown as Error).message }],
                     })
                 }
             }
@@ -103,7 +103,7 @@ const CreateInfraEnv: React.FC = () => {
             } catch (err) {
                 setCreationStatus({
                     status: 'ERROR',
-                    messages: [{ message: err.message }],
+                    messages: [{ message: (err as unknown as Error).message }],
                 })
             }
         }

@@ -9,7 +9,6 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 import * as path from 'path'
 import ReactRefreshTypeScript from 'react-refresh-typescript'
-import TsImportPlugin from 'ts-import-plugin'
 import webpack from 'webpack'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 
@@ -49,15 +48,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                         configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
                         transpileOnly: true,
                         getCustomTransformers: () => ({
-                            before: [
-                                TsImportPlugin([
-                                    {
-                                        libraryName: '@patternfly/react-icons',
-                                        libraryDirectory: 'dist/js/icons',
-                                    },
-                                ]),
-                                isDevelopment && ReactRefreshTypeScript(),
-                            ].filter(Boolean),
+                            before: [isDevelopment && ReactRefreshTypeScript()].filter(Boolean),
                         }),
                     },
                     type: 'javascript/auto',

@@ -3,7 +3,7 @@ import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@open-
 import { PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 // include monaco editor
@@ -23,7 +23,7 @@ import { setAvailableConnections, setAvailableTemplates } from './controlData/Co
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
 import endpointTemplate from './templates/endpoints.hbs'
-import { featureGatesState, secretsState, managedClustersState, clusterCuratorsState } from '../../../../../atoms'
+import { featureGatesState, secretsState, managedClustersState, clusterCuratorsState, agentClusterInstallsState } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
 import {
     ClusterCurator,
@@ -61,7 +61,7 @@ export default function CreateClusterPage() {
     const history = useHistory()
     const location = useLocation()
     const [secrets] = useRecoilState(secretsState)
-    const [readOnly, setReadOnly] = useState(false)
+    const templateEditorRef = useRef<null>();
 
     const providerConnections = secrets.map(unpackProviderConnection)
     const ansibleCredentials = providerConnections.filter(
@@ -76,8 +76,9 @@ export default function CreateClusterPage() {
     const curatorTemplates = filterForTemplatedCurators(clusterCurators)
     const [selectedTemplate, setSelectedTemplate] = useState('')
     const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
+    const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
+    
     const classes = useStyles()
-
     // create portals for buttons in header
     const switches = (
         <div className="switch-controls">
@@ -94,7 +95,8 @@ export default function CreateClusterPage() {
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
-    const createResource = async (resourceJSON: { createResources: any[] }, noRedirect: boolean) => {
+    const createResource = async (resourceJSON: { createResources: any[] }, noRedirect: boolean, 
+            inProgressMsg?: string, completedMsg?: string) => {
         if (resourceJSON) {
             const { createResources } = resourceJSON
             const map = keyBy(createResources, 'kind')
@@ -102,12 +104,14 @@ export default function CreateClusterPage() {
 
             // return error if cluster name is already used
             const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
+            const matchedAgentClusterInstall = agentClusterInstalls.find((mc) => mc.metadata.name === clusterName)
 
-            if (matchedManagedCluster) {
-                return setCreationStatus({
+            if (matchedManagedCluster || matchedAgentClusterInstall) {
+                setCreationStatus({
                     status: 'ERROR',
                     messages: [{ message: `The cluster name is already used by another cluster.` }],
                 })
+                return 'ERROR'
             } else {
                 // check if Template is selected
                 if (selectedTemplate !== '') {
@@ -131,13 +135,19 @@ export default function CreateClusterPage() {
                     }
                 })
 
-                setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
+                const progressMessage = inProgressMsg ? [inProgressMsg] : []
+                setCreationStatus({ status: 'IN_PROGRESS', messages: progressMessage })
 
                 // creates managedCluster, deployment, secrets etc...
                 const { status, messages } = await createCluster(createResources)
-                setCreationStatus({ status, messages })
 
-                if (status !== 'ERROR' && selectedTemplate !== '') {
+                if (status === 'ERROR') {
+                    setCreationStatus({ status, messages })
+                } else if (status !== 'ERROR' && selectedTemplate !== '') {
+                    setCreationStatus({
+                        status: 'IN_PROGRESS',
+                        messages: [{ message: 'Running automation...' }],
+                    })
                     // get template, modifty it and create curator cluster namespace
                     const currentTemplate = curatorTemplates.find(
                         (template) => template.metadata.name === selectedTemplate
@@ -181,12 +191,16 @@ export default function CreateClusterPage() {
 
                 // redirect to created cluster
                 if (status === 'DONE') {
+                    const finishMessage = completedMsg ? [completedMsg] : []
+                    setCreationStatus({ status, messages: finishMessage })
                     if (!noRedirect) {
                         setTimeout(() => {
                             history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
                         }, 2000)
                     }
                 }
+
+                return status
             }
         }
     }
@@ -249,6 +263,51 @@ export default function CreateClusterPage() {
                     control.active = true
                 }
                 break
+            case 'reviewSave':
+                control.mutation =  (controlData: any[]) => {
+                    return new Promise((resolve) => {
+                        if (templateEditorRef.current) {
+                            const resourceJSON = templateEditorRef.current?.getResourceJSON()
+                            if (resourceJSON) {
+                                const networkForm = controlData.find((r: any ) => r.id === 'aiNetwork')
+                                if (networkForm) {
+                                    networkForm.resourceJSON = resourceJSON
+                                }
+                                createResource(resourceJSON, true, 'Saving draft...', 'Draft saved').then(status=>{
+                                        if (status==='ERROR') {
+                                            resolve(status)
+                                        } else {
+                                            setTimeout(() => {
+                                                resolve(status)
+                                                setCreationStatus(undefined)
+                                            }, 250)
+                                        }
+                                })
+                                return
+                            }
+                        }
+                        resolve('ERROR')
+                    })
+                }
+                break
+            case 'reviewFinish':
+                control.mutation = async (controlData: any[]) => {
+                    return new Promise((resolve) => {
+                        const networkForm = controlData.find((r: any ) => r.id === 'aiNetwork')
+                        const clusterName = get(networkForm, 'agentClusterInstall.spec.clusterDeploymentRef.name')
+                        patchNetwork(networkForm.agentClusterInstall, networkForm.active).then(status=>{
+                            resolve(status)
+                            if (status!=='ERROR') {
+                                setCreationStatus({ status, messages: ['Configured cluster network. Redirecting to cluster details...' ]})
+                                setTimeout(() => {
+                                    history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
+                                }, 2000)
+                            }
+                        })
+                    })
+                }
+
+                break
         }
     }
 
@@ -268,25 +327,32 @@ export default function CreateClusterPage() {
         }
     }
 
-    const onStepChange = (step: any, prevStep: any) => {
-        if (step.control && !!step.control.disableEditor !== readOnly) {
-            setReadOnly(step.control.disableEditor)
-        }
-        if (prevStep?.id === 'aiNetworkStep' && prevStep?.control?.active) {
-            const values = prevStep.control.active
-            const agentClusterInstall = prevStep.control.agentClusterInstall
+    const patchNetwork = async (
+        agentClusterInstall: any, 
+        values: {
+            sshPublicKey: any; 
+            clusterNetworkCidr: any; 
+            clusterNetworkHostPrefix: any; 
+            serviceNetworkCidr: any; 
+            apiVip: any; 
+            ingressVip: any; }) => {
             const patches = getNetworkingPatches(agentClusterInstall, values)
             const patch = async () => {
+                let status = 'DONE'
+                let messages=['Configured the cluster network'] 
                 try {
                     if (patches.length > 0) {
                         await patchResource(agentClusterInstall, patches).promise
                     }
                 } catch (e) {
-                    throw new Error(`Failed to patch the AgentClusterInstall resource: ${e.message}`)
+                    status = 'ERROR'
+                    messages = [`Failed to configure the cluster network: ${e.message}`]
                 }
+                setCreationStatus({ status, messages })
+                return status
             }
-            patch()
-        }
+        setCreationStatus({ status: 'IN_PROGRESS', messages: ['Configuring the cluster network'] })
+        return patch();
     }
 
     return (
@@ -324,7 +390,6 @@ export default function CreateClusterPage() {
                             type={'cluster'}
                             title={'Cluster YAML'}
                             monacoEditor={<MonacoEditor />}
-                            editorReadOnly={readOnly}
                             controlData={controlData}
                             template={template}
                             portals={Portals}
@@ -335,12 +400,15 @@ export default function CreateClusterPage() {
                                 pauseCreate,
                                 creationStatus: creationStatus?.status,
                                 creationMsg: creationStatus?.messages,
+                                resetStatus: ()=>{
+                                    setCreationStatus(undefined)
+                                }
                             }}
                             logging={process.env.NODE_ENV !== 'production'}
                             i18n={i18n}
                             onControlInitialize={onControlInitialize}
                             onControlChange={onControlChange}
-                            onStepChange={onStepChange}
+                            ref={templateEditorRef}
                             controlProps={selectedConnection}
                         />
                     </PageSection>
