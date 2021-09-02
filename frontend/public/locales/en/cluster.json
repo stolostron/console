@@ -1,6 +1,6 @@
 {
     "page.header.cluster-management": "Clusters",
-    "page.header.cluster-management.tooltip": "View all clusters.",
+    "page.header.cluster-management.tooltip": "View clusters.",
     "page.header.import-cluster": "Import an existing cluster",
     "page.header.import-cluster.tooltip": "Import clusters from different providers to manage them from this console.",
     "page.header.install-submariner.tooltip": "Install the Submariner add-on to managed clusters to create a multi-cluster network.",
