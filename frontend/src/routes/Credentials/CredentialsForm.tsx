@@ -225,7 +225,7 @@ export function CredentialsForm(props: {
         providerConnection?.stringData?.['osServiceAccount.json'] ?? ''
     )
 
-    // VMWare
+    // VMware
     const [vCenter, setVcenter] = useState(providerConnection?.stringData?.vCenter ?? '')
     const [username, setUsername] = useState(providerConnection?.stringData?.username ?? '')
     const [password, setPassword] = useState(providerConnection?.stringData?.password ?? '')
