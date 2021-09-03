@@ -196,6 +196,12 @@ export function CredentialsForm(props: {
     const [baseDomainResourceGroupName, setBaseDomainResourceGroupName] = useState(
         providerConnection?.stringData?.baseDomainResourceGroupName ?? ''
     )
+    enum CloudNames {
+        AzurePublicCloud = 'AzurePublicCloud',
+        AzureUSGovernmentCloud = 'AzureUSGovernmentCloud',
+    }
+
+    const [cloudName, setCloudName] = useState<CloudNames | string>(CloudNames.AzurePublicCloud)
 
     let osServicePrincipalJson:
         | {
@@ -292,6 +298,7 @@ export function CredentialsForm(props: {
                 break
             case Provider.azure:
                 secret.stringData!.baseDomainResourceGroupName = baseDomainResourceGroupName
+                secret.stringData!.cloudName = cloudName
                 secret.stringData!['osServicePrincipal.json'] = JSON.stringify({
                     clientId,
                     clientSecret,
@@ -513,6 +520,21 @@ export function CredentialsForm(props: {
                         value: baseDomain,
                         onChange: setBaseDomain,
                         validation: (v) => validateBaseDomain(v, t),
+                    },
+                    {
+                        id: 'azureCloudName',
+                        type: 'Select',
+                        label: t('Azure cloud name'),
+                        placeholder: t(''),
+                        labelHelp: t('Choose the Azure cloud name type'),
+                        value: cloudName,
+                        onChange: setCloudName,
+                        isRequired: true,
+                        options: [
+                            { id: CloudNames.AzurePublicCloud, value: CloudNames.AzurePublicCloud },
+                            { id: CloudNames.AzureUSGovernmentCloud, value: CloudNames.AzureUSGovernmentCloud },
+                        ],
+                        isHidden: credentialsType != Provider.azure,
                     },
                 ],
             },
