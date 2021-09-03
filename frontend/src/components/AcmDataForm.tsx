@@ -979,7 +979,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         }
         case 'Checkbox': {
             const { body } = input
-            return <Checkbox id="t" body={body}/>
+            return <Checkbox id="t" body={body} />
         }
         case 'Select':
         case 'GroupedSelect':
