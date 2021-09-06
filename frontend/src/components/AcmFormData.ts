@@ -65,13 +65,6 @@ export interface InputBase<T> {
     prompt?: { text: string; linkType: LinkType; callback: () => void }
 }
 
-export interface Checkbox extends InputBase<string> {
-    type: 'Checkbox'
-    body: string
-    isChecked?: boolean
-    description?: string
-}
-
 export interface TextInput extends InputBase<string> {
     type: 'Text'
     isSecret?: boolean
@@ -166,4 +159,3 @@ export type Input =
     | GroupedTilesInput
     | NumberInput
     | FormDataOrderedInput
-    | Checkbox

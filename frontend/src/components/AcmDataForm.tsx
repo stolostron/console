@@ -8,7 +8,6 @@ import {
     Alert,
     AlertGroup,
     Button,
-    Checkbox,
     ClipboardCopyButton,
     CodeBlock,
     CodeBlockAction,
@@ -977,10 +976,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                 </InputGroup>
             )
         }
-        case 'Checkbox': {
-            const { body } = input
-            return <Checkbox id="t" body={body} />
-        }
+
         case 'Select':
         case 'GroupedSelect':
         case 'Multiselect':
