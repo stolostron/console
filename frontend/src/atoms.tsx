@@ -53,6 +53,7 @@ import {
     AgentClusterInstallKind,
     AgentKind,
     InfraEnvKind,
+    BareMetalHostKind,
 } from './resources'
 import { AcmRoute } from '@open-cluster-management/ui-components'
 import { Fragment, ReactNode, useEffect, useState } from 'react'
@@ -102,6 +103,7 @@ export const agentClusterInstallsState = atom<CIM.AgentClusterInstallK8sResource
 })
 export const agentsState = atom<CIM.AgentK8sResource[]>({ key: 'agents', default: [] })
 export const infraEnvironmentsState = atom<CIM.InfraEnvK8sResource[]>({ key: 'infraenvs', default: [] })
+export const bareMetalHostsState = atom<CIM.BareMetalHostK8sResource[]>({ key: 'baremetalhosts', default: [] })
 
 interface Settings {
     LOG_LEVEL?: string
@@ -158,6 +160,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setAgentClusterInstalls] = useRecoilState(agentClusterInstallsState)
     const [, setAgents] = useRecoilState(agentsState)
     const [, setInfraEnvironments] = useRecoilState(infraEnvironmentsState)
+    const [, setBareMetalHosts] = useRecoilState(bareMetalHostsState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
         [AgentKind]: setAgents,
@@ -188,6 +191,7 @@ export function LoadData(props: { children?: ReactNode }) {
         [PolicyReportKind]: setPolicyReports,
         [SecretKind]: setSecrets,
         [SubmarinerConfigKind]: setSubmarinerConfigs,
+        [BareMetalHostKind]: setBareMetalHosts,
     }
 
     useEffect(() => {

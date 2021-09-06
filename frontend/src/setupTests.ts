@@ -5,6 +5,7 @@ import '@testing-library/jest-dom'
 import nock from 'nock'
 import { configure } from '@testing-library/dom'
 import JestFetchMock from 'jest-fetch-mock'
+import { noop } from 'lodash'
 
 require('react')
 
@@ -137,4 +138,11 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('i18next', () => ({
     t: (key: string) => key,
+    createInstance: () => ({
+        use: () => ({
+            use: () => ({
+                init: noop,
+            }),
+        }),
+    }),
 }))

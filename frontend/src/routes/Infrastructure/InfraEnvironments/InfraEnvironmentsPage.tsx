@@ -26,6 +26,8 @@ import { rbacDelete } from '../../../lib/rbac-util'
 import { RbacDropdown } from '../../../components/Rbac'
 import { deleteResource } from '../../../resources'
 
+const { AGENT_LOCATION_LABEL_KEY } = CIM
+
 const InfraEnvironmentsPage: React.FC = () => {
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
@@ -139,7 +141,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                     },
                     {
                         header: t('infraEnv.tableHeader.location'),
-                        cell: (infraEnv) => infraEnv.metadata?.labels?.['assisted-install-location'] ?? '-',
+                        cell: (infraEnv) => infraEnv.metadata?.labels?.[AGENT_LOCATION_LABEL_KEY] ?? '-',
                     },
                     {
                         header: t('infraEnv.tableHeader.hosts'),
