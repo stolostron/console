@@ -23,7 +23,13 @@ import { setAvailableConnections, setAvailableTemplates } from './controlData/Co
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
 import endpointTemplate from './templates/endpoints.hbs'
-import { featureGatesState, secretsState, managedClustersState, clusterCuratorsState, agentClusterInstallsState } from '../../../../../atoms'
+import {
+    featureGatesState,
+    secretsState,
+    managedClustersState,
+    clusterCuratorsState,
+    agentClusterInstallsState,
+} from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
 import {
     ClusterCurator,
@@ -61,7 +67,7 @@ export default function CreateClusterPage() {
     const history = useHistory()
     const location = useLocation()
     const [secrets] = useRecoilState(secretsState)
-    const templateEditorRef = useRef<null>();
+    const templateEditorRef = useRef<null>()
 
     const providerConnections = secrets.map(unpackProviderConnection)
     const ansibleCredentials = providerConnections.filter(
@@ -77,7 +83,7 @@ export default function CreateClusterPage() {
     const [selectedTemplate, setSelectedTemplate] = useState('')
     const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
-    
+
     const classes = useStyles()
     // create portals for buttons in header
     const switches = (
@@ -95,8 +101,12 @@ export default function CreateClusterPage() {
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
-    const createResource = async (resourceJSON: { createResources: any[] }, noRedirect: boolean, 
-            inProgressMsg?: string, completedMsg?: string) => {
+    const createResource = async (
+        resourceJSON: { createResources: any[] },
+        noRedirect: boolean,
+        inProgressMsg?: string,
+        completedMsg?: string
+    ) => {
         if (resourceJSON) {
             const { createResources } = resourceJSON
             const map = keyBy(createResources, 'kind')
@@ -264,24 +274,24 @@ export default function CreateClusterPage() {
                 }
                 break
             case 'reviewSave':
-                control.mutation =  (controlData: any[]) => {
+                control.mutation = (controlData: any[]) => {
                     return new Promise((resolve) => {
                         if (templateEditorRef.current) {
                             const resourceJSON = templateEditorRef.current?.getResourceJSON()
                             if (resourceJSON) {
-                                const networkForm = controlData.find((r: any ) => r.id === 'aiNetwork')
+                                const networkForm = controlData.find((r: any) => r.id === 'aiNetwork')
                                 if (networkForm) {
                                     networkForm.resourceJSON = resourceJSON
                                 }
-                                createResource(resourceJSON, true, 'Saving draft...', 'Draft saved').then(status=>{
-                                        if (status==='ERROR') {
+                                createResource(resourceJSON, true, 'Saving draft...', 'Draft saved').then((status) => {
+                                    if (status === 'ERROR') {
+                                        resolve(status)
+                                    } else {
+                                        setTimeout(() => {
                                             resolve(status)
-                                        } else {
-                                            setTimeout(() => {
-                                                resolve(status)
-                                                setCreationStatus(undefined)
-                                            }, 250)
-                                        }
+                                            setCreationStatus(undefined)
+                                        }, 250)
+                                    }
                                 })
                                 return
                             }
@@ -293,12 +303,15 @@ export default function CreateClusterPage() {
             case 'reviewFinish':
                 control.mutation = async (controlData: any[]) => {
                     return new Promise((resolve) => {
-                        const networkForm = controlData.find((r: any ) => r.id === 'aiNetwork')
+                        const networkForm = controlData.find((r: any) => r.id === 'aiNetwork')
                         const clusterName = get(networkForm, 'agentClusterInstall.spec.clusterDeploymentRef.name')
-                        patchNetwork(networkForm.agentClusterInstall, networkForm.active).then(status=>{
+                        patchNetwork(networkForm.agentClusterInstall, networkForm.active).then((status) => {
                             resolve(status)
-                            if (status!=='ERROR') {
-                                setCreationStatus({ status, messages: ['Configured cluster network. Redirecting to cluster details...' ]})
+                            if (status !== 'ERROR') {
+                                setCreationStatus({
+                                    status,
+                                    messages: ['Configured cluster network. Redirecting to cluster details...'],
+                                })
                                 setTimeout(() => {
                                     history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
                                 }, 2000)
@@ -328,31 +341,33 @@ export default function CreateClusterPage() {
     }
 
     const patchNetwork = async (
-        agentClusterInstall: any, 
+        agentClusterInstall: any,
         values: {
-            sshPublicKey: any; 
-            clusterNetworkCidr: any; 
-            clusterNetworkHostPrefix: any; 
-            serviceNetworkCidr: any; 
-            apiVip: any; 
-            ingressVip: any; }) => {
-            const patches = getNetworkingPatches(agentClusterInstall, values)
-            const patch = async () => {
-                let status = 'DONE'
-                let messages=['Configured the cluster network'] 
-                try {
-                    if (patches.length > 0) {
-                        await patchResource(agentClusterInstall, patches).promise
-                    }
-                } catch (e) {
-                    status = 'ERROR'
-                    messages = [`Failed to configure the cluster network: ${e.message}`]
+            sshPublicKey: any
+            clusterNetworkCidr: any
+            clusterNetworkHostPrefix: any
+            serviceNetworkCidr: any
+            apiVip: any
+            ingressVip: any
+        }
+    ) => {
+        const patches = getNetworkingPatches(agentClusterInstall, values)
+        const patch = async () => {
+            let status = 'DONE'
+            let messages = ['Configured the cluster network']
+            try {
+                if (patches.length > 0) {
+                    await patchResource(agentClusterInstall, patches).promise
                 }
-                setCreationStatus({ status, messages })
-                return status
+            } catch (e) {
+                status = 'ERROR'
+                messages = [`Failed to configure the cluster network: ${e.message}`]
             }
+            setCreationStatus({ status, messages })
+            return status
+        }
         setCreationStatus({ status: 'IN_PROGRESS', messages: ['Configuring the cluster network'] })
-        return patch();
+        return patch()
     }
 
     return (
@@ -400,9 +415,9 @@ export default function CreateClusterPage() {
                                 pauseCreate,
                                 creationStatus: creationStatus?.status,
                                 creationMsg: creationStatus?.messages,
-                                resetStatus: ()=>{
+                                resetStatus: () => {
                                     setCreationStatus(undefined)
-                                }
+                                },
                             }}
                             logging={process.env.NODE_ENV !== 'production'}
                             i18n={i18n}

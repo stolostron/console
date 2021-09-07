@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useRef, useEffect, useState } from 'react';
+import { useCallback, useRef, useEffect, useState } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { FormikProps } from 'formik';
+import { FormikProps } from 'formik'
 import { NetworkConfigurationValues } from 'openshift-assisted-ui-lib/dist/src/common/types/clusters'
 import { patchResource } from '../../../../../../../resources'
 import { get, isEqual } from 'lodash'
@@ -26,12 +26,12 @@ type NetworkFormProps = {
 }
 
 const fields: any = {
-    apiVip: {label:'API Virtual IP'},
-    ingressVip: {label:'Ingress Virtual IP'},
-    clusterNetworkCidr: {label:'Cluster network CIDR'},
-    clusterNetworkHostPrefix: {label:'Cluster network host prefix'},
-    serviceNetworkCidr: {label:'Service network CIDR'},
-    sshPublicKey: {label:'Host SSH Public Key'},
+    apiVip: { label: 'API Virtual IP' },
+    ingressVip: { label: 'Ingress Virtual IP' },
+    clusterNetworkCidr: { label: 'Cluster network CIDR' },
+    clusterNetworkHostPrefix: { label: 'Cluster network host prefix' },
+    serviceNetworkCidr: { label: 'Service network CIDR' },
+    sshPublicKey: { label: 'Host SSH Public Key' },
 }
 
 const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
@@ -42,44 +42,37 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
         } else {
             control.active = formRef?.current?.values
         }
-        control.validate = 
-            () => {
-                return formRef?.current?.submitForm().then(()=>{
-                    return formRef?.current?.errors
-                })
-            }
-        control.summary = ()=>{
-            return Object.keys(fields).map(key=>{
+        control.validate = () => {
+            return formRef?.current?.submitForm().then(() => {
+                return formRef?.current?.errors
+            })
+        }
+        control.summary = () => {
+            return Object.keys(fields).map((key) => {
                 return {
                     term: fields[key].label,
                     desc: get(control, `active.${key}`),
-                    exception: get(control, `errors.${key}`)
+                    exception: get(control, `errors.${key}`),
                 }
             })
         }
     }, [control])
 
     const [editAgent, setEditAgent] = useState()
-    const [
-        agents,
-    ] = useRecoilValue(
-        waitForAll([
-            agentsState
-        ])
-    )
+    const [agents] = useRecoilValue(waitForAll([agentsState]))
 
-    const { resourceJSON={} } = control
-    const { createResources = []} = resourceJSON
-    const clusterDeployment = createResources.find((r: { kind: string; })=> r.kind==='ClusterDeployment')
-    const agentClusterInstall = createResources.find((r: { kind: string; })=> r.kind==='AgentClusterInstall')
+    const { resourceJSON = {} } = control
+    const { createResources = [] } = resourceJSON
+    const clusterDeployment = createResources.find((r: { kind: string }) => r.kind === 'ClusterDeployment')
+    const agentClusterInstall = createResources.find((r: { kind: string }) => r.kind === 'AgentClusterInstall')
 
-    useEffect(() => control.agentClusterInstall = agentClusterInstall, [control, agentClusterInstall]);
+    useEffect(() => (control.agentClusterInstall = agentClusterInstall), [control, agentClusterInstall])
 
     const onValuesChanged = useCallback((values) => {
         if (!isEqual(values, control.active)) {
-            control.active = values;
+            control.active = values
             control.step.title.isComplete = false
-            handleChange(control);
+            handleChange(control)
         }
     }, [])
 

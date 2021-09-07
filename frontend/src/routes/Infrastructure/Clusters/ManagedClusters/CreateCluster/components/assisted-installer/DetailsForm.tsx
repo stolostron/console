@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {  useCallback, useRef, useEffect, useState } from 'react';
-import { FormikProps } from 'formik';
+import { useCallback, useRef, useEffect, useState } from 'react'
+import { FormikProps } from 'formik'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterImageSet, listClusterImageSets, Secret } from '../../../../../../../resources'
 import { set, get, isEqual, startCase, camelCase } from 'lodash'
@@ -12,7 +12,7 @@ const { ACMClusterDeploymentDetailsStep } = CIM
 type FormControl = {
     active: ClusterDetailsValues
     disabled?: () => void
-    reverse?: (control: { active: ClusterDetailsValues },templateObject: any) => void
+    reverse?: (control: { active: ClusterDetailsValues }, templateObject: any) => void
     validate?: () => void
     summary?: () => void
     step?: any
@@ -24,12 +24,11 @@ type DetailsFormProps = {
     controlProps: Secret
 }
 const fields: any = {
-    'name': {path:'ClusterDeployment[0].metadata.name'},
-    'baseDnsDomain': {path:'ClusterDeployment[0].spec.baseDomain'},
-    'openshiftVersion': {path:'AgentClusterInstall[0].spec.imageSetRef.name'},
-    'pullSecret': {},
+    name: { path: 'ClusterDeployment[0].metadata.name' },
+    baseDnsDomain: { path: 'ClusterDeployment[0].spec.baseDomain' },
+    openshiftVersion: { path: 'AgentClusterInstall[0].spec.imageSetRef.name' },
+    pullSecret: {},
 }
-
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
     const formRef = useRef<FormikProps<ClusterDetailsValues>>(null)
@@ -39,30 +38,31 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         }
 
         if (control.disabled) {
-            Array.from(document.forms[0].elements as HTMLCollectionOf<HTMLElement>)
-            .forEach((item:HTMLElement, inx) => {
-                item.style.backgroundColor = '#e0e0e0'
-                item.style.pointerEvents = 'none'
-                item.addEventListener('keydown', (event) => {
-                        event.preventDefault();
-                        return false;
-                    }
-                )
-                if (inx===0) {
-                    setTimeout(()=>{
-                        item.blur()
+            Array.from(document.forms[0].elements as HTMLCollectionOf<HTMLElement>).forEach(
+                (item: HTMLElement, inx) => {
+                    item.style.backgroundColor = '#e0e0e0'
+                    item.style.pointerEvents = 'none'
+                    item.addEventListener('keydown', (event) => {
+                        event.preventDefault()
+                        return false
                     })
+                    if (inx === 0) {
+                        setTimeout(() => {
+                            item.blur()
+                        })
+                    }
                 }
-            })
+            )
         }
 
-        control.reverse = 
-            (control: {
-                active: ClusterDetailsValues 
+        control.reverse = (
+            control: {
+                active: ClusterDetailsValues
             },
-            templateObject: any) => {
-            const active = {...control.active}
-            Object.keys(fields).forEach(key=>{
+            templateObject: any
+        ) => {
+            const active = { ...control.active }
+            Object.keys(fields).forEach((key) => {
                 const path = fields[key].path
                 if (path) {
                     set(active, key, getValue(templateObject, path) || '')
@@ -73,18 +73,17 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 formRef?.current?.setValues(control.active)
             }
         }
-        control.validate = 
-            () => {
-                return formRef?.current?.submitForm().then(()=>{
-                    return formRef?.current?.errors
-                })
-            }
-        control.summary = ()=>{
-            return Object.keys(fields).map(key=>{
+        control.validate = () => {
+            return formRef?.current?.submitForm().then(() => {
+                return formRef?.current?.errors
+            })
+        }
+        control.summary = () => {
+            return Object.keys(fields).map((key) => {
                 return {
                     term: startCase(camelCase(key)),
                     desc: get(control, `active.${key}`),
-                    exception: get(control, `errors.${key}`)
+                    exception: get(control, `errors.${key}`),
                 }
             })
         }
@@ -95,19 +94,21 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         const fetchImages = async () => {
             const images = await listClusterImageSets().promise
             if (!isEqual(images, clusterImages)) {
-                setClusterImages(images);
+                setClusterImages(images)
             }
         }
         fetchImages()
     })
     const onValuesChanged = useCallback((values) => {
         if (formRef?.current?.dirty && !isEqual(values, control.active)) {
-            control.active = values;
+            control.active = values
             if (!control.active.openshiftVersion) {
-                control.active.openshiftVersion = (document.getElementsByName('openshiftVersion') as unknown as HTMLCollectionOf<HTMLInputElement>)[0].value
+                control.active.openshiftVersion = (
+                    document.getElementsByName('openshiftVersion') as unknown as HTMLCollectionOf<HTMLInputElement>
+                )[0].value
             }
             control.step.title.isComplete = false
-            handleChange(control);
+            handleChange(control)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])

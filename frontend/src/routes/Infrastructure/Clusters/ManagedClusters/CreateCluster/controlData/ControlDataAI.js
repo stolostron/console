@@ -33,7 +33,7 @@ const controlDataAI = [
         component: <DetailsForm />,
         providerId: 'ai',
         mustValidate: true,
-        encodeValues: ['pullSecret']
+        encodeValues: ['pullSecret'],
     },
     ...automationControlData,
     {
@@ -41,9 +41,10 @@ const controlDataAI = [
         type: 'review',
         title: 'Review and Save',
         nextButtonLabel: 'Save',
-        comment: 'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.',
+        comment:
+            'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.',
         disableEditorOnSuccess: true,
-        disablePreviousControlsOnSuccess: true
+        disablePreviousControlsOnSuccess: true,
     },
     {
         id: 'aiNetworkStep',
@@ -55,13 +56,13 @@ const controlDataAI = [
         type: 'custom',
         component: <NetworkForm />,
         providerId: 'aiNetwork',
-        mustValidate: true
+        mustValidate: true,
     },
     {
         id: 'reviewFinish',
         type: 'review',
         title: 'Review and Configure',
-        nextButtonLabel: 'Configure'
+        nextButtonLabel: 'Configure',
     },
 ]
 
