@@ -1,59 +1,92 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useRef, useEffect, useState } from 'react';
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue, waitForAll } from 'recoil'
+import { FormikProps } from 'formik';
 import { NetworkConfigurationValues } from 'openshift-assisted-ui-lib/dist/src/common/types/clusters'
-import { patchResource, ClusterDeploymentKind } from '../../../../../../../resources'
+import { patchResource } from '../../../../../../../resources'
+import { get, isEqual } from 'lodash'
+import { agentsState } from '../../../../../../../atoms'
 
-import { agentClusterInstallsState, agentsState, clusterDeploymentsState } from '../../../../../../../atoms'
-
-const { ACMClusterDeploymentNetworkingStep, LoadingState, EditAgentModal } = CIM
+const { ACMClusterDeploymentNetworkingStep, EditAgentModal } = CIM
 
 type FormControl = {
-    active: NetworkConfigurationValues
+    active?: NetworkConfigurationValues
     agentClusterInstall: CIM.AgentClusterInstallK8sResource
+    validate?: () => void
+    summary?: () => void
+    resourceJSON?: any
+    step?: any
 }
 
 type NetworkFormProps = {
     control: FormControl
-    handleCreateResource: (redirect: boolean) => any
+    resourceJSON: any
     handleChange: (control: FormControl) => void
 }
 
-const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleCreateResource, handleChange }) => {
-    const [resourceJSON, setResourceJSON] = useState<any>()
-    const [editAgent, setEditAgent] = useState()
+const fields: any = {
+    apiVip: {label:'API Virtual IP'},
+    ingressVip: {label:'Ingress Virtual IP'},
+    clusterNetworkCidr: {label:'Cluster network CIDR'},
+    clusterNetworkHostPrefix: {label:'Cluster network host prefix'},
+    serviceNetworkCidr: {label:'Service network CIDR'},
+    sshPublicKey: {label:'Host SSH Public Key'},
+}
 
+const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
+    const formRef = useRef<FormikProps<NetworkConfigurationValues>>(null)
     useEffect(() => {
-        const resource = handleCreateResource(true) //await
-        setResourceJSON(resource)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+        if (control.active) {
+            formRef?.current?.setValues(control.active, false)
+        } else {
+            control.active = formRef?.current?.values
+        }
+        control.validate = 
+            () => {
+                return formRef?.current?.submitForm().then(()=>{
+                    return formRef?.current?.errors
+                })
+            }
+        control.summary = ()=>{
+            return Object.keys(fields).map(key=>{
+                return {
+                    term: fields[key].label,
+                    desc: get(control, `active.${key}`),
+                    exception: get(control, `errors.${key}`)
+                }
+            })
+        }
+    }, [control])
 
-    const [clusterDeployments, agentClusterInstalls, agents] = useRecoilValue(
-        waitForAll([clusterDeploymentsState, agentClusterInstallsState, agentsState])
+    const [editAgent, setEditAgent] = useState()
+    const [
+        agents,
+    ] = useRecoilValue(
+        waitForAll([
+            agentsState
+        ])
     )
 
-    const cdName = resourceJSON?.createResources.find((r: any) => r.kind === ClusterDeploymentKind).metadata.name
+    const { resourceJSON={} } = control
+    const { createResources = []} = resourceJSON
+    const clusterDeployment = createResources.find((r: { kind: string; })=> r.kind==='ClusterDeployment')
+    const agentClusterInstall = createResources.find((r: { kind: string; })=> r.kind==='AgentClusterInstall')
 
-    const clusterDeployment = clusterDeployments.find(
-        (c) => c.metadata.name === cdName && c.metadata.namespace === cdName
-    )
-    const agentClusterInstall = agentClusterInstalls.find(
-        (a) => a.metadata.name === cdName && a.metadata.namespace === cdName
-    )
-
-    useEffect(() => (control.agentClusterInstall = agentClusterInstall), [control, agentClusterInstall])
+    useEffect(() => control.agentClusterInstall = agentClusterInstall, [control, agentClusterInstall]);
 
     const onValuesChanged = useCallback((values) => {
-        control.active = values
-        handleChange(control)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        if (!isEqual(values, control.active)) {
+            control.active = values;
+            control.step.title.isComplete = false
+            handleChange(control);
+        }
     }, [])
 
-    return clusterDeployment && agentClusterInstall ? (
+    return (
         <>
             <ACMClusterDeploymentNetworkingStep
+                formRef={formRef}
                 onValuesChanged={onValuesChanged}
                 clusterDeployment={clusterDeployment}
                 agentClusterInstall={agentClusterInstall}
@@ -81,8 +114,6 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleCreateResource
                 onFormSaveError={() => {}}
             />
         </>
-    ) : (
-        <LoadingState />
     )
 }
 
