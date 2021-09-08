@@ -149,7 +149,7 @@ export function ClustersTable(props: {
 
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
 
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['cluster', 'common'])
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
     const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
@@ -275,7 +275,7 @@ export function ClustersTable(props: {
                         cell: (cluster) => {
                             if (cluster.labels) {
                                 const labelKeys = Object.keys(cluster.labels)
-                                const collapse =
+                                let collapse =
                                     [
                                         'cloud',
                                         'clusterID',
@@ -285,7 +285,15 @@ export function ClustersTable(props: {
                                         'vendor',
                                         'managed-by',
                                         'local-cluster',
-                                    ].filter((label) => labelKeys.includes(label)) ?? []
+                                        'openshiftVersion',
+                                    ].filter((label) => {
+                                        return labelKeys.includes(label)
+                                    }) ?? []
+                                labelKeys.forEach((label) => {
+                                    if (label.includes('open-cluster-management.io')) {
+                                        collapse.push(label)
+                                    }
+                                })
                                 return (
                                     <AcmLabels
                                         labels={cluster.labels}
