@@ -4,7 +4,7 @@ import { FormikProps } from 'formik'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterImageSet, listClusterImageSets, Secret } from '../../../../../../../resources'
 import { set, get, isEqual, startCase, camelCase } from 'lodash'
-import { getValue } from 'C:/Users/jswanke/git2/temptifly/src' //'temptifly'
+import { getValue } from 'temptifly'
 import { ClusterDetailsValues } from 'openshift-assisted-ui-lib/dist/src/common'
 
 const { ACMClusterDeploymentDetailsStep } = CIM
