@@ -165,8 +165,15 @@ export function ClusterSetAccessManagement() {
                     items={clusterRoleBindings}
                     keyFn={keyFn}
                     columns={columns}
-                    tableActions={[{ id: 'addUserGroup', title: t('access.add'), click: () => setAddModalOpen(true) }]}
-                    bulkActions={[
+                    tableActionButtons={[
+                        {
+                            id: 'addUserGroup',
+                            title: t('access.add'),
+                            click: () => setAddModalOpen(true),
+                            variant: ButtonVariant.primary,
+                        },
+                    ]}
+                    tableActions={[
                         {
                             id: 'removeAuthorization',
                             title: t('access.remove'),
@@ -190,6 +197,7 @@ export function ClusterSetAccessManagement() {
                                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                 })
                             },
+                            variant: 'bulk-action',
                         },
                     ]}
                     rowActions={[

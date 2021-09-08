@@ -182,7 +182,6 @@ export function NodesPoolsTable() {
                 columns={columns}
                 keyFn={keyFn}
                 tableActions={[]}
-                bulkActions={[]}
                 rowActions={[]}
             />
         </>

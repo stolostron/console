@@ -11,7 +11,17 @@ import {
     AcmTable,
     StatusType,
 } from '@open-cluster-management/ui-components'
-import { Flex, FlexItem, PageSection, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import {
+    ButtonVariant,
+    Flex,
+    FlexItem,
+    PageSection,
+    Stack,
+    StackItem,
+    Text,
+    TextContent,
+    TextVariants,
+} from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { useContext, useState } from 'react'
@@ -293,7 +303,7 @@ export function ClusterSetSubmarinerPageContent() {
                             ]}
                             keyFn={keyFn}
                             key="submarinerTable"
-                            bulkActions={[
+                            tableActions={[
                                 {
                                     id: 'uninstall-submariner',
                                     title: t('bulk.title.uninstallSubmariner.action'),
@@ -319,10 +329,11 @@ export function ClusterSetSubmarinerPageContent() {
                                             isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                                         })
                                     },
+                                    variant: 'bulk-action',
                                 },
                             ]}
                             rowActions={[]}
-                            tableActions={[
+                            tableActionButtons={[
                                 {
                                     id: 'install-submariner',
                                     title: t('managed.clusterSets.submariner.addons.install'),
@@ -333,6 +344,7 @@ export function ClusterSetSubmarinerPageContent() {
                                                 clusterSet?.metadata.name!
                                             )
                                         ),
+                                    variant: ButtonVariant.primary,
                                 },
                             ]}
                             emptyState={

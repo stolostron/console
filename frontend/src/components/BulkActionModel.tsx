@@ -103,7 +103,6 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                     tableActions={[]}
                                     emptyState={props.emptyState}
                                     rowActions={[]}
-                                    bulkActions={[]}
                                     perPageOptions={[]}
                                     autoHidePagination
                                     showToolbar={props.showToolbar}
@@ -153,7 +152,6 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                     keyFn={props.keyFn}
                                     tableActions={[]}
                                     rowActions={[]}
-                                    bulkActions={[]}
                                     perPageOptions={[]}
                                     autoHidePagination
                                 />

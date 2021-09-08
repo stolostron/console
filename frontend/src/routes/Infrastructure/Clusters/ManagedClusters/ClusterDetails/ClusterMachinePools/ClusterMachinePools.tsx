@@ -222,7 +222,6 @@ export function MachinePoolsTable() {
                 columns={columns}
                 keyFn={keyFn}
                 tableActions={[]}
-                bulkActions={[]}
                 rowActions={[]}
                 emptyState={
                     <AcmEmptyState

@@ -9,7 +9,7 @@ import {
     AcmLaunchLink,
     AcmPageContent,
     AcmTable,
-    IAcmTableAction,
+    IAcmTableButtonAction,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
@@ -83,13 +83,14 @@ export default function ClustersPage() {
                     <StackItem>
                         <ClustersTable
                             clusters={clusters}
-                            tableActions={[
+                            tableButtonActions={[
                                 {
                                     id: 'createCluster',
                                     title: t('managed.createCluster'),
                                     click: () => history.push(NavigationPath.createCluster),
                                     isDisabled: !canCreateCluster,
                                     tooltip: t('common:rbac.unauthorized'),
+                                    variant: ButtonVariant.primary,
                                 },
                                 {
                                     id: 'importCluster',
@@ -140,7 +141,7 @@ const PageActions = () => {
 
 export function ClustersTable(props: {
     clusters?: Cluster[]
-    tableActions?: IAcmTableAction[]
+    tableButtonActions?: IAcmTableButtonAction[]
     emptyState?: React.ReactNode
 }) {
     sessionStorage.removeItem('DiscoveredClusterDisplayName')
@@ -332,8 +333,8 @@ export function ClustersTable(props: {
                 ]}
                 keyFn={mckeyFn}
                 key="managedClustersTable"
-                tableActions={props.tableActions}
-                bulkActions={[
+                tableActionButtons={props.tableButtonActions}
+                tableActions={[
                     {
                         id: 'upgradeClusters',
                         title: t('managed.upgrade.plural'),
@@ -341,6 +342,7 @@ export function ClustersTable(props: {
                             if (!managedClusters) return
                             setUpgradeClusters(managedClusters)
                         },
+                        variant: 'bulk-action',
                     },
                     {
                         id: 'selectChannels',
@@ -349,7 +351,9 @@ export function ClustersTable(props: {
                             if (!managedClusters) return
                             setSelectChannels(managedClusters)
                         },
+                        variant: 'bulk-action',
                     },
+                    { id: 'seperator-1', variant: 'action-seperator' },
                     {
                         id: 'hibernate-cluster',
                         title: t('managed.hibernate.plural'),
@@ -383,6 +387,7 @@ export function ClustersTable(props: {
                                 plural: t('hibernatable.clusters'),
                             })
                         },
+                        variant: 'bulk-action',
                     },
                     {
                         id: 'resume-cluster',
@@ -417,7 +422,9 @@ export function ClustersTable(props: {
                                 plural: t('hibernatable.clusters'),
                             })
                         },
+                        variant: 'bulk-action',
                     },
+                    { id: 'seperator-2', variant: 'action-seperator' },
                     {
                         id: 'detachCluster',
                         title: t('managed.detach.plural'),
@@ -439,6 +446,7 @@ export function ClustersTable(props: {
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
+                        variant: 'bulk-action',
                     },
                     {
                         id: 'destroyCluster',
@@ -461,6 +469,7 @@ export function ClustersTable(props: {
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
+                        variant: 'bulk-action',
                     },
                 ]}
                 rowActions={[]}
