@@ -10,10 +10,11 @@ import {
     AcmPageContent,
     AcmTable,
     IAcmTableAction,
+    IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
-import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -143,9 +144,11 @@ export function ClustersTable(props: {
     tableActions?: IAcmTableAction[]
     emptyState?: React.ReactNode
 }) {
-    sessionStorage.removeItem('DiscoveredClusterDisplayName')
-    sessionStorage.removeItem('DiscoveredClusterConsoleURL')
-    sessionStorage.removeItem('DiscoveredClusterApiURL')
+    useEffect(() => {
+        sessionStorage.removeItem('DiscoveredClusterDisplayName')
+        sessionStorage.removeItem('DiscoveredClusterConsoleURL')
+        sessionStorage.removeItem('DiscoveredClusterApiURL')
+    }, [])
 
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
 
@@ -156,9 +159,9 @@ export function ClustersTable(props: {
         open: false,
     })
 
-    function mckeyFn(cluster: Cluster) {
+    const mckeyFn = useCallback(function mckeyFn(cluster: Cluster) {
         return cluster.name!
-    }
+    }, [])
 
     const modalColumns = useMemo(
         () => [
@@ -195,6 +198,248 @@ export function ClustersTable(props: {
         [t]
     )
 
+    const columns = useMemo<IAcmTableColumn<Cluster>[]>(
+        () => [
+            {
+                header: t('table.name'),
+                tooltip: t('table.name.helperText.noBold'),
+                sort: 'displayName',
+                search: (cluster) => [cluster.displayName as string, cluster.hive.clusterClaimName as string],
+                cell: (cluster) => (
+                    <>
+                        <span style={{ whiteSpace: 'nowrap' }}>
+                            <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
+                                {cluster.displayName}
+                            </Link>
+                        </span>
+                        {cluster.hive.clusterClaimName && (
+                            <TextContent>
+                                <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
+                            </TextContent>
+                        )}
+                    </>
+                ),
+            },
+            {
+                header: t('table.status'),
+                sort: 'status',
+                search: 'status',
+                cell: (cluster) => (
+                    <span style={{ whiteSpace: 'nowrap' }}>
+                        <StatusField cluster={cluster} />
+                    </span>
+                ),
+            },
+            {
+                header: t('table.provider'),
+                sort: 'provider',
+                search: 'provider',
+                cell: (cluster) => (cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-'),
+            },
+            {
+                header: t('table.distribution'),
+                sort: 'distribution.displayVersion',
+                search: 'distribution.displayVersion',
+                cell: (cluster) => (
+                    <DistributionField
+                        cluster={cluster}
+                        clusterCurator={clusterCurators.find((curator) => curator.metadata.name === cluster.name)}
+                    />
+                ),
+            },
+            {
+                header: t('table.labels'),
+                search: (cluster) =>
+                    cluster.labels ? Object.keys(cluster.labels).map((key) => `${key}=${cluster.labels![key]}`) : '',
+                cell: (cluster) => {
+                    if (cluster.labels) {
+                        const labelKeys = Object.keys(cluster.labels)
+                        const collapse =
+                            [
+                                'cloud',
+                                'clusterID',
+                                'installer.name',
+                                'installer.namespace',
+                                'name',
+                                'vendor',
+                                'managed-by',
+                                'local-cluster',
+                            ].filter((label) => labelKeys.includes(label)) ?? []
+                        return (
+                            <AcmLabels
+                                labels={cluster.labels}
+                                style={{ maxWidth: '600px' }}
+                                expandedText={t('common:show.less')}
+                                collapsedText={t('common:show.more', { number: collapse.length })}
+                                collapse={collapse}
+                            />
+                        )
+                    } else {
+                        return '-'
+                    }
+                },
+            },
+            {
+                header: t('table.nodes'),
+                cell: (cluster) => {
+                    return cluster.nodes!.nodeList!.length > 0 ? (
+                        <AcmInlineStatusGroup
+                            healthy={cluster.nodes!.ready}
+                            danger={cluster.nodes!.unhealthy}
+                            unknown={cluster.nodes!.unknown}
+                        />
+                    ) : (
+                        '-'
+                    )
+                },
+            },
+            {
+                header: '',
+                cell: (cluster: Cluster) => {
+                    return <ClusterActionDropdown cluster={cluster} isKebab={true} />
+                },
+                cellTransforms: [fitContent],
+            },
+        ],
+        []
+    )
+
+    const bulkActions = useMemo(
+        () => [
+            {
+                id: 'upgradeClusters',
+                title: t('managed.upgrade.plural'),
+                click: (managedClusters: Array<Cluster>) => {
+                    if (!managedClusters) return
+                    setUpgradeClusters(managedClusters)
+                },
+            },
+            {
+                id: 'selectChannels',
+                title: t('managed.selectChannel.plural'),
+                click: (managedClusters: Array<Cluster>) => {
+                    if (!managedClusters) return
+                    setSelectChannels(managedClusters)
+                },
+            },
+            {
+                id: 'hibernate-cluster',
+                title: t('managed.hibernate.plural'),
+                click: (clusters) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.hibernate'),
+                        action: t('hibernate'),
+                        processing: t('hibernating'),
+                        resources: clusters.filter((cluster) => cluster.hive.isHibernatable),
+                        description: t('bulk.message.hibernate'),
+                        columns: modalColumns,
+                        keyFn: (cluster) => cluster.name as string,
+                        actionFn: (cluster) => {
+                            return patchResource(
+                                {
+                                    apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                    kind: ClusterDeploymentDefinition.kind,
+                                    metadata: {
+                                        name: cluster.name!,
+                                        namespace: cluster.namespace!,
+                                    },
+                                } as ClusterDeployment,
+                                [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
+                            )
+                        },
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                        plural: t('hibernatable.clusters'),
+                    })
+                },
+            },
+            {
+                id: 'resume-cluster',
+                title: t('managed.resume.plural'),
+                click: (clusters) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.resume'),
+                        action: t('resume'),
+                        processing: t('resuming'),
+                        resources: clusters.filter((cluster) => cluster.status === ClusterStatus.hibernating),
+                        description: t('bulk.message.resume'),
+                        columns: modalColumns,
+                        keyFn: (cluster) => cluster.name as string,
+                        actionFn: (cluster) => {
+                            return patchResource(
+                                {
+                                    apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                    kind: ClusterDeploymentDefinition.kind,
+                                    metadata: {
+                                        name: cluster.name!,
+                                        namespace: cluster.namespace!,
+                                    },
+                                } as ClusterDeployment,
+                                [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
+                            )
+                        },
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                        plural: t('hibernatable.clusters'),
+                    })
+                },
+            },
+            {
+                id: 'detachCluster',
+                title: t('managed.detach.plural'),
+                click: (clusters) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.detach'),
+                        action: t('detach'),
+                        processing: t('detaching'),
+                        resources: clusters,
+                        description: t('bulk.message.detach'),
+                        columns: modalColumns,
+                        keyFn: (cluster) => cluster.name as string,
+                        actionFn: (cluster) => detachCluster(cluster.name!),
+                        close: () => setModalProps({ open: false }),
+                        isDanger: true,
+                        icon: 'warning',
+                        confirmText: t('confirm').toLowerCase(),
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                    })
+                },
+            },
+            {
+                id: 'destroyCluster',
+                title: t('managed.destroy.plural'),
+                click: (clusters) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.destroy'),
+                        action: t('destroy'),
+                        processing: t('destroying'),
+                        resources: clusters,
+                        description: t('bulk.message.destroy'),
+                        columns: modalColumns,
+                        keyFn: (cluster) => cluster.name as string,
+                        actionFn: (cluster) => deleteCluster(cluster, true),
+                        close: () => setModalProps({ open: false }),
+                        isDanger: true,
+                        icon: 'warning',
+                        confirmText: t('confirm').toLowerCase(),
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                    })
+                },
+            },
+        ],
+        [modalColumns]
+    )
+
+    const rowActions = useMemo(() => [], [])
+
     return (
         <Fragment>
             <BulkActionModel<Cluster> {...modalProps} />
@@ -215,247 +460,12 @@ export function ClustersTable(props: {
             <AcmTable<Cluster>
                 plural="clusters"
                 items={props.clusters}
-                columns={[
-                    {
-                        header: t('table.name'),
-                        tooltip: t('table.name.helperText.noBold'),
-                        sort: 'displayName',
-                        search: (cluster) => [cluster.displayName as string, cluster.hive.clusterClaimName as string],
-                        cell: (cluster) => (
-                            <>
-                                <span style={{ whiteSpace: 'nowrap' }}>
-                                    <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
-                                        {cluster.displayName}
-                                    </Link>
-                                </span>
-                                {cluster.hive.clusterClaimName && (
-                                    <TextContent>
-                                        <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-                                    </TextContent>
-                                )}
-                            </>
-                        ),
-                    },
-                    {
-                        header: t('table.status'),
-                        sort: 'status',
-                        search: 'status',
-                        cell: (cluster) => (
-                            <span style={{ whiteSpace: 'nowrap' }}>
-                                <StatusField cluster={cluster} />
-                            </span>
-                        ),
-                    },
-                    {
-                        header: t('table.provider'),
-                        sort: 'provider',
-                        search: 'provider',
-                        cell: (cluster) =>
-                            cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
-                    },
-                    {
-                        header: t('table.distribution'),
-                        sort: 'distribution.displayVersion',
-                        search: 'distribution.displayVersion',
-                        cell: (cluster) => (
-                            <DistributionField
-                                cluster={cluster}
-                                clusterCurator={clusterCurators.find(
-                                    (curator) => curator.metadata.name === cluster.name
-                                )}
-                            />
-                        ),
-                    },
-                    {
-                        header: t('table.labels'),
-                        search: (cluster) =>
-                            cluster.labels
-                                ? Object.keys(cluster.labels).map((key) => `${key}=${cluster.labels![key]}`)
-                                : '',
-                        cell: (cluster) => {
-                            if (cluster.labels) {
-                                const labelKeys = Object.keys(cluster.labels)
-                                const collapse =
-                                    [
-                                        'cloud',
-                                        'clusterID',
-                                        'installer.name',
-                                        'installer.namespace',
-                                        'name',
-                                        'vendor',
-                                        'managed-by',
-                                        'local-cluster',
-                                    ].filter((label) => labelKeys.includes(label)) ?? []
-                                return (
-                                    <AcmLabels
-                                        labels={cluster.labels}
-                                        style={{ maxWidth: '600px' }}
-                                        expandedText={t('common:show.less')}
-                                        collapsedText={t('common:show.more', { number: collapse.length })}
-                                        collapse={collapse}
-                                    />
-                                )
-                            } else {
-                                return '-'
-                            }
-                        },
-                    },
-                    {
-                        header: t('table.nodes'),
-                        cell: (cluster) => {
-                            return cluster.nodes!.nodeList!.length > 0 ? (
-                                <AcmInlineStatusGroup
-                                    healthy={cluster.nodes!.ready}
-                                    danger={cluster.nodes!.unhealthy}
-                                    unknown={cluster.nodes!.unknown}
-                                />
-                            ) : (
-                                '-'
-                            )
-                        },
-                    },
-                    {
-                        header: '',
-                        cell: (cluster: Cluster) => {
-                            return <ClusterActionDropdown cluster={cluster} isKebab={true} />
-                        },
-                        cellTransforms: [fitContent],
-                    },
-                ]}
+                columns={columns}
                 keyFn={mckeyFn}
                 key="managedClustersTable"
                 tableActions={props.tableActions}
-                bulkActions={[
-                    {
-                        id: 'upgradeClusters',
-                        title: t('managed.upgrade.plural'),
-                        click: (managedClusters: Array<Cluster>) => {
-                            if (!managedClusters) return
-                            setUpgradeClusters(managedClusters)
-                        },
-                    },
-                    {
-                        id: 'selectChannels',
-                        title: t('managed.selectChannel.plural'),
-                        click: (managedClusters: Array<Cluster>) => {
-                            if (!managedClusters) return
-                            setSelectChannels(managedClusters)
-                        },
-                    },
-                    {
-                        id: 'hibernate-cluster',
-                        title: t('managed.hibernate.plural'),
-                        click: (clusters) => {
-                            setModalProps({
-                                open: true,
-                                title: t('bulk.title.hibernate'),
-                                action: t('hibernate'),
-                                processing: t('hibernating'),
-                                resources: clusters.filter((cluster) => cluster.hive.isHibernatable),
-                                description: t('bulk.message.hibernate'),
-                                columns: modalColumns,
-                                keyFn: (cluster) => cluster.name as string,
-                                actionFn: (cluster) => {
-                                    return patchResource(
-                                        {
-                                            apiVersion: ClusterDeploymentDefinition.apiVersion,
-                                            kind: ClusterDeploymentDefinition.kind,
-                                            metadata: {
-                                                name: cluster.name!,
-                                                namespace: cluster.namespace!,
-                                            },
-                                        } as ClusterDeployment,
-                                        [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
-                                    )
-                                },
-                                close: () => {
-                                    setModalProps({ open: false })
-                                },
-                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                                plural: t('hibernatable.clusters'),
-                            })
-                        },
-                    },
-                    {
-                        id: 'resume-cluster',
-                        title: t('managed.resume.plural'),
-                        click: (clusters) => {
-                            setModalProps({
-                                open: true,
-                                title: t('bulk.title.resume'),
-                                action: t('resume'),
-                                processing: t('resuming'),
-                                resources: clusters.filter((cluster) => cluster.status === ClusterStatus.hibernating),
-                                description: t('bulk.message.resume'),
-                                columns: modalColumns,
-                                keyFn: (cluster) => cluster.name as string,
-                                actionFn: (cluster) => {
-                                    return patchResource(
-                                        {
-                                            apiVersion: ClusterDeploymentDefinition.apiVersion,
-                                            kind: ClusterDeploymentDefinition.kind,
-                                            metadata: {
-                                                name: cluster.name!,
-                                                namespace: cluster.namespace!,
-                                            },
-                                        } as ClusterDeployment,
-                                        [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
-                                    )
-                                },
-                                close: () => {
-                                    setModalProps({ open: false })
-                                },
-                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                                plural: t('hibernatable.clusters'),
-                            })
-                        },
-                    },
-                    {
-                        id: 'detachCluster',
-                        title: t('managed.detach.plural'),
-                        click: (clusters) => {
-                            setModalProps({
-                                open: true,
-                                title: t('bulk.title.detach'),
-                                action: t('detach'),
-                                processing: t('detaching'),
-                                resources: clusters,
-                                description: t('bulk.message.detach'),
-                                columns: modalColumns,
-                                keyFn: (cluster) => cluster.name as string,
-                                actionFn: (cluster) => detachCluster(cluster.name!),
-                                close: () => setModalProps({ open: false }),
-                                isDanger: true,
-                                icon: 'warning',
-                                confirmText: t('confirm').toLowerCase(),
-                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                            })
-                        },
-                    },
-                    {
-                        id: 'destroyCluster',
-                        title: t('managed.destroy.plural'),
-                        click: (clusters) => {
-                            setModalProps({
-                                open: true,
-                                title: t('bulk.title.destroy'),
-                                action: t('destroy'),
-                                processing: t('destroying'),
-                                resources: clusters,
-                                description: t('bulk.message.destroy'),
-                                columns: modalColumns,
-                                keyFn: (cluster) => cluster.name as string,
-                                actionFn: (cluster) => deleteCluster(cluster, true),
-                                close: () => setModalProps({ open: false }),
-                                isDanger: true,
-                                icon: 'warning',
-                                confirmText: t('confirm').toLowerCase(),
-                                isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                            })
-                        },
-                    },
-                ]}
-                rowActions={[]}
+                bulkActions={bulkActions}
+                rowActions={rowActions}
                 emptyState={props.emptyState}
             />
         </Fragment>

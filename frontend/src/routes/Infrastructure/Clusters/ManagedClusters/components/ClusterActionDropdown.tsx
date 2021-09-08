@@ -78,210 +78,216 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         destroyRbac.push(rbacDelete(ManagedClusterDefinition, undefined, cluster.name))
     }
 
-    let actions = [
-        {
-            id: 'edit-labels',
-            text: t('managed.editLabels'),
-            click: () => setShowEditLabels(true),
-            isDisabled: true,
-            rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
-        },
-        {
-            id: 'upgrade-cluster',
-            text: t('managed.upgrade'),
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            click: (_cluster: Cluster) => setShowUpgradeModal(true),
-            isDisabled: true,
-            rbac: [
-                rbacPatch(ClusterCuratorDefinition, cluster.namespace),
-                rbacCreate(ClusterCuratorDefinition, cluster.namespace),
-            ],
-        },
-        {
-            id: 'select-channel',
-            text: t('managed.selectChannel'),
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            click: (_cluster: Cluster) => setShowChannelSelectModal(true),
-            isDisabled: true,
-            rbac: [
-                rbacPatch(ClusterCuratorDefinition, cluster.namespace),
-                rbacCreate(ClusterCuratorDefinition, cluster.namespace),
-            ],
-        },
-        {
-            id: 'search-cluster',
-            text: t('managed.search'),
-            click: (cluster: Cluster) =>
-                window.location.assign(`/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`),
-        },
-        {
-            id: 'import-cluster',
-            text: t('managed.import'),
-            click: (cluster: Cluster) => {
-                setModalProps({
-                    open: true,
-                    title: t('bulk.title.import'),
-                    action: t('common:import'),
-                    processing: t('common:importing'),
-                    resources: [cluster],
-                    close: () => {
-                        setModalProps({ open: false })
-                    },
-                    description: t('bulk.message.import'),
-                    columns: [
-                        {
-                            header: t('upgrade.table.name'),
-                            sort: 'displayName',
-                            cell: (cluster) => (
-                                <>
-                                    <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
-                                    {cluster.hive.clusterClaimName && (
-                                        <TextContent>
-                                            <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-                                        </TextContent>
-                                    )}
-                                </>
-                            ),
+    let actions = useMemo(
+        () => [
+            {
+                id: 'edit-labels',
+                text: t('managed.editLabels'),
+                click: () => setShowEditLabels(true),
+                isDisabled: true,
+                rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
+            },
+            {
+                id: 'upgrade-cluster',
+                text: t('managed.upgrade'),
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                click: (_cluster: Cluster) => setShowUpgradeModal(true),
+                isDisabled: true,
+                rbac: [
+                    rbacPatch(ClusterCuratorDefinition, cluster.namespace),
+                    rbacCreate(ClusterCuratorDefinition, cluster.namespace),
+                ],
+            },
+            {
+                id: 'select-channel',
+                text: t('managed.selectChannel'),
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                click: (_cluster: Cluster) => setShowChannelSelectModal(true),
+                isDisabled: true,
+                rbac: [
+                    rbacPatch(ClusterCuratorDefinition, cluster.namespace),
+                    rbacCreate(ClusterCuratorDefinition, cluster.namespace),
+                ],
+            },
+            {
+                id: 'search-cluster',
+                text: t('managed.search'),
+                click: (cluster: Cluster) =>
+                    window.location.assign(`/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`),
+            },
+            {
+                id: 'import-cluster',
+                text: t('managed.import'),
+                click: (cluster: Cluster) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.import'),
+                        action: t('common:import'),
+                        processing: t('common:importing'),
+                        resources: [cluster],
+                        close: () => {
+                            setModalProps({ open: false })
                         },
-                        {
-                            header: t('table.provider'),
-                            sort: 'provider',
-                            cell: (cluster: Cluster) =>
-                                cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+                        description: t('bulk.message.import'),
+                        columns: [
+                            {
+                                header: t('upgrade.table.name'),
+                                sort: 'displayName',
+                                cell: (cluster) => (
+                                    <>
+                                        <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
+                                        {cluster.hive.clusterClaimName && (
+                                            <TextContent>
+                                                <Text component={TextVariants.small}>
+                                                    {cluster.hive.clusterClaimName}
+                                                </Text>
+                                            </TextContent>
+                                        )}
+                                    </>
+                                ),
+                            },
+                            {
+                                header: t('table.provider'),
+                                sort: 'provider',
+                                cell: (cluster: Cluster) =>
+                                    cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
+                            },
+                        ],
+                        keyFn: (cluster) => cluster.name as string,
+                        actionFn: (cluster: Cluster) => createImportResources(cluster.name!, cluster.clusterSet!),
+                    })
+                },
+                rbac: [rbacCreate(ManagedClusterDefinition)],
+            },
+            {
+                id: 'hibernate-cluster',
+                text: t('managed.hibernate'),
+                click: () => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.hibernate'),
+                        action: t('hibernate'),
+                        processing: t('hibernating'),
+                        resources: [cluster],
+                        description: t('bulk.message.hibernate'),
+                        columns: modalColumns,
+                        keyFn: (cluster) => cluster.name as string,
+                        actionFn: (cluster) => {
+                            return patchResource(
+                                {
+                                    apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                    kind: ClusterDeploymentDefinition.kind,
+                                    metadata: {
+                                        name: cluster.name!,
+                                        namespace: cluster.namespace!,
+                                    },
+                                } as ClusterDeployment,
+                                [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
+                            )
                         },
-                    ],
-                    keyFn: (cluster) => cluster.name as string,
-                    actionFn: (cluster: Cluster) => createImportResources(cluster.name!, cluster.clusterSet!),
-                })
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                    })
+                },
+                isDisabled: true,
+                rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
             },
-            rbac: [rbacCreate(ManagedClusterDefinition)],
-        },
-        {
-            id: 'hibernate-cluster',
-            text: t('managed.hibernate'),
-            click: () => {
-                setModalProps({
-                    open: true,
-                    title: t('bulk.title.hibernate'),
-                    action: t('hibernate'),
-                    processing: t('hibernating'),
-                    resources: [cluster],
-                    description: t('bulk.message.hibernate'),
-                    columns: modalColumns,
-                    keyFn: (cluster) => cluster.name as string,
-                    actionFn: (cluster) => {
-                        return patchResource(
-                            {
-                                apiVersion: ClusterDeploymentDefinition.apiVersion,
-                                kind: ClusterDeploymentDefinition.kind,
-                                metadata: {
-                                    name: cluster.name!,
-                                    namespace: cluster.namespace!,
-                                },
-                            } as ClusterDeployment,
-                            [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
-                        )
-                    },
-                    close: () => {
-                        setModalProps({ open: false })
-                    },
-                })
+            {
+                id: 'resume-cluster',
+                text: t('managed.resume'),
+                click: () => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.resume'),
+                        action: t('resume'),
+                        processing: t('resuming'),
+                        resources: [cluster],
+                        description: t('bulk.message.resume'),
+                        columns: modalColumns,
+                        keyFn: (cluster) => cluster.name as string,
+                        actionFn: (cluster) => {
+                            return patchResource(
+                                {
+                                    apiVersion: ClusterDeploymentDefinition.apiVersion,
+                                    kind: ClusterDeploymentDefinition.kind,
+                                    metadata: {
+                                        name: cluster.name!,
+                                        namespace: cluster.namespace!,
+                                    },
+                                } as ClusterDeployment,
+                                [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
+                            )
+                        },
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                    })
+                },
+                isDisabled: true,
+                rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
             },
-            isDisabled: true,
-            rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
-        },
-        {
-            id: 'resume-cluster',
-            text: t('managed.resume'),
-            click: () => {
-                setModalProps({
-                    open: true,
-                    title: t('bulk.title.resume'),
-                    action: t('resume'),
-                    processing: t('resuming'),
-                    resources: [cluster],
-                    description: t('bulk.message.resume'),
-                    columns: modalColumns,
-                    keyFn: (cluster) => cluster.name as string,
-                    actionFn: (cluster) => {
-                        return patchResource(
-                            {
-                                apiVersion: ClusterDeploymentDefinition.apiVersion,
-                                kind: ClusterDeploymentDefinition.kind,
-                                metadata: {
-                                    name: cluster.name!,
-                                    namespace: cluster.namespace!,
-                                },
-                            } as ClusterDeployment,
-                            [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
-                        )
-                    },
-                    close: () => {
-                        setModalProps({ open: false })
-                    },
-                })
+            {
+                id: 'detach-cluster',
+                text: t('managed.detach'),
+                click: (cluster: Cluster) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.detach'),
+                        action: t('detach'),
+                        processing: t('detaching'),
+                        resources: [cluster],
+                        description: t('bulk.message.detach'),
+                        columns: modalColumns,
+                        keyFn: (cluster) => cluster.name as string,
+                        actionFn: (cluster) => detachCluster(cluster.name!),
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                        isDanger: true,
+                        icon: 'warning',
+                        confirmText: cluster.displayName,
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                    })
+                },
+                isDisabled: true,
+                rbac: [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
             },
-            isDisabled: true,
-            rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
-        },
-        {
-            id: 'detach-cluster',
-            text: t('managed.detach'),
-            click: (cluster: Cluster) => {
-                setModalProps({
-                    open: true,
-                    title: t('bulk.title.detach'),
-                    action: t('detach'),
-                    processing: t('detaching'),
-                    resources: [cluster],
-                    description: t('bulk.message.detach'),
-                    columns: modalColumns,
-                    keyFn: (cluster) => cluster.name as string,
-                    actionFn: (cluster) => detachCluster(cluster.name!),
-                    close: () => {
-                        setModalProps({ open: false })
-                    },
-                    isDanger: true,
-                    icon: 'warning',
-                    confirmText: cluster.displayName,
-                    isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                })
+            {
+                id: 'destroy-cluster',
+                text: t('managed.destroy'),
+                click: (cluster: Cluster) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.destroy'),
+                        action: t('destroy'),
+                        processing: t('destroying'),
+                        resources: [cluster],
+                        description: t('bulk.message.destroy'),
+                        columns: modalColumns,
+                        keyFn: (cluster) => cluster.name as string,
+                        actionFn: (cluster) => deleteCluster(cluster),
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                        isDanger: true,
+                        icon: 'warning',
+                        confirmText: cluster.displayName,
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                    })
+                },
+                isDisabled: true,
+                rbac: destroyRbac,
             },
-            isDisabled: true,
-            rbac: [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
-        },
-        {
-            id: 'destroy-cluster',
-            text: t('managed.destroy'),
-            click: (cluster: Cluster) => {
-                setModalProps({
-                    open: true,
-                    title: t('bulk.title.destroy'),
-                    action: t('destroy'),
-                    processing: t('destroying'),
-                    resources: [cluster],
-                    description: t('bulk.message.destroy'),
-                    columns: modalColumns,
-                    keyFn: (cluster) => cluster.name as string,
-                    actionFn: (cluster) => deleteCluster(cluster),
-                    close: () => {
-                        setModalProps({ open: false })
-                    },
-                    isDanger: true,
-                    icon: 'warning',
-                    confirmText: cluster.displayName,
-                    isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                })
+            {
+                id: 'ai-edit',
+                text: t('managed.editAI'),
+                click: (cluster: Cluster) =>
+                    history.push(`/multicloud/cluster/edit/${cluster.namespace}/${cluster.name}`),
             },
-            isDisabled: true,
-            rbac: destroyRbac,
-        },
-        {
-            id: 'ai-edit',
-            text: t('managed.editAI'),
-            click: (cluster: Cluster) => history.push(`/multicloud/cluster/edit/${cluster.namespace}/${cluster.name}`),
-        },
-    ]
+        ],
+        []
+    )
 
     // ClusterCurator
     if ([ClusterStatus.prehookjob, ClusterStatus.prehookfailed].includes(cluster.status)) {
