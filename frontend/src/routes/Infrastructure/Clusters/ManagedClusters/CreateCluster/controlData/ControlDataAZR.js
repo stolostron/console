@@ -68,6 +68,8 @@ const regions = [
     'ukwest',
     'westcentralus',
     'westindia',
+    'usgovvirginia',
+    'usgovtexas',
 ]
 
 //  List vm sizes in a location/region

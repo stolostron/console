@@ -108,6 +108,7 @@ describe('add credentials page', () => {
             'azr',
             {
                 baseDomainResourceGroupName: 'baseDomainResourceGroupName',
+                cloudName: 'AzurePublicCloud',
                 'osServicePrincipal.json': JSON.stringify({
                     clientId: 'clientId',
                     clientSecret: 'clientSecret',

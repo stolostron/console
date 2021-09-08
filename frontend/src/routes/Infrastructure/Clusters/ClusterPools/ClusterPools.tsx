@@ -2,14 +2,6 @@
 
 import { makeStyles } from '@material-ui/styles'
 import {
-    Cluster,
-    ClusterClaimDefinition,
-    ClusterPool,
-    ClusterStatus,
-    deleteResource,
-    ResourceErrorCode,
-} from '../../../../resources'
-import {
     AcmAlertContext,
     AcmButton,
     AcmEmptyState,
@@ -17,10 +9,19 @@ import {
     AcmInlineProvider,
     AcmPageContent,
     AcmTable,
-    IAcmTableAction,
+    IAcmTableButtonAction,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { Flex, FlexItem, PageSection, Stack, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import {
+    ButtonVariant,
+    Flex,
+    FlexItem,
+    PageSection,
+    Stack,
+    Text,
+    TextContent,
+    TextVariants,
+} from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
@@ -34,6 +35,14 @@ import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
+import {
+    Cluster,
+    ClusterClaimDefinition,
+    ClusterPool,
+    ClusterStatus,
+    deleteResource,
+    ResourceErrorCode,
+} from '../../../../resources'
 import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 import { StatusField } from '../ManagedClusters/components/StatusField'
 import { useAllClusters } from '../ManagedClusters/components/useAllClusters'
@@ -86,11 +95,12 @@ export default function ClusterPoolsPage() {
                     <Stack>
                         <ClusterPoolsTable
                             clusterPools={clusterPools}
-                            tableActions={[
+                            tableActionButtons={[
                                 {
                                     id: 'createClusterPool',
                                     title: t('managed.createClusterPool'),
                                     click: () => history.push(NavigationPath.createClusterPool),
+                                    variant: ButtonVariant.primary,
                                 },
                             ]}
                             emptyState={
@@ -135,7 +145,7 @@ function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
 export function ClusterPoolsTable(props: {
     clusterPools: ClusterPool[]
     emptyState: React.ReactNode
-    tableActions?: IAcmTableAction[]
+    tableActionButtons?: IAcmTableButtonAction[]
 }) {
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const { clusterPools } = props
@@ -378,7 +388,7 @@ export function ClusterPoolsTable(props: {
                 ]}
                 keyFn={mckeyFn}
                 key="clusterPoolsTable"
-                bulkActions={[
+                tableActions={[
                     {
                         id: 'updateReleaseImages',
                         title: t('bulk.updateReleaseImages.clusterPools'),
@@ -388,7 +398,9 @@ export function ClusterPoolsTable(props: {
                                 close: () => setUpdateReleaseImageModalProps(undefined),
                             })
                         },
+                        variant: 'bulk-action',
                     },
+                    { id: 'seperator', variant: 'action-seperator' },
                     {
                         id: 'destroyClusterPools',
                         title: t('bulk.destroy.clusterPools'),
@@ -410,9 +422,10 @@ export function ClusterPoolsTable(props: {
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
+                        variant: 'bulk-action',
                     },
                 ]}
-                tableActions={props.tableActions}
+                tableActionButtons={props.tableActionButtons}
                 rowActions={[]}
                 emptyState={props.emptyState}
             />

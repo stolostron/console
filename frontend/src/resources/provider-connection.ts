@@ -22,6 +22,7 @@ export interface ProviderConnectionStringData {
 
     baseDomainResourceGroupName?: string
     ['osServicePrincipal.json']?: string
+    cloudName?: string
 
     projectID?: string
     ['osServiceAccount.json']?: string
