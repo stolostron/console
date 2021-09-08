@@ -524,9 +524,8 @@ export function CredentialsForm(props: {
                     {
                         id: 'azureCloudName',
                         type: 'Select',
-                        label: t('Azure cloud name'),
-                        placeholder: t(''),
-                        labelHelp: t('Choose the Azure cloud name type'),
+                        label: t('credentialsForm.cloudName.label'),
+                        labelHelp: t('credentialsForm.cloudName.labelHelp'),
                         value: cloudName,
                         onChange: setCloudName,
                         isRequired: true,
