@@ -361,11 +361,12 @@ export function DiscoveredClustersTable(props: {
                 columns={discoveredClusterCols}
                 keyFn={dckeyFn}
                 key="tbl-discoveredclusters"
-                tableActions={[
+                tableActionButtons={[
                     {
                         id: 'configureDiscovery',
                         title: t('discovery.configureDiscovery'),
                         click: () => history.push(NavigationPath.configureDiscovery),
+                        variant: ButtonVariant.primary,
                     },
                     {
                         id: 'addDiscovery',
@@ -374,7 +375,6 @@ export function DiscoveredClustersTable(props: {
                         variant: ButtonVariant.secondary,
                     },
                 ]}
-                bulkActions={[]}
                 rowActions={[
                     {
                         id: 'importCluster',

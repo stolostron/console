@@ -375,20 +375,21 @@ export function BareMetalAssetsTable(props: {
                     },
                 ]}
                 keyFn={keyFn}
-                tableActions={[
+                tableActionButtons={[
                     {
                         id: 'createAsset',
                         title: t('bareMetalAsset.bulkAction.createAsset'),
                         click: () => history.push(NavigationPath.createBareMetalAsset),
+                        variant: ButtonVariant.primary,
                     },
                     {
                         id: 'importAsset',
                         title: t('bareMetalAsset.bulkAction.importAssets'),
-                        variant: ButtonVariant.secondary,
                         click: () => setImportModalProps(),
+                        variant: ButtonVariant.secondary,
                     },
                 ]}
-                bulkActions={[
+                tableActions={[
                     {
                         id: 'deleteBareMetalAsset',
                         title: t('bareMetalAsset.bulkAction.deleteAsset'),
@@ -421,6 +422,7 @@ export function BareMetalAssetsTable(props: {
                                 icon: 'warning',
                             })
                         },
+                        variant: 'bulk-action',
                     },
                     {
                         id: 'createBareMetalAssetCluster',
@@ -433,6 +435,7 @@ export function BareMetalAssetsTable(props: {
                         },
                         isDisabled: !canCreateCluster,
                         tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
+                        variant: 'bulk-action',
                     },
                 ]}
                 rowActions={[]}

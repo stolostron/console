@@ -20,7 +20,16 @@ import {
     AcmPageContent,
     AcmTable,
 } from '@open-cluster-management/ui-components'
-import { Flex, FlexItem, PageSection, Stack, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import {
+    ButtonVariant,
+    Flex,
+    FlexItem,
+    PageSection,
+    Stack,
+    Text,
+    TextContent,
+    TextVariants,
+} from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
@@ -296,7 +305,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 ]}
                 keyFn={mckeyFn}
                 key="clusterSetsTable"
-                bulkActions={[
+                tableActions={[
                     {
                         id: 'deleteClusterSets',
                         title: t('bulk.delete.sets'),
@@ -318,15 +327,17 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
+                        variant: 'bulk-action',
                     },
                 ]}
-                tableActions={[
+                tableActionButtons={[
                     {
                         id: 'createClusterSet',
                         title: t('managed.createClusterSet'),
                         click: () => setCreateClusterSetModalOpen(true),
                         isDisabled: !canCreateClusterSet,
                         tooltip: t('common:rbac.unauthorized'),
+                        variant: ButtonVariant.primary,
                     },
                 ]}
                 rowActions={[]}

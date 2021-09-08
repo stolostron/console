@@ -276,16 +276,17 @@ function AnsibleJobTemplateTable() {
                 keyFn={(clusterCurator: ClusterCurator) => {
                     return clusterCurator.metadata.uid as string
                 }}
-                tableActions={[
+                tableActionButtons={[
                     {
                         id: 'add',
                         title: t('template.create'),
                         click: () => {
                             history.push(NavigationPath.addAnsibleAutomation)
                         },
+                        variant: ButtonVariant.primary,
                     },
                 ]}
-                bulkActions={[
+                tableActions={[
                     {
                         id: 'deleteTemplate',
                         title: t('bulk.delete.templates'),
@@ -316,6 +317,7 @@ function AnsibleJobTemplateTable() {
                                 icon: 'warning',
                             })
                         },
+                        variant: 'bulk-action',
                     },
                 ]}
                 emptyState={

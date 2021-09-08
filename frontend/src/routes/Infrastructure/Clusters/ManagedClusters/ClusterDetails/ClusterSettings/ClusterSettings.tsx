@@ -63,7 +63,6 @@ export function ClusterSettingsTable(props: { addons: Addon[] | undefined }) {
             ]}
             keyFn={(addon: Addon) => addon.name}
             tableActions={[]}
-            bulkActions={[]}
             rowActions={[]}
         />
     )

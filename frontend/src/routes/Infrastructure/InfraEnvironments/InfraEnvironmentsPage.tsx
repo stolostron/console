@@ -11,7 +11,7 @@ import {
     AcmRoute,
     AcmTable,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -213,14 +213,15 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                         },
                     },
                 ]}
-                tableActions={[
+                tableActionButtons={[
                     {
                         id: 'createInfraEnv',
                         title: t('infraEnv.bulkAction.createInfraEnv'),
                         click: () => history.push(NavigationPath.createInfraEnv),
+                        variant: ButtonVariant.primary,
                     },
                 ]}
-                bulkActions={[
+                tableActions={[
                     {
                         id: 'delete',
                         title: t('infraEnv.delete.plural'),
@@ -253,6 +254,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 icon: 'warning',
                             })
                         },
+                        variant: 'bulk-action',
                     },
                 ]}
                 emptyState={
