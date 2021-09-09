@@ -9,9 +9,13 @@ import {
     AcmLaunchLink,
     AcmPageContent,
     AcmTable,
+    compareStrings,
     IAcmTableAction,
     IAcmTableButtonAction,
     IAcmTableColumn,
+    ITableFilter,
+    Provider,
+    ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
@@ -458,6 +462,36 @@ export function ClustersTable(props: {
 
     const rowActions = useMemo(() => [], [])
 
+    // `cluster:status.${props.cluster?.status}.message`
+    const filters = useMemo<ITableFilter<Cluster>[]>(() => {
+        return [
+            {
+                id: 'provider',
+                label: t('table.provider'),
+                options: Object.values(Provider)
+                    .map((key) => ({
+                        label: ProviderLongTextMap[key],
+                        value: key,
+                    }))
+                    .filter((value, index, array) => index === array.findIndex((v) => v.value === value.value))
+                    .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+                tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.provider ?? ''),
+            },
+            {
+                id: 'status',
+                label: t('table.status'),
+                options: Object.keys(ClusterStatus)
+                    .map((key) => ({
+                        label: t(`status.${key}`),
+                        value: t(`status.${key}`),
+                    }))
+                    .filter((value, index, array) => index === array.findIndex((v) => v.value === value.value))
+                    .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+                tableFilterFn: (selectedValues, cluster) => selectedValues.includes(t(`status.${cluster.status}`)),
+            },
+        ]
+    }, [])
+
     return (
         <Fragment>
             <BulkActionModel<Cluster> {...modalProps} />
@@ -485,6 +519,7 @@ export function ClustersTable(props: {
                 tableActions={tableActions}
                 rowActions={rowActions}
                 emptyState={props.emptyState}
+                filters={filters}
             />
         </Fragment>
     )
