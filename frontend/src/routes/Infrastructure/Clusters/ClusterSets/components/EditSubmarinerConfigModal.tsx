@@ -1,13 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    CableDriver,
-    Cluster,
-    patchResource,
-    SubmarinerConfig,
-    submarinerConfigDefault,
-} from '../../../../../resources'
-import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmButton,
@@ -18,10 +11,17 @@ import {
     AcmTextInput,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { ActionGroup, ModalVariant, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { useCallback, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
+import {
+    CableDriver,
+    Cluster,
+    patchResource,
+    SubmarinerConfig,
+    submarinerConfigDefault,
+} from '../../../../../resources'
 
 export type EditSubmarinerConfigModalProps = {
     submarinerConfig?: SubmarinerConfig
@@ -33,7 +33,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
     const { t } = useTranslation(['cluster', 'common'])
 
     const [nattPort, setNattPort] = useState<string | undefined>()
-    const [nattEnable, setNattEnable] = useState<string | undefined>()
+    const [nattEnable, setNattEnable] = useState(submarinerConfigDefault.nattEnable)
     const [cableDriver, setCableDriver] = useState<CableDriver | undefined>()
     const [gateways, setGateways] = useState<string | undefined>()
     const [awsInstanceType, setAwsInstanceType] = useState<string | undefined>()
@@ -42,7 +42,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
         function reset() {
             props.onClose?.()
             setNattPort(undefined)
-            setNattEnable(undefined)
+            setNattEnable(submarinerConfigDefault.nattEnable)
             setCableDriver(undefined)
             setGateways(undefined)
             setAwsInstanceType(undefined)
@@ -53,7 +53,11 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
     useEffect(() => {
         if (props.submarinerConfig) {
             setNattPort(props.submarinerConfig?.spec.IPSecNATTPort?.toString())
-            setNattEnable(props.submarinerConfig?.spec.NATTEnable?.toString())
+            setNattEnable(
+                props.submarinerConfig?.spec.NATTEnable === undefined
+                    ? submarinerConfigDefault.nattEnable
+                    : props.submarinerConfig?.spec.NATTEnable
+            )
             setCableDriver(props.submarinerConfig?.spec.cableDriver)
             setGateways(props.submarinerConfig?.spec.gatewayConfig?.gateways?.toString())
             setAwsInstanceType(props.submarinerConfig?.spec.gatewayConfig?.aws?.instanceType)
@@ -84,21 +88,13 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                             value={nattPort}
                             onChange={(port) => setNattPort(port)}
                         />
-                        <AcmSelect
+
+                        <Checkbox
                             id="natt-enable"
                             label={t('submariner.install.form.nattenable')}
-                            placeholder={t('submariner.install.form.nattenable.placeholder')}
-                            labelHelp={t('submariner.install.form.nattenable.labelHelp')}
-                            value={nattEnable}
-                            onChange={(enable) => setNattEnable(enable)}
-                        >
-                            <SelectOption key={'true'} value={'true'}>
-                                "True"
-                            </SelectOption>
-                            <SelectOption key={'false'} value={'false'}>
-                                "False"
-                            </SelectOption>
-                        </AcmSelect>
+                            isChecked={nattEnable}
+                            onChange={setNattEnable}
+                        />
                         <AcmSelect
                             id="cable-driver"
                             label={t('submariner.install.form.cabledriver')}
@@ -152,7 +148,10 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                                         {
                                             op: 'replace',
                                             path: '/spec/NATTEnable',
-                                            value: nattEnable ?? submarinerConfigDefault.nattEnable,
+                                            value:
+                                                nattEnable != undefined
+                                                    ? nattEnable
+                                                    : submarinerConfigDefault.nattEnable,
                                         },
                                         {
                                             op: 'replace',

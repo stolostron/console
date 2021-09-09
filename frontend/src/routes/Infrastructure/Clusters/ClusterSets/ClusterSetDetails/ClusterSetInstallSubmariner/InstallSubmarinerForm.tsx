@@ -466,11 +466,14 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 },
                                 {
                                     id: 'natt-enable',
-                                    type: 'Select',
+                                    type: 'Checkbox',
                                     label: t('submariner.install.form.nattenable'),
-                                    placeholder: t('submariner.install.form.nattenable.placeholder'),
-                                    labelHelp: t('submariner.install.form.nattenable.labelHelp'),
-                                    value: nattEnables[clusterName] ?? submarinerConfigDefault.nattEnable.toString(),
+                                    // placeholder: t('submariner.install.form.nattenable.placeholder'),
+                                    // labelHelp: t('submariner.install.form.nattenable.labelHelp'),
+                                    value:
+                                        nattEnables[clusterName] !== undefined
+                                            ? nattEnables[clusterName]
+                                            : submarinerConfigDefault.nattEnable,
                                     onChange: (value: boolean) => {
                                         const copy = { ...nattEnables }
                                         copy[clusterName] = value
