@@ -81,7 +81,7 @@
     "submariner.install.form.instancetype": "Instance type",
     "submariner.install.form.clusters.placeholder": "Select clusters",
     "submariner.install.form.port.placeholder": "Enter port number",
-    "submariner.install.form.nattenable.placeholder": "Select natt enabled",
+    "submariner.install.form.nattenable.placeholder": "Select NAT-T enabled",
     "submariner.install.form.cabledriver.placeholder": "Select cable driver",
     "submariner.install.form.gateways.placeholder": "Enter gateway count",
     "submariner.install.form.instancetype.placeholder": "Select instance type",
