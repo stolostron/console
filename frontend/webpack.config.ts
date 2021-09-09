@@ -95,7 +95,14 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             //             vendor: { test: /[\\/]node_modules[\\/]/, name: 'vendors', chunks: 'all' },
             //         },
             //     },
-            minimizer: [`...`, new CssMinimizerPlugin()],
+            minimizer: [
+                `...`,
+                new CssMinimizerPlugin({
+                    minimizerOptions: {
+                        preset: ['default', { mergeLonghand: false }],
+                    },
+                }),
+            ],
         },
         devServer: {
             port: 3000,
