@@ -462,7 +462,6 @@ export function ClustersTable(props: {
 
     const rowActions = useMemo(() => [], [])
 
-    // `cluster:status.${props.cluster?.status}.message`
     const filters = useMemo<ITableFilter<Cluster>[]>(() => {
         return [
             {
