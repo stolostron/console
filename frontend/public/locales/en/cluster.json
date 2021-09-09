@@ -75,7 +75,7 @@
     "submariner.install.form.config.doc": "How do I configure Submariner?",
     "submariner.install.form.credential.secret": "Provider credential secret",
     "submariner.install.form.nattport": "IPSec NAT-T port",
-    "submariner.install.form.nattenable": "NATT Enable",
+    "submariner.install.form.nattenable": "Enable NAT-T",
     "submariner.install.form.cabledriver": "Cable driver",
     "submariner.install.form.gateways": "Gateway count",
     "submariner.install.form.instancetype": "Instance type",
