@@ -1,3 +1,7 @@
+.pf-c-content {
+    --pf-c-page__main-wizard--BorderTopWidth: 0
+}
+
 .pf-c-content .temptifly.showEditor,
 .temptifly.showWizard {
     height: calc(100vh - 187px);
