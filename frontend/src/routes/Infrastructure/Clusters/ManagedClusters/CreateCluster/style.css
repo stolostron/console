@@ -1,9 +1,12 @@
+.pf-c-content {
+    --pf-c-page__main-wizard--BorderTopWidth: 0
+}
+
 .pf-c-content .temptifly.showEditor,
 .temptifly.showWizard {
     margin: unset;
     padding: unset;
     height: calc(100vh - 187px);
-    margin-top: -1px;
     background-color: black;
 }
 
