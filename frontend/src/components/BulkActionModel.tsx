@@ -92,7 +92,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                 {!errors ? (
                     <Fragment>
                         {props.description}
-                        {props.columns && props.keyFn && (
+                        {progress == 0 && props.columns && props.keyFn && (
                             <AcmTablePaginationContextProvider localStorageKey="model">
                                 <AcmTable<T>
                                     gridBreakPoint={TableGridBreakpoint.none}
