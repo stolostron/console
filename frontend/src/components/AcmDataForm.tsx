@@ -8,6 +8,7 @@ import {
     Alert,
     AlertGroup,
     Button,
+    Checkbox,
     ClipboardCopyButton,
     CodeBlock,
     CodeBlockAction,
@@ -736,6 +737,14 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                 </DescriptionListGroup>
             )
         }
+        case 'Checkbox': {
+            return (
+                <DescriptionListGroup key={input.label}>
+                    <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                    <DescriptionListDescription>{input.value ? 'True' : 'False'}</DescriptionListDescription>
+                </DescriptionListGroup>
+            )
+        }
         case 'GroupedSelect':
         case 'GroupedTiles': {
             let selectedOption: SelectOptionInput | undefined
@@ -975,6 +984,10 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                     )}
                 </InputGroup>
             )
+        }
+        case 'Checkbox': {
+            const { value, ...inputProps } = input
+            return <Checkbox {...inputProps} isChecked={value} />
         }
 
         case 'Select':

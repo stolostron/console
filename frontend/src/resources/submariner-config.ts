@@ -28,6 +28,7 @@ export interface SubmarinerConfig extends IResource {
     metadata: V1ObjectMeta
     spec: {
         IPSecNATTPort?: number
+        NATTEnable?: boolean
         cableDriver?: CableDriver
         credentialsSecret?: {
             name: string
@@ -43,6 +44,7 @@ export interface SubmarinerConfig extends IResource {
 
 type SubmarinerConfigDefaults = {
     nattPort: number
+    nattEnable: boolean
     cableDriver: CableDriver
     gateways: number
     awsInstanceType: string
@@ -50,6 +52,7 @@ type SubmarinerConfigDefaults = {
 
 export const submarinerConfigDefault: SubmarinerConfigDefaults = {
     nattPort: 4500,
+    nattEnable: true,
     cableDriver: CableDriver.libreswan,
     gateways: 1,
     awsInstanceType: 'm5n.large',
