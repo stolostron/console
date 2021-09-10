@@ -185,6 +185,7 @@ export function ClusterSetManageResourcesContent() {
                 close={() => history.push(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
                 isValidError={errorIsNot([ResourceErrorCode.NotFound])}
                 resources={[...removedResources, ...selectedResources]}
+                hideTableAfterSubmit={true}
                 description={
                     <div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>
                 }
