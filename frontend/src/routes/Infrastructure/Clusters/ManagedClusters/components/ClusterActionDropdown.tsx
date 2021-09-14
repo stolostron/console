@@ -22,6 +22,7 @@ import { createImportResources } from '../../../../../lib/import-cluster'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
+import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
 
@@ -31,6 +32,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
+    const [scaleUpModalOpen, setScaleUpModalOpen] = useState<boolean>(false)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
@@ -286,6 +288,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     history.push(`/multicloud/cluster/edit/${cluster.namespace}/${cluster.name}`),
                 isDisabled: cluster.status !== ClusterStatus.draft,
             },
+            {
+                id: 'ai-scale-up',
+                text: t('managed.ai.scaleUp'),
+                click: () => setScaleUpModalOpen(true),
+            },
         ],
         []
     )
@@ -364,6 +371,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         actions = actions.filter((a) => a.id !== 'ai-edit')
     }
 
+    // TODO(jtomasek): disable this action for SNO clusters
+    if (!(cluster.provider === Provider.hybrid && cluster.status === ClusterStatus.pendingimport)) {
+        actions = actions.filter((a) => a.id !== 'ai-scale-up')
+    }
+
     return (
         <>
             <EditLabels
@@ -389,6 +401,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 text={t('actions')}
                 actions={actions}
             />
+            <ScaleUpDialog isOpen={scaleUpModalOpen} closeDialog={() => setScaleUpModalOpen(false)} />
         </>
     )
 }
