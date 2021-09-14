@@ -29,12 +29,17 @@ export const getActiveCardID = (control, fetchData = {}) => {
     return null
 }
 
-export const controlData = [
+export const getControlData = (warning, onControlSelect) => [
     ///////////////////////  container platform  /////////////////////////////////////
     {
         id: 'distStep',
         type: 'step',
         title: 'Infrastructure',
+    },
+    {
+        id: 'warning',
+        type: 'custom',
+        component: warning,
     },
     ///////////////////////  cloud  /////////////////////////////////////
     {
@@ -43,6 +48,7 @@ export const controlData = [
         sort: false,
         pauseControlCreationHereUntilSelected: true,
         scrollViewAfterSelection: 300,
+        onSelect: onControlSelect,
         available: [
             {
                 id: 'AWS',
