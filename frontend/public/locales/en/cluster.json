@@ -61,6 +61,7 @@
     "managed.clusterSets.submariner.addons.config.notSupported.view": "View unsupported clusters ({{number}})",
     "managed.clusterSets.submariner.addons.config.notSupported.provider": "{{clusterName}} (Provider not supported)",
     "managed.editAI": "Edit cluster",
+    "managed.ai.scaleUp": "Add hosts",
 
     "submariner.title.tooltip": "Submariner enables direct networking between Pods and Services in different Kubernetes clusters, either on-premises or in the cloud.",
     "submariner.clusters.empty.title": "No available clusters found",
