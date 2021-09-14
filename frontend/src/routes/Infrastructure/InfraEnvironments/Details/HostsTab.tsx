@@ -2,19 +2,18 @@
 import { patchResource, deleteResource, getResource, listNamespacedResources } from '../../../../resources'
 import { AcmPageContent } from '@open-cluster-management/ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
-import isMatch from 'lodash/isMatch'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useState } from 'react'
 
-import { useRecoilValue, waitForAll } from 'recoil'
-import { agentsState, bareMetalHostsState } from '../../../../atoms'
 import { NavigationPath } from '../../../../NavigationPath'
 import { onEditBMH } from './utils'
 
 const { InfraEnvAgentTable, EditBMHModal, AGENT_BMH_HOSTNAME_LABEL_KEY } = CIM
 
 type HostsTabProps = {
-    infraEnv: CIM.InfraEnvK8sResource
+    infraEnv: CIM.InfraEnvK8sResource;
+    infraAgents: CIM.AgentK8sResource[];
+    bareMetalHosts: CIM.BareMetalHostK8sResource[]
 }
 
 const fetchSecret = (namespace: string, name: string) =>
@@ -28,12 +27,8 @@ const fetchNMState = async (namespace: string, bmhName: string) => {
     return nmStates.find((nm) => nm.metadata?.labels?.[AGENT_BMH_HOSTNAME_LABEL_KEY] === bmhName)
 }
 
-const HostsTab: React.FC<HostsTabProps> = ({ infraEnv }) => {
-    const [agents, bareMetalHosts] = useRecoilValue(waitForAll([agentsState, bareMetalHostsState]))
+const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts }) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
-    const infraAgents = agents.filter((a) =>
-        isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
-    )
 
     return (
         <AcmPageContent id="hosts">
