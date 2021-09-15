@@ -94,6 +94,7 @@ export function startWatching(): void {
     watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs')
     watchResource(token, 'agent-install.openshift.io/v1beta1', 'agents')
     watchResource(token, 'agent-install.openshift.io/v1beta1', 'infraenvs')
+    watchResource(token, 'metal3.io/v1alpha1', 'baremetalhosts')
 }
 
 export function watchResource(

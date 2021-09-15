@@ -7,6 +7,8 @@
     "clusters": "Managed clusters",
     "clusterPools": "Cluster pools",
     "managed.createCluster": "Create cluster",
+    "edit.yaml.on.ro": "YAML (read only): On",
+    "editor.bar.readonly": "The resource has been saved and the YAML is now read only.",
     "cluster.create.title": "Create cluster",
     "cluster.create.select.cloudprovider": "Select a provider",
     "cluster.create.select.cloudprovider.description": "Select a managed service.",
