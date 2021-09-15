@@ -33,7 +33,7 @@ const gp16Cpu8Gib = '16 vCPU, 64 GiB - General Purpose'
 
 // For this regions list, place recommeneded at the top
 // Recommended is top alphabetized list, others/optional is second alphabetixed list
-export const regions = [
+const regions = [
     'australiaeast',
     'brazilsouth',
     'canadacentral',
