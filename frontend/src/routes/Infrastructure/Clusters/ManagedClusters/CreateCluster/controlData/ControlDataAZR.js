@@ -69,7 +69,7 @@ const regions = [
     'westcentralus',
     'westindia',
 ]
-export const govRegions = ['usgovvirginia', 'usgovtexas']
+const govRegions = ['usgovvirginia', 'usgovtexas']
 
 //  List vm sizes in a location/region
 //    az vm list-sizes --location eastus --output table
