@@ -33,7 +33,7 @@ const gp16Cpu8Gib = '16 vCPU, 64 GiB - General Purpose'
 
 // For this regions list, place recommeneded at the top
 // Recommended is top alphabetized list, others/optional is second alphabetixed list
-const regions = [
+export const regions = [
     'australiaeast',
     'brazilsouth',
     'canadacentral',
@@ -68,9 +68,8 @@ const regions = [
     'ukwest',
     'westcentralus',
     'westindia',
-    'usgovvirginia',
-    'usgovtexas',
 ]
+export const govRegions = ['usgovvirginia', 'usgovtexas']
 
 //  List vm sizes in a location/region
 //    az vm list-sizes --location eastus --output table
@@ -437,6 +436,23 @@ export const getControlDataAZR = (includeAutomation = true) => {
     return [...controlDataAZR]
 }
 
+const setRegions = (control, controlData) => {
+    const alterRegionData = (controlData, regions, active) => {
+        const regionObject = controlData.find((object) => object.name === 'Region')
+        regionObject.active = active
+        regionObject.available = regions
+    }
+
+    if (control.active) {
+        const connection = control.availableMap[control.active]
+        if (connection.replacements.cloudName === 'AzureUSGovernmentCloud')
+            alterRegionData(controlData, govRegions, govRegions[0])
+        else alterRegionData(controlData, regions, 'centralus')
+    } else {
+        alterRegionData(controlData, regions, 'centralus')
+    }
+}
+
 const controlDataAZR = [
     ///////////////////////  connection  /////////////////////////////////////
     {
@@ -444,6 +460,7 @@ const controlDataAZR = [
         tooltip: 'tooltip.creation.ocp.cloud.connection',
         id: 'connection',
         type: 'singleselect',
+        onSelect: setRegions,
         placeholder: 'creation.ocp.cloud.select.connection',
         providerId: 'azr',
         validation: {
