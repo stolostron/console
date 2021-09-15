@@ -34,7 +34,7 @@ export const controlData = [
     {
         id: 'distStep',
         type: 'step',
-        title: 'Infrastructure',
+        title: 'Infrastructure provider',
     },
     ///////////////////////  cloud  /////////////////////////////////////
     {

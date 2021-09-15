@@ -3,7 +3,7 @@ import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@open-
 import { PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 // include monaco editor
@@ -62,6 +62,14 @@ export default function CreateClusterPage() {
     const location = useLocation()
     const [secrets] = useRecoilState(secretsState)
     const [readOnly, setReadOnly] = useState(false)
+
+    // if a connection is added outside of wizard, add it to connection selection
+    const [connectionControl, setConnectionControl] = useState()
+    useEffect(() => {
+        if (connectionControl) {
+            setAvailableConnections(connectionControl, secrets)
+        }
+    }, [connectionControl, secrets])
 
     const providerConnections = secrets.map(unpackProviderConnection)
     const ansibleCredentials = providerConnections.filter(
@@ -224,6 +232,9 @@ export default function CreateClusterPage() {
     const mustJoinClusterSet = useMustJoinClusterSet()
     function onControlInitialize(control: any) {
         switch (control.id) {
+            case 'connection':
+                setConnectionControl(control)
+                break
             case 'clusterSet':
                 if (control.available) {
                     control.available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []

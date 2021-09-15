@@ -120,7 +120,7 @@
     "creation.ocp.cloud.no.ocp.images": "No default images. Enter a release image path.",
     "creation.ocp.cloud.loading.connections": "Loading provider connections...",
     "creation.ocp.cloud.no.connections": "No defined connections. Select 'Add a connection' to create a connection.",
-    "creation.ocp.cloud.add.connection": "Add credential",
+    "creation.ocp.cloud.add.connection": "Add credentials",
     "creation.ocp.cloud.add.template": "Add automation template",
     "creation.ocp.cluster.add.label": "Add another label",
     "creation.ocp.cluster.add.host": "Search hosts with this label",
