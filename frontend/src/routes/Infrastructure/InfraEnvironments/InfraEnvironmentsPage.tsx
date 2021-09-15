@@ -11,7 +11,7 @@ import {
     AcmRoute,
     AcmTable,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -25,6 +25,8 @@ import { fitContent } from '@patternfly/react-table'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { RbacDropdown } from '../../../components/Rbac'
 import { deleteResource } from '../../../resources'
+
+const { AGENT_LOCATION_LABEL_KEY } = CIM
 
 const InfraEnvironmentsPage: React.FC = () => {
     const [, setRoute] = useRecoilState(acmRouteState)
@@ -139,7 +141,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                     },
                     {
                         header: t('infraEnv.tableHeader.location'),
-                        cell: (infraEnv) => infraEnv.metadata?.labels?.['assisted-install-location'] ?? '-',
+                        cell: (infraEnv) => infraEnv.metadata?.labels?.[AGENT_LOCATION_LABEL_KEY] ?? '-',
                     },
                     {
                         header: t('infraEnv.tableHeader.hosts'),
@@ -213,14 +215,15 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                         },
                     },
                 ]}
-                tableActions={[
+                tableActionButtons={[
                     {
                         id: 'createInfraEnv',
                         title: t('infraEnv.bulkAction.createInfraEnv'),
                         click: () => history.push(NavigationPath.createInfraEnv),
+                        variant: ButtonVariant.primary,
                     },
                 ]}
-                bulkActions={[
+                tableActions={[
                     {
                         id: 'delete',
                         title: t('infraEnv.delete.plural'),
@@ -253,6 +256,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 icon: 'warning',
                             })
                         },
+                        variant: 'bulk-action',
                     },
                 ]}
                 emptyState={

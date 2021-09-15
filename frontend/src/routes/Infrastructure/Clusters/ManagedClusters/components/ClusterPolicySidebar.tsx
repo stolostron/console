@@ -364,7 +364,6 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
                 ]}
                 keyFn={(item: any) => item.policy}
                 tableActions={[]}
-                bulkActions={[]}
                 rowActions={[]}
                 gridBreakPoint={TableGridBreakpoint.none}
             />

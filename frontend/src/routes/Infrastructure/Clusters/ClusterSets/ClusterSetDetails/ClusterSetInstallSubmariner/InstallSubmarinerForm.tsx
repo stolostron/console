@@ -174,6 +174,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     const [gcServiceAccountKeys, setGcServiceAccountKeys] = useState<Record<string, any>>({})
 
     const [nattPorts, setNattPorts] = useState<Record<string, number>>({})
+    const [nattEnables, setNattEnables] = useState<Record<string, boolean>>({})
     const [cableDrivers, setCableDrivers] = useState<Record<string, CableDriver>>({})
     const [gateways, setGateways] = useState<Record<string, number>>({})
     const [awsInstanceTypes, setAwsInstanceTypes] = useState<Record<string, string>>({})
@@ -464,6 +465,22 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     },
                                 },
                                 {
+                                    id: 'natt-enable',
+                                    type: 'Checkbox',
+                                    label: t('submariner.install.form.nattenable'),
+                                    // placeholder: t('submariner.install.form.nattenable.placeholder'),
+                                    // labelHelp: t('submariner.install.form.nattenable.labelHelp'),
+                                    value:
+                                        nattEnables[clusterName] !== undefined
+                                            ? nattEnables[clusterName]
+                                            : submarinerConfigDefault.nattEnable,
+                                    onChange: (value: boolean) => {
+                                        const copy = { ...nattEnables }
+                                        copy[clusterName] = value
+                                        setNattEnables(copy)
+                                    },
+                                },
+                                {
                                     id: 'gateways',
                                     type: 'Number',
                                     label: t('submariner.install.form.gateways'),
@@ -563,6 +580,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     gateways: gateways[cluster.displayName!] || submarinerConfigDefault.gateways,
                                 },
                                 IPSecNATTPort: nattPorts[cluster.displayName!] ?? submarinerConfigDefault.nattPort,
+                                NATTEnable: nattEnables[cluster.displayName!] ?? submarinerConfigDefault.nattEnable,
                                 cableDriver: cableDrivers[cluster.displayName!] ?? submarinerConfigDefault.cableDriver,
                             },
                         }

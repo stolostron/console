@@ -14,7 +14,7 @@ import {
     Provider,
     ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
@@ -272,16 +272,17 @@ export function CredentialsTable(props: {
                     },
                 ]}
                 keyFn={(secret) => secret.metadata?.uid as string}
-                tableActions={[
+                tableActionButtons={[
                     {
                         id: 'add',
                         title: t('credentials.tableAction.add'),
                         click: () => {
                             history.push(NavigationPath.addCredentials)
                         },
+                        variant: ButtonVariant.primary,
                     },
                 ]}
-                bulkActions={[
+                tableActions={[
                     {
                         id: 'deleteConnection',
                         title: t('credentials.tableAction.deleteMultiple'),
@@ -312,6 +313,7 @@ export function CredentialsTable(props: {
                                 icon: 'warning',
                             })
                         },
+                        variant: 'bulk-action',
                     },
                 ]}
                 rowActions={[]}
