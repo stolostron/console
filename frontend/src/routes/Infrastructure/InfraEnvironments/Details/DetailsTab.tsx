@@ -7,10 +7,10 @@ const { EnvironmentDetails, EnvironmentErrors } = CIM
 
 type DetailsTabProps = CIM.EnvironmentErrorsProps
 
-const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv, infraAgents }) => (
+const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv }) => (
     <AcmPageContent id="overview">
         <PageSection>
-            <EnvironmentErrors infraEnv={infraEnv} infraAgents={infraAgents} />
+            <EnvironmentErrors infraEnv={infraEnv} />
             <Card>
                 <CardBody>
                     <EnvironmentDetails infraEnv={infraEnv} />
