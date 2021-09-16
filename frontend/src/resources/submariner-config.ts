@@ -55,5 +55,5 @@ export const submarinerConfigDefault: SubmarinerConfigDefaults = {
     nattEnable: true,
     cableDriver: CableDriver.libreswan,
     gateways: 1,
-    awsInstanceType: 'm5n.large',
+    awsInstanceType: 'c5d.large',
 }
