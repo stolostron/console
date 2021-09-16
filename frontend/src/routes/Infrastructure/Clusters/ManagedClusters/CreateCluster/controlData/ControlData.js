@@ -119,7 +119,7 @@ export const getControlData = (warning, onControlSelect) => [
                     replacements: {},
                     replaceTemplate: aiTemplate,
                 },
-                section: 'Centrally managed',
+                section: 'Providers',
             },
             {
                 id: 'BMC',
