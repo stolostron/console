@@ -189,7 +189,7 @@ export const clusterDetailsControlData = [
     {
         name: 'creation.ocp.name',
         tooltip: 'tooltip.creation.ocp.name',
-        placeholder:'creation.ocp.name.placeholder',
+        placeholder: 'creation.ocp.name.placeholder',
         id: 'name',
         type: 'text',
         validation: {
