@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { makeStyles } from '@material-ui/styles'
 import Handlebars from 'handlebars'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -20,12 +19,9 @@ import '../Clusters/ManagedClusters/CreateCluster/style.css'
 import 'temptifly/dist/styles.css'
 import { createProject, createResource } from '../../../resources'
 
+
+
 const controlData = [
-    {
-        id: 'aiStep',
-        type: 'step',
-        title: 'Configure environment',
-    },
     {
         name: 'creation.ocp.cloud.connection',
         tooltip: 'tooltip.creation.ocp.cloud.connection',
@@ -36,14 +32,6 @@ const controlData = [
     },
 ]
 
-const useStyles = makeStyles({
-    wizardBody: {
-        '& .pf-c-wizard__outer-wrap .pf-c-wizard__main .pf-c-wizard__main-body': {
-            height: '100%',
-        },
-    },
-})
-
 // where to put Create/Cancel buttons
 const Portals = Object.freeze({
     editBtn: 'edit-button-portal-id',
@@ -53,7 +41,6 @@ const Portals = Object.freeze({
 
 const CreateInfraEnv: React.FC = () => {
     const template = Handlebars.compile(infraEnvTemplate)
-    const classes = useStyles()
     const history = useHistory()
     const { t } = useTranslation(['infraenv', 'common'])
     const { t: tEditor } = useTranslation(['create'])
@@ -114,19 +101,6 @@ const CreateInfraEnv: React.FC = () => {
             header={
                 <AcmPageHeader
                     title={t('infraenv:createInfraEnv.title')}
-                    titleTooltip={
-                        <>
-                            {t('infraenv:createInfraEnv.title.tooltip')}
-                            <a
-                                href="foo"
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ display: 'block', marginTop: '4px' }}
-                            >
-                                {t('common:learn.more')}
-                            </a>
-                        </>
-                    }
                     breadcrumb={[
                         { text: t('infraenv:infraenvs'), to: NavigationPath.infraEnvironments },
                         { text: t('infraenv:createInfraEnv.title'), to: '' },
@@ -137,10 +111,9 @@ const CreateInfraEnv: React.FC = () => {
             }
         >
             <AcmErrorBoundary>
-                <AcmPageContent id="create-cluster">
-                    <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
+                <AcmPageContent id="create-infra-env">
+                    <PageSection className="pf-c-content" variant="light" isFilled>
                         <TemplateEditor
-                            wizardClassName={classes.wizardBody}
                             type="Infra env"
                             title="InfraEnv YAML"
                             monacoEditor={<MonacoEditor />}
@@ -163,5 +136,6 @@ const CreateInfraEnv: React.FC = () => {
         </AcmPage>
     )
 }
+
 
 export default CreateInfraEnv

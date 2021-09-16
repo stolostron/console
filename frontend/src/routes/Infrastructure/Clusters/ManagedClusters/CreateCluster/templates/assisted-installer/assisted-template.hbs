@@ -32,8 +32,6 @@ metadata:
   name: {{{ai.name}}}
   namespace: {{{ai.name}}}
 spec:
-  clusterDeploymentRef:
-    name: {{{ai.name}}}
   holdInstallation: true
   provisionRequirements:
 {{#switch ai.highAvailabilityMode}}
