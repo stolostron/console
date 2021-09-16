@@ -176,6 +176,7 @@ const controlDataVMW = [
             {
                 name: 'creation.ocp.pool.name',
                 tooltip: 'tooltip.creation.ocp.pool.name',
+                placeholder: 'creation.ocp.pool.placeholder',
                 id: 'workerName',
                 type: 'text',
                 active: 'worker',
@@ -260,6 +261,7 @@ const controlDataVMW = [
         type: 'text',
         name: 'creation.ocp.ingress.vip',
         tooltip: 'tooltip.creation.ocp.ingress.vip',
+        placeholder: 'creation.ocp.ingress.vip.placeholder',
         active: '',
         validation: VALIDATE_IP,
     },
