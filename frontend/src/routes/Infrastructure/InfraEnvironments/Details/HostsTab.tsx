@@ -7,6 +7,7 @@ import { useState } from 'react'
 
 import { NavigationPath } from '../../../../NavigationPath'
 import { onEditBMH } from './utils'
+import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal';
 
 const { InfraEnvAgentTable, EditBMHModal, AGENT_BMH_HOSTNAME_LABEL_KEY } = CIM
 
@@ -29,6 +30,7 @@ const fetchNMState = async (namespace: string, bmhName: string) => {
 
 const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts }) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
+    const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
 
     return (
         <AcmPageContent id="hosts">
@@ -40,6 +42,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                             bareMetalHosts={bareMetalHosts}
                             infraEnv={infraEnv}
                             getClusterDeploymentLink={({ name }) => NavigationPath.clusterDetails.replace(':id', name)}
+                            onEditHost={setEditAgent}
                             onApprove={(agent) => {
                                 patchResource(agent, [
                                     {
@@ -82,6 +85,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                             fetchSecret={fetchSecret}
                             fetchNMState={fetchNMState}
                         />
+                        <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
                     </CardBody>
                 </Card>
             </PageSection>
