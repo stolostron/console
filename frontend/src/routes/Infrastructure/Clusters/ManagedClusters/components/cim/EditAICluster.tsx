@@ -13,6 +13,7 @@ import {
 } from '../../../../../../atoms'
 import { onHostsNext, onSaveNetworking } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
+import { NavigationPath } from '../../../../../../NavigationPath'
 
 const { ClusterDeploymentWizard, FeatureGateContextProvider, ACM_ENABLED_FEATURES } = CIM
 
@@ -87,6 +88,13 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
                 onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents })}
                 hostActions={hostActions}
+                onFinish={() =>
+                    history.push(
+                        NavigationPath.clusterCreateProgress
+                            .replace(':namespace', agentClusterInstall.metadata.string as string)
+                            .replace(':name', agentClusterInstall.metadata.string as string)
+                    )
+                }
             />
             <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
         </FeatureGateContextProvider>
