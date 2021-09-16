@@ -109,7 +109,7 @@
         "stream-browserify": "^3.0.0",
         "style-loader": "^3.2.1",
         "swr": "^1.0.0",
-        "temptifly": "^0.4.13",
+        "temptifly": "^0.4.16",
         "ts-import-plugin": "^1.6.7",
         "ts-jest": "^27.0.5",
         "ts-loader": "^9.2.5",

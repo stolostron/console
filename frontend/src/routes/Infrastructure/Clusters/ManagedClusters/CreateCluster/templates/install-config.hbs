@@ -5,6 +5,16 @@ metadata:
 baseDomain: {{{baseDomain}}} ##baseDomain
 
 
+{{#if hasProxy}}
+proxy:
+  httpProxy: {{{httpProxy}}} ##httpProxy
+  httpsProxy: {{{httpsProxy}}} ##httpsProxy
+{{#if noProxy}}
+  noProxy: {{{noProxy}}} ## noProxy
+{{/if}}
+{{/if}}
+
+
 {{! ========================================================== }}
 {{! ========================================================== }}
 {{! ==================Master Nodes============================ }}
@@ -295,13 +305,13 @@ sshKey: |-
 {{/if}}
 
 {{! ==================Disconnected BMC================================ }}
+
 {{#if additionalTrustBundle}}
 additionalTrustBundle: |-
 {{#each additionalTrustBundle}}
     {{{.}}}
 {{/each}}
 {{/if}}
-
 
 {{#if imageMirror}}
 {{#if imageMirror.[0]}}
@@ -317,3 +327,5 @@ imageContentSources:
   source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
 {{/if}}
 {{/if}}
+
+ 

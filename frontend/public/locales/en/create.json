@@ -124,7 +124,7 @@
     "creation.ocp.cloud.add.template": "Add automation template",
     "creation.ocp.cluster.add.label": "Add another label",
     "creation.ocp.cluster.add.host": "Search hosts with this label",
-    "creation.ocp.cluster.node.pool.info": "The instance type and quantity of master and worker nodes to create for your cluster. Additional worker nodes can be added after the cluster is created.",
+    "creation.ocp.cluster.node.pool.info": "Select the instance type and quantity of master and worker nodes in your cluster. 3 master nodes will be created by default. Additional worker nodes can be added after the cluster is created.",
     "creation.ocp.cluster.add.node.pool": "Add worker pool",
     "creation.ocp.cluster.delete.node.pool": "Delete node pool",
     "creation.ocp.cluster.add.network": "Add network",
