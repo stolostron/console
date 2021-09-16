@@ -78,10 +78,22 @@ export default function ClusterPoolsPage() {
                                 </TextContent>
                             </FlexItem>
                         </Flex>
-                        <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
-                            <FlexItem>
+                        <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
+                            <FlexItem />
+                            <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
                                 <AcmButton
                                     onClick={() => window.open(DOC_LINKS.CLUSTER_POOLS, '_blank')}
+                                    variant="link"
+                                    role="link"
+                                    icon={<ExternalLinkAltIcon />}
+                                    iconPosition="right"
+                                >
+                                    {t('common:view.documentation')}
+                                </AcmButton>
+                            </FlexItem>
+                            <FlexItem>
+                                <AcmButton
+                                    onClick={() => window.open(DOC_LINKS.CLUSTER_CLAIMS, '_blank')}
                                     variant="link"
                                     role="link"
                                     icon={<ExternalLinkAltIcon />}
