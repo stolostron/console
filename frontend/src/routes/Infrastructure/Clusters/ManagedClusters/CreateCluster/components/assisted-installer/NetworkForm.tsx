@@ -7,8 +7,9 @@ import { get, isEqual } from 'lodash'
 import { NetworkConfigurationValues } from 'openshift-assisted-ui-lib/dist/src/common/types/clusters'
 import { patchResource } from '../../../../../../../resources'
 import { agentClusterInstallsState, agentsState, clusterDeploymentsState } from '../../../../../../../atoms'
+import EditAgentModal from '../../../components/cim/EditAgentModal'
 
-const { ACMClusterDeploymentNetworkingStep, EditAgentModal } = CIM
+const { ACMClusterDeploymentNetworkingStep } = CIM
 
 type FormControl = {
     active?: NetworkConfigurationValues
@@ -116,22 +117,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
                         ]).promise,
                 }}
             />
-            <EditAgentModal
-                isOpen={!!editAgent}
-                agent={editAgent}
-                usedHostnames={[]}
-                onClose={() => setEditAgent(undefined)}
-                onSave={(agent, hostname) =>
-                    patchResource(agent, [
-                        {
-                            op: 'replace',
-                            path: '/spec/hostname',
-                            value: hostname,
-                        },
-                    ]).promise
-                }
-                onFormSaveError={() => {}}
-            />
+            <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
         </>
     )
 }
