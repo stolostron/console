@@ -318,7 +318,11 @@ export default function CreateClusterPage() {
                                     messages: ['Configured cluster network. Redirecting to cluster details...'],
                                 })
                                 setTimeout(() => {
-                                    history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
+                                    history.push(
+                                        NavigationPath.clusterCreateProgress
+                                            .replace(':namespace', clusterName as string)
+                                            .replace(':name', clusterName as string)
+                                    )
                                 }, 2000)
                             }
                         })

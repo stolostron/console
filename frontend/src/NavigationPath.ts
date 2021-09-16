@@ -44,4 +44,5 @@ export enum NavigationPath {
     infraEnvironmentHosts = '/multicloud/infra-environments/:namespace/:name/hosts',
     createInfraEnv = '/multicloud/create-infra-env',
     editCluster = '/multicloud/cluster/edit/:namespace/:name',
+    clusterCreateProgress = '/multicloud/cluster/progress/:namespace/:name',
 }
