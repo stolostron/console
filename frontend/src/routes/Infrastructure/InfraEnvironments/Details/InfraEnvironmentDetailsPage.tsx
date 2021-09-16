@@ -24,7 +24,7 @@ import HostsTab from './HostsTab'
 import { ResourceError, createResource, patchResource } from '../../../../resources'
 import { agentsState, bareMetalHostsState } from '../../../../atoms'
 
-const { AddHostModal, getBareMetalHostCredentialsSecret, getBareMetalHost } = CIM
+const { AddHostModal, getBareMetalHostCredentialsSecret, getBareMetalHost, InfraEnvHostsTabAgentsWarning } = CIM
 
 type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -105,6 +105,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                                             .replace(':name', match.params.name)}
                                     >
                                         {t('tab.hosts')}
+                                        <InfraEnvHostsTabAgentsWarning infraAgents={infraAgents} />
                                     </Link>
                                 </AcmSecondaryNavItem>
                             </AcmSecondaryNav>
@@ -116,7 +117,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.infraEnvironmentOverview}>
-                            <DetailsTab infraEnv={infraEnv} infraAgents={infraAgents} />
+                            <DetailsTab infraEnv={infraEnv} />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentHosts}>
                             <HostsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={bareMetalHosts} />
