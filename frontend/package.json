@@ -9,6 +9,7 @@
         "clean": "rm -rf coverage build",
         "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc:noEmit -c green,blue,cyan,magenta",
         "jest": "jest --runInBand",
+        "jest:parallel": "jest",
         "eslint": "eslint src --ext .ts --max-warnings=0",
         "eslint:fix": "eslint src test --ext .ts --fix",
         "prettier": "prettier --check src public",
