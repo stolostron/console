@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'
-import isMatch from 'lodash/isMatch'
 import { patchResource } from '../../../../../../resources'
 import {
     agentClusterInstallsState,
@@ -12,9 +11,9 @@ import {
     clusterImageSetsState,
     infraEnvironmentsState,
 } from '../../../../../../atoms'
-import { getNetworkingPatches } from './utils'
+import { onHostsNext, onSaveNetworking } from '../../CreateCluster/components/assisted-installer/utils'
 
-const { ClusterDeploymentWizard, EditAgentModal } = CIM
+const { ClusterDeploymentWizard, EditAgentModal, FeatureGateContextProvider, ACM_ENABLED_FEATURES } = CIM
 
 type EditAIClusterProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -25,7 +24,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
 }) => {
     const history = useHistory()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
-    const [clusterImageSets, clusterDeployments, agentClusterInstalls, agents, infraEnvs] = useRecoilValue(
+    const [clusterImageSets, clusterDeployments, agentClusterInstalls, agents] = useRecoilValue(
         waitForAll([
             clusterImageSetsState,
             clusterDeploymentsState,
@@ -41,12 +40,6 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const agentClusterInstall = agentClusterInstalls.find(
         (aci) => aci.metadata.name === name && aci.metadata.namespace === namespace
     )
-    const infraEnv = infraEnvs.find((ie) => ie.metadata.name === name && ie.metadata.namespace === namespace)
-
-    const infraAgents =
-        infraEnv && agents.filter((a) => isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels))
-
-    const defaultPullSecret = '' // Can be retrieved from c.rh.c . We can not query that here.
 
     const onSaveDetails = (values: any) => {
         return patchResource(agentClusterInstall, [
@@ -58,51 +51,41 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         ]).promise
     }
 
+    const hostActions = {
+        canEditHost: () => true,
+        onEditHost: (agent: CIM.AgentK8sResource) => {
+            setEditAgent(agent)
+        },
+        canEditRole: () => true,
+        onEditRole: (agent: CIM.AgentK8sResource, role: string | undefined) => {
+            return patchResource(agent, [
+                {
+                    op: 'replace',
+                    path: '/spec/role',
+                    value: role,
+                },
+            ]).promise
+        },
+    }
+
     return (
-        <>
+        <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
             <ClusterDeploymentWizard
                 className="cluster-deployment-wizard"
-                defaultPullSecret={defaultPullSecret}
                 clusterImages={clusterImageSets}
                 clusterDeployment={clusterDeployment}
                 agentClusterInstall={agentClusterInstall}
-                agents={infraAgents}
-                pullSecretSet
-                usedClusterNames={[]}
+                agents={agents}
+                usedClusterNames={
+                    [
+                        /* Not needed for the Edit flow */
+                    ]
+                }
                 onClose={history.goBack}
                 onSaveDetails={onSaveDetails}
-                onSaveNetworking={async (values) => {
-                    try {
-                        const patches = getNetworkingPatches(agentClusterInstall, values)
-                        if (patches.length > 0) {
-                            await patchResource(agentClusterInstall, patches).promise
-                        }
-                    } catch (e) {
-                        if (e instanceof Error)
-                            throw Error(`Failed to patch the AgentClusterInstall resource: ${e.message}`)
-                    }
-                }}
-                canEditHost={() => true}
-                onEditHost={(agent) => {
-                    setEditAgent(agent)
-                }}
-                canEditRole={() => true}
-                onEditRole={(agent, role) => {
-                    patchResource(agent, [
-                        {
-                            op: 'replace',
-                            path: '/spec/approved',
-                            value: true,
-                        },
-                    ])
-                    return patchResource(agent, [
-                        {
-                            op: 'replace',
-                            path: '/spec/role',
-                            value: role,
-                        },
-                    ]).promise
-                }}
+                onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
+                onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents })}
+                hostActions={hostActions}
             />
             <EditAgentModal
                 isOpen={!!editAgent}
@@ -120,7 +103,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 }}
                 onFormSaveError={() => {}}
             />
-        </>
+        </FeatureGateContextProvider>
     )
 }
 

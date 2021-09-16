@@ -25,6 +25,9 @@ import { fitContent } from '@patternfly/react-table'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { RbacDropdown } from '../../../components/Rbac'
 import { deleteResource } from '../../../resources'
+import { OnPremiseBanner } from '../Clusters/ManagedClusters/components/cim/OnPremiseBanner'
+
+const { AGENT_LOCATION_LABEL_KEY } = CIM
 
 const InfraEnvironmentsPage: React.FC = () => {
     const [, setRoute] = useRecoilState(acmRouteState)
@@ -56,6 +59,13 @@ const InfraEnvironmentsPage: React.FC = () => {
             }
         >
             <AcmPageContent id="infra-environments">
+                <OnPremiseBanner
+                    id="banner.infraenv"
+                    WrappingComponent={PageSection}
+                    titleKey="cim:cim.infra.banner.header"
+                    textKey="cim:cim.infra.banner.body"
+                />
+
                 <PageSection>
                     <InfraEnvsTable infraEnvs={infraEnvs} agents={agents} />
                 </PageSection>
@@ -139,7 +149,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                     },
                     {
                         header: t('infraEnv.tableHeader.location'),
-                        cell: (infraEnv) => infraEnv.metadata?.labels?.['assisted-install-location'] ?? '-',
+                        cell: (infraEnv) => infraEnv.metadata?.labels?.[AGENT_LOCATION_LABEL_KEY] ?? '-',
                     },
                     {
                         header: t('infraEnv.tableHeader.hosts'),

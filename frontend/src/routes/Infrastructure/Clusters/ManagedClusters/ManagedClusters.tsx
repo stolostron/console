@@ -2,6 +2,7 @@
 
 import {
     AcmAlertContext,
+    AcmButton,
     AcmEmptyState,
     AcmInlineProvider,
     AcmInlineStatusGroup,
@@ -40,19 +41,29 @@ import {
     ResourceErrorCode,
 } from '../../../../resources'
 import { usePageContext } from '../Clusters'
-import { DiscoveryBanner } from '../DiscoveredClusters/DiscoveryComponents/Banner'
 import { AddCluster } from './components/AddCluster'
 import { BatchChannelSelectModal } from './components/BatchChannelSelectModal'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'
+import { OnPremiseBanner } from './components/cim/OnPremiseBanner'
 import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
 
+function InfraEnvLinkButton() {
+    const { t } = useTranslation(['cim'])
+
+    return (
+        <Link to={NavigationPath.infraEnvironments} style={{ marginRight: '16px' }}>
+            <AcmButton key="enableDiscovery" variant={ButtonVariant.primary}>
+                {t('cim.onpremise.banner.infraenv.link')}
+            </AcmButton>
+        </Link>
+    )
+}
 export default function ClustersPage() {
     const { t } = useTranslation(['cluster', 'discovery'])
     const alertContext = useContext(AcmAlertContext)
-    const [isDiscoveryBannerDismissed] = useState<string>(localStorage.getItem('DiscoveryBannerDismissed') || '')
     let clusters = useAllClusters()
     clusters = clusters.filter((cluster) => {
         // don't show clusters in cluster pools in table
@@ -81,11 +92,12 @@ export default function ClustersPage() {
         <AcmPageContent id="clusters">
             <PageSection>
                 <Stack hasGutter={true}>
-                    {isDiscoveryBannerDismissed === 'true' ? null : (
-                        <StackItem>
-                            <DiscoveryBanner />
-                        </StackItem>
-                    )}
+                    <OnPremiseBanner
+                        id="banner.managedclusters"
+                        extraButton={<InfraEnvLinkButton />}
+                        titleKey="cim:cim.onpremise.banner.header"
+                        textKey="cim:cim.onpremise.banner.body"
+                    />
                     <StackItem>
                         <ClustersTable
                             clusters={clusters}
