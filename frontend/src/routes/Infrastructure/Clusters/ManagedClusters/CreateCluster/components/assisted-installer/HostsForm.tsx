@@ -91,14 +91,16 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     }, [])
 
     return agents?.length && clusterDeployment && agentClusterInstall ? (
-        <ACMClusterDeploymentHostsStep
-            formRef={formRef}
-            onValuesChanged={onValuesChanged}
-            clusterDeployment={clusterDeployment}
-            agentClusterInstall={agentClusterInstall}
-            agents={agents}
-            error={error}
-        />
+        <div className="hosts-form">
+            <ACMClusterDeploymentHostsStep
+                formRef={formRef}
+                onValuesChanged={onValuesChanged}
+                clusterDeployment={clusterDeployment}
+                agentClusterInstall={agentClusterInstall}
+                agents={agents}
+                error={error}
+            />
+        </div>
     ) : (
         <div>loading</div>
     )
