@@ -16,6 +16,7 @@ import getControlDataBMC from './ControlDataBMC'
 import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo, BaremetalLogo } from './Logos'
 import controlDataAI from './ControlDataAI'
+import Deprecated from '../../components/Deprecated'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -119,6 +120,7 @@ export const controlData = [
                 id: 'BMC',
                 logo: <BaremetalLogo />,
                 title: 'cluster.create.baremetal.subtitle',
+                text: <Deprecated />,
                 change: {
                     insertControlData: getControlDataBMC(),
                     replacements: {
