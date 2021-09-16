@@ -113,7 +113,7 @@ export const controlData = [
                     replacements: {},
                     replaceTemplate: aiTemplate,
                 },
-                section: 'Centrally managed',
+                section: 'Providers',
             },
             {
                 id: 'BMC',
