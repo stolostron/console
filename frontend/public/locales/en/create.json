@@ -42,6 +42,7 @@
     "cluster.create.aws.title": "Select to create an OpenShift Container Platform on Amazon Web Services",
     "cluster.create.aws.subtitle": "Amazon Web Services",
     "cluster.create.ai.subtitle": "On Premises",
+    "cluster.create.ai.tooltip": "Create a cluster from hosts that have been discovered and made available.",
     "cluster.create.ibmcloud.title": "Select to create an OpenShift Container Platform on IBM Cloud",
     "cluster.create.ibmcloud.subtitle": "OpenShift on IBM Cloud",
     "cluster.create.ibm.subtitle": "IBM Cloud",

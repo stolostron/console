@@ -7,6 +7,7 @@ import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
 import aiTemplateHbs from '../templates/assisted-installer/assisted-template.hbs'
 import { AcmIconVariant, AcmIcon } from '@open-cluster-management/ui-components'
+import { CIM } from 'openshift-assisted-ui-lib'
 
 import getControlDataAWS from './ControlDataAWS'
 import getControlDataGCP from './ControlDataGCP'
@@ -17,6 +18,8 @@ import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo, BaremetalLogo } from './Logos'
 import controlDataAI from './ControlDataAI'
 import Deprecated from '../../components/Deprecated'
+
+const { TechnologyPreview, PreviewBadgePosition } = CIM 
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -115,25 +118,27 @@ export const getControlData = (warning, onControlSelect) => [
                 id: 'AI',
                 logo: <AcmIcon icon={AcmIconVariant.hybrid} />,
                 title: 'cluster.create.ai.subtitle',
+                tooltip: 'cluster.create.ai.tooltip',
+                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
                 change: {
                     insertControlData: controlDataAI,
                     replacements: {},
                     replaceTemplate: aiTemplate,
                 },
-                section: 'Providers',
+                section: 'Centrally managed',
             },
             {
                 id: 'BMC',
                 logo: <BaremetalLogo />,
                 title: 'cluster.create.baremetal.subtitle',
-                text: <Deprecated />,
+                // text: <Deprecated />,
                 change: {
                     insertControlData: getControlDataBMC(),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Centrally managed',
+                section: 'Providers',
             },
         ],
         active: getActiveCardID,
