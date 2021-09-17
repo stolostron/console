@@ -35,14 +35,8 @@ import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import {deleteClusterPool} from '../../../../lib/delete-clusterpool'
-import {
-    Cluster,
-    ClusterClaimDefinition,
-    ClusterPool,
-    ClusterStatus,
-    ResourceErrorCode,
-} from '../../../../resources'
+import { deleteClusterPool } from '../../../../lib/delete-clusterpool'
+import { Cluster, ClusterClaimDefinition, ClusterPool, ClusterStatus, ResourceErrorCode } from '../../../../resources'
 import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 import { StatusField } from '../ManagedClusters/components/StatusField'
 import { useAllClusters } from '../ManagedClusters/components/useAllClusters'
