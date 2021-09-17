@@ -35,12 +35,12 @@ import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
+import {deleteClusterPool} from '../../../../lib/delete-clusterpool'
 import {
     Cluster,
     ClusterClaimDefinition,
     ClusterPool,
     ClusterStatus,
-    deleteResource,
     ResourceErrorCode,
 } from '../../../../resources'
 import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
@@ -363,7 +363,7 @@ export function ClusterPoolsTable(props: {
                                             description: t('bulk.message.destroyClusterPool'),
                                             columns: modalColumns,
                                             keyFn: mckeyFn,
-                                            actionFn: deleteResource,
+                                            actionFn: deleteClusterPool,
                                             confirmText: clusterPool.metadata.name!,
                                             close: () => setModalProps({ open: false }),
                                             isDanger: true,
@@ -414,7 +414,7 @@ export function ClusterPoolsTable(props: {
                                 description: t('bulk.message.destroyClusterPool'),
                                 columns: modalColumns,
                                 keyFn: mckeyFn,
-                                actionFn: deleteResource,
+                                actionFn: deleteClusterPool,
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,
                                 icon: 'warning',
