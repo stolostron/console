@@ -7,7 +7,6 @@ import {
     ClusterPool,
     createResource,
     getResource,
-    managedClusterSetLabel,
 } from '../../../../../resources'
 import {
     AcmAlertContext,
