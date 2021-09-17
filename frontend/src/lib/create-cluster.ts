@@ -8,6 +8,7 @@ import {
     IResource,
     ManagedClusterApiVersion,
     ManagedClusterKind,
+    clusterPoolNamespaceLabels,
 } from '../resources'
 import { get, keyBy } from 'lodash'
 import { attachBMAs, syncBMAs } from './bare-metal-assets'
@@ -35,6 +36,7 @@ export async function createCluster(resources: any[]) {
     // get ClusterDeployment and filter it out to create at the very end
     let response
     let namespace = ''
+    let labels = undefined
     const clusterResources: any = []
     resources = resources.filter((resource: any) => {
         const { kind, metadata = {}, spec = {} } = resource
@@ -44,9 +46,9 @@ export async function createCluster(resources: any[]) {
                 return false
 
             case 'ClusterPool':
-                namespace = metadata.namespace
                 clusterResources.push(resource)
                 ;({ namespace } = metadata)
+                labels = clusterPoolNamespaceLabels
                 return false
 
             case 'ClusterDeployment':
@@ -69,7 +71,7 @@ export async function createCluster(resources: any[]) {
 
     // create project and ignore if it already exists
     try {
-        await createProject(namespace).promise
+        await createProject(namespace, labels).promise
     } catch (err) {
         if ((err as unknown as { code: number }).code !== 409) {
             return {
@@ -79,7 +81,7 @@ export async function createCluster(resources: any[]) {
         }
     }
 
-    // create cluster resources
+    // create resources
     errors = []
     let results = resources.map((resource: any) => createResource(resource))
     response = await Promise.allSettled(results.map((result: any) => result.promise))
