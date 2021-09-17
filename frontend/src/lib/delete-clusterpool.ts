@@ -60,7 +60,10 @@ export function deleteClusterPool(clusterPool: ClusterPool) {
             resources.push({
                 apiVersion: SecretApiVersion,
                 kind: SecretKind,
-                metadata: { name: `${clusterPool.metadata.name}-azure-creds`, namespace: clusterPool.metadata.namespace },
+                metadata: {
+                    name: `${clusterPool.metadata.name}-azure-creds`,
+                    namespace: clusterPool.metadata.namespace,
+                },
             })
             break
     }
