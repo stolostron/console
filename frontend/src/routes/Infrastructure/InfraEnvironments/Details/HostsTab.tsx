@@ -7,13 +7,13 @@ import { useState } from 'react'
 
 import { NavigationPath } from '../../../../NavigationPath'
 import { onEditBMH } from './utils'
-import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal';
+import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
 
 const { InfraEnvAgentTable, EditBMHModal, AGENT_BMH_HOSTNAME_LABEL_KEY } = CIM
 
 type HostsTabProps = {
-    infraEnv: CIM.InfraEnvK8sResource;
-    infraAgents: CIM.AgentK8sResource[];
+    infraEnv: CIM.InfraEnvK8sResource
+    infraAgents: CIM.AgentK8sResource[]
     bareMetalHosts: CIM.BareMetalHostK8sResource[]
 }
 
