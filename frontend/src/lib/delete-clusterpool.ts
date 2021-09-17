@@ -5,9 +5,9 @@ import {
     ClusterPoolApiVersion,
     ClusterPoolKind,
     IResource,
-    NamespaceApiVersion,
-    NamespaceKind,
     ResourceError,
+    SecretApiVersion,
+    SecretKind,
 } from '../resources'
 import { deleteResources } from './delete-resources'
 
@@ -17,13 +17,54 @@ export function deleteClusterPool(clusterPool: ClusterPool) {
             apiVersion: ClusterPoolApiVersion,
             kind: ClusterPoolKind,
             metadata: { name: clusterPool.metadata.name, namespace: clusterPool.metadata.namespace },
-        },{
-            apiVersion: NamespaceApiVersion,
-            kind: NamespaceKind,
-            metadata: { name: clusterPool.metadata.namespace! },
-        }
+        },
+        {
+            apiVersion: SecretApiVersion,
+            kind: SecretKind,
+            metadata: { name: clusterPool.spec?.pullSecretRef.name, namespace: clusterPool.metadata.namespace },
+        },
+        {
+            apiVersion: SecretApiVersion,
+            kind: SecretKind,
+            metadata: {
+                name: clusterPool.spec?.installConfigSecretTemplateRef.name,
+                namespace: clusterPool.metadata.namespace,
+            },
+        },
+        {
+            apiVersion: SecretApiVersion,
+            kind: SecretKind,
+            metadata: {
+                name: `${clusterPool.metadata.name}-ssh-private-key`,
+                namespace: clusterPool.metadata.namespace,
+            },
+        },
     ]
-    console.log('in deletion function')
+
+    switch (clusterPool.metadata.labels!['cloud']) {
+        case 'AWS':
+            resources.push({
+                apiVersion: SecretApiVersion,
+                kind: SecretKind,
+                metadata: { name: `${clusterPool.metadata.name}-aws-creds`, namespace: clusterPool.metadata.namespace },
+            })
+            break
+        case 'GCP':
+            resources.push({
+                apiVersion: SecretApiVersion,
+                kind: SecretKind,
+                metadata: { name: `${clusterPool.metadata.name}-gcp-creds`, namespace: clusterPool.metadata.namespace },
+            })
+            break
+        case 'Azure':
+            resources.push({
+                apiVersion: SecretApiVersion,
+                kind: SecretKind,
+                metadata: { name: `${clusterPool.metadata.name}-azure-creds`, namespace: clusterPool.metadata.namespace },
+            })
+            break
+    }
+
     const deleteResourcesResult = deleteResources(resources)
     return {
         promise: new Promise((resolve, reject) => {
