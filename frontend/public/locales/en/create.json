@@ -77,6 +77,7 @@
     "cluster.create.submit": "Create",
     "cluster.create.select.region": "Select or enter cluster region",
     "cluster.create.select.purpose": "Select or enter cluster purpose",
+    "cluster.create.centrallymanaged.section.tooltip": "Simplify cluster self-service with infrastructure environments, which enable you to manage hosts, create ready-to-use host groups, and quickly create clusters based on provided infrastructure. To use infrastructure environments, select <strong>On Premise</strong>.",
     "cluster.management": "Cluster management",
     "create.ocp.version": "Select OpenShift Container Platform version",
     "creation.ocp.cloud": "Cloud",

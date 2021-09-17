@@ -2,6 +2,7 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
+import { Trans } from 'react-i18next'
 
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -19,7 +20,7 @@ import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo, BaremetalLogo }
 import controlDataAI from './ControlDataAI'
 import Deprecated from '../../components/Deprecated'
 
-const { TechnologyPreview, PreviewBadgePosition } = CIM 
+const { TechnologyPreview, PreviewBadgePosition } = CIM
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -135,6 +136,9 @@ export const controlData = [
                 section: 'Providers',
             },
         ],
+        sectionTooltips: {
+            'Centrally managed': <Trans i18nKey="create:cluster.create.centrallymanaged.section.tooltip" />,
+        },
         active: getActiveCardID,
         validation: {
             notification: 'creation.ocp.cluster.must.select.infrastructure',
