@@ -40,6 +40,7 @@ const AIClusterProgress: React.FC = () => {
           )
         : []
 
+    /*
     // TODO(jtomasek): Figure out how to use this from ai-ui-lib (currently in ClusterDeploymentDetails which is not used by ACM)
     const handleFetchEvents: CIM.EventListFetchProps['onFetchEvents'] = async (_, onSuccess, onError) => {
         try {
@@ -55,8 +56,9 @@ const AIClusterProgress: React.FC = () => {
             onError('Failed to fetch cluster events.')
         }
     }
-
     const [clusterStatus, clusterStatusInfo] = getClusterStatus(agentClusterInstall)
+    */
+
     return (
         <>
             {shouldShowClusterInstallationProgress(agentClusterInstall) && (
@@ -69,7 +71,7 @@ const AIClusterProgress: React.FC = () => {
                                         clusterDeployment={clusterDeployment}
                                         agentClusterInstall={agentClusterInstall}
                                         agents={clusterAgents}
-                                        onFetchEvents={handleFetchEvents}
+                                        fetchEvents={() => Promise.resolve(/* will be impleented later */)}
                                     />
                                 </StackItem>
                                 {shouldShowClusterCredentials(agentClusterInstall) && (
@@ -93,7 +95,10 @@ const AIClusterProgress: React.FC = () => {
                                 {shouldShowClusterInstallationError(agentClusterInstall) && (
                                     <StackItem>
                                         <ClusterInstallationError
-                                            title={
+                                            clusterDeployment={{}}
+                                            agentClusterInstall={undefined}
+                                            backendURL="will be implemented later"
+                                            /*title={
                                                 clusterStatus === 'cancelled'
                                                     ? 'Cluster installation was cancelled'
                                                     : undefined
@@ -101,6 +106,7 @@ const AIClusterProgress: React.FC = () => {
                                             statusInfo={clusterStatusInfo}
                                             logsUrl={agentClusterInstall.status?.debugInfo?.logsURL}
                                             openshiftVersion={clusterDeployment.status?.installVersion}
+                                            */
                                         />
                                     </StackItem>
                                 )}

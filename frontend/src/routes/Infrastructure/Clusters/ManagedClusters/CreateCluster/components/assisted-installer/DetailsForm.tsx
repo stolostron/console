@@ -100,13 +100,8 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         fetchImages()
     })
     const onValuesChanged = useCallback((values) => {
-        if (formRef?.current?.dirty && !isEqual(values, control.active)) {
+        if (!isEqual(values, control.active)) {
             control.active = values
-            if (!control.active.openshiftVersion) {
-                control.active.openshiftVersion = (
-                    document.getElementsByName('openshiftVersion') as unknown as HTMLCollectionOf<HTMLInputElement>
-                )[0].value
-            }
             control.step.title.isComplete = false
             handleChange(control)
         }
