@@ -318,6 +318,10 @@ export default function CreateClusterPage() {
                     return new Promise((resolve) => {
                         const networkForm = controlData.find((r: any) => r.id === 'aiNetwork')
                         const clusterName = get(networkForm, 'agentClusterInstall.spec.clusterDeploymentRef.name')
+                        const clusterNamespace = get(
+                            networkForm,
+                            'agentClusterInstall.spec.clusterDeploymentRef.namespace'
+                        )
                         patchNetwork(networkForm.agentClusterInstall, networkForm.active).then((status) => {
                             resolve(status)
                             if (status !== 'ERROR') {
@@ -328,7 +332,7 @@ export default function CreateClusterPage() {
                                 setTimeout(() => {
                                     history.push(
                                         NavigationPath.clusterCreateProgress
-                                            .replace(':namespace', clusterName as string)
+                                            .replace(':namespace', clusterNamespace as string)
                                             .replace(':name', clusterName as string)
                                     )
                                 }, 2000)

@@ -3,7 +3,7 @@ import { useCallback, useRef, useEffect, useState } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
-import { get, isEqual } from 'lodash'
+import { debounce, get, isEqual } from 'lodash'
 import { NetworkConfigurationValues } from 'openshift-assisted-ui-lib/dist/src/common/types/clusters'
 import { patchResource } from '../../../../../../../resources'
 import { agentClusterInstallsState, agentsState, clusterDeploymentsState } from '../../../../../../../atoms'
@@ -81,14 +81,17 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
 
     useEffect(() => (control.agentClusterInstall = agentClusterInstall), [control, agentClusterInstall])
 
-    const onValuesChanged = useCallback((values) => {
-        if (!isEqual(values, control.active)) {
-            control.active = values
-            control.step.title.isComplete = false
-            handleChange(control)
-        }
-        // eslint-disable-next-line
-    }, [])
+    const onValuesChanged = useCallback(
+        debounce((values) => {
+            if (!isEqual(values, control.active)) {
+                control.active = values
+                control.step.title.isComplete = false
+                handleChange(control)
+            }
+            // eslint-disable-next-line
+        }, 300),
+        []
+    )
 
     const matchingAgents = agents.filter(
         (a) =>

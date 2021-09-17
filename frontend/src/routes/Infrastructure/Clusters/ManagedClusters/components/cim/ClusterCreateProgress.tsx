@@ -1,17 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmButton } from '@open-cluster-management/ui-components'
-import {
-    Bullseye,
-    Button,
-    EmptyState,
-    EmptyStateBody,
-    EmptyStateIcon,
-    EmptyStateSecondaryActions,
-    Page,
-    PageSection,
-    Spinner,
-    Title,
-} from '@patternfly/react-core'
+import { Page, PageSection } from '@patternfly/react-core'
 import * as React from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'
