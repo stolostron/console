@@ -114,14 +114,9 @@ export function CreateClusterPool() {
     const createResource = async (resourceJSON: { createResources: any[] }) => {
         if (resourceJSON) {
             const { createResources } = resourceJSON
-            // removing unused ssh-privatekey yaml
-            const clusterPoolCreateResources = createResources.filter((resource) => {
-                if (has(resource, 'stringData.ssh-privatekey')) return false
-                return true
-            })
 
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
-            const { status, messages } = await createCluster(clusterPoolCreateResources)
+            const { status, messages } = await createCluster(createResources)
             setCreationStatus({ status, messages })
 
             // redirect to created cluster
