@@ -34,7 +34,7 @@ import { FeatureGates } from '../../../../../FeatureGates'
 import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-import { has } from 'lodash'
+
 interface CreationStatus {
     status: string
     messages: any[] | null
