@@ -34,7 +34,6 @@ import { FeatureGates } from '../../../../../FeatureGates'
 import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -114,7 +113,6 @@ export function CreateClusterPool() {
     const createResource = async (resourceJSON: { createResources: any[] }) => {
         if (resourceJSON) {
             const { createResources } = resourceJSON
-
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
             const { status, messages } = await createCluster(createResources)
             setCreationStatus({ status, messages })
