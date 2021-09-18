@@ -34,6 +34,7 @@ import { FeatureGates } from '../../../../../FeatureGates'
 import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
+import { has } from 'lodash'
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -113,8 +114,14 @@ export function CreateClusterPool() {
     const createResource = async (resourceJSON: { createResources: any[] }) => {
         if (resourceJSON) {
             const { createResources } = resourceJSON
+            // removing unused ssh-privatekey yaml
+            const clusterPoolCreateResources = createResources.filter((resource) => {
+                if (has(resource, 'stringData.ssh-privatekey')) return false
+                return true
+            })
+
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
-            const { status, messages } = await createCluster(createResources)
+            const { status, messages } = await createCluster(clusterPoolCreateResources)
             setCreationStatus({ status, messages })
 
             // redirect to created cluster
