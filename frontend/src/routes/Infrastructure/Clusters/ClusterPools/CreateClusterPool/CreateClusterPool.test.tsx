@@ -115,19 +115,6 @@ const mockInstallConfigSecret: Secret = {
     },
 }
 
-const mockPrivateSecret: Secret = {
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-        name: 'test-ssh-private-key',
-        namespace: mockNamespace.metadata.name!,
-    },
-    stringData: {
-        'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-    },
-    type: 'Opaque',
-}
-
 const mockCredentialSecret: Secret = {
     apiVersion: SecretApiVersion,
     kind: SecretKind,
@@ -282,7 +269,6 @@ describe('CreateClusterPool', () => {
             nockCreate(mockCreateProject),
             nockCreate(mockPullSecret),
             nockCreate(mockInstallConfigSecret),
-            nockCreate(mockPrivateSecret),
             nockCreate(mockCredentialSecret),
             nockCreate(mockClusterPool),
         ]
