@@ -104,44 +104,45 @@ export default function ClusterSetsPage() {
                 <TechPreviewAlert i18nKey="cluster:preview.clusterSets" docHref={DOC_LINKS.CLUSTER_SETS} />
                 <Stack hasGutter style={{ height: 'unset' }}>
                     <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-sets-learn">
-                        <Flex spaceItems={{ default: 'spaceItemsLg' }}>
-                            <FlexItem flex={{ default: 'flex_1' }}>
-                                <TextContent>
-                                    <Text component={TextVariants.h4}>{t('clusterSets')}</Text>
-                                    <Text component={TextVariants.p}>{t('learn.clusterSets')}</Text>
-                                </TextContent>
-                            </FlexItem>
-                            <FlexItem flex={{ default: 'flex_1' }}>
-                                <TextContent>
-                                    <Text component={TextVariants.h4}>{t('submariner')}</Text>
-                                    <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
-                                </TextContent>
-                            </FlexItem>
-                        </Flex>
-                        <Flex justifyContent={{ default: 'justifyContentSpaceBetween' }}>
-                            <FlexItem />
-                            <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
-                                <AcmButton
-                                    onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
-                                    variant="link"
-                                    role="link"
-                                    icon={<ExternalLinkAltIcon />}
-                                    iconPosition="right"
-                                >
-                                    {t('common:view.documentation')}
-                                </AcmButton>
-                            </FlexItem>
-                            <FlexItem>
-                                <AcmButton
-                                    onClick={() => window.open(DOC_LINKS.SUBMARINER, '_blank')}
-                                    variant="link"
-                                    role="link"
-                                    icon={<ExternalLinkAltIcon />}
-                                    iconPosition="right"
-                                >
-                                    {t('common:view.documentation')}
-                                </AcmButton>
-                            </FlexItem>
+                        <Flex style={{ flexWrap: 'inherit' }}>
+                            <Flex style={{ maxWidth: '50%' }}>
+                                <FlexItem>
+                                    <TextContent>
+                                        <Text component={TextVariants.h4}>{t('clusterSets')}</Text>
+                                        <Text component={TextVariants.p}>{t('learn.clusterSets')}</Text>
+                                    </TextContent>
+                                </FlexItem>
+                                <FlexItem align={{ default: 'alignRight' }}>
+                                    <AcmButton
+                                        onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
+                                        variant="link"
+                                        role="link"
+                                        icon={<ExternalLinkAltIcon />}
+                                        iconPosition="right"
+                                    >
+                                        {t('common:view.documentation')}
+                                    </AcmButton>
+                                </FlexItem>
+                            </Flex>
+                            <Flex>
+                                <FlexItem>
+                                    <TextContent>
+                                        <Text component={TextVariants.h4}>{t('submariner')}</Text>
+                                        <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
+                                    </TextContent>
+                                </FlexItem>
+                                <FlexItem align={{ default: 'alignRight' }}>
+                                    <AcmButton
+                                        onClick={() => window.open(DOC_LINKS.SUBMARINER, '_blank')}
+                                        variant="link"
+                                        role="link"
+                                        icon={<ExternalLinkAltIcon />}
+                                        iconPosition="right"
+                                    >
+                                        {t('common:view.documentation')}
+                                    </AcmButton>
+                                </FlexItem>
+                            </Flex>
                         </Flex>
                     </AcmExpandableCard>
                     <Stack>
