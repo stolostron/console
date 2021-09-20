@@ -24,7 +24,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetsState, namespacesState, secretsState } from '../../../../../atoms'
-import { nockCreate, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
+import { nockCreate, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'
 import {
     clickByPlaceholderText,
     clickByTestId,
@@ -78,6 +78,15 @@ const mockNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
     metadata: { name: 'test-namespace' },
+}
+
+const mockNamespaceUpdate: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: {
+        name: mockNamespace.metadata.name,
+        labels: { 'open-cluster-management.io/managed-by': 'clusterpools' },
+    },
 }
 
 const mockCreateProject: ProjectRequest = {
@@ -267,6 +276,7 @@ describe('CreateClusterPool', () => {
         const createNocks = [
             // create the managed cluster
             nockCreate(mockCreateProject),
+            nockReplace(mockNamespaceUpdate),
             nockCreate(mockPullSecret),
             nockCreate(mockInstallConfigSecret),
             nockCreate(mockCredentialSecret),
