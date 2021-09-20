@@ -1,17 +1,17 @@
 .pf-c-content {
-    --pf-c-page__main-wizard--BorderTopWidth: 0
+    --pf-c-page__main-wizard--BorderTopWidth: 0;
 }
 
 .pf-c-content .temptifly.showEditor,
 .temptifly.showWizard {
     height: calc(100vh - 187px);
-    margin-top: 0px;
+    margin-top: 0;
     background-color: black;
 }
 
 .pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
 .pf-c-content .temptifly.showWizard .creation-view-controls-container {
-    padding: unset;
+    padding: 0;
     margin-right: -5px;
     height: calc(100vh - 187px);
 }
