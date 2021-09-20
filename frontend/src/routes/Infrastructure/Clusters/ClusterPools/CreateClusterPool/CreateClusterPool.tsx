@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { useRecoilState } from 'recoil'
 import {
     AcmPage,
@@ -108,6 +108,14 @@ export function CreateClusterPool() {
     const toastContext = useContext(AcmToastContext)
     const [featureGateCache] = useRecoilState(featureGatesState)
 
+    // if a connection is added outside of wizard, add it to connection selection
+    const [connectionControl, setConnectionControl] = useState()
+    useEffect(() => {
+        if (connectionControl) {
+            setAvailableConnections(connectionControl, secrets)
+        }
+    }, [connectionControl, secrets])
+
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
     const createResource = async (resourceJSON: { createResources: any[] }) => {
@@ -163,6 +171,9 @@ export function CreateClusterPool() {
     const mustJoinClusterSet = useMustJoinClusterSet()
     function onControlInitialize(control: any) {
         switch (control.id) {
+            case 'connection':
+                setConnectionControl(control)
+                break
             case 'clusterSet':
                 if (control.available) {
                     control.available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []

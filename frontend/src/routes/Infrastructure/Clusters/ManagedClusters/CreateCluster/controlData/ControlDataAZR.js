@@ -9,6 +9,7 @@ import {
     clusterDetailsControlData,
     networkingControlData,
     automationControlData,
+    proxyControlData,
     getSimplifiedImageName,
     getWorkerName,
     isHidden_lt_OCP48,
@@ -504,18 +505,18 @@ const controlDataAZR = [
     },
     {
         name: 'creation.ocp.addition.labels',
-        tooltip: 'tooltip.creation.ocp.addition.labels',
         id: 'additional',
         type: 'labels',
         active: [],
+        tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
-        id: 'mpoolsStep',
+        id: 'nodePoolsStep',
         type: 'step',
-        title: 'Master node',
+        title: 'Node pools',
     },
     {
         id: 'nodes',
@@ -544,6 +545,7 @@ const controlDataAZR = [
                 id: 'masterPool',
                 type: 'section',
                 collapsable: true,
+                collapsed: true,
                 subtitle: 'creation.ocp.node.master.pool.title',
                 info: 'creation.ocp.node.master.pool.info',
             },
@@ -578,17 +580,6 @@ const controlDataAZR = [
     },
     ///////////////////////  worker pools  /////////////////////////////////////
     {
-        id: 'wpoolsStep',
-        type: 'step',
-        title: 'Worker pools',
-        hidden: isHidden_SNO,
-    },
-    {
-        id: 'nodes',
-        type: 'title',
-        info: 'creation.ocp.cluster.node.pool.info',
-    },
-    {
         id: 'workerPools',
         type: 'group',
         prompts: {
@@ -602,6 +593,7 @@ const controlDataAZR = [
                 id: 'workerPool',
                 type: 'section',
                 collapsable: true,
+                collapsed: true,
                 subtitle: getWorkerName,
                 info: 'creation.ocp.node.worker.pool.info',
             },
@@ -675,6 +667,7 @@ const controlDataAZR = [
         title: 'Networking',
     },
     ...networkingControlData,
+    ...proxyControlData,
 ]
 
 export default getControlDataAZR
