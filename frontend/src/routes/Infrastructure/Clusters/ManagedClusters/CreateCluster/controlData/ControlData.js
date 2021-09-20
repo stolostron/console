@@ -2,11 +2,13 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
+import { Trans } from 'react-i18next'
 
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
 import aiTemplateHbs from '../templates/assisted-installer/assisted-template.hbs'
 import { AcmIconVariant, AcmIcon } from '@open-cluster-management/ui-components'
+import { CIM } from 'openshift-assisted-ui-lib'
 
 import getControlDataAWS from './ControlDataAWS'
 import getControlDataGCP from './ControlDataGCP'
@@ -16,6 +18,9 @@ import getControlDataBMC from './ControlDataBMC'
 import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo, BaremetalLogo } from './Logos'
 import controlDataAI from './ControlDataAI'
+import Deprecated from '../../components/Deprecated'
+
+const { TechnologyPreview, PreviewBadgePosition } = CIM
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -29,12 +34,17 @@ export const getActiveCardID = (control, fetchData = {}) => {
     return null
 }
 
-export const controlData = [
+export const getControlData = (warning, onControlSelect) => [
     ///////////////////////  container platform  /////////////////////////////////////
     {
         id: 'distStep',
         type: 'step',
-        title: 'Infrastructure',
+        title: 'Infrastructure provider',
+    },
+    {
+        id: 'warning',
+        type: 'custom',
+        component: warning,
     },
     ///////////////////////  cloud  /////////////////////////////////////
     {
@@ -43,6 +53,7 @@ export const controlData = [
         sort: false,
         pauseControlCreationHereUntilSelected: true,
         scrollViewAfterSelection: 300,
+        onSelect: onControlSelect,
         available: [
             {
                 id: 'AWS',
@@ -108,6 +119,8 @@ export const controlData = [
                 id: 'AI',
                 logo: <AcmIcon icon={AcmIconVariant.hybrid} />,
                 title: 'cluster.create.ai.subtitle',
+                tooltip: 'cluster.create.ai.tooltip',
+                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
                 change: {
                     insertControlData: controlDataAI,
                     replacements: {},
@@ -119,15 +132,19 @@ export const controlData = [
                 id: 'BMC',
                 logo: <BaremetalLogo />,
                 title: 'cluster.create.baremetal.subtitle',
+                // text: <Deprecated />,
                 change: {
                     insertControlData: getControlDataBMC(),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Centrally managed',
+                section: 'Providers',
             },
         ],
+        sectionTooltips: {
+            'Centrally managed': <Trans i18nKey="create:cluster.create.centrallymanaged.section.tooltip" />,
+        },
         active: getActiveCardID,
         validation: {
             notification: 'creation.ocp.cluster.must.select.infrastructure',

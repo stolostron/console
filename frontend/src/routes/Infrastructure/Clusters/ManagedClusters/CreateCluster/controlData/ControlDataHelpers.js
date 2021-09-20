@@ -1,7 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { VALIDATE_CIDR, VALIDATE_NUMERIC, VALIDATE_BASE_DNS_NAME_REQUIRED, VALID_DNS_LABEL } from 'temptifly'
+import {
+    VALIDATE_CIDR,
+    VALIDATE_NUMERIC,
+    VALIDATE_BASE_DNS_NAME_REQUIRED,
+    VALID_DNS_LABEL,
+    VALIDATE_URL,
+} from 'temptifly'
 import { listClusterImageSets } from '../../../../../../resources'
 import { unpackProviderConnection } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -217,11 +223,17 @@ export const clusterDetailsControlData = [
         id: 'baseDomain',
         type: 'text',
         validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
+        tip: 'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.',
     },
 ]
 
 export const networkingControlData = [
     ///////////////////////  networking  /////////////////////////////////////
+    {
+        id: 'networkInfo',
+        type: 'title',
+        info: 'Configure network access for your cluster. One network is created by default.',
+    },
     {
         id: 'networkType',
         name: 'creation.ocp.cluster.network.type',
@@ -286,6 +298,70 @@ export const networkingControlData = [
                 validation: VALIDATE_CIDR,
             },
         ],
+    },
+]
+
+const onChangeProxy = (control, controlData) => {
+    const useProxy = controlData.find(({ id }) => {
+        return id === 'hasProxy'
+    }).active
+    ;['httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle'].forEach((pid) => {
+        const ctrl = controlData.find(({ id }) => id === pid)
+        if (ctrl) {
+            ctrl.disabled = !useProxy
+        }
+    })
+}
+
+export const proxyControlData = [
+    {
+        id: 'proxyStep',
+        type: 'step',
+        title: 'Proxy',
+    },
+    {
+        id: 'proxyInfo',
+        type: 'title',
+        info: 'Production environments can deny direct access to the Internet and instead have an HTTP or HTTPS proxy available. You can configure a new OpenShift Container Platform cluster to use a proxy by configuring the proxy settings.',
+    },
+    {
+        name: 'Use proxy',
+        id: 'hasProxy',
+        type: 'checkbox',
+        active: false,
+        onSelect: onChangeProxy,
+    },
+    {
+        id: 'httpProxy',
+        type: 'text',
+        name: 'Http Proxy',
+        disabled: true,
+        tip: 'Requires this format: http://<username>:<pswd>@<ip>:<port>',
+        validation: VALIDATE_URL,
+    },
+    {
+        id: 'httpsProxy',
+        type: 'text',
+        name: 'Https Proxy',
+        tip: 'Requires this format: https://<username>:<pswd>@<ip>:<port>',
+        disabled: true,
+        validation: VALIDATE_URL,
+    },
+    {
+        active: [],
+        id: 'noProxy',
+        type: 'values',
+        name: 'No Proxy',
+        placeholder: 'example.com',
+        disabled: true,
+        tip: 'By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs. Add sites to No Proxy to bypass the proxy if necessary.',
+    },
+    {
+        id: 'additionalTrustBundle',
+        type: 'textarea',
+        name: 'Additional Trust Bundle',
+        disabled: true,
+        placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
     },
 ]
 

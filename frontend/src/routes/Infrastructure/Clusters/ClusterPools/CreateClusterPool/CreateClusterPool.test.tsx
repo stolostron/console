@@ -24,7 +24,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetsState, namespacesState, secretsState } from '../../../../../atoms'
-import { nockCreate, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
+import { nockCreate, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'
 import {
     clickByPlaceholderText,
     clickByTestId,
@@ -80,6 +80,15 @@ const mockNamespace: Namespace = {
     metadata: { name: 'test-namespace' },
 }
 
+const mockNamespaceUpdate: Namespace = {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: {
+        name: mockNamespace.metadata.name,
+        labels: { 'open-cluster-management.io/managed-by': 'clusterpools' },
+    },
+}
+
 const mockCreateProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
     kind: ProjectRequestKind,
@@ -113,19 +122,6 @@ const mockInstallConfigSecret: Secret = {
         'install-config.yaml':
             'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluCmNvbnRyb2xQbGFuZToKICBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6IG1hc3RlcgogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogNDAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKY29tcHV0ZToKLSBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6ICd3b3JrZXInCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGF3czoKICAgICAgcm9vdFZvbHVtZToKICAgICAgICBpb3BzOiAyMDAwCiAgICAgICAgc2l6ZTogMTAwCiAgICAgICAgdHlwZTogaW8xCiAgICAgIHR5cGU6IG01LnhsYXJnZQpuZXR3b3JraW5nOgogIG5ldHdvcmtUeXBlOiBPcGVuU2hpZnRTRE4KICBjbHVzdGVyTmV0d29yazoKICAtIGNpZHI6IDEwLjEyOC4wLjAvMTQKICAgIGhvc3RQcmVmaXg6IDIzCiAgbWFjaGluZU5ldHdvcms6CiAgLSBjaWRyOiAxMC4wLjAuMC8xNgogIHNlcnZpY2VOZXR3b3JrOgogIC0gMTcyLjMwLjAuMC8xNgpwbGF0Zm9ybToKICBhd3M6CiAgICByZWdpb246IHVzLWVhc3QtMQpwdWxsU2VjcmV0OiAiIiAjIHNraXAsIGhpdmUgd2lsbCBpbmplY3QgYmFzZWQgb24gaXQncyBzZWNyZXRzCnNzaEtleTogfC0KICAgIHNzaC1yc2EgQUFBQUIxIGZha2VlbWFpbEByZWRoYXQuY29tCg==',
     },
-}
-
-const mockPrivateSecret: Secret = {
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-        name: 'test-ssh-private-key',
-        namespace: mockNamespace.metadata.name!,
-    },
-    stringData: {
-        'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
-    },
-    type: 'Opaque',
 }
 
 const mockCredentialSecret: Secret = {
@@ -280,9 +276,9 @@ describe('CreateClusterPool', () => {
         const createNocks = [
             // create the managed cluster
             nockCreate(mockCreateProject),
+            nockReplace(mockNamespaceUpdate),
             nockCreate(mockPullSecret),
             nockCreate(mockInstallConfigSecret),
-            nockCreate(mockPrivateSecret),
             nockCreate(mockCredentialSecret),
             nockCreate(mockClusterPool),
         ]

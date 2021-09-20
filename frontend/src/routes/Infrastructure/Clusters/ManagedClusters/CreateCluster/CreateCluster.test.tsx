@@ -942,6 +942,9 @@ describe('CreateCluster', () => {
         await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
         await clickByText('Next')
 
+        // skipping proxy
+        await clickByText('Next')
+
         // skipping ansible template
         await clickByText('Next')
 
@@ -1030,6 +1033,9 @@ describe('CreateCluster', () => {
         await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
         await clickByText('Next')
 
+        // skipping proxy
+        await clickByText('Next')
+
         // ansible template
         await clickByPlaceholderText('template.clusterCreate.select.placeholder')
         await clickByText(mockClusterCurators[0].metadata.name!)
@@ -1110,13 +1116,13 @@ describe('CreateCluster', () => {
         container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
         await clickByText('Next')
 
-        // step 3 -- master nodes
-        await clickByText('Next')
-
-        // step 4 -- worker nodes
+        // step 3 -- nodes
         await clickByText('Next')
 
         // step 5 -- the network
+        await clickByText('Next')
+
+        // skipping proxy
         await clickByText('Next')
 
         // step 6 - integration - skipping ansible template

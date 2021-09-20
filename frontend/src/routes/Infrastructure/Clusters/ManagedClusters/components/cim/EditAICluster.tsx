@@ -12,8 +12,10 @@ import {
     infraEnvironmentsState,
 } from '../../../../../../atoms'
 import { onHostsNext, onSaveNetworking } from '../../CreateCluster/components/assisted-installer/utils'
+import EditAgentModal from './EditAgentModal'
+import { NavigationPath } from '../../../../../../NavigationPath'
 
-const { ClusterDeploymentWizard, EditAgentModal, FeatureGateContextProvider, ACM_ENABLED_FEATURES } = CIM
+const { ClusterDeploymentWizard, FeatureGateContextProvider, ACM_ENABLED_FEATURES } = CIM
 
 type EditAIClusterProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -86,23 +88,15 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
                 onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents })}
                 hostActions={hostActions}
+                onFinish={() =>
+                    history.push(
+                        NavigationPath.clusterCreateProgress
+                            .replace(':namespace', agentClusterInstall.metadata.namespace)
+                            .replace(':name', agentClusterInstall.metadata.name)
+                    )
+                }
             />
-            <EditAgentModal
-                isOpen={!!editAgent}
-                agent={editAgent}
-                usedHostnames={[]}
-                onClose={() => setEditAgent(undefined)}
-                onSave={(agent, hostname) => {
-                    return patchResource(agent, [
-                        {
-                            op: 'replace',
-                            path: '/spec/hostname',
-                            value: hostname,
-                        },
-                    ]).promise
-                }}
-                onFormSaveError={() => {}}
-            />
+            <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
         </FeatureGateContextProvider>
     )
 }

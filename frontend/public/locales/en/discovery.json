@@ -43,10 +43,6 @@
     "discoveryConfig.namespaces.labelHelp": "Select the namespace that contains your credentials.",
     "discoveryConfig.namespaces.placeholder": "Select a namespace",
 
-    "clusters.banner.header": "Enable cluster discovery",
-    "clusters.banner.body": "Create discovery settings to connect clusters from OpenShift Cluster Manager. Filter to see relevant clusters. After you save the changes, these clusters appear in the <bold>Discovered clusters</bold> tab.",
-    "clusters.banner.dismiss": "Dismiss",
-
     "discoveryConfig.testFilter": "Test filter",
     "discoveryConfig.add": "Create",
     "discoveryConfig.edit": "Save",

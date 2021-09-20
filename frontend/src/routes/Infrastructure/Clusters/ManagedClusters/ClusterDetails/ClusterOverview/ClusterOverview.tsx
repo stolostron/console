@@ -33,6 +33,7 @@ import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails'
 import AIClusterProgress from '../../components/cim/AIClusterProgress'
 import AIClusterDetails from '../../components/cim/AIClusterDetails'
+import AIClusterErrors from '../../components/cim/AIClusterErrors'
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster, clusterCurator } = useContext(ClusterContext)
@@ -176,6 +177,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     displayName={cluster!.displayName}
                     close={() => setShowEditLabels(false)}
                 />
+                {isHybrid && <AIClusterErrors />}
                 {isHybrid ? <AIClusterProgress /> : <ProgressStepBar />}
                 <AcmDescriptionList
                     title={t('table.details')}
