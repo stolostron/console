@@ -1,22 +1,15 @@
 .pf-c-content .temptifly.showEditor,
 .temptifly.showWizard {
-    margin: unset;
-    padding: unset;
-    height: calc(100vh - 187px);
-    margin-top: -1px;
-    background-color: black;
+    margin: -24px 0 -3.125rem 0;
 }
 
 .pf-c-content .temptifly .creation-view-split-container.showEditor {
-    margin: unset;
-    padding: unset;
+    height: calc(100vh - 200px);
 }
 .pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
 .pf-c-content .temptifly.showWizard .creation-view-controls-container {
-    margin: unset;
-    padding: unset;
-    margin-right: -5px;
-    height: calc(100vh - 187px);
+    padding-top: 1rem;
+    height: calc(100vh - 205px);
 }
 
 .portal-controls {
@@ -24,39 +17,4 @@
 }
 .portal-controls > div {
     margin-left: 16px;
-}
-
-@media (max-width: 1200px) {
-    .pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
-    .pf-c-content .temptifly.showWizard .creation-view-controls-container {
-        height: calc(100vh - 179px);
-    }
-    .pf-c-content .temptifly.showEditor,
-    .temptifly.showWizard {
-        height: calc(100vh - 179px);
-    }
-}
-
-.pf-c-content .pf-c-wizard__main-body {
-    height: 100%;
-}
-
-.temptifly-controls-singleselect .tf--list-box,
-.temptifly-controls-combobox .tf--list-box,
-.temptifly-controls-treeselect .tf--list-box,
-.creation-view-controls-singleselect .tf--list-box,
-.creation-view-controls-combobox .tf--list-box,
-.creation-view-controls-treeselect .tf--list-box {
-    box-shadow: unset !important;
-}
-
-.temptifly-controls-labels-container,
-.creation-view-controls-labels-container {
-    border-style: solid;
-    border-width: var(--pf-global--BorderWidth--sm);
-    border-top-color: var(--pf-global--BorderColor--300);
-    border-right-color: var(--pf-global--BorderColor--300);
-    border-bottom-color: var(--pf-global--BorderColor--200);
-    border-left-color: var(--pf-global--BorderColor--300);
-    box-shadow: unset !important;
 }
