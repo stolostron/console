@@ -4,11 +4,10 @@ import { Stack, StackItem } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useContext } from 'react'
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
-import { getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
+import { backendUrl, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 
 const {
     ClusterDeploymentProgress,
-    getClusterStatus,
     ClusterInstallationError,
     AgentTable,
     shouldShowClusterInstallationProgress,
@@ -17,7 +16,6 @@ const {
     getConsoleUrl,
     ClusterDeploymentCredentials,
     ClusterDeploymentKubeconfigDownload,
-    formatEventsData,
 } = CIM
 
 const fetchSecret: CIM.FetchSecret = (name, namespace) =>
@@ -40,23 +38,6 @@ const AIClusterProgress: React.FC = () => {
           )
         : []
 
-    // TODO(jtomasek): Figure out how to use this from ai-ui-lib (currently in ClusterDeploymentDetails which is not used by ACM)
-    const handleFetchEvents: CIM.EventListFetchProps['onFetchEvents'] = async (_, onSuccess, onError) => {
-        try {
-            const eventsURL = agentClusterInstall.status?.debugInfo?.eventsURL
-            if (!eventsURL) throw new Error('Events URL is not available.')
-
-            const res = await fetch(eventsURL)
-            const rawData: Record<string, string>[] = await res.json()
-            const data = formatEventsData(rawData)
-
-            onSuccess(data)
-        } catch (e) {
-            onError('Failed to fetch cluster events.')
-        }
-    }
-
-    const [clusterStatus, clusterStatusInfo] = getClusterStatus(agentClusterInstall)
     return (
         <>
             {shouldShowClusterInstallationProgress(agentClusterInstall) && (
@@ -69,7 +50,7 @@ const AIClusterProgress: React.FC = () => {
                                         clusterDeployment={clusterDeployment}
                                         agentClusterInstall={agentClusterInstall}
                                         agents={clusterAgents}
-                                        onFetchEvents={handleFetchEvents}
+                                        fetchEvents={() => Promise.resolve(/* will be impleented later */)}
                                     />
                                 </StackItem>
                                 {shouldShowClusterCredentials(agentClusterInstall) && (
@@ -93,14 +74,9 @@ const AIClusterProgress: React.FC = () => {
                                 {shouldShowClusterInstallationError(agentClusterInstall) && (
                                     <StackItem>
                                         <ClusterInstallationError
-                                            title={
-                                                clusterStatus === 'cancelled'
-                                                    ? 'Cluster installation was cancelled'
-                                                    : undefined
-                                            }
-                                            statusInfo={clusterStatusInfo}
-                                            logsUrl={agentClusterInstall.status?.debugInfo?.logsURL}
-                                            openshiftVersion={clusterDeployment.status?.installVersion}
+                                            clusterDeployment={clusterDeployment}
+                                            agentClusterInstall={agentClusterInstall}
+                                            backendURL={backendUrl}
                                         />
                                     </StackItem>
                                 )}

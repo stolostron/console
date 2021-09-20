@@ -15,14 +15,16 @@ import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
+import isMatch from 'lodash/isMatch'
 import { acmRouteState, infraEnvironmentsState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
 import { ResourceError, createResource, patchResource } from '../../../../resources'
+import { agentsState, bareMetalHostsState } from '../../../../atoms'
 
-const { AddHostModal, getBareMetalHostCredentialsSecret, getBareMetalHost } = CIM
+const { AddHostModal, getBareMetalHostCredentialsSecret, getBareMetalHost, InfraEnvHostsTabAgentsWarning } = CIM
 
 type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -38,6 +40,11 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
 
     const infraEnv = infraEnvironments.find(
         (i) => i.metadata.name === match.params.name && i.metadata.namespace === match.params.namespace
+    )
+
+    const [agents, bareMetalHosts] = useRecoilValue(waitForAll([agentsState, bareMetalHostsState]))
+    const infraAgents = agents.filter((a) =>
+        isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
     )
 
     if (!infraEnv) {
@@ -98,6 +105,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                                             .replace(':name', match.params.name)}
                                     >
                                         {t('tab.hosts')}
+                                        <InfraEnvHostsTabAgentsWarning infraAgents={infraAgents} />
                                     </Link>
                                 </AcmSecondaryNavItem>
                             </AcmSecondaryNav>
@@ -112,7 +120,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                             <DetailsTab infraEnv={infraEnv} />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentHosts}>
-                            <HostsTab infraEnv={infraEnv} />
+                            <HostsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={bareMetalHosts} />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentDetails}>
                             <Redirect
