@@ -1,6 +1,10 @@
 .pf-c-content .temptifly.showEditor,
 .temptifly.showWizard {
-    margin: -24px 0 -3.125rem 0;
+    margin: unset;
+    padding: unset;
+    height: calc(100vh - 187px);
+    margin-top: -1px;
+    background-color: black;
 }
 
 .pf-c-content .temptifly .creation-view-split-container.showEditor {
