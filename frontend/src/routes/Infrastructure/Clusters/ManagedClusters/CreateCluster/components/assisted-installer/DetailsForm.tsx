@@ -4,7 +4,7 @@ import { FormikProps } from 'formik'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { set, get, isEqual, startCase, camelCase, debounce } from 'lodash'
 import { getValue } from 'temptifly'
-import { AcmSelect } from '@open-cluster-management/ui-components'
+import { AcmLabelsInput, AcmSelect } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
 import { SelectOption, Text } from '@patternfly/react-core'
 import { Link } from 'react-router-dom'
@@ -15,10 +15,15 @@ import { ClusterImageSet, listClusterImageSets, Secret } from '../../../../../..
 import { clusterDeploymentsState } from '../../../../../../../atoms'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'
 
-const { ACMClusterDeploymentDetailsStep, FeatureGateContextProvider, ACM_ENABLED_FEATURES } = CIM
+const { ACMClusterDeploymentDetailsStep, FeatureGateContextProvider, ACM_ENABLED_FEATURES, labelsToArray } = CIM
 
 type FormControl = {
-    active: CIM.ClusterDetailsValues
+    active: CIM.ClusterDetailsValues & {
+        managedClusterSet?: string
+        additionalLabels?: {
+            [x: string]: string
+        }[]
+    }
     disabled?: VoidFunction
     reverse?: (control: { active: CIM.ClusterDetailsValues }, templateObject: any) => void
     validate?: VoidFunction
@@ -36,17 +41,20 @@ const fields: any = {
     baseDnsDomain: { path: 'ClusterDeployment[0].spec.baseDomain' },
     openshiftVersion: { path: 'AgentClusterInstall[0].spec.imageSetRef.name' },
     pullSecret: {},
-    managedClusterSet: { path: 'ClusterDeployment[0].metadata.labels["cluster.open-cluster-management.io/clusterset"]' },
+    // managedClusterSet: {
+    //     path: 'ClusterDeployment[0].metadata.labels["cluster.open-cluster-management.io/clusterset"]',
+    // },
 }
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
     const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
     const formRef = useRef<FormikProps<any>>(null)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation(['cluster', 'common'])
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
+    const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
 
     useEffect(() => {
         if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
@@ -73,11 +81,15 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
 
         control.reverse = (
             control: {
-                active: CIM.ClusterDetailsValues
+                active: FormControl['active']
             },
             templateObject: any
         ) => {
-            const active = { ...control.active, managedClusterSet }
+            const active = {
+                ...control.active,
+                managedClusterSet: control.active.managedClusterSet,
+                additionalLabels: control.active.additionalLabels,
+            }
             Object.keys(fields).forEach((key) => {
                 const path = fields[key].path
                 if (path) {
@@ -148,7 +160,17 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 ))}
             </AcmSelect>
         ),
-        openshiftVersion: <div>Bar</div>,
+        openshiftVersion: (
+            <AcmLabelsInput
+                id="additionalLabels"
+                label={t('import.form.labels.label')}
+                buttonLabel={t('common:label.add')}
+                value={additionalLabels}
+                onChange={(label) => setAdditionaLabels(label)}
+                placeholder={t('labels.edit.placeholder')}
+                isDisabled={false}
+            />
+        ),
     }
 
     useEffect(() => {
@@ -158,16 +180,30 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
 
     const onValuesChanged = useCallback(
         debounce((formiValues) => {
-            const values = { ...formiValues, managedClusterSet: control.active.managedClusterSet }
+            const values = {
+                ...formiValues,
+                managedClusterSet: control.active.managedClusterSet,
+                additionalLabels: control.active.additionalLabels,
+            }
             if (!isEqual(values, control.active)) {
                 control.active = values
                 control.step.title.isComplete = false
                 handleChange(control)
             }
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, 300),
+        }),
         []
     )
+
+    useEffect(() => {
+        control.active = {
+            ...control.active,
+            additionalLabels: labelsToArray(additionalLabels).map((keyValue) => {
+                const [key, value] = keyValue.split('=', 2)
+                return { key, value }
+            }),
+        }
+        handleChange(control)
+    }, [additionalLabels])
 
     return (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
