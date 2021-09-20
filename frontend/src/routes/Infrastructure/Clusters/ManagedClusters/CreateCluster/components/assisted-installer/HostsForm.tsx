@@ -3,7 +3,7 @@ import { useCallback, useRef, useEffect, useState } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
-import { get, isEmpty, isEqual } from 'lodash'
+import { debounce, get, isEmpty, isEqual } from 'lodash'
 import { agentClusterInstallsState, agentsState, clusterDeploymentsState } from '../../../../../../../atoms'
 import { onHostsNext } from './utils'
 
@@ -81,24 +81,29 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
         }
     }, [control, clusterDeployment, agents])
 
-    const onValuesChanged = useCallback((values) => {
-        if (!isEqual(values, control.active)) {
-            control.active = values
-            control.step.title.isComplete = false
-            handleChange(control)
-        }
-        // eslint-disable-next-line
-    }, [])
+    const onValuesChanged = useCallback(
+        debounce((values) => {
+            if (!isEqual(values, control.active)) {
+                control.active = values
+                control.step.title.isComplete = false
+                handleChange(control)
+            }
+            // eslint-disable-next-line
+        }, 300),
+        []
+    )
 
     return agents?.length && clusterDeployment && agentClusterInstall ? (
-        <ACMClusterDeploymentHostsStep
-            formRef={formRef}
-            onValuesChanged={onValuesChanged}
-            clusterDeployment={clusterDeployment}
-            agentClusterInstall={agentClusterInstall}
-            agents={agents}
-            error={error}
-        />
+        <div className="hosts-form">
+            <ACMClusterDeploymentHostsStep
+                formRef={formRef}
+                onValuesChanged={onValuesChanged}
+                clusterDeployment={clusterDeployment}
+                agentClusterInstall={agentClusterInstall}
+                agents={agents}
+                error={error}
+            />
+        </div>
     ) : (
         <div>loading</div>
     )

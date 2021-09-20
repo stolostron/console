@@ -1,11 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useRef, useEffect, useState } from 'react'
+import { useCallback, useRef, useEffect, useState, useMemo } from 'react'
 import { FormikProps } from 'formik'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { set, get, isEqual, startCase, camelCase } from 'lodash'
+import { set, get, isEqual, startCase, camelCase, debounce } from 'lodash'
 import { getValue } from 'temptifly'
 import { ClusterImageSet, listClusterImageSets, Secret } from '../../../../../../../resources'
 import { ClusterDetailsValues } from 'openshift-assisted-ui-lib/dist/src/common'
+import { clusterDeploymentsState } from '../../../../../../../atoms'
+import { useRecoilState } from 'recoil'
 
 const { ACMClusterDeploymentDetailsStep, FeatureGateContextProvider, ACM_ENABLED_FEATURES } = CIM
 
@@ -31,9 +33,10 @@ const fields: any = {
 }
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
+    const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
     const formRef = useRef<FormikProps<any>>(null)
     useEffect(() => {
-        if (control.active) {
+        if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
             formRef?.current?.setValues(control.active, true)
         }
 
@@ -98,27 +101,27 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
             }
         }
         fetchImages()
-    })
-    const onValuesChanged = useCallback((values) => {
-        if (formRef?.current?.dirty && !isEqual(values, control.active)) {
-            control.active = values
-            if (!control.active.openshiftVersion) {
-                control.active.openshiftVersion = (
-                    document.getElementsByName('openshiftVersion') as unknown as HTMLCollectionOf<HTMLInputElement>
-                )[0].value
-            }
-            control.step.title.isComplete = false
-            handleChange(control)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+    const onValuesChanged = useCallback(
+        debounce((values) => {
+            if (!isEqual(values, control.active)) {
+                control.active = values
+                control.step.title.isComplete = false
+                handleChange(control)
+            }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, 300),
+        []
+    )
+
+    const usedClusterNames = useMemo(() => clusterDeployments.map((cd) => cd.metadata.name || ''), [])
     return (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
             <ACMClusterDeploymentDetailsStep
                 formRef={formRef}
                 onValuesChanged={onValuesChanged}
                 clusterImages={clusterImages}
-                usedClusterNames={[]}
+                usedClusterNames={usedClusterNames}
                 pullSecret={controlProps?.stringData?.pullSecret}
                 defaultBaseDomain={controlProps?.stringData?.baseDomain}
             />

@@ -51,6 +51,9 @@ const InfraEnvironmentDetailsPage = lazy(
 const EditAICluster = lazy(
     () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/EditAICluster')
 )
+const ClusterCreateProgress = lazy(
+    () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/ClusterCreateProgress')
+)
 
 export default function App() {
     const [route] = useRecoilState(acmRouteState)
@@ -87,6 +90,10 @@ export default function App() {
                                         component={InfraEnvironmentDetailsPage}
                                     />
                                     <Route path={NavigationPath.editCluster} component={EditAICluster} />
+                                    <Route
+                                        path={NavigationPath.clusterCreateProgress}
+                                        component={ClusterCreateProgress}
+                                    />
                                     <Route
                                         exact
                                         path={NavigationPath.ansibleAutomations}

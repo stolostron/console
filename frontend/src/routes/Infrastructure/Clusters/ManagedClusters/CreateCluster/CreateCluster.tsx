@@ -18,7 +18,7 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
-import { controlData } from './controlData/ControlData'
+import { getControlData } from './controlData/ControlData'
 import { setAvailableConnections, setAvailableTemplates } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
@@ -29,6 +29,7 @@ import {
     managedClustersState,
     clusterCuratorsState,
     agentClusterInstallsState,
+    infraEnvironmentsState,
 } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
 import {
@@ -44,6 +45,8 @@ import { createResource as createResourceTool } from '../../../../../resources'
 import { FeatureGates } from '../../../../../FeatureGates'
 import { getNetworkingPatches } from './components/assisted-installer/utils'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { WarningContext, WarningContextType, Warning } from './Warning'
+
 interface CreationStatus {
     status: string
     messages: any[] | null
@@ -84,6 +87,11 @@ export default function CreateClusterPage() {
     const [selectedTemplate, setSelectedTemplate] = useState('')
     const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
+    const [infraEnvs] = useRecoilState(infraEnvironmentsState)
+    const [warning, setWarning] = useState<WarningContextType>()
+
+    // Is there a way how to get this without fetching all InfraEnvs?
+    const isInfraEnvAvailable = !!infraEnvs?.length
 
     const classes = useStyles()
     // create portals for buttons in header
@@ -225,7 +233,7 @@ export default function CreateClusterPage() {
     const pauseCreate = () => {}
 
     // setup translation
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation(['create', 'cim'])
     const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
@@ -310,6 +318,10 @@ export default function CreateClusterPage() {
                     return new Promise((resolve) => {
                         const networkForm = controlData.find((r: any) => r.id === 'aiNetwork')
                         const clusterName = get(networkForm, 'agentClusterInstall.spec.clusterDeploymentRef.name')
+                        const clusterNamespace = get(
+                            networkForm,
+                            'agentClusterInstall.spec.clusterDeploymentRef.namespace'
+                        )
                         patchNetwork(networkForm.agentClusterInstall, networkForm.active).then((status) => {
                             resolve(status)
                             if (status !== 'ERROR') {
@@ -318,7 +330,11 @@ export default function CreateClusterPage() {
                                     messages: ['Configured cluster network. Redirecting to cluster details...'],
                                 })
                                 setTimeout(() => {
-                                    history.push(NavigationPath.clusterDetails.replace(':id', clusterName as string))
+                                    history.push(
+                                        NavigationPath.clusterCreateProgress
+                                            .replace(':namespace', clusterNamespace as string)
+                                            .replace(':name', clusterName as string)
+                                    )
                                 }, 2000)
                             }
                         })
@@ -369,6 +385,23 @@ export default function CreateClusterPage() {
         return patch()
     }
 
+    const onControlSelect = (control: any) => {
+        if (control.controlId === 'infrastructure') {
+            if (control.active?.includes('AI') && !isInfraEnvAvailable) {
+                setWarning({
+                    title: t('cim:cim.infra.missing.warning.title'),
+                    text: t('cim:cim.infra.missing.warning.text'),
+                    linkText: t('cim:cim.infra.manage.link'),
+                    linkTo: NavigationPath.infraEnvironments,
+                })
+            } else {
+                setWarning(undefined)
+            }
+        }
+    }
+
+    const controlData = getControlData(<Warning />, onControlSelect)
+
     return (
         <AcmPage
             header={
@@ -399,32 +432,34 @@ export default function CreateClusterPage() {
             <AcmErrorBoundary>
                 <AcmPageContent id="create-cluster">
                     <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
-                        <TemplateEditor
-                            wizardClassName={classes.wizardBody}
-                            type={'cluster'}
-                            title={'Cluster YAML'}
-                            monacoEditor={<MonacoEditor />}
-                            controlData={controlData}
-                            template={template}
-                            portals={Portals}
-                            fetchControl={fetchControl}
-                            createControl={{
-                                createResource,
-                                cancelCreate,
-                                pauseCreate,
-                                creationStatus: creationStatus?.status,
-                                creationMsg: creationStatus?.messages,
-                                resetStatus: () => {
-                                    setCreationStatus(undefined)
-                                },
-                            }}
-                            logging={process.env.NODE_ENV !== 'production'}
-                            i18n={i18n}
-                            onControlInitialize={onControlInitialize}
-                            onControlChange={onControlChange}
-                            ref={templateEditorRef}
-                            controlProps={selectedConnection}
-                        />
+                        <WarningContext.Provider value={warning}>
+                            <TemplateEditor
+                                wizardClassName={classes.wizardBody}
+                                type={'cluster'}
+                                title={'Cluster YAML'}
+                                monacoEditor={<MonacoEditor />}
+                                controlData={controlData}
+                                template={template}
+                                portals={Portals}
+                                fetchControl={fetchControl}
+                                createControl={{
+                                    createResource,
+                                    cancelCreate,
+                                    pauseCreate,
+                                    creationStatus: creationStatus?.status,
+                                    creationMsg: creationStatus?.messages,
+                                    resetStatus: () => {
+                                        setCreationStatus(undefined)
+                                    },
+                                }}
+                                logging={process.env.NODE_ENV !== 'production'}
+                                i18n={i18n}
+                                onControlInitialize={onControlInitialize}
+                                onControlChange={onControlChange}
+                                ref={templateEditorRef}
+                                controlProps={selectedConnection}
+                            />
+                        </WarningContext.Provider>
                     </PageSection>
                 </AcmPageContent>
             </AcmErrorBoundary>
