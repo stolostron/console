@@ -4,17 +4,23 @@ import { FormikProps } from 'formik'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { set, get, isEqual, startCase, camelCase, debounce } from 'lodash'
 import { getValue } from 'temptifly'
-import { ClusterImageSet, listClusterImageSets, Secret } from '../../../../../../../resources'
-import { ClusterDetailsValues } from 'openshift-assisted-ui-lib/dist/src/common'
-import { clusterDeploymentsState } from '../../../../../../../atoms'
+import { AcmSelect } from '@open-cluster-management/ui-components'
+import { useTranslation } from 'react-i18next'
+import { SelectOption, Text } from '@patternfly/react-core'
+import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
+
+import { NavigationPath } from '../../../../../../../NavigationPath'
+import { ClusterImageSet, listClusterImageSets, Secret } from '../../../../../../../resources'
+import { clusterDeploymentsState } from '../../../../../../../atoms'
+import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'
 
 const { ACMClusterDeploymentDetailsStep, FeatureGateContextProvider, ACM_ENABLED_FEATURES } = CIM
 
 type FormControl = {
-    active: ClusterDetailsValues
+    active: CIM.ClusterDetailsValues
     disabled?: VoidFunction
-    reverse?: (control: { active: ClusterDetailsValues }, templateObject: any) => void
+    reverse?: (control: { active: CIM.ClusterDetailsValues }, templateObject: any) => void
     validate?: VoidFunction
     summary?: VoidFunction
     step?: any
@@ -30,11 +36,18 @@ const fields: any = {
     baseDnsDomain: { path: 'ClusterDeployment[0].spec.baseDomain' },
     openshiftVersion: { path: 'AgentClusterInstall[0].spec.imageSetRef.name' },
     pullSecret: {},
+    managedClusterSet: { path: 'ClusterDeployment[0].metadata.labels["cluster.open-cluster-management.io/clusterset"]' },
 }
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
     const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
     const formRef = useRef<FormikProps<any>>(null)
+    const { t } = useTranslation(['cluster'])
+
+    const { canJoinClusterSets } = useCanJoinClusterSets()
+    const mustJoinClusterSet = useMustJoinClusterSet()
+    const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
+
     useEffect(() => {
         if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
             formRef?.current?.setValues(control.active, true)
@@ -60,11 +73,11 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
 
         control.reverse = (
             control: {
-                active: ClusterDetailsValues
+                active: CIM.ClusterDetailsValues
             },
             templateObject: any
         ) => {
-            const active = { ...control.active }
+            const active = { ...control.active, managedClusterSet }
             Object.keys(fields).forEach((key) => {
                 const path = fields[key].path
                 if (path) {
@@ -102,8 +115,50 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         }
         fetchImages()
     }, [])
+
+    const usedClusterNames = useMemo(() => clusterDeployments.map((cd) => cd.metadata.name || ''), [])
+
+    const extensionAfter = {
+        // the "key" references element preceeding the one which is being added
+        name: (
+            <AcmSelect
+                id="managedClusterSet"
+                label={t('import.form.managedClusterSet.label')}
+                placeholder={
+                    canJoinClusterSets?.length === 0
+                        ? t('import.no.cluster.sets.available')
+                        : t('import.form.managedClusterSet.placeholder')
+                }
+                labelHelp={t('import.form.managedClusterSet.labelHelp')}
+                value={managedClusterSet}
+                onChange={(mcs) => setManagedClusterSet(mcs)}
+                isDisabled={canJoinClusterSets === undefined || canJoinClusterSets.length === 0}
+                hidden={canJoinClusterSets === undefined}
+                helperText={
+                    <Text component="small">
+                        <Link to={NavigationPath.clusterSets}>{t('import.manage.cluster.sets')}</Link>
+                    </Text>
+                }
+                isRequired={mustJoinClusterSet}
+            >
+                {canJoinClusterSets?.map((mcs) => (
+                    <SelectOption key={mcs.metadata.name} value={mcs.metadata.name}>
+                        {mcs.metadata.name}
+                    </SelectOption>
+                ))}
+            </AcmSelect>
+        ),
+        openshiftVersion: <div>Bar</div>,
+    }
+
+    useEffect(() => {
+        control.active = { ...control.active, managedClusterSet }
+        handleChange(control)
+    }, [managedClusterSet])
+
     const onValuesChanged = useCallback(
-        debounce((values) => {
+        debounce((formiValues) => {
+            const values = { ...formiValues, managedClusterSet: control.active.managedClusterSet }
             if (!isEqual(values, control.active)) {
                 control.active = values
                 control.step.title.isComplete = false
@@ -114,7 +169,6 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         []
     )
 
-    const usedClusterNames = useMemo(() => clusterDeployments.map((cd) => cd.metadata.name || ''), [])
     return (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
             <ACMClusterDeploymentDetailsStep
@@ -124,6 +178,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 usedClusterNames={usedClusterNames}
                 pullSecret={controlProps?.stringData?.pullSecret}
                 defaultBaseDomain={controlProps?.stringData?.baseDomain}
+                extensionAfter={extensionAfter}
             />
         </FeatureGateContextProvider>
     )

@@ -4,6 +4,10 @@ kind: ClusterDeployment
 metadata:
   annotations:
     agentBareMetal-agentSelector/autoSelect: "true"
+  {{#if ai.managedClusterSet}}
+  labels:
+    "cluster.open-cluster-management.io/clusterset": '{{{ai.managedClusterSet}}}'
+  {{/if}}
   name: {{{ai.name}}}
   namespace: {{{ai.name}}}
 spec:
@@ -67,8 +71,8 @@ metadata:
   labels:
     cloud: Hybrid
     name: {{{ai.name}}}
-    {{#if clusterSet}}
-    cluster.open-cluster-management.io/clusterset: '{{{clusterSet}}}'
+    {{#if ai.managedClusterSet}}
+    cluster.open-cluster-management.io/clusterset: '{{{ai.managedClusterSet}}}'
     {{/if}}
   name: {{{ai.name}}}
 spec:
