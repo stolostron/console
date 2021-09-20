@@ -3,13 +3,13 @@ import { useCallback, useRef, useEffect, useState } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
-import { debounce, get, isEmpty, isEqual } from 'lodash'
+import { debounce, isEmpty, isEqual } from 'lodash'
 import { agentClusterInstallsState, agentsState, clusterDeploymentsState } from '../../../../../../../atoms'
 import { onHostsNext } from './utils'
 
 import './hosts-form.css'
 
-const { ACMClusterDeploymentHostsStep } = CIM
+const { ACMClusterDeploymentHostsStep, getTotalCompute } = CIM
 
 type FormControl = {
     active?: CIM.ClusterDeploymentHostsSelectionValues
@@ -25,8 +25,6 @@ type HostsFormProps = {
     resourceJSON: any
     handleChange: (control: FormControl) => void
 }
-
-const fields: any = {}
 
 const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     const [error, setError] = useState<string>()
@@ -55,6 +53,26 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
         control.validate = async () => {
             setError(undefined)
             formRef?.current?.setFieldError('patchError', undefined)
+            const autoSelectHosts = formRef?.current?.values.autoSelectHosts;
+            const hostCount = formRef?.current?.values.hostCount;
+            const ids = formRef?.current?.values.autoSelectHosts ? formRef?.current?.values.autoSelectedHostIds : formRef?.current?.values.selectedHostIds;
+            const selectedAgents = agents.filter((a) => ids?.includes(a.metadata.uid))
+            control.summary = () => {
+                return [
+                    {
+                        term: 'Auto select hosts',
+                        desc: autoSelectHosts ? 'Yes' : 'No',
+                    },
+                    {
+                        term: 'Number of hosts',
+                        desc: hostCount,
+                    },
+                    {
+                        term: 'Total compute',
+                        desc: getTotalCompute(selectedAgents),
+                    },
+                ];
+            }
             await formRef?.current?.submitForm()
             if (!isEmpty(formRef?.current?.errors)) {
                 return formRef?.current?.errors
@@ -69,15 +87,6 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
                     resourcesError: 'Failed patching resources',
                 }
             }
-        }
-        control.summary = () => {
-            return Object.keys(fields).map((key) => {
-                return {
-                    term: fields[key].label,
-                    desc: get(control, `active.${key}`),
-                    exception: get(control, `errors.${key}`),
-                }
-            })
         }
     }, [control, clusterDeployment, agents])
 
