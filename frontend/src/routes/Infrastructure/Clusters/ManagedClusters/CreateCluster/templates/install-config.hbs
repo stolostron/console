@@ -5,6 +5,16 @@ metadata:
 baseDomain: {{{baseDomain}}} ##baseDomain
 
 
+{{#if hasProxy}}
+proxy:
+  httpProxy: {{{httpProxy}}} ##httpProxy
+  httpsProxy: {{{httpsProxy}}} ##httpsProxy
+{{#if noProxy}}
+  noProxy: {{{noProxy}}} ## noProxy
+{{/if}}
+{{/if}}
+
+
 {{! ========================================================== }}
 {{! ========================================================== }}
 {{! ==================Master Nodes============================ }}

@@ -39,7 +39,7 @@ export const getControlData = (warning, onControlSelect) => [
     {
         id: 'distStep',
         type: 'step',
-        title: 'Infrastructure',
+        title: 'Infrastructure provider',
     },
     {
         id: 'warning',
