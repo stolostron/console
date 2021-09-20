@@ -26,7 +26,8 @@
     margin-left: 16px;
 }
 
-@media (max-width: 1200px) {
+/* Safari has issues with calc using vh inside a media query, even when not in effect */
+/* @media (max-width: 1200px) {
     .pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
     .pf-c-content .temptifly.showWizard .creation-view-controls-container {
         height: calc(100vh - 179px);
@@ -35,7 +36,7 @@
     .temptifly.showWizard {
         height: calc(100vh - 179px);
     }
-}
+} */
 
 .pf-c-content .pf-c-wizard__main-body {
     height: 100%;
