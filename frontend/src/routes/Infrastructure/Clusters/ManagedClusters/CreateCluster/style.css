@@ -18,3 +18,27 @@
 .portal-controls > div {
     margin-left: 16px;
 }
+
+.pf-c-content .pf-c-wizard__main-body {
+    height: 100%;
+}
+
+.temptifly-controls-singleselect .tf--list-box,
+.temptifly-controls-combobox .tf--list-box,
+.temptifly-controls-treeselect .tf--list-box,
+.creation-view-controls-singleselect .tf--list-box,
+.creation-view-controls-combobox .tf--list-box,
+.creation-view-controls-treeselect .tf--list-box {
+    box-shadow: unset !important;
+}
+
+.temptifly-controls-labels-container,
+.creation-view-controls-labels-container {
+    border-style: solid;
+    border-width: var(--pf-global--BorderWidth--sm);
+    border-top-color: var(--pf-global--BorderColor--300);
+    border-right-color: var(--pf-global--BorderColor--300);
+    border-bottom-color: var(--pf-global--BorderColor--200);
+    border-left-color: var(--pf-global--BorderColor--300);
+    box-shadow: unset !important;
+}
