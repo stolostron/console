@@ -1,16 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    Cluster,
-    deleteResource,
-    ManagedClusterSet,
-    ManagedClusterSetDefinition,
-    managedClusterSetLabel,
-    mapAddons,
-    mapClusters,
-    ResourceErrorCode,
-} from '../../../../resources'
-import {
     AcmAlertContext,
     AcmButton,
     AcmEmptyState,
@@ -37,6 +27,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
+    agentClusterInstallsState,
     certificateSigningRequestsState,
     clusterDeploymentsState,
     clusterManagementAddonsState,
@@ -46,13 +37,22 @@ import {
     managedClusterSetBindingsState,
     managedClusterSetsState,
     managedClustersState,
-    agentClusterInstallsState,
 } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
+import {
+    Cluster,
+    deleteResource,
+    ManagedClusterSet,
+    ManagedClusterSetDefinition,
+    managedClusterSetLabel,
+    mapAddons,
+    mapClusters,
+    ResourceErrorCode,
+} from '../../../../resources'
 import { usePageContext } from '../Clusters'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
@@ -284,12 +284,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                             )
                             const namespaces = bindings.map((mcsb) => mcsb.metadata.namespace!)
                             return namespaces.length ? (
-                                <AcmLabels
-                                    labels={namespaces}
-                                    collapse={namespaces.filter((_ns, i) => i > 1)}
-                                    style={{ maxWidth: '600px' }}
-                                    variant="outline"
-                                />
+                                <AcmLabels labels={namespaces} collapse={namespaces.filter((_ns, i) => i > 1)} />
                             ) : (
                                 '-'
                             )

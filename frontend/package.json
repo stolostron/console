@@ -22,7 +22,7 @@
         "@babel/preset-react": "^7.14.5",
         "@babel/preset-typescript": "^7.15.0",
         "@kubernetes/client-node": "^0.15.1",
-        "@open-cluster-management/ui-components": "^1.12.0",
+        "@open-cluster-management/ui-components": "^1.14.0",
         "@patternfly/react-code-editor": "^4.3.42",
         "@patternfly/react-core": "^4.152.4",
         "@patternfly/react-icons": "^4.11.14",
