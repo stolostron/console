@@ -118,7 +118,7 @@ export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstal
 
     appendPatch(agentClusterInstallPatches, '/spec/holdInstallation', false, agentClusterInstall.spec?.holdInstallation)
 
-    if (agentClusterInstall?.spec?.provisionRequirements?.controlPlaneAgents === 1) {
+    if (agentClusterInstall?.spec?.provisionRequirements?.controlPlaneAgents === 1 && values.hostSubnet !== 'NO_SUBNET_SET') {
         appendPatch(
             agentClusterInstallPatches,
             '/spec/networking/machineNetwork',

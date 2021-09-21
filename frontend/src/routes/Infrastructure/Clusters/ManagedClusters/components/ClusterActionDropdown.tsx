@@ -284,6 +284,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 text: t('managed.editAI'),
                 click: (cluster: Cluster) =>
                     history.push(`/multicloud/cluster/edit/${cluster.namespace}/${cluster.name}`),
+                isDisabled: cluster.status !== ClusterStatus.draft,
             },
         ],
         []

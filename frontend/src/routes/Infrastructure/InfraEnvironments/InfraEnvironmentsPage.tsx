@@ -155,10 +155,15 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                             const infraAgents = agents.filter((a) =>
                                 isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
                             )
+                            const errorAgents = infraAgents.filter((a) => a.status?.debugInfo?.state === 'error')
                             return (
                                 <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
                                     {infraAgents.length ? (
-                                        <AcmInlineStatusGroup healthy={infraAgents.length} danger={0} unknown={0} />
+                                        <AcmInlineStatusGroup
+                                            healthy={infraAgents.length - errorAgents.length}
+                                            danger={errorAgents.length}
+                                            unknown={0}
+                                        />
                                     ) : (
                                         0
                                     )}
