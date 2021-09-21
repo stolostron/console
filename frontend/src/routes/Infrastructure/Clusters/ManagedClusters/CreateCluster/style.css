@@ -1,22 +1,25 @@
+.pf-c-content {
+    --pf-c-page__main-wizard--BorderTopWidth: 0;
+}
+
 .pf-c-content .temptifly.showEditor,
 .temptifly.showWizard {
-    margin: unset;
-    padding: unset;
-    height: calc(100vh - 187px);
-    margin-top: -1px;
+    height: 100%;
+    margin: 0;
+    padding: 0;
     background-color: black;
 }
 
 .pf-c-content .temptifly .creation-view-split-container.showEditor {
-    margin: unset;
-    padding: unset;
+    margin: 0;
+    padding: 0;
 }
+
 .pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
 .pf-c-content .temptifly.showWizard .creation-view-controls-container {
-    margin: unset;
-    padding: unset;
-    margin-right: -5px;
-    height: calc(100vh - 187px);
+    padding: 0;
+    margin: 0 -10px 0 0;
+    height: 100%;
 }
 
 .portal-controls {
@@ -24,17 +27,6 @@
 }
 .portal-controls > div {
     margin-left: 16px;
-}
-
-@media (max-width: 1200px) {
-    .pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
-    .pf-c-content .temptifly.showWizard .creation-view-controls-container {
-        height: calc(100vh - 179px);
-    }
-    .pf-c-content .temptifly.showEditor,
-    .temptifly.showWizard {
-        height: calc(100vh - 179px);
-    }
 }
 
 .pf-c-content .pf-c-wizard__main-body {
