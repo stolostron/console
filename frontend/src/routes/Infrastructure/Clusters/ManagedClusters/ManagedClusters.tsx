@@ -294,7 +294,6 @@ export function ClustersTable(props: {
                         return (
                             <AcmLabels
                                 labels={cluster.labels}
-                                style={{ maxWidth: '600px' }}
                                 expandedText={t('common:show.less')}
                                 collapsedText={t('common:show.more', { number: collapse.length })}
                                 collapse={collapse}

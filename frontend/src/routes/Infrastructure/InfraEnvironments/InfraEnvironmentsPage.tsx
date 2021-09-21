@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import isMatch from 'lodash/isMatch'
 import {
     AcmButton,
     AcmEmptyState,
@@ -12,18 +11,18 @@ import {
     AcmTable,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { fitContent } from '@patternfly/react-table'
+import isMatch from 'lodash/isMatch'
+import { CIM } from 'openshift-assisted-ui-lib'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import { CIM } from 'openshift-assisted-ui-lib'
-
 import { acmRouteState, agentsState, infraEnvironmentsState } from '../../../atoms'
-import { NavigationPath } from '../../../NavigationPath'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { fitContent } from '@patternfly/react-table'
-import { rbacDelete } from '../../../lib/rbac-util'
 import { RbacDropdown } from '../../../components/Rbac'
+import { rbacDelete } from '../../../lib/rbac-util'
+import { NavigationPath } from '../../../NavigationPath'
 import { deleteResource } from '../../../resources'
 import { OnPremiseBanner } from '../Clusters/ManagedClusters/components/cim/OnPremiseBanner'
 
@@ -136,7 +135,6 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 return (
                                     <AcmLabels
                                         labels={infraEnv.metadata.labels}
-                                        style={{ maxWidth: '600px' }}
                                         expandedText={t('common:show.less')}
                                         collapsedText={t('common:show.more', { number: collapse.length })}
                                         collapse={collapse}
