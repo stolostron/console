@@ -18,6 +18,7 @@ import {
     managedClusterInfosState,
     managedClustersState,
     agentClusterInstallsState,
+    clusterCuratorsState,
 } from '../../../../../atoms'
 
 // returns the clusters assigned to a ManagedClusterSet
@@ -29,6 +30,7 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
         certificateSigningRequests,
         managedClusterAddons,
         clusterClaims,
+        clusterCurators,
         agentClusterInstalls,
     ] = useRecoilValue(
         waitForAll([
@@ -38,6 +40,7 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
             certificateSigningRequestsState,
             managedClusterAddonsState,
             clusterClaimsState,
+            clusterCuratorsState,
             agentClusterInstallsState,
         ])
     )
@@ -95,7 +98,7 @@ export function useClusters(managedClusterSet: ManagedClusterSet | undefined, cl
         groupManagedClusters,
         groupManagedClusterAddons,
         clusterClaims,
-        undefined,
+        clusterCurators,
         agentClusterInstalls
     )
 
