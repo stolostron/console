@@ -26,9 +26,8 @@ export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHosts
         releasedAgents.map((agent) => {
             return patchResource(agent, [
                 {
-                    op: 'replace',
+                    op: 'remove',
                     path: '/spec/clusterDeploymentName',
-                    value: {}, // means: delete; requires https://issues.redhat.com/browse/MGMT-7726
                 },
             ]).promise
         })
@@ -118,7 +117,10 @@ export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstal
 
     appendPatch(agentClusterInstallPatches, '/spec/holdInstallation', false, agentClusterInstall.spec?.holdInstallation)
 
-    if (agentClusterInstall?.spec?.provisionRequirements?.controlPlaneAgents === 1 && values.hostSubnet !== 'NO_SUBNET_SET') {
+    if (
+        agentClusterInstall?.spec?.provisionRequirements?.controlPlaneAgents === 1 &&
+        values.hostSubnet !== 'NO_SUBNET_SET'
+    ) {
         appendPatch(
             agentClusterInstallPatches,
             '/spec/networking/machineNetwork',

@@ -9,7 +9,7 @@ import { onHostsNext } from './utils'
 
 import './hosts-form.css'
 
-const { ACMClusterDeploymentHostsStep, getTotalCompute } = CIM
+const { ACMClusterDeploymentHostsStep, getTotalCompute, LoadingState } = CIM
 
 type FormControl = {
     active?: CIM.ClusterDeploymentHostsSelectionValues
@@ -53,9 +53,11 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
         control.validate = async () => {
             setError(undefined)
             formRef?.current?.setFieldError('patchError', undefined)
-            const autoSelectHosts = formRef?.current?.values.autoSelectHosts;
-            const hostCount = formRef?.current?.values.hostCount;
-            const ids = formRef?.current?.values.autoSelectHosts ? formRef?.current?.values.autoSelectedHostIds : formRef?.current?.values.selectedHostIds;
+            const autoSelectHosts = formRef?.current?.values.autoSelectHosts
+            const hostCount = formRef?.current?.values.hostCount
+            const ids = formRef?.current?.values.autoSelectHosts
+                ? formRef?.current?.values.autoSelectedHostIds
+                : formRef?.current?.values.selectedHostIds
             const selectedAgents = agents.filter((a) => ids?.includes(a.metadata.uid))
             control.summary = () => {
                 return [
@@ -71,7 +73,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
                         term: 'Total compute',
                         desc: getTotalCompute(selectedAgents),
                     },
-                ];
+                ]
             }
             await formRef?.current?.submitForm()
             if (!isEmpty(formRef?.current?.errors)) {
@@ -119,7 +121,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
             />
         </div>
     ) : (
-        <div>loading</div>
+        <LoadingState />
     )
 }
 

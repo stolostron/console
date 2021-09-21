@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'
@@ -15,7 +15,7 @@ import { onHostsNext, onSaveNetworking } from '../../CreateCluster/components/as
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 
-const { ClusterDeploymentWizard, FeatureGateContextProvider, ACM_ENABLED_FEATURES } = CIM
+const { ClusterDeploymentWizard, FeatureGateContextProvider, ACM_ENABLED_FEATURES, LoadingState } = CIM
 
 type EditAIClusterProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -24,6 +24,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         params: { namespace, name },
     },
 }) => {
+    const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
     const history = useHistory()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
     const [clusterImageSets, clusterDeployments, agentClusterInstalls, agents] = useRecoilValue(
@@ -70,7 +71,27 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         },
     }
 
-    return (
+    useEffect(() => {
+        const patch = async () => {
+            if (agentClusterInstall) {
+                if (!agentClusterInstall.spec.holdInstallation) {
+                    await patchResource(agentClusterInstall, [
+                        {
+                            op: 'add',
+                            path: '/spec/holdInstallation',
+                            value: true,
+                        },
+                    ]).promise
+                }
+                setPatchingHoldInstallation(false)
+            }
+        }
+        patch()
+    }, [agentClusterInstall])
+
+    return patchingHoldInstallation ? (
+        <LoadingState />
+    ) : (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
             <ClusterDeploymentWizard
                 className="cluster-deployment-wizard"

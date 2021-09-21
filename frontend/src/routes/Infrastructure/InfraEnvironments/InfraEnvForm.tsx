@@ -55,10 +55,12 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                             <CardBody>
                                 <Stack hasGutter>
                                     <StackItem>
-                                        Once you've successfully created your infrastructure environment go to the details view and add hosts to it.
+                                        Once you've successfully created your infrastructure environment go to the
+                                        details view and add hosts to it.
                                     </StackItem>
                                     <StackItem>
-                                        This will allow cluster creators to then pull from the infrastructure environment any available hosts that have been added.
+                                        This will allow cluster creators to then pull from the infrastructure
+                                        environment any available hosts that have been added.
                                     </StackItem>
                                 </Stack>
                             </CardBody>

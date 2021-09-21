@@ -32,6 +32,8 @@ metadata:
   name: {{{ai.name}}}
   namespace: {{{ai.name}}}
 spec:
+  clusterDeploymentRef:
+    name: {{{ai.name}}}
   holdInstallation: true
   provisionRequirements:
 {{#switch ai.highAvailabilityMode}}
@@ -67,7 +69,7 @@ apiVersion: cluster.open-cluster-management.io/v1
 kind: ManagedCluster
 metadata:
   labels:
-    cloud: 'On Premise'
+    cloud: hybrid
     name: {{{ai.name}}}
     {{#if ai.managedClusterSet}}
     cluster.open-cluster-management.io/clusterset: '{{{ai.managedClusterSet}}}'
@@ -89,7 +91,7 @@ spec:
   clusterName: {{{ai.name}}}
   clusterNamespace: {{{ai.name}}}
   clusterLabels:
-    cloud: 'On Premise'
+    cloud: hybrid
   applicationManager:
     enabled: true
   policyController:

@@ -328,11 +328,8 @@ export default function CreateClusterPage() {
                 control.mutation = async (controlData: any[]) => {
                     return new Promise((resolve) => {
                         const networkForm = controlData.find((r: any) => r.id === 'aiNetwork')
-                        const clusterName = get(networkForm, 'agentClusterInstall.spec.clusterDeploymentName.name')
-                        const clusterNamespace = get(
-                            networkForm,
-                            'agentClusterInstall.spec.clusterDeploymentName.namespace'
-                        )
+                        const clusterName = get(networkForm, 'agentClusterInstall.spec.clusterDeploymentRef.name')
+                        const clusterNamespace = get(networkForm, 'agentClusterInstall.metadata.namespace')
                         patchNetwork(networkForm.agentClusterInstall, networkForm.active).then((status) => {
                             resolve(status)
                             if (status !== 'ERROR') {

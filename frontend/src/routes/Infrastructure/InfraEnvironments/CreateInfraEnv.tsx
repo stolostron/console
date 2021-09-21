@@ -19,8 +19,6 @@ import '../Clusters/ManagedClusters/CreateCluster/style.css'
 import 'temptifly/dist/styles.css'
 import { createProject, createResource } from '../../../resources'
 
-
-
 const controlData = [
     {
         name: 'creation.ocp.cloud.connection',
@@ -81,9 +79,10 @@ const CreateInfraEnv: React.FC = () => {
                         messages: [{ message: (err as unknown as Error).message }],
                     })
                 }
+                return
             }
-            const promises = createResources.map((resource: any) => createResource(resource))
             try {
+                const promises = createResources.map((resource: any) => createResource(resource).promise)
                 await Promise.allSettled(promises)
                 setCreationStatus({ status: 'DONE', messages: [] })
                 history.push(NavigationPath.infraEnvironments)
@@ -136,6 +135,5 @@ const CreateInfraEnv: React.FC = () => {
         </AcmPage>
     )
 }
-
 
 export default CreateInfraEnv

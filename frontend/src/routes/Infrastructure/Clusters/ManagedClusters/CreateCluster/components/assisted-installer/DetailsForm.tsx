@@ -15,7 +15,7 @@ import { ClusterImageSet, listClusterImageSets, Secret } from '../../../../../..
 import { clusterDeploymentsState } from '../../../../../../../atoms'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'
 
-const { ACMClusterDeploymentDetailsStep, FeatureGateContextProvider, ACM_ENABLED_FEATURES, labelsToArray } = CIM
+const { ACMClusterDeploymentDetailsStep, FeatureGateContextProvider, ACM_ENABLED_FEATURES, labelsToArray, LoadingState } = CIM
 
 type FormControl = {
     active: CIM.ClusterDetailsValues & {
@@ -117,12 +117,16 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         }
     }, [control])
 
-    const [clusterImages, setClusterImages] = useState<ClusterImageSet[]>([])
+    const [clusterImages, setClusterImages] = useState<ClusterImageSet[]>()
     useEffect(() => {
         const fetchImages = async () => {
-            const images = await listClusterImageSets().promise
-            if (!isEqual(images, clusterImages)) {
-                setClusterImages(images)
+            try {
+                const images = await listClusterImageSets().promise
+                if (!isEqual(images, clusterImages)) {
+                    setClusterImages(images)
+                }
+            } catch {
+                setClusterImages([])
             }
         }
         fetchImages()
@@ -205,7 +209,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         handleChange(control)
     }, [additionalLabels])
 
-    return (
+    return clusterImages ? (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
             <ACMClusterDeploymentDetailsStep
                 formRef={formRef}
@@ -217,6 +221,8 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 extensionAfter={extensionAfter}
             />
         </FeatureGateContextProvider>
+    ) : (
+        <LoadingState />
     )
 }
 

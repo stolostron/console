@@ -4,7 +4,7 @@
 
 .infra-env-form {
     padding-right: var(--pf-c-page__main-section--PaddingRight);
-    padding-bottom: var(--pf-c-page__main-section--PaddingBottom)
+    padding-bottom: var(--pf-c-page__main-section--PaddingBottom);
 }
 
 .temptifly.showEditor .infra-env-form > .pf-l-grid__item {
