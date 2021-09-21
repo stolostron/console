@@ -296,6 +296,7 @@ export function ClustersTable(props: {
                                 labels={cluster.labels}
                                 expandedText={t('common:show.less')}
                                 collapsedText={t('common:show.more', { number: collapse.length })}
+                                allCollapsedText={t('common:count.labels', { number: collapse.length })}
                                 collapse={collapse}
                             />
                         )
