@@ -220,6 +220,7 @@ export function ClusterPoolsTable(props: {
                     const clusterPoolClusters = clusters.filter(
                         (cluster) =>
                             cluster.hive.clusterPool === clusterPool.metadata.name &&
+                            cluster.hive.clusterPoolNamespace === clusterPool.metadata.namespace &&
                             cluster.hive.clusterClaimName === undefined
                     )
                     if (clusterPoolClusters.length === 0) {
