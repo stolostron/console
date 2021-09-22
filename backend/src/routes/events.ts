@@ -162,19 +162,26 @@ export function watchResource(
                 }, 1000)
             })
         } else {
-            logger.error({
-                msg: 'watch error',
-                error: STATUS_CODES[res.statusCode],
-                code: res.statusCode,
-                kind,
-                apiVersion,
-            })
             res.on('data', () => noop)
             res.on('end', () => noop)
             switch (res.statusCode) {
                 case HTTP_STATUS_FORBIDDEN:
+                    logger.error({
+                        msg: 'watch error',
+                        error: STATUS_CODES[res.statusCode],
+                        code: res.statusCode,
+                        kind,
+                        apiVersion,
+                    })
                     break
                 case HTTP_STATUS_NOT_FOUND:
+                    logger.warn({
+                        msg: 'watch warning',
+                        error: STATUS_CODES[res.statusCode],
+                        code: res.statusCode,
+                        kind,
+                        apiVersion,
+                    })
                     if (options.waitOnNotFound !== true) {
                         setTimeout(() => {
                             watchResource(token, apiVersion, kind, options)
@@ -182,6 +189,13 @@ export function watchResource(
                     }
                     break
                 default:
+                    logger.error({
+                        msg: 'watch error',
+                        error: STATUS_CODES[res.statusCode],
+                        code: res.statusCode,
+                        kind,
+                        apiVersion,
+                    })
                     setTimeout(() => {
                         watchResource(token, apiVersion, kind, options)
                     }, 1000)
