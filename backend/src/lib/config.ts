@@ -9,10 +9,15 @@ import { ServerSideEvents } from './server-side-events'
 
 let settingsEventID = 0
 let watcher: FSWatcher
+let timeout: NodeJS.Timeout
 export function loadSettings(): void {
     void loadConfigSettings()
     watcher = watch('./config', (eventType, filename) => {
-        void loadConfigSettings()
+        if (timeout) clearTimeout(timeout)
+        timeout = setTimeout(() => {
+            timeout = undefined
+            void loadConfigSettings()
+        }, 1000)
     })
 }
 
