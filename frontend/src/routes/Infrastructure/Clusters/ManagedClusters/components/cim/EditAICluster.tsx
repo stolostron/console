@@ -9,9 +9,9 @@ import {
     agentsState,
     clusterDeploymentsState,
     clusterImageSetsState,
-    infraEnvironmentsState,
+    configMapsState,
 } from '../../../../../../atoms'
-import { onHostsNext, onSaveNetworking } from '../../CreateCluster/components/assisted-installer/utils'
+import { getAIConfigMap, onHostsNext, onSaveNetworking } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 
@@ -27,13 +27,13 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
     const history = useHistory()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
-    const [clusterImageSets, clusterDeployments, agentClusterInstalls, agents] = useRecoilValue(
+    const [clusterImageSets, clusterDeployments, agentClusterInstalls, agents, configMaps] = useRecoilValue(
         waitForAll([
             clusterImageSetsState,
             clusterDeploymentsState,
             agentClusterInstallsState,
             agentsState,
-            infraEnvironmentsState,
+            configMapsState,
         ])
     )
 
@@ -43,6 +43,8 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const agentClusterInstall = agentClusterInstalls.find(
         (aci) => aci.metadata.name === name && aci.metadata.namespace === namespace
     )
+
+    const aiConfigMap = getAIConfigMap(configMaps)
 
     const onSaveDetails = (values: any) => {
         return patchResource(agentClusterInstall, [
@@ -89,7 +91,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         patch()
     }, [agentClusterInstall])
 
-    return patchingHoldInstallation ? (
+    return patchingHoldInstallation || !aiConfigMap ? (
         <LoadingState />
     ) : (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
@@ -116,6 +118,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                             .replace(':name', agentClusterInstall.metadata.name)
                     )
                 }
+                aiConfigMap={aiConfigMap}
             />
             <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
         </FeatureGateContextProvider>

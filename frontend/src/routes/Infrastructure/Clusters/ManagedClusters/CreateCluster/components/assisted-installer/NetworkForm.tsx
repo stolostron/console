@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useRef, useEffect, useState } from 'react'
+import { useCallback, useRef, useEffect, useState, useMemo } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
@@ -72,11 +72,16 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
     const aciNamespace = createResources.find((r: { kind: string }) => r.kind === 'AgentClusterInstall').metadata
         .namespace
 
-    const clusterDeployment = clusterDeployments.find(
-        ({ metadata }) => metadata.name === cdName && metadata.namespace === cdNamespace
+    const clusterDeployment = useMemo(
+        () => clusterDeployments.find(({ metadata }) => metadata.name === cdName && metadata.namespace === cdNamespace),
+        [cdName, cdNamespace, clusterDeployments]
     )
-    const agentClusterInstall = agentClusterInstalls.find(
-        ({ metadata }) => metadata.name === aciName && metadata.namespace === aciNamespace
+    const agentClusterInstall = useMemo(
+        () =>
+            agentClusterInstalls.find(
+                ({ metadata }) => metadata.name === aciName && metadata.namespace === aciNamespace
+            ),
+        [aciName, aciNamespace, agentClusterInstalls]
     )
 
     useEffect(() => (control.agentClusterInstall = agentClusterInstall), [control, agentClusterInstall])
@@ -93,10 +98,30 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
         []
     )
 
-    const matchingAgents = agents.filter(
-        (a) =>
-            a.spec?.clusterDeploymentName?.name === clusterDeployment?.metadata.name &&
-            a.spec?.clusterDeploymentName?.namespace === clusterDeployment?.metadata.namespace
+    const matchingAgents = useMemo(
+        () =>
+            agents.filter(
+                (a) =>
+                    a.spec?.clusterDeploymentName?.name === clusterDeployment?.metadata.name &&
+                    a.spec?.clusterDeploymentName?.namespace === clusterDeployment?.metadata.namespace
+            ),
+        [agents, clusterDeployment]
+    )
+
+    const hostActions = useMemo(
+        () => ({
+            onEditHost: setEditAgent,
+            canEditRole: () => true,
+            onEditRole: (agent: CIM.AgentK8sResource, role: string | undefined) =>
+                patchResource(agent, [
+                    {
+                        op: 'replace',
+                        path: '/spec/role',
+                        value: role,
+                    },
+                ]).promise,
+        }),
+        [setEditAgent]
     )
 
     return (
@@ -107,18 +132,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
                 clusterDeployment={clusterDeployment}
                 agentClusterInstall={agentClusterInstall}
                 agents={matchingAgents}
-                hostActions={{
-                    onEditHost: setEditAgent,
-                    canEditRole: () => true,
-                    onEditRole: (agent, role) =>
-                        patchResource(agent, [
-                            {
-                                op: 'replace',
-                                path: '/spec/role',
-                                value: role,
-                            },
-                        ]).promise,
-                }}
+                hostActions={hostActions}
             />
             <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
         </>

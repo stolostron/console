@@ -95,6 +95,12 @@ export function startWatching(): void {
     watchResource(token, 'agent-install.openshift.io/v1beta1', 'agents')
     watchResource(token, 'agent-install.openshift.io/v1beta1', 'infraenvs')
     watchResource(token, 'metal3.io/v1alpha1', 'baremetalhosts')
+    watchResource(token, 'v1', 'configmaps', {
+        fieldSelector: {
+            'metadata.namespace': 'assisted-installer',
+            'metadata.name': 'assisted-service',
+        },
+    })
 }
 
 export function watchResource(

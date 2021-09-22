@@ -1,11 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useRef, useEffect, useState } from 'react'
+import { useCallback, useRef, useEffect, useState, useMemo } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
 import { debounce, isEmpty, isEqual } from 'lodash'
-import { agentClusterInstallsState, agentsState, clusterDeploymentsState } from '../../../../../../../atoms'
-import { onHostsNext } from './utils'
+import {
+    agentClusterInstallsState,
+    agentsState,
+    clusterDeploymentsState,
+    configMapsState,
+} from '../../../../../../../atoms'
+import { getAIConfigMap, onHostsNext } from './utils'
 
 import './hosts-form.css'
 
@@ -29,26 +34,27 @@ type HostsFormProps = {
 const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     const [error, setError] = useState<string>()
     const formRef = useRef<FormikProps<CIM.ClusterDeploymentHostsSelectionValues>>(null)
-    const [agents, clusterDeployments, agentClusterInstalls] = useRecoilValue(
-        waitForAll([agentsState, clusterDeploymentsState, agentClusterInstallsState])
+    const [agents, clusterDeployments, agentClusterInstalls, configMaps] = useRecoilValue(
+        waitForAll([agentsState, clusterDeploymentsState, agentClusterInstallsState, configMapsState])
     )
+    const aiConfigMap = getAIConfigMap(configMaps)
     const { resourceJSON = {} } = control
     const { createResources = [] } = resourceJSON
     const cdName = createResources.find((r: { kind: string }) => r.kind === 'ClusterDeployment').metadata.name
     const aciName = createResources.find((r: { kind: string }) => r.kind === 'AgentClusterInstall').metadata.name
 
-    const clusterDeployment = clusterDeployments.find(
-        (cd) => cd.metadata.name === cdName && cd.metadata.namespace === cdName
+    const clusterDeployment = useMemo(
+        () => clusterDeployments.find((cd) => cd.metadata.name === cdName && cd.metadata.namespace === cdName),
+        [cdName, clusterDeployments]
     )
-    const agentClusterInstall = agentClusterInstalls.find(
-        (aci) => aci.metadata.name === aciName && aci.metadata.namespace === aciName
+    const agentClusterInstall = useMemo(
+        () => agentClusterInstalls.find((aci) => aci.metadata.name === aciName && aci.metadata.namespace === aciName),
+        [aciName, agentClusterInstalls]
     )
 
     useEffect(() => {
-        if (control.active) {
+        if (control.active && formRef?.current?.values && !isEqual(control.active, formRef.current.values)) {
             formRef?.current?.setValues(control.active, false)
-        } else {
-            control.active = formRef?.current?.values
         }
         control.validate = async () => {
             setError(undefined)
@@ -90,7 +96,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
                 }
             }
         }
-    }, [control, clusterDeployment, agents])
+    }, [control.active, clusterDeployment, agents])
 
     const onValuesChanged = useCallback(
         debounce((values) => {
@@ -104,7 +110,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
         []
     )
 
-    return agents?.length && clusterDeployment && agentClusterInstall ? (
+    return agents?.length && clusterDeployment && agentClusterInstall && aiConfigMap ? (
         <div className="hosts-form">
             <ACMClusterDeploymentHostsStep
                 formRef={formRef}
@@ -113,11 +119,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
                 agentClusterInstall={agentClusterInstall}
                 agents={agents}
                 error={error}
-                aiConfigMap={
-                    {
-                        /* TODO(jtomasek) */
-                    }
-                }
+                aiConfigMap={aiConfigMap}
             />
         </div>
     ) : (

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { patchResource } from '../../../../../../../resources'
+import { ConfigMap, patchResource } from '../../../../../../../resources'
 import { isEqual } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
 
@@ -156,3 +156,6 @@ export const onSaveNetworking = async (
         throw Error('Failed to patch the AgentClusterInstall resource')
     }
 }
+
+export const getAIConfigMap = (configMaps: ConfigMap[]) =>
+    configMaps.find((cm) => cm.metadata.name === 'assisted-service' && cm.metadata.namespace === 'assisted-installer')
