@@ -60,7 +60,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development'),
                 'process.env.REACT_APP_BACKEND_HOST': isProduction
                     ? JSON.stringify('')
-                    : JSON.stringify('https://localhost:4000'),
+                    : JSON.stringify('https://10.37.146.83:4000'),
                 'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
             }) as unknown as webpack.WebpackPluginInstance,
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
@@ -107,13 +107,13 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         devServer: {
             port: 3000,
             proxy: {
-                '/multicloud/api': { target: 'https://localhost:4000', secure: false },
-                '/multicloud/apis': { target: 'https://localhost:4000', secure: false },
-                '/multicloud/events': { target: 'https://localhost:4000', secure: false },
-                '/multicloud/proxy/search': { target: 'https://localhost:4000', secure: false },
-                '/multicloud/authenticated': { target: 'https://localhost:4000', secure: false },
-                '/multicloud/common': { target: 'https://localhost:4000', secure: false },
-                '/multicloud/version': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/api': { target: 'https://10.37.146.83:4000', secure: false },
+                '/multicloud/apis': { target: 'https://10.37.146.83:4000', secure: false },
+                '/multicloud/events': { target: 'https://10.37.146.83:4000', secure: false },
+                '/multicloud/proxy/search': { target: 'https://10.37.146.83:4000', secure: false },
+                '/multicloud/authenticated': { target: 'https://10.37.146.83:4000', secure: false },
+                '/multicloud/common': { target: 'https://10.37.146.83:4000', secure: false },
+                '/multicloud/version': { target: 'https://10.37.146.83:4000', secure: false },
             },
             open: true,
             historyApiFallback: true,
