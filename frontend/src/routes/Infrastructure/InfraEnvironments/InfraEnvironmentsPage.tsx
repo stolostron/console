@@ -157,9 +157,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
                             )
                             const errorAgents = infraAgents.filter((a) => getAgentStatus(a)[0] === 'error')
-                            const warningAgents = infraAgents.filter(
-                                (a) => a.status?.debugInfo?.state === 'insufficient'
-                            )
+                            const warningAgents = infraAgents.filter((a) => getAgentStatus(a)[0] === 'insufficient')
 
                             return (
                                 <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
