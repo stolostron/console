@@ -102,6 +102,11 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
                 agentClusterInstall={agentClusterInstall}
                 agents={agents}
                 error={error}
+                aiConfigMap={
+                    {
+                        /* TODO(jtomasek) */
+                    }
+                }
             />
         </div>
     ) : (

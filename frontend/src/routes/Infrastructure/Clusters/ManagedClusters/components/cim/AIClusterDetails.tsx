@@ -13,6 +13,12 @@ const AIClusterDetails: React.FC = () => {
             <AcmExpandableCard title="More cluster information" id="aidetails">
                 {!!clusterDeployment && !!agentClusterInstall && (
                     <ClusterPropertiesList
+                        leftItems={
+                            [
+                                /* TODO(jtomasek) */
+                            ]
+                        }
+                        /*
                         name={clusterDeployment.metadata.name}
                         id={clusterDeployment.metadata.uid}
                         openshiftVersion={agentClusterInstall.spec.imageSetRef.name}
@@ -23,6 +29,7 @@ const AIClusterDetails: React.FC = () => {
                         clusterNetworkHostPrefix={agentClusterInstall.spec?.networking?.clusterNetwork?.[0]?.hostPrefix}
                         serviceNetworkCidr={agentClusterInstall.spec?.networking?.serviceNetwork?.[0]}
                         installedTimestamp={clusterDeployment.status?.installedTimestamp}
+                        */
                     />
                 )}
             </AcmExpandableCard>
