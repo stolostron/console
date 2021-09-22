@@ -1,17 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-import { config } from 'dotenv'
 import { FSWatcher, watch } from 'fs'
+import { readdir, readFile, stat } from 'fs/promises'
+import { join } from 'path'
 import { SettingsEvent } from '../routes/events'
 import { logger } from './logger'
 import { ServerSideEvents } from './server-side-events'
 
 let settingsEventID = 0
 let watcher: FSWatcher
+let timeout: NodeJS.Timeout
 export function loadSettings(): void {
-    loadConfigSettings()
+    void loadConfigSettings()
     watcher = watch('./config', (eventType, filename) => {
-        loadConfigSettings()
+        if (timeout) clearTimeout(timeout)
+        timeout = setTimeout(() => {
+            timeout = undefined
+            void loadConfigSettings()
+        }, 1000)
     })
 }
 
@@ -22,24 +28,20 @@ export function stopSettingsWatch(): void {
     }
 }
 
-let settings: Record<string, string>
-
-export function loadConfigSettings(): void {
+export async function loadConfigSettings(): Promise<void> {
+    const settings: Record<string, string> = {}
     try {
-        const configOutput = config({ path: './config/settings' })
-        if (settings) {
-            if (Object.keys(settings).length === Object.keys(configOutput.parsed).length) {
-                let change = false
-                for (const key in settings) {
-                    if (settings[key] !== configOutput.parsed[key]) {
-                        change = true
-                        break
-                    }
-                }
-                if (!change) return
+        const filenames = await readdir('./config')
+        for (const filename of filenames) {
+            try {
+                const stats = await stat(join('./config', filename))
+                if (stats.isDirectory()) continue
+                const contents = await readFile(join('./config', filename))
+                settings[filename] = contents.toString()
+            } catch (err) {
+                // Do Nothing
             }
         }
-        settings = configOutput.parsed
         if (settings.LOG_LEVEL) {
             logger.level = settings.LOG_LEVEL
         }

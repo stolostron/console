@@ -7,9 +7,6 @@ import {
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
-    FeatureGate,
-    FeatureGateApiVersion,
-    FeatureGateKind,
     ManagedClusterSet,
     ManagedClusterSetApiVersion,
     ManagedClusterSetKind,
@@ -35,13 +32,6 @@ export const mockOpenShiftConsoleConfigMap: ConfigMap = {
     data: {
         consoleURL: 'https://console-openshift-console.apps.test-cluster.dev.test.com',
     },
-}
-
-export const mockDiscoveryFeatureGate: FeatureGate = {
-    apiVersion: FeatureGateApiVersion,
-    kind: FeatureGateKind,
-    metadata: { name: 'open-cluster-management-discovery' },
-    spec: { featureSet: 'DiscoveryEnabled' },
 }
 
 export const mockManagedClusterSet: ManagedClusterSet = {

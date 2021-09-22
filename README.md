@@ -121,13 +121,11 @@ If the backend responds with a `401 Unauthorized` the frontend starts an OAuth f
 
 ## Optional Features
 
-In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product.  These features are enabled using a FeatureGate CR.  The following features are available:
+In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product.  These features are enabled by updating the config-config configmap in the open-cluster-management namepsace.  The following features are available:
 
 ### Single node OpenShift
 
 Enabling this feature will allow the user to create a cluster that only contains a single master node.  This option is only available for providers AWS, Azure, GCP, OpenStack and VMware when the OpenShift release image is version 4.8 or higher.
-
-To enable this feature, `oc apply -f features/single-node-openshift.yaml`.  
 
 ## References
 
