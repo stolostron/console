@@ -774,7 +774,10 @@ export function getClusterStatus(
             } else if (provisionFailed) {
                 const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
                 const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''
-                if (provisionFailedCondition?.message?.includes(currentProvisionRef)) {
+                if (
+                    provisionFailedCondition?.message?.includes(currentProvisionRef) ||
+                    provisionFailedCondition?.reason === 'InvalidInstallConfig'
+                ) {
                     cdStatus = ClusterStatus.provisionfailed
                 } else {
                     cdStatus = ClusterStatus.creating
