@@ -38,7 +38,7 @@
     "discoveryConfig.connections.label": "Credential",
     "discoveryConfig.connections.labelHelp": "Select a credential within that namespace.",
     "discoveryConfig.connections.placeholder": "Select a credential",
-    "discoveryConfig.connections.addCredentials": "Add credentials",
+    "discoveryConfig.connections.addCredentials": "Add credential",
     "discoveryConfig.namespaces.label": "Namespace",
     "discoveryConfig.namespaces.labelHelp": "Select the namespace that contains your credentials.",
     "discoveryConfig.namespaces.placeholder": "Select a namespace",
