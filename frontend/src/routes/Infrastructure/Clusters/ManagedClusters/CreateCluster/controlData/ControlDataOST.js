@@ -2,7 +2,7 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL } from 'temptifly'
+import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL, VALIDATE_URL } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
@@ -15,12 +15,42 @@ import {
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    onChangeConnection,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
 export const getControlDataOST = (includeAutomation = true) => {
     if (includeAutomation) return [...controlDataOST, ...automationControlData]
     return [...controlDataOST]
+}
+
+const onChangeDisconnect = (control, controlData) => {
+    const infrastructure = controlData.find(({ id }) => {
+        return id === 'connection'
+    })
+    const { active, availableMap = {} } = infrastructure
+    const replacements = _.get(availableMap[active], 'replacements')
+    const isDisconnected = controlData.find(({ id }) => {
+        return id === 'isDisconnected'
+    }).active
+    ;['clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle'].forEach((pid) => {
+        const ctrl = controlData.find(({ id }) => id === pid)
+        if (ctrl) {
+            ctrl.disabled = !isDisconnected
+            if (ctrl.disabled) {
+                ctrl.saveActive = ctrl.active
+                ctrl.active = undefined
+                if (replacements) {
+                    delete replacements[ctrl.id]
+                }
+            } else {
+                ctrl.active = ctrl.saveActive
+                if (replacements) {
+                    replacements[ctrl.id] = ctrl.saveActive
+                }
+            }
+        }
+    })
 }
 
 const controlDataOST = [
@@ -38,6 +68,7 @@ const controlDataOST = [
             required: true,
         },
         available: [],
+        onSelect: onChangeConnection,
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,
@@ -226,6 +257,57 @@ const controlDataOST = [
     },
     ...networkingControlData,
     ...proxyControlData,
+    ///////////////////////  openstack  /////////////////////////////////////
+    {
+        id: 'disconnectedStep',
+        type: 'step',
+        title: 'Disconnected installation',
+    },
+    {
+        id: 'disconnectedInfo',
+        type: 'title',
+        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS (RHCOS) image.',
+    },
+    {
+        name: 'Create disconnected installation',
+        id: 'isDisconnected',
+        type: 'checkbox',
+        active: false,
+        onSelect: onChangeDisconnect,
+    },
+    {
+        id: 'clusterOSImage',
+        type: 'text',
+        name: 'Cluster OS Image',
+        disabled: true,
+        tip: 'The location of the Red Hat Enterprise Linux CoreOS (RHCOS) image in your local registry.',
+        validation: VALIDATE_URL,
+    },
+    {
+        id: 'pullSecret',
+        type: 'textarea',
+        name: 'Pull Secret',
+        disabled: true,
+        tip: 'Secret required to pull the OS image from your local registry.',
+    },
+    {
+        id: 'imageContentSources',
+        type: 'textarea',
+        name: 'Image Content Sources',
+        disabled: true,
+        tip: 'The imageContentSources values that were generated during mirror registry creation.',
+    },
+    {
+        getActive: (a, b, c) => {
+            return ['abc']
+        },
+        id: 'disconnectedAdditionalTrustBundle',
+        type: 'textarea',
+        name: 'Additional Trust Bundle',
+        disabled: true,
+        placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
+        tip: 'The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.',
+    },
 ]
 
 export default getControlDataOST

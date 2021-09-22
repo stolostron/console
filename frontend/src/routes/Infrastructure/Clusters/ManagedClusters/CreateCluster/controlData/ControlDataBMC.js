@@ -10,6 +10,7 @@ import {
     automationControlData,
     getSimplifiedImageName,
     isHidden_SNO,
+    onChangeConnection,
 } from './ControlDataHelpers'
 import {
     ControlMode,
@@ -194,6 +195,7 @@ const controlDataBMC = [
             required: true,
         },
         available: [],
+        onSelect: onChangeConnection,
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,
