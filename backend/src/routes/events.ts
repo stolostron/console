@@ -73,9 +73,6 @@ export function startWatching(): void {
     })
     watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveryConfigs')
     watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveredClusters')
-    watchResource(token, 'config.openshift.io/v1', 'featureGates', {
-        labelSelector: { 'console.open-cluster-management.io': '' },
-    })
     watchResource(token, 'v1', 'configmaps', {
         fieldSelector: {
             'metadata.namespace': 'openshift-config-managed',
@@ -295,12 +292,6 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
         case 'MODIFIED': {
             const watchEvent = serverSideEvent.data
             const resource = watchEvent.object
-
-            switch (resource.kind) {
-                case 'FeatureGate': // Allow feature gates for all users
-                    return Promise.resolve(true)
-            }
-
             return canListClusterScopedKind(resource, token).then((allowed) => {
                 if (allowed) return true
                 return canListNamespacedScopedKind(resource, token).then((allowed) => {

@@ -24,12 +24,12 @@ import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
 import endpointTemplate from './templates/endpoints.hbs'
 import {
-    featureGatesState,
     secretsState,
     managedClustersState,
     clusterCuratorsState,
     agentClusterInstallsState,
     infraEnvironmentsState,
+    settingsState,
 } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
 import {
@@ -42,7 +42,6 @@ import { createCluster } from '../../../../../lib/create-cluster'
 import { ProviderConnection, unpackProviderConnection } from '../../../../../resources'
 import { Secret } from '../../../../../resources'
 import { createResource as createResourceTool } from '../../../../../resources'
-import { FeatureGates } from '../../../../../FeatureGates'
 import { getNetworkingPatches } from './components/assisted-installer/utils'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { WarningContext, WarningContextType, Warning } from './Warning'
@@ -87,7 +86,7 @@ export default function CreateClusterPage() {
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
     )
 
-    const [featureGateCache] = useRecoilState(featureGatesState)
+    const [settings] = useRecoilState(settingsState)
 
     const [managedClusters] = useRecoilState(managedClustersState)
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
@@ -289,7 +288,7 @@ export default function CreateClusterPage() {
                 setAvailableTemplates(control, curatorTemplates)
                 break
             case 'singleNodeFeatureFlag':
-                if (featureGateCache.find((fg) => fg.metadata.name === FeatureGates.singleNodeOpenShift)) {
+                if (settings.singleNodeOpenshift === 'enabled') {
                     control.active = true
                 }
                 break
