@@ -20,7 +20,7 @@ module.exports = {
         '^.+\\.hbs$': 'jest-raw-loader',
         '\\.(css|less)$': 'jest-raw-loader',
     },
-    transformIgnorePatterns: ['node_modules/(?!d3-interpolate|d3-color)'],
+    transformIgnorePatterns: ['node_modules/(?!d3-interpolate|d3-color|react-monaco-editor)'],
     coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
     bail: true,
 }

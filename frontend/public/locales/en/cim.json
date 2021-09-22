@@ -4,7 +4,8 @@
     "cim.banner.dismiss": "Dismiss",
     "cim.onpremise.banner.infraenv.link": "Get started with infrastructure environments",
     "cim.infra.banner.header": "A pool of hosts, ready for cluster creation",
-    "cim.infra.banner.body": "<p>Provision hosts for cluster creation. Once the cluster is deleted, the hosts will be available for the cluster creator again.</p><p>Create an Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.</p>",
+    "cim.infra.banner.body": "<p>Provision hosts for cluster creation. Once the cluster is deleted, the hosts will be available for the cluster creator again.</p><p>Select an Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.</p>",
+    "cim.infra.banner.footer": "*For hosts created using discovery ISO you will need to manually reboot them to be rediscovered in the infrastructure environment.",
     "cim.infra.manage.link": "Manage infrastructure environments",
     "cim.infra.missing.warning.text": "An infrastructure environment must be available with hosts to proceed with the On premise option.",
     "cim.infra.missing.warning.title": "No infrastructure environments available"

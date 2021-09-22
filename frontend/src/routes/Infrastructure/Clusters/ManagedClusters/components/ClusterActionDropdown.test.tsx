@@ -15,10 +15,12 @@ import {
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
+import { MemoryRouter } from 'react-router'
 import { nockCreate, nockIgnoreRBAC, nockPatch, nockRBAC } from '../../../../../lib/nock-util'
 import { rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 import { clickByLabel, clickByText, waitForNock, waitForNocks, waitForText } from '../../../../../lib/test-util'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
+import { NavigationPath } from '../../../../../NavigationPath'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -92,7 +94,9 @@ function nockPatchClusterDeployment(op: 'replace' | 'add' | 'remove', path: stri
 
 const Component = (props: { cluster: Cluster }) => (
     <RecoilRoot>
-        <ClusterActionDropdown cluster={props.cluster} isKebab={true} />
+        <MemoryRouter initialEntries={[NavigationPath.clusterDetails]}>
+            <ClusterActionDropdown cluster={props.cluster} isKebab={true} />
+        </MemoryRouter>
     </RecoilRoot>
 )
 
