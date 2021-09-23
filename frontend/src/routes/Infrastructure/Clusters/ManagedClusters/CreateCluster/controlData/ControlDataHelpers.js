@@ -186,6 +186,76 @@ export const setAvailableTemplates = (control, templates) => {
     control.available = templates.map((template) => template.metadata.name)
 }
 
+const onChangeProxy = (control, controlData) => {
+    const infrastructure = controlData.find(({ id }) => {
+        return id === 'connection'
+    })
+    const { active, availableMap = {} } = infrastructure
+    const replacements = _.get(availableMap[active], 'replacements')
+    const useProxy = controlData.find(({ id }) => {
+        return id === 'hasProxy'
+    }).active
+    ;['httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle'].forEach((pid) => {
+        const ctrl = controlData.find(({ id }) => id === pid)
+        if (ctrl) {
+            ctrl.disabled = !useProxy
+            if (ctrl.disabled) {
+                ctrl.saveActive = ctrl.active
+                ctrl.active = undefined
+                if (replacements) {
+                    delete replacements[ctrl.id]
+                }
+            } else {
+                ctrl.active = ctrl.saveActive
+                if (replacements) {
+                    replacements[ctrl.id] = ctrl.saveActive
+                }
+            }
+        }
+    })
+}
+
+export const onChangeConnection = (control, controlData) => {
+    const { active, availableMap = {} } = control
+    const replacements = _.get(availableMap[active], 'replacements')
+    if (replacements) {
+        controlData.forEach((control) => {
+            switch (control.id) {
+                case 'hasProxy':
+                    control.active = !!replacements['httpProxy']
+                    break
+                case 'isDisconnected':
+                    control.active = !!replacements['imageContentSources']
+                    break
+                default:
+                    if (replacements[control.id]) {
+                        switch (control.type) {
+                            case 'values':
+                                control.active = replacements[control.id].split(',')
+                                break
+                            default:
+                                control.active = replacements[control.id]
+                                break
+                        }
+                        control.disabled = false
+                        if (control.id === 'disconnectedAdditionalTrustBundle') {
+                        }
+                    }
+                    break
+            }
+        })
+    }
+    setTimeout(() => {
+        const control = controlData.find(({ id }) => {
+            return id === 'disconnectedAdditionalTrustBundle'
+        })
+        if (control) {
+            control.active = replacements['additionalTrustBundle']
+            control.disabled = !control.active
+        }
+    })
+}
+
 export const clusterDetailsControlData = [
     {
         id: 'detailStep',
@@ -224,6 +294,13 @@ export const clusterDetailsControlData = [
         type: 'text',
         validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
         tip: 'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.',
+    },
+    {
+        name: 'cluster.create.ocp.fips',
+        id: 'fips',
+        type: 'checkbox',
+        active: false,
+        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with RHCOS instead of the default Kubernetes cryptography suite.',
     },
 ]
 
@@ -301,18 +378,6 @@ export const networkingControlData = [
     },
 ]
 
-const onChangeProxy = (control, controlData) => {
-    const useProxy = controlData.find(({ id }) => {
-        return id === 'hasProxy'
-    }).active
-    ;['httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle'].forEach((pid) => {
-        const ctrl = controlData.find(({ id }) => id === pid)
-        if (ctrl) {
-            ctrl.disabled = !useProxy
-        }
-    })
-}
-
 export const proxyControlData = [
     {
         id: 'proxyStep',
@@ -352,9 +417,8 @@ export const proxyControlData = [
         id: 'noProxy',
         type: 'values',
         name: 'No Proxy',
-        placeholder: 'example.com',
         disabled: true,
-        tip: 'By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs. Add sites to No Proxy to bypass the proxy if necessary.',
+        tip: 'Add comma delineated sites to bypass the proxy. By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs.',
     },
     {
         id: 'additionalTrustBundle',
