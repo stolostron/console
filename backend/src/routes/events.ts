@@ -76,7 +76,7 @@ export function startWatching(): void {
     watchResource(token, 'metal3.io/v1alpha1', 'baremetalhosts')
     watchResource(token, 'operator.open-cluster-management.io/v1', 'multiClusterHubs')
     watchResource(token, 'submarineraddon.open-cluster-management.io/v1alpha1', 'submarinerconfigs')
-    watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs', { waitOnNotFound: true })
+    watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs', { mightBeNotFound: true })
     watchResource(token, 'v1', 'configmaps', { fieldSelector: { 'metadata.name': 'insight-content-data' } })
     watchResource(token, 'v1', 'configmaps', {
         fieldSelector: { 'metadata.namespace': 'assisted-installer', 'metadata.name': 'assisted-service' },
@@ -96,7 +96,7 @@ export function watchResource(
     options?: {
         labelSelector?: Record<string, string>
         fieldSelector?: Record<string, string>
-        waitOnNotFound?: true
+        mightBeNotFound?: true
     }
 ): void {
     let path = apiVersion.includes('/') ? '/apis' : '/api'
@@ -174,31 +174,23 @@ export function watchResource(
                         apiVersion,
                     })
                     break
-                case HTTP_STATUS_NOT_FOUND:
-                    logger.warn({
-                        msg: 'watch warning',
-                        error: STATUS_CODES[res.statusCode],
-                        code: res.statusCode,
-                        kind,
-                        apiVersion,
-                    })
-                    if (options.waitOnNotFound !== true) {
+                default:
+                    if (options.mightBeNotFound && res.statusCode === HTTP_STATUS_NOT_FOUND) {
                         setTimeout(() => {
                             watchResource(token, apiVersion, kind, options)
                         }, 5 * 60 * 1000)
+                    } else {
+                        logger.error({
+                            msg: 'watch error',
+                            error: STATUS_CODES[res.statusCode],
+                            code: res.statusCode,
+                            kind,
+                            apiVersion,
+                        })
+                        setTimeout(() => {
+                            watchResource(token, apiVersion, kind, options)
+                        }, 1000)
                     }
-                    break
-                default:
-                    logger.error({
-                        msg: 'watch error',
-                        error: STATUS_CODES[res.statusCode],
-                        code: res.statusCode,
-                        kind,
-                        apiVersion,
-                    })
-                    setTimeout(() => {
-                        watchResource(token, apiVersion, kind, options)
-                    }, 1000)
                     break
             }
         }
@@ -320,12 +312,6 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
         case 'MODIFIED': {
             const watchEvent = serverSideEvent.data
             const resource = watchEvent.object
-
-            switch (resource.kind) {
-                case 'FeatureGate': // Allow feature gates for all users
-                    return Promise.resolve(true)
-            }
-
             return canListClusterScopedKind(resource, token).then((allowed) => {
                 if (allowed) return true
                 return canListNamespacedScopedKind(resource, token).then((allowed) => {
