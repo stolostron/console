@@ -927,7 +927,8 @@ export function CredentialsForm(props: {
                         isHidden: credentialsType !== Provider.openstack,
                         type: 'TextArea',
                         label: t('credentialsForm.imageContentSources.label'),
-                        placeholder: '- mirrors:\n        - <mirror_host_name>:5000/<repo_name>/release\n        source: quay.example.com/openshift-release-dev/ocp-release',
+                        placeholder:
+                            '- mirrors:\n        - <mirror_host_name>:5000/<repo_name>/release\n        source: quay.example.com/openshift-release-dev/ocp-release',
                         labelHelp: t('credentialsForm.imageContentSources.labelHelp'),
                         value: imageContentSources,
                         onChange: setImageContentSources,

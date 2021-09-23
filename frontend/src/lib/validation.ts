@@ -231,8 +231,8 @@ export function validateImageContentSources(value: string, t: TFunction) {
     if (value) {
         try {
             //ensure we have valid YAML
-            const yamlData: { mirrors?: string[], source?: string }[] = YAML.parse(value)
-            const isValid = yamlData.every(item=>{
+            const yamlData: { mirrors?: string[]; source?: string }[] = YAML.parse(value)
+            const isValid = yamlData.every((item) => {
                 return Array.isArray(item.mirrors) && item.source
             })
 
@@ -240,7 +240,6 @@ export function validateImageContentSources(value: string, t: TFunction) {
             if (!isValid) {
                 return t('validate.yaml.not.valid')
             }
-
         } catch (e) {
             return t('validate.yaml.not.valid')
         }
@@ -277,13 +276,13 @@ export function validateHttpsProxy(value: string, t: TFunction) {
 export function validateNoProxy(value: string, t: TFunction) {
     const noProxies = value.split(',')
     if (noProxies) {
-        const allGood = noProxies.every(noProxy=>{
+        const allGood = noProxies.every((noProxy) => {
             return validator.isURL(noProxy, {
-                    require_protocol: false,
-                    require_valid_protocol: false,
-                    require_host: false,
-                })
+                require_protocol: false,
+                require_valid_protocol: false,
+                require_host: false,
             })
+        })
         if (allGood) {
             return undefined
         }
