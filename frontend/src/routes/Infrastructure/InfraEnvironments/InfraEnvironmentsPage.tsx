@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import isMatch from 'lodash/isMatch'
 import {
     AcmButton,
     AcmEmptyState,
@@ -12,22 +11,22 @@ import {
     AcmTable,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { fitContent } from '@patternfly/react-table'
+import isMatch from 'lodash/isMatch'
+import { CIM } from 'openshift-assisted-ui-lib'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import { CIM } from 'openshift-assisted-ui-lib'
-
 import { acmRouteState, agentsState, infraEnvironmentsState } from '../../../atoms'
-import { NavigationPath } from '../../../NavigationPath'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { fitContent } from '@patternfly/react-table'
-import { rbacDelete } from '../../../lib/rbac-util'
 import { RbacDropdown } from '../../../components/Rbac'
+import { rbacDelete } from '../../../lib/rbac-util'
+import { NavigationPath } from '../../../NavigationPath'
 import { deleteResource } from '../../../resources'
 import { OnPremiseBanner } from '../Clusters/ManagedClusters/components/cim/OnPremiseBanner'
 
-const { AGENT_LOCATION_LABEL_KEY } = CIM
+const { AGENT_LOCATION_LABEL_KEY, getAgentStatus } = CIM
 
 const InfraEnvironmentsPage: React.FC = () => {
     const [, setRoute] = useRecoilState(acmRouteState)
@@ -64,6 +63,7 @@ const InfraEnvironmentsPage: React.FC = () => {
                     WrappingComponent={PageSection}
                     titleKey="cim:cim.infra.banner.header"
                     textKey="cim:cim.infra.banner.body"
+                    footerKey="cim:cim.infra.banner.footer"
                 />
 
                 <PageSection>
@@ -136,7 +136,6 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 return (
                                     <AcmLabels
                                         labels={infraEnv.metadata.labels}
-                                        style={{ maxWidth: '600px' }}
                                         expandedText={t('common:show.less')}
                                         collapsedText={t('common:show.more', { number: collapse.length })}
                                         collapse={collapse}
@@ -157,10 +156,17 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                             const infraAgents = agents.filter((a) =>
                                 isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
                             )
+                            const errorAgents = infraAgents.filter((a) => getAgentStatus(a)[0] === 'error')
+                            const warningAgents = infraAgents.filter((a) => getAgentStatus(a)[0] === 'insufficient')
+
                             return (
                                 <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
                                     {infraAgents.length ? (
-                                        <AcmInlineStatusGroup healthy={infraAgents.length} danger={0} unknown={0} />
+                                        <AcmInlineStatusGroup
+                                            healthy={infraAgents.length - errorAgents.length - warningAgents.length}
+                                            danger={errorAgents.length}
+                                            warning={warningAgents.length}
+                                        />
                                     ) : (
                                         0
                                     )}

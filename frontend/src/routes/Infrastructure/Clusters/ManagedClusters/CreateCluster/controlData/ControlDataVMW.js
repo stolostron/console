@@ -170,6 +170,7 @@ const controlDataVMW = [
             {
                 name: 'creation.ocp.pool.name',
                 tooltip: 'tooltip.creation.ocp.pool.name',
+                placeholder: 'creation.ocp.pool.placeholder',
                 id: 'workerName',
                 type: 'text',
                 active: 'worker',
@@ -238,6 +239,7 @@ const controlDataVMW = [
         id: 'networkType',
         name: 'creation.ocp.cluster.vmw.network.type',
         tooltip: 'tooltip.creation.ocp.cluster.vmw.network.type',
+        placeholder: 'creation.ocp.cluster.vmw.network.type',
         type: 'text',
         active: '',
     },
@@ -254,6 +256,7 @@ const controlDataVMW = [
         type: 'text',
         name: 'creation.ocp.ingress.vip',
         tooltip: 'tooltip.creation.ocp.ingress.vip',
+        placeholder: 'creation.ocp.ingress.vip.placeholder',
         active: '',
         validation: VALIDATE_IP,
     },

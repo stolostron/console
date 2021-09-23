@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { patchResource } from '../../../../../../../resources'
+import { ConfigMap, patchResource } from '../../../../../../../resources'
 import { isEqual } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
 
@@ -26,9 +26,8 @@ export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHosts
         releasedAgents.map((agent) => {
             return patchResource(agent, [
                 {
-                    op: 'replace',
+                    op: 'remove',
                     path: '/spec/clusterDeploymentName',
-                    value: {}, // means: delete; requires https://issues.redhat.com/browse/MGMT-7726
                 },
             ]).promise
         })
@@ -118,7 +117,10 @@ export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstal
 
     appendPatch(agentClusterInstallPatches, '/spec/holdInstallation', false, agentClusterInstall.spec?.holdInstallation)
 
-    if (agentClusterInstall?.spec?.provisionRequirements?.controlPlaneAgents === 1) {
+    if (
+        agentClusterInstall?.spec?.provisionRequirements?.controlPlaneAgents === 1 &&
+        values.hostSubnet !== 'NO_SUBNET_SET'
+    ) {
         appendPatch(
             agentClusterInstallPatches,
             '/spec/networking/machineNetwork',
@@ -154,3 +156,6 @@ export const onSaveNetworking = async (
         throw Error('Failed to patch the AgentClusterInstall resource')
     }
 }
+
+export const getAIConfigMap = (configMaps: ConfigMap[]) =>
+    configMaps.find((cm) => cm.metadata.name === 'assisted-service' && cm.metadata.namespace === 'assisted-installer')

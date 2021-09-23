@@ -26,8 +26,6 @@ import {
     DiscoveredClusterKind,
     DiscoveryConfig,
     DiscoveryConfigKind,
-    FeatureGate,
-    FeatureGateKind,
     MachinePool,
     MachinePoolKind,
     ManagedCluster,
@@ -80,7 +78,6 @@ export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
 export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
 export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
 export const discoveredClusterState = atom<DiscoveredCluster[]>({ key: 'discoveredClusters', default: [] })
-export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
 export const machinePoolsState = atom<MachinePool[]>({ key: 'machinePools', default: [] })
 export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
@@ -107,6 +104,8 @@ export const bareMetalHostsState = atom<CIM.BareMetalHostK8sResource[]>({ key: '
 
 interface Settings {
     LOG_LEVEL?: string
+    ansibleIntegration?: 'enabled' | 'disabled'
+    singleNodeOpenshift?: 'enabled' | 'disabled'
 }
 
 interface WatchEvent {
@@ -143,7 +142,6 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setConfigMaps] = useRecoilState(configMapsState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
-    const [, setFeatureGates] = useRecoilState(featureGatesState)
     const [, setMachinePools] = useRecoilState(machinePoolsState)
     const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
@@ -178,7 +176,6 @@ export function LoadData(props: { children?: ReactNode }) {
         [ConfigMapKind]: setConfigMaps,
         [DiscoveryConfigKind]: setDiscoveryConfigs,
         [DiscoveredClusterKind]: setDiscoveredClusters,
-        [FeatureGateKind]: setFeatureGates,
         [InfraEnvKind]: setInfraEnvironments,
         [MachinePoolKind]: setMachinePools,
         [ManagedClusterKind]: setManagedClusters,

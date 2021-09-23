@@ -4,7 +4,7 @@ import { Stack, StackItem } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useContext } from 'react'
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
-import { backendUrl, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
+import { backendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 
 const {
     ClusterDeploymentProgress,
@@ -28,6 +28,12 @@ const fetchSecret: CIM.FetchSecret = (name, namespace) =>
         },
     }).promise
 
+const fetchEvents = async (url: string) => {
+    const abortController = new AbortController()
+    const result = await fetchGet(`${backendUrl}${url}`, abortController.signal)
+    return result.data
+}
+
 const AIClusterProgress: React.FC = () => {
     const { clusterDeployment, agentClusterInstall, agents } = useContext(ClusterContext)
     const clusterAgents = agents
@@ -50,7 +56,7 @@ const AIClusterProgress: React.FC = () => {
                                         clusterDeployment={clusterDeployment}
                                         agentClusterInstall={agentClusterInstall}
                                         agents={clusterAgents}
-                                        fetchEvents={() => Promise.resolve(/* will be impleented later */)}
+                                        fetchEvents={fetchEvents}
                                     />
                                 </StackItem>
                                 {shouldShowClusterCredentials(agentClusterInstall) && (

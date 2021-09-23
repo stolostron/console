@@ -13,6 +13,7 @@ import {
     ActionGroup,
     StackItem,
     Badge,
+    Stack,
 } from '@patternfly/react-core'
 import { AcmButton } from '@open-cluster-management/ui-components'
 import mainIcon from '../../../../../../logos/OnPremiseBannerIcon.svg'
@@ -23,6 +24,7 @@ type OnPremisebannerProps = {
     WrappingComponent?: React.FunctionComponent
     titleKey: string
     textKey: string
+    footerKey?: string
     extraButton?: React.ReactElement
 }
 
@@ -32,6 +34,7 @@ export function OnPremiseBanner({
     titleKey,
     extraButton,
     textKey,
+    footerKey,
 }: OnPremisebannerProps) {
     const { t } = useTranslation(['cim'])
     const localStorageKey = `OnPremiseBannerDismissed.${id}`
@@ -57,8 +60,21 @@ export function OnPremiseBanner({
                         </CardBody>
                     </SplitItem>
                     <SplitItem isFilled>
-                        <CardTitle>{<Trans i18nKey={titleKey} components={{ bold: <strong /> }} />}</CardTitle>
-                        <CardBody>{<Trans i18nKey={textKey} components={{ bold: <strong /> }} />}</CardBody>
+                        <CardTitle>
+                            <Trans i18nKey={titleKey} components={{ bold: <strong /> }} />
+                        </CardTitle>
+                        <CardBody>
+                            <Stack hasGutter>
+                                <StackItem>
+                                    <Trans i18nKey={textKey} components={{ bold: <strong /> }} />
+                                </StackItem>
+                                {footerKey && (
+                                    <StackItem>
+                                        <Trans i18nKey={footerKey} components={{ bold: <strong /> }} />
+                                    </StackItem>
+                                )}
+                            </Stack>
+                        </CardBody>
                         <CardFooter>
                             <ActionGroup>
                                 {extraButton}

@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { clusterDangerStatuses } from '../../../../../../resources'
 import {
     AcmButton,
     AcmCountCardSection,
@@ -14,6 +13,7 @@ import { useContext } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../../NavigationPath'
+import { clusterDangerStatuses } from '../../../../../../resources'
 import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkStatus'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
@@ -60,10 +60,7 @@ export function ClusterSetOverviewPageContent() {
                                 </Popover>
                             ),
                             value: clusterSetBindings?.length ? (
-                                <AcmLabels
-                                    labels={clusterSetBindings?.map((mcsb) => mcsb.metadata.namespace!)}
-                                    variant="outline"
-                                />
+                                <AcmLabels labels={clusterSetBindings?.map((mcsb) => mcsb.metadata.namespace!)} />
                             ) : (
                                 '-'
                             ),

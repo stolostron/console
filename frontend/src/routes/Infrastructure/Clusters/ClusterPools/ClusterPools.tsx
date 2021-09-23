@@ -64,32 +64,45 @@ export default function ClusterPoolsPage() {
                 <TechPreviewAlert i18nKey="cluster:preview.clusterPools" docHref={DOC_LINKS.CLUSTER_POOLS} />
                 <Stack hasGutter style={{ height: 'unset' }}>
                     <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-pools-learn">
-                        <Flex spaceItems={{ default: 'spaceItemsLg' }}>
-                            <FlexItem flex={{ default: 'flex_1' }}>
-                                <TextContent>
-                                    <Text component={TextVariants.h4}>{t('clusterPools')}</Text>
-                                    <Text component={TextVariants.p}>{t('learn.clusterPools')}</Text>
-                                </TextContent>
-                            </FlexItem>
-                            <FlexItem flex={{ default: 'flex_1' }}>
-                                <TextContent>
-                                    <Text component={TextVariants.h4}>{t('clusterClaims')}</Text>
-                                    <Text component={TextVariants.p}>{t('learn.clusterClaims')}</Text>
-                                </TextContent>
-                            </FlexItem>
-                        </Flex>
-                        <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
-                            <FlexItem>
-                                <AcmButton
-                                    onClick={() => window.open(DOC_LINKS.CLUSTER_POOLS, '_blank')}
-                                    variant="link"
-                                    role="link"
-                                    icon={<ExternalLinkAltIcon />}
-                                    iconPosition="right"
-                                >
-                                    {t('common:view.documentation')}
-                                </AcmButton>
-                            </FlexItem>
+                        <Flex style={{ flexWrap: 'inherit' }}>
+                            <Flex style={{ maxWidth: '50%' }}>
+                                <FlexItem>
+                                    <TextContent>
+                                        <Text component={TextVariants.h4}>{t('clusterPools')}</Text>
+                                        <Text component={TextVariants.p}>{t('learn.clusterPools')}</Text>
+                                    </TextContent>
+                                </FlexItem>
+                                <FlexItem align={{ default: 'alignRight' }}>
+                                    <AcmButton
+                                        onClick={() => window.open(DOC_LINKS.CLUSTER_POOLS, '_blank')}
+                                        variant="link"
+                                        role="link"
+                                        icon={<ExternalLinkAltIcon />}
+                                        iconPosition="right"
+                                    >
+                                        {t('common:view.documentation')}
+                                    </AcmButton>
+                                </FlexItem>
+                            </Flex>
+                            <Flex>
+                                <FlexItem>
+                                    <TextContent>
+                                        <Text component={TextVariants.h4}>{t('clusterClaims')}</Text>
+                                        <Text component={TextVariants.p}>{t('learn.clusterClaims')}</Text>
+                                    </TextContent>
+                                </FlexItem>
+                                <FlexItem align={{ default: 'alignRight' }}>
+                                    <AcmButton
+                                        onClick={() => window.open(DOC_LINKS.CLUSTER_CLAIMS, '_blank')}
+                                        variant="link"
+                                        role="link"
+                                        icon={<ExternalLinkAltIcon />}
+                                        iconPosition="right"
+                                    >
+                                        {t('common:view.documentation')}
+                                    </AcmButton>
+                                </FlexItem>
+                            </Flex>
                         </Flex>
                     </AcmExpandableCard>
                     <Stack>
@@ -207,6 +220,7 @@ export function ClusterPoolsTable(props: {
                     const clusterPoolClusters = clusters.filter(
                         (cluster) =>
                             cluster.hive.clusterPool === clusterPool.metadata.name &&
+                            cluster.hive.clusterPoolNamespace === clusterPool.metadata.namespace &&
                             cluster.hive.clusterClaimName === undefined
                     )
                     if (clusterPoolClusters.length === 0) {

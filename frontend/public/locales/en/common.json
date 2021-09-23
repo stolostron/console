@@ -51,6 +51,7 @@
 
     "show.less": "Show less",
     "show.more": "{{number}} more",
+    "count.labels": "{{number}} labels",
 
     "request.failed": "Request failed",
 

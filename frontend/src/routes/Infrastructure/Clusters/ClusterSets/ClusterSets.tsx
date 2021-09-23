@@ -1,16 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    Cluster,
-    deleteResource,
-    ManagedClusterSet,
-    ManagedClusterSetDefinition,
-    managedClusterSetLabel,
-    mapAddons,
-    mapClusters,
-    ResourceErrorCode,
-} from '../../../../resources'
-import {
     AcmAlertContext,
     AcmButton,
     AcmEmptyState,
@@ -37,6 +27,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
+    agentClusterInstallsState,
     certificateSigningRequestsState,
     clusterDeploymentsState,
     clusterManagementAddonsState,
@@ -46,13 +37,22 @@ import {
     managedClusterSetBindingsState,
     managedClusterSetsState,
     managedClustersState,
-    agentClusterInstallsState,
 } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
+import {
+    Cluster,
+    deleteResource,
+    ManagedClusterSet,
+    ManagedClusterSetDefinition,
+    managedClusterSetLabel,
+    mapAddons,
+    mapClusters,
+    ResourceErrorCode,
+} from '../../../../resources'
 import { usePageContext } from '../Clusters'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
@@ -104,32 +104,45 @@ export default function ClusterSetsPage() {
                 <TechPreviewAlert i18nKey="cluster:preview.clusterSets" docHref={DOC_LINKS.CLUSTER_SETS} />
                 <Stack hasGutter style={{ height: 'unset' }}>
                     <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-sets-learn">
-                        <Flex spaceItems={{ default: 'spaceItemsLg' }}>
-                            <FlexItem flex={{ default: 'flex_1' }}>
-                                <TextContent>
-                                    <Text component={TextVariants.h4}>{t('clusterSets')}</Text>
-                                    <Text component={TextVariants.p}>{t('learn.clusterSets')}</Text>
-                                </TextContent>
-                            </FlexItem>
-                            <FlexItem flex={{ default: 'flex_1' }}>
-                                <TextContent>
-                                    <Text component={TextVariants.h4}>{t('submariner')}</Text>
-                                    <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
-                                </TextContent>
-                            </FlexItem>
-                        </Flex>
-                        <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
-                            <FlexItem>
-                                <AcmButton
-                                    onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
-                                    variant="link"
-                                    role="link"
-                                    icon={<ExternalLinkAltIcon />}
-                                    iconPosition="right"
-                                >
-                                    {t('common:view.documentation')}
-                                </AcmButton>
-                            </FlexItem>
+                        <Flex style={{ flexWrap: 'inherit' }}>
+                            <Flex style={{ maxWidth: '50%' }}>
+                                <FlexItem>
+                                    <TextContent>
+                                        <Text component={TextVariants.h4}>{t('clusterSets')}</Text>
+                                        <Text component={TextVariants.p}>{t('learn.clusterSets')}</Text>
+                                    </TextContent>
+                                </FlexItem>
+                                <FlexItem align={{ default: 'alignRight' }}>
+                                    <AcmButton
+                                        onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
+                                        variant="link"
+                                        role="link"
+                                        icon={<ExternalLinkAltIcon />}
+                                        iconPosition="right"
+                                    >
+                                        {t('common:view.documentation')}
+                                    </AcmButton>
+                                </FlexItem>
+                            </Flex>
+                            <Flex>
+                                <FlexItem>
+                                    <TextContent>
+                                        <Text component={TextVariants.h4}>{t('submariner')}</Text>
+                                        <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
+                                    </TextContent>
+                                </FlexItem>
+                                <FlexItem align={{ default: 'alignRight' }}>
+                                    <AcmButton
+                                        onClick={() => window.open(DOC_LINKS.SUBMARINER, '_blank')}
+                                        variant="link"
+                                        role="link"
+                                        icon={<ExternalLinkAltIcon />}
+                                        iconPosition="right"
+                                    >
+                                        {t('common:view.documentation')}
+                                    </AcmButton>
+                                </FlexItem>
+                            </Flex>
                         </Flex>
                     </AcmExpandableCard>
                     <Stack>
@@ -284,12 +297,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                             )
                             const namespaces = bindings.map((mcsb) => mcsb.metadata.namespace!)
                             return namespaces.length ? (
-                                <AcmLabels
-                                    labels={namespaces}
-                                    collapse={namespaces.filter((_ns, i) => i > 1)}
-                                    style={{ maxWidth: '600px' }}
-                                    variant="outline"
-                                />
+                                <AcmLabels labels={namespaces} collapse={namespaces.filter((_ns, i) => i > 1)} />
                             ) : (
                                 '-'
                             )

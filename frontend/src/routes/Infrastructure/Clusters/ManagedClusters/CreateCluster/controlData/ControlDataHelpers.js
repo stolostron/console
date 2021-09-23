@@ -265,6 +265,7 @@ export const clusterDetailsControlData = [
     {
         name: 'creation.ocp.name',
         tooltip: 'tooltip.creation.ocp.name',
+        placeholder: 'creation.ocp.name.placeholder',
         id: 'name',
         type: 'text',
         validation: {
@@ -288,6 +289,7 @@ export const clusterDetailsControlData = [
     {
         name: 'creation.ocp.baseDomain',
         tooltip: 'tooltip.creation.ocp.baseDomain',
+        placeholder: 'placeholder.creation.ocp.baseDomain',
         id: 'baseDomain',
         type: 'text',
         validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
@@ -341,6 +343,7 @@ export const networkingControlData = [
                 type: 'text',
                 name: 'creation.ocp.cluster.network',
                 tooltip: 'tooltip.creation.ocp.cluster.network',
+                placeholder: 'creation.ocp.cluster.network.placeholder',
                 active: '10.128.0.0/14',
                 validation: VALIDATE_CIDR,
             },
@@ -349,6 +352,7 @@ export const networkingControlData = [
                 type: 'text',
                 name: 'creation.ocp.cluster.network.host.prefix',
                 tooltip: 'tooltip.creation.ocp.cluster.network.host.prefix',
+                placeholder: 'creation.ocp.cluster.network.host.prefix.placeholder',
                 active: '23',
                 validation: VALIDATE_NUMERIC,
             },
@@ -357,6 +361,7 @@ export const networkingControlData = [
                 type: 'text',
                 name: 'creation.ocp.service.network',
                 tooltip: 'tooltip.creation.ocp.service.network',
+                placeholder: 'creation.ocp.service.network.placeholder',
                 active: '172.30.0.0/16',
                 validation: VALIDATE_CIDR,
             },
@@ -365,6 +370,7 @@ export const networkingControlData = [
                 type: 'text',
                 name: 'creation.ocp.machine.cidr',
                 tooltip: 'tooltip.creation.ocp.machine.cidr',
+                placeholder: 'creation.ocp.machine.cidr.placeholder',
                 active: '10.0.0.0/16',
                 validation: VALIDATE_CIDR,
             },
