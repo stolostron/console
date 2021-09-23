@@ -39,6 +39,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
 
     const { cluster } = props
+    console.log('cluster:', cluster)
 
     const modalColumns = useMemo(
         () => [
@@ -371,8 +372,10 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         actions = actions.filter((a) => a.id !== 'ai-edit')
     }
 
-    // TODO(jtomasek): disable this action for SNO clusters
-    if (!(cluster.provider === Provider.hybrid && cluster.status === ClusterStatus.pendingimport)) {
+    if (
+        !(cluster.provider === Provider.hybrid && cluster.status === ClusterStatus.pendingimport) ||
+        cluster.isSNOCluster
+    ) {
         actions = actions.filter((a) => a.id !== 'ai-scale-up')
     }
 

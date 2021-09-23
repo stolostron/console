@@ -15,7 +15,7 @@ import { AddonStatus } from './get-addons'
 import { getLatest } from './utils'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 
-const { isDraft } = CIM
+const { isDraft, getIsSNOCluster } = CIM
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -85,6 +85,7 @@ export type Cluster = {
         createdBy?: string
         claimedBy?: string
     }
+    isSNOCluster: boolean
 }
 
 export type DistributionInfo = {
@@ -226,6 +227,7 @@ export function getCluster(
         isHive: !!clusterDeployment,
         isManaged: !!managedCluster || !!managedClusterInfo,
         isCurator: !!clusterCurator,
+        isSNOCluster: getIsSNOCluster(agentClusterInstall),
         hive: getHiveConfig(clusterDeployment, clusterClaim),
         clusterSet:
             managedCluster?.metadata?.labels?.[managedClusterSetLabel] ||
