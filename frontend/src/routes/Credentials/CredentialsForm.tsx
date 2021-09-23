@@ -926,9 +926,9 @@ export function CredentialsForm(props: {
                         id: 'imageContentSources',
                         isHidden: credentialsType !== Provider.openstack,
                         type: 'TextArea',
-                        label: 'Image content sources', //t('credentialsForm.imageContentSources.label'),
-                        placeholder: 'Image content sources', //t('credentialsForm.imageContentSources.placeholder'),
-                        labelHelp: 'Image content sources', //t('credentialsForm.imageContentSources.labelHelp'),
+                        label: t('credentialsForm.imageContentSources.label'),
+                        placeholder: '- mirrors:\n        - <mirror_host_name>:5000/<repo_name>/release\n        source: quay.example.com/openshift-release-dev/ocp-release',
+                        labelHelp: t('credentialsForm.imageContentSources.labelHelp'),
                         value: imageContentSources,
                         onChange: setImageContentSources,
                         //                    validation: (value) => validateImageContentSources(value, t),
@@ -947,12 +947,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: 'Proxy', //t('credentialsForm.bareMetalDisconnected.title'),
-                wizardTitle: 'Proxy', //t('credentialsForm.bareMetalDisconnected.wizardTitle'),
+                title: t('credentialsForm.proxy.title'),
+                wizardTitle: t('credentialsForm.proxy.wizardTitle'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION_BAREMETAL} target="_blank" rel="noreferrer">
-                        {'How do I configure a proxy?'}
-                        {/* t('credentialsForm.bareMetalDisconnected.wizardDescription')} */}
+                    <a href={DOC_LINKS.CREATE_CONNECTION_PROXY} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.proxy.wizardDescription')}
                     </a>
                 ),
                 inputs: [
@@ -967,9 +966,9 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: 'HTTP Url', //t('credentialsForm.imageMirror.label'),
-                        placeholder: 'HTTP Url', //t('credentialsForm.imageMirror.placeholder'),
-                        labelHelp: 'HTTP Url', //t('credentialsForm.imageMirror.labelHelp'),
+                        label: t('credentialsForm.httpProxy.label'),
+                        placeholder: t('credentialsForm.httpProxy.placeholder'),
+                        labelHelp: t('credentialsForm.httpProxy.labelHelp'),
                         value: httpProxy,
                         onChange: setHttpProxy,
                         //                   validation: (value) => validateHttpProxy(value, t),
@@ -985,9 +984,9 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: 'HTTPS Url', //t('credentialsForm.imageMirror.label'),
-                        placeholder: 'HTTPS Url', //t('credentialsForm.imageMirror.placeholder'),
-                        labelHelp: 'HTTPS Url', //t('credentialsForm.imageMirror.labelHelp'),
+                        label: t('credentialsForm.httpsProxy.label'),
+                        placeholder: t('credentialsForm.httpsProxy.placeholder'),
+                        labelHelp: t('credentialsForm.httpsProxy.labelHelp'),
                         value: httpsProxy,
                         onChange: setHttpsProxy,
                         //                  validation: (value) => validateHttpsProxy(value, t),
@@ -1003,9 +1002,9 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: 'No proxy', //t('credentialsForm.imageMirror.label'),
-                        placeholder: 'No proxy', //t('credentialsForm.imageMirror.placeholder'),
-                        labelHelp: 'No proxy', //t('credentialsForm.imageMirror.labelHelp'),
+                        label: t('credentialsForm.noProxy.label'),
+                        placeholder: t('credentialsForm.noProxy.placeholder'),
+                        labelHelp: t('credentialsForm.noProxy.labelHelp'),
                         value: noProxy,
                         onChange: setNoProxy,
                         //                   validation: (value) => validateNoProxy(value, t),

@@ -298,9 +298,6 @@ const controlDataOST = [
         tip: 'The imageContentSources values that were generated during mirror registry creation.',
     },
     {
-        getActive: (a, b, c) => {
-            return ['abc']
-        },
         id: 'disconnectedAdditionalTrustBundle',
         type: 'textarea',
         name: 'Additional Trust Bundle',
