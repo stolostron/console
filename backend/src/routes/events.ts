@@ -1,17 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import AbortController from 'abort-controller'
-import { IncomingMessage } from 'http'
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { IncomingMessage, STATUS_CODES } from 'http'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { parseCookies } from '../lib/cookies'
-import { requestRetry } from '../lib/request-retry'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { noop } from '../lib/noop'
+import { requestRetry } from '../lib/request-retry'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { IResource } from '../resources/resource'
 import { serviceAcccountToken, setDead } from './liveness'
+
+const { HTTP_STATUS_OK, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND } = constants
 
 export function events(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = parseCookies(req)['acm-access-token-cookie']
@@ -49,55 +51,42 @@ export function startWatching(): void {
 
     ServerSideEvents.eventFilter = eventFilter
 
-    watchResource(token, 'v1', 'namespaces')
-    watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clusterCurators')
-    watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'managedClusterSets')
-    watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'managedClusterSetBindings')
-    watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
-    watchResource(token, 'internal.open-cluster-management.io/v1beta1', 'managedClusterInfos')
-    watchResource(token, 'inventory.open-cluster-management.io/v1alpha1', 'bareMetalAssets')
-    watchResource(token, 'operator.open-cluster-management.io/v1', 'multiClusterHubs')
+    watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'clusterManagementAddons')
+    watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
+    watchResource(token, 'agent-install.openshift.io/v1beta1', 'agents')
+    watchResource(token, 'agent-install.openshift.io/v1beta1', 'infraenvs')
     watchResource(token, 'certificates.k8s.io/v1beta1', 'certificateSigningRequests', {
         labelSelector: { 'open-cluster-management.io/cluster-name': '' },
     })
+    watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
+    watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'managedClusterSetBindings')
+    watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'managedClusterSets')
+    watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clusterCurators')
+    watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveredClusters')
+    watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveryConfigs')
+    watchResource(token, 'extensions.hive.openshift.io/v1beta1', 'agentclusterinstalls')
     watchResource(token, 'hive.openshift.io/v1', 'clusterClaims')
     watchResource(token, 'hive.openshift.io/v1', 'clusterDeployments')
-    watchResource(token, 'hive.openshift.io/v1', 'clusterPools')
     watchResource(token, 'hive.openshift.io/v1', 'clusterImageSets')
+    watchResource(token, 'hive.openshift.io/v1', 'clusterPools')
     watchResource(token, 'hive.openshift.io/v1', 'clusterProvisions')
     watchResource(token, 'hive.openshift.io/v1', 'machinePools')
-    watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'clusterManagementAddons')
-    watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
-    watchResource(token, 'v1', 'secrets', {
-        labelSelector: { 'cluster.open-cluster-management.io/credentials': '' },
-    })
-    watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveryConfigs')
-    watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveredClusters')
-    watchResource(token, 'v1', 'configmaps', {
-        fieldSelector: {
-            'metadata.namespace': 'openshift-config-managed',
-            'metadata.name': 'console-public',
-        },
-    })
-    watchResource(token, 'v1', 'configmaps', {
-        fieldSelector: {
-            'metadata.name': 'insight-content-data',
-        },
-    })
-    watchResource(token, 'extensions.hive.openshift.io/v1beta1', 'agentclusterinstalls')
-    watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clustercurators')
-    watchResource(token, 'wgpolicyk8s.io/v1alpha2', 'policyreports')
-    watchResource(token, 'submarineraddon.open-cluster-management.io/v1alpha1', 'submarinerconfigs')
-    watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs')
-    watchResource(token, 'agent-install.openshift.io/v1beta1', 'agents')
-    watchResource(token, 'agent-install.openshift.io/v1beta1', 'infraenvs')
+    watchResource(token, 'internal.open-cluster-management.io/v1beta1', 'managedClusterInfos')
+    watchResource(token, 'inventory.open-cluster-management.io/v1alpha1', 'bareMetalAssets')
     watchResource(token, 'metal3.io/v1alpha1', 'baremetalhosts')
+    watchResource(token, 'operator.open-cluster-management.io/v1', 'multiClusterHubs')
+    watchResource(token, 'submarineraddon.open-cluster-management.io/v1alpha1', 'submarinerconfigs')
+    watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs', { mightBeNotFound: true })
+    watchResource(token, 'v1', 'configmaps', { fieldSelector: { 'metadata.name': 'insight-content-data' } })
     watchResource(token, 'v1', 'configmaps', {
-        fieldSelector: {
-            'metadata.namespace': 'assisted-installer',
-            'metadata.name': 'assisted-service',
-        },
+        fieldSelector: { 'metadata.namespace': 'assisted-installer', 'metadata.name': 'assisted-service' },
     })
+    watchResource(token, 'v1', 'configmaps', {
+        fieldSelector: { 'metadata.namespace': 'openshift-config-managed', 'metadata.name': 'console-public' },
+    })
+    watchResource(token, 'v1', 'namespaces')
+    watchResource(token, 'v1', 'secrets', { labelSelector: { 'cluster.open-cluster-management.io/credentials': '' } })
+    watchResource(token, 'wgpolicyk8s.io/v1alpha2', 'policyreports')
 }
 
 export function watchResource(
@@ -107,8 +96,8 @@ export function watchResource(
     options?: {
         labelSelector?: Record<string, string>
         fieldSelector?: Record<string, string>
-    },
-    resourceVersion?: string
+        mightBeNotFound?: true
+    }
 ): void {
     let path = apiVersion.includes('/') ? '/apis' : '/api'
     path += `/${apiVersion}/${kind.toLowerCase()}`
@@ -134,8 +123,8 @@ export function watchResource(
     let buffer: Buffer = Buffer.from('')
     const abortController = new AbortController()
 
-    function onResponse(res: IncomingMessage) {
-        if (res.statusCode === 200) {
+    function onWatchResponse(res: IncomingMessage) {
+        if (res.statusCode === HTTP_STATUS_OK) {
             if (process.env.LOG_WATCH) {
                 logger.info({ msg: 'watch start', kind })
             }
@@ -165,26 +154,56 @@ export function watchResource(
                     buffer = Buffer.from(buffer)
                     oldBuffer.fill(0)
                 }
-            }).on('end', () => noop)
+            }).on('end', () => {
+                if (process.env.LOG_WATCH) logger.info({ msg: 'watch stop', kind })
+                if (stopping) return
+                setTimeout(() => {
+                    watchResource(token, apiVersion, kind, options)
+                }, 1000)
+            })
         } else {
             res.on('data', () => noop)
             res.on('end', () => noop)
+            switch (res.statusCode) {
+                case HTTP_STATUS_FORBIDDEN:
+                    logger.error({
+                        msg: 'watch error',
+                        error: STATUS_CODES[res.statusCode],
+                        code: res.statusCode,
+                        kind,
+                        apiVersion,
+                    })
+                    break
+                default:
+                    if (options.mightBeNotFound && res.statusCode === HTTP_STATUS_NOT_FOUND) {
+                        setTimeout(() => {
+                            watchResource(token, apiVersion, kind, options)
+                        }, 5 * 60 * 1000)
+                    } else {
+                        logger.error({
+                            msg: 'watch error',
+                            error: STATUS_CODES[res.statusCode],
+                            code: res.statusCode,
+                            kind,
+                            apiVersion,
+                        })
+                        setTimeout(() => {
+                            watchResource(token, apiVersion, kind, options)
+                        }, 1000)
+                    }
+                    break
+            }
         }
     }
 
-    function onClose() {
-        if (process.env.LOG_WATCH) logger.info({ msg: 'watch stop', kind })
-        if (stopping) return
-        watchResource(token, apiVersion, kind, options)
-    }
-
-    function onError(err: Error) {
+    function onWatchError(err: Error) {
         if (stopping) return
         logger.error({
             msg: 'watching error',
-            kind,
             error: err.message,
             code: (err as unknown as { code: string })?.code,
+            kind,
+            apiVersion,
         })
         switch ((err as unknown as { code: string }).code) {
             case 'ENOTFOUND':
@@ -197,11 +216,12 @@ export function watchResource(
         url,
         token,
         timeout: 4 * 60 * 1000 + Math.floor(Math.random() * 30 * 1000),
-        onResponse,
-        onError,
-        onClose,
+        onResponse: onWatchResponse,
+        onError: onWatchError,
+        onClose: noop,
         signal: abortController.signal,
     })
+
     abortControllers[kind] = abortController
 }
 
