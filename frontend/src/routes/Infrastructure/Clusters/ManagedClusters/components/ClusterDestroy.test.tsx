@@ -36,6 +36,7 @@ const mockDestroyCluster: Cluster = {
     },
     isHive: false,
     isManaged: true,
+    isSNOCluster: false,
 }
 
 const mockDetachCluster: Cluster = {
@@ -65,6 +66,7 @@ const mockDetachCluster: Cluster = {
     isHive: false,
     isManaged: true,
     isCurator: false,
+    isSNOCluster: false,
     owner: {},
 }
 
