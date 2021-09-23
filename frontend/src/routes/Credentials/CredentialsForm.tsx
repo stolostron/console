@@ -931,7 +931,7 @@ export function CredentialsForm(props: {
                         labelHelp: t('credentialsForm.imageContentSources.labelHelp'),
                         value: imageContentSources,
                         onChange: setImageContentSources,
-                        //                    validation: (value) => validateImageContentSources(value, t),
+                        validation: (value) => validateImageContentSources(value, t),
                     },
                     {
                         id: 'additionalTrustBundle',
@@ -971,7 +971,7 @@ export function CredentialsForm(props: {
                         labelHelp: t('credentialsForm.httpProxy.labelHelp'),
                         value: httpProxy,
                         onChange: setHttpProxy,
-                        //                   validation: (value) => validateHttpProxy(value, t),
+                        validation: (value) => validateHttpProxy(value, t),
                     },
                     {
                         id: 'httpsProxy',
@@ -989,7 +989,7 @@ export function CredentialsForm(props: {
                         labelHelp: t('credentialsForm.httpsProxy.labelHelp'),
                         value: httpsProxy,
                         onChange: setHttpsProxy,
-                        //                  validation: (value) => validateHttpsProxy(value, t),
+                        validation: (value) => validateHttpsProxy(value, t),
                     },
                     {
                         id: 'noProxy',
@@ -1007,7 +1007,7 @@ export function CredentialsForm(props: {
                         labelHelp: t('credentialsForm.noProxy.labelHelp'),
                         value: noProxy,
                         onChange: setNoProxy,
-                        //                   validation: (value) => validateNoProxy(value, t),
+                        validation: (value) => validateNoProxy(value, t),
                     },
                     {
                         id: 'additionalTrustBundle',

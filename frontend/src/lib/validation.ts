@@ -228,65 +228,66 @@ export function validateWebURL(url: string, t: TFunction) {
 }
 
 export function validateImageContentSources(value: string, t: TFunction) {
-    const VALID_BARE_METAL_OS_IMAGE_TESTER =
-        /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)sha256=([a-fA-F0-9]{64})$/
     if (value) {
-        if (value.length === 0) {
-            return undefined
-        }
+        try {
+            //ensure we have valid YAML
+            const yamlData: { mirrors?: string[], source?: string }[] = YAML.parse(value)
+            const isValid = yamlData.every(item=>{
+                return Array.isArray(item.mirrors) && item.source
+            })
 
-        if (!VALID_BARE_METAL_OS_IMAGE_TESTER.test(value)) {
-            return t('validate.os.image.url.not.valid')
+            //check for the clouds key
+            if (!isValid) {
+                return t('validate.yaml.not.valid')
+            }
+
+        } catch (e) {
+            return t('validate.yaml.not.valid')
         }
     }
-
     return undefined
 }
 
 export function validateHttpProxy(value: string, t: TFunction) {
-    const VALID_BARE_METAL_OS_IMAGE_TESTER =
-        /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)sha256=([a-fA-F0-9]{64})$/
-    if (value) {
-        if (value.length === 0) {
-            return undefined
-        }
-
-        if (!VALID_BARE_METAL_OS_IMAGE_TESTER.test(value)) {
-            return t('validate.os.image.url.not.valid')
-        }
-    }
-
-    return undefined
+    if (
+        validator.isURL(value, {
+            require_protocol: true,
+            require_valid_protocol: true,
+            protocols: ['http'],
+            require_host: true,
+        })
+    )
+        return undefined
+    return t('validate.ansible.url.not.valid')
 }
 
 export function validateHttpsProxy(value: string, t: TFunction) {
-    const VALID_BARE_METAL_OS_IMAGE_TESTER =
-        /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)sha256=([a-fA-F0-9]{64})$/
-    if (value) {
-        if (value.length === 0) {
-            return undefined
-        }
-
-        if (!VALID_BARE_METAL_OS_IMAGE_TESTER.test(value)) {
-            return t('validate.os.image.url.not.valid')
-        }
-    }
-
-    return undefined
+    if (
+        validator.isURL(value, {
+            require_protocol: true,
+            require_valid_protocol: true,
+            protocols: ['https'],
+            require_host: true,
+        })
+    )
+        return undefined
+    return t('validate.ansible.url.not.valid')
 }
 
 export function validateNoProxy(value: string, t: TFunction) {
-    const VALID_BARE_METAL_OS_IMAGE_TESTER =
-        /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)sha256=([a-fA-F0-9]{64})$/
-    if (value) {
-        if (value.length === 0) {
+    const noProxies = value.split(',')
+    if (noProxies) {
+        const allGood = noProxies.every(noProxy=>{
+            return validator.isURL(noProxy, {
+                    require_protocol: false,
+                    require_valid_protocol: false,
+                    require_host: false,
+                })
+            })
+        if (allGood) {
             return undefined
-        }
-
-        if (!VALID_BARE_METAL_OS_IMAGE_TESTER.test(value)) {
-            return t('validate.os.image.url.not.valid')
         }
     }
 
-    return undefined
+    return t('validate.ansible.url.not.valid')
 }
