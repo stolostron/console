@@ -300,9 +300,11 @@ platform:
 
 {{/switch}}
 
-fips: {{fips}}
+{{#if fips}}
+fips: true
+{{/if}}
 
-{{#if pullSecret}}
+{{#if imageContentSources}}
 pullSecret: {{{pullSecret}}}
 {{else}}
 pullSecret: "" # skip, hive will inject based on it's secrets
