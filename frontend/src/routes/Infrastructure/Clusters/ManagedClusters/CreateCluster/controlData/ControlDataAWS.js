@@ -73,6 +73,8 @@ export const awsRegions = {
     'eu-west-3': ['eu-west-3a', 'eu-west-3b', 'eu-west-3c'],
     'me-south-1': ['me-south-1a', 'me-south-1b', 'me-south-1c'],
     'sa-east-1': ['sa-east-1a', 'sa-east-1b', 'sa-east-1c'],
+    'us-gov-west-1': ['us-gov-west-1a','us-gov-west-1b','us-gov-west-1c'],
+    'us-gov-east-1': ['us-gov-east-1a','us-gov-east-1b','us-gov-east-1c']
 }
 
 const setAWSZones = (control, controlData) => {
@@ -818,6 +820,99 @@ const controlDataAWS = [
         title: 'Networking',
     },
     ...networkingControlData,
+    {
+        id: 'privateLinkAWS',
+        type: 'step',
+        title: 'AWS Private Configuration',
+    },
+    {
+        id: 'privateLink',
+        type: 'title',
+        info: 'OPTIONAL: Configuration for private AWS cluster provision',
+    },
+    {
+        name: 'Hosted Zone',
+        tooltip: 'The ID of your existing Route 53 private hosted zone.',
+        id: 'hostedZone',
+        type: 'text',
+        placeholder:'Enter hosted zone ID',
+        active: '',
+        validation: VALIDATE_ALPHANUMERIC,
+    },
+    {
+        name: 'amiID',
+        tooltip: 'The ID of the AMI used to boot machines for the cluster. If set, the AMI must belong to the same region as the cluster.',
+        id: 'amiID',
+        type: 'text',
+        placeholder:'Enter ami ID',
+        active: '',
+        validation: VALIDATE_ALPHANUMERIC,
+    },
+    ///////////////////////  subnets  /////////////////////////////////////
+    {
+        id: 'privateLink',
+        type: 'group',
+        onlyOne: true,
+        controlData: [
+            {
+                id: 'subnetSection',
+                type: 'section',
+                collapsable: true,
+                collapsed: true,
+                subtitle: 'Subnets',
+                info: 'Specify subnets for each availability zone that your cluster uses.',
+            },
+            {
+                name: 'Subnet ID',
+                tooltip: 'If you provide your own VPC, specify subnets for each availability zone that your cluster uses.',
+                id: 'subnetID',
+                type: 'values',
+                placeholder:'Enter one or more subnet IDs',
+                active: [],
+                validation: VALIDATE_ALPHANUMERIC,
+            },
+        ],
+    },
+    {
+        id: 'serviceEndpoints',
+        type: 'group',
+        onlyOne: false,
+        prompts: {
+            nameId: 'tester',
+            baseName: 'Subnet ID',
+            addPrompt: 'Add Service Endpoint',
+            deletePrompt: 'Remove Service Endpoint',
+        },
+        controlData: [
+            ///////////////////////  Service Endpoints  /////////////////////////////////////
+            {
+                id: 'serviceEndpoint',
+                type: 'section',
+                collapsable: true,
+                collapsed: true,
+                subtitle: 'Service Endpoints',
+                info: 'Specify subnets for each availability zone that your cluster uses.',
+            },
+            {
+                name: 'name',
+                tooltip: 'The AWS service endpoints. Custom endpoints are required when installing to an unknown AWS region.',
+                id: 'endpointName',
+                type: 'text',
+                placeholder:'Enter AWS service endpoint name',
+                active: [],
+                validation: VALIDATE_ALPHANUMERIC,
+            },
+            {
+                name: 'url',
+                tooltip: 'The AWS service endpoint url. The endpoint URL must use the https protocol and the host must trust the certificate.',
+                id: 'endpointURL',
+                type: 'text',
+                placeholder:'Enter AWS service endpoint url',
+                active: '',
+                validation: VALIDATE_ALPHANUMERIC,
+            },
+        ],
+    },
     ...proxyControlData,
 ]
 
