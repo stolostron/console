@@ -39,7 +39,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
 
     const { cluster } = props
-    console.log('cluster:', cluster)
 
     const modalColumns = useMemo(
         () => [
