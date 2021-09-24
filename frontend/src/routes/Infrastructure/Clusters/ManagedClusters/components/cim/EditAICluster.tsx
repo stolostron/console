@@ -91,6 +91,25 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         patch()
     }, [agentClusterInstall])
 
+    const onFinish = () => {
+        const doItAsync = async () => {
+            await patchResource(agentClusterInstall, [
+                {
+                    op: 'replace',
+                    path: '/spec/holdInstallation',
+                    value: false,
+                },
+            ]).promise
+
+            history.push(
+                NavigationPath.clusterCreateProgress
+                    .replace(':namespace', agentClusterInstall.metadata.namespace)
+                    .replace(':name', agentClusterInstall.metadata.name)
+            )
+        }
+        doItAsync()
+    }
+
     return patchingHoldInstallation || !aiConfigMap ? (
         <LoadingState />
     ) : (
@@ -111,13 +130,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
                 onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents })}
                 hostActions={hostActions}
-                onFinish={() =>
-                    history.push(
-                        NavigationPath.clusterCreateProgress
-                            .replace(':namespace', agentClusterInstall.metadata.namespace)
-                            .replace(':name', agentClusterInstall.metadata.name)
-                    )
-                }
+                onFinish={onFinish}
                 aiConfigMap={aiConfigMap}
             />
             <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
