@@ -10,7 +10,7 @@
     "createBareMetalAsset.namespaceName.placeholder": "Select a namespace to store the bare metal asset in the cluster",
     "createBareMetalAsset.address.label": "Baseboard Management Controller address",
     "createBareMetalAsset.address.placeholder": "Enter an address",
-    "createBareMetalAsset.address.labelHelp": "The address to communicate with the hosted BMC controller. IPMI, iDRAC, iRMC, and Redfish protocols are supported. For example: ipmi://, idrac://, irmc://, redfish://",
+    "createBareMetalAsset.address.labelHelp": "The address to communicate with the hosted BMC controller. IPMI, iDRAC, iRMC, and Redfish protocols are supported. For example: ipmi://, idrac://, irmc://, redfish://.",
     "createBareMetalAsset.username.label": "Username",
     "createBareMetalAsset.username.placeholder": "Enter a username",
     "createBareMetalAsset.password.label": "Password",
