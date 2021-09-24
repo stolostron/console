@@ -20,7 +20,7 @@ export function requestRetry(options: {
     timeout?: number // Milliseconds before a request times out.
     body?: unknown
     onResponse: (response: IncomingMessage) => void
-    onClose: () => void
+    onClose: (statusCode?: number) => void
     onError: (err: Error) => void
     signal?: AbortSignal
 }): void {
@@ -96,14 +96,14 @@ export function requestRetry(options: {
                                 logger.warn({ msg: 'retrying request', status: response.statusCode, url: options.url })
                             } else {
                                 options.onError(new Error(`response error  statusCode:${response.statusCode}`))
-                                options.onClose()
+                                options.onClose(response.statusCode)
                             }
                             break
 
                         default:
                             clientRequest.removeListener('error', handleError)
                             response.on('error', options.onError)
-                            response.on('close', options.onClose)
+                            response.on('close', () => options.onClose(response.statusCode))
                             options.onResponse(response)
                     }
                 })
