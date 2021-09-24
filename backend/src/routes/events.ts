@@ -99,6 +99,8 @@ export function watchResource(
         mightBeNotFound?: true
     }
 ): void {
+    if (stopping) return
+
     let path = apiVersion.includes('/') ? '/apis' : '/api'
     path += `/${apiVersion}/${kind.toLowerCase()}`
     path += `?watch`
@@ -126,7 +128,7 @@ export function watchResource(
     function onWatchResponse(res: IncomingMessage) {
         if (res.statusCode === HTTP_STATUS_OK) {
             if (process.env.LOG_WATCH) {
-                logger.info({ msg: 'watch start', kind })
+                logger.info({ ...{ msg: 'watch start', kind }, ...(options ?? {}) })
             }
             res.on('data', (chunk) => {
                 if (chunk instanceof Buffer) {
@@ -156,43 +158,13 @@ export function watchResource(
                 }
             }).on('end', () => {
                 if (process.env.LOG_WATCH) logger.info({ msg: 'watch stop', kind })
-                if (stopping) return
-                setTimeout(() => {
-                    watchResource(token, apiVersion, kind, options)
-                }, 1000)
+                // setTimeout(() => {
+                //     watchResource(token, apiVersion, kind, options)
+                // }, 1000)
             })
         } else {
             res.on('data', () => noop)
             res.on('end', () => noop)
-            switch (res.statusCode) {
-                case HTTP_STATUS_FORBIDDEN:
-                    logger.error({
-                        msg: 'watch error',
-                        error: STATUS_CODES[res.statusCode],
-                        code: res.statusCode,
-                        kind,
-                        apiVersion,
-                    })
-                    break
-                default:
-                    if (options.mightBeNotFound && res.statusCode === HTTP_STATUS_NOT_FOUND) {
-                        setTimeout(() => {
-                            watchResource(token, apiVersion, kind, options)
-                        }, 5 * 60 * 1000)
-                    } else {
-                        logger.error({
-                            msg: 'watch error',
-                            error: STATUS_CODES[res.statusCode],
-                            code: res.statusCode,
-                            kind,
-                            apiVersion,
-                        })
-                        setTimeout(() => {
-                            watchResource(token, apiVersion, kind, options)
-                        }, 1000)
-                    }
-                    break
-            }
         }
     }
 
@@ -212,13 +184,50 @@ export function watchResource(
         }
     }
 
+    function onClose(statusCode?: number) {
+        if (process.env.LOG_WATCH) logger.info({ msg: 'watch stop', kind })
+        if (stopping) return
+        switch (statusCode) {
+            case HTTP_STATUS_OK:
+                watchResource(token, apiVersion, kind, options)
+                break
+            case HTTP_STATUS_FORBIDDEN:
+                logger.error({
+                    msg: 'watch error',
+                    error: STATUS_CODES[statusCode],
+                    code: statusCode,
+                    kind,
+                    apiVersion,
+                })
+                break
+            default:
+                if (options?.mightBeNotFound && statusCode === HTTP_STATUS_NOT_FOUND) {
+                    setTimeout(() => {
+                        watchResource(token, apiVersion, kind, options)
+                    }, 5 * 60 * 1000)
+                } else {
+                    logger.error({
+                        msg: 'watch error',
+                        error: STATUS_CODES[statusCode],
+                        code: statusCode,
+                        kind,
+                        apiVersion,
+                    })
+                    setTimeout(() => {
+                        watchResource(token, apiVersion, kind, options)
+                    }, 1000)
+                }
+                break
+        }
+    }
+
     requestRetry({
         url,
         token,
         timeout: 4 * 60 * 1000 + Math.floor(Math.random() * 30 * 1000),
         onResponse: onWatchResponse,
         onError: onWatchError,
-        onClose: noop,
+        onClose: onClose,
         signal: abortController.signal,
     })
 

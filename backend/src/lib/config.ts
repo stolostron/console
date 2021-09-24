@@ -42,6 +42,11 @@ export async function loadConfigSettings(): Promise<void> {
                 // Do Nothing
             }
         }
+        for (const key in settings) {
+            if (key.startsWith('LOG_')) {
+                process.env[key] = settings[key]
+            }
+        }
         if (settings.LOG_LEVEL) {
             logger.level = settings.LOG_LEVEL
         }
