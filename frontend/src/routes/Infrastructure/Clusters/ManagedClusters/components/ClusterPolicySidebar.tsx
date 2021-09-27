@@ -212,7 +212,12 @@ function DetailsView(props: {
     function getExtraData() {
         const extraData = _.get(selectedReport, 'properties.extra_data', {})
         if (typeof extraData === 'string') {
-            return JSON.parse(extraData)
+            try {
+                return JSON.parse(extraData)
+            } catch (err) {
+                console.error(err)
+                return {}
+            }
         }
         return extraData
     }
