@@ -78,12 +78,14 @@ const CreateInfraEnv: React.FC = () => {
                         status: 'ERROR',
                         messages: [{ message: (err as unknown as Error).message }],
                     })
+                    return
                 }
-                return
             }
             try {
                 const promises = createResources.map((resource: any) => createResource(resource).promise)
-                await Promise.allSettled(promises)
+                // All resources must be resolved
+                await Promise.all(promises)
+
                 setCreationStatus({ status: 'DONE', messages: [] })
                 history.push(NavigationPath.infraEnvironments)
             } catch (err) {
