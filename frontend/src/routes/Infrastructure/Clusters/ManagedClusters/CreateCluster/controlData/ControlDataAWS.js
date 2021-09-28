@@ -592,9 +592,11 @@ export const AWSworkerInstanceTypes = [
     },
 ]
 
-export const getControlDataAWS = (includeAutomation = true) => {
-    if (includeAutomation) return [...controlDataAWS, ...automationControlData]
-    return [...controlDataAWS]
+export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true) => {
+    let controlData = [...controlDataAWS]
+    if (includeAwsPrivate) controlData.push(...awsPrivateControlData)
+    if (includeAutomation) controlData.push(...automationControlData)
+    return controlData
 }
 
 const controlDataAWS = [
@@ -821,6 +823,10 @@ const controlDataAWS = [
         title: 'Networking',
     },
     ...networkingControlData,
+    ...proxyControlData,
+]
+
+const awsPrivateControlData = [
     {
         id: 'privateAWS',
         type: 'step',
@@ -900,7 +906,7 @@ const controlDataAWS = [
                 id: 'endpointName',
                 type: 'text',
                 placeholder: 'creation.aws.serviceEndpointName.placeholder',
-                active: [],
+                active: '',
                 validation: VALIDATE_ALPHANUMERIC,
             },
             {
@@ -914,7 +920,6 @@ const controlDataAWS = [
             },
         ],
     },
-    ...proxyControlData,
 ]
 
 export default getControlDataAWS

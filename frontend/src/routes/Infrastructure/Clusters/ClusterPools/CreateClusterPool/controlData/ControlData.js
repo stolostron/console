@@ -73,7 +73,7 @@ const fixupControlsForClusterPool = (controlData) => {
 
     return controlData
 }
-const fixedUpAWS = fixupControlsForClusterPool(cloneDeep(getControlDataAWS(false)))
+const fixedUpAWS = fixupControlsForClusterPool(cloneDeep(getControlDataAWS(false, false)))
 const fixedUpGCP = fixupControlsForClusterPool(cloneDeep(getControlDataGCP(false)))
 const fixedUpAZR = fixupControlsForClusterPool(cloneDeep(getControlDataAZR(false)))
 
