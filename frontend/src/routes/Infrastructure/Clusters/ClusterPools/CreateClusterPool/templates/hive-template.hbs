@@ -21,6 +21,9 @@ metadata:
 spec:
   size: {{{size}}} ##size
   baseDomain: {{{baseDomain}}}  ##baseDomain
+{{#if singleNode}}
+  skipMachinePools: true
+{{/if}}
   installConfigSecretTemplateRef:
     name: {{{name}}}-install-config
 {{#if releaseImageReference}}
