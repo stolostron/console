@@ -192,63 +192,46 @@ export function LoadData(props: { children?: ReactNode }) {
     }
 
     useEffect(() => {
-        let eventDataQueue: WatchEvent[] | undefined = []
+        const eventQueue: WatchEvent[] = []
 
-        async function processEvents() {
-            if (!eventDataQueue) return
-            const dataToProcess = eventDataQueue
-            for (const kind in setters) {
+        function processEventQueue() {
+            if (eventQueue.length === 0) return
+
+            const kindsMap = eventQueue?.reduce((kindsMap, eventData) => {
+                const kind = eventData.object.kind
+                if (kind) {
+                    if (!kindsMap[kind]) kindsMap[kind] = []
+                    kindsMap[kind].push(eventData)
+                }
+                return kindsMap
+            }, {} as Record<string, WatchEvent[]>)
+            eventQueue.length = 0
+
+            for (const kind in kindsMap) {
                 const setter = setters[kind]
                 setter((resources) => {
                     const newResources = [...resources]
-                    for (const data of dataToProcess) {
-                        if (data.object?.kind === kind) {
-                            const index = newResources.findIndex(
-                                (resource) =>
-                                    resource.metadata?.name === data.object.metadata.name &&
-                                    resource.metadata?.namespace === data.object.metadata.namespace
-                            )
-                            switch (data.type) {
-                                case 'ADDED':
-                                case 'MODIFIED':
-                                    if (index !== -1) newResources[index] = data.object
-                                    else newResources.push(data.object)
-                                    break
-                                case 'DELETED':
-                                    if (index !== -1) newResources.splice(index, 1)
-                                    break
-                            }
+                    const watchEvents = kindsMap[kind]
+                    for (const watchEvent of watchEvents) {
+                        const index = newResources.findIndex(
+                            (resource) =>
+                                resource.metadata?.name === watchEvent.object.metadata.name &&
+                                resource.metadata?.namespace === watchEvent.object.metadata.namespace
+                        )
+                        switch (watchEvent.type) {
+                            case 'ADDED':
+                            case 'MODIFIED':
+                                if (index !== -1) newResources[index] = watchEvent.object
+                                else newResources.push(watchEvent.object)
+                                break
+                            case 'DELETED':
+                                if (index !== -1) newResources.splice(index, 1)
+                                break
                         }
                     }
                     return newResources
                 })
             }
-            eventDataQueue = undefined
-        }
-
-        function processEventData(data: WatchEvent): void {
-            if (!data.object) return
-            const setter = setters[data.object.kind]
-            if (!setter) return
-            setter((resources) => {
-                const newResources = [...resources]
-                const index = resources.findIndex(
-                    (resource) =>
-                        resource.metadata?.name === data.object.metadata.name &&
-                        resource.metadata?.namespace === data.object.metadata.namespace
-                )
-                switch (data.type) {
-                    case 'ADDED':
-                    case 'MODIFIED':
-                        if (index !== -1) newResources[index] = data.object
-                        else newResources.push(data.object)
-                        break
-                    case 'DELETED':
-                        if (index !== -1) newResources.splice(index, 1)
-                        break
-                }
-                return newResources
-            })
         }
 
         function processMessage(event: MessageEvent) {
@@ -259,14 +242,13 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 'ADDED':
                         case 'MODIFIED':
                         case 'DELETED':
-                            if (eventDataQueue) eventDataQueue.push(data)
-                            else processEventData(data)
+                            eventQueue.push(data)
                             break
                         case 'START':
-                            if (eventDataQueue === undefined) eventDataQueue = []
+                            eventQueue.length = 0
                             break
                         case 'LOADED':
-                            processEvents()
+                            processEventQueue()
                             setLoading(false)
                             break
                         case 'SETTINGS':
@@ -293,7 +275,10 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
         startWatch()
+
+        const timeout = setInterval(processEventQueue, 1000)
         return () => {
+            clearInterval(timeout)
             if (evtSource) evtSource.close()
         }
     }, [])
