@@ -34,7 +34,7 @@ export const getActiveCardID = (control, fetchData = {}) => {
     return null
 }
 
-export const getControlData = (warning, onControlSelect) => [
+export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate = false) => [
     ///////////////////////  container platform  /////////////////////////////////////
     {
         id: 'distStep',
@@ -60,7 +60,7 @@ export const getControlData = (warning, onControlSelect) => [
                 logo: <AwsLogo />,
                 title: 'cluster.create.aws.subtitle',
                 change: {
-                    insertControlData: getControlDataAWS(),
+                    insertControlData: getControlDataAWS(true, awsPrivateFeatureGate),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },

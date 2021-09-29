@@ -34,7 +34,13 @@ import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clusterCuratorsState, managedClusterSetsState, managedClustersState, secretsState } from '../../../../../atoms'
+import {
+    clusterCuratorsState,
+    managedClusterSetsState,
+    managedClustersState,
+    secretsState,
+    settingsState,
+} from '../../../../../atoms'
 import { nockCreate, nockGet, nockIgnoreRBAC, nockList, nockPatch } from '../../../../../lib/nock-util'
 import {
     clickByLabel,
@@ -885,6 +891,11 @@ describe('CreateCluster', () => {
                         providerConnectionAws as Secret,
                     ])
                     snapshot.set(clusterCuratorsState, mockClusterCurators)
+                    snapshot.set(settingsState, {
+                        ansibleIntegration: 'enabled',
+                        singleNodeOpenshift: 'enabled',
+                        awsPrivateWizardStep: 'enabled',
+                    })
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
