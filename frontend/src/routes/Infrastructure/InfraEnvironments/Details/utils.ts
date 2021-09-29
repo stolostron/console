@@ -16,9 +16,9 @@ const appendPatch = (patches: any, path: string, newVal: object | string | boole
 }
 
 export type ModalProps = {
-    bmh: CIM.BareMetalHostK8sResource
-    nmState: CIM.NMStateK8sResource
-    secret: CIM.SecretK8sResource
+    bmh?: CIM.BareMetalHostK8sResource
+    nmState?: CIM.NMStateK8sResource
+    secret?: CIM.SecretK8sResource
 }
 
 export const onEditBMH =
@@ -26,8 +26,8 @@ export const onEditBMH =
         let newSecret
         if (editModal?.secret) {
             const patches: any[] = []
-            appendPatch(patches, '/data/username', values.username, atob(editModal.secret.data.username))
-            appendPatch(patches, '/data/password', values.password, atob(editModal.secret.data.password))
+            appendPatch(patches, '/data/username', btoa(values.username), editModal.secret.data.username)
+            appendPatch(patches, '/data/password', btoa(values.password), editModal.secret.data.password)
             if (patches.length) {
                 await patchResource(editModal.secret, patches).promise
             }
@@ -43,7 +43,7 @@ export const onEditBMH =
             if (patches.length) {
                 await patchResource(editModal.nmState, patches).promise
             }
-        } else {
+        } else if (nmState) {
             await createResource<any>(nmState).promise
         }
 
