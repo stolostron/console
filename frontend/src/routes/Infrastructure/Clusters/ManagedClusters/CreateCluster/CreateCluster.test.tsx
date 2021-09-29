@@ -1215,14 +1215,11 @@ describe('CreateCluster', () => {
         await clickByText('Next')
         await typeByText('Hosted Zone', 'aws-hosted-zone.com')
         await typeByPlaceholderText('creation.aws.ami.placeholder', 'ami-0876eacb38191e91f')
-
         await clickByText('creation.aws.subnet.subtitle')
         await typeByPlaceholderText('creation.aws.subnetID.placeholder', 'subnet-02216dd4dae7c45d0')
-
         await clickByText('creation.aws.serviceEndpoint.subtitle')
         await typeByPlaceholderText('creation.aws.serviceEndpointName.placeholder', 'endpoint-1')
         await typeByPlaceholderText('creation.aws.serviceEndpointUrl.placeholder', 'aws.endpoint-1.com')
-
         await clickByText('Next')
 
         // skipping proxy
