@@ -16,7 +16,6 @@ export const SubmarinerConfigDefinition: IResourceDefinition = {
 
 export enum CableDriver {
     libreswan = 'libreswan',
-    wireguard = 'wireguard',
     vxlan = 'vxlan',
 }
 
