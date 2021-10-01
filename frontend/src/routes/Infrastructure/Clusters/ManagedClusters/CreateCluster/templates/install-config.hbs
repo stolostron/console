@@ -251,6 +251,28 @@ platform:
 {{#case 'AWS'}}
   aws:
     region: {{{../../region}}}
+    {{#if ../../subnetID}}
+    subnets:
+      {{#each ../../subnetID}}
+        - {{{.}}}
+      {{/each}}
+    {{/if}}
+    {{#if ../../subnetID}}
+    serviceEndpoints:
+      {{#each ../../serviceEndpoints}}
+      - name: '{{{endpointName}}}'
+        url: '{{{endpointURL}}}'
+      {{/each}}
+    {{/if}}
+    {{#if ../../hostedZone}}
+    hostedZone: {{{../../hostedZone}}}
+    {{/if}}
+    {{#if ../../amiID}}
+    amiID: {{{../../amiID}}}
+    {{/if}}
+{{#if ../../hostedZone}}
+publish: Internal
+{{/if}}
 {{/case}}
 
 {{#case 'GCP'}}
