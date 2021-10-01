@@ -262,7 +262,7 @@
     "creation.aws.hostedZone.placeholder": "Enter hosted zone ID",
     "creation.aws.ami.tooltip": "The ID of the AMI used to boot machines for the cluster. If set, the AMI must belong to the same region as the cluster.",
     "creation.aws.ami.placeholder": "Enter amiID",
-    "creation.aws.subnet.subtitle": "Subets",
+    "creation.aws.subnet.subtitle": "Subnets",
     "creation.aws.subnet.info": "Specify subnets for each availability zone that your cluster uses.",
     "creation.aws.subnetID.tooltip": "If you provide your own VPC, specify subnets for each availability zone that your cluster uses.",
     "creation.aws.subnetID.placeholder": "Enter one or more subnet IDs",
