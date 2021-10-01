@@ -678,7 +678,7 @@ const controlDataAWS = [
         onSelect: setAWSZones,
         reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
-    ///////////////////////  master pool  /////////////////////////////////////
+    ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
         type: 'group',
@@ -689,13 +689,13 @@ const controlDataAWS = [
                 type: 'section',
                 collapsable: true,
                 collapsed: true,
-                subtitle: 'creation.ocp.node.master.pool.title',
-                info: 'creation.ocp.node.master.pool.info',
+                subtitle: 'creation.ocp.node.controlplane.pool.title',
+                info: 'creation.ocp.node.controlplane.pool.info',
             },
             ///////////////////////  zone  /////////////////////////////////////
             {
                 name: 'creation.ocp.zones',
-                tooltip: 'tooltip.creation.ocp.master.zones',
+                tooltip: 'tooltip.creation.ocp.controlplane.zones',
                 id: 'masterZones',
                 type: 'multiselect',
                 available: [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],

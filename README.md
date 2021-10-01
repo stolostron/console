@@ -125,7 +125,7 @@ In some cases there are development preview (Dev Preview) features or technical 
 
 ### Single node OpenShift
 
-Enabling this feature will allow the user to create a cluster that only contains a single master node.  This option is only available for providers AWS, Azure, GCP, OpenStack and VMware when the OpenShift release image is version 4.8 or higher.
+Enabling this feature will allow the user to create a cluster that only contains a single control plane node.  This option is only available for providers AWS, Azure, GCP, OpenStack and VMware when the OpenShift release image is version 4.8 or higher.
 
 ## References
 
