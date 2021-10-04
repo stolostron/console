@@ -158,4 +158,6 @@ export const onSaveNetworking = async (
 }
 
 export const getAIConfigMap = (configMaps: ConfigMap[]) =>
-    configMaps.find((cm) => cm.metadata.name === 'assisted-service' && cm.metadata.namespace === 'assisted-installer')
+    configMaps.find(
+        (cm) => cm.metadata.name === 'assisted-service-config' && cm.metadata.namespace === 'assisted-installer'
+    )

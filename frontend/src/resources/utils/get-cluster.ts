@@ -700,8 +700,9 @@ export function getClusterStatus(
             return { status: ccStatus, statusMessage }
         } else if (clusterDeployment) {
             // when curator is no longer installing, catch the prehook/posthook failure here
-
-            if (
+            if (clusterDeployment.metadata.deletionTimestamp) {
+                ccStatus = ClusterStatus.destroying
+            } else if (
                 checkCuratorConditionFailed(CuratorCondition.curatorjob, ccConditions) &&
                 checkCuratorLatestFailedOperation(CuratorCondition.install, ccConditions) &&
                 (checkCuratorConditionFailed(CuratorCondition.prehook, ccConditions) ||

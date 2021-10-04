@@ -24,7 +24,13 @@ import HostsTab from './HostsTab'
 import { ResourceError, createResource, patchResource } from '../../../../resources'
 import { agentsState, bareMetalHostsState } from '../../../../atoms'
 
-const { AddHostModal, getBareMetalHostCredentialsSecret, getBareMetalHost, InfraEnvHostsTabAgentsWarning } = CIM
+const {
+    AddHostModal,
+    getBareMetalHostCredentialsSecret,
+    getBareMetalHost,
+    InfraEnvHostsTabAgentsWarning,
+    INFRAENV_AGENTINSTALL_LABEL_KEY,
+} = CIM
 
 type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -43,8 +49,16 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     )
 
     const [agents, bareMetalHosts] = useRecoilValue(waitForAll([agentsState, bareMetalHostsState]))
-    const infraAgents = agents.filter((a) =>
-        isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+    const infraAgents = agents.filter(
+        (a) =>
+            a.metadata.namespace === infraEnv?.metadata?.namespace &&
+            isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+    )
+
+    const infraBMHs = bareMetalHosts.filter(
+        (bmh) =>
+            bmh.metadata.namespace === infraEnv?.metadata?.namespace &&
+            bmh.metadata.labels?.[INFRAENV_AGENTINSTALL_LABEL_KEY] === infraEnv?.metadata?.name
     )
 
     if (!infraEnv) {
@@ -120,7 +134,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                             <DetailsTab infraEnv={infraEnv} />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentHosts}>
-                            <HostsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={bareMetalHosts} />
+                            <HostsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentDetails}>
                             <Redirect

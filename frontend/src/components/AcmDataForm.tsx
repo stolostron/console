@@ -1103,6 +1103,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             return (
                 <SelectWithToggle
                     {...inputProps}
+                    toggleId={`${input.id}-input-toggle`}
                     selections={selections}
                     onSelect={onSelect}
                     onClear={onClear}

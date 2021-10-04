@@ -22,7 +22,7 @@ export const DOC_LINKS = {
     CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/managedclustersets`,
     CLUSTER_POOLS: `${DOC_BASE_PATH}/clusters/managing-cluster-pools`,
     CLUSTER_CLAIMS: `${DOC_BASE_PATH}/clusters/managing-cluster-pools#claiming-clusters-from-cluster-pools`,
-    SUBMARINER: `${DOC_BASE_PATH}/services/submariner`,
+    SUBMARINER: `${DOC_BASE_PATH}/services/services-overview#submariner`,
     DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/discovery-intro`,
     MACHINE_POOLS: `${DOC_BASE_PATH}/clusters/resizing-a-cluster`,
     ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/ansible-config-cluster`,
