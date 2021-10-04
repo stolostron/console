@@ -1,9 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { AcmRoute } from '@open-cluster-management/ui-components'
+import { CIM } from 'openshift-assisted-ui-lib'
+import { Fragment, ReactNode, useEffect, useState } from 'react'
+import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
+import { LoadingPage } from './components/LoadingPage'
 import {
+    AgentClusterInstallKind,
+    AgentKind,
     AnsibleJob,
     AnsibleJobKind,
     BareMetalAsset,
     BareMetalAssetKind,
+    BareMetalHostKind,
     CertificateSigningRequest,
     CertificateSigningRequestKind,
     ClusterClaim,
@@ -26,6 +34,7 @@ import {
     DiscoveredClusterKind,
     DiscoveryConfig,
     DiscoveryConfigKind,
+    InfraEnvKind,
     MachinePool,
     MachinePoolKind,
     ManagedCluster,
@@ -48,19 +57,17 @@ import {
     SecretKind,
     SubmarinerConfig,
     SubmarinerConfigKind,
-    AgentClusterInstallKind,
-    AgentKind,
-    InfraEnvKind,
-    BareMetalHostKind,
 } from './resources'
-import { AcmRoute } from '@open-cluster-management/ui-components'
-import { Fragment, ReactNode, useEffect, useState } from 'react'
-import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { LoadingPage } from './components/LoadingPage'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
+export const agentClusterInstallsState = atom<CIM.AgentClusterInstallK8sResource[]>({
+    key: 'agentclusterinstalls',
+    default: [],
+})
+export const agentsState = atom<CIM.AgentK8sResource[]>({ key: 'agents', default: [] })
+export const ansibleJobState = atom<AnsibleJob[]>({ key: 'ansiblejobs', default: [] })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
+export const bareMetalHostsState = atom<CIM.BareMetalHostK8sResource[]>({ key: 'baremetalhosts', default: [] })
 export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>({
     key: 'certificateSigningRequests',
     default: [],
@@ -69,38 +76,31 @@ export const clusterClaimsState = atom<ClusterClaim[]>({ key: 'clusterClaims', d
 export const clusterCuratorsState = atom<ClusterCurator[]>({ key: 'clusterCurators', default: [] })
 export const clusterDeploymentsState = atom<ClusterDeployment[]>({ key: 'clusterDeployments', default: [] })
 export const clusterImageSetsState = atom<ClusterImageSet[]>({ key: 'clusterImageSets', default: [] })
-export const clusterPoolsState = atom<ClusterPool[]>({ key: 'clusterPools', default: [] })
-export const clusterProvisionsState = atom<ClusterProvision[]>({ key: 'clusterProvisions', default: [] })
 export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     key: 'clusterManagementAddons',
     default: [],
 })
+export const clusterPoolsState = atom<ClusterPool[]>({ key: 'clusterPools', default: [] })
+export const clusterProvisionsState = atom<ClusterProvision[]>({ key: 'clusterProvisions', default: [] })
 export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
-export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
 export const discoveredClusterState = atom<DiscoveredCluster[]>({ key: 'discoveredClusters', default: [] })
+export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
+export const infraEnvironmentsState = atom<CIM.InfraEnvK8sResource[]>({ key: 'infraenvs', default: [] })
 export const machinePoolsState = atom<MachinePool[]>({ key: 'machinePools', default: [] })
-export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
-export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
 export const managedClusterSetBindingsState = atom<ManagedClusterSetBinding[]>({
     key: 'managedClusterSetBindings',
     default: [],
 })
+export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
+export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
 export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const policyreportState = atom<PolicyReport[]>({ key: 'policyreports', default: [] })
 export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 export const submarinerConfigsState = atom<SubmarinerConfig[]>({ key: 'submarinerconfigs', default: [] })
-export const ansibleJobState = atom<AnsibleJob[]>({ key: 'ansiblejobs', default: [] })
-export const agentClusterInstallsState = atom<CIM.AgentClusterInstallK8sResource[]>({
-    key: 'agentclusterinstalls',
-    default: [],
-})
-export const agentsState = atom<CIM.AgentK8sResource[]>({ key: 'agents', default: [] })
-export const infraEnvironmentsState = atom<CIM.InfraEnvK8sResource[]>({ key: 'infraenvs', default: [] })
-export const bareMetalHostsState = atom<CIM.BareMetalHostK8sResource[]>({ key: 'baremetalhosts', default: [] })
 
 interface Settings {
     LOG_LEVEL?: string
@@ -131,65 +131,65 @@ type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADE
 
 export function LoadData(props: { children?: ReactNode }) {
     const [loading, setLoading] = useState(true)
+    const [, setAgentClusterInstalls] = useRecoilState(agentClusterInstallsState)
+    const [, setAgents] = useRecoilState(agentsState)
+    const [, setAnsibleJobs] = useRecoilState(ansibleJobState)
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
+    const [, setBareMetalHosts] = useRecoilState(bareMetalHostsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [, setClusterClaims] = useRecoilState(clusterClaimsState)
     const [, setClusterCurators] = useRecoilState(clusterCuratorsState)
     const [, setClusterDeployments] = useRecoilState(clusterDeploymentsState)
-    const [, setClusterPools] = useRecoilState(clusterPoolsState)
-    const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setClusterImageSets] = useRecoilState(clusterImageSetsState)
     const [, setClusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
+    const [, setClusterPools] = useRecoilState(clusterPoolsState)
+    const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setConfigMaps] = useRecoilState(configMapsState)
-    const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
+    const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
+    const [, setInfraEnvironments] = useRecoilState(infraEnvironmentsState)
     const [, setMachinePools] = useRecoilState(machinePoolsState)
-    const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
-    const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
     const [, setManagedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
+    const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
+    const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
     const [, setSecrets] = useRecoilState(secretsState)
     const [, setSettings] = useRecoilState(settingsState)
     const [, setSubmarinerConfigs] = useRecoilState(submarinerConfigsState)
-    const [, setAnsibleJobs] = useRecoilState(ansibleJobState)
-    const [, setAgentClusterInstalls] = useRecoilState(agentClusterInstallsState)
-    const [, setAgents] = useRecoilState(agentsState)
-    const [, setInfraEnvironments] = useRecoilState(infraEnvironmentsState)
-    const [, setBareMetalHosts] = useRecoilState(bareMetalHostsState)
 
     const setters: Record<string, SetterOrUpdater<any[]>> = {
-        [AgentKind]: setAgents,
         [AgentClusterInstallKind]: setAgentClusterInstalls,
+        [AgentKind]: setAgents,
         [AnsibleJobKind]: setAnsibleJobs,
         [BareMetalAssetKind]: setBareMetalAssets,
+        [BareMetalHostKind]: setBareMetalHosts,
         [CertificateSigningRequestKind]: setCertificateSigningRequests,
         [ClusterClaimKind]: setClusterClaims,
         [ClusterCuratorKind]: setClusterCurators,
         [ClusterDeploymentKind]: setClusterDeployments,
         [ClusterImageSetKind]: setClusterImageSets,
+        [ClusterManagementAddOnKind]: setClusterManagementAddons,
         [ClusterPoolKind]: setClusterPools,
         [ClusterProvisionKind]: setClusterProvisions,
-        [ClusterManagementAddOnKind]: setClusterManagementAddons,
         [ConfigMapKind]: setConfigMaps,
-        [DiscoveryConfigKind]: setDiscoveryConfigs,
         [DiscoveredClusterKind]: setDiscoveredClusters,
+        [DiscoveryConfigKind]: setDiscoveryConfigs,
         [InfraEnvKind]: setInfraEnvironments,
         [MachinePoolKind]: setMachinePools,
-        [ManagedClusterKind]: setManagedClusters,
         [ManagedClusterAddOnKind]: setManagedClusterAddons,
         [ManagedClusterInfoKind]: setManagedClusterInfos,
-        [ManagedClusterSetKind]: setManagedClusterSets,
+        [ManagedClusterKind]: setManagedClusters,
         [ManagedClusterSetBindingKind]: setManagedClusterSetBindings,
+        [ManagedClusterSetKind]: setManagedClusterSets,
         [MultiClusterHubKind]: setMultiClusterHubs,
         [NamespaceKind]: setNamespaces,
         [PolicyReportKind]: setPolicyReports,
         [SecretKind]: setSecrets,
         [SubmarinerConfigKind]: setSubmarinerConfigs,
-        [BareMetalHostKind]: setBareMetalHosts,
     }
 
     useEffect(() => {
