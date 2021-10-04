@@ -79,7 +79,7 @@ export function startWatching(): void {
     watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs', { mightBeNotFound: true })
     watchResource(token, 'v1', 'configmaps', { fieldSelector: { 'metadata.name': 'insight-content-data' } })
     watchResource(token, 'v1', 'configmaps', {
-        fieldSelector: { 'metadata.namespace': 'assisted-installer', 'metadata.name': 'assisted-service-config' },
+        fieldSelector: { 'metadata.namespace': 'assisted-installer', 'metadata.name': 'assisted-service' },
     })
     watchResource(token, 'v1', 'configmaps', {
         fieldSelector: { 'metadata.namespace': 'openshift-config-managed', 'metadata.name': 'console-public' },
@@ -127,7 +127,7 @@ export function watchResource(
 
     function onWatchResponse(res: IncomingMessage) {
         if (res.statusCode === HTTP_STATUS_OK) {
-            if (process.env === "true") {
+            if (process.env.LOG_WATCH === 'true') {
                 logger.info({ ...{ msg: 'watch start', kind }, ...(options ?? {}) })
             }
             res.on('data', (chunk) => {
@@ -157,7 +157,7 @@ export function watchResource(
                     oldBuffer.fill(0)
                 }
             }).on('end', () => {
-                if (process.env.LOG_WATCH === "true") logger.info({ msg: 'watch stop', kind })
+                if (process.env.LOG_WATCH === 'true') logger.info({ msg: 'watch stop', kind })
                 // setTimeout(() => {
                 //     watchResource(token, apiVersion, kind, options)
                 // }, 1000)
@@ -185,7 +185,7 @@ export function watchResource(
     }
 
     function onClose(statusCode?: number) {
-        if (process.env.LOG_WATCH === "true") logger.info({ msg: 'watch stop', kind })
+        if (process.env.LOG_WATCH === 'true') logger.info({ msg: 'watch stop', kind })
         if (stopping) return
         switch (statusCode) {
             case HTTP_STATUS_OK:
