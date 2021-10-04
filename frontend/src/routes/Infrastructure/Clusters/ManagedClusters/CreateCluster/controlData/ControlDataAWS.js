@@ -741,6 +741,7 @@ const controlDataAWS = [
     {
         id: 'workerPools',
         type: 'group',
+        hidden: isHidden_SNO,
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',
