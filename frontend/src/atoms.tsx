@@ -1,61 +1,88 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmRoute } from '@open-cluster-management/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { Fragment, ReactNode, useEffect, useState } from 'react'
+import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import {
     AgentClusterInstallKind,
+    AgentClusterInstallVersion,
     AgentKind,
+    AgentKindVersion,
     AnsibleJob,
+    AnsibleJobApiVersion,
     AnsibleJobKind,
     BareMetalAsset,
+    BareMetalAssetApiVersion,
     BareMetalAssetKind,
+    BareMetalHostApiVersion,
     BareMetalHostKind,
     CertificateSigningRequest,
+    CertificateSigningRequestApiVersion,
     CertificateSigningRequestKind,
     ClusterClaim,
+    ClusterClaimApiVersion,
     ClusterClaimKind,
     ClusterCurator,
+    ClusterCuratorApiVersion,
     ClusterCuratorKind,
     ClusterDeployment,
+    ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
     ClusterImageSet,
+    ClusterImageSetApiVersion,
     ClusterImageSetKind,
     ClusterManagementAddOn,
+    ClusterManagementAddOnApiVersion,
     ClusterManagementAddOnKind,
     ClusterPool,
+    ClusterPoolApiVersion,
     ClusterPoolKind,
     ClusterProvision,
+    ClusterProvisionApiVersion,
     ClusterProvisionKind,
     ConfigMap,
+    ConfigMapApiVersion,
     ConfigMapKind,
     DiscoveredCluster,
+    DiscoveredClusterApiVersion,
     DiscoveredClusterKind,
     DiscoveryConfig,
+    DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
+    InfraEnvApiVersion,
     InfraEnvKind,
     MachinePool,
+    MachinePoolApiVersion,
     MachinePoolKind,
     ManagedCluster,
     ManagedClusterAddOn,
+    ManagedClusterAddOnApiVersion,
     ManagedClusterAddOnKind,
+    ManagedClusterApiVersion,
     ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
     ManagedClusterInfoKind,
     ManagedClusterKind,
     ManagedClusterSet,
+    ManagedClusterSetApiVersion,
     ManagedClusterSetBinding,
     ManagedClusterSetBindingKind,
     ManagedClusterSetKind,
     MultiClusterHub,
+    MultiClusterHubApiVersion,
     MultiClusterHubKind,
     Namespace,
+    NamespaceApiVersion,
     NamespaceKind,
     PolicyReport,
+    PolicyReportApiVersion,
     PolicyReportKind,
     Secret,
+    SecretApiVersion,
     SecretKind,
     SubmarinerConfig,
+    SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
 } from './resources'
 
@@ -161,36 +188,42 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setSettings] = useRecoilState(settingsState)
     const [, setSubmarinerConfigs] = useRecoilState(submarinerConfigsState)
 
-    const setters: Record<string, SetterOrUpdater<any[]>> = {
-        [AgentClusterInstallKind]: setAgentClusterInstalls,
-        [AgentKind]: setAgents,
-        [AnsibleJobKind]: setAnsibleJobs,
-        [BareMetalAssetKind]: setBareMetalAssets,
-        [BareMetalHostKind]: setBareMetalHosts,
-        [CertificateSigningRequestKind]: setCertificateSigningRequests,
-        [ClusterClaimKind]: setClusterClaims,
-        [ClusterCuratorKind]: setClusterCurators,
-        [ClusterDeploymentKind]: setClusterDeployments,
-        [ClusterImageSetKind]: setClusterImageSets,
-        [ClusterManagementAddOnKind]: setClusterManagementAddons,
-        [ClusterPoolKind]: setClusterPools,
-        [ClusterProvisionKind]: setClusterProvisions,
-        [ConfigMapKind]: setConfigMaps,
-        [DiscoveredClusterKind]: setDiscoveredClusters,
-        [DiscoveryConfigKind]: setDiscoveryConfigs,
-        [InfraEnvKind]: setInfraEnvironments,
-        [MachinePoolKind]: setMachinePools,
-        [ManagedClusterAddOnKind]: setManagedClusterAddons,
-        [ManagedClusterInfoKind]: setManagedClusterInfos,
-        [ManagedClusterKind]: setManagedClusters,
-        [ManagedClusterSetBindingKind]: setManagedClusterSetBindings,
-        [ManagedClusterSetKind]: setManagedClusterSets,
-        [MultiClusterHubKind]: setMultiClusterHubs,
-        [NamespaceKind]: setNamespaces,
-        [PolicyReportKind]: setPolicyReports,
-        [SecretKind]: setSecrets,
-        [SubmarinerConfigKind]: setSubmarinerConfigs,
-    }
+    const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
+        const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
+        function addSetter(apiVersion: string, kind: string, setter: SetterOrUpdater<any[]>) {
+            if (!setters[apiVersion]) setters[apiVersion] = {}
+            setters[apiVersion][kind] = setter
+        }
+        addSetter(AgentClusterInstallVersion, AgentClusterInstallKind, setAgentClusterInstalls)
+        addSetter(AgentKindVersion, AgentKind, setAgents)
+        addSetter(AnsibleJobApiVersion, AnsibleJobKind, setAnsibleJobs)
+        addSetter(BareMetalAssetApiVersion, BareMetalAssetKind, setBareMetalAssets)
+        addSetter(BareMetalHostApiVersion, BareMetalHostKind, setBareMetalHosts)
+        addSetter(CertificateSigningRequestApiVersion, CertificateSigningRequestKind, setCertificateSigningRequests)
+        addSetter(ClusterClaimApiVersion, ClusterClaimKind, setClusterClaims)
+        addSetter(ClusterCuratorApiVersion, ClusterCuratorKind, setClusterCurators)
+        addSetter(ClusterDeploymentApiVersion, ClusterDeploymentKind, setClusterDeployments)
+        addSetter(ClusterImageSetApiVersion, ClusterImageSetKind, setClusterImageSets)
+        addSetter(ClusterManagementAddOnApiVersion, ClusterManagementAddOnKind, setClusterManagementAddons)
+        addSetter(ClusterPoolApiVersion, ClusterPoolKind, setClusterPools)
+        addSetter(ClusterProvisionApiVersion, ClusterProvisionKind, setClusterProvisions)
+        addSetter(ConfigMapApiVersion, ConfigMapKind, setConfigMaps)
+        addSetter(DiscoveredClusterApiVersion, DiscoveredClusterKind, setDiscoveredClusters)
+        addSetter(DiscoveryConfigApiVersion, DiscoveryConfigKind, setDiscoveryConfigs)
+        addSetter(InfraEnvApiVersion, InfraEnvKind, setInfraEnvironments)
+        addSetter(MachinePoolApiVersion, MachinePoolKind, setMachinePools)
+        addSetter(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons)
+        addSetter(ManagedClusterInfoApiVersion, ManagedClusterInfoKind, setManagedClusterInfos)
+        addSetter(ManagedClusterApiVersion, ManagedClusterKind, setManagedClusters)
+        addSetter(ManagedClusterSetApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
+        addSetter(ManagedClusterApiVersion, ManagedClusterSetKind, setManagedClusterSets)
+        addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
+        addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
+        addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
+        addSetter(SecretApiVersion, SecretKind, setSecrets)
+        addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
+        return setters
+    }, [])
 
     useEffect(() => {
         const eventQueue: WatchEvent[] = []
@@ -198,40 +231,46 @@ export function LoadData(props: { children?: ReactNode }) {
         function processEventQueue() {
             if (eventQueue.length === 0) return
 
-            const kindsMap = eventQueue?.reduce((kindsMap, eventData) => {
+            const resourceTypeMap = eventQueue?.reduce((resourceTypeMap, eventData) => {
+                const apiVersion = eventData.object.apiVersion
                 const kind = eventData.object.kind
-                if (kind) {
-                    if (!kindsMap[kind]) kindsMap[kind] = []
-                    kindsMap[kind].push(eventData)
-                }
-                return kindsMap
-            }, {} as Record<string, WatchEvent[]>)
+                if (!resourceTypeMap[apiVersion]) resourceTypeMap[apiVersion] = {}
+                if (!resourceTypeMap[apiVersion][kind]) resourceTypeMap[apiVersion][kind] = []
+                resourceTypeMap[apiVersion][kind].push(eventData)
+                return resourceTypeMap
+            }, {} as Record<string, Record<string, WatchEvent[]>>)
             eventQueue.length = 0
 
-            for (const kind in kindsMap) {
-                const setter = setters[kind]
-                setter((resources) => {
-                    const newResources = [...resources]
-                    const watchEvents = kindsMap[kind]
-                    for (const watchEvent of watchEvents) {
-                        const index = newResources.findIndex(
-                            (resource) =>
-                                resource.metadata?.name === watchEvent.object.metadata.name &&
-                                resource.metadata?.namespace === watchEvent.object.metadata.namespace
-                        )
-                        switch (watchEvent.type) {
-                            case 'ADDED':
-                            case 'MODIFIED':
-                                if (index !== -1) newResources[index] = watchEvent.object
-                                else newResources.push(watchEvent.object)
-                                break
-                            case 'DELETED':
-                                if (index !== -1) newResources.splice(index, 1)
-                                break
-                        }
+            for (const apiVersion in resourceTypeMap) {
+                for (const kind in resourceTypeMap[apiVersion]) {
+                    const setter = setters[apiVersion]?.[kind]
+                    if (setter) {
+                        setter((resources) => {
+                            const newResources = [...resources]
+                            const watchEvents = resourceTypeMap[apiVersion][kind]
+                            if (watchEvents) {
+                                for (const watchEvent of watchEvents) {
+                                    const index = newResources.findIndex(
+                                        (resource) =>
+                                            resource.metadata?.name === watchEvent.object.metadata.name &&
+                                            resource.metadata?.namespace === watchEvent.object.metadata.namespace
+                                    )
+                                    switch (watchEvent.type) {
+                                        case 'ADDED':
+                                        case 'MODIFIED':
+                                            if (index !== -1) newResources[index] = watchEvent.object
+                                            else newResources.push(watchEvent.object)
+                                            break
+                                        case 'DELETED':
+                                            if (index !== -1) newResources.splice(index, 1)
+                                            break
+                                    }
+                                }
+                            }
+                            return newResources
+                        })
                     }
-                    return newResources
-                })
+                }
             }
         }
 
