@@ -838,7 +838,9 @@ export function AcmDataFormInputs(props: {
                                 isRequired={input.isRequired}
                                 helperTextInvalid={
                                     <Split>
-                                        <SplitItem isFilled>{error}</SplitItem>
+                                        <SplitItem isFilled>
+                                            <span className="pf-c-form__helper-text pf-m-error">{error}</span>
+                                        </SplitItem>
                                         {input.prompt && (
                                             <SplitItem>
                                                 <AcmButton
@@ -863,7 +865,9 @@ export function AcmDataFormInputs(props: {
                                 validated={validated}
                                 helperText={
                                     <Split>
-                                        <SplitItem isFilled>{input.helperText}</SplitItem>
+                                        <SplitItem isFilled>
+                                            <span className="pf-c-form__helper-text">{input.helperText}</span>
+                                        </SplitItem>
                                         {input.prompt && (
                                             <SplitItem>
                                                 <AcmButton
