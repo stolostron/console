@@ -86,6 +86,7 @@ export function startWatching(): void {
     })
     watchResource(token, 'v1', 'namespaces')
     watchResource(token, 'v1', 'secrets', { labelSelector: { 'cluster.open-cluster-management.io/credentials': '' } })
+    watchResource(token, 'v1', 'secrets', { fieldSelector: { 'metadata.name': 'auto-import-secret' } })
     watchResource(token, 'wgpolicyk8s.io/v1alpha2', 'policyreports')
 }
 
