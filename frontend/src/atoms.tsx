@@ -277,7 +277,7 @@ export function LoadData(props: { children?: ReactNode }) {
         }
         startWatch()
 
-        const timeout = setInterval(processEventQueue, 1000)
+        const timeout = setInterval(processEventQueue, 500)
         return () => {
             clearInterval(timeout)
             if (evtSource) evtSource.close()
