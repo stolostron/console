@@ -127,7 +127,7 @@ export function watchResource(
 
     function onWatchResponse(res: IncomingMessage) {
         if (res.statusCode === HTTP_STATUS_OK) {
-            if (process.env.LOG_WATCH) {
+            if (process.env === "true") {
                 logger.info({ ...{ msg: 'watch start', kind }, ...(options ?? {}) })
             }
             res.on('data', (chunk) => {
@@ -157,7 +157,7 @@ export function watchResource(
                     oldBuffer.fill(0)
                 }
             }).on('end', () => {
-                if (process.env.LOG_WATCH) logger.info({ msg: 'watch stop', kind })
+                if (process.env.LOG_WATCH === "true") logger.info({ msg: 'watch stop', kind })
                 // setTimeout(() => {
                 //     watchResource(token, apiVersion, kind, options)
                 // }, 1000)
@@ -185,7 +185,7 @@ export function watchResource(
     }
 
     function onClose(statusCode?: number) {
-        if (process.env.LOG_WATCH) logger.info({ msg: 'watch stop', kind })
+        if (process.env.LOG_WATCH === "true") logger.info({ msg: 'watch stop', kind })
         if (stopping) return
         switch (statusCode) {
             case HTTP_STATUS_OK:
