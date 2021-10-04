@@ -34,14 +34,22 @@ import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clusterCuratorsState, managedClusterSetsState, managedClustersState, secretsState } from '../../../../../atoms'
+import {
+    clusterCuratorsState,
+    managedClusterSetsState,
+    managedClustersState,
+    secretsState,
+    settingsState,
+} from '../../../../../atoms'
 import { nockCreate, nockGet, nockIgnoreRBAC, nockList, nockPatch } from '../../../../../lib/nock-util'
 import {
     clickByLabel,
     clickByPlaceholderText,
     clickByTestId,
     clickByText,
+    typeByPlaceholderText,
     typeByTestId,
+    typeByText,
     waitForLabelText,
     waitForNocks,
     waitForText,
@@ -355,6 +363,24 @@ const mockInstallConfigSecret = {
     data: {
         'install-config.yaml':
             'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogdGVzdApiYXNlRG9tYWluOiBiYXNlLmRvbWFpbgpjb250cm9sUGxhbmU6CiAgbmFtZTogbWFzdGVyCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGJhcmVtZXRhbDoge30KY29tcHV0ZToKICAtIG5hbWU6IHdvcmtlcgogICAgcmVwbGljYXM6IDIKbmV0d29ya2luZzoKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgY2x1c3Rlck5ldHdvcms6CiAgICAtIGNpZHI6IDEwLjEyOC4wLjAvMTQKICAgICAgaG9zdFByZWZpeDogMjMKICBtYWNoaW5lTmV0d29yazoKICAgIC0gY2lkcjogMTAuMC4wLjAvMTYKICBzZXJ2aWNlTmV0d29yazoKICAgIC0gMTcyLjMwLjAuMC8xNgpwbGF0Zm9ybToKICBiYXJlbWV0YWw6CiAgICBsaWJ2aXJ0VVJJOiBxZW11K3NzaDovL2xpYnZpcnRVUkkKICAgIHByb3Zpc2lvbmluZ05ldHdvcmtDSURSOiAxMC40LjUuMwogICAgcHJvdmlzaW9uaW5nTmV0d29ya0ludGVyZmFjZTogZW5wMXMwCiAgICBwcm92aXNpb25pbmdCcmlkZ2U6IHByb3Zpc2lvbmluZwogICAgZXh0ZXJuYWxCcmlkZ2U6IGJhcmVtZXRhbAogICAgYXBpVklQOiBudWxsCiAgICBpbmdyZXNzVklQOiBudWxsCiAgICBib290c3RyYXBPU0ltYWdlOiBib290c3RyYXBPU0ltYWdlCiAgICBjbHVzdGVyT1NJbWFnZTogY2x1c3Rlck9TSW1hZ2UKICAgIGhvc3RzOgogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC0wCiAgICAgICAgbmFtZXNwYWNlOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlCiAgICAgICAgcm9sZTogbWFzdGVyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogZXhhbXBsZS5jb206ODAKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTEKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiBleGFtcGxlLmNvbTo4MAogICAgICAgICAgZGlzYWJsZUNlcnRpZmljYXRlVmVyaWZpY2F0aW9uOiB0cnVlCiAgICAgICAgICB1c2VybmFtZTogdGVzdAogICAgICAgICAgcGFzc3dvcmQ6IHRlc3QKICAgICAgICBib290TUFDQWRkcmVzczogMDA6OTA6N0Y6MTI6REU6N0YKICAgICAgICBoYXJkd2FyZVByb2ZpbGU6IGRlZmF1bHQKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMgogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IG1hc3RlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6IGV4YW1wbGUuY29tOjgwCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC0zCiAgICAgICAgbmFtZXNwYWNlOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlCiAgICAgICAgcm9sZTogd29ya2VyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogZXhhbXBsZS5jb206ODAKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTQKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiB3b3JrZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiBleGFtcGxlLmNvbTo4MAogICAgICAgICAgZGlzYWJsZUNlcnRpZmljYXRlVmVyaWZpY2F0aW9uOiB0cnVlCiAgICAgICAgICB1c2VybmFtZTogbnVsbAogICAgICAgICAgcGFzc3dvcmQ6IG51bGwKICAgICAgICBib290TUFDQWRkcmVzczogMDA6OTA6N0Y6MTI6REU6N0YKICAgICAgICBoYXJkd2FyZVByb2ZpbGU6IGRlZmF1bHQKcHVsbFNlY3JldDogJycKc3NoS2V5OiBzc2gtcnNhIEFBQUFCMSBmYWtlQGVtYWlsLmNvbQphZGRpdGlvbmFsVHJ1c3RCdW5kbGU6IHwtCiAgLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCiAgY2VydGRhdGEKICAtLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCmltYWdlQ29udGVudFNvdXJjZXM6CiAgLSBtaXJyb3JzOgogICAgICAtIGltYWdlLm1pcnJvcjoxMjMvYWJjCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlLW5pZ2h0bHkKICAtIG1pcnJvcnM6CiAgICAgIC0gaW1hZ2UubWlycm9yOjEyMy9hYmMKICAgIHNvdXJjZTogcXVheS5pby9vcGVuc2hpZnQtcmVsZWFzZS1kZXYvb2NwLXJlbGVhc2UKICAtIG1pcnJvcnM6CiAgICAgIC0gaW1hZ2UubWlycm9yOjEyMy9hYmMKICAgIHNvdXJjZTogcXVheS5pby9vcGVuc2hpZnQtcmVsZWFzZS1kZXYvb2NwLXY0LjAtYXJ0LWRldgo=',
+    },
+}
+
+const mockInstallConfigSecretPrivate = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+        name: 'test-install-config',
+        namespace: 'test',
+        labels: {
+            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnection.metadata.namespace!,
+            'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionAws',
+        },
+    },
+    type: 'Opaque',
+    data: {
+        'install-config.yaml':
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluCmNvbnRyb2xQbGFuZToKICBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6IG1hc3RlcgogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogNDAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKY29tcHV0ZToKLSBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6ICd3b3JrZXInCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGF3czoKICAgICAgcm9vdFZvbHVtZToKICAgICAgICBpb3BzOiAyMDAwCiAgICAgICAgc2l6ZTogMTAwCiAgICAgICAgdHlwZTogaW8xCiAgICAgIHR5cGU6IG01LnhsYXJnZQpuZXR3b3JraW5nOgogIG5ldHdvcmtUeXBlOiBPcGVuU2hpZnRTRE4KICBjbHVzdGVyTmV0d29yazoKICAtIGNpZHI6IDEwLjEyOC4wLjAvMTQKICAgIGhvc3RQcmVmaXg6IDIzCiAgbWFjaGluZU5ldHdvcms6CiAgLSBjaWRyOiAxMC4wLjAuMC8xNgogIHNlcnZpY2VOZXR3b3JrOgogIC0gMTcyLjMwLjAuMC8xNgpwbGF0Zm9ybToKICBhd3M6CiAgICByZWdpb246IHVzLWVhc3QtMQogICAgc3VibmV0czoKICAgICAgICAtIHN1Ym5ldC0wMjIxNmRkNGRhZTdjNDVkMAogICAgc2VydmljZUVuZHBvaW50czoKICAgICAgLSBuYW1lOiAnZW5kcG9pbnQtMScKICAgICAgICB1cmw6ICdhd3MuZW5kcG9pbnQtMS5jb20nCiAgICBob3N0ZWRab25lOiBhd3MtaG9zdGVkLXpvbmUuY29tCiAgICBhbWlJRDogYW1pLTA4NzZlYWNiMzgxOTFlOTFmCnB1Ymxpc2g6IEludGVybmFsCnB1bGxTZWNyZXQ6ICIiICMgc2tpcCwgaGl2ZSB3aWxsIGluamVjdCBiYXNlZCBvbiBpdCdzIHNlY3JldHMKc3NoS2V5OiB8LQogICAgc3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20K',
     },
 }
 
@@ -865,6 +891,11 @@ describe('CreateCluster', () => {
                         providerConnectionAws as Secret,
                     ])
                     snapshot.set(clusterCuratorsState, mockClusterCurators)
+                    snapshot.set(settingsState, {
+                        ansibleIntegration: 'enabled',
+                        singleNodeOpenshift: 'enabled',
+                        awsPrivateWizardStep: 'enabled',
+                    })
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
@@ -1122,6 +1153,9 @@ describe('CreateCluster', () => {
         // step 5 -- the network
         await clickByText('Next')
 
+        // skipping private configuration
+        await clickByText('Next')
+
         // skipping proxy
         await clickByText('Next')
 
@@ -1148,6 +1182,81 @@ describe('CreateCluster', () => {
         await clickByText('Create')
 
         // expect(consoleInfos).hasNoConsoleLogs()
+        await waitForText('success.create.creating')
+
+        // make sure creating
+        await waitForNocks(createNocks)
+    })
+
+    test('can create AWS cluster with private configuration', async () => {
+        window.scrollBy = () => {}
+
+        const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
+
+        // create the form
+        const { container } = render(<Component />)
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        // step 1 -- the infrastructure
+        await clickByTestId('cluster.create.aws.subtitle')
+
+        // wait for tables/combos to fill in
+        await waitForNocks(initialNocks)
+
+        // connection
+        await clickByPlaceholderText('creation.ocp.cloud.select.connection')
+        //screen.debug(debug(), 2000000)
+        await clickByText(providerConnectionAws.metadata.name!)
+        await clickByText('Next')
+
+        // step 2 -- the name and imageset
+        await typeByTestId('eman', clusterName!)
+        await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
+        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+        await clickByText('Next')
+
+        // step 3 -- nodes
+        await clickByText('Next')
+
+        // step 5 -- the network
+        await clickByText('Next')
+
+        // private configuration
+        await clickByText('Next')
+        await typeByText('Hosted Zone', 'aws-hosted-zone.com')
+        await typeByPlaceholderText('creation.aws.ami.placeholder', 'ami-0876eacb38191e91f')
+        await clickByText('creation.aws.subnet.subtitle')
+        await typeByPlaceholderText('creation.aws.subnetID.placeholder', 'subnet-02216dd4dae7c45d0')
+        await clickByText('creation.aws.serviceEndpoint.subtitle')
+        await typeByPlaceholderText('creation.aws.serviceEndpointName.placeholder', 'endpoint-1')
+        await typeByPlaceholderText('creation.aws.serviceEndpointUrl.placeholder', 'aws.endpoint-1.com')
+        await clickByText('Next')
+
+        // skipping proxy
+        await clickByText('Next')
+
+        // step 6 - integration - skipping ansible template
+
+        // nocks for cluster creation
+        const createNocks = [
+            // create aws namespace (project)
+            nockCreate(mockClusterProject, mockClusterProjectResponse),
+
+            // create the managed cluster
+            nockCreate(mockManagedClusterAws),
+            nockCreate(mockMachinePoolAws),
+            nockCreate(mockProviderConnectionSecretCopiedAws),
+            nockCreate(mockPullSecretAws),
+            nockCreate(mockInstallConfigSecretPrivate),
+            nockCreate(mockPrivateSecretAws),
+            nockCreate(mockKlusterletAddonSecretAws),
+            nockCreate(mockClusterDeploymentAws),
+        ]
+
+        // click create button
+        await clickByText('Create')
+
         await waitForText('success.create.creating')
 
         // make sure creating

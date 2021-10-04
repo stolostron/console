@@ -106,6 +106,7 @@ interface Settings {
     LOG_LEVEL?: string
     ansibleIntegration?: 'enabled' | 'disabled'
     singleNodeOpenshift?: 'enabled' | 'disabled'
+    awsPrivateWizardStep?: 'enabled' | 'disabled'
 }
 
 interface WatchEvent {

@@ -81,7 +81,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                             bmh={editBMH}
                             isOpen={!!editBMH}
                             onClose={() => setEditBMH(undefined)}
-                            onEdit={onEditBMH(editBMH)}
+                            onEdit={onEditBMH}
                             fetchSecret={fetchSecret}
                             fetchNMState={fetchNMState}
                         />

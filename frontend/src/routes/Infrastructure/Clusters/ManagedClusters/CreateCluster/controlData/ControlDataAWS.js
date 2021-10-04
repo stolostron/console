@@ -73,6 +73,8 @@ export const awsRegions = {
     'eu-west-3': ['eu-west-3a', 'eu-west-3b', 'eu-west-3c'],
     'me-south-1': ['me-south-1a', 'me-south-1b', 'me-south-1c'],
     'sa-east-1': ['sa-east-1a', 'sa-east-1b', 'sa-east-1c'],
+    'us-gov-west-1': ['us-gov-west-1a', 'us-gov-west-1b', 'us-gov-west-1c'],
+    'us-gov-east-1': ['us-gov-east-1a', 'us-gov-east-1b', 'us-gov-east-1c'],
 }
 
 const setAWSZones = (control, controlData) => {
@@ -590,9 +592,11 @@ export const AWSworkerInstanceTypes = [
     },
 ]
 
-export const getControlDataAWS = (includeAutomation = true) => {
-    if (includeAutomation) return [...controlDataAWS, ...automationControlData]
-    return [...controlDataAWS]
+export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true) => {
+    let controlData = [...controlDataAWS]
+    if (includeAwsPrivate) controlData.push(...awsPrivateControlData)
+    if (includeAutomation) controlData.push(...automationControlData)
+    return controlData
 }
 
 const controlDataAWS = [
@@ -678,7 +682,7 @@ const controlDataAWS = [
         onSelect: setAWSZones,
         reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
-    ///////////////////////  master pool  /////////////////////////////////////
+    ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
         type: 'group',
@@ -689,13 +693,13 @@ const controlDataAWS = [
                 type: 'section',
                 collapsable: true,
                 collapsed: true,
-                subtitle: 'creation.ocp.node.master.pool.title',
-                info: 'creation.ocp.node.master.pool.info',
+                subtitle: 'creation.ocp.node.controlplane.pool.title',
+                info: 'creation.ocp.node.controlplane.pool.info',
             },
             ///////////////////////  zone  /////////////////////////////////////
             {
                 name: 'creation.ocp.zones',
-                tooltip: 'tooltip.creation.ocp.master.zones',
+                tooltip: 'tooltip.creation.ocp.controlplane.zones',
                 id: 'masterZones',
                 type: 'multiselect',
                 available: [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],
@@ -820,6 +824,102 @@ const controlDataAWS = [
     },
     ...networkingControlData,
     ...proxyControlData,
+]
+
+const awsPrivateControlData = [
+    {
+        id: 'privateAWS',
+        type: 'step',
+        title: 'AWS private configuration',
+    },
+    {
+        id: 'privateAWSTitle',
+        type: 'title',
+        info: 'creation.aws.privateAWS.info',
+    },
+    {
+        name: 'Hosted Zone',
+        tooltip: 'creation.aws.hostedZone.tooltip',
+        id: 'hostedZone',
+        type: 'text',
+        placeholder: 'creation.aws.hostedZone.placeholder',
+        active: '',
+        validation: VALIDATE_ALPHANUMERIC,
+    },
+    {
+        name: 'amiID',
+        tooltip: 'creation.aws.ami.tooltip',
+        id: 'amiID',
+        type: 'text',
+        placeholder: 'creation.aws.ami.placeholder',
+        active: '',
+        validation: VALIDATE_ALPHANUMERIC,
+    },
+    ///////////////////////  subnets  /////////////////////////////////////
+    {
+        id: 'privateLink',
+        type: 'group',
+        onlyOne: true,
+        controlData: [
+            {
+                id: 'subnetSection',
+                type: 'section',
+                collapsable: true,
+                collapsed: true,
+                subtitle: 'creation.aws.subnet.subtitle',
+                info: 'creation.aws.subnet.info',
+            },
+            {
+                name: 'Subnet ID',
+                tooltip: 'creation.aws.subnetID.tooltip',
+                id: 'subnetID',
+                type: 'values',
+                placeholder: 'creation.aws.subnetID.placeholder',
+                active: [],
+                validation: VALIDATE_ALPHANUMERIC,
+            },
+        ],
+    },
+    {
+        id: 'serviceEndpoints',
+        type: 'group',
+        onlyOne: false,
+        prompts: {
+            nameId: 'tester',
+            baseName: 'Subnet ID',
+            addPrompt: 'creation.aws.serviceEndpoint.addPrompt',
+            deletePrompt: 'creation.aws.serviceEndpoint.deletePrompt',
+        },
+        controlData: [
+            ///////////////////////  Service Endpoints  /////////////////////////////////////
+            {
+                id: 'serviceEndpoint',
+                type: 'section',
+                collapsable: true,
+                collapsed: true,
+                subtitle: 'creation.aws.serviceEndpoint.subtitle',
+                info: 'creation.aws.serviceEndpoint.info',
+            },
+            {
+                name: 'Name',
+                tooltip: 'creation.aws.serviceEndpointName.tooltip',
+                id: 'endpointName',
+                type: 'text',
+                placeholder: 'creation.aws.serviceEndpointName.placeholder',
+                active: '',
+                validation: VALIDATE_ALPHANUMERIC,
+            },
+            {
+                name: 'Url',
+                tooltip: 'creation.aws.serviceEndpointUrl.tooltip',
+                id: 'endpointURL',
+                type: 'text',
+                placeholder: 'creation.aws.serviceEndpointUrl.placeholder',
+                active: '',
+                validation: VALIDATE_ALPHANUMERIC,
+            },
+        ],
+    },
 ]
 
 export default getControlDataAWS
