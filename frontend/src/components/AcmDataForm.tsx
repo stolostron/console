@@ -866,9 +866,7 @@ export function AcmDataFormInputs(props: {
                                 helperText={
                                     <Split>
                                         <SplitItem isFilled>
-                                            <span className="pf-c-form__helper-text pf-m-error">
-                                                {input.helperText}
-                                            </span>
+                                            <span className="pf-c-form__helper-text">{input.helperText}</span>
                                         </SplitItem>
                                         {input.prompt && (
                                             <SplitItem>
