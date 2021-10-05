@@ -2,12 +2,12 @@
 import { useCallback, useMemo } from 'react'
 import { Card, CardBody, CardTitle, Grid, GridItem, Split, SplitItem, Stack, StackItem } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { EnvironmentStepFormValues } from 'openshift-assisted-ui-lib/dist/src/cim/components/InfraEnv/InfraEnvFormPage'
+import { useRecoilState } from 'recoil'
 import mainIcon from '../../../logos/OnPremiseBannerIcon.svg'
+import { infraEnvironmentsState, infrastructuresState } from '../../../atoms'
+import { isBMPlatform } from './utils'
 
 import './InfraEnvForm.css'
-import { useRecoilState } from 'recoil'
-import { infraEnvironmentsState } from '../../../atoms'
 
 const { InfraEnvFormPage, getLabels } = CIM
 
@@ -18,7 +18,9 @@ type InfraEnvFormProps = {
 
 const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) => {
     const [infraEnvironments] = useRecoilState(infraEnvironmentsState)
-    const onValuesChanged = useCallback((values: EnvironmentStepFormValues) => {
+    const [infrastructures] = useRecoilState(infrastructuresState)
+
+    const onValuesChanged = useCallback((values: CIM.EnvironmentStepFormValues) => {
         control.active = values
         if (values.labels) {
             control.active = {
@@ -40,7 +42,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
     return (
         <Grid hasGutter className="infra-env-form">
             <GridItem span={8}>
-                <InfraEnvFormPage onValuesChanged={onValuesChanged} usedNames={infraEnvNames} />
+                <InfraEnvFormPage onValuesChanged={onValuesChanged} usedNames={infraEnvNames} isBMPlatform={isBMPlatform(infrastructures[0])} />
             </GridItem>
             <GridItem span={8}>
                 <Card>

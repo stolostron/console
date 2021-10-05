@@ -16,13 +16,14 @@ import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLoca
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
 import isMatch from 'lodash/isMatch'
-import { acmRouteState, infraEnvironmentsState } from '../../../../atoms'
+import { acmRouteState, infraEnvironmentsState, infrastructuresState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
 import { ResourceError, createResource, patchResource } from '../../../../resources'
 import { agentsState, bareMetalHostsState } from '../../../../atoms'
+import { isBMPlatform } from '../utils'
 
 const {
     AddHostModal,
@@ -48,6 +49,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
         (i) => i.metadata.name === match.params.name && i.metadata.namespace === match.params.namespace
     )
 
+    const [infrastructures] = useRecoilState(infrastructuresState)
     const [agents, bareMetalHosts] = useRecoilValue(waitForAll([agentsState, bareMetalHostsState]))
     const infraAgents = agents.filter(
         (a) =>
@@ -149,6 +151,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
             <AddHostModal
                 infraEnv={infraEnv}
                 isOpen={isoModalOpen}
+                isBMPlatform={isBMPlatform(infrastructures[0])}
                 onClose={() => setISOModalOpen(false)}
                 onCreate={async (values: CIM.AddBmcValues, nmState: CIM.NMStateK8sResource) => {
                     const secret = getBareMetalHostCredentialsSecret(values, infraEnv.metadata.namespace)
