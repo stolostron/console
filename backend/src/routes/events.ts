@@ -79,7 +79,7 @@ export function startWatching(): void {
     watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs', { mightBeNotFound: true })
     watchResource(token, 'v1', 'configmaps', { fieldSelector: { 'metadata.name': 'insight-content-data' } })
     watchResource(token, 'v1', 'configmaps', {
-        fieldSelector: { 'metadata.namespace': 'assisted-installer', 'metadata.name': 'assisted-service' },
+        fieldSelector: { 'metadata.namespace': 'assisted-installer', 'metadata.name': 'assisted-service-config' },
     })
     watchResource(token, 'v1', 'configmaps', {
         fieldSelector: { 'metadata.namespace': 'openshift-config-managed', 'metadata.name': 'console-public' },
