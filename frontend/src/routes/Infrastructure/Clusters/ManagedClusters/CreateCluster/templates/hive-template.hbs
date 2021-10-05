@@ -465,12 +465,15 @@ metadata:
   name: {{{../../name}}}-ovirt-creds
   namespace: '{{{../../name}}}'
 stringData:
-  ovirt_url: {{{../../ovirt_url}}}
-  ovirt_username: {{{../../ovirt_username}}}
+  ovirt-config.yaml: |
+    ovirt_url: {{{../../ovirt_url}}}
+    ovirt_username: {{{../../ovirt_username}}}
 {{#if ../../showSecrets}}
-  ovirt_password: {{{../../ovirt_password}}}
+    ovirt_password: {{{../../ovirt_password}}}
+    ovirt_ca_bundle: {{{../../cacertificate}}}
 {{else}}
-  ovirt_password: # injected on create
+    ovirt_password: # injected on create
+    ovirt_ca_bundle: # injected on create
 {{/if}}
 ---
 
