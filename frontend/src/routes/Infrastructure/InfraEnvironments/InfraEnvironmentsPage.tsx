@@ -63,7 +63,6 @@ const InfraEnvironmentsPage: React.FC = () => {
                     WrappingComponent={PageSection}
                     titleKey="cim:cim.infra.banner.header"
                     textKey="cim:cim.infra.banner.body"
-                    footerKey="cim:cim.infra.banner.footer"
                 />
 
                 <PageSection>
