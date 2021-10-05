@@ -81,6 +81,17 @@ controlPlane:
         diskSizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
   {{/case}}
 
+  {{#case 'RHV'}}
+  platform:
+    ovirt:
+      cpu:
+        cores: {{{../../masterCores}}} ##masterPool.{{@index}}.masterCores
+        sockets: {{{../../masterSockets}}} ##masterPool.{{@index}}.masterSockets
+      memoryMB:  {{{../../masterMemoryMB}}} ##masterPool.{{@index}}.masterMemoryMB
+      osDisk:
+        sizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+  {{/case}}
+
   {{#case 'OpenStack'}}
   platform:
     openstack:
@@ -161,6 +172,17 @@ compute:
       memoryMB:  {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
         diskSizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+  {{/case}}
+
+  {{#case 'RHV'}}
+  platform:
+    ovirt:
+      cpu:
+        cores: {{{../../cores}}} ##workerPools.{{@index}}.cores
+        sockets: {{{../../sockets}}} ##workerPools.{{@index}}.sockets
+      memoryMB:  {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
+      osDisk:
+        sizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
   {{/case}}
 
   {{#case 'OpenStack'}}
@@ -299,6 +321,16 @@ publish: Internal
     apiVIP: {{{../../apiVIP}}}    ##apiVIP
     ingressVIP: {{{../../ingressVIP}}}  ##ingressVIP
     network: {{{../../networkType}}}
+{{/case}}
+
+{{#case 'RHV'}}
+  platform:
+    ovirt:
+      api_vip: {{{../../apiVIP}}}    ##apiVIP
+      ingress_vip: {{{../../ingressVIP}}}  ##ingressVIP
+      ovirt_cluster_id: {{{../../ovirt_cluster_id}}} ##ovirt_cluster_id
+      ovirt_network_name: {{{../../ovirt_network_name}}} ##ovirt_network_name
+      ovirt_storage_domain_id: {{{../../ovirt_storage_domain_id}}} ##ovirt_storage_domain_id
 {{/case}}
 
 {{! == NOTE: lbFloatingIP is deprecated in 4.7 for apiFloatingIP, but since we still support 4.5 and 4.6, we need the old key }}

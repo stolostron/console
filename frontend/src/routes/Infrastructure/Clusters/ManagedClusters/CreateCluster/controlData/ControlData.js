@@ -14,6 +14,7 @@ import getControlDataAWS from './ControlDataAWS'
 import getControlDataGCP from './ControlDataGCP'
 import getControlDataAZR from './ControlDataAZR'
 import getControlDataVMW from './ControlDataVMW'
+import getControlDataRHV from './ControlDataRHV'
 import getControlDataBMC from './ControlDataBMC'
 import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo, BaremetalLogo } from './Logos'
@@ -109,6 +110,18 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                 title: 'cluster.create.redhat.subtitle',
                 change: {
                     insertControlData: getControlDataOST(),
+                    replacements: {
+                        'install-config': { template: installConfig, encode: true, newTab: true },
+                    },
+                },
+                section: 'Providers',
+            },
+            {
+                id: 'RHV',
+                logo: <RedHatLogo />,
+                title: 'cluster.create.rhv.subtitle',
+                change: {
+                    insertControlData: getControlDataRHV(),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
