@@ -63,26 +63,16 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
 
     useEffect(() => {
+        if (control.disabled && formRef?.current) {
+            Array.from(document.forms[0].elements as HTMLCollectionOf<HTMLElement>).forEach((item: HTMLElement) => {
+                item.setAttribute('disabled', 'true')
+            })
+        }
+    }, [control.disabled, formRef.current])
+
+    useEffect(() => {
         if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
             formRef?.current?.setValues(control.active, true)
-        }
-
-        if (control.disabled) {
-            Array.from(document.forms[0].elements as HTMLCollectionOf<HTMLElement>).forEach(
-                (item: HTMLElement, inx) => {
-                    item.style.backgroundColor = '#e0e0e0'
-                    item.style.pointerEvents = 'none'
-                    item.addEventListener('keydown', (event) => {
-                        event.preventDefault()
-                        return false
-                    })
-                    if (inx === 0) {
-                        setTimeout(() => {
-                            item.blur()
-                        })
-                    }
-                }
-            )
         }
 
         control.reverse = (
