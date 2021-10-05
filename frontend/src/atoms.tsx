@@ -52,6 +52,8 @@ import {
     DiscoveryConfigKind,
     InfraEnvApiVersion,
     InfraEnvKind,
+    InfrastructureApiVersion,
+    InfrastructureKind,
     MachinePool,
     MachinePoolApiVersion,
     MachinePoolKind,
@@ -113,6 +115,7 @@ export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [
 export const discoveredClusterState = atom<DiscoveredCluster[]>({ key: 'discoveredClusters', default: [] })
 export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
 export const infraEnvironmentsState = atom<CIM.InfraEnvK8sResource[]>({ key: 'infraenvs', default: [] })
+export const infrastructuresState = atom<CIM.InfrastructureK8sResource[]>({ key: 'infrastructures', default: [] })
 export const machinePoolsState = atom<MachinePool[]>({ key: 'machinePools', default: [] })
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
@@ -175,6 +178,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setInfraEnvironments] = useRecoilState(infraEnvironmentsState)
+    const [, setInfrastructure] = useRecoilState(infrastructuresState)
     const [, setMachinePools] = useRecoilState(machinePoolsState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
@@ -211,6 +215,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(DiscoveredClusterApiVersion, DiscoveredClusterKind, setDiscoveredClusters)
         addSetter(DiscoveryConfigApiVersion, DiscoveryConfigKind, setDiscoveryConfigs)
         addSetter(InfraEnvApiVersion, InfraEnvKind, setInfraEnvironments)
+        addSetter(InfrastructureApiVersion, InfrastructureKind, setInfrastructure)
         addSetter(MachinePoolApiVersion, MachinePoolKind, setMachinePools)
         addSetter(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons)
         addSetter(ManagedClusterInfoApiVersion, ManagedClusterInfoKind, setManagedClusterInfos)
