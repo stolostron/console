@@ -252,9 +252,7 @@ export function CredentialsForm(props: {
     const [ovirtUrl, setOvirtUrl] = useState(providerConnection?.stringData?.ovirt_url ?? '')
     const [ovirtUsername, setOvirtUsername] = useState(providerConnection?.stringData?.ovirt_username ?? '')
     const [ovirtPassword, setOvirtPassword] = useState(providerConnection?.stringData?.ovirt_password ?? '')
-    const [ovirtCABundle, setOvirtCABundle] = useState(
-        providerConnection?.stringData?.ovirt_ca_bundle ?? ''
-    )
+    const [ovirtCABundle, setOvirtCABundle] = useState(providerConnection?.stringData?.ovirt_ca_bundle ?? '')
 
     // BareMetal
     const [libvirtURI, setLibvirtURI] = useState(providerConnection?.stringData?.libvirtURI ?? '')
@@ -364,10 +362,14 @@ export function CredentialsForm(props: {
                 secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.rhv:
+                secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.ovirt_url = ovirtUrl
                 secret.stringData!.ovirt_username = ovirtUsername
                 secret.stringData!.ovirt_password = ovirtPassword
                 secret.stringData!.ovirt_ca_bundle = ovirtCABundle
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!['ssh-privatekey'] = sshPrivatekey
+                secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.ansible:
                 secret.stringData!.host = _.trimEnd(ansibleHost, '/')
@@ -529,6 +531,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.rhv,
                             Provider.hybrid,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
@@ -1052,6 +1055,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.rhv,
                             Provider.hybrid,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
@@ -1072,6 +1076,7 @@ export function CredentialsForm(props: {
                             Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
+                            Provider.rhv,
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
@@ -1092,6 +1097,7 @@ export function CredentialsForm(props: {
                             Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
+                            Provider.rhv,
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',

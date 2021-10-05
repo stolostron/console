@@ -228,6 +228,46 @@ describe('add credentials page', () => {
         await waitForNock(createNock)
     })
 
+    it('should create rhv (Red Hat Virtualization) credentials', async () => {
+        render(<AddCredentialsTest />)
+
+        const providerConnection = createProviderConnection(
+            'rhv',
+            {
+                ovirt_url: 'rhv_url',
+                ovirt_username: 'username',
+                ovirt_password: 'password',
+                ovirt_ca_bundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
+            },
+            true
+        )
+
+        // Credentials type
+        await clickByTestId('rhv')
+        await typeByTestId('credentialsName', providerConnection.metadata.name!)
+        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
+        await clickByText('common:next')
+
+        // credentials
+        await typeByTestId('ovirt_url', providerConnection.stringData?.vCenter!)
+        await typeByTestId('ovirt_username', providerConnection.stringData?.username!)
+        await typeByTestId('ovirt_password', providerConnection.stringData?.password!)
+        await typeByTestId('ovirt_ca_bundle', providerConnection.stringData?.cacertificate!)
+        await clickByText('common:next')
+
+        // Pull secret
+        await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
+        await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
+        await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
+        await clickByText('common:next')
+
+        // Add Credentials
+        const createNock = nockCreate({ ...providerConnection })
+        await clickByText('credentialsForm.submitButton.add')
+        await waitForNock(createNock)
+    })
+
     it('should create ost (OpenStack) credentials', async () => {
         render(<AddCredentialsTest />)
 
