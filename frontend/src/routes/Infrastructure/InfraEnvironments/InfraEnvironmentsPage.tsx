@@ -145,6 +145,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 return '-'
                             }
                         },
+                        search: (infraEnv) => JSON.stringify(infraEnv.metadata?.labels) || '',
                     },
                     {
                         header: t('infraEnv.tableHeader.location'),
