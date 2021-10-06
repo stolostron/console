@@ -42,6 +42,11 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
         title: 'Infrastructure provider',
     },
     {
+        id: 'showSecrets',
+        type: 'hidden',
+        active: false,
+    },
+    {
         id: 'warning',
         type: 'custom',
         component: warning,
