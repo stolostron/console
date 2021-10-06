@@ -18,9 +18,8 @@ const {
     ClusterDeploymentKubeconfigDownload,
     EventsModalButton,
     getAICluster,
-    getEventsURL,
-    formatEventsData,
     LogsDownloadButton,
+    getOnFetchEventsHandler,
 } = CIM
 
 const fetchSecret: CIM.FetchSecret = (name, namespace) =>
@@ -56,21 +55,6 @@ const AIClusterProgress: React.FC = () => {
         return [clusterAgents, cluster]
     }, [clusterDeployment, agentClusterInstall, agents])
 
-    const onFetchEvents: CIM.EventListFetchProps['onFetchEvents'] = async (params, onSuccess, onError) => {
-        const eventsURL = getEventsURL(agentClusterInstall)
-        if (!eventsURL) {
-            onError('Cannot determine events URL')
-            return
-        }
-        try {
-            const result = await fetchEvents(eventsURL)
-            const data = formatEventsData(result)
-            onSuccess(data)
-        } catch (e) {
-            onError(e.message)
-        }
-    }
-
     return (
         <>
             {shouldShowClusterInstallationProgress(agentClusterInstall) && (
@@ -83,7 +67,7 @@ const AIClusterProgress: React.FC = () => {
                                         clusterDeployment={clusterDeployment}
                                         agentClusterInstall={agentClusterInstall}
                                         agents={clusterAgents}
-                                        fetchEvents={fetchEvents}
+                                        onFetchEvents={getOnFetchEventsHandler(fetchEvents, agentClusterInstall)}
                                     />
                                 </StackItem>
                                 {shouldShowClusterCredentials(agentClusterInstall) && (
@@ -110,7 +94,7 @@ const AIClusterProgress: React.FC = () => {
                                         title="Cluster Events"
                                         variant={ButtonVariant.link}
                                         style={{ textAlign: 'right' }}
-                                        onFetchEvents={onFetchEvents}
+                                        onFetchEvents={getOnFetchEventsHandler(fetchEvents, agentClusterInstall)}
                                         ButtonComponent={Button}
                                     >
                                         View Cluster Events
