@@ -55,6 +55,8 @@ export function startWatching(): void {
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
     watchResource(token, 'agent-install.openshift.io/v1beta1', 'agents')
     watchResource(token, 'agent-install.openshift.io/v1beta1', 'infraenvs')
+    watchResource(token, 'config.openshift.io/v1', 'infrastructures')
+
     watchResource(token, 'certificates.k8s.io/v1beta1', 'certificateSigningRequests', {
         labelSelector: { 'open-cluster-management.io/cluster-name': '' },
     })
