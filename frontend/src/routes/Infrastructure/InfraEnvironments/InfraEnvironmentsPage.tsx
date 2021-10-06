@@ -36,27 +36,7 @@ const InfraEnvironmentsPage: React.FC = () => {
     const { t } = useTranslation(['infraenv', 'common'])
 
     return (
-        <AcmPage
-            hasDrawer
-            header={
-                <AcmPageHeader
-                    title={t('infraenv:infraenvs')}
-                    titleTooltip={
-                        <>
-                            {t('infraenv:infraenvs.tooltip')}
-                            <a
-                                href="foo"
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ display: 'block', marginTop: '4px' }}
-                            >
-                                {t('common:learn.more')}
-                            </a>
-                        </>
-                    }
-                />
-            }
-        >
+        <AcmPage hasDrawer header={<AcmPageHeader title={t('infraenv:infraenvs')} />}>
             <AcmPageContent id="infra-environments">
                 <OnPremiseBanner
                     id="banner.infraenv"
