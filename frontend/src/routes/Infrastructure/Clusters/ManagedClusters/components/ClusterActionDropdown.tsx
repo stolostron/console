@@ -396,13 +396,15 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 close={() => setShowChannelSelectModal(false)}
             />
             <BulkActionModel<Cluster> {...modalProps} />
-            <RbacDropdown<Cluster>
-                id={`${cluster.name}-actions`}
-                item={cluster}
-                isKebab={props.isKebab}
-                text={t('actions')}
-                actions={actions}
-            />
+            {actions && actions.length > 0 && (
+                <RbacDropdown<Cluster>
+                    id={`${cluster.name}-actions`}
+                    item={cluster}
+                    isKebab={props.isKebab}
+                    text={t('actions')}
+                    actions={actions}
+                />
+            )}
             <ScaleUpDialog isOpen={scaleUpModalOpen} closeDialog={() => setScaleUpModalOpen(false)} />
         </>
     )

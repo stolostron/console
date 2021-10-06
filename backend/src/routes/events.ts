@@ -59,8 +59,8 @@ export function startWatching(): void {
         labelSelector: { 'open-cluster-management.io/cluster-name': '' },
     })
     watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
-    watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'managedClusterSetBindings')
-    watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'managedClusterSets')
+    watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'managedClusterSetBindings')
+    watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'managedClusterSets')
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clusterCurators')
     watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveredClusters')
     watchResource(token, 'discovery.open-cluster-management.io/v1alpha1', 'discoveryConfigs')
@@ -86,6 +86,7 @@ export function startWatching(): void {
     })
     watchResource(token, 'v1', 'namespaces')
     watchResource(token, 'v1', 'secrets', { labelSelector: { 'cluster.open-cluster-management.io/credentials': '' } })
+    watchResource(token, 'v1', 'secrets', { fieldSelector: { 'metadata.name': 'auto-import-secret' } })
     watchResource(token, 'wgpolicyk8s.io/v1alpha2', 'policyreports')
 }
 
@@ -127,7 +128,7 @@ export function watchResource(
 
     function onWatchResponse(res: IncomingMessage) {
         if (res.statusCode === HTTP_STATUS_OK) {
-            if (process.env.LOG_WATCH) {
+            if (process.env.LOG_WATCH === 'true') {
                 logger.info({ ...{ msg: 'watch start', kind }, ...(options ?? {}) })
             }
             res.on('data', (chunk) => {
@@ -157,7 +158,7 @@ export function watchResource(
                     oldBuffer.fill(0)
                 }
             }).on('end', () => {
-                if (process.env.LOG_WATCH) logger.info({ msg: 'watch stop', kind })
+                if (process.env.LOG_WATCH === 'true') logger.info({ msg: 'watch stop', kind })
                 // setTimeout(() => {
                 //     watchResource(token, apiVersion, kind, options)
                 // }, 1000)
@@ -185,7 +186,7 @@ export function watchResource(
     }
 
     function onClose(statusCode?: number) {
-        if (process.env.LOG_WATCH) logger.info({ msg: 'watch stop', kind })
+        if (process.env.LOG_WATCH === 'true') logger.info({ msg: 'watch stop', kind })
         if (stopping) return
         switch (statusCode) {
             case HTTP_STATUS_OK:
