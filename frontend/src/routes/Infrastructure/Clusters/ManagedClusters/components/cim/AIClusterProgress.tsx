@@ -35,7 +35,7 @@ const fetchSecret: CIM.FetchSecret = (name, namespace) =>
 const fetchEvents = async (url: string) => {
     const abortController = new AbortController()
     const result = await fetchGet(`${backendUrl}${url}`, abortController.signal)
-    return result.data
+    return result.data as string
 }
 
 const AIClusterProgress: React.FC = () => {
