@@ -42,7 +42,11 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
     return (
         <Grid hasGutter className="infra-env-form">
             <GridItem span={8}>
-                <InfraEnvFormPage onValuesChanged={onValuesChanged} usedNames={infraEnvNames} isBMPlatform={isBMPlatform(infrastructures[0])} />
+                <InfraEnvFormPage
+                    onValuesChanged={onValuesChanged}
+                    usedNames={infraEnvNames}
+                    isBMPlatform={isBMPlatform(infrastructures[0])}
+                />
             </GridItem>
             <GridItem span={8}>
                 <Card>
