@@ -70,6 +70,7 @@ import {
     ManagedClusterSetApiVersion,
     ManagedClusterSetBinding,
     ManagedClusterSetBindingKind,
+    ManagedClusterSetBindingApiVersion,
     ManagedClusterSetKind,
     MultiClusterHub,
     MultiClusterHubApiVersion,
@@ -220,8 +221,8 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons)
         addSetter(ManagedClusterInfoApiVersion, ManagedClusterInfoKind, setManagedClusterInfos)
         addSetter(ManagedClusterApiVersion, ManagedClusterKind, setManagedClusters)
-        addSetter(ManagedClusterSetApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
-        addSetter(ManagedClusterApiVersion, ManagedClusterSetKind, setManagedClusterSets)
+        addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
+        addSetter(ManagedClusterSetApiVersion, ManagedClusterSetKind, setManagedClusterSets)
         addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
         addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
         addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
