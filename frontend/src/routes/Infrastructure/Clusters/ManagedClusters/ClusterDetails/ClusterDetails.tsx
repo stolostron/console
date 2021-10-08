@@ -46,7 +46,7 @@ import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
+import { ClusterActionDropdown, getClusterActions } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { MachinePoolsPageContent } from './ClusterMachinePools/ClusterMachinePools'
@@ -175,6 +175,25 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         )
     }
 
+    const clusterActionGroupChildren = []
+    const addonLinks = addons.filter((addon) => addon.launchLink)
+    if (addonLinks.length > 0) {
+        clusterActionGroupChildren.push(
+            <AcmLaunchLink
+                links={addonLinks?.map((addon) => ({
+                    id: addon.launchLink?.displayText!,
+                    text: addon.launchLink?.displayText!,
+                    href: addon.launchLink?.href!,
+                }))}
+            />
+        )
+    }
+    if (cluster?.hive.secrets?.installConfig || cluster?.hive.secrets?.kubeconfig) {
+        clusterActionGroupChildren.push(<DownloadConfigurationDropdown canGetSecret={canGetSecret} />)
+    }
+    if (getClusterActions(cluster).length > 0) {
+        clusterActionGroupChildren.push(<ClusterActionDropdown cluster={cluster!} isKebab={false} />)
+    }
     return (
         <ClusterContext.Provider
             value={{
@@ -249,21 +268,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                 </AcmSecondaryNavItem>
                             </AcmSecondaryNav>
                         }
-                        actions={
-                            <AcmActionGroup>
-                                <AcmLaunchLink
-                                    links={addons
-                                        ?.filter((addon) => addon.launchLink)
-                                        ?.map((addon) => ({
-                                            id: addon.launchLink?.displayText!,
-                                            text: addon.launchLink?.displayText!,
-                                            href: addon.launchLink?.href!,
-                                        }))}
-                                />
-                                <DownloadConfigurationDropdown canGetSecret={canGetSecret} />
-                                <ClusterActionDropdown cluster={cluster!} isKebab={false} />
-                            </AcmActionGroup>
-                        }
+                        actions={<AcmActionGroup>{clusterActionGroupChildren}</AcmActionGroup>}
                     />
                 }
             >

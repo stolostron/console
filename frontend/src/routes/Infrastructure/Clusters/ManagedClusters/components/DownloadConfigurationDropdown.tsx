@@ -32,32 +32,28 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
         }
     }
 
-    if (cluster?.hive.secrets?.installConfig || cluster?.hive.secrets?.kubeconfig) {
-        const dropdownItems = []
-        cluster?.hive.secrets?.installConfig &&
-            dropdownItems.push({
-                id: 'install-config.yaml',
-                text: 'install-config',
-                isDisabled: !props.canGetSecret,
-                tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
-            })
-        cluster?.hive.secrets?.kubeconfig &&
-            dropdownItems.push({
-                id: 'kubeconfig',
-                text: 'kubeconfig',
-                isDisabled: !props.canGetSecret,
-                tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
-            })
-        return (
-            <AcmDropdown
-                isPlain={true}
-                dropdownItems={dropdownItems}
-                onSelect={(id: string) => downloadConfig(id)}
-                text={t('configuration.download')}
-                id="download-configuration"
-            />
-        )
-    } else {
-        return null
-    }
+    const dropdownItems = []
+    cluster?.hive.secrets?.installConfig &&
+        dropdownItems.push({
+            id: 'install-config.yaml',
+            text: 'install-config',
+            isDisabled: !props.canGetSecret,
+            tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
+        })
+    cluster?.hive.secrets?.kubeconfig &&
+        dropdownItems.push({
+            id: 'kubeconfig',
+            text: 'kubeconfig',
+            isDisabled: !props.canGetSecret,
+            tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
+        })
+    return (
+        <AcmDropdown
+            isPlain={true}
+            dropdownItems={dropdownItems}
+            onSelect={(id: string) => downloadConfig(id)}
+            text={t('configuration.download')}
+            id="download-configuration"
+        />
+    )
 }
