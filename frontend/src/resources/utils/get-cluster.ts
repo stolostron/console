@@ -15,7 +15,7 @@ import { AddonStatus } from './get-addons'
 import { getLatest } from './utils'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 
-const { isDraft, getIsSNOCluster } = CIM
+const { isDraft, getIsSNOCluster, getConsoleUrl: getConsoleUrlAI, getClusterApiUrl: getClusterApiUrlAI } = CIM
 
 export enum ClusterStatus {
     'pending' = 'pending',
@@ -600,7 +600,12 @@ export function getDistributionInfo(
 }
 
 export function getKubeApiServer(clusterDeployment?: ClusterDeployment, managedClusterInfo?: ManagedClusterInfo) {
-    return clusterDeployment?.status?.apiURL ?? managedClusterInfo?.spec?.masterEndpoint
+    return (
+        clusterDeployment?.status?.apiURL ??
+        managedClusterInfo?.spec?.masterEndpoint ??
+        // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
+        getClusterApiUrlAI(clusterDeployment)
+    )
 }
 
 export function getConsoleUrl(
@@ -612,7 +617,12 @@ export function getConsoleUrl(
         (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
     )
     if (consoleUrlClaim) return consoleUrlClaim.value
-    return clusterDeployment?.status?.webConsoleURL ?? managedClusterInfo?.status?.consoleURL
+    return (
+        clusterDeployment?.status?.webConsoleURL ??
+        managedClusterInfo?.status?.consoleURL ??
+        // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
+        getConsoleUrlAI(clusterDeployment)
+    )
 }
 
 export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
