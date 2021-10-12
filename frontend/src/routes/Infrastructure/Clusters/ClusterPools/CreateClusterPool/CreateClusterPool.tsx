@@ -210,7 +210,10 @@ export function CreateClusterPool() {
             type={'ClusterPool'}
             title={'ClusterPool YAML'}
             monacoEditor={<MonacoEditor />}
-            controlData={getControlData(settings.awsPrivateWizardStep == 'enabled')}
+            controlData={getControlData(
+                settings.awsPrivateWizardStep == 'enabled',
+                settings.singleNodeOpenshift === 'enabled'
+            )}
             template={template}
             portals={Portals}
             fetchControl={fetchControl}
