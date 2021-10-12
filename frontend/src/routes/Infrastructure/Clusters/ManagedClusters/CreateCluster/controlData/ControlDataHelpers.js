@@ -423,3 +423,9 @@ export const onChangeSNO = (control, controlData) => {
         }
     })
 }
+
+export const addSnoText = (controlData) => {
+    const masterPool = controlData.find((object) => object.id == 'masterPool' )
+    const poolControlData = masterPool.controlData.find((object) => object.id == 'masterPool')
+    poolControlData.info = 'creation.ocp.node.controlplane.pool.info.sno_enabled'
+}

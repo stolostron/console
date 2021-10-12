@@ -15,6 +15,7 @@ import {
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -592,7 +593,8 @@ export const AWSworkerInstanceTypes = [
     },
 ]
 
-export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true) => {
+export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataAWS)
     let controlData = [...controlDataAWS]
     if (includeAwsPrivate) controlData.push(...awsPrivateControlData)
     if (includeAutomation) controlData.push(...automationControlData)

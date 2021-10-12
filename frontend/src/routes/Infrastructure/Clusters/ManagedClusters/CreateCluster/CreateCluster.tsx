@@ -407,7 +407,7 @@ export default function CreateClusterPage() {
         }
     }
 
-    const controlData = getControlData(<Warning />, onControlSelect, settings.awsPrivateWizardStep === 'enabled')
+    const controlData = getControlData(<Warning />, onControlSelect, settings.awsPrivateWizardStep === 'enabled', settings.singleNodeOpenshift === 'enabled')
 
     return (
         <AcmPage
