@@ -15,10 +15,12 @@ import {
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
-export const getControlDataOST = (includeAutomation = true) => {
+export const getControlDataOST = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataOST)
     if (includeAutomation) return [...controlDataOST, ...automationControlData]
     return [...controlDataOST]
 }
