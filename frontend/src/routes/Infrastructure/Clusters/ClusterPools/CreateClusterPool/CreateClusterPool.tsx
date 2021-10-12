@@ -211,7 +211,7 @@ export function CreateClusterPool() {
             title={'ClusterPool YAML'}
             monacoEditor={<MonacoEditor />}
             controlData={getControlData(
-                settings.awsPrivateWizardStep == 'enabled',
+                settings.awsPrivateWizardStep === 'enabled',
                 settings.singleNodeOpenshift === 'enabled'
             )}
             template={template}
