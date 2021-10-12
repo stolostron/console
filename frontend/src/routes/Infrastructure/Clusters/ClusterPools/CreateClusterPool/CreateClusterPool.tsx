@@ -21,7 +21,7 @@ import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/
 import '../../ManagedClusters/CreateCluster/style.css'
 
 // template/data
-import { controlData } from './controlData/ControlData'
+import { getControlData } from './controlData/ControlData'
 import { setAvailableConnections } from '../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import hiveTemplate from './templates/hive-template.hbs'
 import { secretsState } from '../../../../../atoms'
@@ -210,7 +210,10 @@ export function CreateClusterPool() {
             type={'ClusterPool'}
             title={'ClusterPool YAML'}
             monacoEditor={<MonacoEditor />}
-            controlData={controlData}
+            controlData={getControlData(
+                settings.awsPrivateWizardStep == 'enabled',
+                settings.singleNodeOpenshift === 'enabled'
+            )}
             template={template}
             portals={Portals}
             fetchControl={fetchControl}
