@@ -1,6 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import _ from 'lodash'
 import {
+    AgentClusterInstallGroup,
+    AgentClusterInstallKind,
+    AgentClusterInstallVersion,
+    AgentClusterInstallVersionOnly,
     ClusterCurator,
     ClusterCuratorApiVersion,
     ClusterCuratorKind,
@@ -29,12 +34,14 @@ import {
     SelfSubjectAccessReview,
 } from '../../../../../resources'
 import { AcmRoute } from '@open-cluster-management/ui-components'
+import { CIM } from 'openshift-assisted-ui-lib'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
     acmRouteState,
+    agentClusterInstallsState,
     certificateSigningRequestsState,
     clusterCuratorsState,
     clusterDeploymentsState,
@@ -57,6 +64,7 @@ import {
     waitForNock,
     waitForNocks,
     waitForNotText,
+    waitForTestId,
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -217,6 +225,73 @@ const mockClusterDeployment: ClusterDeployment = {
             'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:a3ed2bf438dfa5a114aa94cb923103432cd457cac51d1c4814ae0ef7e6e9853b',
         provisionRef: {
             name: 'test-cluster-31-26h5q',
+        },
+    },
+}
+
+const mockAIClusterDeployment: ClusterDeployment = _.cloneDeep(mockClusterDeployment)
+mockAIClusterDeployment.metadata.labels = {
+    'hive.openshift.io/cluster-platform': 'agent-baremetal',
+}
+mockAIClusterDeployment.metadata.annotations = {
+    'agentBareMetal-agentSelector/autoSelect': 'false',
+}
+mockAIClusterDeployment.spec!.platform = {
+    agentBareMetal: {
+        agentSelector: {},
+    },
+}
+mockAIClusterDeployment.spec!.clusterInstallRef = {
+    group: AgentClusterInstallGroup,
+    kind: AgentClusterInstallKind,
+    name: clusterName,
+    version: AgentClusterInstallVersionOnly,
+}
+
+const mockAgentClusterInstall: CIM.AgentClusterInstallK8sResource = {
+    apiVersion: AgentClusterInstallVersion,
+    kind: AgentClusterInstallKind,
+    metadata: {
+        name: clusterName,
+        namespace: clusterName,
+        // skip ownerReference to CD for now
+    },
+    spec: {
+        apiVIP: '192.168.122.152',
+        ingressVIP: '192.168.122.155',
+        clusterDeploymentRef: {
+            name: clusterName,
+        },
+        clusterMetadata: {
+            clusterID: '6aa9cdfe-a13c-4e8c-b7e3-0219fad10163',
+            /* Add when actually needed
+            adminKubeconfigSecretRef: {
+                name: `${clusterName}-admin-kubeconfig`,
+            },
+            adminPasswordSecretRef: {
+                name: `${clusterName}-admin-password`,
+            },
+            */
+            // infraID: '570004e6-c97c-428a-92b7-2d1f7c4adc0f',
+        },
+        imageSetRef: {
+            name: 'img4.8.13-x86-64-appsub',
+        },
+        networking: {
+            clusterNetwork: [{ cidr: '10.128.0.0/14', hostPrefix: 23 }],
+            serviceNetwork: ['172.30.0.0/16'],
+        },
+        provisionRequirements: {
+            controlPlaneAgents: 3,
+        },
+    },
+    status: {
+        conditions: [],
+        debugInfo: {
+            // eventsUrl: '',
+            // logsURL: '',
+            state: 'adding-hosts',
+            stateInfo: '',
         },
     },
 }
@@ -729,14 +804,14 @@ const nockListHiveProvisionJobs = () =>
         ['hive.openshift.io/cluster-deployment-name=test-cluster', 'hive.openshift.io/job-type=provision']
     )
 
-const Component = () => (
+const Component = ({ clusterDeployment = mockClusterDeployment }) => (
     <RecoilRoot
         initializeState={(snapshot) => {
             snapshot.set(acmRouteState, AcmRoute.Clusters)
             snapshot.set(managedClusterAddonsState, mockManagedClusterAddOns)
             snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
             snapshot.set(managedClustersState, [mockManagedCluster])
-            snapshot.set(clusterDeploymentsState, [mockClusterDeployment])
+            snapshot.set(clusterDeploymentsState, [clusterDeployment])
             snapshot.set(managedClusterInfosState, [mockManagedClusterInfo])
             snapshot.set(certificateSigningRequestsState, [])
             snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
@@ -744,6 +819,7 @@ const Component = () => (
             snapshot.set(clusterProvisionsState, [mockClusterProvisions])
             snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
             snapshot.set(clusterCuratorsState, [mockClusterCurator])
+            snapshot.set(agentClusterInstallsState, [mockAgentClusterInstall])
         }}
     >
         <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
@@ -864,5 +940,36 @@ describe('ClusterDetails', () => {
         )
         await waitForNocks([nock])
         await waitForText('Not found')
+    })
+})
+
+const AIComponent = () => <Component clusterDeployment={mockAIClusterDeployment} />
+
+describe('ClusterDetails for On Premise', () => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+        render(<AIComponent />)
+    })
+
+    test('overview page renders AI empty details', async () => {
+        await waitForText(clusterName, true)
+        await waitForText('tab.overview')
+        await waitForText('table.details')
+
+        await waitForText('Cluster hosts')
+        await waitForTestId('col-header-hostname', true) // Multiple === true since the Empty state reuses the column
+        await waitForTestId('col-header-role')
+        await waitForTestId('col-header-infraenvstatus')
+        await waitForTestId('col-header-infraenv')
+        await waitForTestId('col-header-cpucores')
+        await waitForTestId('col-header-memory')
+        await waitForTestId('col-header-disk')
+
+        await waitForText('Waiting for hosts...')
+
+        // TODO(mlibra): If only we can address titles/headers in the table by ID. That would require changes to the AcmDescriptionList component
+        await waitForText('On Premise')
+
+        // screen.debug(undefined, -1)
     })
 })
