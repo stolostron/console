@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ClusterPoolApiVersion = 'hive.openshift.io/v1'
@@ -18,7 +17,7 @@ export const ClusterPoolDefinition: IResourceDefinition = {
 export interface ClusterPool extends IResource {
     apiVersion: ClusterPoolApiVersionType
     kind: ClusterPoolKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec?: {
         baseDomain: string
         installConfigSecretTemplateRef: {

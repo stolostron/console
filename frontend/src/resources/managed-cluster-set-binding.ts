@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ManagedClusterSetBindingApiVersion = 'cluster.open-cluster-management.io/v1beta1'
@@ -17,7 +16,7 @@ export const ManagedClusterSetBindingDefinition: IResourceDefinition = {
 export interface ManagedClusterSetBinding extends IResource {
     apiVersion: ManagedClusterSetBindingApiVersionType
     kind: ManagedClusterSetBindingKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec: {
         clusterSet: string
     }

@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
 export const CertificateSigningRequestApiVersion = 'certificates.k8s.io/v1beta1'
@@ -17,7 +16,7 @@ export const CertificateSigningRequestDefinition: IResourceDefinition = {
 export interface CertificateSigningRequest extends IResource {
     apiVersion: CertificateSigningRequestApiVersionType
     kind: CertificateSigningRequestKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     status?: {
         certificate?: string
     }

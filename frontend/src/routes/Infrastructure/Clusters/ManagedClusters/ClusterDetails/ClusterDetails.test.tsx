@@ -1,33 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    ClusterCurator,
-    ClusterCuratorApiVersion,
-    ClusterCuratorKind,
-    ClusterDeployment,
-    ClusterDeploymentApiVersion,
-    ClusterDeploymentKind,
-    ClusterManagementAddOn,
-    ClusterProvision,
-    ClusterProvisionApiVersion,
-    ClusterProvisionKind,
-    MachinePool,
-    MachinePoolApiVersion,
-    MachinePoolKind,
-    ManagedCluster,
-    ManagedClusterAddOn,
-    ManagedClusterAddOnApiVersion,
-    ManagedClusterAddOnKind,
-    ManagedClusterApiVersion,
-    ManagedClusterInfo,
-    ManagedClusterInfoApiVersion,
-    ManagedClusterInfoKind,
-    ManagedClusterKind,
-    PodApiVersion,
-    PodKind,
-    PodList,
-    SelfSubjectAccessReview,
-} from '../../../../../resources'
 import { AcmRoute } from '@open-cluster-management/ui-components'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
@@ -60,6 +32,34 @@ import {
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
+import {
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    ClusterDeployment,
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+    ClusterManagementAddOn,
+    ClusterProvision,
+    ClusterProvisionApiVersion,
+    ClusterProvisionKind,
+    MachinePool,
+    MachinePoolApiVersion,
+    MachinePoolKind,
+    ManagedCluster,
+    ManagedClusterAddOn,
+    ManagedClusterAddOnApiVersion,
+    ManagedClusterAddOnKind,
+    ManagedClusterApiVersion,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
+    ManagedClusterKind,
+    PodApiVersion,
+    PodKind,
+    PodList,
+    SelfSubjectAccessReview,
+} from '../../../../../resources'
 import ClusterDetails from './ClusterDetails'
 
 export const clusterName = 'test-cluster'
@@ -227,6 +227,8 @@ const mockHiveProvisionPods: PodList = {
     metadata: { selfLink: '/api/v1/namespaces/test-cluster/pods', resourceVersion: '50100517' },
     items: [
         {
+            apiVersion: PodApiVersion,
+            kind: PodKind,
             metadata: {
                 name: 'test-cluster-0-92r2t-provision-wtsph',
                 generateName: 'test-cluster-0-92r2t-provision-',
