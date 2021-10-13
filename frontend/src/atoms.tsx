@@ -54,6 +54,7 @@ import {
     InfraEnvKind,
     InfrastructureApiVersion,
     InfrastructureKind,
+    IResource,
     MachinePool,
     MachinePoolApiVersion,
     MachinePoolKind,
@@ -69,8 +70,8 @@ import {
     ManagedClusterSet,
     ManagedClusterSetApiVersion,
     ManagedClusterSetBinding,
-    ManagedClusterSetBindingKind,
     ManagedClusterSetBindingApiVersion,
+    ManagedClusterSetBindingKind,
     ManagedClusterSetKind,
     MultiClusterHub,
     MultiClusterHubApiVersion,
@@ -87,63 +88,55 @@ import {
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
-    IResource,
 } from './resources'
 
+let atomArrayKey = 0
+function AtomArray<T>() {
+    return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
+}
+
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
-export const agentClusterInstallsState = atom<CIM.AgentClusterInstallK8sResource[]>({
-    key: 'agentclusterinstalls',
-    default: [],
-})
-export const agentsState = atom<CIM.AgentK8sResource[]>({ key: 'agents', default: [] })
-export const ansibleJobState = atom<AnsibleJob[]>({ key: 'ansiblejobs', default: [] })
 
-export const applicationsState = atom<IResource[]>({ key: 'applications', default: [] })
-export const channelsState = atom<IResource[]>({ key: 'channels', default: [] })
-export const gitOpsClustersState = atom<IResource[]>({ key: 'gitOpsClusters', default: [] })
-export const placementRulesState = atom<IResource[]>({ key: 'placementRules', default: [] })
-export const subscriptionsState = atom<IResource[]>({ key: 'subscriptions', default: [] })
-export const appProjectsState = atom<IResource[]>({ key: 'appProjects', default: [] })
-export const argoApplicationsState = atom<IResource[]>({ key: 'argoApplications', default: [] })
-export const applicationSetsState = atom<IResource[]>({ key: 'applicationSets', default: [] })
-export const argoCDsState = atom<IResource[]>({ key: 'argoCDs', default: [] })
+export const agentClusterInstallsState = AtomArray<CIM.AgentClusterInstallK8sResource>()
+export const agentsState = AtomArray<CIM.AgentK8sResource>()
+export const ansibleJobState = AtomArray<AnsibleJob>()
+export const appProjectsState = AtomArray<IResource>()
+export const applicationSetsState = AtomArray<IResource>()
+export const applicationsState = AtomArray<IResource>()
+export const argoApplicationsState = AtomArray<IResource>()
+export const argoCDsState = AtomArray<IResource>()
+export const bareMetalAssetsState = AtomArray<BareMetalAsset>()
+export const bareMetalHostsState = AtomArray<CIM.BareMetalHostK8sResource>()
+export const certificateSigningRequestsState = AtomArray<CertificateSigningRequest>()
+export const channelsState = AtomArray<IResource>()
+export const clusterClaimsState = AtomArray<ClusterClaim>()
+export const clusterCuratorsState = AtomArray<ClusterCurator>()
+export const clusterDeploymentsState = AtomArray<ClusterDeployment>()
+export const clusterImageSetsState = AtomArray<ClusterImageSet>()
+export const clusterManagementAddonsState = AtomArray<ClusterManagementAddOn>()
+export const clusterPoolsState = AtomArray<ClusterPool>()
+export const clusterProvisionsState = AtomArray<ClusterProvision>()
+export const configMapsState = AtomArray<ConfigMap>()
+export const discoveredClusterState = AtomArray<DiscoveredCluster>()
+export const discoveryConfigState = AtomArray<DiscoveryConfig>()
+export const gitOpsClustersState = AtomArray<IResource>()
+export const infraEnvironmentsState = AtomArray<CIM.InfraEnvK8sResource>()
+export const infrastructuresState = AtomArray<CIM.InfrastructureK8sResource>()
+export const machinePoolsState = AtomArray<MachinePool>()
+export const managedClusterAddonsState = AtomArray<ManagedClusterAddOn>()
+export const managedClusterInfosState = AtomArray<ManagedClusterInfo>()
+export const managedClusterSetBindingsState = AtomArray<ManagedClusterSetBinding>()
+export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
+export const managedClustersState = AtomArray<ManagedCluster>()
+export const multiClusterHubState = AtomArray<MultiClusterHub>()
+export const namespacesState = AtomArray<Namespace>()
+export const placementRulesState = AtomArray<IResource>()
+export const policyreportState = AtomArray<PolicyReport>()
+export const secretsState = AtomArray<Secret>()
+export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
+export const subscriptionsState = AtomArray<IResource>()
 
-export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
-export const bareMetalHostsState = atom<CIM.BareMetalHostK8sResource[]>({ key: 'baremetalhosts', default: [] })
-export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>({
-    key: 'certificateSigningRequests',
-    default: [],
-})
-export const clusterClaimsState = atom<ClusterClaim[]>({ key: 'clusterClaims', default: [] })
-export const clusterCuratorsState = atom<ClusterCurator[]>({ key: 'clusterCurators', default: [] })
-export const clusterDeploymentsState = atom<ClusterDeployment[]>({ key: 'clusterDeployments', default: [] })
-export const clusterImageSetsState = atom<ClusterImageSet[]>({ key: 'clusterImageSets', default: [] })
-export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
-    key: 'clusterManagementAddons',
-    default: [],
-})
-export const clusterPoolsState = atom<ClusterPool[]>({ key: 'clusterPools', default: [] })
-export const clusterProvisionsState = atom<ClusterProvision[]>({ key: 'clusterProvisions', default: [] })
-export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
-export const discoveredClusterState = atom<DiscoveredCluster[]>({ key: 'discoveredClusters', default: [] })
-export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
-export const infraEnvironmentsState = atom<CIM.InfraEnvK8sResource[]>({ key: 'infraenvs', default: [] })
-export const infrastructuresState = atom<CIM.InfrastructureK8sResource[]>({ key: 'infrastructures', default: [] })
-export const machinePoolsState = atom<MachinePool[]>({ key: 'machinePools', default: [] })
-export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
-export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
-export const managedClusterSetBindingsState = atom<ManagedClusterSetBinding[]>({
-    key: 'managedClusterSetBindings',
-    default: [],
-})
-export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
-export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
-export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
-export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
-export const policyreportState = atom<PolicyReport[]>({ key: 'policyreports', default: [] })
-export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
-export const submarinerConfigsState = atom<SubmarinerConfig[]>({ key: 'submarinerconfigs', default: [] })
 
 interface Settings {
     LOG_LEVEL?: string
