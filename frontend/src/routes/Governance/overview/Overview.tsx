@@ -75,7 +75,7 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
                                     <Divider />
                                     <CardBody>
                                         <Stack hasGutter>
-                                            <div style={{ display: 'flex', gap: '16px', alignItems: 'start' }}>
+                                            <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
                                                 <RisksGauge risks={category.policyRisks} />
                                                 <div style={{ alignSelf: 'center' }}>
                                                     <PolicyRiskLabels
@@ -122,7 +122,7 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
                                     <Divider />
                                     <CardBody>
                                         <Stack hasGutter>
-                                            <div style={{ display: 'flex', gap: '16px', alignItems: 'start' }}>
+                                            <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
                                                 <RisksGauge risks={category.policyRisks} />
                                                 <div style={{ alignSelf: 'center' }}>
                                                     <PolicyRiskLabels
@@ -170,7 +170,7 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
                                     <Divider />
                                     <CardBody>
                                         <Stack hasGutter>
-                                            <div style={{ display: 'flex', gap: '16px', alignItems: 'start' }}>
+                                            <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
                                                 <RisksGauge risks={category.policyRisks} />
                                                 <div style={{ alignSelf: 'center' }}>
                                                     <PolicyRiskLabels

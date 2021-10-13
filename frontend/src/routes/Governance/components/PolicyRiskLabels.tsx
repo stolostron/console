@@ -29,7 +29,7 @@ export function RisksCard(props: { title: string; risks: IPolicyRisks; singular:
             </CardHeader>
             <Divider />
             <CardBody>
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'start' }}>
+                <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
                     <RisksGauge risks={props.risks} />
                     <div style={{ alignSelf: 'center' }}>
                         <PolicyRiskLabels
