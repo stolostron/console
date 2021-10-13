@@ -191,5 +191,8 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
+    },
+    "dependencies": {
+        "react-masonry-css": "^1.0.16"
     }
 }
