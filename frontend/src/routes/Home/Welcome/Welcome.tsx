@@ -125,7 +125,7 @@ export default function WelcomePage() {
             </PageSection>
             <PageSection variant="light">
                 <Stack hasGutter>
-                    <Title headingLevel="h1">Easy, simple, and secure.</Title>
+                    <Title headingLevel="h2">Easy, simple, and secure.</Title>
                     <Text>
                         Easy to use and simple to understand, Red Hat Advanced Cluster Management for Kubernetes
                         provides the following mission critical capabilities based on open source projects:
@@ -142,7 +142,7 @@ export default function WelcomePage() {
             </PageSection>
             <PageSection variant="default">
                 <Stack hasGutter>
-                    <Title headingLevel="h1">Converse and connect.</Title>
+                    <Title headingLevel="h2">Converse and connect.</Title>
                     <AcmMasonry minSize={400}>
                         {connections.map((card) => (
                             <Card isRounded isHoverable>
