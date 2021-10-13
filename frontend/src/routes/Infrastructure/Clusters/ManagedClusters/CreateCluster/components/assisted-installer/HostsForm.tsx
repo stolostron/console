@@ -110,7 +110,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
         []
     )
 
-    return agents?.length && clusterDeployment && agentClusterInstall && aiConfigMap ? (
+    return agents?.length && clusterDeployment && agentClusterInstall ? (
         <div className="hosts-form">
             <ACMClusterDeploymentHostsStep
                 formRef={formRef}
