@@ -483,6 +483,8 @@ export function getDistributionInfo(
     let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
     switch (productClaim) {
         case 'OpenShiftDedicated':
+        case 'ROSA':
+        case 'ARO':
             isManagedOpenShift = true
             break
     }
