@@ -16,6 +16,8 @@ import { NavigationPath } from './NavigationPath'
 import { LoadingPage } from './components/LoadingPage'
 import './App.css'
 
+const ApplicationsPage = lazy(() => import('./routes/Applications/Applications'))
+
 const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
 const ClusterDetailsPage = lazy(
     () => import('./routes/Infrastructure/Clusters/ManagedClusters/ClusterDetails/ClusterDetails')
@@ -66,6 +68,7 @@ export default function App() {
                         <AcmTablePaginationContextProvider localStorageKey="clusters">
                             <Suspense fallback={<LoadingPage />}>
                                 <Switch>
+                                    <Route path={NavigationPath.applications} component={ApplicationsPage} />
                                     <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
                                     <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
                                     <Route

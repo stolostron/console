@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 
 export enum NavigationPath {
+    applications = '/multicloud/applications',
     console = '/multicloud',
     clusters = '/multicloud/clusters',
     clusterDetails = '/multicloud/clusters/:id',

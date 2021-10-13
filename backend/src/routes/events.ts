@@ -55,8 +55,18 @@ export function startWatching(): void {
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
     watchResource(token, 'agent-install.openshift.io/v1beta1', 'agents')
     watchResource(token, 'agent-install.openshift.io/v1beta1', 'infraenvs')
+    watchResource(token, 'app.k8s.io/v1beta1', 'applications')
+    watchResource(token, 'apps.open-cluster-management.io/v1', 'channels')
+    // watchResource(token, 'apps.open-cluster-management.io/v1', 'deployables')
+    watchResource(token, 'apps.open-cluster-management.io/v1alpha1', 'gitOpsClusters')
+    // watchResource(token, 'apps.open-cluster-management.io/v1', 'helmReleases')
+    watchResource(token, 'apps.open-cluster-management.io/v1', 'placementRules')
+    watchResource(token, 'apps.open-cluster-management.io/v1', 'subscriptions')
+    watchResource(token, 'argoproj.io/v1alpha1', 'appProjects')
+    watchResource(token, 'argoproj.io/v1alpha1', 'applications')
+    watchResource(token, 'argoproj.io/v1alpha1', 'applicationSets')
+    watchResource(token, 'argoproj.io/v1alpha1', 'argoCDs')
     watchResource(token, 'config.openshift.io/v1', 'infrastructures')
-
     watchResource(token, 'certificates.k8s.io/v1beta1', 'certificateSigningRequests', {
         labelSelector: { 'open-cluster-management.io/cluster-name': '' },
     })

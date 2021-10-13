@@ -87,6 +87,7 @@ import {
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
+    IResource,
 } from './resources'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
@@ -96,6 +97,17 @@ export const agentClusterInstallsState = atom<CIM.AgentClusterInstallK8sResource
 })
 export const agentsState = atom<CIM.AgentK8sResource[]>({ key: 'agents', default: [] })
 export const ansibleJobState = atom<AnsibleJob[]>({ key: 'ansiblejobs', default: [] })
+
+export const applicationsState = atom<IResource[]>({ key: 'applications', default: [] })
+export const channelsState = atom<IResource[]>({ key: 'channels', default: [] })
+export const gitOpsClustersState = atom<IResource[]>({ key: 'gitOpsClusters', default: [] })
+export const placementRulesState = atom<IResource[]>({ key: 'placementRules', default: [] })
+export const subscriptionsState = atom<IResource[]>({ key: 'subscriptions', default: [] })
+export const appProjectsState = atom<IResource[]>({ key: 'appProjects', default: [] })
+export const argoApplicationsState = atom<IResource[]>({ key: 'argoApplications', default: [] })
+export const applicationSetsState = atom<IResource[]>({ key: 'applicationSets', default: [] })
+export const argoCDsState = atom<IResource[]>({ key: 'argoCDs', default: [] })
+
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
 export const bareMetalHostsState = atom<CIM.BareMetalHostK8sResource[]>({ key: 'baremetalhosts', default: [] })
 export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>({
@@ -165,6 +177,17 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setAgentClusterInstalls] = useRecoilState(agentClusterInstallsState)
     const [, setAgents] = useRecoilState(agentsState)
     const [, setAnsibleJobs] = useRecoilState(ansibleJobState)
+
+    const [, setApplicationsState] = useRecoilState(applicationsState)
+    const [, setChannelsState] = useRecoilState(channelsState)
+    const [, setGitOpsClustersState] = useRecoilState(gitOpsClustersState)
+    const [, setPlacementRulesState] = useRecoilState(placementRulesState)
+    const [, setSubscriptionsState] = useRecoilState(subscriptionsState)
+    const [, setAppProjectsState] = useRecoilState(appProjectsState)
+    const [, setArgoApplicationsState] = useRecoilState(argoApplicationsState)
+    const [, setApplicationSetsState] = useRecoilState(applicationSetsState)
+    const [, setArgoCDsState] = useRecoilState(argoCDsState)
+
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const [, setBareMetalHosts] = useRecoilState(bareMetalHostsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
@@ -202,6 +225,17 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(AgentClusterInstallVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(AgentKindVersion, AgentKind, setAgents)
         addSetter(AnsibleJobApiVersion, AnsibleJobKind, setAnsibleJobs)
+
+        addSetter('app.k8s.io/v1beta1', 'Application', setApplicationsState)
+        addSetter('apps.open-cluster-management.io/v1', 'Channel', setChannelsState)
+        addSetter('apps.open-cluster-management.io/v1alpha1', 'GitOpsCluster', setGitOpsClustersState)
+        addSetter('apps.open-cluster-management.io/v1', 'PlacementRule', setPlacementRulesState)
+        addSetter('apps.open-cluster-management.io/v1', 'Subscription', setSubscriptionsState)
+        addSetter('argoproj.io/v1alpha1', 'appProjects', setAppProjectsState)
+        addSetter('argoproj.io/v1alpha1', 'applications', setArgoApplicationsState)
+        addSetter('argoproj.io/v1alpha1', 'applicationSets', setApplicationSetsState)
+        addSetter('argoproj.io/v1alpha1', 'argoCDs', setArgoCDsState)
+
         addSetter(BareMetalAssetApiVersion, BareMetalAssetKind, setBareMetalAssets)
         addSetter(BareMetalHostApiVersion, BareMetalHostKind, setBareMetalHosts)
         addSetter(CertificateSigningRequestApiVersion, CertificateSigningRequestKind, setCertificateSigningRequests)
