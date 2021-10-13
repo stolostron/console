@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmPage } from '@open-cluster-management/ui-components'
-import { Card, CardBody, CardTitle, PageSection, Stack, Text, Title } from '@patternfly/react-core'
+import { Card, CardBody, CardTitle, Page, PageSection, Stack, Text, Title } from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { AcmMasonry } from '../../../components/AcmMasonry'
@@ -98,7 +97,7 @@ export default function WelcomePage() {
     )
 
     return (
-        <AcmPage>
+        <Page>
             <PageSection variant="light">
                 <Stack hasGutter>
                     <Title headingLevel="h1">Welcome! &nbsp; Let’s get started.</Title>
@@ -154,6 +153,6 @@ export default function WelcomePage() {
                     </AcmMasonry>
                 </Stack>
             </PageSection>
-        </AcmPage>
+        </Page>
     )
 }
