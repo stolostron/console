@@ -22,7 +22,6 @@ export function AcmMasonry(props: { children: ReactNode; minSize?: number }) {
             breakpointCols[t] = count++
             t += minSize
         }
-        breakpointCols['default'] = count
         return breakpointCols
     }, [])
 

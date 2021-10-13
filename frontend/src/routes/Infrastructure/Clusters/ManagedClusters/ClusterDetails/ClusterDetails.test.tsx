@@ -37,10 +37,13 @@ import {
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
+<<<<<<< HEAD
     AgentClusterInstallApiVersion,
     AgentClusterInstallGroup,
     AgentClusterInstallKind,
     AgentClusterInstallVersion,
+=======
+>>>>>>> 2620198 (Next: Support applications and policies (#926))
     ClusterCurator,
     ClusterCuratorApiVersion,
     ClusterCuratorKind,
@@ -51,6 +54,12 @@ import {
     ClusterProvision,
     ClusterProvisionApiVersion,
     ClusterProvisionKind,
+<<<<<<< HEAD
+=======
+    MachinePool,
+    MachinePoolApiVersion,
+    MachinePoolKind,
+>>>>>>> 2620198 (Next: Support applications and policies (#926))
     ManagedCluster,
     ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,

@@ -39,6 +39,7 @@ export interface IBulkActionModelProps<T = undefined> {
     actionFn: (item: T) => IRequestResult
     preActionFn?: (items: Array<T>, errors: ItemError<T>[]) => void
     confirmText?: string
+    confirmSideEffects?: string | React.ReactNode
     isDanger?: boolean
     isValidError?: (error: Error) => boolean
     emptyState?: JSX.Element
@@ -93,6 +94,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                 {!errors ? (
                     <Fragment>
                         {props.description}
+                        {props.confirmSideEffects}
                         {props.hideTableAfterSubmit && progress != 0
                             ? undefined
                             : props.columns &&

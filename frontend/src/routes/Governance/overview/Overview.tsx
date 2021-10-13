@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardBody, CardHeader, CardTitle, PageSection, Stack, Text, Title } from '@patternfly/react-core'
+import { Card, CardBody, CardHeader, CardTitle, Divider, PageSection, Stack, Text, Title } from '@patternfly/react-core'
 import { Link } from 'react-router-dom'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { NavigationPath } from '../../../NavigationPath'
@@ -25,7 +25,7 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
 
                 <AcmMasonry>
                     <div>
-                        <Link to={NavigationPath.policies} style={{ textDecoration: 'none' }}>
+                        <Link to={NavigationPath.policies}>
                             <RisksCard
                                 title="Policies"
                                 risks={governanceData.policyRisks}
@@ -35,7 +35,7 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
                         </Link>
                     </div>
                     <div>
-                        <Link to={NavigationPath.clusters} style={{ textDecoration: 'none' }}>
+                        <Link to={NavigationPath.clusters}>
                             <RisksCard
                                 title="Clusters"
                                 risks={governanceData.clusterRisks}
@@ -72,6 +72,7 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
                                             </Title>
                                         </CardTitle>
                                     </CardHeader>
+                                    <Divider />
                                     <CardBody>
                                         <Stack hasGutter>
                                             <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
@@ -118,6 +119,7 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
                                             </Title>
                                         </CardTitle>
                                     </CardHeader>
+                                    <Divider />
                                     <CardBody>
                                         <Stack hasGutter>
                                             <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
@@ -165,6 +167,7 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
                                             </Title>
                                         </CardTitle>
                                     </CardHeader>
+                                    <Divider />
                                     <CardBody>
                                         <Stack hasGutter>
                                             <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>

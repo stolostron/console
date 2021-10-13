@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import { PlacementBinding } from '../../resources/placement-binding'
+import { PlacementRule } from '../../resources/placement-rule'
 import { getPolicySeverity, Policy, PolicySeverity } from '../../resources/policy'
 
 export interface IGovernanceData {
@@ -87,8 +88,8 @@ export interface IPolicyRisks {
 
 export function useGovernanceData(
     policies: Policy[],
-    placementBindings: PlacementBinding[]
-    // placementRules: PlacementRule[]
+    placementBindings: PlacementBinding[],
+    placementRules: PlacementRule[]
 ): IGovernanceData {
     const governanceData = useMemo(() => {
         const governanceDataMap: IGovernanceDataMap = {
@@ -176,7 +177,7 @@ export function useGovernanceData(
                 const group = policyData.metadata.annotations?.[`policy.open-cluster-management.io/${groupName}`]
                 if (group) {
                     for (const name of group.split(',').map((categoryName) => categoryName.trim())) {
-                        const groupingMap = (governanceDataMap as any)[groupName] as unknown as IGroupingMap
+                        const groupingMap = governanceDataMap[groupName] as unknown as IGroupingMap
                         let groupRisks = groupingMap[name]
                         if (!groupRisks) {
                             groupRisks = {
@@ -256,8 +257,8 @@ export function useGovernanceData(
         }
 
         for (const groupName of ['categories', 'standards', 'controls']) {
-            ;(governanceData as any)[groupName] = {
-                risks: calculatePolicyRisks((governanceDataMap as any)[groupName]),
+            governanceData[groupName] = {
+                risks: calculatePolicyRisks(governanceDataMap[groupName]),
                 // {
                 //     synced: Object.values(governanceDataMap[groupName]).filter(
                 //         (v) => v.policyRisks.high === 0 && v.policyRisks.synced > 0
@@ -266,8 +267,8 @@ export function useGovernanceData(
                 //     medium: Object.values(governanceDataMap[groupName]).filter((v) => v.policyRisks.medium > 0).length,
                 //     low: Object.values(governanceDataMap[groupName]).filter((v) => v.policyRisks.low > 0).length,
                 // },
-                groups: Object.keys((governanceDataMap as any)[groupName]).map((name) => {
-                    const value = (governanceDataMap as any)[groupName][name]
+                groups: Object.keys(governanceDataMap[groupName]).map((name) => {
+                    const value = governanceDataMap[groupName][name]
                     return {
                         name,
                         policyRisks: value.policyRisks,

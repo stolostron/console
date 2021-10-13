@@ -6,26 +6,11 @@ import {
     AcmToastGroup,
     AcmToastProvider,
 } from '@open-cluster-management/ui-components'
-import {
-    Dropdown,
-    DropdownItem,
-    DropdownToggle,
-    Nav,
-    NavExpandable,
-    NavItem,
-    NavItemSeparator,
-    NavList,
-    Page,
-    PageHeader,
-    PageSection,
-    PageSidebar,
-    Title,
-} from '@patternfly/react-core'
-import RedHatIcon from '@patternfly/react-icons/dist/js/icons/redhat-icon'
-import { Fragment, lazy, Suspense, useCallback, useMemo, useState } from 'react'
-import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
 import './App.css'
-import { LoadData } from './atoms'
+import { acmRouteState, LoadData } from './atoms'
 import { LoadingPage } from './components/LoadingPage'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
@@ -45,26 +30,13 @@ const CreateInfraEnv = lazy(() => import('./routes/Infrastructure/InfraEnvironme
 const InfraEnvironmentDetailsPage = lazy(
     () => import('./routes/Infrastructure/InfraEnvironments/Details/InfraEnvironmentDetailsPage')
 )
-
+const EditAICluster = lazy(
+    () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/EditAICluster')
+)
+const ClusterCreateProgress = lazy(
+    () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/ClusterCreateProgress')
+)
 const GovernancePage = lazy(() => import('./routes/Governance/Governance'))
-const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
-const OverviewPage = lazy(() => import('./routes/Home/Overview/OverviewPage'))
-
-const SearchPage = lazy(() => import('./routes/Search/SearchPage'))
-const DetailsPage = lazy(() => import('./routes/Search/Details/DetailsPage'))
-
-interface IRoute {
-    type: 'route'
-    route: NavigationPath
-    title: string
-    component: React.ComponentType<RouteComponentProps<any>> | React.ComponentType<any> | undefined
-}
-
-interface IRouteGroup {
-    type: 'group'
-    title: string
-    routes: IRoute[]
-}
 
 export default function App() {
     const routes: (IRoute | IRouteGroup)[] = useMemo(
@@ -155,10 +127,41 @@ export default function App() {
                         <AcmTablePaginationContextProvider localStorageKey="clusters">
                             <Suspense fallback={<LoadingPage />}>
                                 <Switch>
-                                    <Route path={NavigationPath.addCredentials} component={CredentialPage} />
-                                    <Route path={NavigationPath.editCredentials} component={CredentialPage} />
-                                    <Route path={NavigationPath.viewCredentials} component={CredentialPage} />
-
+                                    <Route path={NavigationPath.applications} component={ApplicationsPage} />
+                                    <Route path={NavigationPath.governance} component={GovernancePage} />
+                                    <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
+                                    <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.createClusterPool}
+                                        component={CreateClusterPoolPage}
+                                    />
+                                    <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
+                                    <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
+                                    <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
+                                    <Route exact path={NavigationPath.addCredentials} component={CredentialPage} />
+                                    <Route exact path={NavigationPath.editCredentials} component={CredentialPage} />
+                                    <Route exact path={NavigationPath.viewCredentials} component={CredentialPage} />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.infraEnvironments}
+                                        component={InfraEnvironmentsPage}
+                                    />
+                                    <Route exact path={NavigationPath.createInfraEnv} component={CreateInfraEnv} />
+                                    <Route
+                                        path={NavigationPath.infraEnvironmentDetails}
+                                        component={InfraEnvironmentDetailsPage}
+                                    />
+                                    <Route path={NavigationPath.editCluster} component={EditAICluster} />
+                                    <Route
+                                        path={NavigationPath.clusterCreateProgress}
+                                        component={ClusterCreateProgress}
+                                    />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.ansibleAutomations}
+                                        component={AnsibleAutomationsPage}
+                                    />
                                     <Route
                                         exact
                                         path={NavigationPath.addAnsibleAutomation}

@@ -9,6 +9,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import {
     ButtonVariant,
+    Checkbox,
     Chip,
     DescriptionList,
     DescriptionListDescription,
@@ -24,11 +25,17 @@ import { NoWrap } from '../../../components/NoWrap'
 import { Policy } from '../../../resources/policy'
 import { PolicyRiskLabels } from '../components/PolicyRiskLabels'
 import { IGovernanceData, IPolicy } from '../useGovernanceData'
+import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { deletePolicy } from '../../../lib/delete-policies'
 
 export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
     const { governanceData } = props
 
-    const { t } = useTranslation(['govenance'])
+    const { t } = useTranslation(['governance', 'common'])
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<IPolicy> | { open: false}>({
+        open: false,
+    })
+    const [checked, setChecked ] = useState(false)
     const policyKeyFn = useCallback(
         (resource: Policy) => resource.metadata.uid ?? `${resource.metadata.name}/${resource.metadata.namespace}`,
         []
@@ -36,18 +43,18 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
     const policyColumns = useMemo<IAcmTableColumn<IPolicy>[]>(
         () => [
             {
-                header: t('Name'),
+                header: t('policies.tableHeader.name'),
                 cell: (policy) => {
-                    // let compliantCount = 0
-                    // let noncompliantCount = 0
-                    // if (policy.status?.status) {
-                    //     compliantCount = policy.status.status.filter(
-                    //         (cluster) => cluster.compliant === 'Compliant'
-                    //     ).length
-                    //     noncompliantCount = policy.status.status.filter(
-                    //         (cluster) => cluster.compliant === 'NonCompliant'
-                    //     ).length
-                    // }
+                    let compliantCount = 0
+                    let noncompliantCount = 0
+                    if (policy.status?.status) {
+                        compliantCount = policy.status.status.filter(
+                            (cluster) => cluster.compliant === 'Compliant'
+                        ).length
+                        noncompliantCount = policy.status.status.filter(
+                            (cluster) => cluster.compliant === 'NonCompliant'
+                        ).length
+                    }
                     return (
                         <Fragment>
                             <div>
@@ -72,7 +79,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             //     search: 'metadata.namespace',
             // },
             {
-                header: t('Clusters'),
+                header: t('policies.tableHeader.clusters'),
                 cell: (policy) => {
                     if (policy.status?.status) {
                         return (
@@ -118,7 +125,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             //     sort: (lhs, rhs) => compareNumbers(getPolicySeverity(lhs), getPolicySeverity(rhs)),
             // },
             {
-                header: t('Remediation'),
+                header: t('policies.tableHeader.remediation'),
                 cell: 'spec.remediationAction',
                 sort: 'spec.remediationAction',
             },
@@ -148,7 +155,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             //     cell: () => 'TODO',
             // },
             {
-                header: t('Categories'),
+                header: t('policies.tableHeader.categories'),
                 cell: (policy) => {
                     const categories = policy.metadata.annotations?.['policy.open-cluster-management.io/categories']
                     if (!categories) return <Fragment />
@@ -173,7 +180,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 },
             },
             {
-                header: t('Standards'),
+                header: t('policies.tableHeader.standards'),
                 cell: (policy) => {
                     const standards = policy.metadata.annotations?.['policy.open-cluster-management.io/standards']
                     if (!standards) return <Fragment />
@@ -190,7 +197,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 },
             },
             {
-                header: t('Created'),
+                header: t('policies.tableHeader.created'),
                 cell: (resource) => (
                     <span style={{ whiteSpace: 'nowrap' }}>
                         {resource.metadata.creationTimestamp &&
@@ -203,26 +210,81 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
         []
     )
 
-    const tableActions = useMemo<IAcmTableAction<Policy>[]>(
+    const renderConfirmCheckbox = () => {
+        console.log('checked', checked)
+        function handleChange(checked:boolean){
+            setChecked(!checked)
+            return null
+        }
+
+        return (
+            <Fragment>
+                <Checkbox
+                    id={'remove-policy-resources'}
+                    isChecked={checked}
+                    onClick= {() => handleChange(checked)}
+                    label={'test'}
+                />
+            </Fragment>
+        )
+    }
+
+    const tableActions = useMemo<IAcmTableAction<IPolicy>[]>(
         () => [
             {
-                variant: 'bulk-action',
                 id: 'delete-policy',
-                title: t('Delete'),
-                click: () => {},
+                title: t('policies.bulkActions.delete'),
+                click: (policies: IPolicy[]) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.delete'),
+                        action: t('common:delete'),
+                        processing: t('common:deleting'),
+                        resources: [...policies],
+                        description: t('bulk.message.delete'),
+                        columns: [
+                            {
+                                header: t('policies.tableHeader.name'),
+                                cell: 'metadata.name',
+                                sort: 'metadata.name',
+                            },
+                            {
+                                header: t('policies.tableHeader.placementRule'),
+                                cell: 'status.placement[0].placementRule',
+                            },
+                            {
+                                header: t('policies.tableHeader.placementBinding'),
+                                cell: 'status.placement[0].placementBinding',
+                            }
+                        ],
+                        keyFn:(policy: IPolicy) => policy.metadata.uid as string,
+                        confirmSideEffects: renderConfirmCheckbox(),
+                        actionFn: (policy) => deletePolicy(policy, checked),
+                        close: () => setModalProps({ open: false }),
+                        isDanger: true,
+                        icon: 'warning',
+                    })
+                },
+                variant: 'bulk-action',
             },
             {
                 id: 'seperator-1',
                 variant: 'action-seperator',
             },
             {
-                variant: 'bulk-action',
                 id: 'add-to-set',
-                title: t('Add to policy set'),
+                title: t('bulk.title.addToSet'),
                 click: () => {},
+                variant: 'bulk-action',
             },
+            {
+                id: 'remove-from-set',
+                title: t('bulk.title.removeFromSet'),
+                click: () => {},
+                variant: 'bulk-action',
+            }
         ],
-        []
+        [checked]
     )
 
     const policyRowActions = useMemo<IAcmRowAction<Policy>[]>(
@@ -358,6 +420,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
 
     return (
         <PageSection>
+            <BulkActionModel<IPolicy> {...modalProps} />
             <AcmTable<IPolicy>
                 plural={t('Policies')}
                 columns={activeColumns}

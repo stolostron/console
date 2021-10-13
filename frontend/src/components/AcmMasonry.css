@@ -4,7 +4,6 @@
     display: flex;
     margin-left: -24px; /* gutter size offset */
     width: auto;
-    margin-bottom: -24px; /* gutter size offset */
 }
 
 .my-masonry-grid_column {
@@ -12,6 +11,6 @@
     background-clip: padding-box;
 }
 
-.my-masonry-grid_column > * {
+.my-masonry-grid_column > div {
     margin-bottom: 24px;
 }
