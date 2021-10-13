@@ -1,7 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/* istanbul ignore file */
 
 export enum NavigationPath {
+    home = '/multicloud/home',
+    welcome = '/multicloud/home/welcome',
+    overview = '/multicloud/home/overview',
     addAnsibleAutomation = '/multicloud/ansible-automations/add',
     addCredentials = '/multicloud/credentials/add',
     ansibleAutomations = '/multicloud/ansible-automations',
@@ -38,15 +40,15 @@ export enum NavigationPath {
     editBareMetalAsset = '/multicloud/bare-metal-assets/:namespace/:name',
     editCluster = '/multicloud/cluster/edit/:namespace/:name',
     editCredentials = '/multicloud/credentials/edit/:namespace/:name',
-    governance = '/multicloud/policies',
     importCluster = '/multicloud/import-cluster',
     importCommand = '/multicloud/import-cluster/:clusterName',
     infraEnvironmentDetails = '/multicloud/infra-environments/:namespace/:name',
     infraEnvironmentHosts = '/multicloud/infra-environments/:namespace/:name/hosts',
     infraEnvironmentOverview = '/multicloud/infra-environments/:namespace/:name/overview',
     infraEnvironments = '/multicloud/infra-environments',
-    policies = '/multicloud/policies/policies',
-    policySets = '/multicloud/policies/policy-sets',
+    governance = '/multicloud/governance',
+    policies = '/multicloud/governance/policies',
+    policySets = '/multicloud/governance/policy-sets',
     viewAnsibleAutomation = '/multicloud/ansible-automations/view/:namespace/:name',
     viewCredentials = '/multicloud/credentials/view/:namespace/:name',
 }
