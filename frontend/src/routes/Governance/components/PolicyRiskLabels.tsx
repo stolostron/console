@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Card, CardBody, CardHeader, CardTitle, Title, Tooltip } from '@patternfly/react-core'
+import { Card, CardBody, CardHeader, CardTitle, Divider, Title, Tooltip } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon'
 import ChevronCircleDownIcon from '@patternfly/react-icons/dist/esm/icons/chevron-circle-down-icon'
 import ChevronCircleUpIcon from '@patternfly/react-icons/dist/esm/icons/chevron-circle-up-icon'
@@ -27,6 +27,7 @@ export function RisksCard(props: { title: string; risks: IPolicyRisks; singular:
                     </Title>
                 </CardTitle>
             </CardHeader>
+            <Divider />
             <CardBody>
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'start' }}>
                     <RisksGauge risks={props.risks} />
