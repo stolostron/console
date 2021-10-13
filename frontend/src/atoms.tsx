@@ -90,6 +90,8 @@ import {
     SubmarinerConfigKind,
 } from './resources'
 import { ApplicationApiVersion, ApplicationKind } from './resources/application'
+import { PlacementBinding, PlacementBindingApiVersion, PlacementBindingKind } from './resources/placement-binding'
+import { Policy, PolicyApiVersion, PolicyKind } from './resources/policy'
 
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -131,6 +133,8 @@ export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
 export const managedClustersState = AtomArray<ManagedCluster>()
 export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
+export const policiesState = AtomArray<Policy>()
+export const placementBindingsState = AtomArray<PlacementBinding>()
 export const placementRulesState = AtomArray<IResource>()
 export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
@@ -201,6 +205,8 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
+    const [, setPoliciesState] = useRecoilState(policiesState)
+    const [, setPlacementBindingsState] = useRecoilState(placementBindingsState)
     const [, setPlacementRulesState] = useRecoilState(placementRulesState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
     const [, setSecrets] = useRecoilState(secretsState)
@@ -249,6 +255,8 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
         addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
         addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
+        addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
+        addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
         addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
         addSetter(SecretApiVersion, SecretKind, setSecrets)
         addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
