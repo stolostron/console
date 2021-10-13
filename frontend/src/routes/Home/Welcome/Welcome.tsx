@@ -113,7 +113,7 @@ export default function WelcomePage() {
                 <AcmMasonry minSize={1000}>
                     {cards.map((card) => (
                         <div>
-                            <Link to={card.link} style={{ color: 'black' }}>
+                            <Link to={card.link} style={{ color: 'black', textDecoration: 'none' }}>
                                 <Card isRounded isLarge isHoverable>
                                     <CardTitle>{card.title}</CardTitle>
                                     <CardBody>{card.description}</CardBody>
