@@ -84,6 +84,9 @@ export function startWatching(): void {
         fieldSelector: { 'metadata.namespace': 'assisted-installer', 'metadata.name': 'assisted-service-config' },
     })
     watchResource(token, 'v1', 'configmaps', {
+        fieldSelector: { 'metadata.namespace': 'rhacm', 'metadata.name': 'assisted-service' },
+    })
+    watchResource(token, 'v1', 'configmaps', {
         fieldSelector: { 'metadata.namespace': 'openshift-config-managed', 'metadata.name': 'console-public' },
     })
     watchResource(token, 'v1', 'namespaces')
