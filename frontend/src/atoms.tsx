@@ -89,6 +89,7 @@ import {
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
 } from './resources'
+import { ApplicationApiVersion, ApplicationKind } from './resources/application'
 
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -213,7 +214,7 @@ export function LoadData(props: { children?: ReactNode }) {
             if (!setters[apiVersion]) setters[apiVersion] = {}
             setters[apiVersion][kind] = setter
         }
-        addSetter('app.k8s.io/v1beta1', 'Application', setApplicationsState)
+        addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
         addSetter('apps.open-cluster-management.io/v1', 'Channel', setChannelsState)
         addSetter('apps.open-cluster-management.io/v1', 'PlacementRule', setPlacementRulesState)
         addSetter('apps.open-cluster-management.io/v1', 'Subscription', setSubscriptionsState)
