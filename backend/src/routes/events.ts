@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import AbortController from 'abort-controller'
 import { IncomingMessage, STATUS_CODES } from 'http'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
@@ -87,6 +86,8 @@ export function startWatching(): void {
     watchResource(token, 'inventory.open-cluster-management.io/v1alpha1', 'bareMetalAssets')
     watchResource(token, 'metal3.io/v1alpha1', 'baremetalhosts')
     watchResource(token, 'operator.open-cluster-management.io/v1', 'multiClusterHubs')
+    watchResource(token, 'policy.open-cluster-management.io/v1', 'placementBindings')
+    watchResource(token, 'policy.open-cluster-management.io/v1', 'policies')
     watchResource(token, 'submarineraddon.open-cluster-management.io/v1alpha1', 'submarinerconfigs')
     watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs', { mightBeNotFound: true })
     watchResource(token, 'v1', 'configmaps', { fieldSelector: { 'metadata.name': 'insight-content-data' } })
