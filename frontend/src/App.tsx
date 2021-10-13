@@ -4,17 +4,17 @@
 import {
     AcmHeader,
     AcmTablePaginationContextProvider,
-    AcmToastProvider,
     AcmToastGroup,
+    AcmToastProvider,
 } from '@open-cluster-management/ui-components'
-import { Suspense, lazy } from 'react'
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
+import './App.css'
 import { acmRouteState, LoadData } from './atoms'
+import { LoadingPage } from './components/LoadingPage'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
-import { LoadingPage } from './components/LoadingPage'
-import './App.css'
 
 const ApplicationsPage = lazy(() => import('./routes/Applications/Applications'))
 
@@ -56,7 +56,7 @@ const EditAICluster = lazy(
 const ClusterCreateProgress = lazy(
     () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/ClusterCreateProgress')
 )
-const GovernancePage = lazy(() => import('./routes/governance/Governance'))
+const GovernancePage = lazy(() => import('./routes/Governance/Governance'))
 
 export default function App() {
     const [route] = useRecoilState(acmRouteState)
