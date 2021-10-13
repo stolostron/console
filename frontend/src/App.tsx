@@ -56,6 +56,7 @@ const EditAICluster = lazy(
 const ClusterCreateProgress = lazy(
     () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/ClusterCreateProgress')
 )
+const GovernancePage = lazy(() => import('./routes/governance/Governance'))
 
 export default function App() {
     const [route] = useRecoilState(acmRouteState)
@@ -69,6 +70,7 @@ export default function App() {
                             <Suspense fallback={<LoadingPage />}>
                                 <Switch>
                                     <Route path={NavigationPath.applications} component={ApplicationsPage} />
+                                    <Route path={NavigationPath.governance} component={GovernancePage} />
                                     <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
                                     <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
                                     <Route
