@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { listResources } from './utils/resource-request'
 import { IResource, IResourceDefinition } from './resource'
+import { Metadata } from './metadata'
 
 export const DiscoveredClusterApiVersion = 'discovery.open-cluster-management.io/v1alpha1'
 export type DiscoveredClusterApiVersionType = 'discovery.open-cluster-management.io/v1alpha1'
@@ -18,7 +17,7 @@ export const DiscoveredClusterDefinition: IResourceDefinition = {
 export interface DiscoveredCluster extends IResource {
     apiVersion: DiscoveredClusterApiVersionType
     kind: DiscoveredClusterKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec: {
         name: string
         console: string

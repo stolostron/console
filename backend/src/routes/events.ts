@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import AbortController from 'abort-controller'
 import { IncomingMessage, STATUS_CODES } from 'http'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
@@ -55,8 +54,18 @@ export function startWatching(): void {
     watchResource(token, 'addon.open-cluster-management.io/v1alpha1', 'managedClusterAddons')
     watchResource(token, 'agent-install.openshift.io/v1beta1', 'agents')
     watchResource(token, 'agent-install.openshift.io/v1beta1', 'infraenvs')
+    watchResource(token, 'app.k8s.io/v1beta1', 'applications')
+    watchResource(token, 'apps.open-cluster-management.io/v1', 'channels')
+    // watchResource(token, 'apps.open-cluster-management.io/v1', 'deployables')
+    watchResource(token, 'apps.open-cluster-management.io/v1alpha1', 'gitOpsClusters')
+    // watchResource(token, 'apps.open-cluster-management.io/v1', 'helmReleases')
+    watchResource(token, 'apps.open-cluster-management.io/v1', 'placementRules')
+    watchResource(token, 'apps.open-cluster-management.io/v1', 'subscriptions')
+    watchResource(token, 'argoproj.io/v1alpha1', 'appProjects')
+    watchResource(token, 'argoproj.io/v1alpha1', 'applications')
+    watchResource(token, 'argoproj.io/v1alpha1', 'applicationSets')
+    watchResource(token, 'argoproj.io/v1alpha1', 'argoCDs')
     watchResource(token, 'config.openshift.io/v1', 'infrastructures')
-
     watchResource(token, 'certificates.k8s.io/v1beta1', 'certificateSigningRequests', {
         labelSelector: { 'open-cluster-management.io/cluster-name': '' },
     })
@@ -77,6 +86,8 @@ export function startWatching(): void {
     watchResource(token, 'inventory.open-cluster-management.io/v1alpha1', 'bareMetalAssets')
     watchResource(token, 'metal3.io/v1alpha1', 'baremetalhosts')
     watchResource(token, 'operator.open-cluster-management.io/v1', 'multiClusterHubs')
+    watchResource(token, 'policy.open-cluster-management.io/v1', 'placementBindings')
+    watchResource(token, 'policy.open-cluster-management.io/v1', 'policies')
     watchResource(token, 'submarineraddon.open-cluster-management.io/v1alpha1', 'submarinerconfigs')
     watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs', { mightBeNotFound: true })
     watchResource(token, 'v1', 'configmaps', { fieldSelector: { 'metadata.name': 'insight-content-data' } })

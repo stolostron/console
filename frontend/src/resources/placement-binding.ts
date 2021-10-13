@@ -1,10 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { IResource } from '.'
 import { Metadata } from './metadata'
 import { ResourceRef } from './resource-ref'
 
-export interface PlacementBinding {
-    apiVersion: 'policy.open-cluster-management.io/v1'
-    kind: 'PlacementBinding'
+export const PlacementBindingApiVersion = 'policy.open-cluster-management.io/v1'
+export type PlacementBindingApiVersionType = 'policy.open-cluster-management.io/v1'
+
+export const PlacementBindingKind = 'PlacementBinding'
+export type PlacementBindingKindType = 'PlacementBinding'
+
+export interface PlacementBinding extends IResource {
+    apiVersion: PlacementBindingApiVersionType
+    kind: PlacementBindingKindType
     metadata: Metadata
     placementRef: ResourceRef
     subjects?: ResourceRef[] | null

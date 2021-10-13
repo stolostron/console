@@ -4,17 +4,19 @@
 import {
     AcmHeader,
     AcmTablePaginationContextProvider,
-    AcmToastProvider,
     AcmToastGroup,
+    AcmToastProvider,
 } from '@open-cluster-management/ui-components'
-import { Suspense, lazy } from 'react'
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
+import './App.css'
 import { acmRouteState, LoadData } from './atoms'
+import { LoadingPage } from './components/LoadingPage'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
-import { LoadingPage } from './components/LoadingPage'
-import './App.css'
+
+const ApplicationsPage = lazy(() => import('./routes/Applications/Applications'))
 
 const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
 const ClusterDetailsPage = lazy(
@@ -54,6 +56,7 @@ const EditAICluster = lazy(
 const ClusterCreateProgress = lazy(
     () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/ClusterCreateProgress')
 )
+const GovernancePage = lazy(() => import('./routes/Governance/Governance'))
 
 export default function App() {
     const [route] = useRecoilState(acmRouteState)
@@ -66,6 +69,8 @@ export default function App() {
                         <AcmTablePaginationContextProvider localStorageKey="clusters">
                             <Suspense fallback={<LoadingPage />}>
                                 <Switch>
+                                    <Route path={NavigationPath.applications} component={ApplicationsPage} />
+                                    <Route path={NavigationPath.governance} component={GovernancePage} />
                                     <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
                                     <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
                                     <Route
