@@ -91,6 +91,7 @@ import {
 } from './resources'
 import { ApplicationApiVersion, ApplicationKind } from './resources/application'
 import { PlacementBinding, PlacementBindingApiVersion, PlacementBindingKind } from './resources/placement-binding'
+import { PlacementRule } from './resources/placement-rule'
 import { Policy, PolicyApiVersion, PolicyKind } from './resources/policy'
 
 let atomArrayKey = 0
@@ -135,7 +136,7 @@ export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
 export const policiesState = AtomArray<Policy>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
-export const placementRulesState = AtomArray<IResource>()
+export const placementRulesState = AtomArray<PlacementRule>()
 export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()

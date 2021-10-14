@@ -42,7 +42,6 @@ export default function GovernancePage() {
     const isOverview = location.pathname == NavigationPath.governance
     return (
         <AcmPage
-            hasDrawer
             header={
                 <AcmPageHeader
                     title={t('Governance')}
@@ -80,11 +79,7 @@ export default function GovernancePage() {
                             path={NavigationPath.policies}
                             render={() => <PoliciesPage governanceData={governanceData} />}
                         />
-                        <Route
-                            exact
-                            path={NavigationPath.policySets}
-                            render={() => <PolicySetsPage governanceData={governanceData} />}
-                        />
+                        <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
                     </Switch>
                 </Suspense>
             </PageContext.Provider>
