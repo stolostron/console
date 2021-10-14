@@ -1,0 +1,14 @@
+{
+    "policies.tableHeader.clusters": "Clusters",
+    "policies.tableHeader.name": "Name",
+    "policies.tableHeader.remediation": "Remediation",
+    "policies.tableHeader.controls": "Controls",
+    "policies.tableHeader.categories": "Categories",
+    "policies.tableHeader.standards": "Standards",
+    "policies.tableHeader.created": "Created",
+
+    "policies.bulkActions.delete": "Delete",
+
+    "bulk.title.delete": "Permanently delete policy?",
+    "bulk.message.delete": "After you delete the selected policies, all of the information is permanently lost."
+}
