@@ -288,6 +288,13 @@ export const getConditionStatusMessage = (condition: string, conditions: V1Custo
     return cond?.message
 }
 
+export const getLatestConditionStatusMessage = (
+    condition: string,
+    conditions: V1CustomResourceDefinitionCondition[]
+) => {
+    return conditions[0].type === condition
+}
+
 export function getOwner(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim) {
     const userIdentity = 'open-cluster-management.io/user-identity'
     const cdUserIdentity = clusterDeployment?.metadata.annotations?.[userIdentity]
@@ -741,6 +748,7 @@ export function getClusterStatus(
             cdConditions
         )
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
+        const provisionCurrentlyFailing = getLatestConditionStatusMessage('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
 
@@ -793,6 +801,8 @@ export function getClusterStatus(
                     provisionFailedCondition?.message?.includes(currentProvisionRef) ||
                     provisionFailedCondition?.reason === 'InvalidInstallConfig'
                 ) {
+                    cdStatus = ClusterStatus.provisionfailed
+                } else if (provisionCurrentlyFailing) {
                     cdStatus = ClusterStatus.provisionfailed
                 } else {
                     cdStatus = ClusterStatus.creating
