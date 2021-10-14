@@ -145,7 +145,7 @@ export default function WelcomePage() {
                                     style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
                                 >
                                     <CardTitle>
-                                        <div style={{ display: 'flex', gap: 16 }}>
+                                        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                                             {card.icon}
                                             {card.title}
                                         </div>
@@ -188,7 +188,7 @@ export default function WelcomePage() {
                                 style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
                             >
                                 <CardTitle>
-                                    <div style={{ display: 'flex', gap: 16 }}>
+                                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                                         {card.icon}
                                         {card.title}
                                     </div>
