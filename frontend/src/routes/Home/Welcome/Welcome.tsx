@@ -49,7 +49,7 @@ export default function WelcomePage() {
                 title: 'Multicluster networking',
                 description:
                     'Enable direct networking connection between different on-premises or cloud-hosted Kubernetes clusters by grouping them in cluster sets and enabling the Submariner add-on.',
-                link: NavigationPath.overview,
+                link: NavigationPath.clusterSets,
             },
         ],
         []
