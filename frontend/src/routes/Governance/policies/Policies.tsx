@@ -214,7 +214,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             {
                 id: 'delete-policy',
                 title: t('policies.bulkActions.delete'),
-                click: (policies) => {
+                click: (policies: IPolicy[]) => {
                     setModalProps({
                         open: true,
                         title: t('bulk.title.delete'),
@@ -229,6 +229,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                                 sort: 'metadata.name',
                             },
                         ],
+                        keyFn:(policy: IPolicy) => policy.metadata.uid as string,
                         actionFn: deleteResource,
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
