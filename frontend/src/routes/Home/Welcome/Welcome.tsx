@@ -21,7 +21,7 @@ export default function WelcomePage() {
                 icon: <OverviewIcon />,
                 title: 'End-to-end visibility',
                 description:
-                    'Go to Overview View system alerts, critical application metrics, and overall system health. Search, identify, and resolve issues that are impacting distributed workloads using an operational dashboard designed for Site Reliability Engineers (SREs).',
+                    'View system alerts, critical application metrics, and overall system health. Search, identify, and resolve issues that are impacting distributed workloads using an operational dashboard designed for Site Reliability Engineers (SREs).',
                 link: NavigationPath.overview,
             },
             {
