@@ -88,7 +88,7 @@
         "monaco-editor-webpack-plugin": "^4.1.2",
         "nock": "^13.1.3",
         "node-util": "^0.0.1",
-        "openshift-assisted-ui-lib": "1.5.39",
+        "openshift-assisted-ui-lib": "1.5.39-1",
         "path-browserify": "^1.0.1",
         "prettier": "^2.4.1",
         "process": "^0.11.10",
