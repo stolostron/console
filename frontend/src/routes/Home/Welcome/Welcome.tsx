@@ -11,7 +11,6 @@ import GovernanceIcon from './graphics/welcome-card-4-icon.svg'
 import NetworkingIcon from './graphics/welcome-card-5-icon.svg'
 import CommunityIcon from './graphics/welcome-community-icon.svg'
 import HeaderGraphic from './graphics/Welcome-page-header.png'
-import SlackIcon from './graphics/welcome-slack-icon.svg'
 import SupportIcon from './graphics/welcome-support-icon.svg'
 
 export default function WelcomePage() {
@@ -98,16 +97,18 @@ export default function WelcomePage() {
                 icon: <CommunityIcon />,
                 title: 'Technical community',
                 description: 'Want more information? Check out the developer community.',
+                link: 'https://www.redhat.com/en/blog/products',
             },
-            {
-                icon: <SlackIcon />,
-                title: 'Slack channel',
-                description: 'Join our Slack community to connect and chat with us.',
-            },
+            // {
+            //     icon: <SlackIcon />,
+            //     title: 'Slack channel',
+            //     description: 'Join our Slack community to connect and chat with us.',
+            // },
             {
                 icon: <SupportIcon />,
                 title: 'Support center',
                 description: 'Need technical support? Contact us.',
+                link: 'https://access.redhat.com/support',
             },
         ],
         []
@@ -181,20 +182,24 @@ export default function WelcomePage() {
                     <Title headingLevel="h2">Converse and connect.</Title>
                     <AcmMasonry minSize={400}>
                         {connections.map((card) => (
-                            <Card
-                                isRounded
-                                isHoverable
-                                key={card.title}
-                                style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
-                            >
-                                <CardTitle>
-                                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                                        {card.icon}
-                                        {card.title}
-                                    </div>
-                                </CardTitle>
-                                <CardBody>{card.description}</CardBody>
-                            </Card>
+                            <div>
+                                <Link to={card.link} style={{ color: 'black', textDecoration: 'none' }}>
+                                    <Card
+                                        isRounded
+                                        isHoverable
+                                        key={card.title}
+                                        style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
+                                    >
+                                        <CardTitle>
+                                            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                                                {card.icon}
+                                                {card.title}
+                                            </div>
+                                        </CardTitle>
+                                        <CardBody>{card.description}</CardBody>
+                                    </Card>
+                                </Link>
+                            </div>
                         ))}
                     </AcmMasonry>
                 </Stack>
