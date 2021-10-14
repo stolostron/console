@@ -16,9 +16,6 @@ import {
     ClusterProvision,
     ClusterProvisionApiVersion,
     ClusterProvisionKind,
-    MachinePool,
-    MachinePoolApiVersion,
-    MachinePoolKind,
     ManagedCluster,
     ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
@@ -54,7 +51,7 @@ import {
     managedClusterSetsState,
     managedClustersState,
 } from '../../../../../atoms'
-import { nockCreate, nockDelete, nockIgnoreRBAC, nockNamespacedList } from '../../../../../lib/nock-util'
+import { nockCreate, nockDelete, nockGet, nockIgnoreRBAC, nockNamespacedList } from '../../../../../lib/nock-util'
 import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
     clickByLabel,
@@ -69,8 +66,11 @@ import {
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import ClusterDetails from './ClusterDetails'
-
-export const clusterName = 'test-cluster'
+import {
+    clusterName,
+    mockMachinePoolAuto,
+    mockMachinePoolManual,
+} from './ClusterMachinePools/ClusterDetails.sharedmocks'
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
@@ -644,143 +644,6 @@ const mockClusterProvisions: ClusterProvision = {
     },
 }
 
-export const mockMachinePoolManual: MachinePool = {
-    apiVersion: MachinePoolApiVersion,
-    kind: MachinePoolKind,
-    metadata: {
-        name: `${clusterName}-manual`,
-        namespace: clusterName,
-    },
-    spec: {
-        clusterDeploymentRef: {
-            name: clusterName,
-        },
-        name: 'worker',
-        platform: {
-            aws: {
-                rootVolume: {
-                    iops: 100,
-                    size: 22,
-                    type: 'gp2',
-                },
-                type: 'm4.xlarge',
-            },
-        },
-        replicas: 3,
-    },
-    status: {
-        replicas: 3,
-        machineSets: [
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1a`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1b`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1c`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1d`,
-                replicas: 0,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1e`,
-                replicas: 0,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1f`,
-                replicas: 0,
-            },
-        ],
-    },
-}
-
-export const mockMachinePoolAuto: MachinePool = {
-    apiVersion: MachinePoolApiVersion,
-    kind: MachinePoolKind,
-    metadata: {
-        name: `${clusterName}-auto`,
-        namespace: clusterName,
-    },
-    spec: {
-        clusterDeploymentRef: {
-            name: clusterName,
-        },
-        name: 'worker',
-        platform: {
-            aws: {
-                rootVolume: {
-                    iops: 100,
-                    size: 22,
-                    type: 'gp2',
-                },
-                type: 'm4.xlarge',
-            },
-        },
-        autoscaling: {
-            minReplicas: 1,
-            maxReplicas: 3,
-        },
-    },
-    status: {
-        replicas: 3,
-        machineSets: [
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1a`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1b`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1c`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1d`,
-                replicas: 0,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1e`,
-                replicas: 0,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1f`,
-                replicas: 0,
-            },
-        ],
-    },
-}
-
 const mockClusterCurator: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
     kind: ClusterCuratorKind,
@@ -794,6 +657,14 @@ const mockClusterCurator: ClusterCurator = {
             towerAuthSecret: 'ansible-credential-i',
             prehook: [],
         },
+    },
+}
+
+const mockRHACMNamespace = {
+    apiVersion: 'v1',
+    kind: 'Namespace',
+    metadata: {
+        name: 'rhacm',
     },
 }
 
@@ -948,10 +819,13 @@ const AIComponent = () => <Component clusterDeployment={mockAIClusterDeployment}
 describe('ClusterDetails for On Premise', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
-        render(<AIComponent />)
     })
 
     test('overview page renders AI empty details', async () => {
+        const nocks: Scope[] = [nockGet(mockRHACMNamespace, undefined, 404)]
+        render(<AIComponent />)
+        await waitForNocks(nocks)
+
         await waitForText(clusterName, true)
         await waitForText('tab.overview')
         await waitForText('table.details')
