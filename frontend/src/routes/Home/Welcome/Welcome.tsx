@@ -158,14 +158,16 @@ export default function WelcomePage() {
                         Easy to use and simple to understand, Red Hat Advanced Cluster Management for Kubernetes
                         provides the following mission critical capabilities based on open source projects:
                     </Text>
-                    <AcmMasonry minSize={400}>
-                        {capabilities.map((card) => (
-                            <Card isRounded isFlat key={card.title}>
-                                <CardTitle>{card.title}</CardTitle>
-                                <CardBody>{card.description}</CardBody>
-                            </Card>
-                        ))}
-                    </AcmMasonry>
+                    <div style={{ paddingTop: 16 }}>
+                        <AcmMasonry minSize={400}>
+                            {capabilities.map((card) => (
+                                <Card isRounded isFlat key={card.title}>
+                                    <CardTitle>{card.title}</CardTitle>
+                                    <CardBody>{card.description}</CardBody>
+                                </Card>
+                            ))}
+                        </AcmMasonry>
+                    </div>
                 </Stack>
             </PageSection>
             <PageSection variant="default">
