@@ -34,6 +34,7 @@ import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import { CIM } from 'openshift-assisted-ui-lib'
 import {
     clusterCuratorsState,
     managedClusterSetsState,
@@ -53,11 +54,14 @@ import {
     waitForLabelText,
     waitForNocks,
     waitForText,
+    waitForRole,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import CreateClusterPage from './CreateCluster'
+import { Scope } from 'nock/types'
 
 const clusterName = 'test'
+const baseDomain = 'base.domain.com'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
 //const awsProjectNamespace = 'test-aws-namespace'
 
@@ -67,10 +71,10 @@ const clusterImageSet: ClusterImageSet = {
     apiVersion: ClusterImageSetApiVersion,
     kind: ClusterImageSetKind,
     metadata: {
-        name: 'ocp-release43',
+        name: 'ocp-release48',
     },
     spec: {
-        releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.6.15-x86_64',
+        releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.8.15-x86_64',
     },
 }
 const mockClusterImageSet = [clusterImageSet]
@@ -92,7 +96,7 @@ const providerConnection: ProviderConnection = {
         bootstrapOSImage: 'bootstrapOSImage',
         clusterOSImage: 'clusterOSImage',
         additionalTrustBundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
-        baseDomain: 'base.domain',
+        baseDomain,
         pullSecret: '{"pullSecret":"secret"}',
         'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
         'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
@@ -225,7 +229,7 @@ const providerConnectionAws: ProviderConnection = {
     stringData: {
         aws_access_key_id: 'fake-aws-key-id',
         aws_secret_access_key: 'fake-aws-secret-access-key',
-        baseDomain: 'base.domain',
+        baseDomain,
         pullSecret: '{"pullSecret":"secret"}',
         'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----',
         'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
@@ -331,6 +335,20 @@ const mockManagedCluster: ManagedCluster = {
     },
 }
 
+const mockManagedClusterAI: ManagedCluster = {
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: {
+        labels: {
+            cloud: 'hybrid',
+            name: 'test',
+            myLabelKey: 'myValue',
+        },
+        name: 'test',
+    },
+    spec: { hubAcceptsClient: true },
+}
+
 const mockPullSecret = {
     apiVersion: 'v1',
     kind: 'Secret',
@@ -344,6 +362,18 @@ const mockPullSecret = {
     },
     stringData: {
         '.dockerconfigjson': '{"pullSecret":"secret"}',
+    },
+    type: 'kubernetes.io/dockerconfigjson',
+}
+
+const pullSecretAI = '{"auths":{"cloud.openshift.com":{"auth":"b3BlbSKIPPED","email":"my@email.somewhere.com"}}}'
+const mockPullSecretAI = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: { name: 'pullsecret-cluster-test', namespace: 'test', labels: {} },
+    data: {
+        '.dockerconfigjson':
+            'eyJhdXRocyI6eyJjbG91ZC5vcGVuc2hpZnQuY29tIjp7ImF1dGgiOiJiM0JsYlNLSVBQRUQiLCJlbWFpbCI6Im15QGVtYWlsLnNvbWV3aGVyZS5jb20ifX19',
     },
     type: 'kubernetes.io/dockerconfigjson',
 }
@@ -362,7 +392,7 @@ const mockInstallConfigSecret = {
     type: 'Opaque',
     data: {
         'install-config.yaml':
-            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogdGVzdApiYXNlRG9tYWluOiBiYXNlLmRvbWFpbgpjb250cm9sUGxhbmU6CiAgbmFtZTogbWFzdGVyCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGJhcmVtZXRhbDoge30KY29tcHV0ZToKICAtIG5hbWU6IHdvcmtlcgogICAgcmVwbGljYXM6IDIKbmV0d29ya2luZzoKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgY2x1c3Rlck5ldHdvcms6CiAgICAtIGNpZHI6IDEwLjEyOC4wLjAvMTQKICAgICAgaG9zdFByZWZpeDogMjMKICBtYWNoaW5lTmV0d29yazoKICAgIC0gY2lkcjogMTAuMC4wLjAvMTYKICBzZXJ2aWNlTmV0d29yazoKICAgIC0gMTcyLjMwLjAuMC8xNgpwbGF0Zm9ybToKICBiYXJlbWV0YWw6CiAgICBsaWJ2aXJ0VVJJOiBxZW11K3NzaDovL2xpYnZpcnRVUkkKICAgIHByb3Zpc2lvbmluZ05ldHdvcmtDSURSOiAxMC40LjUuMwogICAgcHJvdmlzaW9uaW5nTmV0d29ya0ludGVyZmFjZTogZW5wMXMwCiAgICBwcm92aXNpb25pbmdCcmlkZ2U6IHByb3Zpc2lvbmluZwogICAgZXh0ZXJuYWxCcmlkZ2U6IGJhcmVtZXRhbAogICAgYXBpVklQOiBudWxsCiAgICBpbmdyZXNzVklQOiBudWxsCiAgICBib290c3RyYXBPU0ltYWdlOiBib290c3RyYXBPU0ltYWdlCiAgICBjbHVzdGVyT1NJbWFnZTogY2x1c3Rlck9TSW1hZ2UKICAgIGhvc3RzOgogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC0wCiAgICAgICAgbmFtZXNwYWNlOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlCiAgICAgICAgcm9sZTogbWFzdGVyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogZXhhbXBsZS5jb206ODAKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTEKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiBleGFtcGxlLmNvbTo4MAogICAgICAgICAgZGlzYWJsZUNlcnRpZmljYXRlVmVyaWZpY2F0aW9uOiB0cnVlCiAgICAgICAgICB1c2VybmFtZTogdGVzdAogICAgICAgICAgcGFzc3dvcmQ6IHRlc3QKICAgICAgICBib290TUFDQWRkcmVzczogMDA6OTA6N0Y6MTI6REU6N0YKICAgICAgICBoYXJkd2FyZVByb2ZpbGU6IGRlZmF1bHQKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMgogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IG1hc3RlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6IGV4YW1wbGUuY29tOjgwCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC0zCiAgICAgICAgbmFtZXNwYWNlOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlCiAgICAgICAgcm9sZTogd29ya2VyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogZXhhbXBsZS5jb206ODAKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTQKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiB3b3JrZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiBleGFtcGxlLmNvbTo4MAogICAgICAgICAgZGlzYWJsZUNlcnRpZmljYXRlVmVyaWZpY2F0aW9uOiB0cnVlCiAgICAgICAgICB1c2VybmFtZTogbnVsbAogICAgICAgICAgcGFzc3dvcmQ6IG51bGwKICAgICAgICBib290TUFDQWRkcmVzczogMDA6OTA6N0Y6MTI6REU6N0YKICAgICAgICBoYXJkd2FyZVByb2ZpbGU6IGRlZmF1bHQKcHVsbFNlY3JldDogJycKc3NoS2V5OiBzc2gtcnNhIEFBQUFCMSBmYWtlQGVtYWlsLmNvbQphZGRpdGlvbmFsVHJ1c3RCdW5kbGU6IHwtCiAgLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCiAgY2VydGRhdGEKICAtLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCmltYWdlQ29udGVudFNvdXJjZXM6CiAgLSBtaXJyb3JzOgogICAgICAtIGltYWdlLm1pcnJvcjoxMjMvYWJjCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlLW5pZ2h0bHkKICAtIG1pcnJvcnM6CiAgICAgIC0gaW1hZ2UubWlycm9yOjEyMy9hYmMKICAgIHNvdXJjZTogcXVheS5pby9vcGVuc2hpZnQtcmVsZWFzZS1kZXYvb2NwLXJlbGVhc2UKICAtIG1pcnJvcnM6CiAgICAgIC0gaW1hZ2UubWlycm9yOjEyMy9hYmMKICAgIHNvdXJjZTogcXVheS5pby9vcGVuc2hpZnQtcmVsZWFzZS1kZXYvb2NwLXY0LjAtYXJ0LWRldgo=',
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogdGVzdApiYXNlRG9tYWluOiBiYXNlLmRvbWFpbi5jb20KY29udHJvbFBsYW5lOgogIG5hbWU6IG1hc3RlcgogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBiYXJlbWV0YWw6IHt9CmNvbXB1dGU6CiAgLSBuYW1lOiB3b3JrZXIKICAgIHJlcGxpY2FzOiAyCm5ldHdvcmtpbmc6CiAgbmV0d29ya1R5cGU6IE9wZW5TaGlmdFNETgogIGNsdXN0ZXJOZXR3b3JrOgogICAgLSBjaWRyOiAxMC4xMjguMC4wLzE0CiAgICAgIGhvc3RQcmVmaXg6IDIzCiAgbWFjaGluZU5ldHdvcms6CiAgICAtIGNpZHI6IDEwLjAuMC4wLzE2CiAgc2VydmljZU5ldHdvcms6CiAgICAtIDE3Mi4zMC4wLjAvMTYKcGxhdGZvcm06CiAgYmFyZW1ldGFsOgogICAgbGlidmlydFVSSTogcWVtdStzc2g6Ly9saWJ2aXJ0VVJJCiAgICBwcm92aXNpb25pbmdOZXR3b3JrQ0lEUjogMTAuNC41LjMKICAgIHByb3Zpc2lvbmluZ05ldHdvcmtJbnRlcmZhY2U6IGVucDFzMAogICAgcHJvdmlzaW9uaW5nQnJpZGdlOiBwcm92aXNpb25pbmcKICAgIGV4dGVybmFsQnJpZGdlOiBiYXJlbWV0YWwKICAgIGFwaVZJUDogbnVsbAogICAgaW5ncmVzc1ZJUDogbnVsbAogICAgYm9vdHN0cmFwT1NJbWFnZTogYm9vdHN0cmFwT1NJbWFnZQogICAgY2x1c3Rlck9TSW1hZ2U6IGNsdXN0ZXJPU0ltYWdlCiAgICBob3N0czoKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMAogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IG1hc3RlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6IGV4YW1wbGUuY29tOjgwCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC0xCiAgICAgICAgbmFtZXNwYWNlOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlCiAgICAgICAgcm9sZTogbWFzdGVyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogZXhhbXBsZS5jb206ODAKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTIKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiBleGFtcGxlLmNvbTo4MAogICAgICAgICAgZGlzYWJsZUNlcnRpZmljYXRlVmVyaWZpY2F0aW9uOiB0cnVlCiAgICAgICAgICB1c2VybmFtZTogdGVzdAogICAgICAgICAgcGFzc3dvcmQ6IHRlc3QKICAgICAgICBib290TUFDQWRkcmVzczogMDA6OTA6N0Y6MTI6REU6N0YKICAgICAgICBoYXJkd2FyZVByb2ZpbGU6IGRlZmF1bHQKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMwogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IHdvcmtlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6IGV4YW1wbGUuY29tOjgwCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC00CiAgICAgICAgbmFtZXNwYWNlOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlCiAgICAgICAgcm9sZTogd29ya2VyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogZXhhbXBsZS5jb206ODAKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IG51bGwKICAgICAgICAgIHBhc3N3b3JkOiBudWxsCiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CnB1bGxTZWNyZXQ6ICcnCnNzaEtleTogc3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20KYWRkaXRpb25hbFRydXN0QnVuZGxlOiB8LQogIC0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQogIGNlcnRkYXRhCiAgLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQppbWFnZUNvbnRlbnRTb3VyY2VzOgogIC0gbWlycm9yczoKICAgICAgLSBpbWFnZS5taXJyb3I6MTIzL2FiYwogICAgc291cmNlOiBxdWF5LmlvL29wZW5zaGlmdC1yZWxlYXNlLWRldi9vY3AtcmVsZWFzZS1uaWdodGx5CiAgLSBtaXJyb3JzOgogICAgICAtIGltYWdlLm1pcnJvcjoxMjMvYWJjCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlCiAgLSBtaXJyb3JzOgogICAgICAtIGltYWdlLm1pcnJvcjoxMjMvYWJjCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC12NC4wLWFydC1kZXYK',
     },
 }
 
@@ -380,7 +410,7 @@ const mockInstallConfigSecretPrivate = {
     type: 'Opaque',
     data: {
         'install-config.yaml':
-            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluCmNvbnRyb2xQbGFuZToKICBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6IG1hc3RlcgogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogNDAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKY29tcHV0ZToKLSBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6ICd3b3JrZXInCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGF3czoKICAgICAgcm9vdFZvbHVtZToKICAgICAgICBpb3BzOiAyMDAwCiAgICAgICAgc2l6ZTogMTAwCiAgICAgICAgdHlwZTogaW8xCiAgICAgIHR5cGU6IG01LnhsYXJnZQpuZXR3b3JraW5nOgogIG5ldHdvcmtUeXBlOiBPcGVuU2hpZnRTRE4KICBjbHVzdGVyTmV0d29yazoKICAtIGNpZHI6IDEwLjEyOC4wLjAvMTQKICAgIGhvc3RQcmVmaXg6IDIzCiAgbWFjaGluZU5ldHdvcms6CiAgLSBjaWRyOiAxMC4wLjAuMC8xNgogIHNlcnZpY2VOZXR3b3JrOgogIC0gMTcyLjMwLjAuMC8xNgpwbGF0Zm9ybToKICBhd3M6CiAgICByZWdpb246IHVzLWVhc3QtMQogICAgc3VibmV0czoKICAgICAgICAtIHN1Ym5ldC0wMjIxNmRkNGRhZTdjNDVkMAogICAgc2VydmljZUVuZHBvaW50czoKICAgICAgLSBuYW1lOiAnZW5kcG9pbnQtMScKICAgICAgICB1cmw6ICdhd3MuZW5kcG9pbnQtMS5jb20nCiAgICBob3N0ZWRab25lOiBhd3MtaG9zdGVkLXpvbmUuY29tCiAgICBhbWlJRDogYW1pLTA4NzZlYWNiMzgxOTFlOTFmCnB1Ymxpc2g6IEludGVybmFsCnB1bGxTZWNyZXQ6ICIiICMgc2tpcCwgaGl2ZSB3aWxsIGluamVjdCBiYXNlZCBvbiBpdCdzIHNlY3JldHMKc3NoS2V5OiB8LQogICAgc3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20K',
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluLmNvbQpjb250cm9sUGxhbmU6CiAgaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiBtYXN0ZXIKICByZXBsaWNhczogMwogIHBsYXRmb3JtOgogICAgYXdzOgogICAgICByb290Vm9sdW1lOgogICAgICAgIGlvcHM6IDQwMDAKICAgICAgICBzaXplOiAxMDAKICAgICAgICB0eXBlOiBpbzEKICAgICAgdHlwZTogbTUueGxhcmdlCmNvbXB1dGU6Ci0gaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiAnd29ya2VyJwogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogMjAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKbmV0d29ya2luZzoKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgY2x1c3Rlck5ldHdvcms6CiAgLSBjaWRyOiAxMC4xMjguMC4wLzE0CiAgICBob3N0UHJlZml4OiAyMwogIG1hY2hpbmVOZXR3b3JrOgogIC0gY2lkcjogMTAuMC4wLjAvMTYKICBzZXJ2aWNlTmV0d29yazoKICAtIDE3Mi4zMC4wLjAvMTYKcGxhdGZvcm06CiAgYXdzOgogICAgcmVnaW9uOiB1cy1lYXN0LTEKICAgIHN1Ym5ldHM6CiAgICAgICAgLSBzdWJuZXQtMDIyMTZkZDRkYWU3YzQ1ZDAKICAgIHNlcnZpY2VFbmRwb2ludHM6CiAgICAgIC0gbmFtZTogJ2VuZHBvaW50LTEnCiAgICAgICAgdXJsOiAnYXdzLmVuZHBvaW50LTEuY29tJwogICAgaG9zdGVkWm9uZTogYXdzLWhvc3RlZC16b25lLmNvbQogICAgYW1pSUQ6IGFtaS0wODc2ZWFjYjM4MTkxZTkxZgpwdWJsaXNoOiBJbnRlcm5hbApwdWxsU2VjcmV0OiAiIiAjIHNraXAsIGhpdmUgd2lsbCBpbmplY3QgYmFzZWQgb24gaXQncyBzZWNyZXRzCnNzaEtleTogfC0KICAgIHNzaC1yc2EgQUFBQUIxIGZha2VAZW1haWwuY29tCg==',
     },
 }
 
@@ -415,9 +445,10 @@ const mockInstallConfigSecretAws = {
     type: 'Opaque',
     data: {
         'install-config.yaml':
-            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluCmNvbnRyb2xQbGFuZToKICBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6IG1hc3RlcgogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogNDAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKY29tcHV0ZToKLSBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIG5hbWU6ICd3b3JrZXInCiAgcmVwbGljYXM6IDMKICBwbGF0Zm9ybToKICAgIGF3czoKICAgICAgcm9vdFZvbHVtZToKICAgICAgICBpb3BzOiAyMDAwCiAgICAgICAgc2l6ZTogMTAwCiAgICAgICAgdHlwZTogaW8xCiAgICAgIHR5cGU6IG01LnhsYXJnZQpuZXR3b3JraW5nOgogIG5ldHdvcmtUeXBlOiBPcGVuU2hpZnRTRE4KICBjbHVzdGVyTmV0d29yazoKICAtIGNpZHI6IDEwLjEyOC4wLjAvMTQKICAgIGhvc3RQcmVmaXg6IDIzCiAgbWFjaGluZU5ldHdvcms6CiAgLSBjaWRyOiAxMC4wLjAuMC8xNgogIHNlcnZpY2VOZXR3b3JrOgogIC0gMTcyLjMwLjAuMC8xNgpwbGF0Zm9ybToKICBhd3M6CiAgICByZWdpb246IHVzLWVhc3QtMQpwdWxsU2VjcmV0OiAiIiAjIHNraXAsIGhpdmUgd2lsbCBpbmplY3QgYmFzZWQgb24gaXQncyBzZWNyZXRzCnNzaEtleTogfC0KICAgIHNzaC1yc2EgQUFBQUIxIGZha2VAZW1haWwuY29tCg==',
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluLmNvbQpjb250cm9sUGxhbmU6CiAgaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiBtYXN0ZXIKICByZXBsaWNhczogMwogIHBsYXRmb3JtOgogICAgYXdzOgogICAgICByb290Vm9sdW1lOgogICAgICAgIGlvcHM6IDQwMDAKICAgICAgICBzaXplOiAxMDAKICAgICAgICB0eXBlOiBpbzEKICAgICAgdHlwZTogbTUueGxhcmdlCmNvbXB1dGU6Ci0gaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiAnd29ya2VyJwogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogMjAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKbmV0d29ya2luZzoKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgY2x1c3Rlck5ldHdvcms6CiAgLSBjaWRyOiAxMC4xMjguMC4wLzE0CiAgICBob3N0UHJlZml4OiAyMwogIG1hY2hpbmVOZXR3b3JrOgogIC0gY2lkcjogMTAuMC4wLjAvMTYKICBzZXJ2aWNlTmV0d29yazoKICAtIDE3Mi4zMC4wLjAvMTYKcGxhdGZvcm06CiAgYXdzOgogICAgcmVnaW9uOiB1cy1lYXN0LTEKcHVsbFNlY3JldDogIiIgIyBza2lwLCBoaXZlIHdpbGwgaW5qZWN0IGJhc2VkIG9uIGl0J3Mgc2VjcmV0cwpzc2hLZXk6IHwtCiAgICBzc2gtcnNhIEFBQUFCMSBmYWtlQGVtYWlsLmNvbQo=',
     },
 }
+
 const mockProviderConnectionSecretCopiedAws = {
     apiVersion: 'v1',
     kind: 'Secret',
@@ -484,6 +515,38 @@ const mockKlusterletAddonSecret = {
         },
     },
 }
+
+const mockKlusterletAddonConfigAI = {
+    apiVersion: 'agent.open-cluster-management.io/v1',
+    kind: 'KlusterletAddonConfig',
+    metadata: {
+        name: clusterName,
+        namespace: clusterName,
+    },
+    spec: {
+        clusterName: clusterName,
+        clusterNamespace: clusterName,
+        clusterLabels: {
+            cloud: 'hybrid',
+        },
+        applicationManager: {
+            enabled: true,
+        },
+        policyController: {
+            enabled: true,
+        },
+        searchCollector: {
+            enabled: true,
+        },
+        certPolicyController: {
+            enabled: true,
+        },
+        iamPolicyController: {
+            enabled: true,
+        },
+    },
+}
+
 const mockClusterDeploymentAnsible = {
     apiVersion: 'hive.openshift.io/v1',
     kind: 'ClusterDeployment',
@@ -499,7 +562,7 @@ const mockClusterDeploymentAnsible = {
         },
     },
     spec: {
-        baseDomain: 'base.domain',
+        baseDomain,
         clusterName: 'test',
         controlPlaneConfig: {
             servingCertificates: {},
@@ -588,7 +651,7 @@ const mockClusterDeploymentAnsible = {
                 name: 'test-ssh-private-key',
             },
             imageSetRef: {
-                name: 'ocp-release43',
+                name: 'ocp-release48',
             },
             sshKnownHosts: ['sshKnownHosts'],
         },
@@ -613,7 +676,7 @@ const mockClusterDeployment = {
         },
     },
     spec: {
-        baseDomain: 'base.domain',
+        baseDomain,
         clusterName: 'test',
         controlPlaneConfig: {
             servingCertificates: {},
@@ -702,12 +765,61 @@ const mockClusterDeployment = {
                 name: 'test-ssh-private-key',
             },
             imageSetRef: {
-                name: 'ocp-release43',
+                name: 'ocp-release48',
             },
             sshKnownHosts: ['sshKnownHosts'],
         },
         pullSecretRef: {
             name: 'test-pull-secret',
+        },
+    },
+}
+
+const mockClusterDeploymentAI: CIM.ClusterDeploymentK8sResource = {
+    apiVersion: 'hive.openshift.io/v1',
+    kind: 'ClusterDeployment',
+    metadata: {
+        annotations: {
+            'agentBareMetal-agentSelector/autoSelect': 'true',
+        },
+        labels: null,
+        name: clusterName,
+        namespace: clusterName,
+    },
+    spec: {
+        baseDomain,
+        clusterInstallRef: {
+            group: 'extensions.hive.openshift.io',
+            kind: 'AgentClusterInstall',
+            name: clusterName,
+            version: 'v1beta1',
+        },
+        clusterName,
+        platform: {
+            agentBareMetal: {
+                agentSelector: {
+                    matchLabels: null,
+                },
+            },
+        },
+        pullSecretRef: {
+            name: 'pullsecret-cluster-test',
+        },
+    },
+}
+
+const mockAgentClusterInstall: CIM.AgentClusterInstallK8sResource = {
+    apiVersion: 'extensions.hive.openshift.io/v1beta1',
+    kind: 'AgentClusterInstall',
+    metadata: { name: 'test', namespace: 'test' },
+    spec: {
+        clusterDeploymentRef: { name: 'test' },
+        holdInstallation: true,
+        provisionRequirements: { controlPlaneAgents: 3 },
+        imageSetRef: { name: 'ocp-release48' },
+        networking: {
+            clusterNetwork: [{ cidr: '10.128.0.0/14', hostPrefix: 23 }],
+            serviceNetwork: ['172.30.0.0/16'],
         },
     },
 }
@@ -785,7 +897,7 @@ const mockClusterDeploymentAws = {
         },
     },
     spec: {
-        baseDomain: 'base.domain',
+        baseDomain,
         clusterName: 'test',
         controlPlaneConfig: {
             servingCertificates: {},
@@ -1017,7 +1129,7 @@ describe('CreateCluster', () => {
         // click create button
         await clickByText('Create')
 
-        // expect(consoleInfos).hasNoConsoleLogs()
+        expect(consoleInfos).hasNoConsoleLogs()
         await waitForText('success.create.creating')
 
         // make sure creating
@@ -1261,5 +1373,72 @@ describe('CreateCluster', () => {
 
         // make sure creating
         await waitForNocks(createNocks)
+    })
+
+    test('can create On Premise cluster', async () => {
+        const initialNocks: Scope[] = [nockList(clusterImageSet, mockClusterImageSet)]
+        render(<Component />)
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        // Create On Premise cluster
+        await clickByTestId('cluster.create.ai.subtitle')
+        await clickByText('Next')
+
+        // wait for tables/combos to fill in
+        await waitForNocks(initialNocks)
+
+        // check integration of AI in the left-side navigation
+        await waitForText('Cluster details', true)
+        await waitForText('Review and Save')
+        await waitForText('Cluster hosts')
+        await waitForText('Cluster network')
+        await waitForText('Review and install')
+
+        // fill-in Cluster details
+        await typeByTestId('form-input-name-field', clusterName)
+        await typeByTestId('form-input-baseDnsDomain-field', baseDomain)
+
+        await clickByTestId('form-input-highAvailabilityMode-field')
+        await waitForText('SNO is in a proof-of-concept stage and is not supported in any way.')
+        await clickByTestId('form-input-highAvailabilityMode-field')
+
+        await waitForText('OpenShift 4.8.15') // single value of combobox
+        await typeByTestId('additionalLabels', 'myLabelKey=myValue')
+        await clickByTestId('form-input-pullSecret-field')
+
+        await typeByTestId('form-input-pullSecret-field', pullSecretAI)
+
+        // transition to Automation
+        await clickByText('Next')
+
+        await waitForText('template.clusterCreate.name')
+
+        // skip Automation to the Review and Save step
+        await clickByText('Next')
+        await waitForText('creation.ocp.cloud.connection')
+
+        await waitForText(
+            'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.'
+        )
+
+        // Let's save it
+        const createNocks = [
+            nockCreate(mockClusterProject, mockClusterProjectResponse),
+            nockCreate(mockClusterDeploymentAI),
+            nockCreate(mockManagedClusterAI),
+            nockCreate(mockAgentClusterInstall),
+            nockCreate(mockPullSecretAI),
+            nockCreate(mockKlusterletAddonConfigAI),
+        ]
+
+        await clickByText('Save')
+
+        // make sure creating
+        await waitForNocks(createNocks)
+
+        // to pass the spinner, mock agents, clusterDeployment, agentClusterInstall and the AI ConfigMap. See HostsForm.tsx.
+        await waitForRole('progressbar')
+
+        // screen.debug(undefined, -1)
     })
 })
