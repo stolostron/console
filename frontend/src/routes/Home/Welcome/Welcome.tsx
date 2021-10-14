@@ -10,6 +10,7 @@ import ApplicationsIcon from './graphics/welcome-card-3-icon.svg'
 import GovernanceIcon from './graphics/welcome-card-4-icon.svg'
 import NetworkingIcon from './graphics/welcome-card-5-icon.svg'
 import CommunityIcon from './graphics/welcome-community-icon.svg'
+import HeaderGraphic from './graphics/Welcome-page-header.png'
 import SlackIcon from './graphics/welcome-slack-icon.svg'
 import SupportIcon from './graphics/welcome-support-icon.svg'
 
@@ -114,16 +115,22 @@ export default function WelcomePage() {
 
     return (
         <Page>
-            <PageSection variant="light">
-                <Stack hasGutter>
-                    <Title headingLevel="h1">Welcome! &nbsp; Let’s get started.</Title>
-                    <Text>
-                        Red Hat Advanced Cluster Management for Kubernetes provides the tools and capabilities to
-                        address various challenges with managing multiple clusters and consoles, distributed business
-                        applications, and inconsistent security controls across Kubernetes clusters that are deployed
-                        on-premises, or across public clouds.
-                    </Text>
-                </Stack>
+            <PageSection
+                variant="darker"
+                style={{ backgroundColor: '#333', backgroundImage: 'linear-gradient(to right, #333, #111)' }}
+            >
+                <div style={{ display: 'flex', gap: 64 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 32 }}>
+                        <Title headingLevel="h1">Welcome! &nbsp; Let’s get started.</Title>
+                        <Text>
+                            Red Hat Advanced Cluster Management for Kubernetes provides the tools and capabilities to
+                            address various challenges with managing multiple clusters and consoles, distributed
+                            business applications, and inconsistent security controls across Kubernetes clusters that
+                            are deployed on-premises, or across public clouds.
+                        </Text>
+                    </div>
+                    <img src={HeaderGraphic} style={{ height: '200px' }} />
+                </div>
             </PageSection>
             <PageSection variant="default">
                 <AcmMasonry minSize={1000}>
