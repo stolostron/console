@@ -42,7 +42,7 @@ export default function WelcomePage() {
         []
     )
 
-    const details = useMemo(
+    const capabilities = useMemo(
         () => [
             {
                 title: 'Kubernetes',
@@ -114,7 +114,7 @@ export default function WelcomePage() {
                     {cards.map((card) => (
                         <div>
                             <Link to={card.link} style={{ color: 'black', textDecoration: 'none' }}>
-                                <Card isRounded isLarge isHoverable>
+                                <Card isRounded isLarge isHoverable key={card.title}>
                                     <CardTitle>{card.title}</CardTitle>
                                     <CardBody>{card.description}</CardBody>
                                 </Card>
@@ -131,8 +131,8 @@ export default function WelcomePage() {
                         provides the following mission critical capabilities based on open source projects:
                     </Text>
                     <AcmMasonry minSize={400}>
-                        {details.map((card) => (
-                            <Card isRounded isFlat>
+                        {capabilities.map((card) => (
+                            <Card isRounded isFlat key={card.title}>
                                 <CardTitle>{card.title}</CardTitle>
                                 <CardBody>{card.description}</CardBody>
                             </Card>
@@ -145,7 +145,7 @@ export default function WelcomePage() {
                     <Title headingLevel="h2">Converse and connect.</Title>
                     <AcmMasonry minSize={400}>
                         {connections.map((card) => (
-                            <Card isRounded isHoverable>
+                            <Card isRounded isHoverable key={card.title}>
                                 <CardTitle>{card.title}</CardTitle>
                                 <CardBody>{card.description}</CardBody>
                             </Card>
