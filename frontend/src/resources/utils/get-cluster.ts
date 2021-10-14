@@ -292,7 +292,7 @@ export const getLatestConditionStatusMessage = (
     condition: string,
     conditions: V1CustomResourceDefinitionCondition[]
 ) => {
-    return conditions[0].type === condition
+    return conditions[0]?.type === condition
 }
 
 export function getOwner(clusterDeployment?: ClusterDeployment, clusterClaim?: ClusterClaim) {
