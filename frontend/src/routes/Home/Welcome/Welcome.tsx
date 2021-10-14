@@ -19,28 +19,28 @@ export default function WelcomePage() {
         () => [
             {
                 icon: <OverviewIcon />,
-                title: 'End-to-end visibility',
+                title: 'Overview',
                 description:
                     'View system alerts, critical application metrics, and overall system health. Search, identify, and resolve issues that are impacting distributed workloads using an operational dashboard designed for Site Reliability Engineers (SREs).',
                 link: NavigationPath.overview,
             },
             {
                 icon: <InfrastructureIcon />,
-                title: 'Cluster lifecycle',
+                title: 'Clusters',
                 description:
                     'Create, update, scale, and remove clusters reliably, consistently using an open source programming model that supports and encourages Infrastructure as Code best practices and design principles.',
                 link: NavigationPath.clusters,
             },
             {
                 icon: <ApplicationsIcon />,
-                title: 'Application lifecycle',
+                title: 'Applications',
                 description:
                     'Define a business application using open standards and deploy the applications using placement policies that are integrated into existing CI/CD pipelines and governance controls.',
                 link: NavigationPath.applications,
             },
             {
                 icon: <GovernanceIcon />,
-                title: 'Governance, Risk, and Compliance',
+                title: 'Governance',
                 description:
                     'Use policies to automatically configure and maintain consistency of security controls required by industry or other corporate standards. Prevent unintentional or malicious configuration drift that might expose unwanted and unnecessary threat vectors.',
                 link: NavigationPath.governance,
