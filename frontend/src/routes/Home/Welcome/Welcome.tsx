@@ -137,7 +137,13 @@ export default function WelcomePage() {
                     {cards.map((card) => (
                         <div>
                             <Link to={card.link} style={{ color: 'black', textDecoration: 'none' }}>
-                                <Card isRounded isLarge isHoverable key={card.title}>
+                                <Card
+                                    isRounded
+                                    isLarge
+                                    isHoverable
+                                    key={card.title}
+                                    style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
+                                >
                                     <CardTitle>
                                         <div style={{ display: 'flex', gap: 16 }}>
                                             {card.icon}
@@ -175,7 +181,12 @@ export default function WelcomePage() {
                     <Title headingLevel="h2">Converse and connect.</Title>
                     <AcmMasonry minSize={400}>
                         {connections.map((card) => (
-                            <Card isRounded isHoverable key={card.title}>
+                            <Card
+                                isRounded
+                                isHoverable
+                                key={card.title}
+                                style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
+                            >
                                 <CardTitle>
                                     <div style={{ display: 'flex', gap: 16 }}>
                                         {card.icon}
