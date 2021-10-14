@@ -89,7 +89,7 @@ export function startWatching(): void {
     watchResource(token, 'policy.open-cluster-management.io/v1', 'placementBindings')
     watchResource(token, 'policy.open-cluster-management.io/v1', 'policies')
     watchResource(token, 'submarineraddon.open-cluster-management.io/v1alpha1', 'submarinerconfigs')
-    watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs', { mightBeNotFound: true })
+    watchResource(token, 'tower.ansible.com/v1alpha1', 'ansiblejobs')
     watchResource(token, 'v1', 'configmaps', { fieldSelector: { 'metadata.name': 'insight-content-data' } })
     watchResource(token, 'v1', 'configmaps', {
         fieldSelector: { 'metadata.namespace': 'assisted-installer', 'metadata.name': 'assisted-service-config' },
@@ -110,7 +110,6 @@ export function watchResource(
     options?: {
         labelSelector?: Record<string, string>
         fieldSelector?: Record<string, string>
-        mightBeNotFound?: true
     }
 ): void {
     if (stopping) return
@@ -215,7 +214,7 @@ export function watchResource(
                 })
                 break
             default:
-                if (options?.mightBeNotFound && statusCode === HTTP_STATUS_NOT_FOUND) {
+                if (statusCode === HTTP_STATUS_NOT_FOUND) {
                     setTimeout(() => {
                         watchResource(token, apiVersion, kind, options)
                     }, 5 * 60 * 1000)

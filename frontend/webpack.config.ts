@@ -35,7 +35,8 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         module: {
             rules: [
                 { test: /\.hbs$/, loader: 'raw-loader', exclude: /node_modules/ },
-                { test: /\.(jpg|jpeg|png|gif|svg|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
+                { test: /\.(svg)$/, use: '@svgr/webpack' },
+                { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
                     test: /\.css$/,
                     use: isDevelopment ? ['style-loader', 'css-loader'] : [MiniCssExtractPlugin.loader, 'css-loader'],

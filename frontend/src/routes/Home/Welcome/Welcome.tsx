@@ -4,35 +4,48 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { NavigationPath } from '../../../NavigationPath'
+import OverviewIcon from './graphics/welcome-card-1-icon.svg'
+import InfrastructureIcon from './graphics/welcome-card-2-icon.svg'
+import ApplicationsIcon from './graphics/welcome-card-3-icon.svg'
+import GovernanceIcon from './graphics/welcome-card-4-icon.svg'
+import NetworkingIcon from './graphics/welcome-card-5-icon.svg'
+import CommunityIcon from './graphics/welcome-community-icon.svg'
+import SlackIcon from './graphics/welcome-slack-icon.svg'
+import SupportIcon from './graphics/welcome-support-icon.svg'
 
 export default function WelcomePage() {
     const cards = useMemo(
         () => [
             {
+                icon: <OverviewIcon />,
                 title: 'End-to-end visibility',
                 description:
                     'Go to Overview View system alerts, critical application metrics, and overall system health. Search, identify, and resolve issues that are impacting distributed workloads using an operational dashboard designed for Site Reliability Engineers (SREs).',
                 link: NavigationPath.overview,
             },
             {
+                icon: <InfrastructureIcon />,
                 title: 'Cluster lifecycle',
                 description:
                     'Create, update, scale, and remove clusters reliably, consistently using an open source programming model that supports and encourages Infrastructure as Code best practices and design principles.',
                 link: NavigationPath.clusters,
             },
             {
+                icon: <ApplicationsIcon />,
                 title: 'Application lifecycle',
                 description:
                     'Define a business application using open standards and deploy the applications using placement policies that are integrated into existing CI/CD pipelines and governance controls.',
                 link: NavigationPath.applications,
             },
             {
+                icon: <GovernanceIcon />,
                 title: 'Governance, Risk, and Compliance',
                 description:
                     'Use policies to automatically configure and maintain consistency of security controls required by industry or other corporate standards. Prevent unintentional or malicious configuration drift that might expose unwanted and unnecessary threat vectors.',
                 link: NavigationPath.governance,
             },
             {
+                icon: <NetworkingIcon />,
                 title: 'Multicluster networking',
                 description:
                     'Enable direct networking connection between different on-premises or cloud-hosted Kubernetes clusters by grouping them in cluster sets and enabling the Submariner add-on.',
@@ -81,14 +94,17 @@ export default function WelcomePage() {
     const connections = useMemo(
         () => [
             {
+                icon: <CommunityIcon />,
                 title: 'Technical community',
                 description: 'Want more information? Check out the developer community.',
             },
             {
+                icon: <SlackIcon />,
                 title: 'Slack channel',
                 description: 'Join our Slack community to connect and chat with us.',
             },
             {
+                icon: <SupportIcon />,
                 title: 'Support center',
                 description: 'Need technical support? Contact us.',
             },
@@ -115,7 +131,12 @@ export default function WelcomePage() {
                         <div>
                             <Link to={card.link} style={{ color: 'black', textDecoration: 'none' }}>
                                 <Card isRounded isLarge isHoverable key={card.title}>
-                                    <CardTitle>{card.title}</CardTitle>
+                                    <CardTitle>
+                                        <div style={{ display: 'flex', gap: 16 }}>
+                                            {card.icon}
+                                            {card.title}
+                                        </div>
+                                    </CardTitle>
                                     <CardBody>{card.description}</CardBody>
                                 </Card>
                             </Link>
@@ -146,7 +167,12 @@ export default function WelcomePage() {
                     <AcmMasonry minSize={400}>
                         {connections.map((card) => (
                             <Card isRounded isHoverable key={card.title}>
-                                <CardTitle>{card.title}</CardTitle>
+                                <CardTitle>
+                                    <div style={{ display: 'flex', gap: 16 }}>
+                                        {card.icon}
+                                        {card.title}
+                                    </div>
+                                </CardTitle>
                                 <CardBody>{card.description}</CardBody>
                             </Card>
                         ))}
