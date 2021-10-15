@@ -7,18 +7,24 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
-import { createContext, ElementType, Fragment, lazy, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
+import { createContext, ElementType, Fragment, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../../atoms'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
-
-const ClustersPage = lazy(() => import('./ManagedClusters/ManagedClusters'))
-const DiscoveredClustersPage = lazy(() => import('./DiscoveredClusters/DiscoveredClusters'))
-const ClusterSetsPage = lazy(() => import('./ClusterSets/ClusterSets'))
-const ClusterPoolsPage = lazy(() => import('./ClusterPools/ClusterPools'))
+import ClusterPoolsPage from './ClusterPools/ClusterPools'
+import CreateClusterPoolPage from './ClusterPools/CreateClusterPool/CreateClusterPool'
+import ClusterSetDetailsPage from './ClusterSets/ClusterSetDetails/ClusterSetDetails'
+import ClusterSetsPage from './ClusterSets/ClusterSets'
+import DiscoveredClustersPage from './DiscoveredClusters/DiscoveredClusters'
+import ClusterDetailsPage from './ManagedClusters/ClusterDetails/ClusterDetails'
+import ClusterCreateProgress from './ManagedClusters/components/cim/ClusterCreateProgress'
+import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
+import CreateClusterPage from './ManagedClusters/CreateCluster/CreateCluster'
+import ImportClusterPage from './ManagedClusters/ImportCluster/ImportCluster'
+import ClustersPage from './ManagedClusters/ManagedClusters'
 
 export const PageContext = createContext<{
     readonly actions: null | ReactNode
@@ -95,10 +101,22 @@ export default function ClusterManagementPage() {
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.clusters} component={ClustersPage} />
+                        <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
+                        <Route exact path={NavigationPath.clusterCreateProgress} component={ClusterCreateProgress} />
+                        <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
+                        <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
+
                         <Route exact path={NavigationPath.clusterSets} component={ClusterSetsPage} />
+                        <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
+
                         <Route exact path={NavigationPath.clusterPools} component={ClusterPoolsPage} />
+                        <Route exact path={NavigationPath.createClusterPool} component={CreateClusterPoolPage} />
+
                         <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />
-                        <Route exact path={NavigationPath.console}>
+
+                        <Route exact path={NavigationPath.editCluster} component={EditAICluster} />
+
+                        <Route path="*">
                             <Redirect to={NavigationPath.clusters} />
                         </Route>
                     </Switch>

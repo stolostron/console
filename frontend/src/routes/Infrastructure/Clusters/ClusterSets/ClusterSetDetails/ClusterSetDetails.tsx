@@ -1,15 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    Cluster,
-    ClusterPool,
-    ManagedClusterAddOn,
-    ManagedClusterSet,
-    ManagedClusterSetBinding,
-    managedClusterSetLabel,
-    ResourceError,
-} from '../../../../../resources'
-import {
     AcmButton,
     AcmPage,
     AcmPageHeader,
@@ -32,6 +23,15 @@ import {
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { NavigationPath } from '../../../../../NavigationPath'
+import {
+    Cluster,
+    ClusterPool,
+    ManagedClusterAddOn,
+    ManagedClusterSet,
+    ManagedClusterSetBinding,
+    managedClusterSetLabel,
+    ResourceError,
+} from '../../../../../resources'
 import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
 import { useClusterSetBindings } from '../components/ManagedClusterSetBindingModal'
 import { useClusters } from '../components/useClusters'
@@ -57,7 +57,7 @@ export const ClusterSetContext = createContext<{
     clusterSetBindings: undefined,
 })
 
-export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
+export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation(['cluster'])

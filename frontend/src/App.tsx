@@ -33,21 +33,6 @@ import { NavigationPath } from './NavigationPath'
 const ApplicationsPage = lazy(() => import('./routes/Applications/Applications'))
 
 const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
-const ClusterDetailsPage = lazy(
-    () => import('./routes/Infrastructure/Clusters/ManagedClusters/ClusterDetails/ClusterDetails')
-)
-const ClusterSetDetailsPage = lazy(
-    () => import('./routes/Infrastructure/Clusters/ClusterSets/ClusterSetDetails/ClusterSetDetails')
-)
-const CreateClusterPoolPage = lazy(
-    () => import('./routes/Infrastructure/Clusters/ClusterPools/CreateClusterPool/CreateClusterPool')
-)
-const CreateClusterPage = lazy(
-    () => import('./routes/Infrastructure/Clusters/ManagedClusters/CreateCluster/CreateCluster')
-)
-const ImportClusterPage = lazy(
-    () => import('./routes/Infrastructure/Clusters/ManagedClusters/ImportCluster/ImportCluster')
-)
 const CreateBareMetalAssetPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/CreateBareMetalAsset'))
 const DiscoveryConfig = lazy(
     () => import('./routes/Infrastructure/Clusters/DiscoveredClusters/DiscoveryConfig/DiscoveryConfig')
@@ -57,22 +42,13 @@ const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
 const AnsibleAutomationFormPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomationsForm'))
 const BareMetalAssetsPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssetsPage'))
 const AnsibleAutomationsPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomations'))
-const ExampleForm = lazy(() => import('./components/DataForm/ExampleForm'))
-
 const InfraEnvironmentsPage = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPage'))
 const CreateInfraEnv = lazy(() => import('./routes/Infrastructure/InfraEnvironments/CreateInfraEnv'))
 const InfraEnvironmentDetailsPage = lazy(
     () => import('./routes/Infrastructure/InfraEnvironments/Details/InfraEnvironmentDetailsPage')
 )
-const EditAICluster = lazy(
-    () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/EditAICluster')
-)
-const ClusterCreateProgress = lazy(
-    () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/ClusterCreateProgress')
-)
+
 const GovernancePage = lazy(() => import('./routes/Governance/Governance'))
-const PoliciesPage = lazy(() => import('./routes/Governance/policies/Policies'))
-const PolicySetsPage = lazy(() => import('./routes/Governance/policy-sets/PolicySets'))
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
 
 interface IRoute {
@@ -177,38 +153,10 @@ export default function App() {
                         <AcmTablePaginationContextProvider localStorageKey="clusters">
                             <Suspense fallback={<LoadingPage />}>
                                 <Switch>
-                                    {routes.map((route) =>
-                                        route.type === 'group' ? (
-                                            route.routes.map((route) => (
-                                                <Route exact path={route.route} component={route.component} />
-                                            ))
-                                        ) : (
-                                            <Route path={route.route} component={route.component} />
-                                        )
-                                    )}
+                                    <Route path={NavigationPath.addCredentials} component={CredentialPage} />
+                                    <Route path={NavigationPath.editCredentials} component={CredentialPage} />
+                                    <Route path={NavigationPath.viewCredentials} component={CredentialPage} />
 
-                                    <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-                                    <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.createClusterPool}
-                                        component={CreateClusterPoolPage}
-                                    />
-                                    <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
-                                    <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
-                                    <Route exact path={NavigationPath.addCredentials} component={CredentialPage} />
-                                    <Route exact path={NavigationPath.editCredentials} component={CredentialPage} />
-                                    <Route exact path={NavigationPath.viewCredentials} component={CredentialPage} />
-                                    <Route exact path={NavigationPath.createInfraEnv} component={CreateInfraEnv} />
-                                    <Route
-                                        path={NavigationPath.infraEnvironmentDetails}
-                                        component={InfraEnvironmentDetailsPage}
-                                    />
-                                    <Route path={NavigationPath.editCluster} component={EditAICluster} />
-                                    <Route
-                                        path={NavigationPath.clusterCreateProgress}
-                                        component={ClusterCreateProgress}
-                                    />
                                     <Route
                                         exact
                                         path={NavigationPath.addAnsibleAutomation}
@@ -229,14 +177,26 @@ export default function App() {
                                         path={NavigationPath.createBareMetalAsset}
                                         component={CreateBareMetalAssetPage}
                                     />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.infraEnvironmentDetails}
+                                        component={InfraEnvironmentDetailsPage}
+                                    />
+                                    <Route exact path={NavigationPath.createInfraEnv} component={CreateInfraEnv} />
                                     <Route exact path={NavigationPath.createDiscovery} component={DiscoveryConfig} />
                                     <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfig} />
-                                    {process.env.NODE_ENV === 'development' && (
-                                        <Route exact path="/multicloud/example" component={ExampleForm} />
+
+                                    {routes.map((route) =>
+                                        route.type === 'group' ? (
+                                            route.routes.map((route) => (
+                                                <Route path={route.route} component={route.component} />
+                                            ))
+                                        ) : (
+                                            <Route path={route.route} component={route.component} />
+                                        )
                                     )}
 
-                                    <Route path={NavigationPath.console} component={ClusterManagementPage} />
-
+                                    <Route path={NavigationPath.console} component={WelcomePage} />
                                     <Route path="*">
                                         <Redirect to={NavigationPath.console} />
                                     </Route>

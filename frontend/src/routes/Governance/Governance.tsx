@@ -7,18 +7,17 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
-import { Fragment, lazy, ReactNode, Suspense, useEffect, useState } from 'react'
+import { Fragment, ReactNode, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, placementBindingsState, placementRulesState, policiesState } from '../../atoms'
 import { NavigationPath } from '../../NavigationPath'
 import { PageContext } from '../Infrastructure/Clusters/Clusters'
+import GovernanceOverview from './overview/Overview'
+import PoliciesPage from './policies/Policies'
+import PolicySetsPage from './policy-sets/PolicySets'
 import { useGovernanceData } from './useGovernanceData'
-
-const OverviewPage = lazy(() => import('./overview/Overview'))
-const PoliciesPage = lazy(() => import('./policies/Policies'))
-const PolicySetsPage = lazy(() => import('./policy-sets/PolicySets'))
 
 export default function GovernancePage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
@@ -72,7 +71,7 @@ export default function GovernancePage() {
                         <Route
                             exact
                             path={NavigationPath.governance}
-                            render={() => <OverviewPage governanceData={governanceData} />}
+                            render={() => <GovernanceOverview governanceData={governanceData} />}
                         />
                         <Route
                             exact
