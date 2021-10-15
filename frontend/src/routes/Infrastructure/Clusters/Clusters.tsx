@@ -19,13 +19,13 @@ import CreateClusterPoolPage from './ClusterPools/CreateClusterPool/CreateCluste
 import ClusterSetDetailsPage from './ClusterSets/ClusterSetDetails/ClusterSetDetails'
 import ClusterSetsPage from './ClusterSets/ClusterSets'
 import DiscoveredClustersPage from './DiscoveredClusters/DiscoveredClusters'
+import DiscoveryConfigPage from './DiscoveredClusters/DiscoveryConfig/DiscoveryConfig'
 import ClusterDetailsPage from './ManagedClusters/ClusterDetails/ClusterDetails'
 import ClusterCreateProgress from './ManagedClusters/components/cim/ClusterCreateProgress'
 import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
 import CreateClusterPage from './ManagedClusters/CreateCluster/CreateCluster'
 import ImportClusterPage from './ManagedClusters/ImportCluster/ImportCluster'
 import ManagedClusters from './ManagedClusters/ManagedClusters'
-
 export const PageContext = createContext<{
     readonly actions: null | ReactNode
     setActions: (actions: null | ReactNode) => void
@@ -59,6 +59,8 @@ export default function Clusters() {
             <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
             <Route exact path={NavigationPath.createClusterPool} component={CreateClusterPoolPage} />
             <Route exact path={NavigationPath.editCluster} component={EditAICluster} />
+            <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfigPage} />
+            <Route exact path={NavigationPath.createDiscovery} component={DiscoveryConfigPage} />
             <Route path="*" component={ClustersPage} />
         </Switch>
     )

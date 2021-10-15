@@ -34,9 +34,7 @@ const ApplicationsPage = lazy(() => import('./routes/Applications/Applications')
 
 const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/CreateBareMetalAsset'))
-const DiscoveryConfig = lazy(
-    () => import('./routes/Infrastructure/Clusters/DiscoveredClusters/DiscoveryConfig/DiscoveryConfig')
-)
+
 const CredentialPage = lazy(() => import('./routes/Credentials/CredentialsForm'))
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
 const AnsibleAutomationFormPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomationsForm'))
@@ -183,8 +181,6 @@ export default function App() {
                                         component={InfraEnvironmentDetailsPage}
                                     />
                                     <Route exact path={NavigationPath.createInfraEnv} component={CreateInfraEnv} />
-                                    <Route exact path={NavigationPath.createDiscovery} component={DiscoveryConfig} />
-                                    <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfig} />
 
                                     {routes.map((route) =>
                                         route.type === 'group' ? (

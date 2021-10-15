@@ -81,8 +81,8 @@ describe('DiscoveredClusters', () => {
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.discoveredClusters]}>
-                    <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
                     <Route path={NavigationPath.createDiscovery} render={() => <DiscoveryConfigPage />} />
+                    <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
                 </MemoryRouter>
             </RecoilRoot>
         )
