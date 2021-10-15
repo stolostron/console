@@ -24,8 +24,8 @@ import { NoWrap } from '../../../components/NoWrap'
 import { Policy } from '../../../resources/policy'
 import { PolicyRiskLabels } from '../components/PolicyRiskLabels'
 import { IGovernanceData, IPolicy } from '../useGovernanceData'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { deleteResource, ResourceErrorCode } from '../../../resources'
+import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { deletePolicy } from '../../../lib/delete-policies'
 
 
 export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
@@ -230,7 +230,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                             },
                         ],
                         keyFn:(policy: IPolicy) => policy.metadata.uid as string,
-                        actionFn: deleteResource,
+                        actionFn: (policy) => deletePolicy(policy),
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
                         icon: 'warning',
