@@ -24,7 +24,7 @@ import ClusterCreateProgress from './ManagedClusters/components/cim/ClusterCreat
 import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
 import CreateClusterPage from './ManagedClusters/CreateCluster/CreateCluster'
 import ImportClusterPage from './ManagedClusters/ImportCluster/ImportCluster'
-import ClustersPage from './ManagedClusters/ManagedClusters'
+import ManagedClusters from './ManagedClusters/ManagedClusters'
 
 export const PageContext = createContext<{
     readonly actions: null | ReactNode
@@ -49,7 +49,22 @@ export const usePageContext = (showActions: boolean, Component: ElementType) => 
     return Component
 }
 
-export default function ClusterManagementPage() {
+export default function Clusters() {
+    return (
+        <Switch>
+            <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
+            <Route exact path={NavigationPath.clusterCreateProgress} component={ClusterCreateProgress} />
+            <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
+            <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
+            <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
+            <Route exact path={NavigationPath.createClusterPool} component={CreateClusterPoolPage} />
+            <Route exact path={NavigationPath.editCluster} component={EditAICluster} />
+            <Route path="*" component={ClustersPage} />
+        </Switch>
+    )
+}
+
+export function ClustersPage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const location = useLocation()
     const { t } = useTranslation(['cluster', 'bma', 'common'])
@@ -100,24 +115,12 @@ export default function ClusterManagementPage() {
             <PageContext.Provider value={{ actions, setActions }}>
                 <Suspense fallback={<Fragment />}>
                     <Switch>
-                        <Route exact path={NavigationPath.clusters} component={ClustersPage} />
-                        <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
-                        <Route exact path={NavigationPath.clusterCreateProgress} component={ClusterCreateProgress} />
-                        <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
-                        <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-
+                        <Route exact path={NavigationPath.managedClusters} component={ManagedClusters} />
                         <Route exact path={NavigationPath.clusterSets} component={ClusterSetsPage} />
-                        <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-
                         <Route exact path={NavigationPath.clusterPools} component={ClusterPoolsPage} />
-                        <Route exact path={NavigationPath.createClusterPool} component={CreateClusterPoolPage} />
-
                         <Route exact path={NavigationPath.discoveredClusters} component={DiscoveredClustersPage} />
-
-                        <Route exact path={NavigationPath.editCluster} component={EditAICluster} />
-
                         <Route path="*">
-                            <Redirect to={NavigationPath.clusters} />
+                            <Redirect to={NavigationPath.managedClusters} />
                         </Route>
                     </Switch>
                 </Suspense>
