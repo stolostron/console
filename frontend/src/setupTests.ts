@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import '@testing-library/jest-dom'
-import nock from 'nock'
 import { configure } from '@testing-library/dom'
+import '@testing-library/jest-dom'
 import JestFetchMock from 'jest-fetch-mock'
 import { noop } from 'lodash'
+import nock from 'nock'
 
 require('react')
 
@@ -133,6 +133,10 @@ jest.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string) => key,
     }),
+    withTranslation: () => (Component: any) => {
+        Component.defaultProps = { ...Component.defaultProps, t: () => '' }
+        return Component
+    },
     Trans: (props: { i18nKey: string }) => props.i18nKey,
 }))
 

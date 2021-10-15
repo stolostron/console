@@ -38,16 +38,16 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             {
                 header: t('Name'),
                 cell: (policy) => {
-                    let compliantCount = 0
-                    let noncompliantCount = 0
-                    if (policy.status?.status) {
-                        compliantCount = policy.status.status.filter(
-                            (cluster) => cluster.compliant === 'Compliant'
-                        ).length
-                        noncompliantCount = policy.status.status.filter(
-                            (cluster) => cluster.compliant === 'NonCompliant'
-                        ).length
-                    }
+                    // let compliantCount = 0
+                    // let noncompliantCount = 0
+                    // if (policy.status?.status) {
+                    //     compliantCount = policy.status.status.filter(
+                    //         (cluster) => cluster.compliant === 'Compliant'
+                    //     ).length
+                    //     noncompliantCount = policy.status.status.filter(
+                    //         (cluster) => cluster.compliant === 'NonCompliant'
+                    //     ).length
+                    // }
                     return (
                         <Fragment>
                             <div>

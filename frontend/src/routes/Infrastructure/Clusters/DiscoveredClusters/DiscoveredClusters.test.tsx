@@ -4,19 +4,18 @@ import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
-import { mockCRHCredential, mockDiscoveryConfig } from '../../../../lib/test-metadata'
-import { clickByText, waitForNotText, waitForText, waitForNocks } from '../../../../lib/test-util'
-import DiscoveredClustersPage from './DiscoveredClusters'
-import { NavigationPath } from '../../../../NavigationPath'
-import DiscoveryConfigPage from './DiscoveryConfig/DiscoveryConfig'
 import { nockCreate } from '../../../../lib/nock-util'
-
+import { mockCRHCredential, mockDiscoveryConfig } from '../../../../lib/test-metadata'
+import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
+import { NavigationPath } from '../../../../NavigationPath'
+import DiscoveredClustersPage from './DiscoveredClusters'
 import {
-    mockDiscoveredClusters,
-    mockRHOCMSecrets,
     discoveryConfigCreateSelfSubjectAccessRequest,
     discoveryConfigCreateSelfSubjectAccessResponse,
+    mockDiscoveredClusters,
+    mockRHOCMSecrets,
 } from './DiscoveryComponents/test-utils'
+import DiscoveryConfigPage from './DiscoveryConfig/DiscoveryConfig'
 
 beforeEach(() => {
     sessionStorage.clear()
