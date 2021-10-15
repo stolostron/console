@@ -258,8 +258,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                             }
                         ],
                         keyFn:(policy: IPolicy) => policy.metadata.uid as string,
-                        confirmSideEffects: renderConfirmCheckbox(),
-                        actionFn: (policy) => deletePolicy(policy, checked),
+                        actionFn: (policy) => deletePolicy(policy),
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
                         icon: 'warning',
