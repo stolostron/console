@@ -5,7 +5,7 @@ import {
     AgentClusterInstallGroup,
     AgentClusterInstallKind,
     AgentClusterInstallVersion,
-    AgentClusterInstallVersionOnly,
+    AgentClusterInstallApiVersion,
     ClusterCurator,
     ClusterCuratorApiVersion,
     ClusterCuratorKind,
@@ -245,11 +245,11 @@ mockAIClusterDeployment.spec!.clusterInstallRef = {
     group: AgentClusterInstallGroup,
     kind: AgentClusterInstallKind,
     name: clusterName,
-    version: AgentClusterInstallVersionOnly,
+    version: AgentClusterInstallVersion,
 }
 
 const mockAgentClusterInstall: CIM.AgentClusterInstallK8sResource = {
-    apiVersion: AgentClusterInstallVersion,
+    apiVersion: AgentClusterInstallApiVersion,
     kind: AgentClusterInstallKind,
     metadata: {
         name: clusterName,
