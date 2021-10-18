@@ -606,7 +606,7 @@ export function getKubeApiServer(clusterDeployment?: ClusterDeployment, managedC
         clusterDeployment?.status?.apiURL ??
         managedClusterInfo?.spec?.masterEndpoint ??
         // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
-        getClusterApiUrlAI(clusterDeployment)
+        (clusterDeployment && getClusterApiUrlAI(clusterDeployment))
     )
 }
 
@@ -623,7 +623,7 @@ export function getConsoleUrl(
         clusterDeployment?.status?.webConsoleURL ??
         managedClusterInfo?.status?.consoleURL ??
         // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
-        getConsoleUrlAI(clusterDeployment)
+        (clusterDeployment && getConsoleUrlAI(clusterDeployment))
     )
 }
 
