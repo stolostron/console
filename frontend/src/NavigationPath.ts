@@ -26,6 +26,7 @@ export enum NavigationPath {
     clusters = '/multicloud/clusters',
     configureDiscovery = '/multicloud/configure-discovery',
     console = '/multicloud',
+    createApplication = '/multicloud/create-application',
     createBareMetalAsset = '/multicloud/create-bare-metal-asset',
     createCluster = '/multicloud/create-cluster',
     createClusterPool = '/multicloud/create-cluster-pool',

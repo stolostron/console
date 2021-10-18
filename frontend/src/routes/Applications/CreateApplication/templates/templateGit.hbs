@@ -1,0 +1,73 @@
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Github channel ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+        repoURL: {{{githubURL}}}
+        targetRevision: {{{githubBranch}}}
+        path: {{{githubPath}}}
+      destination:
+        server: '{{{curlyServer}}}'
+        namespace: {{{destinationNS}}}
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Sync policies ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}      
+      syncPolicy:
+        automated:
+        {{#if prune}}
+          prune: true
+        {{/if}}
+        {{#if allowEmpty}}
+          allowEmpty: true
+        {{/if}}
+        {{#if selfHeal}}
+          selfHeal: true
+        {{/if}}
+        syncOptions:
+          {{#if validate}}
+            - Validate=true
+          {{/if}}
+          {{#if pruneLast}}
+            - PruneLast=true
+          {{/if}}
+          {{#if replace}}
+            - Replace=true
+          {{/if}}
+          {{#if createNamespace}}
+            - CreateNamespace=true
+          {{/if}}
+          {{#if applyOutOfSyncOnly}}
+            - ApplyOutOfSyncOnly=true
+          {{/if}}
+          {{#if prunePropagationPolicy}}
+            {{#if propagationPolicy}}
+            - PrunePropagationPolicy={{{propagationPolicy}}}
+            {{/if}}
+          {{/if}}
+
+{{#unless channelNamespace}}
+{{#unless channelNamespaceExists}}
+---
+apiVersion: v1                      
+kind: Namespace
+metadata:
+  name: {{{channelName}}}-ns
+{{/unless}}
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: Channel
+metadata:
+  name: {{{channelName}}}
+  namespace: {{{channelName}}}-ns
+  {{#if selfLinks}}
+  selfLink: {{{selfLinks.Channel}}}
+  {{/if}}
+spec:
+  type: Git
+{{#if githubURL}}
+  pathname: '{{{githubURL}}}'
+{{/if}}
+{{/unless}}     

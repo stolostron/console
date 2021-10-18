@@ -1,0 +1,129 @@
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Application ============================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+                         
+
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: {{{appSetName}}}
+  namespace: {{{argoServer}}}
+  {{#if selfLink}}
+  selfLink: {{{selfLink}}}
+  {{/if}}
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+        {{#if decisionResourceName}}
+            cluster.open-cluster-management.io/placement: {{{decisionResourceName}}}  
+        {{else}}  
+            cluster.open-cluster-management.io/placement: {{{appSetName}}}-placement
+        {{/if}}                
+        requeueAfterSeconds: {{{requeueTime}}}
+  template:
+    metadata:
+      name: '{{{appSetName}}}-{{curlyName}}'
+    spec:
+      project: "default"
+      source:
+
+      
+{{#each channels}}
+
+{{#switch channelType}}
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Github channel ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{#case 'github'}}
+
+{{>templateGit 
+  curlyServer=../../../curlyServer
+  destinationNS=../../../destinationNS
+  channelName=../../channelName
+  channelNamespace=../../channelNamespace
+  channelNamespaceExists=../../channelNamespaceExists
+  githubURL=../../githubURL
+  githubPath=../../githubPath
+  githubBranch=../../githubBranch
+  prune=../../../prune
+  allowEmpty=../../../allowEmpty
+  selfHeal=../../../selfHeal
+  validate=../../../validate
+  pruneLast=../../../pruneLast
+  replace=../../../replace
+  createNamespace=../../../createNamespace
+  applyOutOfSyncOnly=../../../applyOutOfSyncOnly
+  prunePropagationPolicy=../../../prunePropagationPolicy
+  propagationPolicy=../../../propagationPolicy
+}}
+{{/case}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Helm channel ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{#case 'helmrepo'}}
+
+{{>templateHelm 
+  curlyServer=../../../curlyServer
+  destinationNS=../../../destinationNS
+  channelName=../../channelName
+  channelNamespace=../../channelNamespace
+  channelNamespaceExists=../../channelNamespaceExists
+  helmURL=../../helmURL
+  helmChartName=../../helmChartName
+  helmPackageVersion=../../helmPackageVersion
+  allowEmpty=../../../allowEmpty
+  selfHeal=../../../selfHeal
+  validate=../../../validate
+  createNamespace=../../../createNamespace
+  applyOutOfSyncOnly=../../../applyOutOfSyncOnly
+  prunePropagationPolicy=../../../prunePropagationPolicy
+  propagationPolicy=../../../propagationPolicy
+}}
+{{/case}}
+
+
+{{/switch}}
+{{/each}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================placement ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}  
+
+{{#unless existingrule-checkbox}} 
+---
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: Placement
+metadata:
+  name: {{{@root.appSetName}}}-placement
+  namespace: {{{@root.argoServer}}}
+  {{#if selfLinks}}
+  selfLink: {{{selfLinks.Placement}}}
+  {{/if}}
+{{#if clusterSelector.mode}}  
+spec:
+  predicates:
+  - requiredClusterSelector:
+      labelSelector:
+        matchLabels:
+          {{#each clusterSelector.clusterLabelsList}}
+          {{#if validValue}}
+          {{{labelName}}}: {{{labelValue}}}
+          {{/if}}
+          {{/each}} 
+{{/if}}
+{{/unless}}

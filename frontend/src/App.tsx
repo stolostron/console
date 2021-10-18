@@ -17,6 +17,7 @@ import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 
 const ApplicationsPage = lazy(() => import('./routes/Applications/Applications'))
+const CreateApplication = lazy(() => import('./routes/Applications/CreateApplication/CreateApplication'))
 
 const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
 const ClusterDetailsPage = lazy(
@@ -70,6 +71,11 @@ export default function App() {
                             <Suspense fallback={<LoadingPage />}>
                                 <Switch>
                                     <Route path={NavigationPath.applications} component={ApplicationsPage} />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.createApplication}
+                                        component={CreateApplication}
+                                    />
                                     <Route path={NavigationPath.governance} component={GovernancePage} />
                                     <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
                                     <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
