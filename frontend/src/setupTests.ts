@@ -39,7 +39,7 @@ expect.extend({
                 const missingNock = []
                 missingNock.push(req.method)
                 missingNock.push(req.path)
-                req.requestBodyBuffers.forEach((buffer) => {
+                req.requestBodyBuffers?.forEach((buffer) => {
                     missingNock.push(`\n${buffer.toString('utf8')}`)
                 })
                 msgs.push(missingNock.join(' '))
