@@ -34,7 +34,6 @@ import userEvent from '@testing-library/user-event'
 import { cloneDeep } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { CIM } from 'openshift-assisted-ui-lib'
 import {
     clusterCuratorsState,
     managedClusterSetsState,
@@ -54,14 +53,12 @@ import {
     waitForLabelText,
     waitForNocks,
     waitForText,
-    waitForRole,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import CreateClusterPage from './CreateCluster'
 import { Scope } from 'nock/types'
+import { clusterName, baseDomain, mockAgentClusterInstall, mockClusterDeploymentAI } from './CreateCluster.sharedmocks'
 
-const clusterName = 'test'
-const baseDomain = 'base.domain.com'
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
 //const awsProjectNamespace = 'test-aws-namespace'
 
@@ -775,55 +772,6 @@ const mockClusterDeployment = {
     },
 }
 
-const mockClusterDeploymentAI: CIM.ClusterDeploymentK8sResource = {
-    apiVersion: 'hive.openshift.io/v1',
-    kind: 'ClusterDeployment',
-    metadata: {
-        annotations: {
-            'agentBareMetal-agentSelector/autoSelect': 'true',
-        },
-        labels: null,
-        name: clusterName,
-        namespace: clusterName,
-    },
-    spec: {
-        baseDomain,
-        clusterInstallRef: {
-            group: 'extensions.hive.openshift.io',
-            kind: 'AgentClusterInstall',
-            name: clusterName,
-            version: 'v1beta1',
-        },
-        clusterName,
-        platform: {
-            agentBareMetal: {
-                agentSelector: {
-                    matchLabels: null,
-                },
-            },
-        },
-        pullSecretRef: {
-            name: 'pullsecret-cluster-test',
-        },
-    },
-}
-
-const mockAgentClusterInstall: CIM.AgentClusterInstallK8sResource = {
-    apiVersion: 'extensions.hive.openshift.io/v1beta1',
-    kind: 'AgentClusterInstall',
-    metadata: { name: 'test', namespace: 'test' },
-    spec: {
-        clusterDeploymentRef: { name: 'test' },
-        holdInstallation: true,
-        provisionRequirements: { controlPlaneAgents: 3 },
-        imageSetRef: { name: 'ocp-release48' },
-        networking: {
-            clusterNetwork: [{ cidr: '10.128.0.0/14', hostPrefix: 23 }],
-            serviceNetwork: ['172.30.0.0/16'],
-        },
-    },
-}
-
 const patchBareMetalAssetReq: BareMetalAsset = {
     kind: 'BareMetalAsset',
     apiVersion: 'inventory.open-cluster-management.io/v1alpha1',
@@ -1437,8 +1385,7 @@ describe('CreateCluster', () => {
         // make sure creating
         await waitForNocks(createNocks)
 
-        // to pass the spinner, mock agents, clusterDeployment, agentClusterInstall and the AI ConfigMap. See HostsForm.tsx.
-        await waitForRole('progressbar')
+        // next step (Hosts selection) is tested in the HostsForm.test
 
         // screen.debug(undefined, -1)
     })

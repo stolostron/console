@@ -246,6 +246,24 @@ export async function typeByLabel(text: string, type: string, index?: number) {
     }
 }
 
+// By Selector
+export async function waitForSelector(container: HTMLElement, selector: string) {
+    await waitFor(() => expect(container.querySelector(selector)))
+}
+
+export async function waitForNoSelector(container: HTMLElement, selector: string) {
+    await waitFor(() => expect(container.querySelector(selector)).toHaveLength(0), options)
+}
+
+export async function waitForValueBySelector(container: HTMLElement, selector: string, value: string | number) {
+    await waitFor(() => expect(container.querySelector(selector)).toHaveValue(value))
+}
+
+export async function clickBySelector(container: HTMLElement, selector: string) {
+    const elem = await waitFor(() => container.querySelector<HTMLButtonElement>(selector))
+    elem?.click()
+}
+
 // Other
 
 export async function wait(ms = 0) {
