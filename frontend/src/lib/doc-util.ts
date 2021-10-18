@@ -21,7 +21,7 @@ export const DOC_LINKS = {
     IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/importing-a-target-managed-cluster-to-the-hub-cluster`,
     CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/managedclustersets`,
     CLUSTER_POOLS: `${DOC_BASE_PATH}/clusters/managing-cluster-pools`,
-    SUBMARINER: `${DOC_BASE_PATH}/services/submariner`,
+    SUBMARINER: `${DOC_BASE_PATH}/services/services-overview#submariner`,
     DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/discovery-intro`,
     MACHINE_POOLS: `${DOC_BASE_PATH}/clusters/resizing-a-cluster`,
     ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/ansible-config-cluster`,
