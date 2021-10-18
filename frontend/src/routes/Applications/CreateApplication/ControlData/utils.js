@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 export const getUniqueChannelName = (channelPath, groupControlData) => {
     //create a unique name for a new channel, based on path and type
     if (!channelPath || !groupControlData) {

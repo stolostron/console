@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { AcmPage } from '@open-cluster-management/ui-components'
 import { useState, useContext, useEffect } from 'react'
 import { useRecoilState } from 'recoil'
