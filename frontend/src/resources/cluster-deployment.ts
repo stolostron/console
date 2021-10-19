@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 import { IResourceDefinition } from './resource'
 import { Selector } from './selector'
 
@@ -19,7 +18,7 @@ export const ClusterDeploymentDefinition: IResourceDefinition = {
 export interface ClusterDeployment {
     apiVersion: ClusterDeploymentApiVersionType
     kind: ClusterDeploymentKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec?: {
         clusterName: string
         baseDomain?: string

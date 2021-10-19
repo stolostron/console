@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 import { IResourceDefinition } from './resource'
 
 export const MachinePoolApiVersion = 'hive.openshift.io/v1'
@@ -17,7 +16,7 @@ export const MachinePoolDefinition: IResourceDefinition = {
 export interface MachinePool {
     apiVersion: MachinePoolApiVersionType
     kind: MachinePoolKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec?: {
         clusterDeploymentRef: {
             name: string

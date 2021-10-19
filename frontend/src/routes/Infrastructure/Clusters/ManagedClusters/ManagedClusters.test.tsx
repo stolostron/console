@@ -1,22 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    CertificateSigningRequest,
-    CertificateSigningRequestApiVersion,
-    CertificateSigningRequestKind,
-    ClusterDeployment,
-    ClusterDeploymentApiVersion,
-    ClusterDeploymentKind,
-    ManagedCluster,
-    ManagedClusterApiVersion,
-    ManagedClusterDefinition,
-    ManagedClusterInfo,
-    ManagedClusterInfoApiVersion,
-    ManagedClusterInfoKind,
-    ManagedClusterKind,
-    managedClusterSetLabel,
-    ResourceAttributes,
-} from '../../../../resources'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
@@ -42,7 +25,24 @@ import {
     waitForNotText,
     waitForText,
 } from '../../../../lib/test-util'
-import ClustersPage from './ManagedClusters'
+import {
+    CertificateSigningRequest,
+    CertificateSigningRequestApiVersion,
+    CertificateSigningRequestKind,
+    ClusterDeployment,
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterDefinition,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
+    ManagedClusterKind,
+    managedClusterSetLabel,
+    ResourceAttributes,
+} from '../../../../resources'
+import ManagedClusters from './ManagedClusters'
 
 const mockManagedCluster0: ManagedCluster = {
     apiVersion: ManagedClusterApiVersion,
@@ -342,7 +342,7 @@ describe('Clusters Page', () => {
                 }}
             >
                 <MemoryRouter>
-                    <ClustersPage />
+                    <ManagedClusters />
                 </MemoryRouter>
             </RecoilRoot>
         )
@@ -448,7 +448,7 @@ describe('Clusters Page RBAC', () => {
                 }}
             >
                 <MemoryRouter>
-                    <ClustersPage />
+                    <ManagedClusters />
                 </MemoryRouter>
             </RecoilRoot>
         )

@@ -1,8 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 /* istanbul ignore file */
-import { AnsibleTowerJobTemplateList } from '../resources'
+import { isEqual } from 'lodash'
+import nock from 'nock'
 import {
+    AnsibleTowerJobTemplateList,
     ClusterRoleBinding,
     getResourceApiPath,
     getResourceNameApiPath,
@@ -14,8 +16,6 @@ import {
     StatusApiVersion,
     StatusKind,
 } from '../resources'
-import { isEqual } from 'lodash'
-import nock from 'nock'
 import { apiSearchUrl, ISearchResult, SearchQuery } from './search'
 
 export function nockGet<Resource extends IResource>(
@@ -320,7 +320,7 @@ export function nockSearch(query: SearchQuery, response?: ISearchResult, statusC
 export const mockBadRequestStatus = {
     kind: StatusKind,
     apiVersion: StatusApiVersion,
-    metadata: {},
+    metadata: { name: '' },
     status: 'Failure',
     message: 'Bad request.',
     code: 400,

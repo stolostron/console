@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { listClusterResources } from './utils/resource-request'
 import { IResource, IResourceDefinition } from './resource'
+import { Metadata } from './metadata'
 
 export const ClusterManagementAddOnApiVersion = 'addon.open-cluster-management.io/v1alpha1'
 export type ClusterManagementAddOnApiVersionType = 'addon.open-cluster-management.io/v1alpha1'
@@ -18,7 +17,7 @@ export const ClusterManagementAddOnDefinition: IResourceDefinition = {
 export interface ClusterManagementAddOn extends IResource {
     apiVersion: ClusterManagementAddOnApiVersionType
     kind: ClusterManagementAddOnKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec: {
         addOnMeta?: {
             displayName: string

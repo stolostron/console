@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ManagedClusterSetApiVersion = 'cluster.open-cluster-management.io/v1beta1'
@@ -18,7 +17,7 @@ export const ManagedClusterSetDefinition: IResourceDefinition = {
 export interface ManagedClusterSet extends IResource {
     apiVersion: ManagedClusterSetApiVersionType
     kind: ManagedClusterSetKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec?: {}
     status?: {
         conditions: V1CustomResourceDefinitionCondition[]
