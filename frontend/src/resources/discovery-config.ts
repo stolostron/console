@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 import { createResource, getResource, listResources, replaceResource } from './utils/resource-request'
 
@@ -18,7 +17,7 @@ export const DiscoveryConfigDefinition: IResourceDefinition = {
 export interface DiscoveryConfig extends IResource {
     apiVersion: DiscoveryConfigApiVersionType
     kind: DiscoveryConfigKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec: {
         filters?: {
             lastActive?: number

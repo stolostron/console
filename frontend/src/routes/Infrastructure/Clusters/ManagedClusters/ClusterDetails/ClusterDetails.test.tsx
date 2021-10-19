@@ -1,39 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
-import {
-    AgentClusterInstallGroup,
-    AgentClusterInstallKind,
-    AgentClusterInstallVersion,
-    AgentClusterInstallApiVersion,
-    ClusterCurator,
-    ClusterCuratorApiVersion,
-    ClusterCuratorKind,
-    ClusterDeployment,
-    ClusterDeploymentApiVersion,
-    ClusterDeploymentKind,
-    ClusterManagementAddOn,
-    ClusterProvision,
-    ClusterProvisionApiVersion,
-    ClusterProvisionKind,
-    ManagedCluster,
-    ManagedClusterAddOn,
-    ManagedClusterAddOnApiVersion,
-    ManagedClusterAddOnKind,
-    ManagedClusterApiVersion,
-    ManagedClusterInfo,
-    ManagedClusterInfoApiVersion,
-    ManagedClusterInfoKind,
-    ManagedClusterKind,
-    PodApiVersion,
-    PodKind,
-    PodList,
-    SelfSubjectAccessReview,
-} from '../../../../../resources'
 import { AcmRoute } from '@open-cluster-management/ui-components'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { render } from '@testing-library/react'
+import _ from 'lodash'
 import { Scope } from 'nock/types'
+import { CIM } from 'openshift-assisted-ui-lib'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
@@ -65,6 +36,35 @@ import {
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
+import {
+    AgentClusterInstallApiVersion,
+    AgentClusterInstallGroup,
+    AgentClusterInstallKind,
+    AgentClusterInstallVersion,
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    ClusterDeployment,
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+    ClusterManagementAddOn,
+    ClusterProvision,
+    ClusterProvisionApiVersion,
+    ClusterProvisionKind,
+    ManagedCluster,
+    ManagedClusterAddOn,
+    ManagedClusterAddOnApiVersion,
+    ManagedClusterAddOnKind,
+    ManagedClusterApiVersion,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
+    ManagedClusterKind,
+    PodApiVersion,
+    PodKind,
+    PodList,
+    SelfSubjectAccessReview,
+} from '../../../../../resources'
 import ClusterDetails from './ClusterDetails'
 import {
     clusterName,
@@ -302,6 +302,8 @@ const mockHiveProvisionPods: PodList = {
     metadata: { selfLink: '/api/v1/namespaces/test-cluster/pods', resourceVersion: '50100517' },
     items: [
         {
+            apiVersion: PodApiVersion,
+            kind: PodKind,
             metadata: {
                 name: 'test-cluster-0-92r2t-provision-wtsph',
                 generateName: 'test-cluster-0-92r2t-provision-',

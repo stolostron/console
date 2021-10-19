@@ -61,7 +61,7 @@ function InfraEnvLinkButton() {
         </Link>
     )
 }
-export default function ClustersPage() {
+export default function ManagedClusters() {
     const { t } = useTranslation(['cluster', 'discovery'])
     const alertContext = useContext(AcmAlertContext)
     let clusters = useAllClusters()
@@ -272,7 +272,7 @@ export function ClustersTable(props: {
                 cell: (cluster) => {
                     if (cluster.labels) {
                         const labelKeys = Object.keys(cluster.labels)
-                        let collapse =
+                        const collapse =
                             [
                                 'cloud',
                                 'clusterID',

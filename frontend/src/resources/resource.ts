@@ -1,9 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { join } from 'path'
-
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19
+
+import { join } from 'path'
+import { Metadata } from './metadata'
 
 export interface IResourceDefinition {
     apiVersion: string
@@ -13,7 +12,7 @@ export interface IResourceDefinition {
 export interface IResource extends IResourceDefinition {
     apiVersion: string
     kind: string
-    metadata?: V1ObjectMeta
+    metadata?: Metadata
 }
 
 export interface ResourceList<Resource extends IResource> {
@@ -37,18 +36,8 @@ export function getResourceName(resource: Partial<IResource>) {
     return resource.metadata?.name
 }
 
-export function setResourceName(resource: Partial<IResource>, name: string) {
-    if (!resource.metadata) resource.metadata = {}
-    return (resource.metadata.name = name)
-}
-
 export function getResourceNamespace(resource: Partial<IResource>) {
     return resource.metadata?.namespace
-}
-
-export function setResourceNamespace(resource: Partial<IResource>, namespace: string) {
-    if (!resource.metadata) resource.metadata = {}
-    return (resource.metadata.namespace = namespace)
 }
 
 export function getResourceApiPath(options: {

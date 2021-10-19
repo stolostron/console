@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { createResource } from './utils/resource-request'
+import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
+import { createResource } from './utils/resource-request'
 
 export const SelfSubjectAccessReviewApiVersion = 'authorization.k8s.io/v1'
 export type SelfSubjectAccessReviewApiVersionType = 'authorization.k8s.io/v1'
@@ -18,7 +17,7 @@ export const SelfSubjectAccessReviewDefinition: IResourceDefinition = {
 export interface SelfSubjectAccessReview extends IResource {
     apiVersion: SelfSubjectAccessReviewApiVersionType
     kind: SelfSubjectAccessReviewType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec: {
         resourceAttributes: ResourceAttributes
         user?: string

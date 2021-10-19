@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 import { IResourceDefinition } from './resource'
 import { listResources } from './utils/resource-request'
 
@@ -45,7 +44,7 @@ export const ClusterRoleBindingDefinition: IResourceDefinition = {
 export interface User {
     apiVersion: UserApiVersionType
     kind: UserKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     identities: string[]
     groups: string[]
 }
@@ -53,14 +52,14 @@ export interface User {
 export interface Group {
     apiVersion: UserApiVersionType
     kind: GroupKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     users: string[]
 }
 
 export interface ClusterRole {
     apiVersion: RbacApiVersionType
     kind: ClusterRoleKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     rules: {
         verbs: string[]
         apiGroups: string[]
@@ -72,7 +71,7 @@ export interface ClusterRole {
 export interface ClusterRoleBinding {
     apiVersion: RbacApiVersionType
     kind: ClusterRoleBindingKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     subjects: {
         kind: 'User' | 'Group'
         apiGroup: 'rbac.authorization.k8s.io'

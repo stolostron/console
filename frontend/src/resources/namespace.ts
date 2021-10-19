@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 import { IResource } from './resource'
 
 export const NamespaceApiVersion = 'v1'
@@ -11,5 +11,5 @@ export type NamespaceKindType = 'Namespace'
 export interface Namespace extends IResource {
     apiVersion: NamespaceApiVersionType
     kind: NamespaceKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
 }

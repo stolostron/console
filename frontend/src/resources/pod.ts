@@ -1,11 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { V1Pod } from '@kubernetes/client-node/dist/gen/model/v1Pod'
+import { Metadata } from './metadata'
+import { IResource, IResourceDefinition } from './resource'
 import { ClusterStatus } from './utils/get-cluster'
 import { listNamespacedResources } from './utils/resource-request'
 import { getLatest } from './utils/utils'
-import { IResource, IResourceDefinition } from './resource'
 
 export const PodApiVersion = 'v1'
 export type PodApiVersionType = 'v1'
@@ -18,10 +16,10 @@ export const PodDefinition: IResourceDefinition = {
     kind: PodKind,
 }
 
-export interface Pod extends V1Pod, IResource {
+export interface Pod extends IResource {
     apiVersion: PodApiVersionType
     kind: PodKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
 }
 
 export const PodListApiVersion = 'v1'
@@ -33,7 +31,7 @@ export type PodListKindType = 'PodList'
 export interface PodList extends IResource {
     apiVersion: PodListApiVersionType
     kind: PodListKindType
-    items: V1Pod[]
+    items: Pod[]
 }
 
 export function listHivePods(namespace: string, labels?: string[]) {
