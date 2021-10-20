@@ -153,6 +153,11 @@ export default function App() {
                             <Suspense fallback={<LoadingPage />}>
                                 <Switch>
                                     <Route path={NavigationPath.applications} component={ApplicationsPage} />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.createApplication}
+                                        component={CreateApplication}
+                                    />
                                     <Route path={NavigationPath.addCredentials} component={CredentialPage} />
                                     <Route path={NavigationPath.editCredentials} component={CredentialPage} />
                                     <Route path={NavigationPath.viewCredentials} component={CredentialPage} />
