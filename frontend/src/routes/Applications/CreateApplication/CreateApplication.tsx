@@ -21,6 +21,7 @@ import { DOC_LINKS } from '../../../lib/doc-util'
 // Template Data
 import { ControlData } from './ControlData/ControlData'
 import createTemplate from './templates/template.hbs'
+import gitTemplate from './templates/templateGit.hbs'
 
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
@@ -132,6 +133,8 @@ export function CreateApplication() {
 
     //compile template
     const template = Handlebars.compile(createTemplate)
+    Handlebars.registerPartial('templateGit', Handlebars.compile(gitTemplate))
+
 
     // if openned from bma page, pass selected bma's to editor
     const urlParams = new URLSearchParams(location.search.substring(1))

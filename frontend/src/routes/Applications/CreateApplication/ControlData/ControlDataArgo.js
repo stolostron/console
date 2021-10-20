@@ -5,6 +5,7 @@ import { AcmIcon, AcmIconVariant } from '@open-cluster-management/ui-components'
 
 import githubChannelData from './ControlDataGit'
 import helmReleaseChannelData from './ControlDataHelm'
+import { loadExistingArgoServer } from './ControlDataHelper'
 
 import { discoverGroupsFromSource } from '../transformers/transform-resources-to-controls'
 import { GithubLogo, HelmRepoLogo } from './Logos'
@@ -62,7 +63,7 @@ export const ControlDataArgo = [
         type: 'combobox',
         label: 'argo.cluster.name',
         placeholder: 'argo.server.placeholder',
-        // fetchAvailable: loadExistingArgoServer(),
+        fetchAvailable: loadExistingArgoServer(),
         validation: {
             required: true,
         },
@@ -170,25 +171,6 @@ export const ControlDataArgo = [
                 validation: {},
             },
         ],
-    },
-    ///////// destination //////////
-    {
-        id: 'destination',
-        type: 'title',
-        info: 'argo.template.destination.title',
-    },
-    {
-        id: 'destinationNS',
-        name: 'argo.destination.namespace',
-        tooltip: 'argo.destination.namespace.tooltip',
-        type: 'text',
-        placeholder: 'argo.destination.namespace.placeholder',
-        validation: {
-            constraint: VALID_DNS_LABEL,
-            notification: 'import.form.invalid.dns.label',
-            required: true,
-        },
-        reverse: 'ApplicationSet[0].spec.template.spec.destination.namespace',
     },
     ///////// destination //////////
     {
