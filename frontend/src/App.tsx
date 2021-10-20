@@ -2,16 +2,30 @@
 /* istanbul ignore file */
 
 import {
-    AcmHeader,
     AcmTablePaginationContextProvider,
     AcmToastGroup,
     AcmToastProvider,
 } from '@open-cluster-management/ui-components'
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
+import {
+    Dropdown,
+    DropdownItem,
+    DropdownToggle,
+    Nav,
+    NavExpandable,
+    NavItem,
+    NavItemSeparator,
+    NavList,
+    Page,
+    PageHeader,
+    PageSection,
+    PageSidebar,
+    Title,
+} from '@patternfly/react-core'
+import RedHatIcon from '@patternfly/react-icons/dist/js/icons/redhat-icon'
+import { Fragment, lazy, Suspense, useCallback, useMemo, useState } from 'react'
+import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
 import './App.css'
-import { acmRouteState, LoadData } from './atoms'
+import { LoadData } from './atoms'
 import { LoadingPage } from './components/LoadingPage'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
@@ -20,50 +34,118 @@ const ApplicationsPage = lazy(() => import('./routes/Applications/Applications')
 const CreateApplication = lazy(() => import('./routes/Applications/CreateApplication/CreateApplication'))
 
 const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
-const ClusterDetailsPage = lazy(
-    () => import('./routes/Infrastructure/Clusters/ManagedClusters/ClusterDetails/ClusterDetails')
-)
-const ClusterSetDetailsPage = lazy(
-    () => import('./routes/Infrastructure/Clusters/ClusterSets/ClusterSetDetails/ClusterSetDetails')
-)
-const CreateClusterPoolPage = lazy(
-    () => import('./routes/Infrastructure/Clusters/ClusterPools/CreateClusterPool/CreateClusterPool')
-)
-const CreateClusterPage = lazy(
-    () => import('./routes/Infrastructure/Clusters/ManagedClusters/CreateCluster/CreateCluster')
-)
-const ImportClusterPage = lazy(
-    () => import('./routes/Infrastructure/Clusters/ManagedClusters/ImportCluster/ImportCluster')
-)
 const CreateBareMetalAssetPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/CreateBareMetalAsset'))
-const DiscoveryConfig = lazy(
-    () => import('./routes/Infrastructure/Clusters/DiscoveredClusters/DiscoveryConfig/DiscoveryConfig')
-)
+
 const CredentialPage = lazy(() => import('./routes/Credentials/CredentialsForm'))
 const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
 const AnsibleAutomationFormPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomationsForm'))
 const BareMetalAssetsPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssetsPage'))
 const AnsibleAutomationsPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomations'))
-const ExampleForm = lazy(() => import('./components/DataForm/ExampleForm'))
-
 const InfraEnvironmentsPage = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPage'))
 const CreateInfraEnv = lazy(() => import('./routes/Infrastructure/InfraEnvironments/CreateInfraEnv'))
 const InfraEnvironmentDetailsPage = lazy(
     () => import('./routes/Infrastructure/InfraEnvironments/Details/InfraEnvironmentDetailsPage')
 )
-const EditAICluster = lazy(
-    () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/EditAICluster')
-)
-const ClusterCreateProgress = lazy(
-    () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/ClusterCreateProgress')
-)
+
 const GovernancePage = lazy(() => import('./routes/Governance/Governance'))
+const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
+
+interface IRoute {
+    type: 'route'
+    route: NavigationPath
+    title: string
+    component: React.ComponentType<RouteComponentProps<any>> | React.ComponentType<any> | undefined
+}
+
+interface IRouteGroup {
+    type: 'group'
+    title: string
+    routes: IRoute[]
+}
 
 export default function App() {
-    const [route] = useRecoilState(acmRouteState)
+    const routes: (IRoute | IRouteGroup)[] = useMemo(
+        () => [
+            {
+                title: 'Home',
+                type: 'group',
+                routes: [
+                    {
+                        title: 'Welcome',
+                        type: 'route',
+                        route: NavigationPath.welcome,
+                        component: WelcomePage,
+                    },
+                    // {
+                    //     title: 'Overview',
+                    //     type: 'route',
+                    //     route: NavigationPath.overview,
+                    //     component: OverviewPage,
+                    // },
+                ],
+            },
+            {
+                title: 'Infrastructure',
+                type: 'group',
+                routes: [
+                    {
+                        title: 'Clusters',
+                        type: 'route',
+                        route: NavigationPath.clusters,
+                        component: ClusterManagementPage,
+                    },
+                    {
+                        title: 'Bare metal assets',
+                        type: 'route',
+                        route: NavigationPath.bareMetalAssets,
+                        component: BareMetalAssetsPage,
+                    },
+                    {
+                        title: 'Automation',
+                        type: 'route',
+                        route: NavigationPath.ansibleAutomations,
+                        component: AnsibleAutomationsPage,
+                    },
+                    {
+                        title: 'Infrastructure environments',
+                        type: 'route',
+                        route: NavigationPath.infraEnvironments,
+                        component: InfraEnvironmentsPage,
+                    },
+                ],
+            },
+            {
+                title: 'Applications',
+                type: 'route',
+                route: NavigationPath.applications,
+                component: ApplicationsPage,
+            },
+            {
+                title: 'Governance',
+                type: 'route',
+                route: NavigationPath.governance,
+                component: GovernancePage,
+            },
+
+            {
+                title: 'Credentials',
+                type: 'route',
+                route: NavigationPath.credentials,
+                component: CredentialsPage,
+            },
+        ],
+        []
+    )
+
     return (
         <BrowserRouter>
-            <AcmHeader route={route}>
+            <Page
+                header={<AppHeader />}
+                sidebar={<AppSidebar routes={routes} />}
+                isManagedSidebar
+                defaultManagedSidebarIsOpen={true}
+                style={{ height: '100vh' }}
+            >
                 <LoadData>
                     <AcmToastProvider>
                         <AcmToastGroup />
@@ -71,45 +153,10 @@ export default function App() {
                             <Suspense fallback={<LoadingPage />}>
                                 <Switch>
                                     <Route path={NavigationPath.applications} component={ApplicationsPage} />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.createApplication}
-                                        component={CreateApplication}
-                                    />
-                                    <Route path={NavigationPath.governance} component={GovernancePage} />
-                                    <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-                                    <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.createClusterPool}
-                                        component={CreateClusterPoolPage}
-                                    />
-                                    <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
-                                    <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
-                                    <Route exact path={NavigationPath.credentials} component={CredentialsPage} />
-                                    <Route exact path={NavigationPath.addCredentials} component={CredentialPage} />
-                                    <Route exact path={NavigationPath.editCredentials} component={CredentialPage} />
-                                    <Route exact path={NavigationPath.viewCredentials} component={CredentialPage} />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.infraEnvironments}
-                                        component={InfraEnvironmentsPage}
-                                    />
-                                    <Route exact path={NavigationPath.createInfraEnv} component={CreateInfraEnv} />
-                                    <Route
-                                        path={NavigationPath.infraEnvironmentDetails}
-                                        component={InfraEnvironmentDetailsPage}
-                                    />
-                                    <Route path={NavigationPath.editCluster} component={EditAICluster} />
-                                    <Route
-                                        path={NavigationPath.clusterCreateProgress}
-                                        component={ClusterCreateProgress}
-                                    />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.ansibleAutomations}
-                                        component={AnsibleAutomationsPage}
-                                    />
+                                    <Route path={NavigationPath.addCredentials} component={CredentialPage} />
+                                    <Route path={NavigationPath.editCredentials} component={CredentialPage} />
+                                    <Route path={NavigationPath.viewCredentials} component={CredentialPage} />
+
                                     <Route
                                         exact
                                         path={NavigationPath.addAnsibleAutomation}
@@ -122,11 +169,6 @@ export default function App() {
                                     />
                                     <Route
                                         exact
-                                        path={NavigationPath.bareMetalAssets}
-                                        component={BareMetalAssetsPage}
-                                    />
-                                    <Route
-                                        exact
                                         path={NavigationPath.editBareMetalAsset}
                                         component={CreateBareMetalAssetPage}
                                     />
@@ -135,13 +177,25 @@ export default function App() {
                                         path={NavigationPath.createBareMetalAsset}
                                         component={CreateBareMetalAssetPage}
                                     />
-                                    <Route exact path={NavigationPath.createDiscovery} component={DiscoveryConfig} />
-                                    <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfig} />
-                                    {process.env.NODE_ENV === 'development' && (
-                                        <Route exact path="/multicloud/example" component={ExampleForm} />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.infraEnvironmentDetails}
+                                        component={InfraEnvironmentDetailsPage}
+                                    />
+                                    <Route exact path={NavigationPath.createInfraEnv} component={CreateInfraEnv} />
+
+                                    {routes.map((route) =>
+                                        route.type === 'group' ? (
+                                            route.routes.map((route) => (
+                                                <Route path={route.route} component={route.component} />
+                                            ))
+                                        ) : (
+                                            <Route path={route.route} component={route.component} />
+                                        )
                                     )}
-                                    <Route path={NavigationPath.console} component={ClusterManagementPage} />
-                                    <Route exact path="*">
+
+                                    <Route path={NavigationPath.console} component={WelcomePage} />
+                                    <Route path="*">
                                         <Redirect to={NavigationPath.console} />
                                     </Route>
                                 </Switch>
@@ -149,7 +203,95 @@ export default function App() {
                         </AcmTablePaginationContextProvider>
                     </AcmToastProvider>
                 </LoadData>
-            </AcmHeader>
+            </Page>
         </BrowserRouter>
+    )
+}
+
+function AppHeader() {
+    return (
+        <PageHeader
+            logo={
+                <div style={{ display: 'flex', gap: 8, alignItems: 'start' }}>
+                    <RedHatIcon size="lg" style={{ color: '#EE0000', marginTop: -8 }} />
+                    <div style={{ color: 'white' }}>
+                        <Title headingLevel="h4" style={{ fontWeight: 'bold', lineHeight: 1.2 }}>
+                            Red Hat
+                        </Title>
+                        <Title headingLevel="h3" style={{ fontWeight: 'lighter', lineHeight: 1.2 }}>
+                            Advanced Cluster Management for Kubernetes
+                        </Title>
+                    </div>
+                </div>
+            }
+            showNavToggle
+        />
+    )
+}
+
+function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
+    const { routes } = props
+    const location = useLocation()
+    const [open, setOpen] = useState(false)
+    const dropdownItems = [
+        <DropdownItem key="cluster-management">Cluster Management</DropdownItem>,
+        <DropdownItem key="administrator">Administrator</DropdownItem>,
+        <DropdownItem key="developer">Developer</DropdownItem>,
+    ]
+    const onToggle = useCallback(() => {
+        setOpen((open) => !open)
+    }, [])
+    const onSelect = useCallback(() => {
+        setOpen((open) => !open)
+    }, [])
+    return (
+        <PageSidebar
+            nav={
+                <Fragment>
+                    <Nav>
+                        <NavItemSeparator style={{ margin: 0 }} />
+                    </Nav>
+                    <PageSection variant="dark" style={{ paddingLeft: 8, paddingRight: 8 }}>
+                        <Dropdown
+                            isPlain
+                            onSelect={onSelect}
+                            toggle={
+                                <DropdownToggle id="toggle-id" onToggle={onToggle}>
+                                    Cluster Management
+                                </DropdownToggle>
+                            }
+                            isOpen={open}
+                            dropdownItems={dropdownItems}
+                            width="100%"
+                        />
+                    </PageSection>
+                    <Nav>
+                        <NavItemSeparator style={{ marginTop: 0 }} />
+                        <NavList>
+                            {routes.map((route) =>
+                                route.type === 'group' ? (
+                                    <NavExpandable
+                                        title={route.title}
+                                        isExpanded
+                                        isActive={!!route.routes.find((route) => location.pathname === route.route)}
+                                    >
+                                        {route.routes.map((route) => (
+                                            <NavItem key={route.route} isActive={location.pathname === route.route}>
+                                                <Link to={route.route}>{route.title}</Link>
+                                            </NavItem>
+                                        ))}
+                                    </NavExpandable>
+                                ) : (
+                                    <NavItem key={route.route} isActive={location.pathname === route.route}>
+                                        <Link to={route.route}>{route.title}</Link>
+                                    </NavItem>
+                                )
+                            )}
+                        </NavList>
+                    </Nav>
+                </Fragment>
+            }
+            className="sidebar"
+        />
     )
 }

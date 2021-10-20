@@ -8,8 +8,8 @@ import { machinePoolsState } from '../../../../../../atoms'
 import { nockDelete, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
 import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails'
-import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from '../ClusterDetails.test'
 import { MachinePoolsPageContent } from './ClusterMachinePools'
+import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
 
 const mockCluster: Cluster = {
     name: clusterName,

@@ -2,6 +2,7 @@
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { Metadata } from './metadata'
 import { IResourceDefinition } from './resource'
+import { Selector } from './selector'
 
 export const ClusterDeploymentApiVersion = 'hive.openshift.io/v1'
 export type ClusterDeploymentApiVersionType = 'hive.openshift.io/v1'
@@ -38,6 +39,9 @@ export interface ClusterDeployment {
                     name: string
                 }
                 region: string
+            }
+            agentBareMetal?: {
+                agentSelector?: Selector
             }
         }
         powerState?: 'Running' | 'Hibernating'

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useMemo, useContext } from 'react'
+import { useMemo, useContext, useEffect, useState } from 'react'
 import { AcmExpandableCard } from '@open-cluster-management/ui-components'
 import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
@@ -40,7 +40,16 @@ const fetchEvents = async (url: string) => {
 
 const AIClusterProgress: React.FC = () => {
     const { clusterDeployment, agentClusterInstall, agents } = useContext(ClusterContext)
-
+    const [aiNamespace, setAiNamespace] = useState('open-cluster-management')
+    useEffect(() => {
+        const checkNs = async () => {
+            try {
+                await getResource({ apiVersion: 'v1', kind: 'namespace', metadata: { name: 'rhacm' } }).promise
+                setAiNamespace('rhacm')
+            } catch {}
+        }
+        checkNs()
+    }, [])
     const [clusterAgents, cluster] = useMemo(() => {
         const clusterAgents = agents
             ? agents.filter(
@@ -55,6 +64,11 @@ const AIClusterProgress: React.FC = () => {
         return [clusterAgents, cluster]
     }, [clusterDeployment, agentClusterInstall, agents])
 
+    const onFetchEvents = useMemo(
+        () => getOnFetchEventsHandler(fetchEvents, aiNamespace, agentClusterInstall),
+        [aiNamespace, agentClusterInstall]
+    )
+
     return (
         <>
             {shouldShowClusterInstallationProgress(agentClusterInstall) && (
@@ -67,7 +81,7 @@ const AIClusterProgress: React.FC = () => {
                                         clusterDeployment={clusterDeployment}
                                         agentClusterInstall={agentClusterInstall}
                                         agents={clusterAgents}
-                                        onFetchEvents={getOnFetchEventsHandler(fetchEvents, agentClusterInstall)}
+                                        onFetchEvents={onFetchEvents}
                                     />
                                 </StackItem>
                                 {shouldShowClusterCredentials(agentClusterInstall) && (
@@ -94,7 +108,7 @@ const AIClusterProgress: React.FC = () => {
                                         title="Cluster Events"
                                         variant={ButtonVariant.link}
                                         style={{ textAlign: 'right' }}
-                                        onFetchEvents={getOnFetchEventsHandler(fetchEvents, agentClusterInstall)}
+                                        onFetchEvents={onFetchEvents}
                                         ButtonComponent={Button}
                                     >
                                         View Cluster Events
@@ -104,6 +118,7 @@ const AIClusterProgress: React.FC = () => {
                                         agentClusterInstall={agentClusterInstall}
                                         backendURL={backendUrl}
                                         variant={ButtonVariant.link}
+                                        aiNamespace={aiNamespace}
                                     />
                                 </StackItem>
                                 {shouldShowClusterInstallationError(agentClusterInstall) && (
@@ -112,6 +127,7 @@ const AIClusterProgress: React.FC = () => {
                                             clusterDeployment={clusterDeployment}
                                             agentClusterInstall={agentClusterInstall}
                                             backendURL={backendUrl}
+                                            aiNamespace={aiNamespace}
                                         />
                                     </StackItem>
                                 )}
