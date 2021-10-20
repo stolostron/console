@@ -1,8 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
-import { Selector } from './selector'
+import { IResource } from './resource'
 
-export interface PlacementRule {
+export const PlacementRuleApiVersion = 'policy.open-cluster-management.io/v1'
+export type PlacementRuleApiVersionType = 'policy.open-cluster-management.io/v1'
+
+export const PlacementRuleKind = 'PlacementBinding'
+export type PlacementRuleKindType = 'PlacementBinding'
+
+export interface PlacementRule extends IResource{
     apiVersion: 'apps.open-cluster-management.io/v1'
     kind: 'PlacementRule'
     metadata: Metadata

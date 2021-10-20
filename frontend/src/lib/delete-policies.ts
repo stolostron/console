@@ -1,5 +1,4 @@
-/* Copyright Contributors to the Open Cluster Management project */
-
+// Copyright Contributors to the Open Cluster Management project
 
 import {
     Policy,
@@ -10,10 +9,12 @@ import {
     ResourceErrorCode
 } from '../resources'
 import { PlacementBindingApiVersion, PlacementBindingKind } from '../resources/placement-binding'
+// import { PlacementRuleApiVersion, PlacementRuleKind } from '../resources/placement-rule'
 
 import { deleteResources } from './delete-resources'
 
-export function deletePolicy(policy: Policy) {
+export function deletePolicy(policy: Policy, checked: boolean) {
+    console.log('checked in delete', checked)
     const resources: IResource[] = [
         {
             apiVersion: PolicyApiVersion,
@@ -27,6 +28,13 @@ export function deletePolicy(policy: Policy) {
             kind: PlacementBindingKind,
             metadata: { name: policy.metadata.name },
         }
+    // resources.push(
+    //     {
+    //         apiVersion: PlacementRuleApiVersion,
+    //         kind: PlacementRuleKind,
+    //     }
+    // )
+
     )
 
     console.log('resources', resources)
