@@ -1,13 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { request, RequestOptions } from 'https'
+import * as ProxyAgent from 'proxy-agent'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
 import { notFound, respondBadRequest } from '../lib/respond'
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
-const ProxyAgent = require('proxy-agent')
 interface AnsibleCredential {
     towerHost: string
     token: string
@@ -41,7 +40,6 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
             rejectUnauthorized: false,
         }
         if (process.env.HTTPS_PROXY) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             options.agent = new ProxyAgent()
         }
         pipeline(
