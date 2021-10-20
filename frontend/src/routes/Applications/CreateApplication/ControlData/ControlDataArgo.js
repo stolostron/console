@@ -4,7 +4,7 @@ import { VALID_DNS_LABEL } from 'temptifly'
 import { AcmIcon, AcmIconVariant } from '@open-cluster-management/ui-components'
 
 import githubChannelData from './ControlDataGit'
-import helmReleaseChannelData from './ControlDataHelm'
+import helmChannelData from './ControlDataHelm'
 import { loadExistingArgoServer } from './ControlDataHelper'
 
 import { discoverGroupsFromSource } from '../transformers/transform-resources-to-controls'
@@ -163,7 +163,7 @@ export const ControlDataArgo = [
                         title: 'channel.type.helmrepo',
                         tooltip: 'tooltip.channel.type.helmrepo',
                         change: {
-                            // insertControlData: helmReleaseChannelData,
+                            insertControlData: helmChannelData,
                         },
                     },
                 ],

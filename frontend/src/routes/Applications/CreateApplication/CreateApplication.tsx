@@ -22,6 +22,7 @@ import { DOC_LINKS } from '../../../lib/doc-util'
 import { ControlData } from './ControlData/ControlData'
 import createTemplate from './templates/template.hbs'
 import gitTemplate from './templates/templateGit.hbs'
+import helmTemplate from './templates/templateHelm.hbs'
 
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
@@ -61,30 +62,28 @@ export default function CreateApplicationPage() {
     )
 
     return (
-    <AcmPage
-        header={
-            <AcmPageHeader
-                title={t('page.header.create-application')}
-                breadcrumb={[
-                    { text: t('applications'), to: NavigationPath.applications },
-                    { text: t('page.header.create-application'), to: '' },
-                ]}
-                switches={switches}
-                actions={portals}  
-            />
-        }
-    >
-        <AcmErrorBoundary>
-            <AcmPageContent id="create-cluster-pool">
-                <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
-                    <CreateApplication />
-                </PageSection>
-            </AcmPageContent>
-        </AcmErrorBoundary>
-    </AcmPage>
+        <AcmPage
+            header={
+                <AcmPageHeader
+                    title={t('page.header.create-application')}
+                    breadcrumb={[
+                        { text: t('applications'), to: NavigationPath.applications },
+                        { text: t('page.header.create-application'), to: '' },
+                    ]}
+                    switches={switches}
+                    actions={portals}
+                />
+            }
+        >
+            <AcmErrorBoundary>
+                <AcmPageContent id="create-cluster-pool">
+                    <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
+                        <CreateApplication />
+                    </PageSection>
+                </AcmPageContent>
+            </AcmErrorBoundary>
+        </AcmPage>
     )
-    
-
 }
 
 export function CreateApplication() {
@@ -134,7 +133,7 @@ export function CreateApplication() {
     //compile template
     const template = Handlebars.compile(createTemplate)
     Handlebars.registerPartial('templateGit', Handlebars.compile(gitTemplate))
-
+    Handlebars.registerPartial('templateHelm', Handlebars.compile(helmTemplate))
 
     // if openned from bma page, pass selected bma's to editor
     const urlParams = new URLSearchParams(location.search.substring(1))

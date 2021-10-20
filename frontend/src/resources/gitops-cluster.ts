@@ -12,12 +12,12 @@ export type GitOpsClusterKindType = 'GitOpsCluster'
 export const GitopsClusterDefinition: IResourceDefinition = {
     apiVersion: GitOpsClusterApiVersion,
     kind: GitOpsClusterKind,
-} 
+}
 
 export interface GitOpsCluster extends IResource {
     apiVersion: GitOpsClusterApiVersionType
     kind: GitOpsClusterKindType
-    metadata: Metadata,
+    metadata: Metadata
     spec?: {
         argoServer?: {
             argoNamespace: string
@@ -32,6 +32,3 @@ export function listGitOpsClusters() {
         kind: GitOpsClusterKind,
     })
 }
-
-
-
