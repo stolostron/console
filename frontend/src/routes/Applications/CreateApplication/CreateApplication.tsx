@@ -1,22 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmPage } from '@open-cluster-management/ui-components'
-import { useState, useContext, useEffect } from 'react'
-import { useRecoilState } from 'recoil'
-
+import { useState, 
+    // useContext
+ } from 'react'
 import {
     AcmPage,
     AcmPageContent,
     AcmPageHeader,
     AcmErrorBoundary,
-    AcmToastContext,
+    // AcmToastContext,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { NavigationPath } from '../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { useTranslation } from 'react-i18next'
-import { useHistory, useLocation } from 'react-router-dom'
-
-import { DOC_LINKS } from '../../../lib/doc-util'
+import { useHistory, 
+    // useLocation
+ } from 'react-router-dom'
 
 // Template Data
 import { ControlData } from './ControlData/ControlData'
@@ -88,14 +87,14 @@ export default function CreateApplicationPage() {
 
 export function CreateApplication() {
     const history = useHistory()
-    const location = useLocation()
-    const toastContext = useContext(AcmToastContext)
+    // const location = useLocation()
+    // const toastContext = useContext(AcmToastContext)
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
     const createResource = async (resourceJSON: { createResources: any[] }) => {
         if (resourceJSON) {
-            const { createResources } = resourceJSON
+            // const { createResources } = resourceJSON
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
             // change createCluster to createApplication
             // const { status, messages } = await createCluster(createResources)
@@ -134,9 +133,6 @@ export function CreateApplication() {
     const template = Handlebars.compile(createTemplate)
     Handlebars.registerPartial('templateGit', Handlebars.compile(gitTemplate))
     Handlebars.registerPartial('templateHelm', Handlebars.compile(helmTemplate))
-
-    // if openned from bma page, pass selected bma's to editor
-    const urlParams = new URLSearchParams(location.search.substring(1))
 
     return (
         <TemplateEditor
