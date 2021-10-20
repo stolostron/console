@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, 
+import {
+    useState,
     // useContext
- } from 'react'
+} from 'react'
 import {
     AcmPage,
     AcmPageContent,
@@ -13,9 +14,10 @@ import { PageSection } from '@patternfly/react-core'
 import { NavigationPath } from '../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { useTranslation } from 'react-i18next'
-import { useHistory, 
+import {
+    useHistory,
     // useLocation
- } from 'react-router-dom'
+} from 'react-router-dom'
 
 // Template Data
 import { ControlData } from './ControlData/ControlData'
