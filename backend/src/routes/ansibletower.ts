@@ -6,6 +6,8 @@ import { URL } from 'url'
 import { logger } from '../lib/logger'
 import { notFound, respondBadRequest } from '../lib/respond'
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
+const ProxyAgent = require('proxy-agent')
 interface AnsibleCredential {
     towerHost: string
     token: string
@@ -37,6 +39,10 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
                 Authorization: `Bearer ${ansibleCredential.token}`,
             },
             rejectUnauthorized: false,
+        }
+        if (process.env.HTTPS_PROXY) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+            options.agent = new ProxyAgent()
         }
         pipeline(
             req,

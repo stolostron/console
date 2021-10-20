@@ -23,6 +23,7 @@
         "find-my-way": "^4.3.3",
         "node-fetch": "^2.6.1",
         "pino": "^6.13.2",
+        "proxy-agent": "^5.0.0",
         "raw-body": "^2.4.1"
     },
     "devDependencies": {
