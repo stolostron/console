@@ -16,6 +16,7 @@ import {
     isHidden_SNO,
     onChangeSNO,
     onChangeConnection,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -433,7 +434,8 @@ const ApplicationCreationPage = [
     },
 ]
 
-export const getControlDataAZR = (includeAutomation = true) => {
+export const getControlDataAZR = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataAZR)
     if (includeAutomation) return [...controlDataAZR, ...automationControlData]
     return [...controlDataAZR]
 }
@@ -537,7 +539,7 @@ const controlDataAZR = [
         cacheUserValueKey: 'create.cluster.region',
         reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
-    ///////////////////////  master pool  /////////////////////////////////////
+    ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
         type: 'group',
@@ -548,8 +550,8 @@ const controlDataAZR = [
                 type: 'section',
                 collapsable: true,
                 collapsed: true,
-                subtitle: 'creation.ocp.node.master.pool.title',
-                info: 'creation.ocp.node.master.pool.info',
+                subtitle: 'creation.ocp.node.controlplane.pool.title',
+                info: 'creation.ocp.node.controlplane.pool.info',
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
@@ -584,6 +586,7 @@ const controlDataAZR = [
     {
         id: 'workerPools',
         type: 'group',
+        hidden: isHidden_SNO,
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',

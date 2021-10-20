@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="27px" height="37px" viewBox="0 0 27 37" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: sketchtool 62 (101010) - https://sketch.com -->
+    <title>3B7C9EE4-EEB6-42DE-96CB-F6097A257195</title>
+    <desc>Created with sketchtool.</desc>
+    <defs>
+        <path d="M0.4275,36.385 C7.5525,36.385 13.49,30.4475 13.49,23.3225 L13.49,23.3225 L13.49,7.885 L0.4275,0.76" id="path-1"></path>
+        <path d="M0.4275,36.385 C7.5525,36.385 13.49,30.4475 13.49,23.3225 L13.49,23.3225 L13.49,7.885 L0.4275,0.76" id="path-3"></path>
+        <path d="M0.4275,36.385 C7.5525,36.385 13.49,30.4475 13.49,23.3225 L13.49,23.3225 L13.49,7.885 L0.4275,0.76" id="path-5"></path>
+        <path d="M0.4275,36.385 C7.5525,36.385 13.49,30.4475 13.49,23.3225 L13.49,7.885 L0.4275,0.76" id="path-7"></path>
+    </defs>
+    <g id="Getting-Started-welcome-4-icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="01.00-Getting-Started-welcome-4-icon" transform="translate(-820.000000, -624.000000)">
+            <g id="Group-16" transform="translate(820.000000, 623.000000)">
+                <g id="Group-13" transform="translate(13.062500, 0.914494)">
+                    <g id="Group-3">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <g id="Clip-2"></g>
+                        <line x1="-0.76" y1="7.2401875" x2="13.49" y2="15.01" id="Stroke-1" stroke="#C9190B" stroke-width="0.855" mask="url(#mask-2)"></line>
+                    </g>
+                    <g id="Group-6">
+                        <mask id="mask-4" fill="white">
+                            <use xlink:href="#path-3"></use>
+                        </mask>
+                        <g id="Clip-5"></g>
+                        <line x1="-0.76" y1="14.31365" x2="13.49" y2="22.0834625" id="Stroke-4" stroke="#C9190B" stroke-width="0.855" mask="url(#mask-4)"></line>
+                    </g>
+                    <g id="Group-9">
+                        <mask id="mask-6" fill="white">
+                            <use xlink:href="#path-5"></use>
+                        </mask>
+                        <g id="Clip-8"></g>
+                        <line x1="-0.76" y1="21.4901875" x2="12.3025" y2="28.6128125" id="Stroke-7" stroke="#C9190B" stroke-width="0.855" mask="url(#mask-6)"></line>
+                    </g>
+                    <g id="Group-12">
+                        <mask id="mask-8" fill="white">
+                            <use xlink:href="#path-7"></use>
+                        </mask>
+                        <g id="Clip-11"></g>
+                        <line x1="-0.76" y1="28.66625" x2="8.2780625" y2="33.5931875" id="Stroke-10" stroke="#C9190B" stroke-width="0.855" mask="url(#mask-8)"></line>
+                    </g>
+                </g>
+                <path d="M13.49,1.67449375 L0.4275,8.79949375 L0.4275,24.2369937 C0.4275,31.3619937 6.365,37.2994937 13.49,37.2994937 C20.615,37.2994937 26.5525,31.3619937 26.5525,24.2369937 L26.5525,8.79949375 L13.49,1.67449375 Z" id="Stroke-14" stroke="#C9190B" stroke-width="0.855"></path>
+            </g>
+        </g>
+    </g>
+</svg>

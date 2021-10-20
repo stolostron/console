@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
 export const SubmarinerConfigApiVersion: SubmarinerConfigApiVersionType =
@@ -17,7 +16,6 @@ export const SubmarinerConfigDefinition: IResourceDefinition = {
 
 export enum CableDriver {
     libreswan = 'libreswan',
-    strongswan = 'strongswan',
     wireguard = 'wireguard',
     vxlan = 'vxlan',
 }
@@ -25,7 +23,7 @@ export enum CableDriver {
 export interface SubmarinerConfig extends IResource {
     apiVersion: SubmarinerConfigApiVersionType
     kind: SubmarinerConfigKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec: {
         IPSecNATTPort?: number
         NATTEnable?: boolean

@@ -2,47 +2,81 @@
 /* istanbul ignore file */
 
 export enum NavigationPath {
+    // Console
     console = '/multicloud',
-    clusters = '/multicloud/clusters',
-    clusterDetails = '/multicloud/clusters/:id',
-    clusterOverview = '/multicloud/clusters/:id/overview',
-    clusterNodes = '/multicloud/clusters/:id/nodes',
-    clusterMachinePools = '/multicloud/clusters/:id/machinepools',
-    clusterSettings = '/multicloud/clusters/:id/settings',
-    clusterSets = '/multicloud/cluster-sets',
-    clusterSetDetails = '/multicloud/cluster-sets/:id',
-    clusterSetOverview = '/multicloud/cluster-sets/:id/overview',
-    clusterSetSubmariner = '/multicloud/cluster-sets/:id/submariner',
-    clusterSetSubmarinerInstall = '/multicloud/cluster-sets/:id/install-submariner',
-    clusterSetClusters = '/multicloud/cluster-sets/:id/clusters',
-    clusterSetClusterPools = '/multicloud/cluster-sets/:id/cluster-pools',
-    clusterSetAccess = '/multicloud/cluster-sets/:id/access',
-    clusterSetManage = '/multicloud/cluster-sets/:id/manage-resources',
-    createClusterSet = '/multicloud/create-cluster-set',
-    clusterPools = '/multicloud/cluster-pools',
-    discoveredClusters = '/multicloud/discovered-clusters',
-    createCluster = '/multicloud/create-cluster',
-    createClusterPool = '/multicloud/create-cluster-pool',
-    importCluster = '/multicloud/import-cluster',
-    importCommand = '/multicloud/import-cluster/:clusterName',
+
+    // Home
+    home = '/multicloud/home',
+    welcome = '/multicloud/home/welcome',
+    overview = '/multicloud/home/overview',
+
+    // Infrastructure
+    infrastructure = '/multicloud/infrastructure',
+
+    // Infrastructure - Clusters - Managed Clusters
+    clusters = '/multicloud/infrastructure/clusters',
+    managedClusters = '/multicloud/infrastructure/clusters/managed',
+    createCluster = '/multicloud/infrastructure/clusters/create',
+    editCluster = '/multicloud/infrastructure/clusters/edit/:namespace/:name',
+    clusterCreateProgress = '/multicloud/infrastructure/clusters/create/:namespace/:name/progress',
+    clusterDetails = '/multicloud/infrastructure/clusters/details/:id',
+    clusterOverview = '/multicloud/infrastructure/clusters/details/:id/overview',
+    clusterSettings = '/multicloud/infrastructure/clusters/details/:id/settings',
+    clusterMachinePools = '/multicloud/infrastructure/clusters/details/:id/machinepools',
+    clusterNodes = '/multicloud/infrastructure/clusters/details/:id/nodes',
+    importCluster = '/multicloud/infrastructure/clusters/import',
+    importCommand = '/multicloud/infrastructure/clusters/import/:clusterName',
+
+    // Infrastructure - Clusters - Cluster Sets
+    clusterSets = '/multicloud/infrastructure/clusters/sets',
+    createClusterSet = '/multicloud/infrastructure/clusters/sets/create',
+    clusterSetDetails = '/multicloud/infrastructure/clusters/sets/details/:id',
+    clusterSetOverview = '/multicloud/infrastructure/clusters/sets/details/:id/overview',
+    clusterSetAccess = '/multicloud/infrastructure/clusters/sets/details/:id/access',
+    clusterSetClusterPools = '/multicloud/infrastructure/clusters/sets/details/:id/cluster-pools',
+    clusterSetClusters = '/multicloud/infrastructure/clusters/sets/details/:id/clusters',
+    clusterSetManage = '/multicloud/infrastructure/clusters/sets/details/:id/manage-resources',
+    clusterSetSubmariner = '/multicloud/infrastructure/clusters/sets/details/:id/submariner',
+    clusterSetSubmarinerInstall = '/multicloud/infrastructure/clusters/sets/details/:id/install-submariner',
+
+    // Infrastructure - Clusters - Cluster Pools
+    clusterPools = '/multicloud/infrastructure/clusters/pools',
+    createClusterPool = '/multicloud/infrastructure/clusters/pools/create',
+
+    // Infrastructure - Clusters - Discovery
+    discoveredClusters = '/multicloud/infrastructure/clusters/discovered',
+    configureDiscovery = '/multicloud/infrastructure/clusters/discovered/configure',
+    createDiscovery = '/multicloud/infrastructure/clusters/discovered/create',
+
+    // Infrastructure - Environments
+    infraEnvironments = '/multicloud/infrastructure/environments',
+    createInfraEnv = '/multicloud/infrastructure/environments/create',
+    infraEnvironmentDetails = '/multicloud/infrastructure/environments/details/:namespace/:name',
+    infraEnvironmentHosts = '/multicloud/infrastructure/environments/details/:namespace/:name/hosts',
+    infraEnvironmentOverview = '/multicloud/infrastructure/environments/details/:namespace/:name/overview',
+
+    // Infrastructure - Bare Metal Assets
+    bareMetalAssets = '/multicloud/infrastructure/bare-metal-assets',
+    createBareMetalAsset = '/multicloud/infrastructure/bare-metal-assets/create',
+    editBareMetalAsset = '/multicloud/infrastructure/bare-metal-assets/edit/:namespace/:name',
+
+    // Infrastructure - Automations
+    ansibleAutomations = '/multicloud/infrastructure/automations',
+    addAnsibleAutomation = '/multicloud/infrastructure/automations/add',
+    editAnsibleAutomation = '/multicloud/infrastructure/automations/edit/:namespace/:name',
+    viewAnsibleAutomation = '/multicloud/infrastructure/automations/details/:namespace/:name',
+
+    // Applications
+    applications = '/multicloud/applications',
+
+    // Governance
+    governance = '/multicloud/governance',
+    policies = '/multicloud/governance/policies',
+    policySets = '/multicloud/governance/policy-sets',
+
+    // Credentials
     credentials = '/multicloud/credentials',
-    addCredentials = '/multicloud/credentials/add',
+    addCredentials = '/multicloud/credentials/create',
     editCredentials = '/multicloud/credentials/edit/:namespace/:name',
-    viewCredentials = '/multicloud/credentials/view/:namespace/:name',
-    bareMetalAssets = '/multicloud/bare-metal-assets',
-    editBareMetalAsset = '/multicloud/bare-metal-assets/:namespace/:name',
-    createBareMetalAsset = '/multicloud/create-bare-metal-asset',
-    createDiscovery = '/multicloud/create-discovery',
-    configureDiscovery = '/multicloud/configure-discovery',
-    ansibleAutomations = '/multicloud/ansible-automations',
-    addAnsibleAutomation = '/multicloud/ansible-automations/add',
-    editAnsibleAutomation = '/multicloud/ansible-automations/edit/:namespace/:name',
-    viewAnsibleAutomation = '/multicloud/ansible-automations/view/:namespace/:name',
-    infraEnvironments = '/multicloud/infra-environments',
-    infraEnvironmentDetails = '/multicloud/infra-environments/:namespace/:name',
-    infraEnvironmentOverview = '/multicloud/infra-environments/:namespace/:name/overview',
-    infraEnvironmentHosts = '/multicloud/infra-environments/:namespace/:name/hosts',
-    createInfraEnv = '/multicloud/create-infra-env',
-    editCluster = '/multicloud/cluster/edit/:namespace/:name',
-    clusterCreateProgress = '/multicloud/cluster/progress/:namespace/:name',
+    viewCredentials = '/multicloud/credentials/details/:namespace/:name',
 }

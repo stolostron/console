@@ -26,6 +26,108 @@ import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
 
+/**
+ * Function to return cluster actions available to a cluster
+ * @param cluster
+ */
+export function getClusterActions(cluster: Cluster) {
+    let actionIds = [
+        'edit-labels',
+        'upgrade-cluster',
+        'select-channel',
+        'search-cluster',
+        'import-cluster',
+        'hibernate-cluster',
+        'resume-cluster',
+        'detach-cluster',
+        'destroy-cluster',
+        'ai-edit',
+        'ai-scale-up',
+    ]
+
+    // ClusterCurator
+    if ([ClusterStatus.prehookjob, ClusterStatus.prehookfailed].includes(cluster.status)) {
+        const disabledPreHookActions = [
+            'upgrade-cluster',
+            'select-channel',
+            'search-cluster',
+            'import-cluster',
+            'hibernate-cluster',
+            'resume-cluster',
+            'detach-cluster',
+        ]
+        actionIds = actionIds.filter((id) => !disabledPreHookActions.includes(id))
+    }
+
+    if (cluster.status === ClusterStatus.importfailed) {
+        const disabledImportFailedActions = [
+            'upgrade-cluster',
+            'select-channel',
+            'search-cluster',
+            'import-cluster',
+            'detach-cluster',
+        ]
+        actionIds = actionIds.filter((id) => !disabledImportFailedActions.includes(id))
+    }
+
+    if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
+        const disabledHibernationActions = [
+            'upgrade-cluster',
+            'select-channel',
+            'search-cluster',
+            'hibernate-cluster',
+            'import-cluster',
+            'detach-cluster',
+        ]
+        actionIds = actionIds.filter((id) => !disabledHibernationActions.includes(id))
+    }
+
+    if (cluster.status !== ClusterStatus.hibernating) {
+        actionIds = actionIds.filter((id) => id !== 'resume-cluster')
+    }
+
+    if (!cluster.hive.isHibernatable) {
+        actionIds = actionIds.filter((id) => id !== 'hibernate-cluster')
+    }
+
+    if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadyUpdates) {
+        actionIds = actionIds.filter((id) => id !== 'upgrade-cluster')
+    }
+
+    if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadySelectChannels) {
+        actionIds = actionIds.filter((id) => id !== 'select-channel')
+    }
+
+    if (!cluster.isManaged || cluster.status === ClusterStatus.detaching) {
+        actionIds = actionIds.filter((id) => id !== 'edit-labels')
+        actionIds = actionIds.filter((id) => id !== 'search-cluster')
+    }
+
+    if (cluster.status !== ClusterStatus.detached) {
+        actionIds = actionIds.filter((id) => id !== 'import-cluster')
+    }
+
+    if (cluster.status === ClusterStatus.detached || !cluster.isManaged || cluster.status === ClusterStatus.detaching) {
+        actionIds = actionIds.filter((id) => id !== 'detach-cluster')
+    }
+
+    if (!cluster.isHive || (cluster.hive.clusterPool && !cluster.hive.clusterClaimName)) {
+        actionIds = actionIds.filter((id) => id !== 'destroy-cluster')
+    }
+
+    if (cluster.provider !== Provider.hybrid) {
+        actionIds = actionIds.filter((id) => id !== 'ai-edit')
+    }
+
+    if (
+        !(cluster.provider === Provider.hybrid && cluster.status === ClusterStatus.pendingimport) ||
+        cluster.isSNOCluster
+    ) {
+        actionIds = actionIds.filter((id) => id !== 'ai-scale-up')
+    }
+    return actionIds
+}
+
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
     const { t } = useTranslation(['cluster'])
     const history = useHistory()
@@ -39,7 +141,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
 
     const { cluster } = props
-    console.log('cluster:', cluster)
 
     const modalColumns = useMemo(
         () => [
@@ -297,88 +398,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         ],
         []
     )
-
-    // ClusterCurator
-    if ([ClusterStatus.prehookjob, ClusterStatus.prehookfailed].includes(cluster.status)) {
-        const disabledPreHookActions = [
-            'upgrade-cluster',
-            'select-channel',
-            'search-cluster',
-            'import-cluster',
-            'hibernate-cluster',
-            'resume-cluster',
-            'detach-cluster',
-        ]
-        actions = actions.filter((a) => !disabledPreHookActions.includes(a.id))
-    }
-
-    if (cluster.status === ClusterStatus.importfailed) {
-        const disabledImportFailedActions = [
-            'upgrade-cluster',
-            'select-channel',
-            'search-cluster',
-            'import-cluster',
-            'detach-cluster',
-        ]
-        actions = actions.filter((a) => !disabledImportFailedActions.includes(a.id))
-    }
-
-    if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
-        const disabledHibernationActions = [
-            'upgrade-cluster',
-            'select-channel',
-            'search-cluster',
-            'hibernate-cluster',
-            'import-cluster',
-            'detach-cluster',
-        ]
-        actions = actions.filter((a) => !disabledHibernationActions.includes(a.id))
-    }
-
-    if (cluster.status !== ClusterStatus.hibernating) {
-        actions = actions.filter((a) => a.id !== 'resume-cluster')
-    }
-
-    if (!cluster.hive.isHibernatable) {
-        actions = actions.filter((a) => a.id !== 'hibernate-cluster')
-    }
-
-    if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadyUpdates) {
-        actions = actions.filter((a) => a.id !== 'upgrade-cluster')
-    }
-
-    if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadySelectChannels) {
-        actions = actions.filter((a) => a.id !== 'select-channel')
-    }
-
-    if (!cluster.isManaged || cluster.status === ClusterStatus.detaching) {
-        actions = actions.filter((a) => a.id !== 'edit-labels')
-        actions = actions.filter((a) => a.id !== 'search-cluster')
-    }
-
-    if (cluster.status !== ClusterStatus.detached) {
-        actions = actions.filter((a) => a.id !== 'import-cluster')
-    }
-
-    if (cluster.status === ClusterStatus.detached || !cluster.isManaged || cluster.status === ClusterStatus.detaching) {
-        actions = actions.filter((a) => a.id !== 'detach-cluster')
-    }
-
-    if (!cluster.isHive || (cluster.hive.clusterPool && !cluster.hive.clusterClaimName)) {
-        actions = actions.filter((a) => a.id !== 'destroy-cluster')
-    }
-
-    if (cluster.provider !== Provider.hybrid) {
-        actions = actions.filter((a) => a.id !== 'ai-edit')
-    }
-
-    if (
-        !(cluster.provider === Provider.hybrid && cluster.status === ClusterStatus.pendingimport) ||
-        cluster.isSNOCluster
-    ) {
-        actions = actions.filter((a) => a.id !== 'ai-scale-up')
-    }
-
+    const clusterActions = getClusterActions(cluster)
+    actions = actions.filter((action) => clusterActions.indexOf(action.id) > -1)
     return (
         <>
             <EditLabels
@@ -397,13 +418,15 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 close={() => setShowChannelSelectModal(false)}
             />
             <BulkActionModel<Cluster> {...modalProps} />
-            <RbacDropdown<Cluster>
-                id={`${cluster.name}-actions`}
-                item={cluster}
-                isKebab={props.isKebab}
-                text={t('actions')}
-                actions={actions}
-            />
+            {actions && actions.length > 0 && (
+                <RbacDropdown<Cluster>
+                    id={`${cluster.name}-actions`}
+                    item={cluster}
+                    isKebab={props.isKebab}
+                    text={t('actions')}
+                    actions={actions}
+                />
+            )}
             <ScaleUpDialog isOpen={scaleUpModalOpen} closeDialog={() => setScaleUpModalOpen(false)} />
         </>
     )

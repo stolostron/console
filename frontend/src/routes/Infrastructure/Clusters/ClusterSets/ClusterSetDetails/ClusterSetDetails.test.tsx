@@ -1,27 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    ClusterRoleBinding,
-    ClusterRoleBindingKind,
-    ManagedCluster,
-    ManagedClusterAddOn,
-    ManagedClusterAddOnApiVersion,
-    ManagedClusterAddOnKind,
-    ManagedClusterApiVersion,
-    ManagedClusterInfo,
-    ManagedClusterInfoApiVersion,
-    ManagedClusterInfoKind,
-    ManagedClusterKind,
-    managedClusterSetLabel,
-    RbacApiVersion,
-    Secret,
-    SecretApiVersion,
-    SecretKind,
-    SubmarinerConfig,
-    SubmarinerConfigApiVersion,
-    submarinerConfigDefault,
-    SubmarinerConfigKind,
-} from '../../../../../resources'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -55,6 +33,28 @@ import {
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
+import {
+    ClusterRoleBinding,
+    ClusterRoleBindingKind,
+    ManagedCluster,
+    ManagedClusterAddOn,
+    ManagedClusterAddOnApiVersion,
+    ManagedClusterAddOnKind,
+    ManagedClusterApiVersion,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
+    ManagedClusterKind,
+    managedClusterSetLabel,
+    RbacApiVersion,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+    SubmarinerConfig,
+    SubmarinerConfigApiVersion,
+    submarinerConfigDefault,
+    SubmarinerConfigKind,
+} from '../../../../../resources'
 import {
     mockClusterDeployments,
     mockManagedClusterInfos,

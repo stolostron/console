@@ -16,6 +16,7 @@ import {
     isHidden_SNO,
     onChangeSNO,
     onChangeConnection,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -247,7 +248,8 @@ const GCPworkerInstanceTypes = [
     },
 ]
 
-export const getControlDataGCP = (includeAutomation = true) => {
+export const getControlDataGCP = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataGCP)
     if (includeAutomation) return [...controlDataGCP, ...automationControlData]
     return [...controlDataGCP]
 }
@@ -335,7 +337,7 @@ const controlDataGCP = [
         cacheUserValueKey: 'create.cluster.region',
         reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
-    ///////////////////////  master pool  /////////////////////////////////////
+    ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
         type: 'group',
@@ -346,8 +348,8 @@ const controlDataGCP = [
                 type: 'section',
                 collapsable: true,
                 collapsed: true,
-                subtitle: 'creation.ocp.node.master.pool.title',
-                info: 'creation.ocp.node.master.pool.info',
+                subtitle: 'creation.ocp.node.controlplane.pool.title',
+                info: 'creation.ocp.node.controlplane.pool.info',
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
@@ -370,6 +372,7 @@ const controlDataGCP = [
     {
         id: 'workerPools',
         type: 'group',
+        hidden: isHidden_SNO,
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',

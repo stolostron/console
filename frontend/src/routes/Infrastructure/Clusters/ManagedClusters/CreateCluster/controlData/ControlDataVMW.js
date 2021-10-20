@@ -15,10 +15,12 @@ import {
     isHidden_SNO,
     onChangeSNO,
     onChangeConnection,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
-export const getControlDataVMW = (includeAutomation = true) => {
+export const getControlDataVMW = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataVMW)
     if (includeAutomation) return [...controlDataVMW, ...automationControlData]
     return [...controlDataVMW]
 }
@@ -95,7 +97,7 @@ const controlDataVMW = [
         type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
-    ///////////////////////  master pool  /////////////////////////////////////
+    ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
         type: 'group',
@@ -106,8 +108,8 @@ const controlDataVMW = [
                 type: 'section',
                 collapsable: true,
                 collapsed: true,
-                subtitle: 'creation.ocp.node.master.pool.title',
-                info: 'creation.ocp.node.master.pool.info',
+                subtitle: 'creation.ocp.node.controlplane.pool.title',
+                info: 'creation.ocp.node.controlplane.pool.info',
             },
             ///////////////////////  coresPerSocket  /////////////////////////////////////
             {
@@ -151,6 +153,7 @@ const controlDataVMW = [
     {
         id: 'workerPools',
         type: 'group',
+        hidden: isHidden_SNO,
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',

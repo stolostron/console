@@ -21,12 +21,27 @@ import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { acmRouteState, agentsState, infraEnvironmentsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
+import { deleteResources } from '../../../lib/delete-resources'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { deleteResource } from '../../../resources'
 import { OnPremiseBanner } from '../Clusters/ManagedClusters/components/cim/OnPremiseBanner'
 
 const { AGENT_LOCATION_LABEL_KEY, getAgentStatus } = CIM
+
+const deleteInfraEnv = (infraEnv: CIM.InfraEnvK8sResource) => {
+    const resources = [infraEnv]
+    if (infraEnv.spec?.pullSecretRef?.name) {
+        resources.push({
+            apiVersion: 'v1',
+            kind: 'Secret',
+            metadata: {
+                name: infraEnv.spec.pullSecretRef.name,
+                namespace: infraEnv.metadata.namespace,
+            },
+        })
+    }
+    return deleteResources(resources)
+}
 
 const InfraEnvironmentsPage: React.FC = () => {
     const [, setRoute] = useRecoilState(acmRouteState)
@@ -36,34 +51,13 @@ const InfraEnvironmentsPage: React.FC = () => {
     const { t } = useTranslation(['infraenv', 'common'])
 
     return (
-        <AcmPage
-            hasDrawer
-            header={
-                <AcmPageHeader
-                    title={t('infraenv:infraenvs')}
-                    titleTooltip={
-                        <>
-                            {t('infraenv:infraenvs.tooltip')}
-                            <a
-                                href="foo"
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ display: 'block', marginTop: '4px' }}
-                            >
-                                {t('common:learn.more')}
-                            </a>
-                        </>
-                    }
-                />
-            }
-        >
+        <AcmPage hasDrawer header={<AcmPageHeader title={t('infraenv:infraenvs')} />}>
             <AcmPageContent id="infra-environments">
                 <OnPremiseBanner
                     id="banner.infraenv"
                     WrappingComponent={PageSection}
                     titleKey="cim:cim.infra.banner.header"
                     textKey="cim:cim.infra.banner.body"
-                    footerKey="cim:cim.infra.banner.footer"
                 />
 
                 <PageSection>
@@ -145,6 +139,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 return '-'
                             }
                         },
+                        search: (infraEnv) => JSON.stringify(infraEnv.metadata?.labels) || '',
                     },
                     {
                         header: t('infraEnv.tableHeader.location'),
@@ -205,7 +200,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                             ],
                                             keyFn: (infraEnv: CIM.InfraEnvK8sResource) =>
                                                 infraEnv.metadata.uid as string,
-                                            actionFn: (infraEnv: CIM.InfraEnvK8sResource) => deleteResource(infraEnv),
+                                            actionFn: deleteInfraEnv,
                                             close: () => {
                                                 setModalProps({ open: false })
                                             },
@@ -262,7 +257,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                     },
                                 ],
                                 keyFn: (infraEnv: CIM.InfraEnvK8sResource) => infraEnv.metadata.uid as string,
-                                actionFn: (infraEnv: CIM.InfraEnvK8sResource) => deleteResource(infraEnv),
+                                actionFn: deleteInfraEnv,
                                 close: () => {
                                     setModalProps({ open: false })
                                 },

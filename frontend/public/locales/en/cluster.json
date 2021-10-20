@@ -89,7 +89,7 @@
     "submariner.install.form.credential.secret.labelHelp": "The reference to the Secret in the cluster namespace that contains the provider credentials. The credentials will be used to prepare the Submariner environment on the provider.",
     "submariner.install.form.nattport.labelHelp": "The Submariner creates the IPsec tunnel between the clusters.  This port is used for IPsec NAT traversal. (default 4500)",
     "submariner.install.form.nattenable.labelHelp": "Submariner can use NAT Traversal for IPsec tunnels between clusters. Set this to true to enable NAT Traversal and false otherwise (default true)",
-    "submariner.install.form.cabledriver.labelHelp": "The Submariner gateway cable driver, Available options are: libreswan (default) strongswan, wireguard, and vxlan.",
+    "submariner.install.form.cabledriver.labelHelp": "The Submariner gateway cable driver, Available options are: libreswan (default), wireguard, and vxlan.",
     "submariner.install.form.gateways.labelHelp": "The number of worker nodes  that will be used to deploy the Submariner gateway component on the managed cluster. If the value is greater than 1, the Submariner gateway HA will be enabled automatically. (default 1)",
     "submariner.install.form.instancetype.labelHelp": "The Amazon Web Services EC2 instance type of the gateway node that will be created on the managed cluster. (default c5d.large)",
     "submariner.update.form.title": "Edit Submariner configuration",

@@ -33,12 +33,27 @@ spec:
     {{#if argocdcluster}}
     argocdCluster: true
     {{/if}}
+{{#if hasProxy}}
+    proxyPolicy: OCPGlobalProxy
+{{/if}}
     enabled: true
   policyController:
+{{#if hasProxy}}
+    proxyPolicy: OCPGlobalProxy
+{{/if}}
     enabled: true
   searchCollector:
+{{#if hasProxy}}
+    proxyPolicy: OCPGlobalProxy
+{{/if}}
     enabled: true
   certPolicyController:
+{{#if hasProxy}}
+    proxyPolicy: OCPGlobalProxy
+{{/if}}
     enabled: true
   iamPolicyController:
+{{#if hasProxy}}
+    proxyPolicy: OCPGlobalProxy
+{{/if}}
     enabled: true

@@ -76,22 +76,44 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     useEffect(() => {
         const patch = async () => {
             if (agentClusterInstall) {
-                if (!agentClusterInstall.spec.holdInstallation) {
-                    await patchResource(agentClusterInstall, [
-                        {
-                            op: 'add',
-                            path: '/spec/holdInstallation',
-                            value: true,
-                        },
-                    ]).promise
+                try {
+                    if (!agentClusterInstall.spec.holdInstallation) {
+                        await patchResource(agentClusterInstall, [
+                            {
+                                op: 'add',
+                                path: '/spec/holdInstallation',
+                                value: true,
+                            },
+                        ]).promise
+                    }
+                } finally {
+                    setPatchingHoldInstallation(false)
                 }
-                setPatchingHoldInstallation(false)
             }
         }
         patch()
     }, [agentClusterInstall])
 
-    return patchingHoldInstallation || !aiConfigMap ? (
+    const onFinish = () => {
+        const doItAsync = async () => {
+            await patchResource(agentClusterInstall, [
+                {
+                    op: 'replace',
+                    path: '/spec/holdInstallation',
+                    value: false,
+                },
+            ]).promise
+
+            history.push(
+                NavigationPath.clusterCreateProgress
+                    .replace(':namespace', agentClusterInstall.metadata.namespace)
+                    .replace(':name', agentClusterInstall.metadata.name)
+            )
+        }
+        doItAsync()
+    }
+
+    return patchingHoldInstallation ? (
         <LoadingState />
     ) : (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
@@ -111,13 +133,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
                 onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents })}
                 hostActions={hostActions}
-                onFinish={() =>
-                    history.push(
-                        NavigationPath.clusterCreateProgress
-                            .replace(':namespace', agentClusterInstall.metadata.namespace)
-                            .replace(':name', agentClusterInstall.metadata.name)
-                    )
-                }
+                onFinish={onFinish}
                 aiConfigMap={aiConfigMap}
             />
             <EditAgentModal agent={editAgent} setAgent={setEditAgent} />

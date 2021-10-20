@@ -215,7 +215,9 @@ export function CredentialsForm(props: {
         AzureUSGovernmentCloud = 'AzureUSGovernmentCloud',
     }
 
-    const [cloudName, setCloudName] = useState<CloudNames | string>(CloudNames.AzurePublicCloud)
+    const [cloudName, setCloudName] = useState<CloudNames | string>(
+        providerConnection?.stringData?.cloudName ?? CloudNames.AzurePublicCloud
+    )
 
     let osServicePrincipalJson:
         | {

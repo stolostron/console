@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ConfigMap } from '@kubernetes/client-node/dist/gen/model/v1ConfigMap'
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { IResource, IResourceDefinition } from './resource'
+import { IResource } from '.'
+import { Metadata } from './metadata'
+import { IResourceDefinition } from './resource'
 
 export const ConfigMapApiVersion = 'v1'
 export type ConfigMapApiVersionType = 'v1'
@@ -15,9 +14,9 @@ export const ConfigMapDefinition: IResourceDefinition = {
     kind: ConfigMapKind,
 }
 
-export interface ConfigMap extends V1ConfigMap, IResource {
+export interface ConfigMap extends IResource {
     apiVersion: ConfigMapApiVersionType
     kind: ConfigMapKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     data?: Record<string, any>
 }

@@ -53,9 +53,18 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                                 ])
                             }}
                             canDelete={(agent, bmh) => !!agent || !!bmh}
-                            onDeleteHost={async (agent, bmh) => {
+                            onDeleteHost={async (agent, bareMetalHost) => {
+                                let bmh = bareMetalHost
                                 if (agent) {
                                     await deleteResource(agent).promise
+                                    const bmhName = agent.metadata.labels?.[AGENT_BMH_HOSTNAME_LABEL_KEY]
+                                    if (bmhName) {
+                                        bmh = bareMetalHosts.find(
+                                            ({ metadata }) =>
+                                                metadata.name === bmhName &&
+                                                metadata.namespace === agent.metadata.namespace
+                                        )
+                                    }
                                 }
                                 if (bmh) {
                                     await deleteResource(bmh).promise
@@ -81,7 +90,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                             bmh={editBMH}
                             isOpen={!!editBMH}
                             onClose={() => setEditBMH(undefined)}
-                            onEdit={onEditBMH(editBMH)}
+                            onEdit={onEditBMH}
                             fetchSecret={fetchSecret}
                             fetchNMState={fetchNMState}
                         />

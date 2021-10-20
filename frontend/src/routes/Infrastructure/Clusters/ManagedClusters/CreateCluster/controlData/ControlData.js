@@ -34,12 +34,17 @@ export const getActiveCardID = (control, fetchData = {}) => {
     return null
 }
 
-export const getControlData = (warning, onControlSelect) => [
+export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate = false, snoFeatureGate = false) => [
     ///////////////////////  container platform  /////////////////////////////////////
     {
         id: 'distStep',
         type: 'step',
         title: 'Infrastructure provider',
+    },
+    {
+        id: 'showSecrets',
+        type: 'hidden',
+        active: false,
     },
     {
         id: 'warning',
@@ -60,7 +65,7 @@ export const getControlData = (warning, onControlSelect) => [
                 logo: <AwsLogo />,
                 title: 'cluster.create.aws.subtitle',
                 change: {
-                    insertControlData: getControlDataAWS(),
+                    insertControlData: getControlDataAWS(true, awsPrivateFeatureGate, snoFeatureGate),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -72,7 +77,7 @@ export const getControlData = (warning, onControlSelect) => [
                 logo: <GoogleLogo />,
                 title: 'cluster.create.google.subtitle',
                 change: {
-                    insertControlData: getControlDataGCP(),
+                    insertControlData: getControlDataGCP(true, snoFeatureGate),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -84,7 +89,7 @@ export const getControlData = (warning, onControlSelect) => [
                 logo: <AzureLogo />,
                 title: 'cluster.create.azure.subtitle',
                 change: {
-                    insertControlData: getControlDataAZR(),
+                    insertControlData: getControlDataAZR(true, snoFeatureGate),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -96,7 +101,7 @@ export const getControlData = (warning, onControlSelect) => [
                 logo: <VMwareLogo />,
                 title: 'cluster.create.vmware.subtitle',
                 change: {
-                    insertControlData: getControlDataVMW(),
+                    insertControlData: getControlDataVMW(true, snoFeatureGate),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -108,7 +113,7 @@ export const getControlData = (warning, onControlSelect) => [
                 logo: <RedHatLogo />,
                 title: 'cluster.create.redhat.subtitle',
                 change: {
-                    insertControlData: getControlDataOST(),
+                    insertControlData: getControlDataOST(true, snoFeatureGate),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },

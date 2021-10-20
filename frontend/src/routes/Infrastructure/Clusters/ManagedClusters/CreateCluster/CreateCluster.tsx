@@ -172,7 +172,7 @@ export default function CreateClusterPage() {
                 } else if (status !== 'ERROR' && selectedTemplate !== '') {
                     setCreationStatus({
                         status: 'IN_PROGRESS',
-                        messages: [{ message: 'Running automation...' }],
+                        messages: ['Running automation...'],
                     })
                     // get template, modifty it and create curator cluster namespace
                     const currentTemplate = curatorTemplates.find(
@@ -407,7 +407,12 @@ export default function CreateClusterPage() {
         }
     }
 
-    const controlData = getControlData(<Warning />, onControlSelect)
+    const controlData = getControlData(
+        <Warning />,
+        onControlSelect,
+        settings.awsPrivateWizardStep === 'enabled',
+        settings.singleNodeOpenshift === 'enabled'
+    )
 
     return (
         <AcmPage

@@ -209,6 +209,19 @@ function DetailsView(props: {
         return d
     }
 
+    function getExtraData() {
+        const extraData = _.get(selectedReport, 'properties.extra_data', {})
+        if (typeof extraData === 'string') {
+            try {
+                return JSON.parse(extraData)
+            } catch (err) {
+                console.error(err)
+                return {}
+            }
+        }
+        return extraData
+    }
+
     return (
         <div className={classes.body}>
             <Flex className={classes.backAction}>
@@ -271,18 +284,12 @@ function DetailsView(props: {
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
                     <TextContent>
-                        <Markdown
-                            template={policyContentData?.resolution ?? ''}
-                            definitions={_.get(selectedReport, 'properties.extra_data', '')}
-                        />
+                        <Markdown template={policyContentData?.resolution ?? ''} definitions={getExtraData()} />
                     </TextContent>
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
                     <TextContent>
-                        <Markdown
-                            template={policyContentData?.reason ?? ''}
-                            definitions={_.get(selectedReport, 'properties.extra_data', '')}
-                        />
+                        <Markdown template={policyContentData?.reason ?? ''} definitions={getExtraData()} />
                     </TextContent>
                 </Tab>
             </Tabs>

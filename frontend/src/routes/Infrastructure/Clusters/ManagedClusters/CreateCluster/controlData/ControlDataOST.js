@@ -16,10 +16,12 @@ import {
     isHidden_SNO,
     onChangeSNO,
     onChangeConnection,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
-export const getControlDataOST = (includeAutomation = true) => {
+export const getControlDataOST = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataOST)
     if (includeAutomation) return [...controlDataOST, ...automationControlData]
     return [...controlDataOST]
 }
@@ -124,7 +126,7 @@ const controlDataOST = [
         type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
-    ///////////////////////  master pool  /////////////////////////////////////
+    ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
         type: 'group',
@@ -135,8 +137,8 @@ const controlDataOST = [
                 type: 'section',
                 collapsable: true,
                 collapsed: true,
-                subtitle: 'creation.ocp.node.master.pool.title',
-                info: 'creation.ocp.node.master.pool.info',
+                subtitle: 'creation.ocp.node.controlplane.pool.title',
+                info: 'creation.ocp.node.controlplane.pool.info',
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
@@ -157,6 +159,7 @@ const controlDataOST = [
     {
         id: 'workerPools',
         type: 'group',
+        hidden: isHidden_SNO,
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',
