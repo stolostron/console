@@ -9,6 +9,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import {
     ButtonVariant,
+    Checkbox,
     Chip,
     DescriptionList,
     DescriptionListDescription,
@@ -27,7 +28,6 @@ import { IGovernanceData, IPolicy } from '../useGovernanceData'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { deletePolicy } from '../../../lib/delete-policies'
 
-
 export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
     const { governanceData } = props
 
@@ -35,6 +35,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<IPolicy> | { open: false}>({
         open: false,
     })
+    const [checked, setChecked ] = useState(false)
     const policyKeyFn = useCallback(
         (resource: Policy) => resource.metadata.uid ?? `${resource.metadata.name}/${resource.metadata.namespace}`,
         []
@@ -209,6 +210,25 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
         []
     )
 
+    const renderConfirmCheckbox = () => {
+        console.log('checked', checked)
+        function handleChange(checked:boolean){
+            setChecked(!checked)
+            return null
+        }
+
+        return (
+            <Fragment>
+                <Checkbox
+                    id={'remove-policy-resources'}
+                    isChecked={checked}
+                    onClick= {() => handleChange(checked)}
+                    label={'test'}
+                />
+            </Fragment>
+        )
+    }
+
     const tableActions = useMemo<IAcmTableAction<IPolicy>[]>(
         () => [
             {
@@ -228,9 +248,18 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                                 cell: 'metadata.name',
                                 sort: 'metadata.name',
                             },
+                            {
+                                header: t('policies.tableHeader.placementRule'),
+                                cell: 'status.placement[0].placementRule',
+                            },
+                            {
+                                header: t('policies.tableHeader.placementBinding'),
+                                cell: 'status.placement[0].placementBinding',
+                            }
                         ],
                         keyFn:(policy: IPolicy) => policy.metadata.uid as string,
-                        actionFn: (policy) => deletePolicy(policy),
+                        confirmSideEffects: renderConfirmCheckbox(),
+                        actionFn: (policy) => deletePolicy(policy, checked),
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
                         icon: 'warning',
@@ -244,12 +273,18 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             },
             {
                 id: 'add-to-set',
-                title: t('Add to policy set'),
+                title: t('bulk.title.addToSet'),
                 click: () => {},
                 variant: 'bulk-action',
             },
+            {
+                id: 'remove-from-set',
+                title: t('bulk.title.removeFromSet'),
+                click: () => {},
+                variant: 'bulk-action',
+            }
         ],
-        []
+        [checked]
     )
 
     const policyRowActions = useMemo<IAcmRowAction<Policy>[]>(
