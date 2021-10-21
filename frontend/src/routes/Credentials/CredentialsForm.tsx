@@ -195,11 +195,6 @@ export function CredentialsForm(props: {
     const [httpsProxy, setHttpsProxy] = useState(providerConnection?.stringData?.httpsProxy ?? '')
     const [noProxy, setNoProxy] = useState(providerConnection?.stringData?.noProxy ?? '')
 
-    // AdditionalTrustBundle
-    const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
-        providerConnection?.stringData?.additionalTrustBundle ?? ''
-    )
-
     // Amazon Web Services State
     const [aws_access_key_id, setAwsAccessKeyID] = useState(providerConnection?.stringData?.aws_access_key_id ?? '')
     const [aws_secret_access_key, setAwsSecretAccessKeyID] = useState(
@@ -259,16 +254,21 @@ export function CredentialsForm(props: {
     // OpenStack
     const [cloudsYaml, setOpenstackCloudsYaml] = useState(providerConnection?.stringData?.['clouds.yaml'] ?? '')
     const [cloud, setOpenstackCloud] = useState(providerConnection?.stringData?.cloud ?? '')
-    const [imageContentSources, setImageContentSources] = useState(
-        providerConnection?.stringData?.imageContentSources ?? ''
-    )
 
     // BareMetal
     const [libvirtURI, setLibvirtURI] = useState(providerConnection?.stringData?.libvirtURI ?? '')
     const [sshKnownHosts, setSshKnownHosts] = useState(providerConnection?.stringData?.sshKnownHosts ?? '')
-    const [imageMirror, setImageMirror] = useState(providerConnection?.stringData?.imageMirror ?? '')
     const [bootstrapOSImage, setBootstrapOSImage] = useState(providerConnection?.stringData?.bootstrapOSImage ?? '')
+    const [imageMirror, setImageMirror] = useState(providerConnection?.stringData?.imageMirror ?? '')
+
+    // Disconnected or Proxy
     const [clusterOSImage, setClusterOSImage] = useState(providerConnection?.stringData?.clusterOSImage ?? '')
+    const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
+        providerConnection?.stringData?.additionalTrustBundle ?? ''
+    )
+    const [imageContentSources, setImageContentSources] = useState(
+        providerConnection?.stringData?.imageContentSources ?? ''
+    )
 
     // Ansible
     const [ansibleHost, setAnsibleHost] = useState(providerConnection?.stringData?.host ?? '')
@@ -359,6 +359,7 @@ export function CredentialsForm(props: {
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-privatekey'] = sshPrivatekey
                 secret.stringData!['ssh-publickey'] = sshPublickey
+                secret.stringData!.imageContentSources = imageContentSources
                 secret.stringData!.httpProxy = httpProxy
                 secret.stringData!.httpsProxy = httpsProxy
                 secret.stringData!.noProxy = noProxy
@@ -926,7 +927,7 @@ export function CredentialsForm(props: {
                     },
                     {
                         id: 'imageContentSources',
-                        isHidden: credentialsType !== Provider.openstack,
+                        isHidden: ![Provider.openstack, Provider.vmware].includes(credentialsType as Provider),
                         type: 'TextArea',
                         label: t('credentialsForm.imageContentSources.label'),
                         placeholder:
@@ -938,7 +939,9 @@ export function CredentialsForm(props: {
                     },
                     {
                         id: 'additionalTrustBundle',
-                        isHidden: ![Provider.baremetal, Provider.openstack].includes(credentialsType as Provider),
+                        isHidden: ![Provider.baremetal, Provider.openstack, Provider.vmware].includes(
+                            credentialsType as Provider
+                        ),
                         type: 'TextArea',
                         label: t('credentialsForm.additionalTrustBundle.label'),
                         placeholder: t('credentialsForm.additionalTrustBundle.placeholder'),

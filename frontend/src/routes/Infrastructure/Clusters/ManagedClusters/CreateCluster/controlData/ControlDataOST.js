@@ -16,6 +16,7 @@ import {
     isHidden_SNO,
     onChangeSNO,
     onChangeConnection,
+    onChangeDisconnect,
     addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
@@ -24,35 +25,6 @@ export const getControlDataOST = (includeAutomation = true, includeSno = false) 
     if (includeSno) addSnoText(controlDataOST)
     if (includeAutomation) return [...controlDataOST, ...automationControlData]
     return [...controlDataOST]
-}
-
-const onChangeDisconnect = (control, controlData) => {
-    const infrastructure = controlData.find(({ id }) => {
-        return id === 'connection'
-    })
-    const { active, availableMap = {} } = infrastructure
-    const replacements = _.get(availableMap[active], 'replacements')
-    const isDisconnected = controlData.find(({ id }) => {
-        return id === 'isDisconnected'
-    }).active
-    ;['clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle'].forEach((pid) => {
-        const ctrl = controlData.find(({ id }) => id === pid)
-        if (ctrl) {
-            ctrl.disabled = !isDisconnected
-            if (ctrl.disabled) {
-                ctrl.saveActive = ctrl.active
-                ctrl.active = undefined
-                if (replacements) {
-                    delete replacements[ctrl.id]
-                }
-            } else {
-                ctrl.active = ctrl.saveActive
-                if (replacements) {
-                    replacements[ctrl.id] = ctrl.saveActive
-                }
-            }
-        }
-    })
 }
 
 const controlDataOST = [
@@ -286,13 +258,6 @@ const controlDataOST = [
         disabled: true,
         tip: 'The location of the Red Hat Enterprise Linux CoreOS (RHCOS) image in your local registry.',
         validation: VALIDATE_URL,
-    },
-    {
-        id: 'pullSecret',
-        type: 'textarea',
-        name: 'Pull Secret',
-        disabled: true,
-        tip: 'Secret required to pull the OS image from your local registry.',
     },
     {
         id: 'imageContentSources',

@@ -256,6 +256,35 @@ export const onChangeConnection = (control, controlData) => {
     })
 }
 
+export const onChangeDisconnect = (control, controlData) => {
+    const infrastructure = controlData.find(({ id }) => {
+        return id === 'connection'
+    })
+    const { active, availableMap = {} } = infrastructure
+    const replacements = _.get(availableMap[active], 'replacements')
+    const isDisconnected = controlData.find(({ id }) => {
+        return id === 'isDisconnected'
+    }).active
+    ;['clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle'].forEach((pid) => {
+        const ctrl = controlData.find(({ id }) => id === pid)
+        if (ctrl) {
+            ctrl.disabled = !isDisconnected
+            if (ctrl.disabled) {
+                ctrl.saveActive = ctrl.active
+                ctrl.active = undefined
+                if (replacements) {
+                    delete replacements[ctrl.id]
+                }
+            } else {
+                ctrl.active = ctrl.saveActive
+                if (replacements) {
+                    replacements[ctrl.id] = ctrl.saveActive
+                }
+            }
+        }
+    })
+}
+
 export const clusterDetailsControlData = [
     {
         id: 'detailStep',
