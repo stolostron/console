@@ -48,7 +48,7 @@ import { getErrorInfo } from '../../../../../components/ErrorPage'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 
-const discoveryVersions = ['4.6', '4.7', '4.8']
+const discoveryVersions = ['4.6', '4.7', '4.8', '4.9']
 
 export default function DiscoveryConfigPage() {
     const { t } = useTranslation(['discovery'])
