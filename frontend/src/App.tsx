@@ -176,7 +176,6 @@ export default function App() {
                                         component={CreateBareMetalAssetPage}
                                     />
                                     <Route
-                                        exact
                                         path={NavigationPath.infraEnvironmentDetails}
                                         component={InfraEnvironmentDetailsPage}
                                     />
