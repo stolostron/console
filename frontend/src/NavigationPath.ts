@@ -79,4 +79,8 @@ export enum NavigationPath {
     addCredentials = '/multicloud/credentials/create',
     editCredentials = '/multicloud/credentials/edit/:namespace/:name',
     viewCredentials = '/multicloud/credentials/details/:namespace/:name',
+
+    // Search
+    search = '/multicloud/search',
+    resources = '/multicloud/resources',
 }

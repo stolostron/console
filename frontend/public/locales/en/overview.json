@@ -1,0 +1,13 @@
+{
+    "overview": "Overview",
+    "overview.add.provider": "Add provider connection",
+    "overview.data.error.message": "The backend service is unavailable.",
+    "overview.data.error.title": "An unexpected error occurred.",
+    "overview.data.info.title": "Configuration alert",
+    "overview.donut.compliance.description": "Overview of {{compliance}} status",
+    "overview.donut.pod.description": "Overview of {{pod}} count and status",
+    "overview.donut.status.description": "Overview of {{cluster}} status",
+    "overview.donut.policyreport.description": "Overview of cluster issues",
+    "overview.donut.policyreport.pie.label": "Clusters with issues",
+    "overview.summary.title": "Summary"
+}
