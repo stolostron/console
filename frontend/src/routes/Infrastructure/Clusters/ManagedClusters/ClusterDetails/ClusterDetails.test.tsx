@@ -670,6 +670,14 @@ const mockRHACMNamespace = {
     },
 }
 
+const mockOCMNamespace = {
+    apiVersion: 'v1',
+    kind: 'Namespace',
+    metadata: {
+        name: 'open-cluster-management',
+    },
+}
+
 const nockListHiveProvisionJobs = () =>
     nockNamespacedList(
         { apiVersion: PodApiVersion, kind: PodKind, metadata: { namespace: clusterName } },
@@ -824,7 +832,7 @@ describe('ClusterDetails for On Premise', () => {
     })
 
     test('overview page renders AI empty details', async () => {
-        const nocks: Scope[] = [nockGet(mockRHACMNamespace, undefined, 404)]
+        const nocks: Scope[] = [nockGet(mockRHACMNamespace, undefined, 404), nockGet(mockOCMNamespace, undefined, 200)]
         render(<AIComponent />)
         await waitForNocks(nocks)
 
