@@ -6,7 +6,7 @@ import { ApolloClient, InMemoryCache } from '@apollo/client'
 
 export const consoleClient = new ApolloClient({
     connectToDevTools: process.env.NODE_ENV === 'development',
-    uri: 'proxy/consoleapi',
+    uri: '/multicloud/proxy/consoleapi',
     cache: new InMemoryCache(),
     credentials: 'same-origin',
     defaultOptions: {

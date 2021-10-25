@@ -6,7 +6,7 @@ import { ApolloClient, InMemoryCache } from '@apollo/client'
 
 export const searchClient = new ApolloClient({
     connectToDevTools: process.env.NODE_ENV === 'development',
-    uri: 'proxy/search',
+    uri: '/multicloud/proxy/search',
     cache: new InMemoryCache(),
     credentials: 'same-origin',
     defaultOptions: {

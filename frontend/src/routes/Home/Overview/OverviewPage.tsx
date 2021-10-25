@@ -24,10 +24,12 @@ import { PlusIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../../atoms'
 import { consoleClient } from '../../../console-sdk/console-client'
 import { useGetOverviewLazyQuery, useGetResourceQuery } from '../../../console-sdk/console-sdk'
+import { NavigationPath } from '../../../NavigationPath'
 import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
 import { searchClient } from '../../../search-sdk/search-client'
 import { useSearchResultCountLazyQuery, useSearchResultItemsLazyQuery } from '../../../search-sdk/search-sdk'
@@ -193,12 +195,11 @@ const PageActions = (props: { timestamp: string; reloading: boolean; refetch: ()
     return (
         <Fragment>
             <AcmActionGroup>
-                <AcmLaunchLink links={getLaunchLink(addons)} />
+                {addons && addons.metadata.name && <AcmLaunchLink links={getLaunchLink(addons)} />}
                 <AcmButton
-                    href="/multicloud/credentials"
+                    component={Link}
                     variant={ButtonVariant.link}
-                    component="a"
-                    rel="noreferrer"
+                    to={NavigationPath.addCredentials}
                     id="add-provider-connection"
                     icon={<PlusIcon />}
                     iconPosition="left"

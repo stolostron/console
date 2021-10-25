@@ -7,7 +7,7 @@
         "build": "TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
         "tsc:noEmit": "tsc --noEmit",
         "clean": "rm -rf coverage build",
-        "test": "NODE_ENV=test concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc:noEmit -c green,blue,cyan,magenta",
+        "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc:noEmit -c green,blue,cyan,magenta",
         "jest": "jest --runInBand",
         "jest:parallel": "jest",
         "eslint": "eslint src --ext .ts --max-warnings=0",
