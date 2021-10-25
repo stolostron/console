@@ -15,6 +15,7 @@ fetchMock.dontMock()
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(30 * 1000)
 
+process.env.NODE_ENV = 'test'
 process.env.REACT_APP_BACKEND_HOST = 'http://localhost'
 process.env.REACT_APP_BACKEND_PATH = ''
 

@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
-import { AnsibleTowerJobTemplateList } from '../ansible-job'
 
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}` + `${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -384,10 +384,16 @@ export async function fetchRetry<T>(options: {
         }
 
         if (response) {
-            let responseData: T | undefined = undefined
-            try {
-                responseData = (await response.json()) as T
-            } catch {}
+            let responseData: T | string | undefined = undefined
+            if (response.headers.get('content-type') !== 'text/plain') {
+                try {
+                    responseData = (await response.json()) as T
+                } catch {}
+            } else {
+                try {
+                    responseData = await response.text()
+                } catch {}
+            }
 
             if ((responseData as any)?.kind === StatusKind) {
                 const status = responseData as unknown as Status

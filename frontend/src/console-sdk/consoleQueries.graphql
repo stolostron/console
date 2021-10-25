@@ -1,0 +1,103 @@
+query getResource(
+    $apiVersion: String
+    $kind: String
+    $name: String
+    $namespace: String
+    $cluster: String
+    $selfLink: String
+    $updateInterval: Int
+    $deleteAfterUse: Boolean
+) {
+    getResource(
+        apiVersion: $apiVersion
+        kind: $kind
+        name: $name
+        namespace: $namespace
+        cluster: $cluster
+        selfLink: $selfLink
+        updateInterval: $updateInterval
+        deleteAfterUse: $deleteAfterUse
+    )
+}
+
+query updateResource(
+    $selfLink: String
+    $namespace: String
+    $kind: String
+    $name: String
+    $body: JSON
+    $cluster: String
+) {
+    updateResource(selfLink: $selfLink, namespace: $namespace, kind: $kind, name: $name, body: $body, cluster: $cluster)
+}
+
+mutation deleteResource(
+    $selfLink: String
+    $apiVersion: String
+    $name: String
+    $namespace: String
+    $cluster: String
+    $kind: String
+    $childResources: JSON
+) {
+    deleteResource(
+        selfLink: $selfLink
+        apiVersion: $apiVersion
+        name: $name
+        namespace: $namespace
+        cluster: $cluster
+        kind: $kind
+        childResources: $childResources
+    )
+}
+
+query userAccess(
+    $resource: String
+    $kind: String
+    $action: String!
+    $namespace: String
+    $apiGroup: String
+    $name: String
+    $version: String
+) {
+    userAccess(
+        resource: $resource
+        kind: $kind
+        action: $action
+        namespace: $namespace
+        apiGroup: $apiGroup
+        name: $name
+        version: $version
+    )
+}
+
+query getOverview($demoMode: Boolean) {
+    overview(demoMode: $demoMode) {
+        clusters {
+            metadata {
+                name
+                namespace
+                labels
+                uid
+            }
+            consoleURL
+            status
+        }
+        applications {
+            metadata {
+                name
+                namespace
+            }
+            raw
+            selector
+        }
+        compliances {
+            metadata {
+                name
+                namespace
+            }
+            raw
+        }
+        timestamp
+    }
+}

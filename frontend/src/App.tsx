@@ -48,6 +48,10 @@ const InfraEnvironmentDetailsPage = lazy(
 
 const GovernancePage = lazy(() => import('./routes/Governance/Governance'))
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
+const OverviewPage = lazy(() => import('./routes/Home/Overview/OverviewPage'))
+
+const SearchPage = lazy(() => import('./routes/Search/SearchPage'))
+const DetailsPage = lazy(() => import('./routes/Search/Details/DetailsPage'))
 
 interface IRoute {
     type: 'route'
@@ -75,12 +79,12 @@ export default function App() {
                         route: NavigationPath.welcome,
                         component: WelcomePage,
                     },
-                    // {
-                    //     title: 'Overview',
-                    //     type: 'route',
-                    //     route: NavigationPath.overview,
-                    //     component: OverviewPage,
-                    // },
+                    {
+                        title: 'Overview',
+                        type: 'route',
+                        route: NavigationPath.overview,
+                        component: OverviewPage,
+                    },
                 ],
             },
             {
@@ -191,6 +195,9 @@ export default function App() {
                                         )
                                     )}
 
+                                    <Route exact path={NavigationPath.search} component={SearchPage} />
+                                    <Route path={NavigationPath.resources} component={DetailsPage} />
+
                                     <Route path={NavigationPath.console} component={WelcomePage} />
                                     <Route path="*">
                                         <Redirect to={NavigationPath.console} />
@@ -268,6 +275,7 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                             {routes.map((route) =>
                                 route.type === 'group' ? (
                                     <NavExpandable
+                                        key={route.title}
                                         title={route.title}
                                         isExpanded
                                         isActive={!!route.routes.find((route) => location.pathname === route.route)}

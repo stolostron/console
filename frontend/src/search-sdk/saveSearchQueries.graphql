@@ -1,0 +1,7 @@
+mutation saveSearch($resource: JSON!) {
+    saveSearch(resource: $resource)
+}
+
+mutation deleteSearch($resource: JSON!) {
+    deleteSearch(resource: $resource)
+}
