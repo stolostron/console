@@ -208,6 +208,7 @@ describe('add credentials page', () => {
                 cluster: 'cluster',
                 datacenter: 'datacenter',
                 defaultDatastore: 'defaultDatastore',
+                imageContentSources: '',
             },
             true
         )
