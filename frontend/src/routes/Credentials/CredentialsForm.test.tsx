@@ -229,6 +229,9 @@ describe('add credentials page', () => {
         await typeByTestId('defaultDatastore', providerConnection.stringData?.defaultDatastore!)
         await clickByText('common:next')
 
+        // skip disconnected
+        await clickByText('common:next')
+
         // skip proxy
         await clickByText('common:next')
 
