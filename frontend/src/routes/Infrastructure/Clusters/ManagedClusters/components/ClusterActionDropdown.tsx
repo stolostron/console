@@ -25,6 +25,7 @@ import { BatchUpgradeModal } from './BatchUpgradeModal'
 import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
+import { NavigationPath } from '../../../../../NavigationPath'
 
 /**
  * Function to return cluster actions available to a cluster
@@ -387,7 +388,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 id: 'ai-edit',
                 text: t('managed.editAI'),
                 click: (cluster: Cluster) =>
-                    history.push(`/multicloud/cluster/edit/${cluster.namespace}/${cluster.name}`),
+                    history.push(
+                        NavigationPath.editCluster
+                            .replace(':namespace', cluster.namespace!)
+                            .replace(':name', cluster.name!)
+                    ),
                 isDisabled: cluster.status !== ClusterStatus.draft,
             },
             {
