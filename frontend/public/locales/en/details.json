@@ -1,0 +1,15 @@
+{
+    "details": "Details",
+    "details.breadcrumb.search": "Search",
+    "logs.request.error": "Error querying resource logs:",
+    "yaml.editor.cancel": "Cancel",
+    "yaml.editor.edit": "Edit",
+    "yaml.editor.mode.editing": "Editing mode",
+    "yaml.editor.mode.readonly": "Read only mode",
+    "yaml.editor.save": "Save",
+    "yaml.getresource.error": "Error querying for resource:",
+    "yaml.tooltip.cancel": "Cancel Edits",
+    "yaml.tooltip.enable": "Enable resource editing",
+    "yaml.tooltip.unauthorized": "You are not allowed to edit this resource",
+    "yaml.update.resource.error": "Error occurred while updating resource:"
+}

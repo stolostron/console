@@ -45,6 +45,25 @@ export function nockGet<Resource extends IResource>(
     return finalNockScope
 }
 
+export function nockGetTextPlain(response: string, statusCode = 200, polling = true, customUri = '') {
+    const nockScope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(customUri)
+    const finalNockScope = nockScope.reply(statusCode, response, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'text/plain',
+    })
+    if (polling) {
+        nockScope.optionally().times(20).reply(statusCode, response, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+            'Content-Type': 'text/plain',
+        })
+    }
+    return finalNockScope
+}
+
 export function nockOptions<Resource extends IResource>(resource: Resource, response?: IResource, statusCode = 200) {
     return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
