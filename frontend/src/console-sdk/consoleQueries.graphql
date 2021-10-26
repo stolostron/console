@@ -51,26 +51,6 @@ mutation deleteResource(
     )
 }
 
-query userAccess(
-    $resource: String
-    $kind: String
-    $action: String!
-    $namespace: String
-    $apiGroup: String
-    $name: String
-    $version: String
-) {
-    userAccess(
-        resource: $resource
-        kind: $kind
-        action: $action
-        namespace: $namespace
-        apiGroup: $apiGroup
-        name: $name
-        version: $version
-    )
-}
-
 query getOverview($demoMode: Boolean) {
     overview(demoMode: $demoMode) {
         clusters {
