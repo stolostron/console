@@ -1,21 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { useState, useEffect } from 'react'
-import { PageSection } from '@patternfly/react-core'
-import { AcmAlert, AcmButton, AcmLoadingPage } from '@open-cluster-management/ui-components'
 import { ApolloError } from '@apollo/client'
 import { makeStyles } from '@material-ui/styles'
+import { AcmAlert, AcmButton, AcmLoadingPage } from '@open-cluster-management/ui-components'
+import { PageSection } from '@patternfly/react-core'
+import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import jsYaml from 'js-yaml'
+import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
+import 'monaco-editor/esm/vs/editor/editor.all.js'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Query, useUserAccessQuery, useUpdateResourceLazyQuery } from '../../../console-sdk/console-sdk'
+import MonacoEditor, { monaco } from 'react-monaco-editor'
 import { consoleClient } from '../../../console-sdk/console-client'
+import { Query, useUpdateResourceLazyQuery } from '../../../console-sdk/console-sdk'
+import { canUser } from '../../../lib/rbac-util'
 import './YAMLEditor.css'
 
-import MonacoEditor, { monaco } from 'react-monaco-editor'
-import 'monaco-editor/esm/vs/editor/editor.all.js'
-import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 monaco.editor.defineTheme('console', {
     base: 'vs-dark',
     inherit: true,
@@ -90,6 +91,30 @@ export default function YAMLPage(props: {
         }
     }, [resource?.getResource])
 
+    useEffect(() => {
+        if (!resource) {
+            return
+        }
+        const canUpdateResource = canUser(
+            'update',
+            {
+                apiVersion: apiversion,
+                kind,
+                metadata: {
+                    name,
+                    namespace,
+                },
+            },
+            cluster === 'local-cluster' ? namespace : cluster,
+            name
+        )
+
+        canUpdateResource.promise
+            .then((result) => setUserCanEdit(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canUpdateResource.abort()
+    }, [cluster, resource])
+
     const [updateResource, { error: updateResourceError }] = useUpdateResourceLazyQuery({
         client: consoleClient,
         onCompleted: (res) => {
@@ -97,28 +122,6 @@ export default function YAMLPage(props: {
             setEditedResourceYaml(jsYaml.dump(res.updateResource, { indent: 2 }))
         },
     })
-
-    // Need to split the apigroup & apiversion (ex: for deployments = apps/v1)
-    const apiGroup = apiversion.includes('/') ? apiversion.split('/')[0] : ''
-    const version = apiversion.includes('/') ? apiversion.split('/')[1] : apiversion.split('/')[0]
-    const {
-        data: userAccessData,
-        loading: userAccessLoading,
-        error: userAccessError,
-    } = useUserAccessQuery({
-        client: consoleClient,
-        variables: {
-            kind,
-            action: 'update',
-            namespace: cluster === 'local-cluster' ? namespace : cluster,
-            apiGroup,
-            version: version,
-        },
-    })
-
-    if (!userAccessLoading && !userAccessError && userAccessData && userCanEdit === undefined) {
-        setUserCanEdit(userAccessData?.userAccess.allowed)
-    }
 
     if (error) {
         return (

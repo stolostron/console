@@ -339,8 +339,6 @@ export type Query = {
     subscriptions?: Maybe<Array<Maybe<Subscription>>>
     subscriptionsForCluster?: Maybe<Array<Maybe<Subscription>>>
     updateResource?: Maybe<Scalars['JSON']>
-    userAccess?: Maybe<Scalars['JSON']>
-    userAccessAnyNamespaces?: Maybe<Scalars['JSON']>
     applicationNamespaces?: Maybe<Array<Maybe<ApplicationNamespace>>>
     filters?: Maybe<Filters>
     labels?: Maybe<Array<Maybe<Label>>>
@@ -456,24 +454,6 @@ export type QueryUpdateResourceArgs = {
     name?: Maybe<Scalars['String']>
     body?: Maybe<Scalars['JSON']>
     cluster?: Maybe<Scalars['String']>
-}
-
-export type QueryUserAccessArgs = {
-    resource?: Maybe<Scalars['String']>
-    kind?: Maybe<Scalars['String']>
-    action: Scalars['String']
-    namespace?: Maybe<Scalars['String']>
-    apiGroup?: Maybe<Scalars['String']>
-    name?: Maybe<Scalars['String']>
-    version?: Maybe<Scalars['String']>
-}
-
-export type QueryUserAccessAnyNamespacesArgs = {
-    resource: Scalars['String']
-    action: Scalars['String']
-    apiGroup?: Maybe<Scalars['String']>
-    name?: Maybe<Scalars['String']>
-    version?: Maybe<Scalars['String']>
 }
 
 export type QueryApplicationNamespacesArgs = {
@@ -722,11 +702,6 @@ export type TopologyFilter = {
     type?: Maybe<Array<Maybe<Scalars['String']>>>
 }
 
-export type UserAccess = {
-    resource?: Maybe<Scalars['String']>
-    action?: Maybe<Scalars['String']>
-}
-
 export type Connection = ConnectionObject & {
     metadata?: Maybe<ConnectionMetadata>
     statusCode?: Maybe<Scalars['Int']>
@@ -765,11 +740,6 @@ export type BareMetalAsset = K8sObject & {
 export type BareMetalAssetSubresources = {
     namespaces?: Maybe<Array<Maybe<Scalars['String']>>>
     bareMetalAsset?: Maybe<Array<Maybe<BareMetalAsset>>>
-}
-
-export type UserAccessAnyNamespaces = {
-    resource?: Maybe<Scalars['String']>
-    action?: Maybe<Scalars['String']>
 }
 
 export enum CacheControlScope {
@@ -812,18 +782,6 @@ export type DeleteResourceMutationVariables = Exact<{
 }>
 
 export type DeleteResourceMutation = Pick<Mutation, 'deleteResource'>
-
-export type UserAccessQueryVariables = Exact<{
-    resource?: Maybe<Scalars['String']>
-    kind?: Maybe<Scalars['String']>
-    action: Scalars['String']
-    namespace?: Maybe<Scalars['String']>
-    apiGroup?: Maybe<Scalars['String']>
-    name?: Maybe<Scalars['String']>
-    version?: Maybe<Scalars['String']>
-}>
-
-export type UserAccessQuery = Pick<Query, 'userAccess'>
 
 export type GetOverviewQueryVariables = Exact<{
     demoMode?: Maybe<Scalars['Boolean']>
@@ -1033,61 +991,6 @@ export type DeleteResourceMutationOptions = Apollo.BaseMutationOptions<
     DeleteResourceMutation,
     DeleteResourceMutationVariables
 >
-export const UserAccessDocument = gql`
-    query userAccess(
-        $resource: String
-        $kind: String
-        $action: String!
-        $namespace: String
-        $apiGroup: String
-        $name: String
-        $version: String
-    ) {
-        userAccess(
-            resource: $resource
-            kind: $kind
-            action: $action
-            namespace: $namespace
-            apiGroup: $apiGroup
-            name: $name
-            version: $version
-        )
-    }
-`
-
-/**
- * __useUserAccessQuery__
- *
- * To run a query within a React component, call `useUserAccessQuery` and pass it any options that fit your needs.
- * When your component renders, `useUserAccessQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useUserAccessQuery({
- *   variables: {
- *      resource: // value for 'resource'
- *      kind: // value for 'kind'
- *      action: // value for 'action'
- *      namespace: // value for 'namespace'
- *      apiGroup: // value for 'apiGroup'
- *      name: // value for 'name'
- *      version: // value for 'version'
- *   },
- * });
- */
-export function useUserAccessQuery(baseOptions: Apollo.QueryHookOptions<UserAccessQuery, UserAccessQueryVariables>) {
-    return Apollo.useQuery<UserAccessQuery, UserAccessQueryVariables>(UserAccessDocument, baseOptions)
-}
-export function useUserAccessLazyQuery(
-    baseOptions?: Apollo.LazyQueryHookOptions<UserAccessQuery, UserAccessQueryVariables>
-) {
-    return Apollo.useLazyQuery<UserAccessQuery, UserAccessQueryVariables>(UserAccessDocument, baseOptions)
-}
-export type UserAccessQueryHookResult = ReturnType<typeof useUserAccessQuery>
-export type UserAccessLazyQueryHookResult = ReturnType<typeof useUserAccessLazyQuery>
-export type UserAccessQueryResult = Apollo.QueryResult<UserAccessQuery, UserAccessQueryVariables>
 
 export const GetOverviewDocument = gql`
     query getOverview($demoMode: Boolean) {

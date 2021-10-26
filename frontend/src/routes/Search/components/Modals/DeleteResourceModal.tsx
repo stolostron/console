@@ -4,10 +4,11 @@
 import { AcmAlert, AcmButton, AcmModal } from '@open-cluster-management/ui-components'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import '@patternfly/react-core/dist/styles/base.css'
-import { Fragment } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { consoleClient } from '../../../../console-sdk/console-client'
-import { useDeleteResourceMutation, useUserAccessQuery } from '../../../../console-sdk/console-sdk'
+import { useDeleteResourceMutation } from '../../../../console-sdk/console-sdk'
+import { canUser } from '../../../../lib/rbac-util'
 import { searchClient } from '../../../../search-sdk/search-client'
 import {
     SearchResultItemsDocument,
@@ -35,6 +36,8 @@ export const ClosedDeleteModalProps: IDeleteModalProps = {
 export const DeleteResourceModal = (props: any) => {
     const { t } = useTranslation(['search'])
     const { open, close, resource, currentQuery, relatedResource } = props
+    const [canDelete, setCanDelete] = useState<boolean>(false)
+    const [accessError, setAccessError] = useState(null)
     const [deleteResourceMutation, deleteResourceResults] = useDeleteResourceMutation({
         client: process.env.NODE_ENV === 'test' ? undefined : consoleClient,
     })
@@ -42,17 +45,33 @@ export const DeleteResourceModal = (props: any) => {
     if (resource) {
         apiGroup = resource.apigroup ? `${resource.apigroup}/${resource.apiversion}` : resource.apiversion
     }
-    const userAccessResponse = useUserAccessQuery({
-        skip: !resource,
-        client: process.env.NODE_ENV === 'test' ? undefined : consoleClient,
-        variables: {
-            kind: resource?.kind,
-            action: 'delete',
-            namespace: resource?._hubClusterResource === 'true' ? resource?.namespace : resource?.cluster,
-            apiGroup: resource?.apigroup ?? '',
-            version: resource?.apiversion,
-        },
-    })
+    useEffect(() => {
+        if (!resource) {
+            return
+        }
+        const { cluster, kind, name, namespace } = resource
+        const canDeleteResource = canUser(
+            'delete',
+            {
+                apiVersion: apiGroup,
+                kind: kind,
+                metadata: {
+                    name: name,
+                    namespace: namespace,
+                },
+            },
+            cluster === 'local-cluster' ? namespace : cluster,
+            name
+        )
+
+        canDeleteResource.promise
+            .then((result) => setCanDelete(result.status?.allowed!))
+            .catch((err) => {
+                console.error(err)
+                setAccessError(err)
+            })
+        return () => canDeleteResource.abort()
+    }, [resource])
 
     function deleteResourceFn() {
         deleteResourceMutation({
@@ -208,10 +227,7 @@ export const DeleteResourceModal = (props: any) => {
                 onClose={close}
                 actions={[
                     <AcmButton
-                        isDisabled={
-                            userAccessResponse.loading ||
-                            (userAccessResponse.data && !userAccessResponse.data.userAccess.allowed)
-                        }
+                        isDisabled={!canDelete}
                         key="confirm"
                         variant={ButtonVariant.danger}
                         onClick={() => deleteResourceFn()}
@@ -223,15 +239,10 @@ export const DeleteResourceModal = (props: any) => {
                     </AcmButton>,
                 ]}
             >
-                {userAccessResponse.error ? (
-                    <AcmAlert
-                        data-testid={'user-access-error'}
-                        noClose={true}
-                        variant={'danger'}
-                        title={userAccessResponse.error}
-                    />
+                {accessError ? (
+                    <AcmAlert data-testid={'user-access-error'} noClose={true} variant={'danger'} title={accessError} />
                 ) : null}
-                {!userAccessResponse.loading && !userAccessResponse?.data?.userAccess.allowed ? (
+                {!accessError && !canDelete ? (
                     <AcmAlert
                         noClose={true}
                         variant={'danger'}
