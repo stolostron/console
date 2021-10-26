@@ -96,23 +96,23 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                         {props.hideTableAfterSubmit && progress != 0
                             ? undefined
                             : props.columns &&
-                              props.keyFn && (
-                                  <AcmTablePaginationContextProvider localStorageKey="model">
-                                      <AcmTable<T>
-                                          gridBreakPoint={TableGridBreakpoint.none}
-                                          plural={props.plural ?? ''}
-                                          items={props.resources}
-                                          columns={props.columns}
-                                          keyFn={props.keyFn}
-                                          tableActions={[]}
-                                          emptyState={props.emptyState}
-                                          rowActions={[]}
-                                          perPageOptions={[]}
-                                          autoHidePagination
-                                          showToolbar={props.showToolbar}
-                                      />
-                                  </AcmTablePaginationContextProvider>
-                              )}
+                                props.keyFn && (
+                                    <AcmTablePaginationContextProvider localStorageKey="model">
+                                        <AcmTable<T>
+                                            gridBreakPoint={TableGridBreakpoint.none}
+                                            plural={props.plural ?? ''}
+                                            items={props.resources}
+                                            columns={props.columns}
+                                            keyFn={props.keyFn}
+                                            tableActions={[]}
+                                            emptyState={props.emptyState}
+                                            rowActions={[]}
+                                            perPageOptions={[]}
+                                            autoHidePagination
+                                            showToolbar={props.showToolbar}
+                                        />
+                                </AcmTablePaginationContextProvider>
+                                )}
 
                         <div style={{ paddingTop: '12px', paddingBottom: '12px' }}>
                             {progress > 0 ? (
@@ -125,7 +125,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                             ) : (
                                 <div style={{ minHeight: '24px' }} />
                             )}
-                        </div>
+                        </div> 
                         {props.confirmText !== undefined && (
                             <AcmTextInput
                                 label={t(`type.to.confirm`).replace('{0}', props.confirmText)}
@@ -167,70 +167,70 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                 <ActionGroup>
                     {errors
                         ? [
-                              <Button variant="primary" key="close-bulk-action" onClick={props.close}>
-                                  {t('common:close')}
-                              </Button>,
-                          ]
+                            <Button variant="primary" key="close-bulk-action" onClick={props.close}>
+                                {t('common:close')}
+                            </Button>,
+                        ]
                         : [
-                              <AcmSubmit
-                                  key="submit-bulk-action"
-                                  id="submit-button"
-                                  isDisabled={
-                                      !props.resources?.length ||
-                                      (props.confirmText !== undefined && confirm !== props.confirmText)
-                                  }
-                                  variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
-                                  onClick={async () => {
-                                      const errors: ItemError<T>[] = []
-                                      if (props.preActionFn) {
-                                          props.preActionFn(props.resources, errors)
-                                      }
-                                      if (errors.length === 0) {
-                                          setProgressCount(props.resources.length)
-                                          const requestResult = resultsSettled(
-                                              props.resources.map((resource) => {
-                                                  const r = props.actionFn(resource)
-                                                  return {
-                                                      promise: r.promise.finally(() =>
-                                                          setProgress((progress) => progress + 1)
-                                                      ),
-                                                      abort: r.abort,
-                                                  }
-                                              })
-                                          )
-                                          const promiseResults = await requestResult.promise
-                                          promiseResults.forEach((promiseResult, index) => {
-                                              if (promiseResult.status === 'rejected') {
-                                                  let validError = true
-                                                  if (props.isValidError) {
-                                                      validError = props.isValidError(promiseResult.reason)
-                                                  }
-                                                  if (validError) {
-                                                      errors.push({
-                                                          item: props.resources[index],
-                                                          error: promiseResult.reason,
-                                                      })
-                                                  }
-                                              }
-                                          })
-                                      }
-                                      await new Promise((resolve) => setTimeout(resolve, 500))
-                                      setErrors(errors)
-                                      if (errors.length === 0) {
-                                          props.close()
-                                      }
-                                  }}
-                                  label={props.action}
-                                  processingLabel={props.processing}
-                              />,
-                              <Button
-                                  variant="link"
-                                  onClick={props.onCancel ? props.onCancel : props.close}
-                                  key="cancel-bulk-action"
-                              >
-                                  {t('common:cancel')}
-                              </Button>,
-                          ]}
+                            <AcmSubmit
+                                key="submit-bulk-action"
+                                id="submit-button"
+                                isDisabled={
+                                    !props.resources?.length ||
+                                    (props.confirmText !== undefined && confirm !== props.confirmText)
+                                }
+                                variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
+                                onClick={async () => {
+                                    const errors: ItemError<T>[] = []
+                                    if (props.preActionFn) {
+                                        props.preActionFn(props.resources, errors)
+                                    }
+                                    if (errors.length === 0) {
+                                        setProgressCount(props.resources.length)
+                                        const requestResult = resultsSettled(
+                                            props.resources.map((resource) => {
+                                                const r = props.actionFn(resource)
+                                                return {
+                                                    promise: r.promise.finally(() =>
+                                                        setProgress((progress) => progress + 1)
+                                                    ),
+                                                    abort: r.abort,
+                                                }
+                                            })
+                                        )
+                                        const promiseResults = await requestResult.promise
+                                        promiseResults.forEach((promiseResult, index) => {
+                                            if (promiseResult.status === 'rejected') {
+                                                let validError = true
+                                                if (props.isValidError) {
+                                                    validError = props.isValidError(promiseResult.reason)
+                                                }
+                                                if (validError) {
+                                                    errors.push({
+                                                        item: props.resources[index],
+                                                        error: promiseResult.reason,
+                                                    })
+                                                }
+                                            }
+                                        })
+                                    }
+                                    await new Promise((resolve) => setTimeout(resolve, 500))
+                                    setErrors(errors)
+                                    if (errors.length === 0) {
+                                        props.close()
+                                    }
+                                }}
+                                label={props.action}
+                                processingLabel={props.processing}
+                            />,
+                            <Button
+                                variant="link"
+                                onClick={props.onCancel ? props.onCancel : props.close}
+                                key="cancel-bulk-action"
+                            >
+                                {t('common:cancel')}
+                            </Button>,
+                        ]}
                 </ActionGroup>
             </AcmForm>
         </AcmModal>
