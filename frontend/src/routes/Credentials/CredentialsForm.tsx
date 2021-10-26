@@ -887,7 +887,7 @@ export function CredentialsForm(props: {
                 title: t('credentialsForm.bareMetalDisconnected.title'),
                 wizardTitle: t('credentialsForm.bareMetalDisconnected.wizardTitle'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION_BAREMETAL} target="_blank" rel="noreferrer">
+                    <a href={DOC_LINKS.CONFIG_DISCONNECTED_INSTALL} target="_blank" rel="noreferrer">
                         {t('credentialsForm.bareMetalDisconnected.wizardDescription')}
                     </a>
                 ),
