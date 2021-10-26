@@ -40,13 +40,25 @@ const fetchEvents = async (url: string) => {
 
 const AIClusterProgress: React.FC = () => {
     const { clusterDeployment, agentClusterInstall, agents } = useContext(ClusterContext)
-    const [aiNamespace, setAiNamespace] = useState('open-cluster-management')
+    const [aiNamespace, setAiNamespace] = useState<string>('')
+    const [namespaceError, setNamespaceError] = useState<boolean>()
     useEffect(() => {
         const checkNs = async () => {
             try {
-                await getResource({ apiVersion: 'v1', kind: 'namespace', metadata: { name: 'rhacm' } }).promise
-                setAiNamespace('rhacm')
-            } catch {}
+                await getResource({
+                    apiVersion: 'v1',
+                    kind: 'namespace',
+                    metadata: { name: 'open-cluster-management' },
+                }).promise
+                setAiNamespace('open-cluster-management')
+            } catch {
+                try {
+                    await getResource({ apiVersion: 'v1', kind: 'namespace', metadata: { name: 'rhacm' } }).promise
+                    setAiNamespace('rhacm')
+                } catch {
+                    setNamespaceError(true)
+                }
+            }
         }
         checkNs()
     }, [])
@@ -69,6 +81,8 @@ const AIClusterProgress: React.FC = () => {
         [aiNamespace, agentClusterInstall]
     )
 
+    const fallbackEventsURL = namespaceError === true ? agentClusterInstall?.status?.debugInfo?.eventsURL : undefined
+
     return (
         <>
             {shouldShowClusterInstallationProgress(agentClusterInstall) && (
@@ -82,6 +96,7 @@ const AIClusterProgress: React.FC = () => {
                                         agentClusterInstall={agentClusterInstall}
                                         agents={clusterAgents}
                                         onFetchEvents={onFetchEvents}
+                                        fallbackEventsURL={fallbackEventsURL}
                                     />
                                 </StackItem>
                                 {shouldShowClusterCredentials(agentClusterInstall) && (
@@ -110,15 +125,14 @@ const AIClusterProgress: React.FC = () => {
                                         style={{ textAlign: 'right' }}
                                         onFetchEvents={onFetchEvents}
                                         ButtonComponent={Button}
+                                        fallbackEventsURL={fallbackEventsURL}
                                     >
                                         View Cluster Events
                                     </EventsModalButton>
                                     <LogsDownloadButton
                                         id="cluster-logs-button"
                                         agentClusterInstall={agentClusterInstall}
-                                        backendURL={backendUrl}
                                         variant={ButtonVariant.link}
-                                        aiNamespace={aiNamespace}
                                     />
                                 </StackItem>
                                 {shouldShowClusterInstallationError(agentClusterInstall) && (
@@ -126,8 +140,6 @@ const AIClusterProgress: React.FC = () => {
                                         <ClusterInstallationError
                                             clusterDeployment={clusterDeployment}
                                             agentClusterInstall={agentClusterInstall}
-                                            backendURL={backendUrl}
-                                            aiNamespace={aiNamespace}
                                         />
                                     </StackItem>
                                 )}
