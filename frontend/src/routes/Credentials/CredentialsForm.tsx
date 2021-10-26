@@ -45,6 +45,10 @@ import {
     validatePrivateSshKey,
     validatePublicSshKey,
     validateWebURL,
+    validateImageContentSources,
+    validateHttpProxy,
+    validateHttpsProxy,
+    validateNoProxy,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
 
@@ -186,6 +190,11 @@ export function CredentialsForm(props: {
     const [sshPublickey, setSshPublickey] = useState(providerConnection?.stringData?.['ssh-publickey'] ?? '')
     const [sshPrivatekey, setSshPrivatekey] = useState(providerConnection?.stringData?.['ssh-privatekey'] ?? '')
 
+    // Proxy
+    const [httpProxy, setHttpProxy] = useState(providerConnection?.stringData?.httpProxy ?? '')
+    const [httpsProxy, setHttpsProxy] = useState(providerConnection?.stringData?.httpsProxy ?? '')
+    const [noProxy, setNoProxy] = useState(providerConnection?.stringData?.noProxy ?? '')
+
     // Amazon Web Services State
     const [aws_access_key_id, setAwsAccessKeyID] = useState(providerConnection?.stringData?.aws_access_key_id ?? '')
     const [aws_secret_access_key, setAwsSecretAccessKeyID] = useState(
@@ -249,11 +258,16 @@ export function CredentialsForm(props: {
     // BareMetal
     const [libvirtURI, setLibvirtURI] = useState(providerConnection?.stringData?.libvirtURI ?? '')
     const [sshKnownHosts, setSshKnownHosts] = useState(providerConnection?.stringData?.sshKnownHosts ?? '')
-    const [imageMirror, setImageMirror] = useState(providerConnection?.stringData?.imageMirror ?? '')
     const [bootstrapOSImage, setBootstrapOSImage] = useState(providerConnection?.stringData?.bootstrapOSImage ?? '')
+    const [imageMirror, setImageMirror] = useState(providerConnection?.stringData?.imageMirror ?? '')
+
+    // Disconnected or Proxy
     const [clusterOSImage, setClusterOSImage] = useState(providerConnection?.stringData?.clusterOSImage ?? '')
     const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
         providerConnection?.stringData?.additionalTrustBundle ?? ''
+    )
+    const [imageContentSources, setImageContentSources] = useState(
+        providerConnection?.stringData?.imageContentSources ?? ''
     )
 
     // Ansible
@@ -289,6 +303,7 @@ export function CredentialsForm(props: {
         if (annotations) {
             secret.metadata.annotations = annotations
         }
+
         switch (credentialsType) {
             case Provider.aws:
                 secret.stringData!.aws_access_key_id = aws_access_key_id
@@ -297,6 +312,10 @@ export function CredentialsForm(props: {
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-privatekey'] = sshPrivatekey
                 secret.stringData!['ssh-publickey'] = sshPublickey
+                secret.stringData!.httpProxy = httpProxy
+                secret.stringData!.httpsProxy = httpsProxy
+                secret.stringData!.noProxy = noProxy
+                secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.azure:
                 secret.stringData!.baseDomainResourceGroupName = baseDomainResourceGroupName
@@ -311,6 +330,10 @@ export function CredentialsForm(props: {
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-privatekey'] = sshPrivatekey
                 secret.stringData!['ssh-publickey'] = sshPublickey
+                secret.stringData!.httpProxy = httpProxy
+                secret.stringData!.httpsProxy = httpsProxy
+                secret.stringData!.noProxy = noProxy
+                secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.gcp:
                 secret.stringData!.projectID = projectID
@@ -319,6 +342,10 @@ export function CredentialsForm(props: {
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-privatekey'] = sshPrivatekey
                 secret.stringData!['ssh-publickey'] = sshPublickey
+                secret.stringData!.httpProxy = httpProxy
+                secret.stringData!.httpsProxy = httpsProxy
+                secret.stringData!.noProxy = noProxy
+                secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.vmware:
                 secret.stringData!.vCenter = vCenter
@@ -332,6 +359,11 @@ export function CredentialsForm(props: {
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-privatekey'] = sshPrivatekey
                 secret.stringData!['ssh-publickey'] = sshPublickey
+                secret.stringData!.imageContentSources = imageContentSources
+                secret.stringData!.httpProxy = httpProxy
+                secret.stringData!.httpsProxy = httpsProxy
+                secret.stringData!.noProxy = noProxy
+                secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.openstack:
                 secret.stringData!['clouds.yaml'] = cloudsYaml
@@ -340,6 +372,12 @@ export function CredentialsForm(props: {
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-privatekey'] = sshPrivatekey
                 secret.stringData!['ssh-publickey'] = sshPublickey
+                secret.stringData!.clusterOSImage = clusterOSImage
+                secret.stringData!.imageContentSources = imageContentSources
+                secret.stringData!.httpProxy = httpProxy
+                secret.stringData!.httpsProxy = httpsProxy
+                secret.stringData!.noProxy = noProxy
+                secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.baremetal:
                 secret.stringData!.libvirtURI = libvirtURI
@@ -347,11 +385,14 @@ export function CredentialsForm(props: {
                 secret.stringData!.imageMirror = imageMirror
                 secret.stringData!.bootstrapOSImage = bootstrapOSImage
                 secret.stringData!.clusterOSImage = clusterOSImage
-                secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-privatekey'] = sshPrivatekey
                 secret.stringData!['ssh-publickey'] = sshPublickey
+                secret.stringData!.httpProxy = httpProxy
+                secret.stringData!.httpsProxy = httpsProxy
+                secret.stringData!.noProxy = noProxy
+                secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.ansible:
                 secret.stringData!.host = _.trimEnd(ansibleHost, '/')
@@ -846,7 +887,7 @@ export function CredentialsForm(props: {
                 title: t('credentialsForm.bareMetalDisconnected.title'),
                 wizardTitle: t('credentialsForm.bareMetalDisconnected.wizardTitle'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION_BAREMETAL} target="_blank" rel="noreferrer">
+                    <a href={DOC_LINKS.CONFIG_DISCONNECTED_INSTALL} target="_blank" rel="noreferrer">
                         {t('credentialsForm.bareMetalDisconnected.wizardDescription')}
                     </a>
                 ),
@@ -875,7 +916,7 @@ export function CredentialsForm(props: {
                     },
                     {
                         id: 'clusterOSImage',
-                        isHidden: credentialsType !== Provider.baremetal,
+                        isHidden: ![Provider.baremetal, Provider.openstack].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('credentialsForm.clusterOSImage.label'),
                         placeholder: t('credentialsForm.clusterOSImage.placeholder'),
@@ -885,8 +926,105 @@ export function CredentialsForm(props: {
                         validation: (value) => validateBareMetalOSImageURL(value, t),
                     },
                     {
+                        id: 'imageContentSources',
+                        isHidden: ![Provider.openstack, Provider.vmware].includes(credentialsType as Provider),
+                        type: 'TextArea',
+                        label: t('credentialsForm.imageContentSources.label'),
+                        placeholder:
+                            '- mirrors:\n        - <mirror_host_name>:5000/<repo_name>/release\n        source: quay.example.com/openshift-release-dev/ocp-release',
+                        labelHelp: t('credentialsForm.imageContentSources.labelHelp'),
+                        value: imageContentSources,
+                        onChange: setImageContentSources,
+                        validation: (value) => validateImageContentSources(value, t),
+                    },
+                    {
                         id: 'additionalTrustBundle',
-                        isHidden: credentialsType !== Provider.baremetal,
+                        isHidden: ![Provider.baremetal, Provider.openstack, Provider.vmware].includes(
+                            credentialsType as Provider
+                        ),
+                        type: 'TextArea',
+                        label: t('credentialsForm.additionalTrustBundle.label'),
+                        placeholder: t('credentialsForm.additionalTrustBundle.placeholder'),
+                        labelHelp: t('credentialsForm.additionalTrustBundle.labelHelp'),
+                        value: additionalTrustBundle,
+                        onChange: setAdditionalTrustBundle,
+                    },
+                ],
+            },
+            {
+                type: 'Section',
+                title: t('credentialsForm.proxy.title'),
+                wizardTitle: t('credentialsForm.proxy.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION_PROXY} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.proxy.wizardDescription')}
+                    </a>
+                ),
+                inputs: [
+                    {
+                        id: 'httpProxy',
+                        isHidden: ![
+                            Provider.aws,
+                            Provider.azure,
+                            Provider.baremetal,
+                            Provider.gcp,
+                            Provider.openstack,
+                            Provider.vmware,
+                        ].includes(credentialsType as Provider),
+                        type: 'Text',
+                        label: t('credentialsForm.httpProxy.label'),
+                        placeholder: t('credentialsForm.httpProxy.placeholder'),
+                        labelHelp: t('credentialsForm.httpProxy.labelHelp'),
+                        value: httpProxy,
+                        onChange: setHttpProxy,
+                        validation: (value) => validateHttpProxy(value, t),
+                    },
+                    {
+                        id: 'httpsProxy',
+                        isHidden: ![
+                            Provider.aws,
+                            Provider.azure,
+                            Provider.baremetal,
+                            Provider.gcp,
+                            Provider.openstack,
+                            Provider.vmware,
+                        ].includes(credentialsType as Provider),
+                        type: 'Text',
+                        label: t('credentialsForm.httpsProxy.label'),
+                        placeholder: t('credentialsForm.httpsProxy.placeholder'),
+                        labelHelp: t('credentialsForm.httpsProxy.labelHelp'),
+                        value: httpsProxy,
+                        onChange: setHttpsProxy,
+                        validation: (value) => validateHttpsProxy(value, t),
+                    },
+                    {
+                        id: 'noProxy',
+                        isHidden: ![
+                            Provider.aws,
+                            Provider.azure,
+                            Provider.baremetal,
+                            Provider.gcp,
+                            Provider.openstack,
+                            Provider.vmware,
+                        ].includes(credentialsType as Provider),
+                        type: 'Text',
+                        label: t('credentialsForm.noProxy.label'),
+                        placeholder: t('credentialsForm.noProxy.placeholder'),
+                        labelHelp: t('credentialsForm.noProxy.labelHelp'),
+                        value: noProxy,
+                        onChange: setNoProxy,
+                        validation: (value) => validateNoProxy(value, t),
+                    },
+                    {
+                        id: 'additionalTrustBundle',
+                        isHidden: ![
+                            Provider.aws,
+                            Provider.azure,
+                            Provider.baremetal,
+                            Provider.gcp,
+                            Provider.openstack,
+                            Provider.vmware,
+                        ].includes(credentialsType as Provider),
                         type: 'TextArea',
                         label: t('credentialsForm.additionalTrustBundle.label'),
                         placeholder: t('credentialsForm.additionalTrustBundle.placeholder'),

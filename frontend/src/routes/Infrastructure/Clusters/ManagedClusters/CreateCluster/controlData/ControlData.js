@@ -16,7 +16,8 @@ import getControlDataAZR from './ControlDataAZR'
 import getControlDataVMW from './ControlDataVMW'
 import getControlDataBMC from './ControlDataBMC'
 import getControlDataOST from './ControlDataOST'
-import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo, BaremetalLogo } from './Logos'
+import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo } from './Logos'
+import ServerIcon from '@patternfly/react-icons/dist/js/icons/server-icon'
 import controlDataAI from './ControlDataAI'
 import Deprecated from '../../components/Deprecated'
 
@@ -135,7 +136,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
             },
             {
                 id: 'BMC',
-                logo: <BaremetalLogo />,
+                logo: <ServerIcon color="slategray" />,
                 title: 'cluster.create.baremetal.subtitle',
                 // text: <Deprecated />,
                 change: {
