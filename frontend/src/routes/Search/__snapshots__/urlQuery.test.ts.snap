@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Correctly returns transformBrowserUrlToSearchString 1`] = `
+Object {
+  "preSelectedRelatedResources": Array [
+    "pod",
+  ],
+  "prefillSearchQuery": "kind:deployment name:search-prod-df8fa-search-api",
+}
+`;
