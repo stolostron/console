@@ -2,55 +2,6 @@
 /* istanbul ignore file */
 
 export enum NavigationPath {
-<<<<<<< HEAD
-    addAnsibleAutomation = '/multicloud/ansible-automations/add',
-    addCredentials = '/multicloud/credentials/add',
-    ansibleAutomations = '/multicloud/ansible-automations',
-    applications = '/multicloud/applications',
-    bareMetalAssets = '/multicloud/bare-metal-assets',
-    clusterCreateProgress = '/multicloud/cluster/progress/:namespace/:name',
-    clusterDetails = '/multicloud/clusters/:id',
-    clusterMachinePools = '/multicloud/clusters/:id/machinepools',
-    clusterNodes = '/multicloud/clusters/:id/nodes',
-    clusterOverview = '/multicloud/clusters/:id/overview',
-    clusterPools = '/multicloud/cluster-pools',
-    clusterSetAccess = '/multicloud/cluster-sets/:id/access',
-    clusterSetClusterPools = '/multicloud/cluster-sets/:id/cluster-pools',
-    clusterSetClusters = '/multicloud/cluster-sets/:id/clusters',
-    clusterSetDetails = '/multicloud/cluster-sets/:id',
-    clusterSetManage = '/multicloud/cluster-sets/:id/manage-resources',
-    clusterSetOverview = '/multicloud/cluster-sets/:id/overview',
-    clusterSetSubmariner = '/multicloud/cluster-sets/:id/submariner',
-    clusterSetSubmarinerInstall = '/multicloud/cluster-sets/:id/install-submariner',
-    clusterSets = '/multicloud/cluster-sets',
-    clusterSettings = '/multicloud/clusters/:id/settings',
-    clusters = '/multicloud/clusters',
-    configureDiscovery = '/multicloud/configure-discovery',
-    console = '/multicloud',
-    createBareMetalAsset = '/multicloud/create-bare-metal-asset',
-    createCluster = '/multicloud/create-cluster',
-    createClusterPool = '/multicloud/create-cluster-pool',
-    createClusterSet = '/multicloud/create-cluster-set',
-    createDiscovery = '/multicloud/create-discovery',
-    createInfraEnv = '/multicloud/create-infra-env',
-    credentials = '/multicloud/credentials',
-    discoveredClusters = '/multicloud/discovered-clusters',
-    editAnsibleAutomation = '/multicloud/ansible-automations/edit/:namespace/:name',
-    editBareMetalAsset = '/multicloud/bare-metal-assets/:namespace/:name',
-    editCluster = '/multicloud/cluster/edit/:namespace/:name',
-    editCredentials = '/multicloud/credentials/edit/:namespace/:name',
-    governance = '/multicloud/policies',
-    importCluster = '/multicloud/import-cluster',
-    importCommand = '/multicloud/import-cluster/:clusterName',
-    infraEnvironmentDetails = '/multicloud/infra-environments/:namespace/:name',
-    infraEnvironmentHosts = '/multicloud/infra-environments/:namespace/:name/hosts',
-    infraEnvironmentOverview = '/multicloud/infra-environments/:namespace/:name/overview',
-    infraEnvironments = '/multicloud/infra-environments',
-    policies = '/multicloud/policies/policies',
-    policySets = '/multicloud/policies/policy-sets',
-    viewAnsibleAutomation = '/multicloud/ansible-automations/view/:namespace/:name',
-    viewCredentials = '/multicloud/credentials/view/:namespace/:name',
-=======
     // Console
     console = '/multicloud',
 
@@ -132,5 +83,4 @@ export enum NavigationPath {
     // Search
     search = '/multicloud/search',
     resources = '/multicloud/resources',
->>>>>>> main
 }
