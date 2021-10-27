@@ -97,12 +97,12 @@ export default function DetailsPage() {
                             variant={'link'}
                             onClick={() => {
                                 const prevLocState = window.history?.state?.state
-                                if (prevLocState && prevLocState.from === '/search') {
+                                if (prevLocState && prevLocState.from === '/multicloud/search') {
                                     // If we came to resources page from search - return to search with previous search filters
                                     history.goBack()
                                 } else {
                                     // If we were redirected to search from elsewhere (ex: application page) - go to blank search page
-                                    window.location.href = '/search'
+                                    window.location.href = '/multicloud/search'
                                 }
                             }}
                         >
