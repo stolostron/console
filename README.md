@@ -121,7 +121,7 @@ If the backend responds with a `401 Unauthorized` the frontend starts an OAuth f
 
 ## Optional Features
 
-In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product.  These features are enabled by updating the config-config configmap in the open-cluster-management namepsace.  The following features are available:
+In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product.  These features are enabled by updating the `console-config` configmap in the installation namepsace (default: `open-cluster-management`).  The following features are available:
 
 ### Single node OpenShift
 
