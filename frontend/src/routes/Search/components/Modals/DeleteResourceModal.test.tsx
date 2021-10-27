@@ -4,39 +4,53 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { DeleteResourceDocument, UserAccessDocument } from '../../../../console-sdk/console-sdk'
-import { wait } from '../../../../lib/test-util'
+import { DeleteResourceDocument } from '../../../../console-sdk/console-sdk'
+import { nockCreate } from '../../../../lib/nock-util'
+import { wait, waitForNocks } from '../../../../lib/test-util'
+import { SelfSubjectAccessReview } from '../../../../resources'
 import { SearchResultItemsDocument } from '../../../../search-sdk/search-sdk'
 import { DeleteResourceModal } from './DeleteResourceModal'
 
+const deleteResourceUpdateSelfSubjectAccessRequest: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            resource: 'pods',
+            verb: 'delete',
+            group: '',
+            namespace: 'testNamespace',
+            name: 'testPod',
+        },
+    },
+}
+
+const deleteResourceUpdateSelfSubjectAccessResponse: SelfSubjectAccessReview = {
+    apiVersion: 'authorization.k8s.io/v1',
+    kind: 'SelfSubjectAccessReview',
+    metadata: {},
+    spec: {
+        resourceAttributes: {
+            resource: 'pods',
+            verb: 'delete',
+            group: '',
+            namespace: 'testNamespace',
+            name: 'testPod',
+        },
+    },
+    status: {
+        allowed: true,
+    },
+}
+
 describe('DeleteResourceModal', () => {
     it('should call the delete resource mutation with a successful response', async () => {
+        const deleteResourceUpdateNock = nockCreate(
+            deleteResourceUpdateSelfSubjectAccessRequest,
+            deleteResourceUpdateSelfSubjectAccessResponse
+        )
         const mocks = [
-            {
-                request: {
-                    query: UserAccessDocument,
-                    variables: {
-                        kind: 'pod',
-                        action: 'delete',
-                        namespace: 'testNamespace',
-                        apiGroup: '',
-                        version: 'v1',
-                    },
-                },
-                result: {
-                    data: {
-                        userAccess: {
-                            allowed: true,
-                            reason: 'RBAC: allowed by ...',
-                            namespace: 'testNamespace',
-                            verb: 'delete',
-                            group: '',
-                            version: 'v1',
-                            resource: 'pods',
-                        },
-                    },
-                },
-            },
             {
                 request: {
                     query: DeleteResourceDocument,
@@ -125,8 +139,8 @@ describe('DeleteResourceModal', () => {
             </MockedProvider>
         )
 
-        // wait for userAccess query to finish
-        await wait()
+        // wait for user access query to finish
+        await waitForNocks([deleteResourceUpdateNock])
 
         // find the button and simulate a click
         const submitButton = screen.getByText('search.modal.delete.resource.action.delete')

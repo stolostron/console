@@ -390,8 +390,8 @@ export default function OverviewPage() {
     function buildSummaryLinks(kind: string, localCluster?: boolean) {
         const localClusterFilter: string = localCluster === true ? `%20cluster%3Alocal-cluster` : ''
         return selectedCloud === ''
-            ? `/search?filters={"textsearch":"kind%3A${kind}${localClusterFilter}"}`
-            : `/search?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}&showrelated=${kind}`
+            ? `/multicloud/search?filters={"textsearch":"kind%3A${kind}${localClusterFilter}"}`
+            : `/multicloud/search?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}&showrelated=${kind}`
     }
     const summary =
         loading || searchLoading || searchPolicyReportLoading
@@ -410,7 +410,7 @@ export default function OverviewPage() {
                           selectedClusterNames.length > 0
                               ? selectedClusterNames.length
                               : data?.overview?.clusters?.length || 0,
-                      href: `search?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}`,
+                      href: `/multicloud/search?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}`,
                   },
                   { isPrimary: false, description: 'Kubernetes type', count: kubernetesTypes?.size },
                   { isPrimary: false, description: 'Region', count: regions?.size },
@@ -439,25 +439,25 @@ export default function OverviewPage() {
                   {
                       key: 'Failed',
                       value: searchResult[4]?.count || 0,
-                      link: `/search?filters={"textsearch":"kind%3Apod%20status%3ACrashLoopBackOff%2CFailed%2CImagePullBackOff%2CRunContainerError%2CTerminated%2CUnknown%2COOMKilled${urlClusterFilter}"}`,
+                      link: `/multicloud/search?filters={"textsearch":"kind%3Apod%20status%3ACrashLoopBackOff%2CFailed%2CImagePullBackOff%2CRunContainerError%2CTerminated%2CUnknown%2COOMKilled${urlClusterFilter}"}`,
                   },
                   {
                       key: 'Pending',
                       value: searchResult[3]?.count || 0,
-                      link: `/search?filters={"textsearch":"kind%3Apod%20status%3AContainerCreating%2CPending%2CTerminating%2CWaiting${urlClusterFilter}"}`,
+                      link: `/multicloud/search?filters={"textsearch":"kind%3Apod%20status%3AContainerCreating%2CPending%2CTerminating%2CWaiting${urlClusterFilter}"}`,
                   },
                   {
                       key: 'Running',
                       value: searchResult[2]?.count || 0,
                       isPrimary: true,
-                      link: `/search?filters={"textsearch":"kind%3Apod%20status%3ARunning%2CCompleted${urlClusterFilter}"}`,
+                      link: `/multicloud/search?filters={"textsearch":"kind%3Apod%20status%3ARunning%2CCompleted${urlClusterFilter}"}`,
                   },
               ]
 
     // TODO: Breaks url if length of selectedClustersFilter is too big.
     // Issue: https://github.com/open-cluster-management/backlog/issues/7087
     function buildClusterComplianceLinks(clusterNames: Array<string> = []): string {
-        return `/search?filters={"textsearch":"kind:cluster${
+        return `/multicloud/search?filters={"textsearch":"kind:cluster${
             clusterNames.length > 0 ? `%20name:${clusterNames.join(',')}` : ''
         }"}&showrelated=policy`
     }
@@ -485,13 +485,13 @@ export default function OverviewPage() {
                   {
                       key: 'Offline',
                       value: offline,
-                      link: `/search?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3A!True${cloudLabelFilter}"}`,
+                      link: `/multicloud/search?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3A!True${cloudLabelFilter}"}`,
                   },
                   {
                       key: 'Ready',
                       value: ready,
                       isPrimary: true,
-                      link: `/search?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3ATrue${cloudLabelFilter}"}`,
+                      link: `/multicloud/search?filters={"textsearch":"kind%3Acluster%20ManagedClusterConditionAvailable%3ATrue${cloudLabelFilter}"}`,
                   },
               ]
 
@@ -505,7 +505,7 @@ export default function OverviewPage() {
                       isPrimary: true,
                       link:
                           policyReportCriticalCount > 0
-                              ? `/search?filters={"textsearch":"kind%3Apolicyreport%20critical%3A>0"}`
+                              ? `/multicloud/search?filters={"textsearch":"kind%3Apolicyreport%20critical%3A>0"}`
                               : undefined,
                   },
                   {
@@ -513,7 +513,7 @@ export default function OverviewPage() {
                       value: policyReportImportantCount,
                       link:
                           policyReportImportantCount > 0
-                              ? `/search?filters={"textsearch":"kind%3Apolicyreport%20important%3A>0"}`
+                              ? `/multicloud/search?filters={"textsearch":"kind%3Apolicyreport%20important%3A>0"}`
                               : undefined,
                   },
                   {
@@ -521,7 +521,7 @@ export default function OverviewPage() {
                       value: policyReportModerateCount,
                       link:
                           policyReportModerateCount > 0
-                              ? `/search?filters={"textsearch":"kind%3Apolicyreport%20moderate%3A>0"}`
+                              ? `/multicloud/search?filters={"textsearch":"kind%3Apolicyreport%20moderate%3A>0"}`
                               : undefined,
                   },
                   {
@@ -529,7 +529,7 @@ export default function OverviewPage() {
                       value: policyReportLowCount,
                       link:
                           policyReportLowCount > 0
-                              ? `/search?filters={"textsearch":"kind%3Apolicyreport%20low%3A>0"}`
+                              ? `/multicloud/search?filters={"textsearch":"kind%3Apolicyreport%20low%3A>0"}`
                               : undefined,
                   },
               ]

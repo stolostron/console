@@ -15,7 +15,7 @@ import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) => {
     let query = ''
     Object.keys(filters).forEach((key) => (query += `${query ? '%20' : ''}${key}:${filters[key]}`))
-    return `/search?filters={"textsearch":"${query}"}${relatedKind ? `&showrelated=${relatedKind}` : ''}`
+    return `/multicloud/search?filters={"textsearch":"${query}"}${relatedKind ? `&showrelated=${relatedKind}` : ''}`
 }
 
 export function StatusSummaryCount() {

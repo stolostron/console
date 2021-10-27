@@ -1381,7 +1381,7 @@ export const GetUrlSearchParam = (resource: any) => {
 export function CreateDetailsLink(item: any) {
     switch (item.kind) {
         case 'cluster':
-            return <a href={`/multicloud/clusters/${item.name}/overview`}>{item.name}</a>
+            return <a href={`/multicloud/infrastructure/clusters/details/${item.name}/overview`}>{item.name}</a>
 
         case 'application':
             const { apigroup, apiversion, applicationSet, cluster, name, namespace } = item
@@ -1400,7 +1400,7 @@ export function CreateDetailsLink(item: any) {
                         pathname: '/multicloud/resources',
                         search: GetUrlSearchParam(item),
                         state: {
-                            from: '/search',
+                            from: '/multicloud/search',
                         },
                     }}
                 >
@@ -1411,7 +1411,7 @@ export function CreateDetailsLink(item: any) {
             // Redirects to the policy page if the policy is a hub cluster resource.
             // If the policy is not, it will redirect and just show the yaml.
             if (item._hubClusterResource && item.apigroup === 'policy.open-cluster-management.io') {
-                return <a href={`/multicloud/policies/all/${item.name}`}>{item.name}</a>
+                return <a href={`/multicloud/governance/policies/${item.name}`}>{item.name}</a>
             }
             return (
                 <Link
@@ -1419,7 +1419,7 @@ export function CreateDetailsLink(item: any) {
                         pathname: '/multicloud/resources',
                         search: GetUrlSearchParam(item),
                         state: {
-                            from: '/search',
+                            from: '/multicloud/search',
                         },
                     }}
                 >
@@ -1429,7 +1429,7 @@ export function CreateDetailsLink(item: any) {
         case 'policyreport':
             return (
                 <a
-                    href={`/multicloud/clusters/${item.namespace}/overview?${encodeURIComponent(
+                    href={`/multicloud/infrastructure/clusters/details/${item.namespace}/overview?${encodeURIComponent(
                         'showClusterIssues=true'
                     )}`}
                 >
@@ -1443,7 +1443,7 @@ export function CreateDetailsLink(item: any) {
                         pathname: '/multicloud/resources',
                         search: GetUrlSearchParam(item),
                         state: {
-                            from: '/search',
+                            from: '/multicloud/search',
                         },
                     }}
                 >

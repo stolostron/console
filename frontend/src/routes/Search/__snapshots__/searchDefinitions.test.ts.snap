@@ -12,7 +12,7 @@ exports[`Correctly returns CreateDetailsLink - ACM-Application 1`] = `
 
 exports[`Correctly returns CreateDetailsLink - Cluster 1`] = `
 <a
-  href="/multicloud/clusters/testClusterName/overview"
+  href="/multicloud/infrastructure/clusters/details/testClusterName/overview"
 >
   testClusterName
 </a>
@@ -25,7 +25,7 @@ exports[`Correctly returns CreateDetailsLink - Default 1`] = `
       "pathname": "/multicloud/resources",
       "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestPodNamespace%26name%3DtestPodName",
       "state": Object {
-        "from": "/search",
+        "from": "/multicloud/search",
       },
     }
   }
@@ -36,7 +36,7 @@ exports[`Correctly returns CreateDetailsLink - Default 1`] = `
 
 exports[`Correctly returns CreateDetailsLink - HUB-Policy 1`] = `
 <a
-  href="/multicloud/policies/all/testPolicyName"
+  href="/multicloud/governance/policies/testPolicyName"
 >
   testPolicyName
 </a>
@@ -49,7 +49,7 @@ exports[`Correctly returns CreateDetailsLink - Managed-Policy 1`] = `
       "pathname": "/multicloud/resources",
       "search": "?cluster%3DtestCluster%26kind%3Dpolicy%26namespace%3DtestPolicyNamespace%26name%3DtestPolicyName",
       "state": Object {
-        "from": "/search",
+        "from": "/multicloud/search",
       },
     }
   }
@@ -65,7 +65,7 @@ exports[`Correctly returns CreateDetailsLink - NON-Application 1`] = `
       "pathname": "/multicloud/resources",
       "search": "?cluster%3DtestCluster%26kind%3Dapplication%26namespace%3DtestApplicationNamespace%26name%3DtestApplicationName",
       "state": Object {
-        "from": "/search",
+        "from": "/multicloud/search",
       },
     }
   }
@@ -76,7 +76,7 @@ exports[`Correctly returns CreateDetailsLink - NON-Application 1`] = `
 
 exports[`Correctly returns CreateDetailsLink - PolicyReport 1`] = `
 <a
-  href="/multicloud/clusters/testPolicyReportNamespace/overview?showClusterIssues%3Dtrue"
+  href="/multicloud/infrastructure/clusters/details/testPolicyReportNamespace/overview?showClusterIssues%3Dtrue"
 >
   testPolicyReport
 </a>
@@ -103,7 +103,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -153,7 +153,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -213,7 +213,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -273,7 +273,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -348,7 +348,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -398,7 +398,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -468,7 +468,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -543,7 +543,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -598,7 +598,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -668,7 +668,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -718,7 +718,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -788,7 +788,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -853,7 +853,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -903,7 +903,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -968,7 +968,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1048,7 +1048,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1118,7 +1118,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1173,7 +1173,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1228,7 +1228,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1283,7 +1283,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1353,7 +1353,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1418,7 +1418,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1475,7 +1475,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1527,7 +1527,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1587,7 +1587,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1642,7 +1642,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1707,7 +1707,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
@@ -1767,7 +1767,7 @@ Array [
           "pathname": "/multicloud/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/search",
+            "from": "/multicloud/search",
           },
         }
       }
