@@ -7,6 +7,7 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
+<<<<<<< HEAD
 import { Fragment, lazy, ReactNode, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
@@ -20,6 +21,20 @@ const OverviewPage = lazy(() => import('./overview/Overview'))
 const PoliciesPage = lazy(() => import('./policies/Policies'))
 const PolicySetsPage = lazy(() => import('./policy-sets/PolicySets'))
 
+=======
+import { Fragment, ReactNode, Suspense, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, Route, Switch, useLocation } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { acmRouteState, placementBindingsState, policiesState } from '../../atoms'
+import { NavigationPath } from '../../NavigationPath'
+import { PageContext } from '../Infrastructure/Clusters/Clusters'
+import GovernanceOverview from './overview/Overview'
+import PoliciesPage from './policies/Policies'
+import PolicySetsPage from './policy-sets/PolicySets'
+import { useGovernanceData } from './useGovernanceData'
+
+>>>>>>> main
 export default function GovernancePage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const location = useLocation()
@@ -30,19 +45,17 @@ export default function GovernancePage() {
 
     const [policies] = useRecoilState(policiesState)
     const [placementBindings] = useRecoilState(placementBindingsState)
-    const [placementRules] = useRecoilState(placementRulesState)
+    // const [placementRules] = useRecoilState(placementRulesState)
     const governanceData = useGovernanceData(
         policies.filter(
             (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
         ),
-        placementBindings,
-        placementRules
+        placementBindings
     )
 
     const isOverview = location.pathname == NavigationPath.governance
     return (
         <AcmPage
-            hasDrawer
             header={
                 <AcmPageHeader
                     title={t('Governance')}
@@ -73,18 +86,14 @@ export default function GovernancePage() {
                         <Route
                             exact
                             path={NavigationPath.governance}
-                            render={() => <OverviewPage governanceData={governanceData} />}
+                            render={() => <GovernanceOverview governanceData={governanceData} />}
                         />
                         <Route
                             exact
                             path={NavigationPath.policies}
                             render={() => <PoliciesPage governanceData={governanceData} />}
                         />
-                        <Route
-                            exact
-                            path={NavigationPath.policySets}
-                            render={() => <PolicySetsPage governanceData={governanceData} />}
-                        />
+                        <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
                     </Switch>
                 </Suspense>
             </PageContext.Provider>

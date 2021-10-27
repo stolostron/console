@@ -59,6 +59,10 @@ function createProviderConnection(
                       pullSecret: '{"pull":"secret"}\n',
                       'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----\n',
                       'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com\n',
+                      httpProxy: '',
+                      httpsProxy: '',
+                      noProxy: '',
+                      additionalTrustBundle: '',
                   },
               }
             : stringData,
@@ -87,6 +91,9 @@ describe('add credentials page', () => {
         // AWS credentials
         await typeByTestId('aws_access_key_id', providerConnection.stringData?.aws_access_key_id!)
         await typeByTestId('aws_secret_access_key', providerConnection.stringData?.aws_secret_access_key!)
+        await clickByText('common:next')
+
+        // skip proxy
         await clickByText('common:next')
 
         // Pull secret and SSH
@@ -134,6 +141,9 @@ describe('add credentials page', () => {
         await typeByTestId('subscriptionId', 'subscriptionId')
         await clickByText('common:next')
 
+        // skip proxy
+        await clickByText('common:next')
+
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
         await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
@@ -170,6 +180,9 @@ describe('add credentials page', () => {
         await typeByTestId('osServiceAccount.json', providerConnection.stringData?.['osServiceAccount.json']!)
         await clickByText('common:next')
 
+        // skip proxy
+        await clickByText('common:next')
+
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
         await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
@@ -195,6 +208,7 @@ describe('add credentials page', () => {
                 cluster: 'cluster',
                 datacenter: 'datacenter',
                 defaultDatastore: 'defaultDatastore',
+                imageContentSources: '',
             },
             true
         )
@@ -214,6 +228,12 @@ describe('add credentials page', () => {
         await typeByTestId('cluster', providerConnection.stringData?.cluster!)
         await typeByTestId('datacenter', providerConnection.stringData?.datacenter!)
         await typeByTestId('defaultDatastore', providerConnection.stringData?.defaultDatastore!)
+        await clickByText('common:next')
+
+        // skip disconnected
+        await clickByText('common:next')
+
+        // skip proxy
         await clickByText('common:next')
 
         // Pull secret
@@ -237,6 +257,8 @@ describe('add credentials page', () => {
                 'clouds.yaml':
                     'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
                 cloud: 'openstack',
+                clusterOSImage: '',
+                imageContentSources: '',
             },
             true
         )
@@ -251,6 +273,12 @@ describe('add credentials page', () => {
         // ost credentials
         await typeByTestId('cloud', providerConnection.stringData?.cloud!)
         await typeByTestId('clouds.yaml', providerConnection.stringData?.['clouds.yaml']!)
+        await clickByText('common:next')
+
+        // skip disconnected
+        await clickByText('common:next')
+
+        // skip proxy
         await clickByText('common:next')
 
         // Pull secret
@@ -300,6 +328,9 @@ describe('add credentials page', () => {
         await typeByTestId('bootstrapOSImage', providerConnection.stringData?.bootstrapOSImage!)
         await typeByTestId('clusterOSImage', providerConnection.stringData?.clusterOSImage!)
         await typeByTestId('additionalTrustBundle', providerConnection.stringData?.additionalTrustBundle!)
+        await clickByText('common:next')
+
+        // skip proxy
         await clickByText('common:next')
 
         // Pull secret

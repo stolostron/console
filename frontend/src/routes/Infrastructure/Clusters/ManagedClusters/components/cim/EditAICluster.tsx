@@ -76,16 +76,19 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     useEffect(() => {
         const patch = async () => {
             if (agentClusterInstall) {
-                if (!agentClusterInstall.spec.holdInstallation) {
-                    await patchResource(agentClusterInstall, [
-                        {
-                            op: 'add',
-                            path: '/spec/holdInstallation',
-                            value: true,
-                        },
-                    ]).promise
+                try {
+                    if (!agentClusterInstall.spec.holdInstallation) {
+                        await patchResource(agentClusterInstall, [
+                            {
+                                op: 'add',
+                                path: '/spec/holdInstallation',
+                                value: true,
+                            },
+                        ]).promise
+                    }
+                } finally {
+                    setPatchingHoldInstallation(false)
                 }
-                setPatchingHoldInstallation(false)
             }
         }
         patch()
@@ -110,7 +113,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         doItAsync()
     }
 
-    return patchingHoldInstallation || !aiConfigMap ? (
+    return patchingHoldInstallation ? (
         <LoadingState />
     ) : (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>

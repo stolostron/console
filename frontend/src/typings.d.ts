@@ -3,4 +3,13 @@
 declare module '@redhat-cloud-services/rule-components/Markdown'
 declare module '*.hbs'
 declare module '*.png'
-declare module '*.svg'
+
+type SvgrComponent = React.StatelessComponent<React.SVGAttributes<SVGElement>>
+
+declare module '*.svg' {
+    const ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>
+    const content: string
+
+    export { ReactComponent }
+    export default content
+}

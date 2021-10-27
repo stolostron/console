@@ -1,0 +1,64 @@
+query savedSearches {
+    items: savedSearches {
+        id
+        name
+        description
+        searchText
+    }
+}
+
+query searchSchema {
+    searchSchema
+}
+
+query searchComplete($property: String!, $query: SearchInput, $limit: Int) {
+    searchComplete(property: $property, query: $query, limit: $limit)
+}
+
+query searchResultItems($input: [SearchInput]) {
+    searchResult: search(input: $input) {
+        items
+    }
+}
+
+query searchResultCount($input: [SearchInput]) {
+    searchResult: search(input: $input) {
+        count
+    }
+}
+
+query searchResultCountAndRelatedCount($input: [SearchInput]) {
+    searchResult: search(input: $input) {
+        count
+        related {
+            kind
+            count
+        }
+    }
+}
+
+query searchResultRelatedCount($input: [SearchInput]) {
+    searchResult: search(input: $input) {
+        related {
+            kind
+            count
+        }
+    }
+}
+
+query searchResultRelatedItems($input: [SearchInput]) {
+    searchResult: search(input: $input) {
+        related {
+            kind
+            items
+        }
+    }
+}
+
+query getMessages {
+    messages {
+        id
+        kind
+        description
+    }
+}

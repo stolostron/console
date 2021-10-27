@@ -918,6 +918,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                     <TextInput
                         {...input}
                         validated={validated}
+                        spellCheck="false"
                         isReadOnly={isReadOnly}
                         type={!input.isSecret || showSecrets ? 'text' : 'password'}
                     />
@@ -969,6 +970,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                             {...input}
                             validated={validated}
                             isReadOnly={isReadOnly}
+                            spellCheck="false"
                             resizeOrientation="vertical"
                             autoResize={true}
                         />

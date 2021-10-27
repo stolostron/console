@@ -1,15 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    Cluster,
-    ClusterCuratorDefinition,
-    ClusterDeployment,
-    ClusterDeploymentDefinition,
-    ClusterStatus,
-    ManagedClusterDefinition,
-    patchResource,
-    ResourceErrorCode,
-} from '../../../../../resources'
 import { AcmInlineProvider, Provider } from '@open-cluster-management/ui-components'
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
@@ -20,6 +10,17 @@ import { RbacDropdown } from '../../../../../components/Rbac'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
 import { createImportResources } from '../../../../../lib/import-cluster'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
+import { NavigationPath } from '../../../../../NavigationPath'
+import {
+    Cluster,
+    ClusterCuratorDefinition,
+    ClusterDeployment,
+    ClusterDeploymentDefinition,
+    ClusterStatus,
+    ManagedClusterDefinition,
+    patchResource,
+    ResourceErrorCode,
+} from '../../../../../resources'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import ScaleUpDialog from './cim/ScaleUpDialog'
@@ -217,7 +218,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 id: 'search-cluster',
                 text: t('managed.search'),
                 click: (cluster: Cluster) =>
-                    window.location.assign(`/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`),
+                    window.location.assign(`/multicloud/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`),
             },
             {
                 id: 'import-cluster',
@@ -387,7 +388,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 id: 'ai-edit',
                 text: t('managed.editAI'),
                 click: (cluster: Cluster) =>
-                    history.push(`/multicloud/cluster/edit/${cluster.namespace}/${cluster.name}`),
+                    history.push(
+                        NavigationPath.editCluster
+                            .replace(':namespace', cluster.namespace!)
+                            .replace(':name', cluster.name!)
+                    ),
                 isDisabled: cluster.status !== ClusterStatus.draft,
             },
             {

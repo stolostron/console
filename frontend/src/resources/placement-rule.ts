@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
-import { IResource } from './resource'
+import { Selector } from './selector'
 
 export const PlacementRuleApiVersion = 'policy.open-cluster-management.io/v1'
 export type PlacementRuleApiVersionType = 'policy.open-cluster-management.io/v1'
@@ -17,14 +17,7 @@ export interface PlacementRule extends IResource{
             status: string
             type: string
         }[]
-        clusterSelector?: {
-            matchExpressions?: {
-                key: string
-                operator: string
-                values?: string[]
-            }[]
-            matchLabels?: Record<string, string>
-        } | null
+        clusterSelector?: Selector | null
     }
     status?: {
         decisions?: {

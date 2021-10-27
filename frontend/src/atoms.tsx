@@ -5,6 +5,7 @@ import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import {
+    AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
     AgentClusterInstallVersion,
     AgentKind,
@@ -91,6 +92,7 @@ import {
 } from './resources'
 import { ApplicationApiVersion, ApplicationKind } from './resources/application'
 import { PlacementBinding, PlacementBindingApiVersion, PlacementBindingKind } from './resources/placement-binding'
+import { PlacementRule } from './resources/placement-rule'
 import { Policy, PolicyApiVersion, PolicyKind } from './resources/policy'
 
 let atomArrayKey = 0
@@ -135,7 +137,7 @@ export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
 export const policiesState = AtomArray<Policy>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
-export const placementRulesState = AtomArray<IResource>()
+export const placementRulesState = AtomArray<PlacementRule>()
 export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
@@ -220,6 +222,7 @@ export function LoadData(props: { children?: ReactNode }) {
             if (!setters[apiVersion]) setters[apiVersion] = {}
             setters[apiVersion][kind] = setter
         }
+        addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
         addSetter('apps.open-cluster-management.io/v1', 'Channel', setChannelsState)
         addSetter('apps.open-cluster-management.io/v1', 'PlacementRule', setPlacementRulesState)

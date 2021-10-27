@@ -126,7 +126,14 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                                 </AcmSecondaryNavItem>
                             </AcmSecondaryNav>
                         }
-                        actions={<AcmButton onClick={() => setISOModalOpen(true)}>{t('Add host')}</AcmButton>}
+                        actions={
+                            <AcmButton
+                                isDisabled={!infraEnv?.status?.isoDownloadURL}
+                                onClick={() => setISOModalOpen(true)}
+                            >
+                                {t('Add host')}
+                            </AcmButton>
+                        }
                     />
                 }
             >
