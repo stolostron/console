@@ -1,0 +1,20 @@
+{
+    "policies.tableHeader.clusters": "Clusters",
+    "policies.tableHeader.name": "Name",
+    "policies.tableHeader.remediation": "Remediation",
+    "policies.tableHeader.controls": "Controls",
+    "policies.tableHeader.categories": "Categories",
+    "policies.tableHeader.standards": "Standards",
+    "policies.tableHeader.created": "Created",
+    "policies.tableHeader.placementRule": "placementRule",
+    "policies.tableHeader.placementBinding": "placementBinding",
+
+    "modal.remove.policy.confirm": "Select {1} to delete {0} and all related resources",
+
+    "policies.action.delete": "Delete",
+
+    "bulk.title.delete": "Permanently delete policy?",
+    "bulk.title.removeFromSet": "Remove from policy set",
+    "bulk.title.addToSet": "Add to policy set",
+    "bulk.message.delete": "After you delete the selected policies, all of the information is permanently lost."
+}

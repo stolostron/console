@@ -2,6 +2,11 @@
 import { Metadata } from './metadata'
 import { Selector } from './selector'
 
+export const PlacementRuleApiVersion = 'policy.open-cluster-management.io/v1'
+export type PlacementRuleApiVersionType = 'policy.open-cluster-management.io/v1'
+
+export const PlacementRuleKind = 'PlacementBinding'
+export type PlacementRuleKindType = 'PlacementBinding'
 export interface PlacementRule {
     apiVersion: 'apps.open-cluster-management.io/v1'
     kind: 'PlacementRule'
