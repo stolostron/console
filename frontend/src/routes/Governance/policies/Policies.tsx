@@ -9,7 +9,6 @@ import {
 } from '@open-cluster-management/ui-components'
 import {
     ButtonVariant,
-    Checkbox,
     Chip,
     DescriptionList,
     DescriptionListDescription,
@@ -36,7 +35,6 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Policy> | { open: false }>({
         open: false,
     })
-    const [checked, setChecked] = useState(false)
     const policyKeyFn = useCallback(
         (resource: Policy) => resource.metadata.uid ?? `${resource.metadata.name}/${resource.metadata.namespace}`,
         []
@@ -211,26 +209,6 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
         []
     )
 
-    const renderConfirmCheckbox = () => {
-        console.log('adfadsf', checked)
-        function handleChange(checked: boolean) {
-            setChecked(!checked)
-            return null
-        }
-
-        return (
-            <Fragment>
-                test
-                <Checkbox
-                    id={'remove-policy-resources'}
-                    isChecked={checked}
-                    onClick={() => handleChange(checked)}
-                    label={'test'}
-                />
-            </Fragment>
-        )
-    }
-
     const tableActions = useMemo<IAcmTableAction<Policy>[]>(
         () => [
             {
@@ -260,7 +238,6 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                             },
                         ],
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
-                        confirmSideEffects: renderConfirmCheckbox(),
                         actionFn: (policy) => deletePolicy(policy),
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
