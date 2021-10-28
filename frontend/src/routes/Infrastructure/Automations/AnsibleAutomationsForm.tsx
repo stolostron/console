@@ -541,41 +541,40 @@ function EditAnsibleJobModal(props: {
             onClose={() => props.setAnsibleJob()}
         >
             <AcmForm>
-                <AcmForm>
-                    <AcmSelect
-                        maxHeight="18em"
-                        menuAppendTo="parent"
-                        label={t('cluster:template.modal.name.label')}
-                        id="job-name"
-                        value={ansibleJob?.name}
-                        helperText={t('cluster:template.modal.name.helper.text')}
-                        onChange={(name) => {
-                            if (ansibleJob) {
-                                const copy = { ...ansibleJob }
-                                copy.name = name as string
-                                setAnsibleJob(copy)
-                            }
-                        }}
-                        variant={SelectVariant.typeahead}
-                        placeholder={t('cluster:template.modal.name.placeholder')}
-                        validation={(name) => {
-                            const selectedJobs = _.map(props.ansibleJobList, 'name')
-                            if (name && selectedJobs.includes(name)) {
-                                // no duplicate job names can be added
-                                return t('cluster:template.job.duplicate.error')
-                            }
-                        }}
-                        isRequired
-                    >
-                        {props.ansibleTowerTemplateList
-                            ? props.ansibleTowerTemplateList?.map((name) => (
-                                  <SelectOption key={name} value={name}>
-                                      {name}
-                                  </SelectOption>
-                              ))
-                            : undefined}
-                    </AcmSelect>
-                </AcmForm>
+                <AcmSelect
+                    maxHeight="18em"
+                    menuAppendTo="parent"
+                    label={t('cluster:template.modal.name.label')}
+                    id="job-name"
+                    value={ansibleJob?.name}
+                    helperText={t('cluster:template.modal.name.helper.text')}
+                    onChange={(name) => {
+                        if (ansibleJob) {
+                            const copy = { ...ansibleJob }
+                            copy.name = name as string
+                            setAnsibleJob(copy)
+                        }
+                    }}
+                    variant={SelectVariant.typeahead}
+                    placeholder={t('cluster:template.modal.name.placeholder')}
+                    validation={(name) => {
+                        const selectedJobs = _.map(props.ansibleJobList, 'name')
+                        if (name && selectedJobs.includes(name)) {
+                            // no duplicate job names can be added
+                            debugger
+                            return t('cluster:template.job.duplicate.error')
+                        }
+                    }}
+                    isRequired
+                >
+                    {props.ansibleTowerTemplateList
+                        ? props.ansibleTowerTemplateList?.map((name) => (
+                              <SelectOption key={name} value={name}>
+                                  {name}
+                              </SelectOption>
+                          ))
+                        : undefined}
+                </AcmSelect>
 
                 <AcmLabelsInput
                     id="job-settings"
