@@ -6,7 +6,7 @@ import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import {
     AgentClusterInstallKind,
-    AgentClusterInstallVersion,
+    AgentClusterInstallApiVersion,
     AgentKind,
     AgentKindVersion,
     AnsibleJob,
@@ -199,7 +199,7 @@ export function LoadData(props: { children?: ReactNode }) {
             if (!setters[apiVersion]) setters[apiVersion] = {}
             setters[apiVersion][kind] = setter
         }
-        addSetter(AgentClusterInstallVersion, AgentClusterInstallKind, setAgentClusterInstalls)
+        addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(AgentKindVersion, AgentKind, setAgents)
         addSetter(AnsibleJobApiVersion, AnsibleJobKind, setAnsibleJobs)
         addSetter(BareMetalAssetApiVersion, BareMetalAssetKind, setBareMetalAssets)
