@@ -35,6 +35,7 @@ import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { validateKubernetesDnsName } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
+import _ from 'lodash'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -511,6 +512,7 @@ export function AnsibleAutomationsForm(props: {
                 setAnsibleJob={updateAnsibleJob}
                 ansibleCredentials={ansibleCredentials}
                 ansibleTowerTemplateList={AnsibleTowerJobTemplateList}
+                ansibleJobList={editAnsibleJobList?.jobs}
             />
         </Fragment>
     )
@@ -521,6 +523,7 @@ function EditAnsibleJobModal(props: {
     ansibleCredentials: ProviderConnection[]
     ansibleTowerTemplateList: string[] | undefined
     ansibleJob?: ClusterCuratorAnsibleJob
+    ansibleJobList?: ClusterCuratorAnsibleJob[]
     setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
 }) {
     const { t } = useTranslation(['common', 'cluster'])
@@ -555,6 +558,13 @@ function EditAnsibleJobModal(props: {
                         }}
                         variant={SelectVariant.typeahead}
                         placeholder={t('cluster:template.modal.name.placeholder')}
+                        validation={(name) => {
+                            const selectedJobs = _.map(props.ansibleJobList, 'name')
+                            if (name && selectedJobs.includes(name)) {
+                                // no duplicate job names can be added
+                                return t('cluster:template.job.duplicate.error')
+                            }
+                        }}
                         isRequired
                     >
                         {props.ansibleTowerTemplateList
