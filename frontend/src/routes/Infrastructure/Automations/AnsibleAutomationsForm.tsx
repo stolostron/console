@@ -561,7 +561,6 @@ function EditAnsibleJobModal(props: {
                         const selectedJobs = _.map(props.ansibleJobList, 'name')
                         if (name && selectedJobs.includes(name)) {
                             // no duplicate job names can be added
-                            debugger
                             return t('cluster:template.job.duplicate.error')
                         }
                     }}
