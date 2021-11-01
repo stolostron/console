@@ -1,17 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { MockedProvider } from '@apollo/client/testing'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { DeleteResourceDocument } from '../../../../console-sdk/console-sdk'
-import { nockCreate } from '../../../../lib/nock-util'
+import { nockCreate, nockGet, nockSearch } from '../../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../../lib/test-util'
 import { SelfSubjectAccessReview } from '../../../../resources'
-import { SearchResultItemsDocument } from '../../../../search-sdk/search-sdk'
 import { DeleteResourceModal } from './DeleteResourceModal'
 
-const deleteResourceUpdateSelfSubjectAccessRequest: SelfSubjectAccessReview = {
+const deleteResourceSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     apiVersion: 'authorization.k8s.io/v1',
     kind: 'SelfSubjectAccessReview',
     metadata: {},
@@ -26,7 +23,7 @@ const deleteResourceUpdateSelfSubjectAccessRequest: SelfSubjectAccessReview = {
     },
 }
 
-const deleteResourceUpdateSelfSubjectAccessResponse: SelfSubjectAccessReview = {
+const deleteResourceSelfSubjectAccessResponse: SelfSubjectAccessReview = {
     apiVersion: 'authorization.k8s.io/v1',
     kind: 'SelfSubjectAccessReview',
     metadata: {},
@@ -44,110 +41,194 @@ const deleteResourceUpdateSelfSubjectAccessResponse: SelfSubjectAccessReview = {
     },
 }
 
-describe('DeleteResourceModal', () => {
-    it('should call the delete resource mutation with a successful response', async () => {
-        const deleteResourceUpdateNock = nockCreate(
-            deleteResourceUpdateSelfSubjectAccessRequest,
-            deleteResourceUpdateSelfSubjectAccessResponse
-        )
-        const mocks = [
+const deleteResourceRequest = {
+    apiVersion: 'action.open-cluster-management.io/v1beta1',
+    kind: 'ManagedClusterAction',
+    metadata: {
+        name: 'delete-resource-1607028460000',
+        namespace: 'local-cluster',
+    },
+    spec: {
+        cluster: {
+            name: 'local-cluster',
+        },
+        type: 'Action',
+        scope: {
+            resourceType: 'pod',
+            namespace: 'testNamespace',
+        },
+        actionType: 'Delete',
+        kube: {
+            resource: 'pod',
+            name: 'testPod',
+            namespace: 'testNamespace',
+        },
+    },
+}
+
+const deleteResourceResponse = {
+    apiVersion: 'action.open-cluster-management.io/v1beta1',
+    kind: 'ManagedClusterAction',
+    metadata: {
+        name: 'delete-resource-1607028460000',
+        namespace: 'local-cluster',
+    },
+    spec: {
+        cluster: {
+            name: 'local-cluster',
+        },
+        type: 'Action',
+        scope: {
+            resourceType: 'pod',
+            namespace: 'testNamespace',
+        },
+        actionType: 'Delete',
+        kube: {
+            resource: 'pod',
+            name: 'testPod',
+            namespace: 'testNamespace',
+        },
+    },
+    status: {
+        conditions: [
             {
-                request: {
-                    query: DeleteResourceDocument,
-                    variables: {
-                        apiVersion: 'v1',
-                        name: 'testPod',
-                        namespace: 'testNamespace',
-                        cluster: 'local-cluster',
-                        kind: 'pod',
-                    },
-                },
-                result: {
-                    data: {
-                        deleteResource: {
-                            apiVersion: 'v1',
-                            kind: 'pod',
-                            metadata: {
-                                name: 'testPod',
-                                namespace: 'testNamespace',
-                            },
-                        },
-                    },
-                },
+                message: 'Action is done.',
+                reason: 'ActionDone',
+                status: 'done',
+                type: 'Completed',
             },
+        ],
+    },
+}
+
+const getMCAResponse = {
+    apiVersion: 'action.open-cluster-management.io/v1beta1',
+    kind: 'ManagedClusterAction',
+    metadata: {
+        name: 'delete-resource-1607028460000',
+        namespace: 'local-cluster',
+    },
+    spec: {
+        cluster: {
+            name: 'local-cluster',
+        },
+        type: 'Action',
+        scope: {
+            resourceType: 'pod',
+            namespace: 'testNamespace',
+        },
+        actionType: 'Delete',
+        kube: {
+            resource: 'pod',
+            name: 'testPod',
+            namespace: 'testNamespace',
+        },
+    },
+    status: {
+        conditions: [
             {
-                request: {
-                    query: SearchResultItemsDocument,
-                    variables: {
-                        input: [
-                            {
-                                keywords: [],
-                                filters: [
-                                    {
-                                        property: 'kind',
-                                        values: ['pod'],
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    fetchPolicy: 'cache-first',
-                },
-                result: {
-                    data: {
-                        searchResult: [
-                            {
-                                items: [
-                                    {
-                                        apiversion: 'v1',
-                                        cluster: 'local-cluster',
-                                        container: 'installer',
-                                        created: '2021-01-04T14:53:52Z',
-                                        hostIP: '10.0.128.203',
-                                        kind: 'pod',
-                                        name: 'testPod',
-                                        namespace: 'testNamespace',
-                                        podIP: '10.129.0.40',
-                                        restarts: 0,
-                                        startedAt: '2021-01-04T14:53:52Z',
-                                        status: 'Completed',
-                                        _uid: 'testing-search-results-pod',
-                                    },
-                                ],
-                                __typename: 'SearchResult',
-                            },
-                        ],
-                    },
-                },
+                message: 'Action is done.',
+                reason: 'ActionDone',
+                status: 'done',
+                type: 'Completed',
             },
-        ]
-        render(
-            <MockedProvider mocks={mocks} addTypename={false}>
-                <DeleteResourceModal
-                    open={true}
-                    currentQuery={'kind:pod'}
-                    resource={{
-                        name: 'testPod',
-                        namespace: 'testNamespace',
-                        kind: 'pod',
+        ],
+    },
+}
+
+const mockSearchQuery = {
+    operationName: 'searchResultItems',
+    variables: {
+        input: [
+            {
+                keywords: [],
+                filters: [
+                    {
+                        property: 'kind',
+                        values: ['pod'],
+                    },
+                ],
+                limit: 10000,
+            },
+        ],
+    },
+    query: 'query searchResultItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    __typename\n  }\n}\n',
+}
+
+const mockSearchResponse = {
+    data: {
+        searchResult: [
+            {
+                items: [
+                    {
                         apiversion: 'v1',
                         cluster: 'local-cluster',
-                        _hubClusterResource: 'true',
-                    }}
-                    close={() => {}}
-                />
-            </MockedProvider>
+                        container: 'installer',
+                        created: '2021-01-04T14:53:52Z',
+                        hostIP: '10.0.128.203',
+                        kind: 'pod',
+                        name: 'testPod',
+                        namespace: 'testNamespace',
+                        podIP: '10.129.0.40',
+                        restarts: 0,
+                        startedAt: '2021-01-04T14:53:52Z',
+                        status: 'Completed',
+                        _uid: 'testing-search-results-pod',
+                    },
+                ],
+                __typename: 'SearchResult',
+            },
+        ],
+    },
+}
+
+describe('DeleteResourceModal', () => {
+    Date.now = jest.fn(() => 1607028460000)
+    it('should call the delete resource mutation with a successful response', async () => {
+        const deleteResourceSelfSubjectAccessNock = nockCreate(
+            deleteResourceSelfSubjectAccessRequest,
+            deleteResourceSelfSubjectAccessResponse
+        )
+        const deleteResourceNock = nockCreate(deleteResourceRequest, deleteResourceResponse)
+        const getSuccessfulActionNock = nockGet(getMCAResponse)
+        const search = nockSearch(mockSearchQuery, mockSearchResponse)
+
+        render(
+            <DeleteResourceModal
+                open={true}
+                currentQuery={'kind:pod'}
+                resource={{
+                    name: 'testPod',
+                    namespace: 'testNamespace',
+                    kind: 'pod',
+                    apiversion: 'v1',
+                    cluster: 'local-cluster',
+                    _hubClusterResource: 'true',
+                }}
+                close={() => {}}
+            />
         )
 
-        // wait for user access query to finish
-        await waitForNocks([deleteResourceUpdateNock])
+        await act(async () => {
+            // wait for user access query to finish
+            await waitForNocks([deleteResourceSelfSubjectAccessNock])
 
-        // find the button and simulate a click
-        const submitButton = screen.getByText('search.modal.delete.resource.action.delete')
-        expect(submitButton).toBeTruthy()
-        userEvent.click(submitButton)
+            // find the button and simulate a click
+            const submitButton = screen.getByText('search.modal.delete.resource.action.delete')
+            expect(submitButton).toBeTruthy()
+            userEvent.click(submitButton)
 
-        await wait() // Test that the component has rendered correctly
-        await waitFor(() => expect(screen.queryByTestId('delete-resource-error')).not.toBeInTheDocument())
+            // Wait for delete resource requesets to finish
+            await waitForNocks([deleteResourceNock])
+
+            // Mimic the polling requests
+            await waitForNocks([getSuccessfulActionNock])
+
+            // update the apollo cache
+            await waitFor(() => expect(search.isDone()).toBeTruthy())
+
+            await wait() // Test that the component has rendered correctly
+            await waitFor(() => expect(screen.queryByTestId('delete-resource-error')).not.toBeInTheDocument())
+        })
     })
 })

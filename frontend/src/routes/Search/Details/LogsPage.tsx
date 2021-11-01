@@ -20,7 +20,7 @@ export default function LogsPage(props: {
     const { getResource, getResourceError, containers, cluster, namespace, name } = props
     const { t } = useTranslation(['details'])
     const [logs, setLogs] = useState<string>('')
-    const [statusCode, setStatusCode] = useState<number>()
+    const [logsError, setLogsError] = useState<string>()
     const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) || '')
 
     useEffect(() => {
@@ -37,20 +37,26 @@ export default function LogsPage(props: {
                 `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${namespace}/${name}/${container}?tailLines=1000`,
             abortController.signal
         )
-        logsResult.then((result) => {
-            setStatusCode(result.status)
-            setLogs(result.data as string)
-        })
+        logsResult
+            .then((result) => {
+                setLogs(result.data as string)
+            })
+            .catch((err) => {
+                setLogsError(err.message)
+            })
     } else if (cluster === 'local-cluster' && container !== '') {
         const abortController = new AbortController()
         const logsResult = fetchGet(
             backendUrl + `/api/v1/namespaces/${namespace}/pods/${name}/log?container=${container}&tailLines=1000`,
             abortController.signal
         )
-        logsResult.then((result) => {
-            setStatusCode(result.status)
-            setLogs(result.data as string)
-        })
+        logsResult
+            .then((result) => {
+                setLogs(result.data as string)
+            })
+            .catch((err) => {
+                setLogsError(err.message)
+            })
     }
 
     if (getResourceError) {
@@ -77,7 +83,14 @@ export default function LogsPage(props: {
                 />
             </PageSection>
         )
-    } else if (statusCode && statusCode >= 300) {
+    } else if (!logsError && logs === '') {
+        return (
+            <PageSection>
+                <AcmLoadingPage />
+            </PageSection>
+        )
+    }
+    if (logsError) {
         return (
             <PageSection>
                 <AcmAlert
@@ -85,14 +98,8 @@ export default function LogsPage(props: {
                     variant={'danger'}
                     isInline={true}
                     title={`${t('logs.request.error')} ${name}`}
+                    subtitle={logsError}
                 />
-            </PageSection>
-        )
-    }
-    if (!statusCode && logs === '') {
-        return (
-            <PageSection>
-                <AcmLoadingPage />
             </PageSection>
         )
     }

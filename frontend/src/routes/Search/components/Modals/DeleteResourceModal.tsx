@@ -6,9 +6,8 @@ import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import '@patternfly/react-core/dist/styles/base.css'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { consoleClient } from '../../../../console-sdk/console-client'
-import { useDeleteResourceMutation } from '../../../../console-sdk/console-sdk'
 import { canUser } from '../../../../lib/rbac-util'
+import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
 import { searchClient } from '../../../../search-sdk/search-client'
 import {
     SearchResultItemsDocument,
@@ -38,9 +37,7 @@ export const DeleteResourceModal = (props: any) => {
     const { open, close, resource, currentQuery, relatedResource } = props
     const [canDelete, setCanDelete] = useState<boolean>(false)
     const [accessError, setAccessError] = useState(null)
-    const [deleteResourceMutation, deleteResourceResults] = useDeleteResourceMutation({
-        client: process.env.NODE_ENV === 'test' ? undefined : consoleClient,
-    })
+    const [deleteResourceError, setDeleteResourceError] = useState(undefined)
     let apiGroup = ''
     if (resource) {
         apiGroup = resource.apigroup ? `${resource.apigroup}/${resource.apiversion}` : resource.apiversion
@@ -74,147 +71,136 @@ export const DeleteResourceModal = (props: any) => {
     }, [resource])
 
     function deleteResourceFn() {
-        deleteResourceMutation({
-            variables: {
-                apiVersion: apiGroup,
-                name: resource.name,
-                namespace: resource.namespace,
-                cluster: resource.cluster,
-                kind: resource.kind,
-                // childResources: // TODO look how app team is getting the correct child resources
-            },
-            // If console-api queries are moved to search-api -> need to look in to using refetchQueries instead of update
-            // We currently have to use update b/c the data that need to be updated is queried from a different apollo client
-            update: () => {
-                if (relatedResource) {
-                    // if related resource is being removed the table & related card count need to be updated
-                    process.env.NODE_ENV === 'test'
-                        ? null
-                        : searchClient
-                              .query({
-                                  query: SearchResultRelatedItemsDocument,
-                                  variables: {
-                                      input: [
-                                          {
-                                              ...convertStringToQuery(currentQuery),
-                                              relatedKinds: [resource.kind],
-                                          },
-                                      ],
-                                  },
-                                  fetchPolicy: 'cache-first',
-                              })
-                              .then((res) => {
-                                  searchClient.writeQuery({
-                                      query: SearchResultRelatedItemsDocument,
-                                      variables: {
-                                          input: [
-                                              {
-                                                  ...convertStringToQuery(currentQuery),
-                                                  relatedKinds: [resource.kind],
-                                              },
-                                          ],
-                                      },
-                                      data: {
-                                          searchResult: [
-                                              {
-                                                  __typename: 'SearchResult',
-                                                  related: res.data.searchResult[0].related.map((item: any) => {
-                                                      if (item.kind === resource.kind) {
-                                                          return {
-                                                              items: item.items.filter((i: any) => {
-                                                                  return (
-                                                                      i.cluster !== resource.cluster ||
-                                                                      i.namespace !== resource.namespace ||
-                                                                      i.kind !== resource.kind ||
-                                                                      i.name !== resource.name
-                                                                  )
-                                                              }),
-                                                              kind: item.kind,
-                                                          }
-                                                      }
-                                                      return item
-                                                  }),
-                                              },
-                                          ],
-                                      },
-                                  })
-                              })
-                    process.env.NODE_ENV === 'test'
-                        ? null
-                        : searchClient
-                              .query({
-                                  query: SearchResultRelatedCountDocument,
-                                  variables: {
-                                      input: [convertStringToQuery(currentQuery)],
-                                  },
-                                  fetchPolicy: 'cache-first',
-                              })
-                              .then((res) => {
-                                  if (res.data) {
-                                      searchClient.writeQuery({
-                                          query: SearchResultRelatedCountDocument,
-                                          variables: {
-                                              input: [convertStringToQuery(currentQuery)],
-                                          },
-                                          data: {
-                                              searchResult: [
-                                                  {
-                                                      __typename: 'SearchResult',
-                                                      related: res.data.searchResult[0].related
-                                                          // eslint-disable-next-line array-callback-return
-                                                          .map((item: any) => {
-                                                              if (item.kind === resource.kind) {
-                                                                  if (item.count > 1) {
-                                                                      return { ...item, count: item.count - 1 }
-                                                                  }
-                                                              } else {
-                                                                  return item
-                                                              }
-                                                          })
-                                                          .filter((i: any) => i !== undefined), // not returning items that now have 0 count - need to filter them out
-                                                  },
-                                              ],
-                                          },
-                                      })
-                                  }
-                              })
+        fireManagedClusterAction('Delete', resource.cluster, resource.kind, apiGroup, resource.name, resource.namespace)
+            .then(async (actionResponse) => {
+                if (actionResponse.actionDone === 'ActionDone') {
+                    if (relatedResource) {
+                        searchClient
+                            .query({
+                                query: SearchResultRelatedItemsDocument,
+                                variables: {
+                                    input: [
+                                        {
+                                            ...convertStringToQuery(currentQuery),
+                                            relatedKinds: [resource.kind],
+                                        },
+                                    ],
+                                },
+                                fetchPolicy: 'cache-first',
+                            })
+                            .then((res) => {
+                                searchClient.writeQuery({
+                                    query: SearchResultRelatedItemsDocument,
+                                    variables: {
+                                        input: [
+                                            {
+                                                ...convertStringToQuery(currentQuery),
+                                                relatedKinds: [resource.kind],
+                                            },
+                                        ],
+                                    },
+                                    data: {
+                                        searchResult: [
+                                            {
+                                                __typename: 'SearchResult',
+                                                related: res.data.searchResult[0].related.map((item: any) => {
+                                                    if (item.kind === resource.kind) {
+                                                        return {
+                                                            items: item.items.filter((i: any) => {
+                                                                return (
+                                                                    i.cluster !== resource.cluster ||
+                                                                    i.namespace !== resource.namespace ||
+                                                                    i.kind !== resource.kind ||
+                                                                    i.name !== resource.name
+                                                                )
+                                                            }),
+                                                            kind: item.kind,
+                                                        }
+                                                    }
+                                                    return item
+                                                }),
+                                            },
+                                        ],
+                                    },
+                                })
+                            })
+                        searchClient
+                            .query({
+                                query: SearchResultRelatedCountDocument,
+                                variables: {
+                                    input: [convertStringToQuery(currentQuery)],
+                                },
+                                fetchPolicy: 'cache-first',
+                            })
+                            .then((res) => {
+                                if (res.data) {
+                                    searchClient.writeQuery({
+                                        query: SearchResultRelatedCountDocument,
+                                        variables: {
+                                            input: [convertStringToQuery(currentQuery)],
+                                        },
+                                        data: {
+                                            searchResult: [
+                                                {
+                                                    __typename: 'SearchResult',
+                                                    related: res.data.searchResult[0].related
+                                                        // eslint-disable-next-line array-callback-return
+                                                        .map((item: any) => {
+                                                            if (item.kind === resource.kind) {
+                                                                if (item.count > 1) {
+                                                                    return { ...item, count: item.count - 1 }
+                                                                }
+                                                            } else {
+                                                                return item
+                                                            }
+                                                        })
+                                                        .filter((i: any) => i !== undefined), // not returning items that now have 0 count - need to filter them out
+                                                },
+                                            ],
+                                        },
+                                    })
+                                }
+                            })
+                    } else {
+                        searchClient
+                            .query({
+                                query: SearchResultItemsDocument,
+                                variables: {
+                                    input: [convertStringToQuery(currentQuery)],
+                                },
+                                fetchPolicy: 'cache-first',
+                            })
+                            .then((res) => {
+                                if (res.data) {
+                                    // Remove deleted resource from search query results - this removes the resource from UI
+                                    searchClient.writeQuery({
+                                        query: SearchResultItemsDocument,
+                                        variables: {
+                                            input: [convertStringToQuery(currentQuery)],
+                                        },
+                                        data: {
+                                            searchResult: [
+                                                {
+                                                    __typename: 'SearchResult',
+                                                    items: res.data.searchResult[0].items.filter((item: any) => {
+                                                        return item._uid !== resource._uid
+                                                    }),
+                                                },
+                                            ],
+                                        },
+                                    })
+                                }
+                            })
+                    }
                     close()
                 } else {
-                    process.env.NODE_ENV === 'test'
-                        ? null
-                        : searchClient
-                              .query({
-                                  query: SearchResultItemsDocument,
-                                  variables: {
-                                      input: [convertStringToQuery(currentQuery)],
-                                  },
-                                  fetchPolicy: 'cache-first',
-                              })
-                              .then((res) => {
-                                  if (res.data) {
-                                      // Remove deleted resource from search query results - this removes the resource from UI
-                                      searchClient.writeQuery({
-                                          query: SearchResultItemsDocument,
-                                          variables: {
-                                              input: [convertStringToQuery(currentQuery)],
-                                          },
-                                          data: {
-                                              searchResult: [
-                                                  {
-                                                      __typename: 'SearchResult',
-                                                      items: res.data.searchResult[0].items.filter((item: any) => {
-                                                          return item._uid !== resource._uid
-                                                      }),
-                                                  },
-                                              ],
-                                          },
-                                      })
-                                  }
-                              })
-                    close()
+                    setDeleteResourceError(actionResponse.actionMessage)
                 }
-            },
-        })
+            })
+            .catch((err) => {
+                console.error('Error deleting resource: ', err)
+                setDeleteResourceError(err)
+            })
     }
 
     return (
@@ -249,12 +235,12 @@ export const DeleteResourceModal = (props: any) => {
                         title={t('search.modal.delete.resource.unauthorized.error')}
                     />
                 ) : null}
-                {deleteResourceResults.error ? (
+                {deleteResourceError ? (
                     <AcmAlert
                         data-testid={'delete-resource-error'}
                         noClose={true}
                         variant={'danger'}
-                        title={deleteResourceResults.error.message}
+                        title={deleteResourceError}
                     />
                 ) : null}
                 <div style={{ paddingTop: '1rem' }}>
