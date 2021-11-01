@@ -17,7 +17,8 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import '../Clusters/ManagedClusters/CreateCluster/style.css'
 import 'temptifly/dist/styles.css'
-import { createProject, createResource } from '../../../resources'
+import { createProject, createResource, IResource } from '../../../resources'
+import { deleteResources } from '../../../lib/delete-resources'
 
 const controlData = [
     {
@@ -81,18 +82,34 @@ const CreateInfraEnv: React.FC = () => {
                     return
                 }
             }
-            try {
-                const promises = createResources.map((resource: any) => createResource(resource).promise)
-                // All resources must be resolved
-                await Promise.all(promises)
 
+            const promises = createResources.map((resource: any) => createResource(resource).promise)
+            // All resources must be resolved
+            const responses = await Promise.allSettled(promises)
+            const error = responses.find((result) => result.status === 'rejected')
+
+            if (error) {
+                const resourcesToDelete = createResources
+                    .filter((r) => r.apiVersion && r.kind && r.metadata?.name && r.metadata?.namespace)
+                    .map(
+                        (r) =>
+                            ({
+                                apiVersion: r.apiVersion,
+                                kind: r.kind,
+                                metadata: { name: r.metadata.name, namespace: r.metadata.namespace },
+                            } as IResource)
+                    )
+                try {
+                    await deleteResources(resourcesToDelete).promise
+                } finally {
+                    setCreationStatus({
+                        status: 'ERROR',
+                        messages: [{ message: (error as PromiseRejectedResult).reason?.message }],
+                    })
+                }
+            } else {
                 setCreationStatus({ status: 'DONE', messages: [] })
                 history.push(NavigationPath.infraEnvironments)
-            } catch (err) {
-                setCreationStatus({
-                    status: 'ERROR',
-                    messages: [{ message: (err as unknown as Error).message }],
-                })
             }
         }
     }
