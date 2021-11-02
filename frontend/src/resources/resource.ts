@@ -13,6 +13,7 @@ export interface IResource extends IResourceDefinition {
     apiVersion: string
     kind: string
     metadata?: Metadata
+    plural?: string
 }
 
 export interface ResourceList<Resource extends IResource> {

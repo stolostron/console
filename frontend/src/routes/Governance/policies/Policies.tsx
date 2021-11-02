@@ -16,11 +16,15 @@ import {
     DescriptionListTerm,
     PageSection,
 } from '@patternfly/react-core'
+import _ from 'lodash'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import moment from 'moment'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { NoWrap } from '../../../components/NoWrap'
+import { deletePolicy } from '../../../lib/delete-policy'
+import { ResourceErrorCode } from '../../../resources'
 import { Policy } from '../../../resources/policy'
 import { PolicyRiskLabels } from '../components/PolicyRiskLabels'
 import { IGovernanceData, IPolicy } from '../useGovernanceData'
@@ -29,6 +33,9 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
     const { governanceData } = props
 
     const { t } = useTranslation(['govenance'])
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<Policy> | { open: false }>({
+        open: false,
+    })
     const policyKeyFn = useCallback(
         (resource: Policy) => resource.metadata.uid ?? `${resource.metadata.name}/${resource.metadata.namespace}`,
         []
@@ -209,7 +216,36 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 variant: 'bulk-action',
                 id: 'delete-policy',
                 title: t('Delete'),
-                click: () => {},
+                click: (policies: Policy[]) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.delete'),
+                        action: t('common:delete'),
+                        processing: t('common:deleting'),
+                        resources: [...policies],
+                        description: t('bulk.message.delete'),
+                        columns: [
+                            {
+                                header: t('policies.tableHeader.name'),
+                                cell: 'metadata.name',
+                                sort: 'metadata.name',
+                            },
+                            {
+                                header: t('policies.tableHeader.placementRule'),
+                                cell: 'status.placement[0].placementRule',
+                            },
+                            {
+                                header: t('policies.tableHeader.placementBinding'),
+                                cell: 'status.placement[0].placementBinding',
+                            },
+                        ],
+                        keyFn: (policy: Policy) => policy.metadata.uid as string,
+                        actionFn: (policy) => deletePolicy(policy),
+                        close: () => setModalProps({ open: false }),
+                        isDanger: true,
+                        icon: 'warning',
+                    })
+                },
             },
             {
                 id: 'seperator-1',
@@ -223,13 +259,57 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             },
         ],
         []
-    )
+    )   
 
     const policyRowActions = useMemo<IAcmRowAction<Policy>[]>(
         () => [
             {
                 id: 'delete-policy',
                 title: t('Delete'),
+                click: (policy: Policy) => {
+                    setModalProps({
+                        open: true,
+                        title: t('bulk.title.delete'),
+                        action: t('common:delete'),
+                        processing: t('common:deleting'),
+                        resources: [policy],
+                        description: t('bulk.message.delete'),
+                        keyFn: (policy: Policy) => policy.metadata.uid as string,
+                        actionFn: (policy) => deletePolicy(policy),
+                        close: () => setModalProps({ open: false }),
+                        isDanger: true,
+                        icon: 'warning',
+                        confirmText: 'confirm',
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                    })
+                },
+            },
+            {
+                id: 'inform-policy',
+                title: t('Inform'),
+                tooltip: 'desc or disabled message',
+                isDisabled: true,
+                click: () => {},
+            },
+            {
+                id: 'enforce-policy',
+                title: t('Enforce'),
+                tooltip: 'desc or disabled message',
+                isDisabled: true,
+                click: () => {},
+            },
+            {
+                id: 'disable-policy',
+                title: t('Disable'),
+                tooltip: 'desc or disabled message',
+                isDisabled: true,
+                click: () => {},
+            },
+            {
+                id: 'enable-policy',
+                title: t('Enable'),
+                tooltip: 'desc or disabled message',
+                isDisabled: true,
                 click: () => {},
             },
         ],
@@ -358,6 +438,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
 
     return (
         <PageSection>
+            <BulkActionModel<Policy> {...modalProps} />
             <AcmTable<IPolicy>
                 plural={t('Policies')}
                 columns={activeColumns}

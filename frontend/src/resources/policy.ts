@@ -8,6 +8,8 @@ export type PolicyApiVersionType = 'policy.open-cluster-management.io/v1'
 export const PolicyKind = 'Policy'
 export type PolicyKindType = 'Policy'
 
+export const PolicyPluralKind = 'Policies'
+export type PolicyPluralKindType = 'Policies'
 export interface Policy {
     apiVersion: PolicyApiVersionType
     kind: PolicyKindType
