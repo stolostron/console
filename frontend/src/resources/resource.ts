@@ -13,7 +13,6 @@ export interface IResource extends IResourceDefinition {
     apiVersion: string
     kind: string
     metadata?: Metadata
-    plural?: string
 }
 
 export interface ResourceList<Resource extends IResource> {
@@ -22,7 +21,9 @@ export interface ResourceList<Resource extends IResource> {
 }
 
 export function getResourcePlural(resourceDefinition: IResourceDefinition) {
-    return resourceDefinition.kind.toLowerCase() + 's'
+    return resourceDefinition.kind?.toLowerCase().endsWith('y')
+        ? resourceDefinition.kind?.toLowerCase().slice(0, -1) + 'ies'
+        : resourceDefinition.kind?.toLowerCase() + 's'
 }
 
 export function getResourceGroup(resourceDefinition: IResourceDefinition) {
@@ -64,7 +65,7 @@ export function getResourceApiPath(options: {
     if (options.plural) {
         path = join(path, options.plural)
     } else if (options.kind) {
-        path = join(path, options.kind.toLowerCase() + 's')
+        path = join(path, getResourcePlural({apiVersion:options.apiVersion, kind: options.kind}))
     }
 
     return path.replace(/\\/g, '/')

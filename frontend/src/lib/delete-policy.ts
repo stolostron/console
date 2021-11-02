@@ -1,6 +1,6 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import { Policy, PolicyApiVersion, PolicyKind, IResource, ResourceError, ResourceErrorCode, PolicyPluralKind } from '../resources'
+import { Policy, PolicyApiVersion, PolicyKind, IResource, ResourceError, ResourceErrorCode } from '../resources'
 // import { PlacementBindingApiVersion, PlacementBindingKind } from '../resources/placement-binding'
 
 import { deleteResources } from './delete-resources'
@@ -10,9 +10,7 @@ export function deletePolicy(policy: Policy) {
         {
             apiVersion: PolicyApiVersion,
             kind: PolicyKind,
-            plural: PolicyPluralKind,
             metadata: { name: policy.metadata.name!, namespace: policy.metadata.namespace! },
-            
         },
     ]
     // resources.push({
