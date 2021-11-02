@@ -15,7 +15,7 @@ import { acmRouteState, placementBindingsState, policiesState } from '../../atom
 import { NavigationPath } from '../../NavigationPath'
 import { PageContext } from '../Infrastructure/Clusters/Clusters'
 import GovernanceOverview from './overview/Overview'
-import PoliciesPage from './Policies/Policies'
+import PoliciesPage from './policies/Policies'
 import PolicySetsPage from './policy-sets/PolicySets'
 import { useGovernanceData } from './useGovernanceData'
 
