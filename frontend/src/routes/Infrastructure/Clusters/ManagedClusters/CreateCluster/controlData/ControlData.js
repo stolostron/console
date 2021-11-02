@@ -9,6 +9,7 @@ import installConfigHbs from '../templates/install-config.hbs'
 import aiTemplateHbs from '../templates/assisted-installer/assisted-template.hbs'
 import { AcmIconVariant, AcmIcon } from '@open-cluster-management/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { ConnectedIcon } from '@patternfly/react-icons';
 
 import getControlDataAWS from './ControlDataAWS'
 import getControlDataGCP from './ControlDataGCP'
@@ -18,7 +19,7 @@ import getControlDataBMC from './ControlDataBMC'
 import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo } from './Logos'
 import ServerIcon from '@patternfly/react-icons/dist/js/icons/server-icon'
-import controlDataAI from './ControlDataAI'
+import { controlDataCIM, controlDataAI } from './ControlDataAI'
 import Deprecated from '../../components/Deprecated'
 
 const { TechnologyPreview, PreviewBadgePosition } = CIM
@@ -40,7 +41,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
     {
         id: 'distStep',
         type: 'step',
-        title: 'Infrastructure provider',
+        title: 'Installation type',
     },
     {
         id: 'showSecrets',
@@ -62,6 +63,32 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
         onSelect: onControlSelect,
         available: [
             {
+                id: 'CIM',
+                logo: <AcmIcon icon={AcmIconVariant.hybrid} />, // TODO(mlibra): change icon
+                title: 'cluster.create.cim.subtitle',
+                tooltip: 'cluster.create.cim.tooltip',
+                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
+                change: {
+                    insertControlData: controlDataCIM,
+                    replacements: {},
+                    replaceTemplate: aiTemplate,
+                },
+                section: 'Assisted installation',
+            },
+            {
+                id: 'AI',
+                logo: <ConnectedIcon />,
+                title: 'cluster.create.ai.subtitle',
+                tooltip: 'cluster.create.ai.tooltip', // TODO(mlibra): customize tooltip to include product-provider's logos
+                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
+                change: {
+                    insertControlData: controlDataAI,
+                    replacements: {},
+                    replaceTemplate: aiTemplate,
+                },
+                section: 'Assisted installation',
+            },
+            {
                 id: 'AWS',
                 logo: <AwsLogo />,
                 title: 'cluster.create.aws.subtitle',
@@ -71,7 +98,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Providers',
+                section: 'Infrastructure providers',
             },
             {
                 id: 'GCP',
@@ -83,7 +110,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Providers',
+                section: 'Infrastructure providers',
             },
             {
                 id: 'Azure',
@@ -95,7 +122,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Providers',
+                section: 'Infrastructure providers',
             },
             {
                 id: 'vSphere',
@@ -107,7 +134,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Providers',
+                section: 'Infrastructure providers',
             },
             {
                 id: 'OpenStack',
@@ -119,20 +146,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Providers',
-            },
-            {
-                id: 'AI',
-                logo: <AcmIcon icon={AcmIconVariant.hybrid} />,
-                title: 'cluster.create.ai.subtitle',
-                tooltip: 'cluster.create.ai.tooltip',
-                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
-                change: {
-                    insertControlData: controlDataAI,
-                    replacements: {},
-                    replaceTemplate: aiTemplate,
-                },
-                section: 'Centrally managed',
+                section: 'Infrastructure providers',
             },
             {
                 id: 'BMC',
@@ -145,7 +159,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Providers',
+                section: 'Infrastructure providers',
             },
         ],
         sectionTooltips: {

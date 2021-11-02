@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import React from 'react'
+import _ from 'lodash'
 import DetailsForm from '../components/assisted-installer/DetailsForm'
 import HostsForm from '../components/assisted-installer/HostsForm'
 import NetworkForm from '../components/assisted-installer/NetworkForm'
 import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
 
-const controlDataAI = [
+export const controlDataCIM = [
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
         name: 'creation.ocp.cloud.connection',
@@ -79,4 +80,5 @@ const controlDataAI = [
     },
 ]
 
-export default controlDataAI
+export const controlDataAI = _.cloneDeep(controlDataCIM);
+
