@@ -259,7 +259,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             },
         ],
         []
-    )   
+    )
 
     const policyRowActions = useMemo<IAcmRowAction<Policy>[]>(
         () => [

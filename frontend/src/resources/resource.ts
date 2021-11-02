@@ -65,7 +65,7 @@ export function getResourceApiPath(options: {
     if (options.plural) {
         path = join(path, options.plural)
     } else if (options.kind) {
-        path = join(path, getResourcePlural({apiVersion:options.apiVersion, kind: options.kind}))
+        path = join(path, getResourcePlural({ apiVersion: options.apiVersion, kind: options.kind }))
     }
 
     return path.replace(/\\/g, '/')

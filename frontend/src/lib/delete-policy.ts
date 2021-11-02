@@ -6,7 +6,7 @@ import { Policy, PolicyApiVersion, PolicyKind, IResource, ResourceError, Resourc
 import { deleteResources } from './delete-resources'
 
 export function deletePolicy(policy: Policy) {
-    const resources: IResource[]  = [
+    const resources: IResource[] = [
         {
             apiVersion: PolicyApiVersion,
             kind: PolicyKind,
