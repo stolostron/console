@@ -45,7 +45,7 @@ const deleteResourceRequest = {
     apiVersion: 'action.open-cluster-management.io/v1beta1',
     kind: 'ManagedClusterAction',
     metadata: {
-        name: 'delete-resource-1607028460000',
+        name: 'ba8c21e9e9628448d5d3bbf50ea9703f4ef16500',
         namespace: 'local-cluster',
     },
     spec: {
@@ -70,7 +70,7 @@ const deleteResourceResponse = {
     apiVersion: 'action.open-cluster-management.io/v1beta1',
     kind: 'ManagedClusterAction',
     metadata: {
-        name: 'delete-resource-1607028460000',
+        name: 'ba8c21e9e9628448d5d3bbf50ea9703f4ef16500',
         namespace: 'local-cluster',
     },
     spec: {
@@ -105,7 +105,7 @@ const getMCAResponse = {
     apiVersion: 'action.open-cluster-management.io/v1beta1',
     kind: 'ManagedClusterAction',
     metadata: {
-        name: 'delete-resource-1607028460000',
+        name: 'ba8c21e9e9628448d5d3bbf50ea9703f4ef16500',
         namespace: 'local-cluster',
     },
     spec: {
@@ -183,7 +183,6 @@ const mockSearchResponse = {
 }
 
 describe('DeleteResourceModal', () => {
-    Date.now = jest.fn(() => 1607028460000)
     it('should call the delete resource mutation with a successful response', async () => {
         const deleteResourceSelfSubjectAccessNock = nockCreate(
             deleteResourceSelfSubjectAccessRequest,
