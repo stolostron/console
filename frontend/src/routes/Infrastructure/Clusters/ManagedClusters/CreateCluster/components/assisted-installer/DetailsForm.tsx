@@ -21,6 +21,7 @@ const {
     ACM_ENABLED_FEATURES,
     labelsToArray,
     LoadingState,
+    ClusterSshKeyFields,
 } = CIM
 
 type FormControl = {
@@ -35,6 +36,7 @@ type FormControl = {
     validate?: VoidFunction
     summary?: VoidFunction
     step?: any
+    additionalProps?: { [x: string]: string }
 }
 
 type DetailsFormProps = {
@@ -171,6 +173,9 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 isDisabled={false}
             />
         ),
+        pullSecret: control.additionalProps?.['promptSshPublicKey'] ? (
+            <ClusterSshKeyFields clusterSshKey="" imageSshKey="" /* Props are empty since we are in the Create flow ...*/ />
+        ) : null,
     }
 
     useEffect(() => {

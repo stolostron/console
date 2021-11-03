@@ -2,7 +2,8 @@
 import React from 'react'
 import _ from 'lodash'
 import DetailsForm from '../components/assisted-installer/DetailsForm'
-import HostsForm from '../components/assisted-installer/HostsForm'
+import CIMHostsForm from '../components/assisted-installer/CIMHostsForm'
+import AIHostsForm from '../components/assisted-installer/AIHostsForm'
 import NetworkForm from '../components/assisted-installer/NetworkForm'
 import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
 
@@ -24,6 +25,15 @@ export const controlDataCIM = [
     },
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
+// TODO(mlibra): That placing is for development only, see below
+    // {
+    //     id: 'aiHosts',
+    //     type: 'custom',
+    //     component: null, // will be defined later
+    //     providerId: 'aiHosts',
+    //     mustValidate: true,
+    // },
+
     {
         id: 'aiDetailStep',
         type: 'step',
@@ -36,6 +46,9 @@ export const controlDataCIM = [
         providerId: 'ai',
         mustValidate: true,
         encodeValues: ['pullSecret'],
+        additionalProps: {
+            promptSshPublicKey: false,
+        }
     },
     ...automationControlData,
     {
@@ -56,7 +69,7 @@ export const controlDataCIM = [
     {
         id: 'aiHosts',
         type: 'custom',
-        component: <HostsForm />,
+        component: null, // will be defined later
         providerId: 'aiHosts',
         mustValidate: true,
     },
@@ -82,3 +95,11 @@ export const controlDataCIM = [
 
 export const controlDataAI = _.cloneDeep(controlDataCIM);
 
+const aiHostsStep = controlDataAI.find((data) => data.id === 'aiHosts');
+aiHostsStep.component = <AIHostsForm />;
+
+const cimHostsStep = controlDataCIM.find((data) => data.id === 'aiHosts');
+cimHostsStep.component = <CIMHostsForm />;
+
+const aiStep = controlDataAI.find((data) => data.id === 'ai');
+aiStep.additionalProps.promptSshPublicKey = true;
