@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import crypto from 'crypto'
 import _ from 'lodash'
-import { createResource, getResource } from './utils/resource-request'
+import { createResource, deleteResource, getResource } from './utils/resource-request'
 
 export const ManagedClusterActionApiVersion = 'action.open-cluster-management.io/v1beta1'
 export type ManagedClusterActionApiVersionType = 'action.open-cluster-management.io/v1beta1'
@@ -75,6 +76,14 @@ export function getManagedClusterAction(metadata: { name: string; namespace: str
     })
 }
 
+function deleteManagedClusterAction(metadata: { name: string; namespace: string }) {
+    deleteResource<ManagedClusterAction>({
+        apiVersion: ManagedClusterActionApiVersion,
+        kind: ManagedClusterActionKind,
+        metadata,
+    })
+}
+
 export const fireManagedClusterAction = (
     actionType: 'Update' | 'Delete',
     clusterName: string,
@@ -84,7 +93,11 @@ export const fireManagedClusterAction = (
     resourceNamespace: string,
     resourceBody?: any
 ) => {
-    const actionName = `${actionType.toLowerCase()}-resource-${Date.now()}`.substring(0, 63)
+    const actionName = crypto
+        .createHash('sha1')
+        .update(`${actionType}-${resourceName}-${resourceKind}`)
+        .digest('hex')
+        .substr(0, 63)
     const { apiGroup, version } = getGroupFromApiVersion(resourceApiVersion)
     return createResource<ManagedClusterAction>({
         apiVersion: ManagedClusterActionApiVersion,
@@ -132,14 +145,17 @@ export async function pollManagedClusterAction(actionName: string, clusterName: 
                 const isComplete = _.get(actionResponse, 'status.conditions[0].type', '')
                 const isActionDone = _.get(actionResponse, 'status.conditions[0].reason', '')
                 const actionMessage = _.get(actionResponse, 'status.conditions[0].message', '')
-                if (isComplete === 'Completed') {
+                if (isComplete === 'Completed' && isActionDone === 'ActionDone') {
                     resolve({
                         complete: isComplete,
                         actionDone: isActionDone,
                         message: actionMessage,
                         result: actionResponse.status?.result,
                     })
+                } else if (isComplete === 'Completed' && isActionDone !== 'ActionDone') {
+                    reject({ message: actionMessage })
                 }
+                deleteManagedClusterAction({ name: actionName, namespace: clusterName })
             })
             .catch((err) => {
                 if (retries-- > 0) {

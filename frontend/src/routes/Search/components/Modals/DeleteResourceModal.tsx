@@ -194,7 +194,7 @@ export const DeleteResourceModal = (props: any) => {
                     }
                     close()
                 } else {
-                    setDeleteResourceError(actionResponse.actionMessage)
+                    setDeleteResourceError(actionResponse.message)
                 }
             })
             .catch((err) => {
