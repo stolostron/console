@@ -2,16 +2,17 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
+import { MockedProvider } from '@apollo/client/testing'
+import { render, screen, waitFor } from '@testing-library/react'
+import { GraphQLError } from 'graphql'
+import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { createBrowserHistory } from 'history'
-import { render, screen, waitFor } from '@testing-library/react'
-import { MockedProvider } from '@apollo/client/testing'
-import { GraphQLError } from 'graphql'
-import { wait } from '../../../lib/test-util'
-import OverviewPage, { mapProviderFromLabel } from './OverviewPage'
 import { GetOverviewDocument } from '../../../console-sdk/console-sdk'
+import { nockDelete, nockGet } from '../../../lib/nock-util'
+import { wait, waitForNocks } from '../../../lib/test-util'
 import { SearchResultCountDocument, SearchResultItemsDocument } from '../../../search-sdk/search-sdk'
+import OverviewPage, { mapProviderFromLabel } from './OverviewPage'
 
 it('should responsed with correct value for mapProviderFromLabel function', () => {
     expect(mapProviderFromLabel('Amazon')).toEqual('aws')
@@ -28,7 +29,68 @@ it('should responsed with correct value for mapProviderFromLabel function', () =
     expect(mapProviderFromLabel('other')).toEqual('other')
 })
 
+const getAddonRequest = {
+    apiVersion: 'view.open-cluster-management.io/v1beta1',
+    kind: 'ManagedClusterView',
+    metadata: {
+        name: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
+        namespace: 'local-cluster',
+        labels: {
+            viewName: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
+        },
+    },
+    spec: {
+        scope: {
+            name: 'observability-controller',
+            resource: 'clustermanagementaddon.v1alpha1.addon.open-cluster-management.io',
+        },
+    },
+}
+
+const getAddonResponse = {
+    apiVersion: 'view.open-cluster-management.io/v1beta1',
+    kind: 'ManagedClusterView',
+    metadata: {
+        name: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
+        namespace: 'local-cluster',
+        labels: {
+            viewName: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
+        },
+    },
+    spec: {
+        scope: {
+            name: 'observability-controller',
+            resource: 'clustermanagementaddon.v1alpha1.addon.open-cluster-management.io',
+        },
+    },
+    status: {
+        conditions: [
+            {
+                message: 'Watching resources successfully',
+                reason: 'GetResourceProcessing',
+                status: 'True',
+                type: 'Processing',
+            },
+        ],
+    },
+}
+
+const deleteMCVRequest = {
+    apiVersion: 'view.open-cluster-management.io/v1beta1',
+    kind: 'ManagedClusterView',
+    metadata: {
+        name: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
+        namespace: 'local-cluster',
+        labels: {
+            viewName: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
+        },
+    },
+}
+
 it('should render overview page in loading state', async () => {
+    const deleteResourceNock = nockGet(getAddonRequest, getAddonResponse)
+    const deleteMCV = nockDelete(deleteMCVRequest)
+
     render(
         <RecoilRoot>
             <Router history={createBrowserHistory()}>
@@ -38,11 +100,20 @@ it('should render overview page in loading state', async () => {
             </Router>
         </RecoilRoot>
     )
+
     // Test the loading state while apollo query finishes
     await waitFor(() => expect(screen.getByText('Loading')).toBeInTheDocument())
+
+    // Wait for delete resource requests to finish
+    await waitForNocks([deleteResourceNock])
+
+    // Wait for deletion of MCV now that we got a successful response
+    await waitForNocks([deleteMCV])
 })
 
 it('should render overview page in error state', async () => {
+    const deleteResourceNock = nockGet(getAddonRequest, getAddonResponse)
+    const deleteMCV = nockDelete(deleteMCVRequest)
     const mocks = [
         {
             request: {
@@ -67,11 +138,20 @@ it('should render overview page in error state', async () => {
     expect(screen.getByText('Loading')).toBeInTheDocument()
     // This wait pauses till apollo query is returning data
     await wait()
+
+    // Wait for delete resource requests to finish
+    await waitForNocks([deleteResourceNock])
+
+    // Wait for deletion of MCV now that we got a successful response
+    await waitForNocks([deleteMCV])
+
     // Test that the component has rendered correctly with an error
     await waitFor(() => expect(screen.queryByText('overview.data.error.title')).toBeTruthy())
 })
 
 it('should render overview page with expected data', async () => {
+    const deleteResourceNock = nockGet(getAddonRequest, getAddonResponse)
+    const deleteMCV = nockDelete(deleteMCVRequest)
     const mocks = [
         {
             request: {
@@ -335,6 +415,12 @@ it('should render overview page with expected data', async () => {
     expect(getByText('Loading')).toBeInTheDocument()
     // This wait pauses till apollo query is returning data
     await wait()
+
+    // Wait for delete resource requests to finish
+    await waitForNocks([deleteResourceNock])
+
+    // Wait for deletion of MCV now that we got a successful response
+    await waitForNocks([deleteMCV])
 
     // Test that the component has rendered correctly with an error
     await waitFor(() => expect(getAllByText('Amazon')).toHaveLength(1))

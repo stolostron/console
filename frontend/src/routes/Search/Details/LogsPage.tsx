@@ -1,23 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { ApolloError } from '@apollo/client'
 import { AcmAlert, AcmLoadingPage, AcmLogWindow } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Query } from '../../../console-sdk/console-sdk'
 import { backendUrl, fetchGet } from '../../../resources'
 
 export default function LogsPage(props: {
-    getResource: Pick<Query, 'getResource'> | undefined
-    getResourceError: ApolloError | undefined
+    resourceError: string
     containers: string[]
     cluster: string
     namespace: string
     name: string
 }) {
-    const { getResource, getResourceError, containers, cluster, namespace, name } = props
+    const { resourceError, containers, cluster, namespace, name } = props
     const { t } = useTranslation(['details'])
     const [logs, setLogs] = useState<string>('')
     const [logsError, setLogsError] = useState<string>()
@@ -59,7 +56,7 @@ export default function LogsPage(props: {
             })
     }
 
-    if (getResourceError) {
+    if (resourceError !== '') {
         return (
             <PageSection>
                 <AcmAlert
@@ -67,23 +64,11 @@ export default function LogsPage(props: {
                     variant={'danger'}
                     isInline={true}
                     title={`${t('logs.request.error')} ${name}`}
-                    subtitle={getResourceError}
+                    subtitle={resourceError}
                 />
             </PageSection>
         )
-    } else if (getResource?.getResource?.message) {
-        return (
-            <PageSection>
-                <AcmAlert
-                    noClose={true}
-                    variant={'danger'}
-                    isInline={true}
-                    title={`${t('logs.request.error')} ${name}`}
-                    subtitle={getResource?.getResource?.message}
-                />
-            </PageSection>
-        )
-    } else if (!logsError && logs === '') {
+    } else if (resourceError === '' && !logsError && logs === '') {
         return (
             <PageSection>
                 <AcmLoadingPage />

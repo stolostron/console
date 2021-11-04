@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { ApolloError } from '@apollo/client'
 import { makeStyles } from '@material-ui/styles'
 import { AcmAlert, AcmButton, AcmLoadingPage } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
@@ -12,7 +11,6 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import MonacoEditor, { monaco } from 'react-monaco-editor'
-import { Query } from '../../../console-sdk/console-sdk'
 import { canUser } from '../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../resources/managedclusteraction'
 import './YAMLEditor.css'
@@ -70,9 +68,9 @@ const useStyles = makeStyles({
 })
 
 export default function YAMLPage(props: {
-    resource: Pick<Query, 'getResource'> | undefined
+    resource: any
     loading: boolean
-    error: ApolloError | undefined
+    error: string
     name: string
     namespace: string
     cluster: string
@@ -87,10 +85,10 @@ export default function YAMLPage(props: {
     const [updateResourceError, setUpdateResourceError] = useState(undefined)
     const classes = useStyles()
     useEffect(() => {
-        if (resource?.getResource) {
-            setEditedResourceYaml(jsYaml.dump(resource?.getResource, { indent: 2 }))
+        if (resource) {
+            setEditedResourceYaml(jsYaml.dump(resource, { indent: 2 }))
         }
-    }, [resource?.getResource])
+    }, [resource])
 
     useEffect(() => {
         if (!resource) {
@@ -148,26 +146,11 @@ export default function YAMLPage(props: {
                     variant={'danger'}
                     isInline={true}
                     title={`${t('yaml.getresource.error')} ${name}`}
-                    subtitle={error?.message}
+                    subtitle={error}
                 />
             </PageSection>
         )
-    } else if (resource?.getResource?.message ?? (resource?.getResource[0] && resource?.getResource[0].message)) {
-        return (
-            <PageSection>
-                <AcmAlert
-                    noClose={true}
-                    variant={'danger'}
-                    isInline={true}
-                    title={`${t('yaml.getresource.error')} ${name}`}
-                    subtitle={
-                        resource?.getResource?.message ?? (resource?.getResource[0] && resource?.getResource[0].message)
-                    }
-                />
-            </PageSection>
-        )
-    }
-    if (loading) {
+    } else if (loading) {
         return (
             <PageSection>
                 <AcmLoadingPage />
@@ -232,9 +215,7 @@ export default function YAMLPage(props: {
                 theme={'console'}
                 width={'100%'}
                 height={'90%'}
-                value={
-                    editedResourceYaml !== '' ? editedResourceYaml : jsYaml.dump(resource?.getResource, { indent: 2 })
-                }
+                value={editedResourceYaml !== '' ? editedResourceYaml : jsYaml.dump(resource, { indent: 2 })}
                 onChange={(value) => {
                     setEditedResourceYaml(value)
                 }}
