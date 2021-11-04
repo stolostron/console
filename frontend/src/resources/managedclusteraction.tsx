@@ -159,7 +159,7 @@ export async function pollManagedClusterAction(actionName: string, clusterName: 
             })
             .catch((err) => {
                 if (retries-- > 0) {
-                    setTimeout(poll, 500, resolve, reject)
+                    setTimeout(poll, 100, resolve, reject)
                 } else {
                     reject(err)
                 }
