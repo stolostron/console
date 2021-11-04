@@ -18,7 +18,6 @@ import { useTranslation } from 'react-i18next'
 import { BulkActionModel } from '../../../../../components/BulkActionModel'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
 import './style.css'
-export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
 // compare version
 const compareVersion = (a: string, b: string) => {

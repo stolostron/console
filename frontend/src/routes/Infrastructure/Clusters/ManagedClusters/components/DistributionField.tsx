@@ -20,8 +20,6 @@ import { RbacButton } from '../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 
-export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
-
 export function DistributionField(props: { cluster?: Cluster; clusterCurator?: ClusterCurator | undefined }) {
     const { t } = useTranslation(['cluster'])
     const [open, toggleOpen] = useState<boolean>(false)

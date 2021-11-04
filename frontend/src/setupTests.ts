@@ -9,15 +9,19 @@ import nock from 'nock'
 
 require('react')
 
+process.env.NODE_ENV = 'test'
+process.env.JEST_DEFAULT_HOST = 'http://localhost'
+process.env.REACT_APP_BACKEND_PATH = ''
+
 JestFetchMock.enableMocks()
 fetchMock.dontMock()
+// browser fetch works with relative URL; cross-fetch does not
+global.fetch = jest.fn((input, reqInit) =>
+    fetchMock(typeof input === 'string' ? new URL(input, process.env.JEST_DEFAULT_HOST).toString() : input, reqInit)
+)
 
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(30 * 1000)
-
-process.env.NODE_ENV = 'test'
-process.env.REACT_APP_BACKEND_HOST = 'http://localhost'
-process.env.REACT_APP_BACKEND_PATH = ''
 
 async function setupBeforeAll(): Promise<void> {
     nock.disableNetConnect()
