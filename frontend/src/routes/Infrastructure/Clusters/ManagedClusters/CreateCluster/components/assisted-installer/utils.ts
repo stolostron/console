@@ -36,6 +36,40 @@ type OnHostsNext = {
 
 type OnDiscoverHostsNext = {
     values: CIM.ClusterDeploymentHostsDiscoveryValues
+    clusterDeployment: CIM.ClusterDeploymentK8sResource
+    agents: CIM.AgentK8sResource[]
+}
+
+const addAgentsToCluster = async ({
+    agents,
+    name,
+    namespace,
+    hostIds,
+}: {
+    agents: CIM.AgentK8sResource[]
+    name: string
+    namespace: string
+    hostIds: string[]
+}) => {
+    const addAgents = agents.filter(
+        (a) =>
+            hostIds.includes(a.metadata.uid) &&
+            (a.spec?.clusterDeploymentName?.name !== name || a.spec?.clusterDeploymentName?.namespace !== namespace)
+    )
+    await Promise.all(
+        addAgents.map((agent) => {
+            return patchResource(agent, [
+                {
+                    op: agent.spec?.clusterDeploymentName ? 'replace' : 'add',
+                    path: '/spec/clusterDeploymentName',
+                    value: {
+                        name,
+                        namespace,
+                    },
+                },
+            ]).promise
+        })
+    )
 }
 
 export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHostsNext) => {
@@ -60,25 +94,7 @@ export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHosts
         })
     )
 
-    const addAgents = agents.filter(
-        (a) =>
-            hostIds.includes(a.metadata.uid) &&
-            (a.spec?.clusterDeploymentName?.name !== name || a.spec?.clusterDeploymentName?.namespace !== namespace)
-    )
-    await Promise.all(
-        addAgents.map((agent) => {
-            return patchResource(agent, [
-                {
-                    op: agent.spec?.clusterDeploymentName ? 'replace' : 'add',
-                    path: '/spec/clusterDeploymentName',
-                    value: {
-                        name,
-                        namespace,
-                    },
-                },
-            ]).promise
-        })
-    )
+    await addAgentsToCluster({ agents, name, namespace, hostIds })
 
     if (clusterDeployment) {
         await patchResource(clusterDeployment, [
@@ -91,9 +107,18 @@ export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHosts
     }
 }
 
-export const onDiscoverHostsNext = async ({ values }: OnDiscoverHostsNext) => {
-    // TODO(mlibra)
-    console.log('--- onDiscoverHostsNext, persisting: ', values)
+/** AI-specific version for the CIM-flow's onHostsNext() callback */
+export const onDiscoverHostsNext = async ({ clusterDeployment, agents }: OnDiscoverHostsNext) => {
+    // TODO(mlibra): So far we do not need "values" of the Formik - options the user will choose from will come later (like CNV or OCS)
+
+    // So far no need to "release" agents since the user either deletes and agent or keep the list static
+    
+    const name = clusterDeployment.metadata.name
+    const namespace = clusterDeployment.metadata.namespace
+
+    addAgentsToCluster({ agents, name, namespace, hostIds: agents.map((a: CIM.AgentK8sResource) => a.metadata.uid) })
+
+    // No need to update ClusterDeployment annotations - they stay static after ccreation by template
 }
 
 const appendPatch = (patches: any, path: string, newVal: object | string | boolean, existingVal?: object | string) => {
