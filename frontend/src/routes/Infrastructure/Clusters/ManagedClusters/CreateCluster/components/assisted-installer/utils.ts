@@ -14,6 +14,8 @@ import {
 } from '../../../../../../../resources'
 import {
     agentClusterInstallsState,
+    agentsState,
+    bareMetalAssetsState,
     clusterDeploymentsState,
     configMapsState,
     infraEnvironmentsState,
@@ -24,8 +26,10 @@ import { ModalProps } from './types'
 const {
     getAnnotationsFromAgentSelector,
     AGENT_BMH_HOSTNAME_LABEL_KEY,
+    INFRAENV_GENERATED_AI_FLOW,
     getBareMetalHostCredentialsSecret,
     getBareMetalHost,
+    isAgentOfAIFlow,
 } = CIM
 
 type OnHostsNext = {
@@ -112,7 +116,7 @@ export const onDiscoverHostsNext = async ({ clusterDeployment, agents }: OnDisco
     // TODO(mlibra): So far we do not need "values" of the Formik - options the user will choose from will come later (like CNV or OCS)
 
     // So far no need to "release" agents since the user either deletes and agent or keep the list static
-    
+
     const name = clusterDeployment.metadata.name
     const namespace = clusterDeployment.metadata.namespace
 
@@ -396,3 +400,22 @@ export const onSaveAgent = async (agent: CIM.AgentK8sResource, hostname: string)
             value: hostname,
         },
     ]).promise
+
+export const useAgentsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }) => {
+    const [agents] = useRecoilValue(waitForAll([agentsState]))
+    return useMemo(() => agents.filter((a) => isAgentOfAIFlow(a, name, namespace)), [agents])
+}
+
+export const useBMHsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }) => {
+    const [bmhs] = useRecoilValue(waitForAll([bareMetalAssetsState]))
+    return useMemo(
+        () =>
+            // TODO(mlibra): make that happen!
+            /* That label is added to the InfraEnv along creating ClusterDeployment, specific for the AI flow */
+            bmhs.filter(
+                (bmh: CIM.BareMetalHostK8sResource) =>
+                    bmh.metadata?.labels?.[INFRAENV_GENERATED_AI_FLOW] === `${namespace}-${name}`
+            ),
+        [bmhs]
+    )
+}

@@ -11,9 +11,24 @@ import {
     clusterImageSetsState,
     configMapsState,
 } from '../../../../../../atoms'
-import { getAIConfigMap, onHostsNext, onSaveNetworking } from '../../CreateCluster/components/assisted-installer/utils'
+import {
+    canDeleteAgent,
+    fetchNMState,
+    fetchSecret,
+    getAIConfigMap,
+    getClusterDeploymentLink,
+    getOnDeleteHost,
+    onApproveAgent,
+    onHostsNext,
+    onSaveAgent,
+    onSaveBMH,
+    onSaveNetworking,
+    useBMHsOfAIFlow,
+    useInfraEnv,
+} from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
+import { isBMPlatform } from '../../../../InfraEnvironments/utils'
 
 const { ClusterDeploymentWizard, FeatureGateContextProvider, ACM_ENABLED_FEATURES, LoadingState } = CIM
 
@@ -37,12 +52,16 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         ])
     )
 
+    // TODO(mlibra): Arn't we missing Bare Metal Hosts in the tables???
+
     const clusterDeployment = clusterDeployments.find(
         (cd) => cd.metadata.name === name && cd.metadata.namespace === namespace
     )
     const agentClusterInstall = agentClusterInstalls.find(
         (aci) => aci.metadata.name === name && aci.metadata.namespace === namespace
     )
+    const infraEnv = useInfraEnv({ name, namespace })
+    const filteredBMHs = useBMHsOfAIFlow({ name, namespace })
 
     const aiConfigMap = getAIConfigMap(configMaps)
 
@@ -123,18 +142,27 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 clusterDeployment={clusterDeployment}
                 agentClusterInstall={agentClusterInstall}
                 agents={agents}
-                usedClusterNames={
-                    [
-                        /* Not needed for the Edit flow */
-                    ]
-                }
+                usedClusterNames={[] /* No need in the Edit flow */}
                 onClose={history.goBack}
                 onSaveDetails={onSaveDetails}
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
                 onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents })}
+                onApproveAgent={onApproveAgent}
+                onDeleteHost={getOnDeleteHost(filteredBMHs)}
+                canDeleteAgent={canDeleteAgent}
+                onSaveAgent={onSaveAgent}
+                onSaveBMH={onSaveBMH}
+                // onFormSaveError={setErrorHandler}
+                // just for Day 2: onSaveHostsDiscovery={(values) => onDiscoverHostsNext({ values, clusterDeployment, agents })}
+                fetchSecret={fetchSecret}
+                fetchNMState={fetchNMState}
+                isBMPlatform={isBMPlatform(infraEnv)}
+                getClusterDeploymentLink={getClusterDeploymentLink}
+              
                 hostActions={hostActions}
                 onFinish={onFinish}
                 aiConfigMap={aiConfigMap}
+                infraEnv={infraEnv}
             />
             <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
         </FeatureGateContextProvider>
