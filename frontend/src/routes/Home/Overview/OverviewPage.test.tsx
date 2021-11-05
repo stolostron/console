@@ -88,7 +88,7 @@ const deleteMCVRequest = {
 }
 
 it('should render overview page in loading state', async () => {
-    const deleteResourceNock = nockGet(getAddonRequest, getAddonResponse)
+    const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
     const deleteMCV = nockDelete(deleteMCVRequest)
 
     render(
@@ -105,14 +105,14 @@ it('should render overview page in loading state', async () => {
     await waitFor(() => expect(screen.getByText('Loading')).toBeInTheDocument())
 
     // Wait for delete resource requests to finish
-    await waitForNocks([deleteResourceNock])
+    await waitForNocks([getAddonNock])
 
     // Wait for deletion of MCV now that we got a successful response
     await waitForNocks([deleteMCV])
 })
 
 it('should render overview page in error state', async () => {
-    const deleteResourceNock = nockGet(getAddonRequest, getAddonResponse)
+    const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
     const deleteMCV = nockDelete(deleteMCVRequest)
     const mocks = [
         {
@@ -140,7 +140,7 @@ it('should render overview page in error state', async () => {
     await wait()
 
     // Wait for delete resource requests to finish
-    await waitForNocks([deleteResourceNock])
+    await waitForNocks([getAddonNock])
 
     // Wait for deletion of MCV now that we got a successful response
     await waitForNocks([deleteMCV])
@@ -150,7 +150,7 @@ it('should render overview page in error state', async () => {
 })
 
 it('should render overview page with expected data', async () => {
-    const deleteResourceNock = nockGet(getAddonRequest, getAddonResponse)
+    const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
     const deleteMCV = nockDelete(deleteMCVRequest)
     const mocks = [
         {
@@ -417,7 +417,7 @@ it('should render overview page with expected data', async () => {
     await wait()
 
     // Wait for delete resource requests to finish
-    await waitForNocks([deleteResourceNock])
+    await waitForNocks([getAddonNock])
 
     // Wait for deletion of MCV now that we got a successful response
     await waitForNocks([deleteMCV])
