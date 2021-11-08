@@ -6,6 +6,7 @@ import '@testing-library/jest-dom'
 import JestFetchMock from 'jest-fetch-mock'
 import { noop } from 'lodash'
 import nock from 'nock'
+import 'regenerator-runtime/runtime'
 
 require('react')
 
