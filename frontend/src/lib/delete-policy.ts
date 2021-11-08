@@ -6,12 +6,7 @@ import { PlacementRuleApiVersion, PlacementRuleKind } from '../resources/placeme
 
 import { deleteResources } from './delete-resources'
 
-export function deletePolicy(
-    policy: Policy,
-    placementBindingChecked?: Boolean,
-    placementRuleChecked?: Boolean
-    ) {
-
+export function deletePolicy(policy: Policy, placementBindingChecked?: Boolean, placementRuleChecked?: Boolean) {
     const resources: IResource[] = [
         {
             apiVersion: PolicyApiVersion,
@@ -20,18 +15,18 @@ export function deletePolicy(
         },
     ]
     placementBindingChecked &&
-    resources.push({
-        apiVersion: PlacementBindingApiVersion,
-        kind: PlacementBindingKind,
-        metadata: { name: `binding-${policy.metadata.name}`, namespace: policy.metadata.namespace! },
-    })
+        resources.push({
+            apiVersion: PlacementBindingApiVersion,
+            kind: PlacementBindingKind,
+            metadata: { name: `binding-${policy.metadata.name}`, namespace: policy.metadata.namespace! },
+        })
 
     placementRuleChecked &&
-    resources.push({
-        apiVersion: PlacementRuleApiVersion,
-        kind: PlacementRuleKind,
-        metadata: { name: `placement-${policy.metadata.name}`, namespace: policy.metadata.namespace! },
-    })
+        resources.push({
+            apiVersion: PlacementRuleApiVersion,
+            kind: PlacementRuleKind,
+            metadata: { name: `placement-${policy.metadata.name}`, namespace: policy.metadata.namespace! },
+        })
 
     const deleteResourcesResult = deleteResources(resources)
 
