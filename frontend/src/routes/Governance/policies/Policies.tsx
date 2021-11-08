@@ -9,6 +9,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import {
     ButtonVariant,
+    Checkbox,
     Chip,
     DescriptionList,
     DescriptionListDescription,
@@ -16,7 +17,7 @@ import {
     DescriptionListTerm,
     PageSection,
 } from '@patternfly/react-core'
-import _ from 'lodash'
+import _, { divide } from 'lodash'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import moment from 'moment'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
@@ -28,6 +29,7 @@ import { ResourceErrorCode } from '../../../resources'
 import { Policy } from '../../../resources/policy'
 import { PolicyRiskLabels } from '../components/PolicyRiskLabels'
 import { IGovernanceData, IPolicy } from '../useGovernanceData'
+import React from 'react'
 
 export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
     const { governanceData } = props
@@ -36,6 +38,8 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Policy> | { open: false }>({
         open: false,
     })
+    const [placementRuleChecked, setPlacementBindingChecked] = useState(false)
+    const [placementBindingChecked, setPlacementRuleChecked] = useState(false)
     const policyKeyFn = useCallback(
         (resource: Policy) => resource.metadata.uid ?? `${resource.metadata.name}/${resource.metadata.namespace}`,
         []
@@ -210,6 +214,34 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
         []
     )
 
+    const renderRelatedResourceCheckbox = (policy: Policy) => {
+        function handlePlacementBindingChecked(checked: boolean) {
+            setPlacementBindingChecked(!checked)
+            return null
+        }
+        function handlePlacementRuleChecked(checked: boolean) {
+            setPlacementRuleChecked(!checked)
+            return null
+        }
+
+        return (
+            <Fragment>
+                <Checkbox
+                    id={'remove-placementRule'}
+                    isChecked={placementRuleChecked}
+                    onClick={() => handlePlacementRuleChecked(placementRuleChecked)}
+                    label={`placement-${policy.metadata.name} [PlacementRule]`}
+                />
+                <Checkbox
+                    id={'remove-placementBinding'}
+                    isChecked={placementBindingChecked}
+                    onClick={() => handlePlacementBindingChecked(placementBindingChecked)}
+                    label={`binding-${policy.metadata.name} [PlacementBinding]`}
+                />
+            </Fragment>
+        )
+    }
+
     const tableActions = useMemo<IAcmTableAction<Policy>[]>(
         () => [
             {
@@ -230,20 +262,19 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                                 cell: 'metadata.name',
                                 sort: 'metadata.name',
                             },
-                            {
-                                header: t('policies.tableHeader.placementRule'),
-                                cell: 'status.placement[0].placementRule',
-                            },
-                            {
-                                header: t('policies.tableHeader.placementBinding'),
-                                cell: 'status.placement[0].placementBinding',
-                            },
+                            // {
+                            //     header: t('policies.tableHeader.resources'),
+                            //     cell: (policy)=>renderRelatedResourceCheckbox(policy),
+                            // },
                         ],
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
-                        actionFn: (policy) => deletePolicy(policy),
+                        actionFn: (policy) => deletePolicy(policy, placementRuleChecked, placementBindingChecked),
                         close: () => setModalProps({ open: false }),
+                        checkBox: (policy: Policy) => renderRelatedResourceCheckbox(policy),
                         isDanger: true,
                         icon: 'warning',
+                        confirmText: 'confirm',
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                     })
                 },
             },
@@ -258,7 +289,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 click: () => {},
             },
         ],
-        []
+        [placementRuleChecked, placementBindingChecked]
     )
 
     const policyRowActions = useMemo<IAcmRowAction<Policy>[]>(
@@ -275,7 +306,8 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                         resources: [policy],
                         description: t('bulk.message.delete'),
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
-                        actionFn: (policy) => deletePolicy(policy),
+                        actionFn: (policy) => deletePolicy(policy, placementRuleChecked, placementBindingChecked),
+                        checkBox: renderRelatedResourceCheckbox(policy),
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
                         icon: 'warning',
@@ -313,7 +345,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 click: () => {},
             },
         ],
-        []
+        [placementRuleChecked, placementBindingChecked]
     )
 
     const namespaces = useMemo(() => {

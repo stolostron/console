@@ -6,7 +6,11 @@ import { PlacementRuleApiVersion, PlacementRuleKind } from '../resources/placeme
 
 import { deleteResources } from './delete-resources'
 
-export function deletePolicy(policy: Policy) {
+export function deletePolicy(
+    policy: Policy,
+    placementBindingChecked?: Boolean,
+    placementRuleChecked?: Boolean
+    ) {
 
     const resources: IResource[] = [
         {
@@ -15,18 +19,20 @@ export function deletePolicy(policy: Policy) {
             metadata: { name: policy.metadata.name!, namespace: policy.metadata.namespace! },
         },
     ]
+    placementBindingChecked &&
     resources.push({
         apiVersion: PlacementBindingApiVersion,
         kind: PlacementBindingKind,
         metadata: { name: `binding-${policy.metadata.name}`, namespace: policy.metadata.namespace! },
     })
+
+    placementRuleChecked &&
     resources.push({
         apiVersion: PlacementRuleApiVersion,
         kind: PlacementRuleKind,
         metadata: { name: `placement-${policy.metadata.name}`, namespace: policy.metadata.namespace! },
     })
 
-    console.log('resources', resources)
     const deleteResourcesResult = deleteResources(resources)
 
     return {

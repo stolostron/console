@@ -38,6 +38,7 @@ export interface IBulkActionModelProps<T = undefined> {
     keyFn?: (item: T) => string
     actionFn: (item: T) => IRequestResult
     preActionFn?: (items: Array<T>, errors: ItemError<T>[]) => void
+    checkBox?: string | React.ReactNode
     confirmText?: string
     isDanger?: boolean
     isValidError?: (error: Error) => boolean
@@ -93,6 +94,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                 {!errors ? (
                     <Fragment>
                         {props.description}
+                        {props.checkBox}
                         {props.hideTableAfterSubmit && progress != 0
                             ? undefined
                             : props.columns &&
