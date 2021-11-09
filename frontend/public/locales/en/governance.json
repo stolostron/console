@@ -1,0 +1,10 @@
+{
+  "policy.delete.confirm": "Removing {{name}} is irreversible. Select any associated resources that need to be deleted in addition to {{name}}.",
+  "policy.title.delete": "Permanently delete policy?",
+  "policy.tableHeader.name": "Policy name",
+
+  "policy.bulk.title.delete": "Permanently delete policies?",
+  "policy.bulk.associatedResources.placementRule": "Associated PlacementRules",
+  "policy.bulk.associatedResources.placementBinding": "Associated PlacementBindings",
+  "bulk.message.delete": "Removing the following policies is irreversible.  Select if associated resources need to be deleted in addition to these policies."
+}

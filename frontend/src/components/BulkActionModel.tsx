@@ -38,7 +38,7 @@ export interface IBulkActionModelProps<T = undefined> {
     keyFn?: (item: T) => string
     actionFn: (item: T) => IRequestResult
     preActionFn?: (items: Array<T>, errors: ItemError<T>[]) => void
-    checkBox?: string | React.ReactNode
+    checkBox?: JSX.Element
     confirmText?: string
     isDanger?: boolean
     isValidError?: (error: Error) => boolean

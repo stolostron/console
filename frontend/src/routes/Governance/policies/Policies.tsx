@@ -17,7 +17,6 @@ import {
     DescriptionListTerm,
     PageSection,
 } from '@patternfly/react-core'
-import _, { divide } from 'lodash'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import moment from 'moment'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
@@ -29,17 +28,16 @@ import { ResourceErrorCode } from '../../../resources'
 import { Policy } from '../../../resources/policy'
 import { PolicyRiskLabels } from '../components/PolicyRiskLabels'
 import { IGovernanceData, IPolicy } from '../useGovernanceData'
-import React from 'react'
 
 export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
     const { governanceData } = props
 
-    const { t } = useTranslation(['govenance'])
+    const { t } = useTranslation(['governance', 'common'])
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Policy> | { open: false }>({
         open: false,
     })
-    const [placementRuleChecked, setPlacementBindingChecked] = useState(false)
-    const [placementBindingChecked, setPlacementRuleChecked] = useState(false)
+    const [placementBindingChecked, setPlacementBindingChecked] = useState(false)
+    const [placementRuleChecked, setPlacementRuleChecked] = useState(false)
     const policyKeyFn = useCallback(
         (resource: Policy) => resource.metadata.uid ?? `${resource.metadata.name}/${resource.metadata.namespace}`,
         []
@@ -214,29 +212,29 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
         []
     )
 
-    const renderRelatedResourceCheckbox = (policy: Policy) => {
-        function handlePlacementBindingChecked(checked: boolean) {
-            setPlacementBindingChecked(!checked)
-            return null
-        }
-        function handlePlacementRuleChecked(checked: boolean) {
-            setPlacementRuleChecked(!checked)
-            return null
-        }
+    let pbcheck = false
+    let prcheck = false
 
+    const renderRelatedResourceCheckbox = (placementBindingChecked: boolean, placementRuleChecked: boolean) => {
+        const handlePlacementBindingChecked = ()=>{
+            return pbcheck = !placementBindingChecked
+        }
+        const handlePlacementRuleChecked = () =>{
+            return prcheck = !placementRuleChecked
+        }
         return (
             <Fragment>
                 <Checkbox
                     id={'remove-placementRule'}
                     isChecked={placementRuleChecked}
-                    onClick={() => handlePlacementRuleChecked(placementRuleChecked)}
-                    label={`placement-${policy.metadata.name} [PlacementRule]`}
+                    onClick={() => handlePlacementRuleChecked()}
+                    label={t('policy.bulk.associatedResources.placementRule')}
                 />
                 <Checkbox
                     id={'remove-placementBinding'}
                     isChecked={placementBindingChecked}
-                    onClick={() => handlePlacementBindingChecked(placementBindingChecked)}
-                    label={`binding-${policy.metadata.name} [PlacementBinding]`}
+                    onClick={() => handlePlacementBindingChecked()}
+                    label= {t('policy.bulk.associatedResources.placementBinding')}
                 />
             </Fragment>
         )
@@ -251,26 +249,26 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 click: (policies: Policy[]) => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.delete'),
+                        title: t('policy.bulk.title.delete'),
                         action: t('common:delete'),
                         processing: t('common:deleting'),
                         resources: [...policies],
                         description: t('bulk.message.delete'),
                         columns: [
                             {
-                                header: t('policies.tableHeader.name'),
+                                header: t('policy.tableHeader.name'),
                                 cell: 'metadata.name',
                                 sort: 'metadata.name',
                             },
-                            // {
-                            //     header: t('policies.tableHeader.resources'),
-                            //     cell: (policy)=>renderRelatedResourceCheckbox(policy),
-                            // },
                         ],
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
-                        actionFn: (policy) => deletePolicy(policy, placementRuleChecked, placementBindingChecked),
-                        close: () => setModalProps({ open: false }),
-                        checkBox: (policy: Policy) => renderRelatedResourceCheckbox(policy),
+                        actionFn: (policy) => deletePolicy(policy, pbcheck, prcheck),
+                        close: async() => {
+                            setModalProps({ open: false })
+                            pbcheck = false
+                            prcheck = false
+                        },
+                        checkBox: renderRelatedResourceCheckbox(placementBindingChecked, placementRuleChecked),
                         isDanger: true,
                         icon: 'warning',
                         confirmText: 'confirm',
@@ -306,9 +304,13 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                         resources: [policy],
                         description: t('bulk.message.delete'),
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
-                        actionFn: (policy) => deletePolicy(policy, placementRuleChecked, placementBindingChecked),
-                        checkBox: renderRelatedResourceCheckbox(policy),
-                        close: () => setModalProps({ open: false }),
+                        actionFn: (policy) => deletePolicy(policy, pbcheck, prcheck),
+                        close: () => {
+                            setModalProps({ open: false })
+                            pbcheck = false
+                            prcheck= false
+                        },
+                        checkBox: renderRelatedResourceCheckbox(placementBindingChecked, placementRuleChecked),
                         isDanger: true,
                         icon: 'warning',
                         confirmText: 'confirm',
