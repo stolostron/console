@@ -421,6 +421,15 @@ export const useBMHsOfAIFlow = ({ name, namespace }: { name: string; namespace: 
     )
 }
 
+const refetchInfraEnv = async (infraEnv: InfraEnvK8sResource) =>
+    await getResource<InfraEnvK8sResource>({
+        apiVersion: infraEnv.apiVersion,
+        kind: infraEnv.kind,
+        metadata: { namespace: infraEnv.metadata.namespace, name: infraEnv.metadata.name },
+    }).promise
+
+const sleep = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 export const getOnSaveISOParams = (infraEnv: InfraEnvK8sResource) => async (values: CIM.DiscoveryImageFormValues) => {
     const patches: any[] = []
     appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey || '', infraEnv.spec?.sshAuthorizedKey)
@@ -433,10 +442,22 @@ export const getOnSaveISOParams = (infraEnv: InfraEnvK8sResource) => async (valu
           }
         : {}
     appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
-    
+
     // TODO(mlibra): Once implemented on the backend, persist values.imageType
 
+    // TODO(mlibra): Why is oldIsoCreatedTimestamp not from a condition? I would expect infraEnv.status?.conditions?.find((condition) => condition.type === 'ImageCreated')
+    const oldIsoCreatedTimestamp = infraEnv.status?.createdTime
+
     await patchResource(infraEnv, patches).promise
-    // TODO(mlibra): keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present
-    // Update: there is MGMT-7255 wip to add image streaming service when this waiting will not be needed
+
+    // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
+    // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
+    // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.
+    let polledInfraEnv: InfraEnvK8sResource = await refetchInfraEnv(infraEnv)
+    let maxPollingCounter = 10
+    while (polledInfraEnv.status?.createdTime === oldIsoCreatedTimestamp && --maxPollingCounter) {
+        await sleep(5 * 1000)
+        polledInfraEnv = await refetchInfraEnv(infraEnv)
+    }
+    // quit anyway ...
 }

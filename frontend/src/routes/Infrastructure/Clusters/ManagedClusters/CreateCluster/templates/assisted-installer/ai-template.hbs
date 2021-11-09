@@ -112,11 +112,14 @@ metadata:
   labels:
     networkType: dhcp
 spec:
+  clusterRef:
+    name: {{{ai.name}}}
+    namespace: {{{ai.name}}}
   agentLabels:
     'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}-{{{ai.name}}}'
   pullSecretRef:
     name: pullsecret-cluster-{{{ai.name}}}
-  sshAuthorizedKey: {{{ai.sshPublicKey}}}
+  sshAuthorizedKey: '{{{ai.sshPublicKey}}}'
 status:
   agentLabelSelector:
     matchLabels:
