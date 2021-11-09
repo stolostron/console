@@ -7,7 +7,6 @@ import { PlacementRuleApiVersion, PlacementRuleKind } from '../resources/placeme
 import { deleteResources } from './delete-resources'
 
 export function deletePolicy(policy: Policy, placementBindingChecked?: Boolean, placementRuleChecked?: Boolean) {
-
     const resources: IResource[] = [
         {
             apiVersion: PolicyApiVersion,

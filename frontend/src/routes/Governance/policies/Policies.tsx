@@ -216,11 +216,11 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
     let prcheck = false
 
     const renderRelatedResourceCheckbox = (placementBindingChecked: boolean, placementRuleChecked: boolean) => {
-        const handlePlacementBindingChecked = ()=>{
-            return pbcheck = !placementBindingChecked
+        const handlePlacementBindingChecked = () => {
+            return (pbcheck = !placementBindingChecked)
         }
-        const handlePlacementRuleChecked = () =>{
-            return prcheck = !placementRuleChecked
+        const handlePlacementRuleChecked = () => {
+            return (prcheck = !placementRuleChecked)
         }
         return (
             <Fragment>
@@ -234,7 +234,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                     id={'remove-placementBinding'}
                     isChecked={placementBindingChecked}
                     onClick={() => handlePlacementBindingChecked()}
-                    label= {t('policy.bulk.associatedResources.placementBinding')}
+                    label={t('policy.bulk.associatedResources.placementBinding')}
                 />
             </Fragment>
         )
@@ -263,7 +263,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                         ],
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
                         actionFn: (policy) => deletePolicy(policy, pbcheck, prcheck),
-                        close: async() => {
+                        close: async () => {
                             setModalProps({ open: false })
                             pbcheck = false
                             prcheck = false
@@ -308,7 +308,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                         close: () => {
                             setModalProps({ open: false })
                             pbcheck = false
-                            prcheck= false
+                            prcheck = false
                         },
                         checkBox: renderRelatedResourceCheckbox(placementBindingChecked, placementRuleChecked),
                         isDanger: true,
