@@ -173,9 +173,9 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 isDisabled={false}
             />
         ),
-        pullSecret: control.additionalProps?.['promptSshPublicKey'] ? (
-            <ClusterSshKeyFields clusterSshKey="" imageSshKey="" /* Props are empty since we are in the Create flow ...*/ />
-        ) : null,
+        // pullSecret: control.additionalProps?.['promptSshPublicKey'] ? (
+        //     <ClusterSshKeyFields clusterSshKey="" imageSshKey="" /* Props are empty since we are in the Create flow ...*/ />
+        // ) : null,
     }
 
     useEffect(() => {

@@ -18,6 +18,7 @@ import {
     getAIConfigMap,
     getClusterDeploymentLink,
     getOnDeleteHost,
+    getOnSaveISOParams,
     onApproveAgent,
     onHostsNext,
     onSaveAgent,
@@ -152,6 +153,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 canDeleteAgent={canDeleteAgent}
                 onSaveAgent={onSaveAgent}
                 onSaveBMH={onSaveBMH}
+                onSaveISOParams={getOnSaveISOParams(infraEnv)}
                 // onFormSaveError={setErrorHandler}
                 // just for Day 2: onSaveHostsDiscovery={(values) => onDiscoverHostsNext({ values, clusterDeployment, agents })}
                 fetchSecret={fetchSecret}

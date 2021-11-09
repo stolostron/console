@@ -22,6 +22,7 @@ import {
 } from '../../../../../../../atoms'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
+import { InfraEnvK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'
 
 const {
     getAnnotationsFromAgentSelector,
@@ -418,4 +419,24 @@ export const useBMHsOfAIFlow = ({ name, namespace }: { name: string; namespace: 
             ),
         [bmhs]
     )
+}
+
+export const getOnSaveISOParams = (infraEnv: InfraEnvK8sResource) => async (values: CIM.DiscoveryImageFormValues) => {
+    const patches: any[] = []
+    appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey || '', infraEnv.spec?.sshAuthorizedKey)
+
+    const proxy = values.enableProxy
+        ? {
+              httpProxy: values.httpProxy,
+              httpsProxy: values.httpsProxy,
+              noProxy: values.noProxy,
+          }
+        : {}
+    appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
+    
+    // TODO(mlibra): Once implemented on the backend, persist values.imageType
+
+    await patchResource(infraEnv, patches).promise
+    // TODO(mlibra): keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present
+    // Update: there is MGMT-7255 wip to add image streaming service when this waiting will not be needed
 }
