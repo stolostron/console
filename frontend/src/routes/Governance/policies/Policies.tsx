@@ -225,16 +225,16 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
         return (
             <Fragment>
                 <Checkbox
-                    id={'remove-placementRule'}
-                    isChecked={placementRuleChecked}
-                    onClick={() => handlePlacementRuleChecked()}
-                    label={t('policy.bulk.associatedResources.placementRule')}
-                />
-                <Checkbox
                     id={'remove-placementBinding'}
                     isChecked={placementBindingChecked}
                     onClick={() => handlePlacementBindingChecked()}
                     label={t('policy.bulk.associatedResources.placementBinding')}
+                />
+                <Checkbox
+                    id={'remove-placementRule'}
+                    isChecked={placementRuleChecked}
+                    onClick={() => handlePlacementRuleChecked()}
+                    label={t('policy.bulk.associatedResources.placementRule')}
                 />
             </Fragment>
         )
@@ -263,12 +263,12 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                         ],
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
                         actionFn: (policy) => deletePolicy(policy, pbcheck, prcheck),
-                        close: async () => {
+                        close: () => {
                             setModalProps({ open: false })
                             pbcheck = false
                             prcheck = false
                         },
-                        checkBox: renderRelatedResourceCheckbox(placementBindingChecked, placementRuleChecked),
+                        checkBox: renderRelatedResourceCheckbox(placementRuleChecked, placementBindingChecked),
                         isDanger: true,
                         icon: 'warning',
                         confirmText: 'confirm',
@@ -310,7 +310,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                             pbcheck = false
                             prcheck = false
                         },
-                        checkBox: renderRelatedResourceCheckbox(placementBindingChecked, placementRuleChecked),
+                        checkBox: renderRelatedResourceCheckbox(placementRuleChecked, placementBindingChecked),
                         isDanger: true,
                         icon: 'warning',
                         confirmText: 'confirm',
