@@ -2,7 +2,7 @@
 import { AcmPageContent } from '@open-cluster-management/ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
 import {
@@ -15,7 +15,7 @@ import {
     onSaveBMH,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 
-const { InfraEnvAgentTable, EditBMHModal } = CIM
+const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames } = CIM
 
 type HostsTabProps = {
     infraEnv: CIM.InfraEnvK8sResource
@@ -26,6 +26,8 @@ type HostsTabProps = {
 const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts }) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
+
+    const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents), [infraAgents])
 
     return (
         <AcmPageContent id="hosts">
@@ -52,7 +54,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                             fetchSecret={fetchSecret}
                             fetchNMState={fetchNMState}
                         />
-                        <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
+                        <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
                     </CardBody>
                 </Card>
             </PageSection>

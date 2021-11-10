@@ -44,6 +44,7 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
     const filteredBMHs = useBMHsOfAIFlow({ name: cdName, namespace: cdName })
     const infraEnv = useInfraEnv({ name: cdName, namespace: cdName })
 
+    // TODO(mlibra): this is not propagated (the user can set host-0 and host-0 twice)
     const usedHostnames = useMemo(() => getAgentsHostsNames(filteredAgents), [filteredAgents])
 
     const setErrorHandler = (err: any) => {

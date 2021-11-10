@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'
@@ -31,7 +31,8 @@ import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { isBMPlatform } from '../../../../InfraEnvironments/utils'
 
-const { ClusterDeploymentWizard, FeatureGateContextProvider, ACM_ENABLED_FEATURES, LoadingState } = CIM
+const { ClusterDeploymentWizard, FeatureGateContextProvider, ACM_ENABLED_FEATURES, LoadingState, getAgentsHostsNames } =
+    CIM
 
 type EditAIClusterProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -53,8 +54,6 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         ])
     )
 
-    // TODO(mlibra): Arn't we missing Bare Metal Hosts in the tables???
-
     const clusterDeployment = clusterDeployments.find(
         (cd) => cd.metadata.name === name && cd.metadata.namespace === namespace
     )
@@ -62,7 +61,10 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         (aci) => aci.metadata.name === name && aci.metadata.namespace === namespace
     )
     const infraEnv = useInfraEnv({ name, namespace })
+    // TODO(mlibra): Arn't we missing Bare Metal Hosts in the tables???
     const filteredBMHs = useBMHsOfAIFlow({ name, namespace })
+
+    const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
 
     const aiConfigMap = getAIConfigMap(configMaps)
 
@@ -143,7 +145,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 clusterDeployment={clusterDeployment}
                 agentClusterInstall={agentClusterInstall}
                 agents={agents}
-                usedClusterNames={[] /* No need in the Edit flow */}
+                usedClusterNames={[]}
                 onClose={history.goBack}
                 onSaveDetails={onSaveDetails}
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
@@ -160,13 +162,12 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 fetchNMState={fetchNMState}
                 isBMPlatform={isBMPlatform(infraEnv)}
                 getClusterDeploymentLink={getClusterDeploymentLink}
-              
                 hostActions={hostActions}
                 onFinish={onFinish}
                 aiConfigMap={aiConfigMap}
                 infraEnv={infraEnv}
             />
-            <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
+            <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
         </FeatureGateContextProvider>
     )
 }
