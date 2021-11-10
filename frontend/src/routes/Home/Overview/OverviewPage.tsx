@@ -28,9 +28,10 @@ import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../../atoms'
 import { consoleClient } from '../../../console-sdk/console-client'
-import { useGetOverviewLazyQuery, useGetResourceQuery } from '../../../console-sdk/console-sdk'
+import { useGetOverviewLazyQuery } from '../../../console-sdk/console-sdk'
 import { NavigationPath } from '../../../NavigationPath'
 import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
+import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { searchClient } from '../../../search-sdk/search-client'
 import { useSearchResultCountLazyQuery, useSearchResultItemsLazyQuery } from '../../../search-sdk/search-sdk'
 
@@ -161,21 +162,26 @@ const searchQueries = (selectedClusters: Array<string>): Array<any> => {
 
 const PageActions = (props: { timestamp: string; reloading: boolean; refetch: () => void }) => {
     const { t } = useTranslation(['overview'])
-    const { data, error } = useGetResourceQuery({
-        client: consoleClient,
-        variables: {
-            namespace: 'open-cluster-management',
-            name: 'observability-controller',
-            cluster: 'local-cluster',
-            kind: 'clustermanagementaddon',
-            apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-        },
-    })
-    if (error) {
-        // TODO: Better error handling
-        console.error(error)
-    }
-    const addons = data?.getResource
+    const [addons, setAddons] = useState()
+    useEffect(() => {
+        fireManagedClusterView(
+            'local-cluster',
+            'clustermanagementaddon',
+            'addon.open-cluster-management.io/v1alpha1',
+            'observability-controller'
+        )
+            .then((viewResponse) => {
+                if (viewResponse.message) {
+                    console.error('Error getting addons: ', viewResponse.message)
+                } else {
+                    setAddons(viewResponse.result)
+                }
+            })
+            .catch((err) => {
+                console.error('Error getting addons: ', err)
+            })
+    }, [])
+
     function getLaunchLink(addon: ClusterManagementAddOn) {
         const pathKey = 'console.open-cluster-management.io/launch-link'
         const textKey = 'console.open-cluster-management.io/launch-link-text'
@@ -195,7 +201,7 @@ const PageActions = (props: { timestamp: string; reloading: boolean; refetch: ()
     return (
         <Fragment>
             <AcmActionGroup>
-                {addons && addons.metadata.name && <AcmLaunchLink links={getLaunchLink(addons)} />}
+                {addons && <AcmLaunchLink links={getLaunchLink(addons)} />}
                 <AcmButton
                     component={Link}
                     variant={ButtonVariant.link}

@@ -8,7 +8,7 @@ export type ISearchResult = {
     data: {
         searchResult: {
             items?: any
-            count: number
+            count?: number
             related?: {
                 count: number
                 kind: string
