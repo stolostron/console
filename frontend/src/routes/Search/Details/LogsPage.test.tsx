@@ -15,8 +15,7 @@ describe('', () => {
     })
     const Component = () => (
         <LogsPage
-            getResource={undefined} // only used in logs page to catch & display errors
-            getResourceError={undefined} // only used in logs page to catch & display errors
+            resourceError={''} // only used in logs page to catch & display errors
             containers={['testContainer', 'testContainer1']}
             cluster={'testCluster'}
             namespace={'testNamespace'}

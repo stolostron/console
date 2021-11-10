@@ -13,13 +13,12 @@ import {
 } from '@open-cluster-management/ui-components'
 import '@patternfly/react-core/dist/styles/base.css'
 import _ from 'lodash'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Route, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../../atoms'
-import { consoleClient } from '../../../console-sdk/console-client'
-import { useGetResourceQuery } from '../../../console-sdk/console-sdk'
+import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import LogsPage from './LogsPage'
 import YAMLPage from './YAMLPage'
 
@@ -65,6 +64,8 @@ function getResourceData() {
 export default function DetailsPage() {
     const { t } = useTranslation(['details'])
     const [, setRoute] = useRecoilState(acmRouteState)
+    const [resource, setResource] = useState(undefined)
+    const [resourceError, setResourceError] = useState('')
     useEffect(() => setRoute(AcmRoute.Resources), [setRoute])
     const { cluster, kind, apiversion, namespace, name } = getResourceData()
     let resourceUrlParams = ''
@@ -75,16 +76,21 @@ export default function DetailsPage() {
     resourceUrlParams = `${resourceUrlParams}${name !== '' ? `&name=${name}` : ''}`
     const classes = useStyles()
 
-    const getResourceResponse = useGetResourceQuery({
-        client: consoleClient,
-        variables: {
-            apiVersion: apiversion,
-            kind,
-            name,
-            namespace,
-            cluster,
-        },
-    })
+    useEffect(() => {
+        fireManagedClusterView(cluster, kind, apiversion, name, namespace)
+            .then((viewResponse) => {
+                if (viewResponse.message) {
+                    setResourceError(viewResponse.message)
+                } else {
+                    setResource(viewResponse.result)
+                }
+            })
+            .catch((err) => {
+                console.error('Error getting resource: ', err)
+                setResourceError(err)
+            })
+    }, [cluster, kind, apiversion, name, namespace])
+
     const location = useLocation()
     const history = useHistory()
 
@@ -137,9 +143,9 @@ export default function DetailsPage() {
             <Switch>
                 <Route exact path={'/multicloud/resources'}>
                     <YAMLPage
-                        resource={getResourceResponse.data}
-                        loading={getResourceResponse.loading}
-                        error={getResourceResponse.error}
+                        resource={resource}
+                        loading={!resource && resourceError !== ''}
+                        error={resourceError}
                         name={name}
                         namespace={namespace}
                         cluster={cluster}
@@ -150,11 +156,8 @@ export default function DetailsPage() {
                 {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
                     <Route path={'/multicloud/resources/logs'}>
                         <LogsPage
-                            getResource={getResourceResponse.data}
-                            getResourceError={getResourceResponse.error}
-                            containers={_.get(getResourceResponse, 'data.getResource.spec.containers', []).map(
-                                (container: any) => container.name
-                            )}
+                            resourceError={resourceError}
+                            containers={_.get(resource, 'spec.containers', []).map((container: any) => container.name)}
                             cluster={cluster}
                             namespace={namespace}
                             name={name}
