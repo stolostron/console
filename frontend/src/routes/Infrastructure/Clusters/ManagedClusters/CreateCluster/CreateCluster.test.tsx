@@ -1381,7 +1381,8 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // Create On Premise cluster
-        await clickByTestId('cluster.create.ai.subtitle')
+        // TODO(mlibra) Add specific test case for the ai flow (start by clicking cluster.create.ai.subtitle hear instead)
+        await clickByTestId('cluster.create.cim.subtitle')
         await clickByText('Next')
 
         // wait for tables/combos to fill in

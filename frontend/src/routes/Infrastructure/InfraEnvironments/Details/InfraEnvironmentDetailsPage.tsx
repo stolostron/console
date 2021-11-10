@@ -21,7 +21,10 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError } from '../../../../resources'
 import { agentsState, bareMetalHostsState } from '../../../../atoms'
 import { isBMPlatform } from '../utils'
-import { getOnCreateBMH } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
+import {
+    getOnCreateBMH,
+    getOnSaveISOParams,
+} from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
 
@@ -154,7 +157,8 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 isOpen={isoModalOpen}
                 isBMPlatform={isBMPlatform(infrastructures[0])}
                 onClose={() => setISOModalOpen(false)}
-                onCreate={getOnCreateBMH(infraEnv)}
+                onCreateBMH={getOnCreateBMH(infraEnv)}
+                onSaveISOParams={getOnSaveISOParams(infraEnv)}
             />
         </>
     )
