@@ -116,12 +116,20 @@ export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHosts
 export const onDiscoverHostsNext = async ({ clusterDeployment, agents }: OnDiscoverHostsNext) => {
     // TODO(mlibra): So far we do not need "values" of the Formik - options the user will choose from will come later (like CNV or OCS)
 
-    // So far no need to "release" agents since the user either deletes and agent or keep the list static
+    // So far no need to "release" agents since the user either deletes the agent or keep the list untouched
 
     const name = clusterDeployment.metadata.name
     const namespace = clusterDeployment.metadata.namespace
 
-    addAgentsToCluster({ agents, name, namespace, hostIds: agents.map((a: CIM.AgentK8sResource) => a.metadata.uid) })
+    await addAgentsToCluster({
+        agents,
+        name,
+        namespace,
+        hostIds: agents.map((a: CIM.AgentK8sResource) => a.metadata.uid),
+    })
+
+    // In the AI flow, the agents are automatically approved
+    await Promise.all(agents.map((agent) => onApproveAgent(agent)))
 
     // No need to update ClusterDeployment annotations - they stay static after ccreation by template
 }

@@ -11,7 +11,6 @@ import {
     useClusterDeployment,
     onDiscoverHostsNext,
     useInfraEnv,
-    onApproveAgent,
     getClusterDeploymentLink,
     getOnDeleteHost,
     canDeleteAgent,
@@ -105,6 +104,7 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
     )
 
     return clusterDeployment && agentClusterInstall ? (
+        // onApproveAgent is missing - done automatically in the AI flow
         <ACMClusterDeploymentHostsDiscoveryStep
             formRef={formRef}
             error={error}
@@ -117,7 +117,6 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
             usedHostnames={usedHostnames}
             onValuesChanged={onValuesChanged}
             onCreateBMH={getOnCreateBMH(infraEnv)}
-            onApproveAgent={onApproveAgent}
             onDeleteHost={getOnDeleteHost(filteredBMHs)}
             canDeleteAgent={canDeleteAgent}
             onSaveAgent={onSaveAgent}
