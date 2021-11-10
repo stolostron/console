@@ -227,7 +227,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter('apps.open-cluster-management.io/v1', 'Channel', setChannelsState)
         addSetter('apps.open-cluster-management.io/v1', 'PlacementRule', setPlacementRulesState)
         addSetter('apps.open-cluster-management.io/v1', 'Subscription', setSubscriptionsState)
-        addSetter('apps.open-cluster-management.io/v1alpha1', 'GitOpsCluster', setGitOpsClustersState)
+        addSetter('apps.open-cluster-management.io/v1beta1', 'GitOpsCluster', setGitOpsClustersState)
         addSetter('argoproj.io/v1alpha1', 'appProjects', setAppProjectsState)
         addSetter('argoproj.io/v1alpha1', 'applicationSets', setApplicationSetsState)
         addSetter('argoproj.io/v1alpha1', 'applications', setArgoApplicationsState)
