@@ -21,7 +21,6 @@ const {
     ACM_ENABLED_FEATURES,
     labelsToArray,
     LoadingState,
-    ClusterSshKeyFields,
 } = CIM
 
 type FormControl = {
@@ -49,9 +48,6 @@ const fields: any = {
     baseDnsDomain: { path: 'ClusterDeployment[0].spec.baseDomain' },
     openshiftVersion: { path: 'AgentClusterInstall[0].spec.imageSetRef.name' },
     pullSecret: {},
-    // managedClusterSet: {
-    //     path: 'ClusterDeployment[0].metadata.labels["cluster.open-cluster-management.io/clusterset"]',
-    // },
 }
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {

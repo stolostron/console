@@ -2,24 +2,24 @@
 import { CIM } from 'openshift-assisted-ui-lib'
 
 export type FormControl = {
-  active?: CIM.ClusterDeploymentHostsSelectionValues
-  agentClusterInstall: CIM.AgentClusterInstallK8sResource
-  validate?: VoidFunction
-  summary?: VoidFunction
-  resourceJSON?: any
-  step?: any
+    active?: CIM.ClusterDeploymentHostsSelectionValues
+    agentClusterInstall: CIM.AgentClusterInstallK8sResource
+    validate?: VoidFunction
+    summary?: VoidFunction
+    resourceJSON?: any
+    step?: any
 }
 
 export type CIMHostsFormProps = {
-  control: FormControl
-  resourceJSON: any
-  handleChange: (control: FormControl) => void
+    control: FormControl
+    resourceJSON: any
+    handleChange: (control: FormControl) => void
 }
 
-export type AIHostsFormProps = CIMHostsFormProps;
+export type AIHostsFormProps = CIMHostsFormProps
 
 export type ModalProps = {
-  bmh?: CIM.BareMetalHostK8sResource
-  nmState?: CIM.NMStateK8sResource
-  secret?: CIM.SecretK8sResource
+    bmh?: CIM.BareMetalHostK8sResource
+    nmState?: CIM.NMStateK8sResource
+    secret?: CIM.SecretK8sResource
 }

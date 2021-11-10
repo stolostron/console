@@ -25,15 +25,6 @@ export const controlDataCIM = [
     },
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
-// TODO(mlibra): That placing is for development only, see below
-    // {
-    //     id: 'aiHosts',
-    //     type: 'custom',
-    //     component: null, // will be defined later
-    //     providerId: 'aiHosts',
-    //     mustValidate: true,
-    // },
-
     {
         id: 'aiDetailStep',
         type: 'step',
@@ -48,7 +39,7 @@ export const controlDataCIM = [
         encodeValues: ['pullSecret'],
         additionalProps: {
             promptSshPublicKey: false,
-        }
+        },
     },
     ...automationControlData,
     {
@@ -93,13 +84,13 @@ export const controlDataCIM = [
     },
 ]
 
-export const controlDataAI = _.cloneDeep(controlDataCIM);
+export const controlDataAI = _.cloneDeep(controlDataCIM)
 
-const aiHostsStep = controlDataAI.find((data) => data.id === 'aiHosts');
-aiHostsStep.component = <AIHostsForm />;
+const aiHostsStep = controlDataAI.find((data) => data.id === 'aiHosts')
+aiHostsStep.component = <AIHostsForm />
 
-const cimHostsStep = controlDataCIM.find((data) => data.id === 'aiHosts');
-cimHostsStep.component = <CIMHostsForm />;
+const cimHostsStep = controlDataCIM.find((data) => data.id === 'aiHosts')
+cimHostsStep.component = <CIMHostsForm />
 
-const aiStep = controlDataAI.find((data) => data.id === 'ai');
-aiStep.additionalProps.promptSshPublicKey = true;
+const aiStep = controlDataAI.find((data) => data.id === 'ai')
+aiStep.additionalProps.promptSshPublicKey = true

@@ -10,7 +10,7 @@ import cimTemplateHbs from '../templates/assisted-installer/cim-template.hbs'
 import aiTemplateHbs from '../templates/assisted-installer/ai-template.hbs'
 import { AcmIconVariant, AcmIcon } from '@open-cluster-management/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { ConnectedIcon } from '@patternfly/react-icons';
+import { ConnectedIcon } from '@patternfly/react-icons'
 
 import getControlDataAWS from './ControlDataAWS'
 import getControlDataGCP from './ControlDataGCP'
@@ -66,7 +66,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
         available: [
             {
                 id: 'CIM',
-                logo: <AcmIcon icon={AcmIconVariant.hybrid} />, // TODO(mlibra): change icon
+                logo: <AcmIcon icon={AcmIconVariant.hybrid} />, // TODO(mlibra): change icon (requests graphics by UXD)
                 title: 'cluster.create.cim.subtitle',
                 tooltip: 'cluster.create.cim.tooltip',
                 text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
@@ -81,7 +81,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                 id: 'AI',
                 logo: <ConnectedIcon />,
                 title: 'cluster.create.ai.subtitle',
-                tooltip: 'cluster.create.ai.tooltip', // TODO(mlibra): customize tooltip to include product-provider's logos
+                tooltip: 'cluster.create.ai.tooltip',
                 text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
                 change: {
                     insertControlData: controlDataAI,

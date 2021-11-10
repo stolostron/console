@@ -25,11 +25,7 @@ import { getOnCreateBMH } from '../../Clusters/ManagedClusters/CreateCluster/com
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
 
-const {
-    AddHostModal,
-    InfraEnvHostsTabAgentsWarning,
-    INFRAENV_AGENTINSTALL_LABEL_KEY,
-} = CIM
+const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY } = CIM
 
 type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
 
