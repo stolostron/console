@@ -26,10 +26,15 @@ import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState } from '../../../atoms'
-import { consoleClient } from '../../../console-sdk/console-client'
-import { useGetOverviewLazyQuery } from '../../../console-sdk/console-sdk'
+import {
+    acmRouteState,
+    applicationsState,
+    argoApplicationsState,
+    managedClustersState,
+    policiesState,
+} from '../../../atoms'
 import { NavigationPath } from '../../../NavigationPath'
+import { Policy } from '../../../resources'
 import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { searchClient } from '../../../search-sdk/search-client'
@@ -96,11 +101,18 @@ function getClusterSummary(clusters: any, selectedCloud: string, setSelectedClou
             if (selectedCloud === '' || selectedCloud === cloud) {
                 // Data for Summary section.
                 prev.clusterNames.add(curr.metadata.name)
-                prev.kubernetesTypes.add(curr.metadata.labels.vendor)
-                prev.regions.add(curr.metadata.labels.region)
+                prev.kubernetesTypes.add(curr.metadata.labels.vendor ?? 'Other')
+                prev.regions.add(curr.metadata.labels.region ?? 'Other')
+
+                const clusterConditions = _.get(curr, 'status.conditions') || []
+                const isReady =
+                    _.get(
+                        clusterConditions.find((c: any) => c.type === 'ManagedClusterConditionAvailable'),
+                        'status'
+                    ) === 'True'
 
                 // Data for Cluster status pie chart.
-                if (curr.status === 'ok') {
+                if (isReady) {
                     prev.ready = prev.ready + 1
                 } else {
                     prev.offline = prev.offline + 1
@@ -222,6 +234,10 @@ const PageActions = (props: { timestamp: string; reloading: boolean; refetch: ()
 export default function OverviewPage() {
     const { t } = useTranslation(['overview'])
     const [, setRoute] = useRecoilState(acmRouteState)
+    const [managedClusters] = useRecoilState(managedClustersState)
+    const [policies] = useRecoilState(policiesState)
+    const [apps] = useRecoilState(applicationsState)
+    const [argoApps] = useRecoilState(argoApplicationsState)
     useEffect(() => setRoute(AcmRoute.Overview), [setRoute])
     const [clusters, setClusters] = useState<any[]>([])
     const [selectedCloud, setSelectedCloud] = useState<string>('')
@@ -234,26 +250,14 @@ export default function OverviewPage() {
         providers: [],
     })
 
-    // CONSOLE-API
-    const [fireConsoleQuery, { data, loading, error, refetch, called }] = useGetOverviewLazyQuery({
-        client: process.env.NODE_ENV === 'test' ? undefined : consoleClient,
-    })
-    useEffect(() => {
-        if (!called) {
-            fireConsoleQuery()
-        } else {
-            refetch && refetch()
-        }
-    }, [called, fireConsoleQuery, refetch])
-
-    const timestamp = data?.overview?.timestamp as string
-    if (!_.isEqual(clusters, data?.overview?.clusters || [])) {
-        setClusters(data?.overview?.clusters || [])
+    const timestamp = new Date().toString() as string
+    if (!_.isEqual(clusters, managedClusters || [])) {
+        setClusters(managedClusters || [])
     }
 
     const nonCompliantClusters = new Set<string>()
-    data?.overview?.compliances?.forEach((c) => {
-        c?.raw?.status?.status?.forEach((i: { clustername: string; clusternamespace: string; compliant?: string }) => {
+    policies.forEach((c: Policy) => {
+        c?.status?.status?.forEach((i: { clustername: string; clusternamespace: string; compliant?: string }) => {
             if (selectedClusterNames.length === 0 || selectedClusterNames.includes(i.clustername)) {
                 if (i.compliant === 'NonCompliant') {
                     nonCompliantClusters.add(i.clustername)
@@ -273,8 +277,7 @@ export default function OverviewPage() {
     })
 
     useEffect(() => {
-        if (!called && !searchCalled) {
-            // The console call needs to finish first.
+        if (!searchCalled) {
             fireSearchQuery({
                 variables: { input: searchQueries(selectedClusterNames) },
             })
@@ -284,7 +287,7 @@ export default function OverviewPage() {
                     input: searchQueries(selectedClusterNames),
                 })
         }
-    }, [fireSearchQuery, called, selectedClusterNames, searchCalled, searchRefetch])
+    }, [fireSearchQuery, selectedClusterNames, searchCalled, searchRefetch])
     const searchResult = searchData?.searchResult || []
 
     // Process data from API.
@@ -303,7 +306,7 @@ export default function OverviewPage() {
         } else if (!_.isEqual(selectedClusterNames, Array.from(clusterNames))) {
             setSelectedClusterNames(Array.from(clusterNames))
         }
-    }, [clusters, selectedCloud, data, searchData, selectedClusterNames])
+    }, [clusters, selectedCloud, searchData, selectedClusterNames])
 
     const [
         firePolicyReportQuery,
@@ -340,7 +343,6 @@ export default function OverviewPage() {
         const clustersToSearch =
             selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((cluster) => cluster.metadata.name)
         if (!searchPolicyReportCalled && clustersToSearch.length > 0) {
-            // The console call needs to finish first.
             firePolicyReportQuery({
                 variables: { input: policyReportQuery(clustersToSearch) },
             })
@@ -350,14 +352,7 @@ export default function OverviewPage() {
                     input: policyReportQuery(clustersToSearch),
                 })
         }
-    }, [
-        firePolicyReportQuery,
-        called,
-        clusters,
-        selectedClusterNames,
-        searchPolicyReportCalled,
-        searchPolicyReportRefetch,
-    ])
+    }, [firePolicyReportQuery, clusters, selectedClusterNames, searchPolicyReportCalled, searchPolicyReportRefetch])
     const searchPolicyReportResult = searchPolicyReportData?.searchResult || []
     const policyReportItems = searchPolicyReportResult[0]?.items || []
     const policyReportCriticalCount = policyReportItems.reduce(
@@ -378,7 +373,6 @@ export default function OverviewPage() {
     )
 
     const refetchData = () => {
-        refetch && refetch()
         searchRefetch && searchRefetch({ input: searchQueries(selectedClusterNames) })
         const clustersToSearch =
             selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((cluster) => cluster.metadata.name)
@@ -400,22 +394,20 @@ export default function OverviewPage() {
             : `/multicloud/search?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}&showrelated=${kind}`
     }
     const summary =
-        loading || searchLoading || searchPolicyReportLoading
+        searchLoading || searchPolicyReportLoading
             ? []
             : [
                   {
                       isPrimary: false,
                       description: 'Applications',
-                      count: data?.overview?.applications?.length || 0,
+                      count: apps.concat(argoApps).length || 0,
                       href: buildSummaryLinks('application', true),
                   },
                   {
                       isPrimary: false,
                       description: 'Clusters',
                       count:
-                          selectedClusterNames.length > 0
-                              ? selectedClusterNames.length
-                              : data?.overview?.clusters?.length || 0,
+                          selectedClusterNames.length > 0 ? selectedClusterNames.length : managedClusters.length || 0,
                       href: `/multicloud/search?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}`,
                   },
                   { isPrimary: false, description: 'Kubernetes type', count: kubernetesTypes?.size },
@@ -439,7 +431,7 @@ export default function OverviewPage() {
     const urlClusterFilter: string =
         selectedClusterNames.length > 0 ? `%20cluster%3A${selectedClusterNames.join(',')}` : ''
     const podData =
-        loading || searchLoading || searchPolicyReportLoading
+        searchLoading || searchPolicyReportLoading
             ? []
             : [
                   {
@@ -468,7 +460,7 @@ export default function OverviewPage() {
         }"}&showrelated=policy`
     }
     const complianceData =
-        loading || searchLoading || searchPolicyReportLoading
+        searchLoading || searchPolicyReportLoading
             ? []
             : [
                   {
@@ -485,7 +477,7 @@ export default function OverviewPage() {
               ]
 
     const clusterData =
-        loading || searchLoading || searchPolicyReportLoading
+        searchLoading || searchPolicyReportLoading
             ? []
             : [
                   {
@@ -502,7 +494,7 @@ export default function OverviewPage() {
               ]
 
     const policyReportData =
-        loading || searchLoading || searchPolicyReportLoading
+        searchLoading || searchPolicyReportLoading
             ? []
             : [
                   {
@@ -540,13 +532,13 @@ export default function OverviewPage() {
                   },
               ]
 
-    if (error || searchError || searchPolicyReportError) {
+    if (searchError || searchPolicyReportError) {
         return (
             <AcmPage
                 header={
                     <AcmPageHeader
                         title={t('overview')}
-                        actions={<PageActions timestamp={timestamp} reloading={loading} refetch={refetchData} />}
+                        actions={<PageActions timestamp={timestamp} reloading={searchLoading} refetch={refetchData} />}
                     />
                 }
             >
@@ -572,14 +564,12 @@ export default function OverviewPage() {
             header={
                 <AcmPageHeader
                     title={t('overview')}
-                    actions={
-                        <PageActions timestamp={timestamp} reloading={loading || searchLoading} refetch={refetchData} />
-                    }
+                    actions={<PageActions timestamp={timestamp} reloading={searchLoading} refetch={refetchData} />}
                 />
             }
         >
             <AcmScrollable>
-                {!called || loading || searchLoading || searchPolicyReportLoading ? (
+                {searchLoading || searchPolicyReportLoading ? (
                     <AcmLoadingPage />
                 ) : (
                     <PageSection>
@@ -588,7 +578,7 @@ export default function OverviewPage() {
                 )}
 
                 <PageSection>
-                    {!called || loading || searchLoading || searchPolicyReportLoading ? (
+                    {searchLoading || searchPolicyReportLoading ? (
                         <AcmSummaryList key="loading" loading title={t('overview.summary.title')} list={summary} />
                     ) : (
                         <AcmSummaryList title={t('overview.summary.title')} list={summary} />
@@ -596,7 +586,7 @@ export default function OverviewPage() {
                 </PageSection>
 
                 <PageSection>
-                    {!called || loading || searchLoading || searchPolicyReportLoading ? (
+                    {searchLoading || searchPolicyReportLoading ? (
                         <AcmChartGroup>
                             <AcmDonutChart
                                 loading
