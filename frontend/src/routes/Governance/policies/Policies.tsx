@@ -36,8 +36,8 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Policy> | { open: false }>({
         open: false,
     })
-    const [placementBindingChecked, setPlacementBindingChecked] = useState(false)
-    const [placementRuleChecked, setPlacementRuleChecked] = useState(false)
+    const [placementBindingChecked] = useState(false)
+    const [placementRuleChecked] = useState(false)
     const policyKeyFn = useCallback(
         (resource: Policy) => resource.metadata.uid ?? `${resource.metadata.name}/${resource.metadata.namespace}`,
         []
