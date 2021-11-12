@@ -30,7 +30,7 @@ const {
     INFRAENV_GENERATED_AI_FLOW,
     getBareMetalHostCredentialsSecret,
     getBareMetalHost,
-    isAgentOfAIFlow,
+    isAgentOfCluster,
 } = CIM
 
 type OnHostsNext = {
@@ -412,7 +412,7 @@ export const onSaveAgent = async (agent: CIM.AgentK8sResource, hostname: string)
 
 export const useAgentsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }) => {
     const [agents] = useRecoilValue(waitForAll([agentsState]))
-    return useMemo(() => agents.filter((a) => isAgentOfAIFlow(a, name, namespace)), [agents])
+    return useMemo(() => agents.filter((a) => isAgentOfCluster(a, name, namespace)), [agents])
 }
 
 export const useBMHsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }) => {
