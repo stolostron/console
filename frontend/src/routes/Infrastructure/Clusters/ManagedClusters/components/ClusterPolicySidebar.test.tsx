@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ConfigMap, PolicyReport } from '../../../../../resources'
 import { act, render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
+import { ConfigMap, PolicyReport } from '../../../../../resources'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 
 const mockPolicyReports: PolicyReport = {
@@ -19,6 +19,7 @@ const mockPolicyReports: PolicyReport = {
         {
             category: 'category,category1,category2',
             scored: false,
+            source: 'insights',
             properties: {
                 created_at: '2021-03-02T21:26:04Z',
                 total_risk: '0',
@@ -31,6 +32,7 @@ const mockPolicyReports: PolicyReport = {
         {
             category: 'category,category1,category2',
             scored: false,
+            source: 'insights',
             properties: {
                 created_at: '2021-03-02T21:26:04Z',
                 total_risk: '1',
@@ -43,6 +45,7 @@ const mockPolicyReports: PolicyReport = {
         {
             category: 'category,category1,category2',
             scored: false,
+            source: 'insights',
             properties: {
                 created_at: '2021-03-02T21:26:04Z',
                 total_risk: '2',
@@ -55,6 +58,7 @@ const mockPolicyReports: PolicyReport = {
         {
             category: 'category,category1,category2',
             scored: false,
+            source: 'insights',
             properties: {
                 created_at: '2021-04-02T21:26:04Z',
                 total_risk: '3',
@@ -67,6 +71,7 @@ const mockPolicyReports: PolicyReport = {
         {
             category: 'category,category1,category2',
             scored: false,
+            source: 'grc',
             properties: {
                 created_at: '2021-03-02T21:26:04Z',
                 total_risk: '4',
