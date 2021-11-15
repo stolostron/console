@@ -2,20 +2,20 @@
 import AbortController from 'abort-controller'
 import { IncomingMessage, STATUS_CODES } from 'http'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { parseCookies } from '../lib/cookies'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { noop } from '../lib/noop'
 import { requestRetry } from '../lib/request-retry'
 import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
+import { getToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { serviceAcccountToken, setDead } from './liveness'
 
-const { HTTP_STATUS_OK, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND } = constants
+const { HTTP_STATUS_OK, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND, HTTP2_HEADER_AUTHORIZATION } = constants
 
 export function events(req: Http2ServerRequest, res: Http2ServerResponse): void {
-    const token = parseCookies(req)['acm-access-token-cookie']
+    const token = getToken(req)
     if (!token) return unauthorized(req, res)
     ServerSideEvents.handleRequest(token, req, res)
 }
