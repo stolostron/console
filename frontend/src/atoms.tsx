@@ -13,6 +13,15 @@ import {
     AnsibleJob,
     AnsibleJobApiVersion,
     AnsibleJobKind,
+    ArgoApplication,
+    ArgoApplicationApiVersion,
+    ArgoApplicationKind,
+    Application,
+    ApplicationApiVersion,
+    ApplicationKind,
+    ApplicationSet,
+    ApplicationSetApiVersion,
+    ApplicationSetKind,
     BareMetalAsset,
     BareMetalAssetApiVersion,
     BareMetalAssetKind,
@@ -21,6 +30,9 @@ import {
     CertificateSigningRequest,
     CertificateSigningRequestApiVersion,
     CertificateSigningRequestKind,
+    Channel,
+    ChannelApiVersion,
+    ChannelKind,
     ClusterClaim,
     ClusterClaimApiVersion,
     ClusterClaimKind,
@@ -80,19 +92,23 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
+    PlacementRule,
+    PlacementRuleApiVersion,
+    PlacementRuleKind,
     PolicyReport,
     PolicyReportApiVersion,
     PolicyReportKind,
     Secret,
     SecretApiVersion,
     SecretKind,
+    Subscription,
+    SubscriptionApiVersion,
+    SubscriptionKind,
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
 } from './resources'
-import { ApplicationApiVersion, ApplicationKind } from './resources/application'
 import { PlacementBinding, PlacementBindingApiVersion, PlacementBindingKind } from './resources/placement-binding'
-import { PlacementRule } from './resources/placement-rule'
 import { Policy, PolicyApiVersion, PolicyKind } from './resources/policy'
 
 let atomArrayKey = 0
@@ -106,14 +122,14 @@ export const agentClusterInstallsState = AtomArray<CIM.AgentClusterInstallK8sRes
 export const agentsState = AtomArray<CIM.AgentK8sResource>()
 export const ansibleJobState = AtomArray<AnsibleJob>()
 export const appProjectsState = AtomArray<IResource>()
-export const applicationSetsState = AtomArray<IResource>()
-export const applicationsState = AtomArray<IResource>()
-export const argoApplicationsState = AtomArray<IResource>()
+export const applicationSetsState = AtomArray<ApplicationSet>()
+export const applicationsState = AtomArray<Application>()
+export const argoApplicationsState = AtomArray<ArgoApplication>()
 export const argoCDsState = AtomArray<IResource>()
 export const bareMetalAssetsState = AtomArray<BareMetalAsset>()
 export const bareMetalHostsState = AtomArray<CIM.BareMetalHostK8sResource>()
 export const certificateSigningRequestsState = AtomArray<CertificateSigningRequest>()
-export const channelsState = AtomArray<IResource>()
+export const channelsState = AtomArray<Channel>()
 export const clusterClaimsState = AtomArray<ClusterClaim>()
 export const clusterCuratorsState = AtomArray<ClusterCurator>()
 export const clusterDeploymentsState = AtomArray<ClusterDeployment>()
@@ -141,7 +157,7 @@ export const placementRulesState = AtomArray<PlacementRule>()
 export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
-export const subscriptionsState = AtomArray<IResource>()
+export const subscriptionsState = AtomArray<Subscription>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
@@ -224,13 +240,13 @@ export function LoadData(props: { children?: ReactNode }) {
         }
         addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
-        addSetter('apps.open-cluster-management.io/v1', 'Channel', setChannelsState)
-        addSetter('apps.open-cluster-management.io/v1', 'PlacementRule', setPlacementRulesState)
-        addSetter('apps.open-cluster-management.io/v1', 'Subscription', setSubscriptionsState)
+        addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
+        addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
+        addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
         addSetter('apps.open-cluster-management.io/v1alpha1', 'GitOpsCluster', setGitOpsClustersState)
         addSetter('argoproj.io/v1alpha1', 'appProjects', setAppProjectsState)
-        addSetter('argoproj.io/v1alpha1', 'applicationSets', setApplicationSetsState)
-        addSetter('argoproj.io/v1alpha1', 'applications', setArgoApplicationsState)
+        addSetter(ApplicationSetApiVersion, ApplicationSetKind, setApplicationSetsState)
+        addSetter(ArgoApplicationApiVersion, ArgoApplicationKind, setArgoApplicationsState)
         addSetter('argoproj.io/v1alpha1', 'argoCDs', setArgoCDsState)
         addSetter(AgentClusterInstallVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(AgentKindVersion, AgentKind, setAgents)
