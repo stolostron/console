@@ -1,18 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import '@patternfly/react-core/dist/styles/base.css'
-import _ from 'lodash'
-import { Fragment, useState } from 'react'
 import {
     AcmAlert,
     AcmExpandableSection,
-    AcmTable,
-    AcmPageCard,
-    AcmTile,
     AcmExpandableWrapper,
     AcmLoadingPage,
+    AcmPageCard,
+    AcmTable,
+    AcmTile,
 } from '@open-cluster-management/ui-components'
+import { PageSection } from '@patternfly/react-core'
+import '@patternfly/react-core/dist/styles/base.css'
+import _ from 'lodash'
+import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { searchClient } from '../../../search-sdk/search-client'
 import {
@@ -20,19 +21,19 @@ import {
     useSearchResultRelatedCountQuery,
     useSearchResultRelatedItemsQuery,
 } from '../../../search-sdk/search-sdk'
-import { convertStringToQuery } from '../search-helper'
 import {
+    ClosedDeleteModalProps,
     DeleteResourceModal,
     IDeleteModalProps,
-    ClosedDeleteModalProps,
 } from '../components/Modals/DeleteResourceModal'
-import { PageSection } from '@patternfly/react-core'
+import { convertStringToQuery } from '../search-helper'
 import searchDefinitions from '../searchDefinitions'
 
 function GetRowActions(
     kind: string,
     rowTitle: string,
     currentQuery: string,
+    relatedResource: boolean,
     setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
 ) {
     return kind !== 'cluster' && kind !== 'release' && kind !== 'policyreport'
@@ -46,7 +47,7 @@ function GetRowActions(
                           close: () => setDeleteResource(ClosedDeleteModalProps),
                           resource: item,
                           currentQuery,
-                          relatedResource: false,
+                          relatedResource,
                       })
                   },
               },
@@ -115,6 +116,7 @@ function RenderRelatedTables(
                                 kind,
                                 t('search.results.delete.resource', { resourceKind: kind }),
                                 currentQuery,
+                                true,
                                 setDeleteResource
                             )}
                         />
@@ -270,6 +272,7 @@ function RenderSearchTables(
                                     kind,
                                     t('search.results.delete.resource', { resourceKind: kind }),
                                     currentQuery,
+                                    false,
                                     setDeleteResource
                                 )}
                             />
