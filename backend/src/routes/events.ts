@@ -12,7 +12,7 @@ import { getToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { serviceAcccountToken, setDead } from './liveness'
 
-const { HTTP_STATUS_OK, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND, HTTP2_HEADER_AUTHORIZATION } = constants
+const { HTTP_STATUS_OK, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND } = constants
 
 export function events(req: Http2ServerRequest, res: Http2ServerResponse): void {
     const token = getToken(req)
