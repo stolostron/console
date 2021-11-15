@@ -1,0 +1,186 @@
+[
+    {
+        "type": "console.perspective",
+        "properties": {
+            "id": "acm",
+            "name": "All clusters",
+            "icon": { "$codeRef": "perspective.icon" },
+            "landingPageURL": { "$codeRef": "perspective.getLandingPageURL" },
+            "importRedirectURL": { "$codeRef": "perspective.getImportRedirectURL" }
+        }
+    },
+    {
+        "type": "console.navigation/section",
+        "properties": {
+            "perspective": "acm",
+            "id": "acm-home",
+            "name": "Home"
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-home",
+            "id": "acm-welcome",
+            "name": "Welcome",
+            "href": "/multicloud/home/welcome"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/home/welcome",
+            "component": { "$codeRef": "welcome.default" }
+        }
+    },
+    // {
+    //     "type": "console.navigation/href",
+    //     "properties": {
+    //         "perspective": "acm",
+    //         "section": "acm-home",
+    //         "id": "acm-overview",
+    //         "name": "Overview",
+    //         "href": "/multicloud/home/overview"
+    //     }
+    // },
+    // {
+    //     "type": "console.page/route",
+    //     "properties": {
+    //         "path": "/multicloud/home/overview",
+    //         "component": { "$codeRef": "welcome.default" }
+    //     }
+    // },
+    // {
+    //     "type": "console.navigation/section",
+    //     "properties": {
+    //         "id": "acm-infrastructure",
+    //         "perspective": "acm",
+    //         "name": "Infrastructure"
+    //     }
+    // },
+    // {
+    //     "type": "console.navigation/href",
+    //     "properties": {
+    //         "perspective": "acm",
+    //         "section": "acm-infrastructure",
+    //         "id": "acm-clusters",
+    //         "name": "Clusters",
+    //         "href": "/multicloud/infrastructure/clusters"
+    //     }
+    // },
+    // {
+    //     "type": "console.page/route",
+    //     "properties": {
+    //         "path": "/multicloud/infrastructure/clusters",
+    //         "component": { "$codeRef": "welcome.default" }
+    //     }
+    // },
+    // {
+    //     "type": "console.navigation/href",
+    //     "properties": {
+    //         "perspective": "acm",
+    //         "section": "acm-infrastructure",
+    //         "id": "acm-bare-metal-assets",
+    //         "name": "Bare metal assets",
+    //         "href": "/multicloud/infrastructure/bare-metal-assets"
+    //     }
+    // },
+    // {
+    //     "type": "console.page/route",
+    //     "properties": {
+    //         "path": "/multicloud/infrastructure/bare-metal-assets",
+    //         "component": { "$codeRef": "welcome.default" }
+    //     }
+    // },
+    // {
+    //     "type": "console.navigation/href",
+    //     "properties": {
+    //         "perspective": "acm",
+    //         "section": "acm-infrastructure",
+    //         "id": "acm-automation",
+    //         "name": "Automation",
+    //         "href": "/multicloud/infrastructure/automation"
+    //     }
+    // },
+    // {
+    //     "type": "console.page/route",
+    //     "properties": {
+    //         "path": "/multicloud/infrastructure/automation",
+    //         "component": { "$codeRef": "welcome.default" }
+    //     }
+    // },
+    // {
+    //     "type": "console.navigation/href",
+    //     "properties": {
+    //         "perspective": "acm",
+    //         "section": "acm-infrastructure",
+    //         "id": "acm-infrastructure-environments",
+    //         "name": "Infrastructure environments",
+    //         "href": "/multicloud/infrastructure/environments"
+    //     }
+    // },
+    // {
+    //     "type": "console.page/route",
+    //     "properties": {
+    //         "path": "/multicloud/infrastructure/environments",
+    //         "component": { "$codeRef": "welcome.default" }
+    //     }
+    // },
+    // {
+    //     "type": "console.navigation/href",
+    //     "properties": {
+    //         "perspective": "acm",
+    //         "id": "acm-applications",
+    //         "name": "Applications",
+    //         "href": "/multicloud/applications"
+    //     }
+    // },
+    // {
+    //     "type": "console.page/route",
+    //     "properties": {
+    //         "path": "/multicloud/applications",
+    //         "component": { "$codeRef": "welcome.default" }
+    //     }
+    // },
+    // {
+    //     "type": "console.navigation/href",
+    //     "properties": {
+    //         "perspective": "acm",
+    //         "id": "acm-governance",
+    //         "name": "Governance",
+    //         "href": "/multicloud/governance"
+    //     }
+    // },
+    // {
+    //     "type": "console.page/route",
+    //     "properties": {
+    //         "path": "/multicloud/governance",
+    //         "component": { "$codeRef": "welcome.default" }
+    //     }
+    // },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "id": "acm-credentials",
+            "name": "Credentials",
+            "href": "/multicloud/credentials"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/credentials",
+            "exact": true,
+            "component": { "$codeRef": "credentialsPage.default" }
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/credentials/details/:namespace/:name",
+            "component": { "$codeRef": "credentialsForm.default" }
+        }
+    }
+]
