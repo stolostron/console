@@ -2,7 +2,6 @@
 import { listResources } from './utils/resource-request'
 import { IResource, IResourceDefinition } from './resource'
 import { Metadata } from './metadata'
-import { map } from 'lodash'
 
 export const GitOpsClusterApiVersion = 'apps.open-cluster-management.io/v1beta1'
 export type GitOpsClusterApiVersionType = 'apps.open-cluster-management.io/v1beta1'
@@ -38,7 +37,9 @@ export function listAvailableArgoServerNS() {
     const gitOpsClusters = listGitOpsClusters()
     return {
         promise: gitOpsClusters.promise.then((gitOpsClusters) => {
-            return map(gitOpsClusters, 'spec.argoServer.argoNamespace')
+            return gitOpsClusters
+                .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
+                .filter((ns) => ns !== undefined) as string[]
         }),
         abort: gitOpsClusters.abort,
     }

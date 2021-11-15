@@ -63,11 +63,11 @@ export default function CreateApplicationPage() {
 
 export function CreateApplication() {
     // will need to pass argoNs to AppForm to get argo namespaces
-    const [argoNs, setArgoNs] = useState([])
+    const [argoNs, setArgoNs] = useState<string[]>([])
     useEffect(() => {
         const fetchNs = async () => {
             try {
-                const newNs = await listAvailableArgoServerNS().promise
+                let newNs = await listAvailableArgoServerNS().promise
                 setArgoNs(newNs)
             } catch {
                 setArgoNs([])

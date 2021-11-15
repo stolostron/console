@@ -27,5 +27,6 @@ export const DOC_LINKS = {
     CONFIG_DISCONNECTED_INSTALL: `${DOC_BASE_PATH}/credentials/credentials#disconnected`,
     DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/discovery-intro`,
     MACHINE_POOLS: `${DOC_BASE_PATH}/clusters/resizing-a-cluster`,
+    MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/managing-applications`,
     ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/ansible-config-cluster`,
 }
