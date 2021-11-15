@@ -3,9 +3,9 @@ import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders
 import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
-import { parseCookies } from '../lib/cookies'
 import { logger } from '../lib/logger'
 import { notFound, unauthorized } from '../lib/respond'
+import { getToken } from '../lib/token'
 
 const proxyHeaders = [
     constants.HTTP2_HEADER_ACCEPT,
@@ -23,7 +23,7 @@ const proxyResponseHeaders = [
 ]
 
 export function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
-    const token = parseCookies(req)['acm-access-token-cookie']
+    const token = getToken(req)
     if (!token) return unauthorized(req, res)
 
     const url = req.url
