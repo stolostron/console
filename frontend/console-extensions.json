@@ -179,6 +179,20 @@
     {
         "type": "console.page/route",
         "properties": {
+            "path": "/multicloud/credentials/create",
+            "component": { "$codeRef": "credentialsForm.default" }
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/credentials/edit/:namespace/:name",
+            "component": { "$codeRef": "credentialsForm.default" }
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
             "path": "/multicloud/credentials/details/:namespace/:name",
             "component": { "$codeRef": "credentialsForm.default" }
         }
