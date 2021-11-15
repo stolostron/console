@@ -9,16 +9,16 @@ export const ChannelKind = 'Channel'
 export type ChannelKindType = 'Channel'
 
 export const ChannelDefinition: IResourceDefinition = {
-  apiVersion: ChannelApiVersion,
-  kind: ChannelKind,
+    apiVersion: ChannelApiVersion,
+    kind: ChannelKind,
 }
 
 export interface Channel extends IResource {
-  apiVersion: ChannelApiVersionType
-  kind: ChannelKindType
-  metadata: Metadata
-  spec: {
-    pathname: string
-    type: string
-  }
+    apiVersion: ChannelApiVersionType
+    kind: ChannelKindType
+    metadata: Metadata
+    spec: {
+        pathname: string
+        type: string
+    }
 }

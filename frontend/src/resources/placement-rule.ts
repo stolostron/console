@@ -10,8 +10,8 @@ export const PlacementRuleKind = 'PlacementRule'
 export type PlacementRuleKindType = 'PlacementRule'
 
 export const PlacementRuleDefinition: IResourceDefinition = {
-  apiVersion: PlacementRuleApiVersion,
-  kind: PlacementRuleKind,
+    apiVersion: PlacementRuleApiVersion,
+    kind: PlacementRuleKind,
 }
 
 export interface PlacementRule extends IResource {

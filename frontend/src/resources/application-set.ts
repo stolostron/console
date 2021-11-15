@@ -10,8 +10,8 @@ export const ApplicationSetKind = 'ApplicationSet'
 export type ApplicationSetKindType = 'ApplicationSet'
 
 export const ApplicationSetDefinition: IResourceDefinition = {
-  apiVersion: ApplicationSetApiVersion,
-  kind: ApplicationSetKind,
+    apiVersion: ApplicationSetApiVersion,
+    kind: ApplicationSetKind,
 }
 
 export interface ApplicationSet extends IResource {
@@ -27,24 +27,24 @@ export interface ApplicationSet extends IResource {
             }
         }[]
         template?: {
-          metadata?: Metadata
-          spec?: {
-              destination?: {
-                namespace: string
-                server: string
-              }
-              project: string
-              source: {
-                path?: string
-                repoURL: string
-                targetRevision?: string
-                chart?: string
-              }
-              syncPolicy: any
-          }
+            metadata?: Metadata
+            spec?: {
+                destination?: {
+                    namespace: string
+                    server: string
+                }
+                project: string
+                source: {
+                    path?: string
+                    repoURL: string
+                    targetRevision?: string
+                    chart?: string
+                }
+                syncPolicy: any
+            }
         }
     }
     transformed?: {
-      clusterCount?: string
+        clusterCount?: string
     }
 }

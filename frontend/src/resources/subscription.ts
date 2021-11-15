@@ -9,27 +9,27 @@ export const SubscriptionKind = 'Subscription'
 export type SubscriptionKindType = 'Subscription'
 
 export const SubscriptionDefinition: IResourceDefinition = {
-  apiVersion: SubscriptionApiVersion,
-  kind: SubscriptionKind,
+    apiVersion: SubscriptionApiVersion,
+    kind: SubscriptionKind,
 }
 
 export interface Subscription extends IResource {
-  apiVersion: SubscriptionApiVersionType
-  kind: SubscriptionKindType
-  metadata: Metadata
-  spec: {
-    channel?: string
-    placement?: {
-      placementRef?: {
-        kind: string
-        name: string
-      }
+    apiVersion: SubscriptionApiVersionType
+    kind: SubscriptionKindType
+    metadata: Metadata
+    spec: {
+        channel?: string
+        placement?: {
+            placementRef?: {
+                kind: string
+                name: string
+            }
+        }
+        secondaryChannel?: string
     }
-    secondaryChannel?: string
-  }
-  status: {
-    message?: string
-    phase?: string
-    statuses?: any
-  }
+    status: {
+        message?: string
+        phase?: string
+        statuses?: any
+    }
 }

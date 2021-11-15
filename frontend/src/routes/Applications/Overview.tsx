@@ -1,24 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@open-cluster-management/ui-components'
 import {
-    ButtonVariant,
-    PageSection
-} from '@patternfly/react-core'
+    AcmButton,
+    AcmEmptyState,
+    AcmTable,
+    IAcmRowAction,
+    IAcmTableColumn,
+} from '@open-cluster-management/ui-components'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TFunction, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router'
 import { useRecoilState } from 'recoil'
-import { 
-    applicationsState,
-    subscriptionsState,
-    channelsState,
-    placementRulesState,
-    applicationSetsState,
-    argoApplicationsState
-} from '../../atoms'
+import { applicationsState, applicationSetsState, argoApplicationsState } from '../../atoms'
 import {
     ApplicationApiVersion,
     ApplicationKind,
@@ -28,8 +24,7 @@ import {
     ApplicationSetKind,
     IResource,
     ApplicationSet,
-    Application,
-    ApplicationDefinition
+    ApplicationDefinition,
 } from '../../resources'
 import ResourceLabels from './components/ResourceLabels'
 import { getAge } from './helpers/resource-helper'
@@ -52,7 +47,7 @@ function getResourceType(resource: IResource) {
 }
 
 // Check if server URL matches hub URL, doesn't work when testing locally
-function isLocalClusterURL(url : string) {
+function isLocalClusterURL(url: string) {
     let argoServerURL
     let localClusterURL = new URL(window.location.href)
 
@@ -62,7 +57,7 @@ function isLocalClusterURL(url : string) {
         return false
     }
 
-    const hostnameWithOutAPI = argoServerURL.hostname.substr(argoServerURL.hostname.indexOf('api.')+4)
+    const hostnameWithOutAPI = argoServerURL.hostname.substr(argoServerURL.hostname.indexOf('api.') + 4)
     if (localClusterURL.host.indexOf(hostnameWithOutAPI) > -1) {
         return true
     }
@@ -71,9 +66,7 @@ function isLocalClusterURL(url : string) {
 
 function getClusterCountString(remoteCount: number, localPlacement: boolean) {
     if (remoteCount) {
-        return localPlacement
-            ? `${remoteCount} Remote, 1 Local`
-            : `${remoteCount} Remote`
+        return localPlacement ? `${remoteCount} Remote, 1 Local` : `${remoteCount} Remote`
     } else if (localPlacement) {
         return 'Local'
     } else {
@@ -82,14 +75,16 @@ function getClusterCountString(remoteCount: number, localPlacement: boolean) {
 }
 
 function calculateClusterCount(resource: ArgoApplication, clusterCount: any, clusterList: string[]) {
-    if (resource.spec.destination?.name === 'in-cluster' ||
+    if (
+        resource.spec.destination?.name === 'in-cluster' ||
         resource.spec.destination?.name === 'local-cluster' ||
-        isLocalClusterURL(resource.spec.destination?.server || '')) {
+        isLocalClusterURL(resource.spec.destination?.server || '')
+    ) {
         clusterCount.localPlacement = true
         clusterList.push('local-cluster')
     } else {
         clusterCount.remoteCount++
-        if (resource.spec.destination?.name){
+        if (resource.spec.destination?.name) {
             clusterList.push(resource.spec.destination?.name)
         }
     }
@@ -101,15 +96,11 @@ function getSearchLink(params: any) {
     let textSearch = ''
 
     _.entries(properties).forEach(([key, value]) => {
-        textSearch = `${textSearch}${textSearch ? ' ' : ''}${key}:${
-            Array.isArray(value) ? value.join() : value
-        }`
+        textSearch = `${textSearch}${textSearch ? ' ' : ''}${key}:${Array.isArray(value) ? value.join() : value}`
     })
 
     if (textSearch) {
-        queryParams.push(
-            `filters={"textsearch":"${encodeURIComponent(textSearch)}"}`
-        )
+        queryParams.push(`filters={"textsearch":"${encodeURIComponent(textSearch)}"}`)
     }
     if (showRelated) {
         queryParams.push(`showrelated=${showRelated}`)
@@ -117,7 +108,12 @@ function getSearchLink(params: any) {
     return `/search${queryParams.length ? '?' : ''}${queryParams.join('&')}`
 }
 
-function createClustersText(resource: IResource, clusterCount: any, clusterList: string[], argoApplications: ArgoApplication[] | undefined) {
+function createClustersText(
+    resource: IResource,
+    clusterCount: any,
+    clusterList: string[],
+    argoApplications: ArgoApplication[] | undefined
+) {
     if (resource.kind === ApplicationSetKind) {
         argoApplications!.forEach((app) => {
             if (app.metadata?.ownerReferences) {
@@ -140,19 +136,15 @@ function generateTransformData(tableItem: IResource, argoApplications: ArgoAppli
     // Cluster column
     const clusterCount: any = {
         localPlacement: false,
-        remoteCount: 0
+        remoteCount: 0,
     }
-    const clusterTransformData = createClustersText(
-        tableItem,
-        clusterCount,
-        [],
-        argoApplications)
+    const clusterTransformData = createClustersText(tableItem, clusterCount, [], argoApplications)
 
     // Resource column
-    const resourceMap : { [key:string]:string; } = {}
+    const resourceMap: { [key: string]: string } = {}
     const appRepos = getApplicationRepos(tableItem)
-    let resourceText:string = ''
-    appRepos?.forEach(repo => {
+    let resourceText: string = ''
+    appRepos?.forEach((repo) => {
         if (!resourceMap[repo.type]) {
             resourceText = resourceText + repo.type
         }
@@ -160,15 +152,15 @@ function generateTransformData(tableItem: IResource, argoApplications: ArgoAppli
     })
 
     const transformedObject = {
-        transformed : {
-           clusterCount: clusterTransformData,
-           resourceText: resourceText,
-           createdText: getAge(tableItem, '', 'metadata.creationTimestamp')
-        }
+        transformed: {
+            clusterCount: clusterTransformData,
+            resourceText: resourceText,
+            createdText: getAge(tableItem, '', 'metadata.creationTimestamp'),
+        },
     }
 
     // Cannot add properties directly to objects in typescript
-    return {...tableItem, ...transformedObject}
+    return { ...tableItem, ...transformedObject }
 }
 
 function getApplicationRepos(resource: IResource) {
@@ -187,7 +179,7 @@ function getApplicationRepos(resource: IResource) {
                     gitPath: castType.spec.source.path,
                     chart: castType.spec.source.chart,
                     targetRevision: castType.spec.source.targetRevision,
-                }
+                },
             ]
         } else if (resource.kind === ApplicationSetKind) {
             castType = resource as ApplicationSet
@@ -198,13 +190,13 @@ function getApplicationRepos(resource: IResource) {
                     gitPath: castType.spec.template?.spec?.source.path,
                     chart: castType.spec.template?.spec?.source.chart,
                     targetRevision: castType.spec.template?.spec?.source.targetRevision,
-                }
+                },
             ]
         }
     }
 }
 
-function getEmptyMessage(t: TFunction<"application"[]>) {
+function getEmptyMessage(t: TFunction<'application'[]>) {
     const buttonName = t('table.application.button.create')
     const buttonText = `<span class="emptyStateButtonReference">${buttonName}</span>`
     const message = t('no-resource.application.message').replace('{0}', buttonText)
@@ -222,9 +214,6 @@ export default function ApplicationsOverview() {
     const { t } = useTranslation(['application'])
 
     const [applications] = useRecoilState(applicationsState)
-    const [subscriptions] = useRecoilState(subscriptionsState)
-    const [channels] = useRecoilState(channelsState)
-    const [placementRules] = useRecoilState(placementRulesState)
     const [applicationSets] = useRecoilState(applicationSetsState)
     const [argoApplications] = useRecoilState(argoApplicationsState)
     const tableItems: IResource[] = []
@@ -237,9 +226,10 @@ export default function ApplicationsOverview() {
         tableItems.push(generateTransformData(appset, argoApplications))
     })
     argoApplications.forEach((argoApp) => {
-        if (!argoApp.metadata.ownerReferences
-            || (argoApp.metadata.ownerReferences
-                && argoApp.metadata.ownerReferences[0].kind !== ApplicationSetKind)) {
+        if (
+            !argoApp.metadata.ownerReferences ||
+            (argoApp.metadata.ownerReferences && argoApp.metadata.ownerReferences[0].kind !== ApplicationSetKind)
+        ) {
             tableItems.push(generateTransformData(argoApp, argoApplications))
         }
     })
@@ -259,9 +249,7 @@ export default function ApplicationsOverview() {
             },
             {
                 header: t('table.column.application.type'),
-                cell: (resource) => (
-                    <span>{getResourceType(resource)}</span>
-                ),
+                cell: (resource) => <span>{getResourceType(resource)}</span>,
                 sort: 'kind',
                 tooltip: t('table.header.application.type.tooltip'),
                 transforms: [cellWidth(15)],
@@ -280,15 +268,15 @@ export default function ApplicationsOverview() {
                 cell: (resource) => {
                     let clusterCount = {
                         localPlacement: false,
-                        remoteCount: 0
+                        remoteCount: 0,
                     }
                     const clusterList: string[] = []
                     const clusterCountString = createClustersText(resource, clusterCount, clusterList, argoApplications)
                     const searchParams: any = {
                         properties: {
                             name: clusterList,
-                            kind: 'cluster'
-                        }
+                            kind: 'cluster',
+                        },
                     }
                     const searchLink = getSearchLink(searchParams)
 
@@ -303,7 +291,7 @@ export default function ApplicationsOverview() {
                 },
                 tooltip: t('table.header.application.clusters.tooltip'),
                 sort: 'transformed.clusterCount',
-                search: 'transformed.clusterCount'
+                search: 'transformed.clusterCount',
             },
             {
                 header: t('table.column.application.resource'),
@@ -311,33 +299,34 @@ export default function ApplicationsOverview() {
                     const appRepos = getApplicationRepos(resource)
                     return (
                         <ResourceLabels
-                            appRepos={appRepos}
+                            appRepos={appRepos!}
                             showSubscriptionAttributes={true}
-                            isArgoApp={getResourceType(resource) === 'Discovered' || getResourceType(resource) === 'ApplicationSet'}
+                            isArgoApp={
+                                getResourceType(resource) === 'Discovered' ||
+                                getResourceType(resource) === 'ApplicationSet'
+                            }
                         />
                     )
                 },
                 tooltip: t('table.header.application.resource.tooltip'),
                 sort: 'transformed.resourceText',
-                search: 'transformed.resourceText'
+                search: 'transformed.resourceText',
             },
             {
                 header: t('table.column.application.timeWindow'),
                 cell: () => {
                     // TODO when new appsub specs are finalized
-                    return ('')
+                    return ''
                 },
-                tooltip: t('table.header.application.timeWindow.tooltip')
+                tooltip: t('table.header.application.timeWindow.tooltip'),
             },
             {
                 header: t('table.column.application.created'),
                 cell: (resource) => {
-                    return (
-                        <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
-                    )
+                    return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
                 },
                 sort: 'metadata.creationTimestamp',
-                search: 'transformed.createdText'
+                search: 'transformed.createdText',
             },
         ],
         []
@@ -350,21 +339,21 @@ export default function ApplicationsOverview() {
             options: [
                 {
                     label: t('table.filter.type.acm.application'),
-                    value: t('table.filter.type.acm.application.value')
+                    value: t('table.filter.type.acm.application.value'),
                 },
                 {
                     label: t('table.filter.type.argo.application'),
-                    value: t('table.filter.type.argo.application.value')
+                    value: t('table.filter.type.argo.application.value'),
                 },
                 {
                     label: t('table.filter.type.appset.application'),
-                    value: t('table.filter.type.appset.application.value')
-                }
+                    value: t('table.filter.type.appset.application.value'),
+                },
             ],
-            tableFilterFn: (selectedValues:string[], item: IResource) => {
+            tableFilterFn: (selectedValues: string[], item: IResource) => {
                 return selectedValues.includes(`${item.kind.toLocaleLowerCase()}.${item.apiVersion}`)
-            }
-        }
+            },
+        },
     ]
 
     const history = useHistory()
@@ -376,16 +365,6 @@ export default function ApplicationsOverview() {
             .catch((err) => console.error(err))
         return () => canCreateApplicationPromise.abort()
     }, [])
-    const tableButtonActions = [
-        {
-            id: 'createApplication',
-            title: t('table.application.button.create'),
-            click: () => history.push(''),  // TODO add link to wizard
-            isDisabled: !canCreateApplication,
-            tooltip: t('actions.create.application.access.denied'),
-            variant: ButtonVariant.primary,
-        }
-    ]
 
     const rowActions = useMemo<IAcmRowAction<IResource>[]>(
         () => [
@@ -403,15 +382,15 @@ export default function ApplicationsOverview() {
                 id: 'searchApplication',
                 title: t('table.actions.applications.search'),
                 click: () => {},
-                isDisabled: false // implement when we use search for remote Argo apps
+                isDisabled: false, // implement when we use search for remote Argo apps
             },
             {
                 id: 'deleteApplication',
                 title: t('table.actions.applications.delete'),
                 click: () => {
                     // need custom function to open modal
-                }
-            }
+                },
+            },
         ],
         []
     )
@@ -424,7 +403,16 @@ export default function ApplicationsOverview() {
                 keyFn={keyFn}
                 items={tableItems}
                 filters={filters}
-                tableActionButtons={tableButtonActions}
+                tableActionButtons={[
+                    {
+                        id: 'createApplication',
+                        title: t('table.application.button.create'),
+                        click: () => history.push(''), // TODO add link to wizard
+                        isDisabled: !canCreateApplication,
+                        tooltip: t('actions.create.application.access.denied'),
+                        variant: ButtonVariant.primary,
+                    },
+                ]}
                 emptyState={
                     <AcmEmptyState
                         key="appOverviewEmptyState"

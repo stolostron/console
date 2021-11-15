@@ -9,8 +9,8 @@ export const ArgoApplicationKind = 'Application'
 export type ArgoApplicationKindType = 'Application'
 
 export const ArgoApplicationDefinition: IResourceDefinition = {
-  apiVersion: ArgoApplicationApiVersion,
-  kind: ArgoApplicationKind,
+    apiVersion: ArgoApplicationApiVersion,
+    kind: ArgoApplicationKind,
 }
 
 export interface ArgoApplication extends IResource {
@@ -19,21 +19,21 @@ export interface ArgoApplication extends IResource {
     metadata: Metadata
     spec: {
         destination: {
-          name?: string
-          namespace: string
-          server?: string
+            name?: string
+            namespace: string
+            server?: string
         }
         project: string
         source: {
-          path?: string
-          repoURL: string
-          targetRevision?: string
-          chart?: string
+            path?: string
+            repoURL: string
+            targetRevision?: string
+            chart?: string
         }
         syncPolicy: any
     }
     status?: any
     transformed?: {
-      clusterCount?: string
+        clusterCount?: string
     }
 }
