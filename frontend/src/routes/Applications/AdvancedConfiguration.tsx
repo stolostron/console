@@ -110,6 +110,7 @@ export default function AdvancedConfiguration() {
                                     component={TextVariants.a}
                                     isVisitedLink
                                     href={DOC_LINKS.MANAGE_APPLICATIONS}
+                                    target="_blank"
                                     style={{
                                         cursor: 'pointer',
                                         display: 'inline-block',
