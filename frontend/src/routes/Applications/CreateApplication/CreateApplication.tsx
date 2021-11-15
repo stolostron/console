@@ -2,6 +2,7 @@
 
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
+import { useEffect, useState } from 'react'
 import { NavigationPath } from '../../../NavigationPath'
 import { useTranslation } from 'react-i18next'
 import { listAvailableArgoServerNS } from '../../../resources/gitops-cluster'
@@ -61,11 +62,21 @@ export default function CreateApplicationPage() {
 }
 
 export function CreateApplication() {
-    // not working
-    const argoServerNS = async () => listAvailableArgoServerNS().promise
-
+    // will need to pass argoNs to AppForm to get argo namespaces
+    const [argoNs, setArgoNs] = useState([])
+    useEffect(() => {
+        const fetchNs = async () => {
+            try {
+                const newNs = await listAvailableArgoServerNS().promise
+                setArgoNs(newNs)
+            } catch {
+                setArgoNs([])
+            }
+        }
+        fetchNs()
+    }, [])
     // will wait to adopt AppForm
 
     // return <AppForm />
-    return <h1>TBD</h1>
+    return <h1>{argoNs}</h1>
 }
