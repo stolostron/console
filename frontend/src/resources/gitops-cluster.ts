@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { listResources } from './utils/resource-request'
+import { isType } from '../lib/is-type'
 import { IResource, IResourceDefinition } from './resource'
 import { Metadata } from './metadata'
 
@@ -37,9 +38,7 @@ export function listAvailableArgoServerNS() {
     const gitOpsClusters = listGitOpsClusters()
     return {
         promise: gitOpsClusters.promise.then((gitOpsClusters) => {
-            return gitOpsClusters
-                .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
-                .filter((ns) => ns !== undefined) as string[]
+            return gitOpsClusters.map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace).filter(isType)
         }),
         abort: gitOpsClusters.abort,
     }
