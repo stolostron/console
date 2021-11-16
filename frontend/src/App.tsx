@@ -31,6 +31,7 @@ import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 
 const ApplicationsPage = lazy(() => import('./routes/Applications/Applications'))
+const CreateApplication = lazy(() => import('./routes/Applications/CreateApplication/CreateApplication'))
 
 const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/CreateBareMetalAsset'))
@@ -173,6 +174,11 @@ export default function App() {
                                         exact
                                         path={NavigationPath.editBareMetalAsset}
                                         component={CreateBareMetalAssetPage}
+                                    />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.createApplication}
+                                        component={CreateApplication}
                                     />
                                     <Route
                                         exact

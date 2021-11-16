@@ -67,7 +67,9 @@ export enum NavigationPath {
     viewAnsibleAutomation = '/multicloud/infrastructure/automations/details/:namespace/:name',
 
     // Applications
+    advancedConfiguration = '/multicloud/applications/advanced',
     applications = '/multicloud/applications',
+    createApplication = '/multicloud/create-application',
 
     // Governance
     governance = '/multicloud/governance',

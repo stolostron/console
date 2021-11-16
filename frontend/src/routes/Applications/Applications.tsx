@@ -16,6 +16,7 @@ import { NavigationPath } from '../../NavigationPath'
 import { PageContext } from '../Infrastructure/Clusters/Clusters'
 
 const ApplicationsOverviewPage = lazy(() => import('./Overview'))
+const AdvancedConfigurationPage = lazy(() => import('./AdvancedConfiguration'))
 
 export default function ApplicationsPage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
@@ -35,6 +36,11 @@ export default function ApplicationsPage() {
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.applications)}>
                                 <Link to={NavigationPath.applications}>{t('application.page.tab.overview')}</Link>
                             </AcmSecondaryNavItem>
+                            <AcmSecondaryNavItem
+                                isActive={location.pathname.startsWith(NavigationPath.advancedConfiguration)}
+                            >
+                                <Link to={NavigationPath.advancedConfiguration}>{t('Advanced configuration')}</Link>
+                            </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
                     actions={actions}
@@ -45,6 +51,11 @@ export default function ApplicationsPage() {
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.applications} component={ApplicationsOverviewPage} />
+                        <Route
+                            exact
+                            path={NavigationPath.advancedConfiguration}
+                            component={AdvancedConfigurationPage}
+                        />
                         <Route exact path={NavigationPath.applications}>
                             <Redirect to={NavigationPath.applications} />
                         </Route>

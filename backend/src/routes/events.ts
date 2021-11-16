@@ -57,7 +57,7 @@ export function startWatching(): void {
     watchResource(token, 'app.k8s.io/v1beta1', 'applications')
     watchResource(token, 'apps.open-cluster-management.io/v1', 'channels')
     // watchResource(token, 'apps.open-cluster-management.io/v1', 'deployables')
-    watchResource(token, 'apps.open-cluster-management.io/v1alpha1', 'gitOpsClusters')
+    watchResource(token, 'apps.open-cluster-management.io/v1beta1', 'gitopsclusters')
     // watchResource(token, 'apps.open-cluster-management.io/v1', 'helmReleases')
     watchResource(token, 'apps.open-cluster-management.io/v1', 'placementRules')
     watchResource(token, 'apps.open-cluster-management.io/v1', 'subscriptions')

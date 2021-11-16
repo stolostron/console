@@ -1,4 +1,5 @@
 {
+    "page.header.create-application": "Create application",
     "page.header.create-cluster": "Create cluster",
     "page.header.create-clusterPool": "Create cluster pool",
     "page.header.create-cluster.tooltip": "Create clusters across different providers.",

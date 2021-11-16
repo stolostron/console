@@ -63,6 +63,8 @@ import {
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
+    GitOpsClusterApiVersion,
+    GitOpsClusterKind,
     InfraEnvApiVersion,
     InfraEnvKind,
     InfrastructureApiVersion,
@@ -243,7 +245,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
         addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
         addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
-        addSetter('apps.open-cluster-management.io/v1alpha1', 'GitOpsCluster', setGitOpsClustersState)
+        addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)
         addSetter('argoproj.io/v1alpha1', 'appProjects', setAppProjectsState)
         addSetter(ApplicationSetApiVersion, ApplicationSetKind, setApplicationSetsState)
         addSetter(ArgoApplicationApiVersion, ArgoApplicationKind, setArgoApplicationsState)
