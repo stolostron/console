@@ -1,6 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    createKlusterletAddonConfig,
+    createManagedCluster,
+    createProject,
+    createResource,
+    IResource,
+    managedClusterSetLabel,
+    ResourceError,
+    ResourceErrorCode,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+} from '../../../../../resources'
+import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmAlertProvider,
@@ -16,20 +29,13 @@ import {
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, Label, PageSection, SelectOption, Text } from '@patternfly/react-core'
-import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
+import { CheckCircleIcon } from '@patternfly/react-icons'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { createResource, ResourceError, ResourceErrorCode } from '../../../../../lib/resource-request'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { createKlusterletAddonConfig } from '../../../../../resources/klusterlet-add-on-config'
-import { createManagedCluster } from '../../../../../resources/managed-cluster'
-import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
-import { createProject } from '../../../../../resources/project'
-import { IResource } from '../../../../../resources/resource'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 

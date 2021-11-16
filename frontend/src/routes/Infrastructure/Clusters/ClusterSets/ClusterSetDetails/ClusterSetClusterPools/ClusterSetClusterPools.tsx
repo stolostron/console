@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext } from 'react'
-import { Link } from 'react-router-dom'
-import { useTranslation, Trans } from 'react-i18next'
+import { ManagedClusterSetDefinition } from '../../../../../../resources'
+import { AcmEmptyState, AcmPageContent } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { AcmPageContent, AcmEmptyState } from '@open-cluster-management/ui-components'
-import { ClusterSetContext } from '../ClusterSetDetails'
-import { ClusterPoolsTable } from '../../../ClusterPools/ClusterPools'
+import { useContext } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { RbacButton } from '../../../../../../components/Rbac'
-import { ManagedClusterSetDefinition } from '../../../../../../resources/managed-cluster-set'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../../NavigationPath'
+import { ClusterPoolsTable } from '../../../ClusterPools/ClusterPools'
+import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetClusterPoolsPageContent() {
     const { t } = useTranslation(['cluster'])

@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    AcmIcon,
-    AcmIconVariant,
     AcmButton,
     AcmDropdown,
     AcmEmptyState,
     AcmEmptyStateImage,
+    AcmIcon,
+    AcmIconVariant,
     AcmInlineProvider,
     AcmPageContent,
     AcmTable,
@@ -14,20 +14,18 @@ import {
     IAcmTableColumn,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { ActionList, ActionListItem, ButtonVariant, PageSection, Bullseye } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import * as moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
-import { NavigationPath } from '../../../../NavigationPath'
-import { DiscoveredCluster } from '../../../../resources/discovered-cluster'
-import { DiscoveryConfig } from '../../../../resources/discovery-config'
-import { ProviderConnection, unpackProviderConnection } from '../../../../resources/provider-connection'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
-import ExternalLinkIcon from '@patternfly/react-icons/dist/js/icons/external-link-alt-icon'
+import { NavigationPath } from '../../../../NavigationPath'
+import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
 
 export default function DiscoveredClustersPage() {
     return (
@@ -225,7 +223,7 @@ export function DiscoveredClustersTable(props: {
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcName">
                     <a target="_blank" rel="noreferrer" href={discoveredCluster.spec.console} key="dcConsoleURL">
-                        <ExternalLinkIcon />
+                        <ExternalLinkAltIcon />
                         <span key="dcNamelink" style={{ marginLeft: '16px' }}>
                             {discoveredCluster.spec.displayName}
                         </span>
@@ -261,7 +259,7 @@ export function DiscoveredClustersTable(props: {
         {
             header: t('dcTbl.type'),
             sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
-                compareStrings(getFullTypeByAcronym(a?.spec?.type), getFullTypeByAcronym(b?.spec?.type)),
+                compareStrings(getFullTypeByAcronym(a?.spec?.type || ''), getFullTypeByAcronym(b?.spec?.type || '')),
             search: (discoveredCluster) => {
                 if (discoveredCluster.spec.type) {
                     return [discoveredCluster.spec.type, getFullTypeByAcronym(discoveredCluster.spec.type) || '-']
@@ -363,11 +361,12 @@ export function DiscoveredClustersTable(props: {
                 columns={discoveredClusterCols}
                 keyFn={dckeyFn}
                 key="tbl-discoveredclusters"
-                tableActions={[
+                tableActionButtons={[
                     {
                         id: 'configureDiscovery',
                         title: t('discovery.configureDiscovery'),
                         click: () => history.push(NavigationPath.configureDiscovery),
+                        variant: ButtonVariant.primary,
                     },
                     {
                         id: 'addDiscovery',
@@ -376,7 +375,6 @@ export function DiscoveredClustersTable(props: {
                         variant: ButtonVariant.secondary,
                     },
                 ]}
-                bulkActions={[]}
                 rowActions={[
                     {
                         id: 'importCluster',
@@ -384,7 +382,7 @@ export function DiscoveredClustersTable(props: {
                         click: (item) => {
                             sessionStorage.setItem('DiscoveredClusterDisplayName', item.spec.displayName)
                             sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)
-                            sessionStorage.setItem('DiscoveredClusterApiURL', item.spec.apiUrl)
+                            sessionStorage.setItem('DiscoveredClusterApiURL', item.spec?.apiUrl || '')
                             history.push(NavigationPath.importCluster)
                         },
                     },

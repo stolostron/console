@@ -2,7 +2,7 @@
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { createResource } from '../lib/resource-request'
+import { createResource } from './utils/resource-request'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ManagedClusterApiVersion = 'cluster.open-cluster-management.io/v1'
@@ -49,7 +49,11 @@ export const createManagedCluster = (data: {
     return createResource<ManagedCluster>({
         apiVersion: ManagedClusterApiVersion,
         kind: ManagedClusterKind,
-        metadata: { name: data.clusterName, labels: data.clusterLabels, annotations: data.clusterAnnotations },
+        metadata: {
+            name: data.clusterName,
+            labels: data.clusterLabels,
+            annotations: data.clusterAnnotations,
+        },
         spec: { hubAcceptsClient: true },
     })
 }

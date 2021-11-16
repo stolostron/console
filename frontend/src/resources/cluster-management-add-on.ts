@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { listClusterResources } from '../lib/resource-request'
+import { listClusterResources } from './utils/resource-request'
 import { IResource, IResourceDefinition } from './resource'
 
 export const ClusterManagementAddOnApiVersion = 'addon.open-cluster-management.io/v1alpha1'

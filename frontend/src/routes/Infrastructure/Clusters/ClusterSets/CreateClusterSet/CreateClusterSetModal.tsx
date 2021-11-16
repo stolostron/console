@@ -1,24 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useTranslation, Trans } from 'react-i18next'
+import {
+    createResource,
+    ManagedClusterSet,
+    ManagedClusterSetApiVersion,
+    ManagedClusterSetKind,
+} from '../../../../../resources'
 import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmButton,
     AcmForm,
+    AcmModal,
     AcmSubmit,
     AcmTextInput,
-    AcmModal,
 } from '@open-cluster-management/ui-components'
-import { ModalVariant, ActionGroup } from '@patternfly/react-core'
-import {
-    ManagedClusterSet,
-    ManagedClusterSetApiVersion,
-    ManagedClusterSetKind,
-} from '../../../../../resources/managed-cluster-set'
-import { createResource } from '../../../../../lib/resource-request'
+import { ActionGroup, ModalVariant } from '@patternfly/react-core'
+import { useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../NavigationPath'
 
 function getEmptySet() {

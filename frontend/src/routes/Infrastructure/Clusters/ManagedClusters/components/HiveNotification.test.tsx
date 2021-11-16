@@ -1,20 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
-import { nockNamespacedList } from '../../../../../lib/nock-util'
-import { mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
-import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForText } from '../../../../../lib/test-util'
 import {
+    Cluster,
     ClusterProvision,
     ClusterProvisionApiVersion,
     ClusterProvisionKind,
-} from '../../../../../resources/cluster-provision'
-import { PodApiVersion, PodKind } from '../../../../../resources/pod'
+    ClusterStatus,
+    PodApiVersion,
+    PodKind,
+} from '../../../../../resources'
+import { render, waitFor } from '@testing-library/react'
+import { RecoilRoot } from 'recoil'
+import { clusterProvisionsState, configMapsState } from '../../../../../atoms'
+import { nockNamespacedList } from '../../../../../lib/nock-util'
+import { mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
+import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForText } from '../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { HiveNotification } from './HiveNotification'
-import { configMapsState, clusterProvisionsState } from '../../../../../atoms'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -42,6 +44,9 @@ const mockCluster: Cluster = {
     },
     isHive: false,
     isManaged: true,
+    isCurator: false,
+    isSNOCluster: false,
+    owner: {},
 }
 
 const mockClusterProvision: ClusterProvision = {

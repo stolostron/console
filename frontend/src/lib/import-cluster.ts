@@ -1,8 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { createManagedCluster } from '../resources/managed-cluster'
-import { createKlusterletAddonConfig } from '../resources/klusterlet-add-on-config'
-import { managedClusterSetLabel } from '../resources/managed-cluster-set'
+import { createKlusterletAddonConfig, createManagedCluster, managedClusterSetLabel } from '../resources'
 
 export const createImportResources = (clusterName: string, clusterSet?: string) => {
     const clusterLabels: Record<string, string> = {

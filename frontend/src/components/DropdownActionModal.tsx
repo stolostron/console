@@ -11,7 +11,7 @@ import {
 import { ActionGroup, Button, ButtonVariant, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IRequestResult } from '../lib/resource-request'
+import { IRequestResult } from '../resources'
 
 export interface IDropdownActionModalProps<T = undefined> {
     open: true

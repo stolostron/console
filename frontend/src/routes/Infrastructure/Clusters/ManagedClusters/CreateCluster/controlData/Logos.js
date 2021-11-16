@@ -1,5 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+// eslint-disable-next-line no-use-before-define
+import React from 'react'
+
 export const RedHatLogo = () => (
     <svg width="54px" height="40px" viewBox="0 0 54 40" version="1.1" role="presentation">
         <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">

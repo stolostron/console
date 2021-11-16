@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { NodeInfo } from '../../../../../../resources'
 import {
     AcmInlineStatus,
     AcmPageContent,
@@ -13,7 +14,6 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
-import { NodeInfo } from '../../../../../../resources/managed-cluster-info'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
 
@@ -182,7 +182,6 @@ export function NodesPoolsTable() {
                 columns={columns}
                 keyFn={keyFn}
                 tableActions={[]}
-                bulkActions={[]}
                 rowActions={[]}
             />
         </>

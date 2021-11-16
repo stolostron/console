@@ -3,10 +3,10 @@
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { V1Secret } from '@kubernetes/client-node/dist/gen/model/v1Secret'
 import { keyBy } from 'lodash'
-import { createResource, deleteResource, getResource, IRequestResult, listResources } from '../lib/resource-request'
-import { createProject } from '../resources/project'
+import { createProject } from './project'
 import { IResourceDefinition } from './resource'
 import { SecretApiVersionType, SecretKindType } from './secret'
+import { createResource, deleteResource, getResource, IRequestResult, listResources } from './utils/resource-request'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
 export type BareMetalAssetApiVersionType = 'inventory.open-cluster-management.io/v1alpha1'

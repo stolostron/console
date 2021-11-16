@@ -19,6 +19,7 @@ import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { startWatching, stopWatching, events } from './routes/events'
 import { loadSettings, stopSettingsWatch } from './lib/config'
+import { ansibleTower } from './routes/ansibletower'
 
 export const router = Router<Router.HTTPVersion.V2>()
 router.get(`/readinessProbe`, readiness)
@@ -37,11 +38,12 @@ router.get(`/logout/`, logout)
 router.get(`/events`, events)
 router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
+router.post(`/ansibletower`, ansibleTower)
 router.get(`/*`, serve)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     if (process.env.NODE_ENV !== 'production') {
-        cors(req, res)
+        if (cors(req, res)) return
         await delay(req, res)
     }
 
@@ -74,6 +76,7 @@ export function start(): Promise<Http2Server | undefined> {
 export async function stop(): Promise<void> {
     if (process.env.NODE_ENV === 'development') {
         setTimeout(() => {
+            logger.warn('process stop timeout. exiting...')
             process.exit(1)
         }, 0.5 * 1000).unref()
     }

@@ -1,28 +1,32 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    ClusterClaim,
+    ClusterClaimApiVersion,
+    ClusterClaimKind,
+    ClusterImageSet,
+    ClusterImageSetApiVersion,
+    ClusterImageSetKind,
+    ClusterPool,
+    ClusterPoolApiVersion,
+    ClusterPoolKind,
+} from '../../../../resources'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { ClusterPool, ClusterPoolApiVersion, ClusterPoolKind } from '../../../../resources/cluster-pool'
-import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../../../../resources/cluster-claim'
+import { clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
+import { nockCreate, nockDelete, nockGet, nockIgnoreRBAC, nockPatch } from '../../../../lib/nock-util'
 import {
-    ClusterImageSet,
-    ClusterImageSetApiVersion,
-    ClusterImageSetKind,
-} from '../../../../resources/cluster-image-set'
-import { clusterPoolsState, clusterImageSetsState } from '../../../../atoms'
-import { nockCreate, nockGet, nockPatch, nockDelete, nockIgnoreRBAC } from '../../../../lib/nock-util'
-import {
+    clickBulkAction,
     clickByLabel,
     clickByText,
-    typeByText,
+    clickRowAction,
+    selectTableRow,
     typeByTestId,
+    typeByText,
     waitForNocks,
     waitForText,
-    clickRowAction,
-    clickBulkAction,
-    selectTableRow,
 } from '../../../../lib/test-util'
 import ClusterPoolsPage from './ClusterPools'
 

@@ -38,4 +38,11 @@ export enum NavigationPath {
     addAnsibleAutomation = '/multicloud/ansible-automations/add',
     editAnsibleAutomation = '/multicloud/ansible-automations/edit/:namespace/:name',
     viewAnsibleAutomation = '/multicloud/ansible-automations/view/:namespace/:name',
+    infraEnvironments = '/multicloud/infra-environments',
+    infraEnvironmentDetails = '/multicloud/infra-environments/:namespace/:name',
+    infraEnvironmentOverview = '/multicloud/infra-environments/:namespace/:name/overview',
+    infraEnvironmentHosts = '/multicloud/infra-environments/:namespace/:name/hosts',
+    createInfraEnv = '/multicloud/create-infra-env',
+    editCluster = '/multicloud/cluster/edit/:namespace/:name',
+    clusterCreateProgress = '/multicloud/cluster/progress/:namespace/:name',
 }

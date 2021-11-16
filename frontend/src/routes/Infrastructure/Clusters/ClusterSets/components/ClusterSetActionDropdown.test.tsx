@@ -1,25 +1,27 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
-import { nockCreate, nockDelete, nockIgnoreRBAC } from '../../../../../lib/nock-util'
-import {
-    clickByText,
-    waitForNock,
-    waitForNocks,
-    typeByText,
-    clickByPlaceholderText,
-    waitForText,
-} from '../../../../../lib/test-util'
-import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
-import { namespacesState, managedClusterSetBindingsState } from '../../../../../atoms'
-import { ClusterSetActionDropdown } from './ClusterSetActionDropdown'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../../../resources/namespace'
 import {
     ManagedClusterSetBinding,
     ManagedClusterSetBindingApiVersion,
     ManagedClusterSetBindingKind,
-} from '../../../../../resources/managed-cluster-set-binding'
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+} from '../../../../../resources'
+import { render } from '@testing-library/react'
+import { RecoilRoot } from 'recoil'
+import { managedClusterSetBindingsState, namespacesState } from '../../../../../atoms'
+import { nockCreate, nockDelete, nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
+import {
+    clickByPlaceholderText,
+    clickByText,
+    typeByText,
+    waitForNock,
+    waitForNocks,
+    waitForText,
+} from '../../../../../lib/test-util'
+import { ClusterSetActionDropdown } from './ClusterSetActionDropdown'
 
 const firstNamespace: Namespace = {
     apiVersion: NamespaceApiVersion,

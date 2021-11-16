@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'
+import { ManagedClusterSet } from '../../../../../resources'
+import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { Popover } from '@patternfly/react-core'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { ManagedClusterSet } from '../../../../../resources/managed-cluster-set'
 import { managedClusterAddonsState } from '../../../../../atoms'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetDetails/ClusterSetSubmariner/ClusterSetSubmariner'

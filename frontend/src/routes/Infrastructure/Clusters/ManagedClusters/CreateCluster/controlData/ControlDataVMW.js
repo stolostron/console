@@ -1,18 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+// eslint-disable-next-line no-use-before-define
+import React from 'react'
 import { VALIDATE_NUMERIC, VALIDATE_IP } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     getSimplifiedImageName,
     clusterDetailsControlData,
+    proxyControlData,
     automationControlData,
     getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+
+export const getControlDataVMW = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataVMW)
+    if (includeAutomation) return [...controlDataVMW, ...automationControlData]
+    return [...controlDataVMW]
+}
 
 const controlDataVMW = [
     ////////////////////////////////////////////////////////////////////////////////////
@@ -67,25 +77,25 @@ const controlDataVMW = [
     },
     {
         name: 'creation.ocp.addition.labels',
-        tooltip: 'tooltip.creation.ocp.addition.labels',
         id: 'additional',
         type: 'labels',
         active: [],
+        tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
-        id: 'mpoolsStep',
+        id: 'nodePoolsStep',
         type: 'step',
-        title: 'Master node',
+        title: 'Node pools',
     },
     {
         id: 'nodes',
         type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
-    ///////////////////////  master pool  /////////////////////////////////////
+    ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
         type: 'group',
@@ -95,8 +105,9 @@ const controlDataVMW = [
                 id: 'masterPool',
                 type: 'section',
                 collapsable: true,
-                subtitle: 'creation.ocp.node.master.pool.title',
-                info: 'creation.ocp.node.master.pool.info',
+                collapsed: true,
+                subtitle: 'creation.ocp.node.controlplane.pool.title',
+                info: 'creation.ocp.node.controlplane.pool.info',
             },
             ///////////////////////  coresPerSocket  /////////////////////////////////////
             {
@@ -138,19 +149,9 @@ const controlDataVMW = [
     },
     ///////////////////////  worker pools  /////////////////////////////////////
     {
-        id: 'wpoolsStep',
-        type: 'step',
-        title: 'Worker pools',
-        hidden: isHidden_SNO,
-    },
-    {
-        id: 'nodes',
-        type: 'title',
-        info: 'creation.ocp.cluster.node.pool.info',
-    },
-    {
         id: 'workerPools',
         type: 'group',
+        hidden: isHidden_SNO,
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',
@@ -162,6 +163,7 @@ const controlDataVMW = [
                 id: 'workerPool',
                 type: 'section',
                 collapsable: true,
+                collapsed: true,
                 subtitle: getWorkerName,
                 info: 'creation.ocp.node.worker.pool.info',
             },
@@ -169,6 +171,7 @@ const controlDataVMW = [
             {
                 name: 'creation.ocp.pool.name',
                 tooltip: 'tooltip.creation.ocp.pool.name',
+                placeholder: 'creation.ocp.pool.placeholder',
                 id: 'workerName',
                 type: 'text',
                 active: 'worker',
@@ -237,6 +240,7 @@ const controlDataVMW = [
         id: 'networkType',
         name: 'creation.ocp.cluster.vmw.network.type',
         tooltip: 'tooltip.creation.ocp.cluster.vmw.network.type',
+        placeholder: 'creation.ocp.cluster.vmw.network.type',
         type: 'text',
         active: '',
     },
@@ -253,10 +257,11 @@ const controlDataVMW = [
         type: 'text',
         name: 'creation.ocp.ingress.vip',
         tooltip: 'tooltip.creation.ocp.ingress.vip',
+        placeholder: 'creation.ocp.ingress.vip.placeholder',
         active: '',
         validation: VALIDATE_IP,
     },
-    ...automationControlData,
+    ...proxyControlData,
 ]
 
-export default controlDataVMW
+export default getControlDataVMW

@@ -3,7 +3,7 @@
 
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 
-export function cors(req: Http2ServerRequest, res: Http2ServerResponse): void {
+export function cors(req: Http2ServerRequest, res: Http2ServerResponse): boolean {
     if (process.env.NODE_ENV !== 'production') {
         if (req.headers['origin']) {
             res.setHeader('Access-Control-Allow-Origin', req.headers['origin'])
@@ -18,7 +18,9 @@ export function cors(req: Http2ServerRequest, res: Http2ServerResponse): void {
                 if (req.headers['access-control-request-headers']) {
                     res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'])
                 }
-                return res.writeHead(200).end()
+                res.writeHead(200).end()
+                return true
         }
     }
+    return false
 }

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
+import { PolicyReport, PolicyReportResults } from '../../../../../resources'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import {
@@ -25,7 +26,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
-import { PolicyReport, PolicyReportResults } from '../../../../../resources/policy-report'
 import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
 
 const useStyles = makeStyles({

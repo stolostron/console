@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { deleteResource, DiscoveryConfig, ProviderConnection, Secret, unpackProviderConnection } from '../../resources'
 import {
     AcmButton,
     AcmEmptyState,
@@ -13,7 +14,7 @@ import {
     Provider,
     ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
@@ -24,11 +25,7 @@ import { acmRouteState, discoveryConfigState, secretsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
 import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
-import { deleteResource } from '../../lib/resource-request'
 import { NavigationPath } from '../../NavigationPath'
-import { DiscoveryConfig } from '../../resources/discovery-config'
-import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
-import { Secret } from '../../resources/secret'
 
 export default function CredentialsPage() {
     const { t } = useTranslation(['credentials'])
@@ -275,16 +272,17 @@ export function CredentialsTable(props: {
                     },
                 ]}
                 keyFn={(secret) => secret.metadata?.uid as string}
-                tableActions={[
+                tableActionButtons={[
                     {
                         id: 'add',
                         title: t('credentials.tableAction.add'),
                         click: () => {
                             history.push(NavigationPath.addCredentials)
                         },
+                        variant: ButtonVariant.primary,
                     },
                 ]}
-                bulkActions={[
+                tableActions={[
                     {
                         id: 'deleteConnection',
                         title: t('credentials.tableAction.deleteMultiple'),
@@ -315,6 +313,7 @@ export function CredentialsTable(props: {
                                 icon: 'warning',
                             })
                         },
+                        variant: 'bulk-action',
                     },
                 ]}
                 rowActions={[]}

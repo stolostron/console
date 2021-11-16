@@ -1,9 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ClusterPool, ClusterStatus, ManagedClusterSet } from '../../../../../resources'
 import { AcmInlineStatusGroup } from '@open-cluster-management/ui-components'
-import { ClusterStatus } from '../../../../../lib/get-cluster'
-import { ManagedClusterSet } from '../../../../../resources/managed-cluster-set'
-import { ClusterPool } from '../../../../../resources/cluster-pool'
 import { useClusters } from './useClusters'
 
 export function ClusterStatuses(props: { managedClusterSet?: ManagedClusterSet; clusterPool?: ClusterPool }) {

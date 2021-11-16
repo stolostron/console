@@ -1,0 +1,23 @@
+{
+    "createInfraEnv.title": "Create infrastructure environment",
+    "createInfraEnv.title.tooltip": "foo tooltip",
+    "infraenvs": "Infrastructure environments",
+    "infraenvs.tooltip": "foo tooltip",
+    "infraEnv.tableHeader.name": "Name",
+    "infraEnv.tableHeader.namespace": "Namespace",
+    "infraEnv.tableHeader.labels": "Labels",
+    "infraEnv.tableHeader.location": "Location",
+    "infraEnv.bulkAction.createInfraEnv": "Create infrastructure environment",
+    "button.backToInfraEnvs": "Back to infrastructure environments",
+    "tab.details": "Details",
+    "tab.hosts": "Hosts",
+    "infraEnv.tableHeader.hosts": "Hosts available",
+    "infraEnv.emptyStateHeader": "You don't have any infrastructure environments.",
+    "infraEnv.createCluster": "Create infrastructure environment",
+    "infraEnv.rowAction.delete.title": "Delete infrastructure environment",
+    "infraEnv.delete.plural": "Delete infrastructure environments",
+    "bulk.title.delete": "Delete infrastructure environments?",
+    "bulk.message.delete": "You are about to delete infrastructure environments. The infrastructure environments will no longer be available.",
+    "action.title.delete": "Delete infrastructure environment?",
+    "action.message.delete": "You are about to delete infrastructure environment. The infrastructure environment will no longer be available."
+}

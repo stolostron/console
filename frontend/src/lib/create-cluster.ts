@@ -1,12 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { createResource } from './resource-request'
-import { syncBMAs, attachBMAs } from './bare-metal-assets'
-import { createProject } from '../resources/project'
+import {
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+    createProject,
+    createResource,
+    IResource,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+    clusterPoolNamespaceLabels,
+} from '../resources'
 import { get, keyBy } from 'lodash'
-import { IResource } from '../resources/resource'
-import { ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../resources/cluster-deployment'
-import { ManagedClusterApiVersion, ManagedClusterKind } from '../resources/managed-cluster'
+import { attachBMAs, syncBMAs } from './bare-metal-assets'
 import { deleteResources } from './delete-resources'
 
 export async function createCluster(resources: any[]) {
@@ -31,6 +36,7 @@ export async function createCluster(resources: any[]) {
     // get ClusterDeployment and filter it out to create at the very end
     let response
     let namespace = ''
+    let labels = undefined
     const clusterResources: any = []
     resources = resources.filter((resource: any) => {
         const { kind, metadata = {}, spec = {} } = resource
@@ -40,9 +46,9 @@ export async function createCluster(resources: any[]) {
                 return false
 
             case 'ClusterPool':
-                namespace = metadata.namespace
                 clusterResources.push(resource)
                 ;({ namespace } = metadata)
+                labels = clusterPoolNamespaceLabels
                 return false
 
             case 'ClusterDeployment':
@@ -65,17 +71,17 @@ export async function createCluster(resources: any[]) {
 
     // create project and ignore if it already exists
     try {
-        await createProject(namespace).promise
+        await createProject(namespace, labels).promise
     } catch (err) {
-        if (err.code !== 409) {
+        if ((err as unknown as { code: number }).code !== 409) {
             return {
                 status: 'ERROR',
-                messages: [{ message: err.message }],
+                messages: [{ message: (err as Error).message }],
             }
         }
     }
 
-    // create cluster resources
+    // create resources
     errors = []
     let results = resources.map((resource: any) => createResource(resource))
     response = await Promise.allSettled(results.map((result: any) => result.promise))

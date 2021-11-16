@@ -1,28 +1,41 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSubmit, AcmTextInput } from '@open-cluster-management/ui-components'
-import { ActionGroup, Button, Chip, ChipGroup, Flex, FlexItem, ModalVariant } from '@patternfly/react-core'
+import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@open-cluster-management/ui-components'
+import {
+    ActionGroup,
+    Button,
+    Chip,
+    ChipGroup,
+    Flex,
+    FlexItem,
+    ModalVariant,
+    SelectOption,
+    SelectVariant,
+} from '@patternfly/react-core'
+import {
+    ClusterCurator,
+    ClusterCuratorAnsibleJob,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    createResource,
+    getClusterCurator,
+    IResource,
+    ProviderConnection,
+    replaceResource,
+    unpackProviderConnection,
+    listAnsibleTowerJobs,
+} from '../../../resources'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { featureGatesState, secretsState } from '../../../atoms'
+import { secretsState, settingsState } from '../../../atoms'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
-import { createResource, replaceResource } from '../../../lib/resource-request'
-import { NavigationPath } from '../../../NavigationPath'
-import { FeatureGates } from '../../../FeatureGates'
-import {
-    AnsibleJob,
-    ClusterCurator,
-    ClusterCuratorApiVersion,
-    ClusterCuratorKind,
-    getClusterCurator,
-} from '../../../resources/cluster-curator'
-import { ProviderConnection, unpackProviderConnection } from '../../../resources/provider-connection'
-import { IResource } from '../../../resources/resource'
 import { validateKubernetesDnsName } from '../../../lib/validation'
+import { NavigationPath } from '../../../NavigationPath'
+import _ from 'lodash'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -94,27 +107,64 @@ export function AnsibleAutomationsForm(props: {
     const { t } = useTranslation(['cluster', 'common', 'credentials', 'create'])
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
-    const [featureGateCache] = useRecoilState(featureGatesState)
+    const [settings] = useRecoilState(settingsState)
 
     const history = useHistory()
-    const [editAnsibleJob, setEditAnsibleJob] = useState<AnsibleJob | undefined>()
+    const [editAnsibleJob, setEditAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
     const [editAnsibleJobList, setEditAnsibleJobList] =
-        useState<{ jobs: AnsibleJob[]; setJobs: (jobs: AnsibleJob[]) => void }>()
+        useState<{ jobs: ClusterCuratorAnsibleJob[]; setJobs: (jobs: ClusterCuratorAnsibleJob[]) => void }>()
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
+    const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
+    const [AnsibleTowerAuthError, setAnsibleTowerAuthError] = useState('')
 
-    const [installPreJobs, setInstallPreJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.install?.prehook ?? [])
-    const [installPostJobs, setInstallPostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.install?.posthook ?? [])
-    const [upgradePreJobs, setUpgradePreJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.upgrade?.prehook ?? [])
-    const [upgradePostJobs, setUpgradePostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.upgrade?.posthook ?? [])
-    const [scalePreJobs, setScalePreJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.scale?.prehook ?? [])
-    const [scalePostJobs, setScalePostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.scale?.posthook ?? [])
-    const [destroyPreJobs, setDestroyPreJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.destroy?.prehook ?? [])
-    const [destroyPostJobs, setDestroyPostJobs] = useState<AnsibleJob[]>(clusterCurator?.spec?.destroy?.posthook ?? [])
+    const [installPreJobs, setInstallPreJobs] = useState<ClusterCuratorAnsibleJob[]>(
+        clusterCurator?.spec?.install?.prehook ?? []
+    )
+    const [installPostJobs, setInstallPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
+        clusterCurator?.spec?.install?.posthook ?? []
+    )
+    const [upgradePreJobs, setUpgradePreJobs] = useState<ClusterCuratorAnsibleJob[]>(
+        clusterCurator?.spec?.upgrade?.prehook ?? []
+    )
+    const [upgradePostJobs, setUpgradePostJobs] = useState<ClusterCuratorAnsibleJob[]>(
+        clusterCurator?.spec?.upgrade?.posthook ?? []
+    )
+    const [scalePreJobs, setScalePreJobs] = useState<ClusterCuratorAnsibleJob[]>(
+        clusterCurator?.spec?.scale?.prehook ?? []
+    )
+    const [scalePostJobs, setScalePostJobs] = useState<ClusterCuratorAnsibleJob[]>(
+        clusterCurator?.spec?.scale?.posthook ?? []
+    )
+    const [destroyPreJobs, setDestroyPreJobs] = useState<ClusterCuratorAnsibleJob[]>(
+        clusterCurator?.spec?.destroy?.prehook ?? []
+    )
+    const [destroyPostJobs, setDestroyPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
+        clusterCurator?.spec?.destroy?.posthook ?? []
+    )
 
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
 
-    function updateAnsibleJob(ansibleJob?: AnsibleJob, replaceJob?: AnsibleJob) {
+    useEffect(() => {
+        if (ansibleSelection) {
+            const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
+            listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!)
+                .promise.then((response) => {
+                    if (response) {
+                        let templateList: string[] = []
+                        if (response?.results) templateList = response.results!.map((job) => job.name!)
+                        setAnsibleTowerJobTemplateList(templateList)
+                        setAnsibleTowerAuthError('')
+                    }
+                })
+                .catch(() => {
+                    setAnsibleTowerAuthError('credentials:validate.ansible.host')
+                    setAnsibleTowerJobTemplateList([])
+                })
+        }
+    }, [ansibleSelection, ansibleCredentials])
+
+    function updateAnsibleJob(ansibleJob?: ClusterCuratorAnsibleJob, replaceJob?: ClusterCuratorAnsibleJob) {
         if (ansibleJob && replaceJob && ansibleJob.name && editAnsibleJobList) {
             if (editAnsibleJobList.jobs.includes(replaceJob)) {
                 editAnsibleJobList.setJobs(
@@ -166,7 +216,7 @@ export function AnsibleAutomationsForm(props: {
         return curator
     }
 
-    function cellsFn(ansibleJob: AnsibleJob) {
+    function cellsFn(ansibleJob: ClusterCuratorAnsibleJob) {
         return [
             <Flex style={{ gap: '8px' }}>
                 <FlexItem>{ansibleJob.name}</FlexItem>
@@ -184,11 +234,11 @@ export function AnsibleAutomationsForm(props: {
     }
 
     const formData: FormData = {
-        title: t('create:template.create.title'),
-        titleTooltip: t('create:template.create.tooltip'),
+        title: isEditing ? t('create:template.edit.title') : t('create:template.create.title'),
+        titleTooltip: isEditing ? t('create:template.edit.tooltip') : t('create:template.create.tooltip'),
         breadcrumb: [
             { text: t('template.title'), to: NavigationPath.ansibleAutomations },
-            { text: t('create:template.create.title') },
+            { text: isEditing ? t('create:template.edit.title') : t('create:template.create.title') },
         ],
         reviewDescription: t('template.create.review.description'),
         reviewTitle: t('template.create.review.title'),
@@ -231,6 +281,9 @@ export function AnsibleAutomationsForm(props: {
                             linkType: LinkType.internalNewTab,
                             callback: () => history.push(NavigationPath.addCredentials),
                         },
+                        validation: () => {
+                            if (AnsibleTowerAuthError) return t(AnsibleTowerAuthError)
+                        },
                     },
                 ],
             },
@@ -250,7 +303,7 @@ export function AnsibleAutomationsForm(props: {
                                 placeholder: t('template.job.placeholder'),
                                 value: installPreJobs,
                                 onChange: setInstallPreJobs,
-                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
                                     setEditAnsibleJobList({ jobs: installPreJobs, setJobs: setInstallPreJobs })
@@ -268,7 +321,7 @@ export function AnsibleAutomationsForm(props: {
                                 placeholder: t('template.job.placeholder'),
                                 value: installPostJobs,
                                 onChange: setInstallPostJobs,
-                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
                                     setEditAnsibleJobList({ jobs: installPostJobs, setJobs: setInstallPostJobs })
@@ -293,7 +346,7 @@ export function AnsibleAutomationsForm(props: {
                                 placeholder: t('template.job.placeholder'),
                                 value: upgradePreJobs,
                                 onChange: setUpgradePreJobs,
-                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
                                     setEditAnsibleJobList({ jobs: upgradePreJobs, setJobs: setUpgradePreJobs })
@@ -311,7 +364,7 @@ export function AnsibleAutomationsForm(props: {
                                 placeholder: t('template.job.placeholder'),
                                 value: upgradePostJobs,
                                 onChange: setUpgradePostJobs,
-                                keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                 cellsFn,
                                 onEdit: (ansibleJob) => {
                                     setEditAnsibleJobList({ jobs: upgradePostJobs, setJobs: setUpgradePostJobs })
@@ -324,9 +377,7 @@ export function AnsibleAutomationsForm(props: {
                             },
                         ],
                     },
-                    ...(featureGateCache.find(
-                        (featureGate) => featureGate.metadata.name === FeatureGates.ansibleAutomationTemplate
-                    )
+                    ...(settings.ansibleIntegration === 'enabled'
                         ? ([
                               {
                                   type: 'Section',
@@ -340,7 +391,7 @@ export function AnsibleAutomationsForm(props: {
                                           placeholder: t('template.job.placeholder'),
                                           value: scalePreJobs,
                                           onChange: setScalePreJobs,
-                                          keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                          keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
                                               setEditAnsibleJobList({ jobs: scalePreJobs, setJobs: setScalePreJobs })
@@ -358,7 +409,7 @@ export function AnsibleAutomationsForm(props: {
                                           placeholder: t('template.job.placeholder'),
                                           value: scalePostJobs,
                                           onChange: setScalePostJobs,
-                                          keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                          keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
                                               setEditAnsibleJobList({ jobs: scalePostJobs, setJobs: setScalePostJobs })
@@ -383,7 +434,7 @@ export function AnsibleAutomationsForm(props: {
                                           placeholder: t('template.job.placeholder'),
                                           value: destroyPreJobs,
                                           onChange: setDestroyPreJobs,
-                                          keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                          keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
                                               setEditAnsibleJobList({
@@ -407,7 +458,7 @@ export function AnsibleAutomationsForm(props: {
                                           placeholder: t('template.job.placeholder'),
                                           value: destroyPostJobs,
                                           onChange: setDestroyPostJobs,
-                                          keyFn: (ansibleJob: AnsibleJob) => ansibleJob.name,
+                                          keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
                                           cellsFn,
                                           onEdit: (ansibleJob) => {
                                               setEditAnsibleJobList({
@@ -457,7 +508,10 @@ export function AnsibleAutomationsForm(props: {
             <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
             <EditAnsibleJobModal
                 ansibleJob={editAnsibleJob}
+                ansibleSelection={ansibleSelection}
                 setAnsibleJob={updateAnsibleJob}
+                ansibleCredentials={ansibleCredentials}
+                ansibleTowerTemplateList={AnsibleTowerJobTemplateList}
                 ansibleJobList={editAnsibleJobList?.jobs}
             />
         </Fragment>
@@ -465,15 +519,15 @@ export function AnsibleAutomationsForm(props: {
 }
 
 function EditAnsibleJobModal(props: {
-    ansibleJob?: AnsibleJob
-    setAnsibleJob: (ansibleJob?: AnsibleJob, old?: AnsibleJob) => void
-    ansibleJobList?: AnsibleJob[]
+    ansibleSelection?: string
+    ansibleCredentials: ProviderConnection[]
+    ansibleTowerTemplateList: string[] | undefined
+    ansibleJob?: ClusterCuratorAnsibleJob
+    ansibleJobList?: ClusterCuratorAnsibleJob[]
+    setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
 }) {
     const { t } = useTranslation(['common', 'cluster'])
-    const [ansibleJob, setAnsibleJob] = useState<AnsibleJob | undefined>()
-    let ansibleJobList: string[]
-    if (props.ansibleJobList)
-        ansibleJobList = props.ansibleJobList.filter((job) => ansibleJob !== job).map((ansibleJob) => ansibleJob.name)
+    const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
     return (
         <AcmModal
@@ -487,26 +541,40 @@ function EditAnsibleJobModal(props: {
             onClose={() => props.setAnsibleJob()}
         >
             <AcmForm>
-                <AcmTextInput
-                    id="job-name"
+                <AcmSelect
+                    maxHeight="18em"
+                    menuAppendTo="parent"
                     label={t('cluster:template.modal.name.label')}
+                    id="job-name"
                     value={ansibleJob?.name}
                     helperText={t('cluster:template.modal.name.helper.text')}
                     onChange={(name) => {
                         if (ansibleJob) {
                             const copy = { ...ansibleJob }
-                            copy.name = name
+                            copy.name = name as string
                             setAnsibleJob(copy)
                         }
                     }}
-                    validation={(name: string) => {
-                        if (ansibleJobList.includes(name)) {
+                    variant={SelectVariant.typeahead}
+                    placeholder={t('cluster:template.modal.name.placeholder')}
+                    validation={(name) => {
+                        const selectedJobs = _.map(props.ansibleJobList, 'name')
+                        if (name && selectedJobs.includes(name)) {
                             // no duplicate job names can be added
                             return t('cluster:template.job.duplicate.error')
                         }
                     }}
                     isRequired
-                />
+                >
+                    {props.ansibleTowerTemplateList
+                        ? props.ansibleTowerTemplateList?.map((name) => (
+                              <SelectOption key={name} value={name}>
+                                  {name}
+                              </SelectOption>
+                          ))
+                        : undefined}
+                </AcmSelect>
+
                 <AcmLabelsInput
                     id="job-settings"
                     label={t('cluster:template.modal.settings.label')}

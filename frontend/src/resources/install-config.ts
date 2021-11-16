@@ -51,6 +51,7 @@ export interface InstallConfig {
 
         azure?: {
             baseDomainResourceGroupName: string
+            cloudName: string
             region: string
         }
         gcp?: {

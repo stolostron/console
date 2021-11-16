@@ -9,10 +9,19 @@ import {
     AcmInlineProvider,
     AcmPageContent,
     AcmTable,
-    IAcmTableAction,
+    IAcmTableButtonAction,
     Provider,
 } from '@open-cluster-management/ui-components'
-import { Flex, FlexItem, PageSection, Stack, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import {
+    ButtonVariant,
+    Flex,
+    FlexItem,
+    PageSection,
+    Stack,
+    Text,
+    TextContent,
+    TextVariants,
+} from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
@@ -22,26 +31,29 @@ import { useRecoilValue, waitForAll } from 'recoil'
 import { clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
+import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
-import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
-import { deleteResource, ResourceErrorCode } from '../../../../lib/resource-request'
 import { NavigationPath } from '../../../../NavigationPath'
-import { ClusterClaimDefinition } from '../../../../resources/cluster-claim'
-import { ClusterPool } from '../../../../resources/cluster-pool'
+import {
+    Cluster,
+    ClusterClaimDefinition,
+    ClusterPool,
+    ClusterStatus,
+    deleteResource,
+    ResourceErrorCode,
+} from '../../../../resources'
+import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 import { StatusField } from '../ManagedClusters/components/StatusField'
 import { useAllClusters } from '../ManagedClusters/components/useAllClusters'
-import { ClusterStatuses } from '../ClusterSets/components/ClusterStatuses'
 import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterClaimModal'
 import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
 import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './components/UpdateReleaseImageModal'
-import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const { t } = useTranslation(['cluster', 'common'])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
     const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
@@ -52,42 +64,56 @@ export default function ClusterPoolsPage() {
                 <TechPreviewAlert i18nKey="cluster:preview.clusterPools" docHref={DOC_LINKS.CLUSTER_POOLS} />
                 <Stack hasGutter style={{ height: 'unset' }}>
                     <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-pools-learn">
-                        <Flex spaceItems={{ default: 'spaceItemsLg' }}>
-                            <FlexItem flex={{ default: 'flex_1' }}>
-                                <TextContent>
-                                    <Text component={TextVariants.h4}>{t('clusterPools')}</Text>
-                                    <Text component={TextVariants.p}>{t('learn.clusterPools')}</Text>
-                                </TextContent>
-                            </FlexItem>
-                            <FlexItem flex={{ default: 'flex_1' }}>
-                                <TextContent>
-                                    <Text component={TextVariants.h4}>{t('clusterClaims')}</Text>
-                                    <Text component={TextVariants.p}>{t('learn.clusterClaims')}</Text>
-                                </TextContent>
-                            </FlexItem>
-                        </Flex>
-                        <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
-                            <FlexItem>
-                                <AcmButton
-                                    onClick={() => window.open(DOC_LINKS.CLUSTER_POOLS, '_blank')}
-                                    variant="link"
-                                    role="link"
-                                    icon={<ExternalLinkAltIcon />}
-                                    iconPosition="right"
-                                >
-                                    {t('common:view.documentation')}
-                                </AcmButton>
-                            </FlexItem>
+                        <Flex style={{ flexWrap: 'inherit' }}>
+                            <Flex style={{ maxWidth: '50%' }}>
+                                <FlexItem>
+                                    <TextContent>
+                                        <Text component={TextVariants.h4}>{t('clusterPools')}</Text>
+                                        <Text component={TextVariants.p}>{t('learn.clusterPools')}</Text>
+                                    </TextContent>
+                                </FlexItem>
+                                <FlexItem align={{ default: 'alignRight' }}>
+                                    <AcmButton
+                                        onClick={() => window.open(DOC_LINKS.CLUSTER_POOLS, '_blank')}
+                                        variant="link"
+                                        role="link"
+                                        icon={<ExternalLinkAltIcon />}
+                                        iconPosition="right"
+                                    >
+                                        {t('common:view.documentation')}
+                                    </AcmButton>
+                                </FlexItem>
+                            </Flex>
+                            <Flex>
+                                <FlexItem>
+                                    <TextContent>
+                                        <Text component={TextVariants.h4}>{t('clusterClaims')}</Text>
+                                        <Text component={TextVariants.p}>{t('learn.clusterClaims')}</Text>
+                                    </TextContent>
+                                </FlexItem>
+                                <FlexItem align={{ default: 'alignRight' }}>
+                                    <AcmButton
+                                        onClick={() => window.open(DOC_LINKS.CLUSTER_CLAIMS, '_blank')}
+                                        variant="link"
+                                        role="link"
+                                        icon={<ExternalLinkAltIcon />}
+                                        iconPosition="right"
+                                    >
+                                        {t('common:view.documentation')}
+                                    </AcmButton>
+                                </FlexItem>
+                            </Flex>
                         </Flex>
                     </AcmExpandableCard>
                     <Stack>
                         <ClusterPoolsTable
                             clusterPools={clusterPools}
-                            tableActions={[
+                            tableActionButtons={[
                                 {
                                     id: 'createClusterPool',
                                     title: t('managed.createClusterPool'),
                                     click: () => history.push(NavigationPath.createClusterPool),
+                                    variant: ButtonVariant.primary,
                                 },
                             ]}
                             emptyState={
@@ -132,7 +158,7 @@ function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
 export function ClusterPoolsTable(props: {
     clusterPools: ClusterPool[]
     emptyState: React.ReactNode
-    tableActions?: IAcmTableAction[]
+    tableActionButtons?: IAcmTableButtonAction[]
 }) {
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const { clusterPools } = props
@@ -194,6 +220,7 @@ export function ClusterPoolsTable(props: {
                     const clusterPoolClusters = clusters.filter(
                         (cluster) =>
                             cluster.hive.clusterPool === clusterPool.metadata.name &&
+                            cluster.hive.clusterPoolNamespace === clusterPool.metadata.namespace &&
                             cluster.hive.clusterClaimName === undefined
                     )
                     if (clusterPoolClusters.length === 0) {
@@ -375,7 +402,7 @@ export function ClusterPoolsTable(props: {
                 ]}
                 keyFn={mckeyFn}
                 key="clusterPoolsTable"
-                bulkActions={[
+                tableActions={[
                     {
                         id: 'updateReleaseImages',
                         title: t('bulk.updateReleaseImages.clusterPools'),
@@ -385,7 +412,9 @@ export function ClusterPoolsTable(props: {
                                 close: () => setUpdateReleaseImageModalProps(undefined),
                             })
                         },
+                        variant: 'bulk-action',
                     },
+                    { id: 'seperator', variant: 'action-seperator' },
                     {
                         id: 'destroyClusterPools',
                         title: t('bulk.destroy.clusterPools'),
@@ -407,9 +436,10 @@ export function ClusterPoolsTable(props: {
                                 isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                             })
                         },
+                        variant: 'bulk-action',
                     },
                 ]}
-                tableActions={props.tableActions}
+                tableActionButtons={props.tableActionButtons}
                 rowActions={[]}
                 emptyState={props.emptyState}
             />

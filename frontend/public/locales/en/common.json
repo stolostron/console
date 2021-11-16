@@ -42,6 +42,7 @@
     "outOf": "{{firstNumber}} out of {{secondNumber}}",
     "wizard.review.title": "Review your selections",
     "wizard.review.description": "Return to a step to make changes.",
+    "deprecated": "Deprecated",
 
     "yes": "Yes",
     "no": "No",
@@ -50,6 +51,7 @@
 
     "show.less": "Show less",
     "show.more": "{{number}} more",
+    "count.labels": "{{number}} labels",
 
     "request.failed": "Request failed",
 

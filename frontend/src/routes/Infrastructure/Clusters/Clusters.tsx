@@ -46,7 +46,7 @@ export const usePageContext = (showActions: boolean, Component: ElementType) => 
 export default function ClusterManagementPage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const location = useLocation()
-    const { t } = useTranslation(['cluster', 'bma'])
+    const { t } = useTranslation(['cluster', 'bma', 'common'])
 
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
