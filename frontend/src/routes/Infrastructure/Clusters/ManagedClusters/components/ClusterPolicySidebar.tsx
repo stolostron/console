@@ -25,7 +25,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
-import { PolicyReport, PolicyReportResults } from '../../../../../resources'
+import { PolicyReport, PolicyReportResults } from '../../../../../resources/policy-report'
 import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
 
 const useStyles = makeStyles({

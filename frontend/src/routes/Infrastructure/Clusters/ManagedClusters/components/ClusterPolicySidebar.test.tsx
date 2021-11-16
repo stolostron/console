@@ -4,7 +4,8 @@ import { act, render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
-import { ConfigMap, PolicyReport } from '../../../../../resources'
+import { ConfigMap } from '../../../../../resources/configmap'
+import { PolicyReport } from '../../../../../resources/policy-report'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 
 const mockPolicyReports: PolicyReport = {
