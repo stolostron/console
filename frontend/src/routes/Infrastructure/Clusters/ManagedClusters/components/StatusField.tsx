@@ -1,16 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useTranslation, Trans } from 'react-i18next'
-import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'
+import { Cluster, ClusterStatus, getLatestAnsibleJob } from '../../../../../resources'
+import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
-import { launchLogs } from './HiveNotification'
 import { ansibleJobState, configMapsState } from '../../../../../atoms'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
-import { getLatestAnsibleJob } from '../../../../../resources/ansible-job'
+import { launchLogs } from './HiveNotification'
 
 export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation(['cluster'])
@@ -56,6 +55,9 @@ export function StatusField(props: { cluster: Cluster }) {
             break
         case ClusterStatus.unknown:
             type = StatusType.unknown
+            break
+        case ClusterStatus.draft:
+            type = StatusType.draft
             break
         case ClusterStatus.pending:
         case ClusterStatus.pendingimport:

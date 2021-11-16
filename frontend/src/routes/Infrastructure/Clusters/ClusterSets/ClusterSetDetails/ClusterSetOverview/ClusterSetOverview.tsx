@@ -1,22 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext } from 'react'
-import { useHistory } from 'react-router-dom'
-import { useTranslation, Trans } from 'react-i18next'
+import {
+    AcmButton,
+    AcmCountCardSection,
+    AcmDescriptionList,
+    AcmLabels,
+    AcmPageContent,
+} from '@open-cluster-management/ui-components'
 import { PageSection, Popover } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import {
-    AcmPageContent,
-    AcmDescriptionList,
-    AcmCountCardSection,
-    AcmLabels,
-    AcmButton,
-} from '@open-cluster-management/ui-components'
-import { ClusterSetContext } from '../ClusterSetDetails'
-import { clusterDangerStatuses } from '../../../../../../lib/get-cluster'
+import { useContext } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
+import { clusterDangerStatuses } from '../../../../../../resources'
 import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkStatus'
+import { ClusterSetContext } from '../ClusterSetDetails'
+import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
 
 export function ClusterSetOverviewPageContent() {
     const { t } = useTranslation(['cluster'])
@@ -60,10 +60,7 @@ export function ClusterSetOverviewPageContent() {
                                 </Popover>
                             ),
                             value: clusterSetBindings?.length ? (
-                                <AcmLabels
-                                    labels={clusterSetBindings?.map((mcsb) => mcsb.metadata.namespace!)}
-                                    variant="outline"
-                                />
+                                <AcmLabels labels={clusterSetBindings?.map((mcsb) => mcsb.metadata.namespace!)} />
                             ) : (
                                 '-'
                             ),

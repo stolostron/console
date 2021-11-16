@@ -43,6 +43,18 @@ const BareMetalAssetsPage = lazy(() => import('./routes/Infrastructure/BareMetal
 const AnsibleAutomationsPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomations'))
 const ExampleForm = lazy(() => import('./components/DataForm/ExampleForm'))
 
+const InfraEnvironmentsPage = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPage'))
+const CreateInfraEnv = lazy(() => import('./routes/Infrastructure/InfraEnvironments/CreateInfraEnv'))
+const InfraEnvironmentDetailsPage = lazy(
+    () => import('./routes/Infrastructure/InfraEnvironments/Details/InfraEnvironmentDetailsPage')
+)
+const EditAICluster = lazy(
+    () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/EditAICluster')
+)
+const ClusterCreateProgress = lazy(
+    () => import('./routes/Infrastructure/Clusters/ManagedClusters/components/cim/ClusterCreateProgress')
+)
+
 export default function App() {
     const [route] = useRecoilState(acmRouteState)
     return (
@@ -67,6 +79,21 @@ export default function App() {
                                     <Route exact path={NavigationPath.addCredentials} component={CredentialPage} />
                                     <Route exact path={NavigationPath.editCredentials} component={CredentialPage} />
                                     <Route exact path={NavigationPath.viewCredentials} component={CredentialPage} />
+                                    <Route
+                                        exact
+                                        path={NavigationPath.infraEnvironments}
+                                        component={InfraEnvironmentsPage}
+                                    />
+                                    <Route exact path={NavigationPath.createInfraEnv} component={CreateInfraEnv} />
+                                    <Route
+                                        path={NavigationPath.infraEnvironmentDetails}
+                                        component={InfraEnvironmentDetailsPage}
+                                    />
+                                    <Route path={NavigationPath.editCluster} component={EditAICluster} />
+                                    <Route
+                                        path={NavigationPath.clusterCreateProgress}
+                                        component={ClusterCreateProgress}
+                                    />
                                     <Route
                                         exact
                                         path={NavigationPath.ansibleAutomations}

@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../resources'
 import {
     AcmAlert,
     AcmForm,
@@ -22,7 +23,6 @@ import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
-import { IRequestResult, ResourceError, ResourceErrorCode, resultsSettled } from '../lib/resource-request'
 
 export interface IBulkActionModelProps<T = undefined> {
     open: true
@@ -43,6 +43,7 @@ export interface IBulkActionModelProps<T = undefined> {
     isValidError?: (error: Error) => boolean
     emptyState?: JSX.Element
     showToolbar?: boolean
+    hideTableAfterSubmit?: boolean
     icon?: 'success' | 'danger' | 'warning' | 'info' | 'default'
 }
 
@@ -92,24 +93,26 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                 {!errors ? (
                     <Fragment>
                         {props.description}
-                        {props.columns && props.keyFn && (
-                            <AcmTablePaginationContextProvider localStorageKey="model">
-                                <AcmTable<T>
-                                    gridBreakPoint={TableGridBreakpoint.none}
-                                    plural={props.plural ?? ''}
-                                    items={props.resources}
-                                    columns={props.columns}
-                                    keyFn={props.keyFn}
-                                    tableActions={[]}
-                                    emptyState={props.emptyState}
-                                    rowActions={[]}
-                                    bulkActions={[]}
-                                    perPageOptions={[]}
-                                    autoHidePagination
-                                    showToolbar={props.showToolbar}
-                                />
-                            </AcmTablePaginationContextProvider>
-                        )}
+                        {props.hideTableAfterSubmit && progress != 0
+                            ? undefined
+                            : props.columns &&
+                              props.keyFn && (
+                                  <AcmTablePaginationContextProvider localStorageKey="model">
+                                      <AcmTable<T>
+                                          gridBreakPoint={TableGridBreakpoint.none}
+                                          plural={props.plural ?? ''}
+                                          items={props.resources}
+                                          columns={props.columns}
+                                          keyFn={props.keyFn}
+                                          tableActions={[]}
+                                          emptyState={props.emptyState}
+                                          rowActions={[]}
+                                          perPageOptions={[]}
+                                          autoHidePagination
+                                          showToolbar={props.showToolbar}
+                                      />
+                                  </AcmTablePaginationContextProvider>
+                              )}
 
                         <div style={{ paddingTop: '12px', paddingBottom: '12px' }}>
                             {progress > 0 ? (
@@ -153,7 +156,6 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                     keyFn={props.keyFn}
                                     tableActions={[]}
                                     rowActions={[]}
-                                    bulkActions={[]}
                                     perPageOptions={[]}
                                     autoHidePagination
                                 />
@@ -212,6 +214,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                               }
                                           })
                                       }
+                                      await new Promise((resolve) => setTimeout(resolve, 500))
                                       setErrors(errors)
                                       if (errors.length === 0) {
                                           props.close()

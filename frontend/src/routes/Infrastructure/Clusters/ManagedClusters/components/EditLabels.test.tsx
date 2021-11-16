@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { IResource, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { mockBadRequestStatus, nockPatch } from '../../../../../lib/nock-util'
-import { IResource } from '../../../../../resources/resource'
 import { EditLabels } from './EditLabels'
-import { ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
 
 const resource: IResource = {
     apiVersion: ManagedClusterApiVersion,

@@ -1,18 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    AnsibleJob,
+    Cluster,
+    ClusterCurator,
+    ClusterCuratorDefinition,
+    ClusterStatus,
+    CuratorCondition,
+    getLatestAnsibleJob,
+} from '../../../../../resources'
 import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RbacButton } from '../../../../../components/Rbac'
-import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../lib/get-cluster'
-import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
-import { AnsibleJob, getLatestAnsibleJob } from '../../../../../resources/ansible-job'
-import { ClusterCurator, ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
-import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { useRecoilState } from 'recoil'
 import { ansibleJobState } from '../../../../../atoms'
+import { RbacButton } from '../../../../../components/Rbac'
+import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
+import { BatchUpgradeModal } from './BatchUpgradeModal'
 
 export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -69,12 +75,12 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
         // if pre/post failed
         if (props.cluster?.distribution?.upgradeInfo?.hookFailed) {
             statusType = StatusType.warning
-            if (props.cluster?.distribution?.upgradeInfo?.prehooks.failed) {
+            if (props.cluster?.distribution?.upgradeInfo?.prehooks?.failed) {
                 statusTitle = 'upgrade.ansible.prehookjob.title'
                 statusMessage = (
                     <Fragment>
                         {t('upgrade.ansible.prehook.failure')}
-                        <div>{props.cluster?.distribution?.upgradeInfo?.latestJob.conditionMessage}</div>
+                        <div>{props.cluster?.distribution?.upgradeInfo?.latestJob?.conditionMessage}</div>
                     </Fragment>
                 )
             } else {
@@ -82,7 +88,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 statusMessage = (
                     <Fragment>
                         {t('upgrade.ansible.posthook.failure')}
-                        <div>{props.cluster?.distribution?.upgradeInfo?.latestJob.conditionMessage}</div>
+                        <div>{props.cluster?.distribution?.upgradeInfo?.latestJob?.conditionMessage}</div>
                     </Fragment>
                 )
             }
@@ -105,7 +111,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
     if (props.cluster?.status !== ClusterStatus.ready) {
         return <>{props.cluster?.distribution.displayVersion ?? '-'}</>
     }
-    if (props.cluster?.distribution.upgradeInfo.upgradeFailed) {
+    if (props.cluster?.distribution.upgradeInfo?.upgradeFailed) {
         // OCP UPGRADE FAILED
         return (
             <>
@@ -142,7 +148,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 />
             </>
         )
-    } else if (props.cluster?.distribution.upgradeInfo.isUpgrading) {
+    } else if (props.cluster?.distribution.upgradeInfo?.isUpgrading) {
         // OCP UPGRADE IN PROGRESS
         return (
             <>
@@ -188,7 +194,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 />
             </>
         )
-    } else if (props.cluster?.distribution.upgradeInfo.isReadyUpdates) {
+    } else if (props.cluster?.distribution.upgradeInfo?.isReadyUpdates) {
         // UPGRADE AVAILABLE
         return (
             <>

@@ -1,10 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Cluster, mapClusters } from '../../../../../resources'
 import { useMemo } from 'react'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { Cluster, mapClusters } from '../../../../../lib/get-cluster'
 import {
-    ansibleJobState,
     certificateSigningRequestsState,
     clusterClaimsState,
     clusterCuratorsState,
@@ -12,6 +11,7 @@ import {
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClustersState,
+    agentClusterInstallsState,
 } from '../../../../../atoms'
 
 export function useAllClusters() {
@@ -23,7 +23,7 @@ export function useAllClusters() {
         managedClusterAddons,
         clusterClaims,
         clusterCurators,
-        ansibleJobs,
+        agentClusterInstalls,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -33,7 +33,7 @@ export function useAllClusters() {
             managedClusterAddonsState,
             clusterClaimsState,
             clusterCuratorsState,
-            ansibleJobState,
+            agentClusterInstallsState,
         ])
     )
     const clusters = useMemo(
@@ -46,7 +46,7 @@ export function useAllClusters() {
                 managedClusterAddons,
                 clusterClaims,
                 clusterCurators,
-                ansibleJobs
+                agentClusterInstalls
             ),
         [
             clusterDeployments,
@@ -56,7 +56,7 @@ export function useAllClusters() {
             managedClusterAddons,
             clusterClaims,
             clusterCurators,
-            ansibleJobs,
+            agentClusterInstalls,
         ]
     )
     return clusters as Cluster[]

@@ -1,10 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
+// eslint-disable-next-line no-use-before-define
+import React from 'react'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     networkingControlData,
+    proxyControlData,
     automationControlData,
     getSimplifiedImageName,
     isHidden_SNO,
@@ -18,7 +20,7 @@ import {
     VALIDATE_ALPHANUMERIC_PERIOD,
     VALIDATE_MAC_ADDRESS,
 } from 'temptifly'
-import { listBareMetalAssets } from '../../../../../../resources/bare-metal-asset'
+import { listBareMetalAssets } from '../../../../../../resources'
 import { withTranslation } from 'react-i18next'
 import WrappedImportBareMetalAssetsButton from '../components/WrappedImportBareMetalAssetsButton'
 import _ from 'lodash'
@@ -172,6 +174,11 @@ const getHostsTitle = (control, controlData, i18n) => {
     }
 }
 
+export const getControlDataBMC = (includeAutomation = true) => {
+    if (includeAutomation) return [...controlDataBMC, ...automationControlData]
+    return [...controlDataBMC]
+}
+
 const controlDataBMC = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -207,10 +214,10 @@ const controlDataBMC = [
     },
     {
         name: 'creation.ocp.addition.labels',
-        tooltip: 'tooltip.creation.ocp.addition.labels',
         id: 'additional',
         type: 'labels',
         active: [],
+        tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
     },
 
     ///////////////////////  hosts  /////////////////////////////////////
@@ -339,6 +346,7 @@ const controlDataBMC = [
         type: 'text',
         name: 'creation.ocp.network.cidr',
         tooltip: 'tooltip.creation.ocp.network.cidr',
+        placeholder: 'creation.ocp.network.cidr.placeholder',
         active: '',
         validation: VALIDATE_CIDR,
     },
@@ -347,6 +355,7 @@ const controlDataBMC = [
         type: 'text',
         name: 'creation.ocp.network.interface',
         tooltip: 'tooltip.creation.ocp.network.interface',
+        placeholder: 'creation.ocp.network.interface.placeholder',
         active: 'enp1s0',
         validation: VALIDATE_ALPHANUMERIC,
     },
@@ -355,6 +364,7 @@ const controlDataBMC = [
         type: 'text',
         name: 'creation.ocp.network.bridge',
         tooltip: 'tooltip.creation.ocp.network.bridge',
+        placeholder: 'creation.ocp.network.bridge.placeholder',
         active: 'provisioning',
         validation: VALIDATE_ALPHANUMERIC_PERIOD,
     },
@@ -363,6 +373,7 @@ const controlDataBMC = [
         type: 'text',
         name: 'creation.ocp.external.bridge',
         tooltip: 'tooltip.creation.ocp.external.bridge',
+        placeholder: 'creation.ocp.external.bridge.placeholder',
         active: 'baremetal',
         validation: VALIDATE_ALPHANUMERIC_PERIOD,
     },
@@ -384,6 +395,7 @@ const controlDataBMC = [
         id: 'apiVIP',
         type: 'text',
         name: 'creation.ocp.api.vip',
+        placeholder: 'creation.ocp.api.vip.placeholder',
         tooltip: 'tooltip.creation.ocp.api.vip',
         active: '',
         validation: VALIDATE_IP_AGAINST_MACHINE_CIDR_OPTIONAL,
@@ -393,11 +405,11 @@ const controlDataBMC = [
         type: 'text',
         name: 'creation.ocp.ingress.vip',
         tooltip: 'tooltip.creation.ocp.ingress.vip',
+        placeholder: 'creation.ocp.ingress.vip.placeholder',
         active: '',
         validation: VALIDATE_IP_AGAINST_MACHINE_CIDR_OPTIONAL,
     },
     ...networkingControlData,
-    ...automationControlData,
+    ...proxyControlData,
 ]
-
-export default controlDataBMC
+export default getControlDataBMC

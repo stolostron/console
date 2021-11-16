@@ -1,6 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    BareMetalAsset,
+    BareMetalAssetApiVersion,
+    BareMetalAssetDefinition,
+    BareMetalAssetKind,
+    BMASecret,
+    createResource,
+    getBareMetalAsset,
+    getSecret,
+    patchResource,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+    unpackSecret,
+} from '../../../resources'
+import {
     AcmAlertContext,
     AcmAlertGroup,
     AcmButton,
@@ -19,22 +34,12 @@ import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { createResource, patchResource } from '../../../lib/resource-request'
-import {
-    BareMetalAsset,
-    BareMetalAssetApiVersion,
-    BareMetalAssetDefinition,
-    BareMetalAssetKind,
-    BMASecret,
-    getBareMetalAsset,
-} from '../../../resources/bare-metal-asset'
 import { namespacesState } from '../../../atoms'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { getSecret, Secret, SecretApiVersion, SecretKind, unpackSecret } from '../../../resources/secret'
 
 export default function CreateBareMetalAssetPage() {
     const { t } = useTranslation(['bma', 'common'])

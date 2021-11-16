@@ -1,5 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    DiscoveredCluster,
+    DiscoveredClusterApiVersion,
+    DiscoveredClusterKind,
+    KlusterletAddonConfig,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
+    ManagedCluster,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+    managedClusterSetLabel,
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+    ProjectRequest,
+    ProjectRequestApiVersion,
+    ProjectRequestKind,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+} from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -21,27 +42,6 @@ import {
     waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import {
-    DiscoveredCluster,
-    DiscoveredClusterApiVersion,
-    DiscoveredClusterKind,
-} from '../../../../../resources/discovered-cluster'
-import {
-    KlusterletAddonConfig,
-    KlusterletAddonConfigApiVersion,
-    KlusterletAddonConfigKind,
-} from '../../../../../resources/klusterlet-add-on-config'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
-import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
-import {
-    Project,
-    ProjectApiVersion,
-    ProjectKind,
-    ProjectRequest,
-    ProjectRequestApiVersion,
-    ProjectRequestKind,
-} from '../../../../../resources/project'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
 
@@ -69,16 +69,6 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
             name: 'foobar',
             type: 'OCP',
             openshiftVersion: '4.5.5',
-            providerConnections: [
-                {
-                    apiVersion: 'v1',
-                    kind: 'Secret',
-                    name: 'ocm-api-token',
-                    namespace: 'open-cluster-management',
-                    resourceVersion: '2673462626',
-                    uid: '8e103e5d-0267-4872-b185-1240e413d7b4',
-                },
-            ],
             status: 'Active',
         },
     },
@@ -88,6 +78,7 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
         metadata: { name: 'test-cluster-02', namespace: 'foobar' },
         spec: {
             activityTimestamp: '2020-07-30T19:09:43Z',
+            displayName: 'test-cluster-02',
             cloudProvider: 'gcp',
             console: 'https://console-openshift-console.apps.test-cluster-01.dev01.red-chesterfield.com',
             creationTimestamp: '2020-07-30T19:09:43Z',

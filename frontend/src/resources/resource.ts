@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { V1ObjectMeta } from '@kubernetes/client-node/dist'
+import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { join } from 'path'
 
 // https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19

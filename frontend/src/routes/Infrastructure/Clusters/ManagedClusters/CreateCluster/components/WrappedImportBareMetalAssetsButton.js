@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
+// eslint-disable-next-line no-use-before-define
+import React from 'react'
 import PropTypes from 'prop-types'
 import { Button } from '@patternfly/react-core'
 import { Tooltip } from 'temptifly'

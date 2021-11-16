@@ -1,13 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Cluster, ClusterStatus, Secret, SecretApiVersion, SecretKind } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
-import { useState } from 'react'
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
+import { RecoilRoot } from 'recoil'
 import { mockBadRequestStatus, nockGet } from '../../../../../lib/nock-util'
-import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ImportCommandContainer } from './ImportCommand'
-import { RecoilRoot } from 'recoil'
 
 const mockSecretResponse: Secret = {
     apiVersion: SecretApiVersion,
@@ -29,6 +27,7 @@ const mockCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
+        isManagedOpenShift: false,
     },
     labels: undefined,
     nodes: undefined,
@@ -45,16 +44,16 @@ const mockCluster: Cluster = {
     },
     isHive: false,
     isManaged: true,
+    isCurator: false,
+    isSNOCluster: false,
+    owner: {},
 }
 
 describe('ImportCommandContainer', () => {
     const Component = () => {
-        const [importCommand, setImportCommand] = useState<string | undefined>()
         return (
             <RecoilRoot>
-                <ClusterContext.Provider
-                    value={{ cluster: mockCluster, addons: undefined, importCommand, setImportCommand }}
-                >
+                <ClusterContext.Provider value={{ cluster: mockCluster, addons: undefined }}>
                     <ImportCommandContainer />
                 </ClusterContext.Provider>
             </RecoilRoot>

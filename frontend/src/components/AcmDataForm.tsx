@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmPageHeader, AcmIcon, AcmIconVariant, AcmButton } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmIcon, AcmIconVariant, AcmPageHeader } from '@open-cluster-management/ui-components'
 import {
     ActionGroup,
     ActionList,
@@ -8,6 +8,7 @@ import {
     Alert,
     AlertGroup,
     Button,
+    Checkbox,
     ClipboardCopyButton,
     CodeBlock,
     CodeBlockAction,
@@ -63,28 +64,30 @@ import {
     WizardStep,
 } from '@patternfly/react-core'
 import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
-import ExclamationCircleIcon from '@patternfly/react-icons/dist/js/icons/exclamation-circle-icon'
-import EyeIcon from '@patternfly/react-icons/dist/js/icons/eye-icon'
-import EyeSlashIcon from '@patternfly/react-icons/dist/js/icons/eye-slash-icon'
-import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
-import PasteIcon from '@patternfly/react-icons/dist/js/icons/paste-icon'
-import PlusIcon from '@patternfly/react-icons/dist/js/icons/plus-icon'
-import TrashIcon from '@patternfly/react-icons/dist/js/icons/trash-icon'
-import EditIcon from '@patternfly/react-icons/dist/js/icons/edit-icon'
-import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
+import {
+    EditIcon,
+    ExclamationCircleIcon,
+    ExternalLinkAltIcon,
+    EyeIcon,
+    EyeSlashIcon,
+    HelpIcon,
+    PasteIcon,
+    PlusIcon,
+    TimesCircleIcon,
+    TrashIcon,
+} from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Fragment, ReactNode, useRef, useState } from 'react'
 import YAML from 'yaml'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
     FormData,
-    SectionGroup,
+    FormDataOrderedInput,
     Input,
     InputBase,
-    Section,
-    SelectOptionInput,
-    FormDataOrderedInput,
     LinkType,
+    Section,
+    SectionGroup,
+    SelectOptionInput,
 } from './AcmFormData'
 
 export interface AcmDataFormProps {
@@ -358,12 +361,12 @@ export function AcmDataFormDefault(props: {
                                                 if ((result as unknown) instanceof Promise) {
                                                     setSubmitText(formData.submittingText)
                                                     ;(result as unknown as Promise<void>).catch((err) => {
-                                                        setSubmitError(err.message)
+                                                        if (err instanceof Error) setSubmitError(err.message)
                                                         setSubmitText(formData.submitText)
                                                     })
                                                 }
                                             } catch (err) {
-                                                setSubmitError(err.message)
+                                                if (err instanceof Error) setSubmitError(err.message)
                                             }
                                         }
                                     }}
@@ -550,12 +553,13 @@ export function AcmDataFormWizard(props: {
                                                             if ((result as unknown) instanceof Promise) {
                                                                 setSubmitText(formData.submittingText)
                                                                 ;(result as unknown as Promise<void>).catch((err) => {
-                                                                    setSubmitError(err.message)
+                                                                    if (err instanceof Error)
+                                                                        setSubmitError(err.message)
                                                                     setSubmitText(formData.submitText)
                                                                 })
                                                             }
                                                         } catch (err) {
-                                                            setSubmitError(err.message)
+                                                            if (err instanceof Error) setSubmitError(err.message)
                                                         }
                                                     }
                                                 }}
@@ -733,6 +737,14 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                 </DescriptionListGroup>
             )
         }
+        case 'Checkbox': {
+            return (
+                <DescriptionListGroup key={input.label}>
+                    <DescriptionListTerm>{input.label}</DescriptionListTerm>
+                    <DescriptionListDescription>{input.value ? 'True' : 'False'}</DescriptionListDescription>
+                </DescriptionListGroup>
+            )
+        }
         case 'GroupedSelect':
         case 'GroupedTiles': {
             let selectedOption: SelectOptionInput | undefined
@@ -826,7 +838,9 @@ export function AcmDataFormInputs(props: {
                                 isRequired={input.isRequired}
                                 helperTextInvalid={
                                     <Split>
-                                        <SplitItem isFilled>{error}</SplitItem>
+                                        <SplitItem isFilled>
+                                            <span className="pf-c-form__helper-text pf-m-error">{error}</span>
+                                        </SplitItem>
                                         {input.prompt && (
                                             <SplitItem>
                                                 <AcmButton
@@ -851,7 +865,9 @@ export function AcmDataFormInputs(props: {
                                 validated={validated}
                                 helperText={
                                     <Split>
-                                        <SplitItem isFilled>{input.helperText}</SplitItem>
+                                        <SplitItem isFilled>
+                                            <span className="pf-c-form__helper-text">{input.helperText}</span>
+                                        </SplitItem>
                                         {input.prompt && (
                                             <SplitItem>
                                                 <AcmButton
@@ -930,7 +946,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                         isReadOnly={isReadOnly}
                         type={'number'}
                         onChange={(value) => {
-                            input.onChange(Number(value))
+                            onChange(Number(value))
                         }}
                     />
                 </InputGroup>
@@ -973,11 +989,16 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                 </InputGroup>
             )
         }
+        case 'Checkbox': {
+            const { value, ...inputProps } = input
+            return <Checkbox {...inputProps} isChecked={value} />
+        }
 
         case 'Select':
         case 'GroupedSelect':
         case 'Multiselect':
         case 'GroupedMultiselect': {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { onChange, placeholder, ...inputProps } = input
             const onSelect = (_event: unknown, selection: string | SelectOptionObject) => {
                 switch (input.type) {
@@ -1086,6 +1107,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             return (
                 <SelectWithToggle
                     {...inputProps}
+                    toggleId={`${input.id}-input-toggle`}
                     selections={selections}
                     onSelect={onSelect}
                     onClear={onClear}

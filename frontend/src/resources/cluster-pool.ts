@@ -57,3 +57,5 @@ export interface ClusterPool extends IResource {
         size?: number
     }
 }
+
+export const clusterPoolNamespaceLabels = Object.freeze({ 'open-cluster-management.io/managed-by': 'clusterpools' })

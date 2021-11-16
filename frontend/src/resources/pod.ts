@@ -2,9 +2,9 @@
 
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { V1Pod } from '@kubernetes/client-node/dist/gen/model/v1Pod'
-import { ClusterStatus } from '../lib/get-cluster'
-import { listNamespacedResources } from '../lib/resource-request'
-import { getLatest } from '../lib/utils'
+import { ClusterStatus } from './utils/get-cluster'
+import { listNamespacedResources } from './utils/resource-request'
+import { getLatest } from './utils/utils'
 import { IResource, IResourceDefinition } from './resource'
 
 export const PodApiVersion = 'v1'

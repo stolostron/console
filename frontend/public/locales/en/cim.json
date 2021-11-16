@@ -1,0 +1,11 @@
+{
+    "cim.onpremise.banner.header": "Create Cluster on Premise with a cloud like experience",
+    "cim.onpremise.banner.body": "<p>The best solution for creating cluster on an <bold>On Premise</bold> at scale. Easily create ready to go clusters for your applications.</p><p>Easily create and re-create clusters from hosts that are provided by an infrastructure environment.</p>",
+    "cim.banner.dismiss": "Dismiss",
+    "cim.onpremise.banner.infraenv.link": "Get started with infrastructure environments",
+    "cim.infra.banner.header": "A pool of hosts, ready for cluster creation",
+    "cim.infra.banner.body": "Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.",
+    "cim.infra.manage.link": "Manage infrastructure environments",
+    "cim.infra.missing.warning.text": "An infrastructure environment must be available with hosts to proceed with the On premise option.",
+    "cim.infra.missing.warning.title": "No infrastructure environments available"
+}

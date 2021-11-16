@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+// eslint-disable-next-line no-use-before-define
+import React from 'react'
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
@@ -7,11 +9,13 @@ import {
     clusterDetailsControlData,
     networkingControlData,
     automationControlData,
+    proxyControlData,
     getSimplifiedImageName,
     getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -67,6 +71,7 @@ const regions = [
     'westcentralus',
     'westindia',
 ]
+const govRegions = ['usgovvirginia', 'usgovtexas']
 
 //  List vm sizes in a location/region
 //    az vm list-sizes --location eastus --output table
@@ -90,7 +95,7 @@ const ApplicationCreationPage = [
                     { value: 'Standard_A1_v2', description: '1 vCPU, 2 GiB - General Purpose' },
                     { value: 'Standard_A2_v2', description: '2 vCPU, 4 GiB - General Purpose' },
                     { value: 'Standard_A4_v2', description: '4 vCPU, 8 GiB - General Purpose' },
-                    { value: 'Standard_A8_v2', description: '8 vCPU, 1 6GiB - General Purpose' },
+                    { value: 'Standard_A8_v2', description: '8 vCPU, 16 GiB - General Purpose' },
                     { value: 'Standard_A2m_v2', description: '2 vCPU, 16 GiB - General Purpose' },
                     { value: 'Standard_A4m_v2', description: '4 vCPU, 32 GiB - General Purpose' },
                     { value: 'Standard_A8m_v2', description: '8 vCPU, 64 GiB - General Purpose' },
@@ -116,17 +121,17 @@ const ApplicationCreationPage = [
                 children: [
                     { value: 'Standard_DC1s_v2', description: '1 vCPU, 4 GiB - General Purpose' },
                     { value: 'Standard_DC2s_v2', description: gp2Cpu8Gib },
-                    { value: 'Standard_DC4s_v2', description: '4 vCPU, 16  GiB - General Purpose' },
+                    { value: 'Standard_DC4s_v2', description: '4 vCPU, 16 GiB - General Purpose' },
                     { value: 'Standard_DC8_v2', description: '8  vCPU, 32 GiB - General Purpose' },
-                    { value: 'Standard_D1_v2', description: '1 vCPU, 3.5GiB - General Purpose' },
+                    { value: 'Standard_D1_v2', description: '1 vCPU, 3.5 GiB - General Purpose' },
                     { value: 'Standard_D2_v2', description: '2 vCPU, 7 GiB - General Purpose' },
-                    { value: 'Standard_D3_v2', description: '4 vCPU, 14  GiB - General Purpose' },
-                    { value: 'Standard_D4_v2', description: '8 vCPU, 28  GiB - General Purpose' },
+                    { value: 'Standard_D3_v2', description: '4 vCPU, 14 GiB - General Purpose' },
+                    { value: 'Standard_D4_v2', description: '8 vCPU, 28 GiB - General Purpose' },
                     { value: 'Standard_D5_v2', description: '16 vCPU, 56 GiB - General Purpose' },
                     { value: 'Standard_DS1_v2', description: '1  vCPU, 3.5 GiB - General Purpose' },
                     { value: 'Standard_DS2_v2', description: '2  vCPU, 7 GiB - General Purpose' },
-                    { value: 'Standard_DS3_v2', description: '4  vCPU, 14  GiB - General Purpose' },
-                    { value: 'Standard_DS4_v2', description: '8  vCPU, 28  GiB - General Purpose' },
+                    { value: 'Standard_DS3_v2', description: '4  vCPU, 14 GiB - General Purpose' },
+                    { value: 'Standard_DS4_v2', description: '8  vCPU, 28 GiB - General Purpose' },
                     { value: 'Standard_DS5_v2', description: '16 vCPU, 56 GiB - General Purpose' },
                 ],
             },
@@ -137,16 +142,16 @@ const ApplicationCreationPage = [
                     { value: 'Standard_D4_v3', description: gp4Cpu8Gib },
                     { value: 'Standard_D8_v3', description: gp8Cpu8Gib },
                     { value: 'Standard_D16_v3', description: gp16Cpu8Gib },
-                    { value: 'Standard_D32_v3', description: '32 vCPU, 128GiB - General Purpose' },
-                    { value: 'Standard_D48_v3', description: '48 vCPU, 192GiB - General Purpose' },
-                    { value: 'Standard_D64_v3', description: '64 vCPU, 256GiB - General Purpose' },
+                    { value: 'Standard_D32_v3', description: '32 vCPU, 128 GiB - General Purpose' },
+                    { value: 'Standard_D48_v3', description: '48 vCPU, 192 GiB - General Purpose' },
+                    { value: 'Standard_D64_v3', description: '64 vCPU, 256 GiB - General Purpose' },
                     { value: 'Standard_D2s_v3', description: gp2Cpu8Gib },
                     { value: 'Standard_D4s_v3', description: gp4Cpu8Gib },
                     { value: 'Standard_D8s_v3', description: gp8Cpu8Gib },
                     { value: 'Standard_D16s_v3', description: gp16Cpu8Gib },
-                    { value: 'Standard_D32s_v3', description: '32 vCPU, 128GiB - General Purpose' },
-                    { value: 'Standard_D48s_v3', description: '48 vCPU, 192GiB - General Purpose' },
-                    { value: 'Standard_D64s_v3', description: '64 vCPU, 256GiB - General Purpose' },
+                    { value: 'Standard_D32s_v3', description: '32 vCPU, 128 GiB - General Purpose' },
+                    { value: 'Standard_D48s_v3', description: '48 vCPU, 192 GiB - General Purpose' },
+                    { value: 'Standard_D64s_v3', description: '64 vCPU, 256 GiB - General Purpose' },
                 ],
             },
             {
@@ -277,9 +282,9 @@ const ApplicationCreationPage = [
                 label: 'Mv2-series',
                 children: [
                     { value: 'Standard_M208ms_v21', description: '208 vCPU, 5700 GiB - Memory Optimized' },
-                    { value: 'Standard_M208s_v21', description: '208 vCPU, 2850  GiB - Memory Optimized' },
-                    { value: 'Standard_M416ms_v21', description: '416 vCPU, 11400GiB - Memory Optimized' },
-                    { value: 'Standard_M416s_v21', description: '416 vCPU, 5700GiB - Memory Optimized' },
+                    { value: 'Standard_M208s_v21', description: '208 vCPU, 2850 GiB - Memory Optimized' },
+                    { value: 'Standard_M416ms_v21', description: '416 vCPU, 11400 GiB - Memory Optimized' },
+                    { value: 'Standard_M416s_v21', description: '416 vCPU, 5700 GiB - Memory Optimized' },
                 ],
             },
         ],
@@ -287,7 +292,7 @@ const ApplicationCreationPage = [
     {
         label: 'Storage Optimized',
         children: [
-            { value: 'Standard_L8s_v2', description: '64 vCPU, 80  GiB - Storage Optimized' },
+            { value: 'Standard_L8s_v2', description: '64 vCPU, 80 GiB - Storage Optimized' },
             { value: 'Standard_L16s_v2', description: '16 vCPU, 128 GiB - Storage Optimized' },
             { value: 'Standard_L32s_v2', description: '32 vCPU, 256 GiB - Storage Optimized' },
             { value: 'Standard_L48s_v2', description: '48 vCPU, 384 GiB - Storage Optimized' },
@@ -428,6 +433,29 @@ const ApplicationCreationPage = [
     },
 ]
 
+export const getControlDataAZR = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataAZR)
+    if (includeAutomation) return [...controlDataAZR, ...automationControlData]
+    return [...controlDataAZR]
+}
+
+const setRegions = (control, controlData) => {
+    const alterRegionData = (controlData, regions, active) => {
+        const regionObject = controlData.find((object) => object.name === 'Region')
+        regionObject.active = active
+        regionObject.available = regions
+    }
+
+    if (control.active) {
+        const connection = control.availableMap[control.active]
+        if (connection.replacements.cloudName === 'AzureUSGovernmentCloud')
+            alterRegionData(controlData, govRegions, govRegions[0])
+        else alterRegionData(controlData, regions, 'centralus')
+    } else {
+        alterRegionData(controlData, regions, 'centralus')
+    }
+}
+
 const controlDataAZR = [
     ///////////////////////  connection  /////////////////////////////////////
     {
@@ -435,6 +463,7 @@ const controlDataAZR = [
         tooltip: 'tooltip.creation.ocp.cloud.connection',
         id: 'connection',
         type: 'singleselect',
+        onSelect: setRegions,
         placeholder: 'creation.ocp.cloud.select.connection',
         providerId: 'azr',
         validation: {
@@ -478,18 +507,18 @@ const controlDataAZR = [
     },
     {
         name: 'creation.ocp.addition.labels',
-        tooltip: 'tooltip.creation.ocp.addition.labels',
         id: 'additional',
         type: 'labels',
         active: [],
+        tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
-        id: 'mpoolsStep',
+        id: 'nodePoolsStep',
         type: 'step',
-        title: 'Master node',
+        title: 'Node pools',
     },
     {
         id: 'nodes',
@@ -508,7 +537,7 @@ const controlDataAZR = [
         cacheUserValueKey: 'create.cluster.region',
         reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
-    ///////////////////////  master pool  /////////////////////////////////////
+    ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
         type: 'group',
@@ -518,8 +547,9 @@ const controlDataAZR = [
                 id: 'masterPool',
                 type: 'section',
                 collapsable: true,
-                subtitle: 'creation.ocp.node.master.pool.title',
-                info: 'creation.ocp.node.master.pool.info',
+                collapsed: true,
+                subtitle: 'creation.ocp.node.controlplane.pool.title',
+                info: 'creation.ocp.node.controlplane.pool.info',
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
@@ -552,19 +582,9 @@ const controlDataAZR = [
     },
     ///////////////////////  worker pools  /////////////////////////////////////
     {
-        id: 'wpoolsStep',
-        type: 'step',
-        title: 'Worker pools',
-        hidden: isHidden_SNO,
-    },
-    {
-        id: 'nodes',
-        type: 'title',
-        info: 'creation.ocp.cluster.node.pool.info',
-    },
-    {
         id: 'workerPools',
         type: 'group',
+        hidden: isHidden_SNO,
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',
@@ -576,6 +596,7 @@ const controlDataAZR = [
                 id: 'workerPool',
                 type: 'section',
                 collapsable: true,
+                collapsed: true,
                 subtitle: getWorkerName,
                 info: 'creation.ocp.node.worker.pool.info',
             },
@@ -583,6 +604,7 @@ const controlDataAZR = [
             {
                 name: 'creation.ocp.pool.name',
                 tooltip: 'tooltip.creation.ocp.pool.name',
+                placeholder: 'creation.ocp.pool.placeholder',
                 id: 'workerName',
                 type: 'text',
                 active: 'worker',
@@ -649,7 +671,7 @@ const controlDataAZR = [
         title: 'Networking',
     },
     ...networkingControlData,
-    ...automationControlData,
+    ...proxyControlData,
 ]
 
-export default controlDataAZR
+export default getControlDataAZR

@@ -1,30 +1,33 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useEffect } from 'react'
 import {
-    AcmForm,
-    AcmSubmit,
-    AcmButton,
-    AcmModal,
-    AcmAlertGroup,
+    ClusterClaim,
+    ClusterClaimApiVersion,
+    ClusterClaimKind,
+    ClusterPool,
+    createResource,
+    getResource,
+} from '../../../../../resources'
+import {
     AcmAlertContext,
+    AcmAlertGroup,
+    AcmButton,
+    AcmForm,
+    AcmModal,
+    AcmSubmit,
     AcmTextInput,
 } from '@open-cluster-management/ui-components'
-import { useTranslation, Trans } from 'react-i18next'
-import { useHistory } from 'react-router-dom'
 import {
-    ModalVariant,
     ActionGroup,
     DescriptionList,
-    DescriptionListTerm,
-    DescriptionListGroup,
     DescriptionListDescription,
+    DescriptionListGroup,
+    DescriptionListTerm,
+    ModalVariant,
 } from '@patternfly/react-core'
-import { ClusterPool } from '../../../../../resources/cluster-pool'
-import { managedClusterSetLabel } from '../../../../../resources/managed-cluster-set'
-import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../../../../../resources/cluster-claim'
-import { createResource, getResource } from '../../../../../lib/resource-request'
-import { createImportResources } from '../../../../../lib/import-cluster'
+import { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../NavigationPath'
 
 export type ClusterClaimModalProps = {
@@ -134,19 +137,6 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                     .then(async (result) => {
                                                         const updatedClaim = (await pollClaim(result)) as ClusterClaim
                                                         if (updatedClaim) {
-                                                            try {
-                                                                // this will eventually be moved to a controller
-                                                                // some users may run into issue creating the import resources
-                                                                // so we will just ignore any errors from these requests
-                                                                createImportResources(
-                                                                    updatedClaim.spec!.namespace!,
-                                                                    props.clusterPool?.metadata.labels?.[
-                                                                        managedClusterSetLabel
-                                                                    ]
-                                                                )
-                                                            } catch (err) {
-                                                                console.error(err)
-                                                            }
                                                             setClusterClaim(updatedClaim)
                                                             setClaimed(true)
                                                         } else {

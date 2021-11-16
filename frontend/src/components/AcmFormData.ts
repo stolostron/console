@@ -82,6 +82,10 @@ export interface TextArea extends InputBase<string> {
     isSecret?: boolean
 }
 
+export interface CheckboxInput extends InputBase<boolean> {
+    type: 'Checkbox'
+}
+
 export interface SelectGroup {
     group: string
     options: SelectOptionInput[]
@@ -159,3 +163,4 @@ export type Input =
     | GroupedTilesInput
     | NumberInput
     | FormDataOrderedInput
+    | CheckboxInput

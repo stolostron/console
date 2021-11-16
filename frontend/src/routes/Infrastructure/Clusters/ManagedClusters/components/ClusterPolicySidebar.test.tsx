@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, act } from '@testing-library/react'
+import { ConfigMap, PolicyReport } from '../../../../../resources'
+import { act, render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
-import { ClusterPolicySidebar } from './ClusterPolicySidebar'
-import { PolicyReport } from '../../../../../resources/policy-report'
-import { ConfigMap } from '../../../../../resources/configmap'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
+import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 
 const mockPolicyReports: PolicyReport = {
     apiVersion: 'wgpolicyk8s.io/v1alpha2',

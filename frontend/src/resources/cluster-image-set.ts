@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { listResources } from '../lib/resource-request'
+import { listResources } from './utils/resource-request'
 import { IResourceDefinition } from './resource'
 
 export const ClusterImageSetApiVersion = 'hive.openshift.io/v1'

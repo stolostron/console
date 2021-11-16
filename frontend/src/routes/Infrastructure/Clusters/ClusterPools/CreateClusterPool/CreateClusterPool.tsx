@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { useRecoilState } from 'recoil'
 import {
     AcmPage,
@@ -16,19 +16,18 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
-import { namespacesState } from '../../../../../atoms'
+import { namespacesState, settingsState } from '../../../../../atoms'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import '../../ManagedClusters/CreateCluster/style.css'
 
 // template/data
-import { controlData } from './controlData/ControlData'
+import { getControlData } from './controlData/ControlData'
 import { setAvailableConnections } from '../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import hiveTemplate from './templates/hive-template.hbs'
-import { featureGatesState, secretsState } from '../../../../../atoms'
+import { secretsState } from '../../../../../atoms'
 
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
-import { FeatureGates } from '../../../../../FeatureGates'
 
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
@@ -106,7 +105,15 @@ export function CreateClusterPool() {
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const toastContext = useContext(AcmToastContext)
-    const [featureGateCache] = useRecoilState(featureGatesState)
+    const [settings] = useRecoilState(settingsState)
+
+    // if a connection is added outside of wizard, add it to connection selection
+    const [connectionControl, setConnectionControl] = useState()
+    useEffect(() => {
+        if (connectionControl) {
+            setAvailableConnections(connectionControl, secrets)
+        }
+    }, [connectionControl, secrets])
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -163,6 +170,9 @@ export function CreateClusterPool() {
     const mustJoinClusterSet = useMustJoinClusterSet()
     function onControlInitialize(control: any) {
         switch (control.id) {
+            case 'connection':
+                setConnectionControl(control)
+                break
             case 'clusterSet':
                 if (control.available) {
                     control.available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
@@ -183,7 +193,7 @@ export function CreateClusterPool() {
                 control.available = namespaces.map((namespace) => namespace.metadata.name) as string[]
                 break
             case 'singleNodeFeatureFlag':
-                if (featureGateCache.find((fg) => fg.metadata.name === FeatureGates.singleNodeOpenShift)) {
+                if (settings.singleNodeOpenshift === 'enabled') {
                     control.active = true
                 }
                 break
@@ -200,7 +210,10 @@ export function CreateClusterPool() {
             type={'ClusterPool'}
             title={'ClusterPool YAML'}
             monacoEditor={<MonacoEditor />}
-            controlData={controlData}
+            controlData={getControlData(
+                settings.awsPrivateWizardStep === 'enabled',
+                settings.singleNodeOpenshift === 'enabled'
+            )}
             template={template}
             portals={Portals}
             fetchControl={fetchControl}

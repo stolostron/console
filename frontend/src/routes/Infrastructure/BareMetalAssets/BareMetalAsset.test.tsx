@@ -1,5 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import {
+    BareMetalAsset,
+    BareMetalAssetApiVersion,
+    BareMetalAssetKind,
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+    ProjectRequest,
+    ProjectRequestApiVersion,
+    ProjectRequestKind,
+    ResourceAttributes,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+} from '../../../resources'
 import { fireEvent, render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
@@ -15,17 +30,6 @@ import {
     waitForNocks,
     waitForText,
 } from '../../../lib/test-util'
-import { BareMetalAsset, BareMetalAssetApiVersion, BareMetalAssetKind } from '../../../resources/bare-metal-asset'
-import {
-    Project,
-    ProjectApiVersion,
-    ProjectKind,
-    ProjectRequest,
-    ProjectRequestApiVersion,
-    ProjectRequestKind,
-} from '../../../resources/project'
-import { Secret, SecretApiVersion, SecretKind } from '../../../resources/secret'
-import { ResourceAttributes } from '../../../resources/self-subject-access-review'
 import BareMetalAssetsPage from './BareMetalAssetsPage'
 
 const bareMetalAsset: BareMetalAsset = {

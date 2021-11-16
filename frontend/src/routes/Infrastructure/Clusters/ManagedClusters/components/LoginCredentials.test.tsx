@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, waitFor, screen, waitForElementToBeRemoved } from '@testing-library/react'
+import { Cluster, ClusterStatus } from '../../../../../resources'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { LoginCredentials } from './LoginCredentials'
+import { mockBadRequestStatus, nockGet } from '../../../../../lib/nock-util'
+import { waitForNock, waitForNocks, waitForNotText } from '../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
-import { ClusterStatus, Cluster } from '../../../../../lib/get-cluster'
-import { nockGet, mockBadRequestStatus } from '../../../../../lib/nock-util'
-import { waitForNocks } from '../../../../../lib/test-util'
+import { LoginCredentials } from './LoginCredentials'
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -22,6 +22,7 @@ const mockCluster: Cluster = {
             upgradeFailed: false,
         },
         displayVersion: '4.6',
+        isManagedOpenShift: false,
     },
     labels: undefined,
     nodes: undefined,
@@ -38,6 +39,9 @@ const mockCluster: Cluster = {
     },
     isHive: true,
     isManaged: true,
+    isCurator: false,
+    isSNOCluster: false,
+    owner: {},
 }
 
 const mockKubeadminSecret = {
@@ -75,14 +79,20 @@ describe('LoginCredentials', () => {
                 <LoginCredentials canGetSecret={true} />
             </ClusterContext.Provider>
         )
-        expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
         await waitFor(() => screen.getByText('credentials.show'))
+
+        expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
         userEvent.click(screen.getByTestId('login-credentials'))
+
         await waitFor(() => screen.getByText('credentials.loading'))
-        await waitForElementToBeRemoved(() => screen.getByText('credentials.loading'))
-        await waitForNocks([nock])
+        await waitForNotText('credentials.loading')
+
+        await waitForNock(nock)
         await waitFor(() => screen.getByText('credentials.hide'))
+
+        expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
         userEvent.click(screen.getByTestId('login-credentials'))
+
         await waitFor(() => screen.getByText('credentials.show'))
     })
     test('renders disabled toggle', async () => {
