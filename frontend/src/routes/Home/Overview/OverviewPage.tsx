@@ -400,7 +400,7 @@ export default function OverviewPage() {
                   {
                       isPrimary: false,
                       description: 'Applications',
-                      count: apps.concat(argoApps).length || 0,
+                      count: [...apps, ...argoApps].length || 0,
                       href: buildSummaryLinks('application', true),
                   },
                   {

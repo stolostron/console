@@ -20,7 +20,7 @@ const ApplicationsOverviewPage = lazy(() => import('./Overview'))
 export default function ApplicationsPage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const location = useLocation()
-    const { t } = useTranslation(['applications'])
+    const { t } = useTranslation(['application'])
 
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Applications), [setRoute])
@@ -29,11 +29,11 @@ export default function ApplicationsPage() {
             hasDrawer
             header={
                 <AcmPageHeader
-                    title={t('Applications')}
+                    title={t('application.page.header')}
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.applications)}>
-                                <Link to={NavigationPath.applications}>{t('Overview')}</Link>
+                                <Link to={NavigationPath.applications}>{t('application.page.tab.overview')}</Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
