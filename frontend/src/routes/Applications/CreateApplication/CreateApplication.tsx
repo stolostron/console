@@ -51,7 +51,7 @@ export default function CreateApplicationPage() {
             }
         >
             <AcmErrorBoundary>
-                <AcmPageContent id="create-cluster-pool">
+                <AcmPageContent id="create-application">
                     <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
                         <CreateApplication />
                     </PageSection>
