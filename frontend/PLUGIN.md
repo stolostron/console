@@ -1,16 +1,17 @@
 # Dynamic Plugins
 
 React can [lazy](https://reactjs.org/docs/code-splitting.html#reactlazy) load components.
-This means the bundled javascript for that component is not loaded until it is needed.
+This means the bundled javascript for a component is not loaded until it is needed.
 
-Webpack 5 added federated module support.
+Webpack 5 added [module federation](https://webpack.js.org/concepts/module-federation).
 The idea being that instead of lazy loading a component from the same server/container,
 you can load a component from a remote server/container. Think microservices for the frontend.
 
-OCP Console dynamic plugins build upon this issue by adding a resource that registers the federated module,
+[OCP Console dynamic plugins](https://github.com/openshift/console/blob/master/dynamic-demo-plugin/README.md#proxy-service)
+build upon this issue by adding a resource that registers the federated module,
 and has extensions indicating how and where that "dynamic plugin" will be loaded into the OCP console.
 
-In addition the OCP console provides dynamic proxies that allow those loaded conponents to communicate with the backends even in other namespaces.
+In addition the OCP console provides dynamic [proxies]((https://github.com/openshift/console/tree/master/frontend/packages/console-dynamic-plugin-sdk) that allow those loaded conponents to communicate with the backends even in other namespaces.
 
 ## ACM Dynamic Plugins
 
