@@ -15,7 +15,7 @@
         "prettier": "prettier --check src public",
         "prettier:fix": "prettier --write src public",
         "update": "npx npm-check-updates --doctor --upgrade && npm audit fix && npm dedup",
-        "plugin:watch": "TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode production --watch",
+        "plugin:watch": "CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode production --watch",
         "plugin:serve": "npx http-server ./dist -p 3000 -c-1 --cors",
         "plugin": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve -c webpack.plugin.ts --mode production"
     },
@@ -53,7 +53,7 @@
         "@babel/preset-env": "^7.15.6",
         "@babel/preset-react": "^7.14.5",
         "@babel/preset-typescript": "^7.15.0",
-        "@openshift-console/dynamic-plugin-sdk-webpack": "0.0.3",
+        "@openshift-console/dynamic-plugin-sdk-webpack": "0.0.4",
         "@pmmmwh/react-refresh-webpack-plugin": "^0.5.1",
         "@sentry/browser": "6.13.0",
         "@svgr/webpack": "^5.5.0",
@@ -216,6 +216,7 @@
         "exposedModules": {
             "perspective": "./src/perspective",
             "welcome": "./src/routes/Home/Welcome/Welcome.tsx",
+            "clustersPage": "./src/routes/Infrastructure/Clusters/ClustersPlugin.tsx",
             "credentialsPage": "./src/routes/Credentials/CredentialsPlugin.tsx",
             "credentialsForm": "./src/routes/Credentials/CredentialsFormPlugin.tsx"
         },

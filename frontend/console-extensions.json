@@ -51,31 +51,31 @@
     //         "component": { "$codeRef": "welcome.default" }
     //     }
     // },
-    // {
-    //     "type": "console.navigation/section",
-    //     "properties": {
-    //         "id": "acm-infrastructure",
-    //         "perspective": "acm",
-    //         "name": "Infrastructure"
-    //     }
-    // },
-    // {
-    //     "type": "console.navigation/href",
-    //     "properties": {
-    //         "perspective": "acm",
-    //         "section": "acm-infrastructure",
-    //         "id": "acm-clusters",
-    //         "name": "Clusters",
-    //         "href": "/multicloud/infrastructure/clusters"
-    //     }
-    // },
-    // {
-    //     "type": "console.page/route",
-    //     "properties": {
-    //         "path": "/multicloud/infrastructure/clusters",
-    //         "component": { "$codeRef": "welcome.default" }
-    //     }
-    // },
+    {
+        "type": "console.navigation/section",
+        "properties": {
+            "id": "acm-infrastructure",
+            "perspective": "acm",
+            "name": "Infrastructure"
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-infrastructure",
+            "id": "acm-clusters",
+            "name": "Clusters",
+            "href": "/multicloud/infrastructure/clusters"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/infrastructure/clusters",
+            "component": { "$codeRef": "clustersPage.default" }
+        }
+    },
     // {
     //     "type": "console.navigation/href",
     //     "properties": {
