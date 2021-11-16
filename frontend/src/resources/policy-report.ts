@@ -18,6 +18,7 @@ export interface PolicyReportResults {
     policy: string
     message: string
     scored: boolean
+    source: string
     category: string
     result: string
     properties: {

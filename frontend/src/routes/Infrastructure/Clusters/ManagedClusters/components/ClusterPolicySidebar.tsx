@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import { PolicyReport, PolicyReportResults } from '../../../../../resources'
 import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import {
@@ -26,6 +25,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
+import { PolicyReport, PolicyReportResults } from '../../../../../resources'
 import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
 
 const useStyles = makeStyles({
@@ -70,8 +70,8 @@ const useStyles = makeStyles({
     },
 })
 
-function renderDonutChart(data: PolicyReport, t: TFunction) {
-    const clusterRiskScores = data.results.map((issue) => issue.properties.total_risk)
+function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
+    const clusterRiskScores = data.map((issue) => issue.properties.total_risk)
     const formattedData = [
         {
             key: t('policy.report.critical'),
@@ -119,7 +119,7 @@ function renderDonutChart(data: PolicyReport, t: TFunction) {
                 right: 145,
                 top: 20,
             }}
-            title={`${data.results.length}`}
+            title={`${data.length}`}
             subTitle={t('policy.report.flyout.donut.chart.text')}
             width={400}
             height={200}
@@ -302,6 +302,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
     const { t } = useTranslation(['cluster'])
     const [detailsView, setDetailsView] = useState<boolean>(false)
     const [selectedReport, setSelectedReport] = useState<PolicyReportResults>()
+    const policyReportViolations = props.data?.results?.filter((violation) => violation.source === 'insights')
 
     return detailsView ? (
         <DetailsView setDetailsView={setDetailsView} selectedReport={selectedReport} />
@@ -309,17 +310,17 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
         <div className={classes.body}>
             <TextContent className={classes.titleText}>
                 <Text component={TextVariants.h2}>
-                    {t('policy.report.flyout.title', { count: props.data.results.length })}
+                    {t('policy.report.flyout.title', { count: policyReportViolations.length })}
                 </Text>
                 <Text component={TextVariants.p}>{t('policy.report.flyout.description')}</Text>
             </TextContent>
-            <div className={classes.donutContainer}>{renderDonutChart(props.data, t)}</div>
+            <div className={classes.donutContainer}>{renderDonutChart(policyReportViolations, t)}</div>
             <TextContent className={classes.tableTitle}>
                 <Text component={TextVariants.h4}>{t('policy.report.flyout.table.header')}</Text>
             </TextContent>
             <AcmTable<PolicyReportResults>
                 plural="Recommendations"
-                items={props.data.results}
+                items={policyReportViolations}
                 initialSort={{
                     index: 2, // default to sorting by highest risk
                     direction: 'desc',
