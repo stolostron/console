@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-export const DOC_VERSION = '2.4'
+export const DOC_VERSION = '2.5'
 
 export const DOC_BASE_PATH = `https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/${DOC_VERSION}/html`
 export const OCP_DOC_BASE_PATH = 'https://docs.openshift.com/container-platform'
 
 export const DOC_LINKS = {
     CLUSTERS: `${DOC_BASE_PATH}/clusters/managing-your-clusters`,
-    BARE_METAL_ASSETS: `${DOC_BASE_PATH}/clusters/creating-and-modifying-bare-metal-assets`,
+    BARE_METAL_ASSETS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#creating-and-modifying-bare-metal-assets`,
     CREATE_CONNECTION: `${DOC_BASE_PATH}/credentials/credentials`,
     CREATE_CONNECTION_AWS: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-amazon-web-services`,
     CREATE_CONNECTION_AZURE: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-microsoft-azure`,
@@ -18,15 +18,15 @@ export const DOC_LINKS = {
     CREATE_CONNECTION_ANSIBLE: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-ansible`,
     CREATE_CONNECTION_REDHATCLOUD: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-openshift-cluster-manager`,
     CREATE_CONNECTION_PROXY: `${DOC_BASE_PATH}/credentials/credentials#proxy`,
-    CREATE_CLUSTER: `${DOC_BASE_PATH}/clusters/creating-a-cluster`,
-    IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/importing-a-target-managed-cluster-to-the-hub-cluster`,
-    CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/managedclustersets`,
-    CLUSTER_POOLS: `${DOC_BASE_PATH}/clusters/managing-cluster-pools`,
-    CLUSTER_CLAIMS: `${DOC_BASE_PATH}/clusters/managing-cluster-pools#claiming-clusters-from-cluster-pools`,
+    CREATE_CLUSTER: `${DOC_BASE_PATH}/clusters/managing-your-clusters#creating-a-cluster`,
+    IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/managing-your-clusters#importing-a-target-managed-cluster-to-the-hub-cluster`,
+    CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#managedclustersets`,
+    CLUSTER_POOLS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#managing-cluster-pools`,
+    CLUSTER_CLAIMS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#claiming-clusters-from-cluster-pools`,
     SUBMARINER: `${DOC_BASE_PATH}/services/services-overview#submariner`,
     CONFIG_DISCONNECTED_INSTALL: `${DOC_BASE_PATH}/credentials/credentials#disconnected`,
-    DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/discovery-intro`,
-    MACHINE_POOLS: `${DOC_BASE_PATH}/clusters/resizing-a-cluster`,
+    DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#discovery-intro`,
+    MACHINE_POOLS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#resizing-a-cluster`,
     MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/managing-applications`,
-    ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/ansible-config-cluster`,
+    ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#ansible-config-cluster`,
 }

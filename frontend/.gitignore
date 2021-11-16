@@ -23,3 +23,5 @@ test-report.xml
 .env.production.local
 
 npm-debug.log*
+
+/dist
