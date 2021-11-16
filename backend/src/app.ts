@@ -13,7 +13,6 @@ import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
 import { ansibleTower } from './routes/ansibletower'
 import { authenticated } from './routes/authenticated'
-import { consoleApi } from './routes/console-api'
 import { events, startWatching, stopWatching } from './routes/events'
 import { liveness } from './routes/liveness'
 import { login, loginCallback, logout } from './routes/oauth'
@@ -38,7 +37,6 @@ router.get(`/logout`, logout)
 router.get(`/logout/`, logout)
 router.get(`/events`, events)
 router.post(`/proxy/search`, search)
-router.post(`/proxy/consoleapi`, consoleApi)
 router.get(`/authenticated`, authenticated)
 router.post(`/ansibletower`, ansibleTower)
 router.get(`/*`, serve)
