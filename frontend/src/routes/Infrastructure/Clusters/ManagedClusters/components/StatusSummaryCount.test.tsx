@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterStatus, PolicyReport } from '../../../../../resources'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
 import { nockSearch } from '../../../../../lib/nock-util'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
+import { Cluster, ClusterStatus, PolicyReport } from '../../../../../resources'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { StatusSummaryCount } from './StatusSummaryCount'
 
@@ -175,6 +175,7 @@ const mockPolicyReports: PolicyReport[] = [
             {
                 category: 'category,category1,category2',
                 scored: false,
+                source: 'insights',
                 properties: {
                     created_at: '2021-03-02T21:26:04Z',
                     total_risk: '1',
@@ -187,6 +188,7 @@ const mockPolicyReports: PolicyReport[] = [
             {
                 category: 'category,category1,category2',
                 scored: false,
+                source: 'insights',
                 properties: {
                     created_at: '2021-04-02T21:26:04Z',
                     total_risk: '3',

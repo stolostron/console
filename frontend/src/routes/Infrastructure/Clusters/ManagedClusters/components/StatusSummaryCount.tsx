@@ -33,11 +33,12 @@ export function StatusSummaryCount() {
     const policyReport = policyReports.filter(
         (pr) => pr.metadata.name?.replace('-policyreport', '') === cluster?.name
     )[0]
-    const policyReportViolationsCount = policyReport?.results?.length ?? 0
-    const criticalCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '4').length
-    const importantCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '3').length
-    const moderateCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '2').length
-    const lowCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '1').length
+    const policyReportViolations = policyReport?.results?.filter((violation) => violation.source === 'insights')
+    const policyReportViolationsCount = policyReportViolations.length ?? 0
+    const criticalCount = policyReportViolations.filter((item) => item.properties?.total_risk === '4').length
+    const importantCount = policyReportViolations.filter((item) => item.properties?.total_risk === '3').length
+    const moderateCount = policyReportViolations.filter((item) => item.properties?.total_risk === '2').length
+    const lowCount = policyReportViolations.filter((item) => item.properties?.total_risk === '1').length
 
     // Show cluster issues sidebar by default if showClusterIssues url param is present
     // This will be true if we are redirected to this page via search results table.
@@ -133,7 +134,7 @@ export function StatusSummaryCount() {
                                   })
                                 : '',
                         // Show the card in danger mode if there is a Critical or Major violation on the cluster
-                        isDanger: policyReport?.results?.some((item) => parseInt(item.properties?.total_risk, 10) >= 3),
+                        isDanger: policyReportViolations.some((item) => parseInt(item.properties?.total_risk, 10) >= 3),
                     },
                 ]}
             />
