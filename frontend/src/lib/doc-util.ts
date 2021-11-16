@@ -24,6 +24,7 @@ export const DOC_LINKS = {
     CLUSTER_POOLS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#managing-cluster-pools`,
     CLUSTER_CLAIMS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#claiming-clusters-from-cluster-pools`,
     SUBMARINER: `${DOC_BASE_PATH}/services/services-overview#submariner`,
+    CONFIG_DISCONNECTED_INSTALL: `${DOC_BASE_PATH}/credentials/credentials#disconnected`,
     DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#discovery-intro`,
     MACHINE_POOLS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#resizing-a-cluster`,
     ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#ansible-config-cluster`,
