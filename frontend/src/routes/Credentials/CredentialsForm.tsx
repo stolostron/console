@@ -1,15 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-    createResource,
-    getSecret,
-    IResource,
-    patchResource,
-    ProviderConnection,
-    Secret,
-    SecretDefinition,
-    unpackProviderConnection,
-} from '../../resources'
-import {
     AcmEmptyState,
     AcmIcon,
     AcmPage,
@@ -23,7 +13,7 @@ import { PageSection } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RouteComponentProps, useHistory } from 'react-router'
+import { useHistory, useLocation, useParams } from 'react-router'
 import { useRecoilState } from 'recoil'
 import { namespacesState } from '../../atoms'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
@@ -38,19 +28,29 @@ import {
     validateCertificate,
     validateCloudsYaml,
     validateGCProjectID,
+    validateHttpProxy,
+    validateHttpsProxy,
+    validateImageContentSources,
     validateImageMirror,
     validateJSON,
     validateKubernetesDnsName,
     validateLibvirtURI,
+    validateNoProxy,
     validatePrivateSshKey,
     validatePublicSshKey,
     validateWebURL,
-    validateImageContentSources,
-    validateHttpProxy,
-    validateHttpsProxy,
-    validateNoProxy,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
+import {
+    createResource,
+    getSecret,
+    IResource,
+    patchResource,
+    ProviderConnection,
+    Secret,
+    SecretDefinition,
+    unpackProviderConnection,
+} from '../../resources'
 
 const credentialProviders: Provider[] = [
     Provider.openstack,
@@ -84,14 +84,16 @@ const providerGroup: Record<string, string> = {
     [Provider.hybrid]: ProviderGroup.CentrallyManaged,
 }
 
-export default function CredentialsFormPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
-    const { name, namespace } = match.params
+export default function CredentialsFormPage() {
+    const params = useParams<{ namespace: string; name: string }>()
+    const location = useLocation()
+    const { name, namespace } = params
     const { t } = useTranslation(['credentials', 'common'])
 
     let isEditing = false
     let isViewing = false
     if (name !== undefined) {
-        isEditing = match.path.endsWith(NavigationPath.editCredentials)
+        isEditing = location.pathname.startsWith('/multicloud/credentials/edit')
         isViewing = !isEditing
     }
 
