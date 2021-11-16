@@ -13,6 +13,8 @@
     "policy.table.actions.informing": "Informing",
     "policy.table.actionGroup.remediation": "Remediation",
     "policy.table.actionGroup.status": "Status",
+    "policy.table.actionGroup.status.enabled": "Enabled",
+    "policy.table.actionGroup.status.disabled": "Disabled",
 
     "policy.modal.title.delete": "Permanently delete policy?",
     "policy.modal.title.delete.bulk": "Permanently delete policies?",
