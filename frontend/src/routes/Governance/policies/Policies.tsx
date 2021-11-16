@@ -250,22 +250,22 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
     }
 
     const bulkModalStatusColumns = [
-            {
-                header: t('policy.tableHeader.name'),
-                cell: 'metadata.name',
-                sort: 'metadata.name',
-            },
-            {
-                header: t('policy.table.actionGroup.status'),
-                cell: (policy: Policy) => (
-                    <span>
-                        {policy.spec.disabled === true
-                            ? t('policy.table.actionGroup.status.disabled')
-                            : t('policy.table.actionGroup.status.enabled')}
-                    </span>
-                ),
-            },
-        ]
+        {
+            header: t('policy.tableHeader.name'),
+            cell: 'metadata.name',
+            sort: 'metadata.name',
+        },
+        {
+            header: t('policy.table.actionGroup.status'),
+            cell: (policy: Policy) => (
+                <span>
+                    {policy.spec.disabled === true
+                        ? t('policy.table.actionGroup.status.disabled')
+                        : t('policy.table.actionGroup.status.enabled')}
+                </span>
+            ),
+        },
+    ]
 
     const bulkModalRemediationColumns = [
         {
