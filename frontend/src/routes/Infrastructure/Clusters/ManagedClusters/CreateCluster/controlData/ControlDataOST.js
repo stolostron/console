@@ -11,6 +11,7 @@ import {
     proxyControlData,
     automationControlData,
     getSimplifiedImageName,
+    getOSTNetworkingControlData,
     getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
@@ -202,6 +203,15 @@ const controlDataOST = [
         },
     },
     {
+        id: 'lbFloatingIP',
+        type: 'text',
+        name: 'creation.ocp.cluster.ost.lb.floating.ip',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.lb.floating.ip',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.lb.floating.ip',
+        active: '',
+        validation: VALIDATE_IP,
+    },
+    {
         id: 'apiFloatingIP',
         type: 'text',
         name: 'creation.ocp.cluster.ost.api.floating.ip',
@@ -228,7 +238,7 @@ const controlDataOST = [
         active: [],
         validation: VALIDATE_IP_OPTIONAL,
     },
-    ...networkingControlData,
+    ...getOSTNetworkingControlData(),
     ...proxyControlData,
 ]
 
