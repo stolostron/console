@@ -35,7 +35,7 @@ const ApplicationsPage = lazy(() => import('./routes/Applications/Applications')
 const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/CreateBareMetalAsset'))
 
-const CredentialsPage = lazy(() => import('./routes/Credentials/CredentialsPage'))
+const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 const AnsibleAutomationFormPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomationsForm'))
 const BareMetalAssetsPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssetsPage'))
 const AnsibleAutomationsPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomations'))
@@ -133,7 +133,7 @@ export default function App() {
                 title: 'Credentials',
                 type: 'route',
                 route: NavigationPath.credentials,
-                component: CredentialsPage,
+                component: Credentials,
             },
         ],
         []
