@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, act } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
-import { ClusterPolicySidebar } from './ClusterPolicySidebar'
-import { PolicyReport } from '../../../../../resources/policy-report'
-import { ConfigMap } from '../../../../../resources/configmap'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
+import { ConfigMap, PolicyReport } from '../../../../../resources'
+import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 
 const mockPolicyReports: PolicyReport = {
     apiVersion: 'wgpolicyk8s.io/v1alpha2',
@@ -20,6 +19,7 @@ const mockPolicyReports: PolicyReport = {
         {
             category: 'category,category1,category2',
             scored: false,
+            source: 'insights',
             properties: {
                 created_at: '2021-03-02T21:26:04Z',
                 total_risk: '0',
@@ -32,6 +32,7 @@ const mockPolicyReports: PolicyReport = {
         {
             category: 'category,category1,category2',
             scored: false,
+            source: 'insights',
             properties: {
                 created_at: '2021-03-02T21:26:04Z',
                 total_risk: '1',
@@ -44,6 +45,7 @@ const mockPolicyReports: PolicyReport = {
         {
             category: 'category,category1,category2',
             scored: false,
+            source: 'insights',
             properties: {
                 created_at: '2021-03-02T21:26:04Z',
                 total_risk: '2',
@@ -56,6 +58,7 @@ const mockPolicyReports: PolicyReport = {
         {
             category: 'category,category1,category2',
             scored: false,
+            source: 'insights',
             properties: {
                 created_at: '2021-04-02T21:26:04Z',
                 total_risk: '3',
@@ -68,6 +71,7 @@ const mockPolicyReports: PolicyReport = {
         {
             category: 'category,category1,category2',
             scored: false,
+            source: 'grc',
             properties: {
                 created_at: '2021-03-02T21:26:04Z',
                 total_risk: '4',

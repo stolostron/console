@@ -1,40 +1,38 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
-import _ from 'lodash'
+import { makeStyles } from '@material-ui/styles'
+import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
+import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import {
-    Tabs,
-    Tab,
-    TabTitleText,
-    Grid,
-    GridItem,
+    Button,
     Flex,
     FlexItem,
+    Grid,
+    GridItem,
+    Tab,
+    Tabs,
+    TabTitleText,
     Text,
     TextContent,
     TextVariants,
-    Button,
 } from '@patternfly/react-core'
+import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
-import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
+import { TFunction } from 'i18next'
+import _ from 'lodash'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
-import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
-import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
-import { makeStyles } from '@material-ui/styles'
-import { useTranslation, TFunction } from 'react-i18next'
-import { PolicyReport, PolicyReportResults } from '../../../../../resources/policy-report'
+import { PolicyReport, PolicyReportResults } from '../../../../../resources'
+import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
 
 const useStyles = makeStyles({
     body: {
         position: 'relative',
         top: '-35px',
         padding: '0 8px',
-        '& h2, h4, p, span, thead': {
-            fontFamily: 'RedHatText-Regular',
-        },
         '& section': {
             paddingTop: 'var(--pf-global--spacer--lg)',
         },
@@ -52,9 +50,6 @@ const useStyles = makeStyles({
     },
     tableTitle: {
         paddingBottom: 'var(--pf-global--spacer--md)',
-        '& h4': {
-            fontFamily: 'RedHatText-Medium',
-        },
     },
     backAction: {
         paddingBottom: 'var(--pf-global--spacer--lg)',
@@ -62,7 +57,6 @@ const useStyles = makeStyles({
     subDetailComponents: {
         paddingBottom: 'var(--pf-global--spacer--xl)',
         '& small': {
-            fontFamily: 'RedHatText-Medium',
             color: 'inherit',
             paddingBottom: 'var(--pf-global--spacer--sm)',
         },
@@ -76,8 +70,8 @@ const useStyles = makeStyles({
     },
 })
 
-function renderDonutChart(data: PolicyReport, t: TFunction<string[]>) {
-    const clusterRiskScores = data.results.map((issue) => issue.properties.total_risk)
+function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
+    const clusterRiskScores = data.map((issue) => issue.properties.total_risk)
     const formattedData = [
         {
             key: t('policy.report.critical'),
@@ -125,7 +119,7 @@ function renderDonutChart(data: PolicyReport, t: TFunction<string[]>) {
                 right: 145,
                 top: 20,
             }}
-            title={`${data.results.length}`}
+            title={`${data.length}`}
             subTitle={t('policy.report.flyout.donut.chart.text')}
             width={400}
             height={200}
@@ -215,6 +209,19 @@ function DetailsView(props: {
         return d
     }
 
+    function getExtraData() {
+        const extraData = _.get(selectedReport, 'properties.extra_data', {})
+        if (typeof extraData === 'string') {
+            try {
+                return JSON.parse(extraData)
+            } catch (err) {
+                console.error(err)
+                return {}
+            }
+        }
+        return extraData
+    }
+
     return (
         <div className={classes.body}>
             <Flex className={classes.backAction}>
@@ -277,18 +284,12 @@ function DetailsView(props: {
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
                     <TextContent>
-                        <Markdown
-                            template={policyContentData?.resolution ?? ''}
-                            definitions={_.get(selectedReport, 'properties.extra_data', '')}
-                        />
+                        <Markdown template={policyContentData?.resolution ?? ''} definitions={getExtraData()} />
                     </TextContent>
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
                     <TextContent>
-                        <Markdown
-                            template={policyContentData?.reason ?? ''}
-                            definitions={_.get(selectedReport, 'properties.extra_data', '')}
-                        />
+                        <Markdown template={policyContentData?.reason ?? ''} definitions={getExtraData()} />
                     </TextContent>
                 </Tab>
             </Tabs>
@@ -301,6 +302,9 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
     const { t } = useTranslation(['cluster'])
     const [detailsView, setDetailsView] = useState<boolean>(false)
     const [selectedReport, setSelectedReport] = useState<PolicyReportResults>()
+    const policyReportViolations = props.data?.results?.filter(
+        (violation: PolicyReportResults) => violation.source === 'insights'
+    )
 
     return detailsView ? (
         <DetailsView setDetailsView={setDetailsView} selectedReport={selectedReport} />
@@ -308,17 +312,17 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
         <div className={classes.body}>
             <TextContent className={classes.titleText}>
                 <Text component={TextVariants.h2}>
-                    {t('policy.report.flyout.title', { count: props.data.results.length })}
+                    {t('policy.report.flyout.title', { count: policyReportViolations.length })}
                 </Text>
                 <Text component={TextVariants.p}>{t('policy.report.flyout.description')}</Text>
             </TextContent>
-            <div className={classes.donutContainer}>{renderDonutChart(props.data, t)}</div>
+            <div className={classes.donutContainer}>{renderDonutChart(policyReportViolations, t)}</div>
             <TextContent className={classes.tableTitle}>
                 <Text component={TextVariants.h4}>{t('policy.report.flyout.table.header')}</Text>
             </TextContent>
             <AcmTable<PolicyReportResults>
                 plural="Recommendations"
-                items={props.data.results}
+                items={policyReportViolations}
                 initialSort={{
                     index: 2, // default to sorting by highest risk
                     direction: 'desc',
@@ -370,7 +374,6 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
                 ]}
                 keyFn={(item: any) => item.policy}
                 tableActions={[]}
-                bulkActions={[]}
                 rowActions={[]}
                 gridBreakPoint={TableGridBreakpoint.none}
             />
