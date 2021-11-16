@@ -35,8 +35,7 @@ const ApplicationsPage = lazy(() => import('./routes/Applications/Applications')
 const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
 const CreateBareMetalAssetPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/CreateBareMetalAsset'))
 
-const CredentialPage = lazy(() => import('./routes/Credentials/CredentialsForm'))
-const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
+const CredentialsPage = lazy(() => import('./routes/Credentials/CredentialsPage'))
 const AnsibleAutomationFormPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomationsForm'))
 const BareMetalAssetsPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssetsPage'))
 const AnsibleAutomationsPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomations'))
@@ -155,10 +154,6 @@ export default function App() {
                         <AcmTablePaginationContextProvider localStorageKey="clusters">
                             <Suspense fallback={<LoadingPage />}>
                                 <Switch>
-                                    <Route path={NavigationPath.addCredentials} component={CredentialPage} />
-                                    <Route path={NavigationPath.editCredentials} component={CredentialPage} />
-                                    <Route path={NavigationPath.viewCredentials} component={CredentialPage} />
-
                                     <Route
                                         exact
                                         path={NavigationPath.addAnsibleAutomation}

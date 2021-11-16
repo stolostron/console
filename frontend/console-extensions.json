@@ -73,7 +73,7 @@
         "type": "console.page/route",
         "properties": {
             "path": "/multicloud/infrastructure/clusters",
-            "component": { "$codeRef": "clustersPage.default" }
+            "component": { "$codeRef": "clusters.default" }
         }
     },
     // {
@@ -172,29 +172,7 @@
         "type": "console.page/route",
         "properties": {
             "path": "/multicloud/credentials",
-            "exact": true,
-            "component": { "$codeRef": "credentialsPage.default" }
-        }
-    },
-    {
-        "type": "console.page/route",
-        "properties": {
-            "path": "/multicloud/credentials/create",
-            "component": { "$codeRef": "credentialsForm.default" }
-        }
-    },
-    {
-        "type": "console.page/route",
-        "properties": {
-            "path": "/multicloud/credentials/edit/:namespace/:name",
-            "component": { "$codeRef": "credentialsForm.default" }
-        }
-    },
-    {
-        "type": "console.page/route",
-        "properties": {
-            "path": "/multicloud/credentials/details/:namespace/:name",
-            "component": { "$codeRef": "credentialsForm.default" }
+            "component": { "$codeRef": "credentials.default" }
         }
     }
 ]

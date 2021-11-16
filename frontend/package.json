@@ -216,9 +216,8 @@
         "exposedModules": {
             "perspective": "./src/perspective",
             "welcome": "./src/routes/Home/Welcome/Welcome.tsx",
-            "clustersPage": "./src/routes/Infrastructure/Clusters/ClustersPlugin.tsx",
-            "credentialsPage": "./src/routes/Credentials/CredentialsPlugin.tsx",
-            "credentialsForm": "./src/routes/Credentials/CredentialsFormPlugin.tsx"
+            "clusters": "./src/routes/Infrastructure/Clusters/ClustersPlugin.tsx",
+            "credentials": "./src/routes/Credentials/CredentialsPlugin.tsx"
         },
         "dependencies": {
             "@console/pluginAPI": "*"

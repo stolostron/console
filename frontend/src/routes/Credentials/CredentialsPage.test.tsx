@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { Provider } from '@open-cluster-management/ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
@@ -28,7 +27,7 @@ import {
     ResourceAttributes,
     Secret,
 } from '../../resources'
-import CredentialsPage from './Credentials'
+import CredentialsPage from './CredentialsPage'
 
 const mockProviderConnection1: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
