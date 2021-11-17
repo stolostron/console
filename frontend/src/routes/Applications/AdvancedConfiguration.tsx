@@ -22,7 +22,7 @@ import { applicationsState } from '../../atoms'
 import { IResource } from '../../resources'
 
 export default function AdvancedConfiguration() {
-    const { t } = useTranslation(['application'])
+    const { t } = useTranslation()
 
     const [applications] = useRecoilState(applicationsState)
 
@@ -73,26 +73,24 @@ export default function AdvancedConfiguration() {
         <PageSection>
             <Stack hasGutter>
                 <StackItem>
-                    <AcmExpandableCard title={t('application:description.title.deploymentHighlightsTerminology')}>
+                    <AcmExpandableCard title={t('Learn more about the terminology')}>
                         <Split hasGutter>
                             <TerminologyCard
-                                title={t('application:description.title.deploymentHighlightsTerminology.subscriptions')}
+                                title={t('Subsciptions')}
                                 description={t(
-                                    'application:description.title.deploymentHighlightsTerminology.subscriptionsSummary'
+                                    'Subscriptions identify Kubernetes resources within channels (source repositories). Then, the subscription places the Kubernetes resources on the target clusters.'
                                 )}
                             />
                             <TerminologyCard
-                                title={t(
-                                    'application:description.title.deploymentHighlightsTerminology.placementRules'
-                                )}
+                                title={t('Placement rules')}
                                 description={t(
-                                    'application:description.title.deploymentHighlightsTerminology.placementRulesSummary'
+                                    'Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
                                 )}
                             />
                             <TerminologyCard
-                                title={t('application:description.title.deploymentHighlightsTerminology.channels')}
+                                title={t('Channels')}
                                 description={t(
-                                    'application:description.title.deploymentHighlightsTerminology.channelsSummary'
+                                    'Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories, or Namespaces on the local cluster. Channels support multiple subscriptions from multiple targets.'
                                 )}
                             />
                         </Split>
@@ -119,8 +117,7 @@ export default function AdvancedConfiguration() {
                                         color: '#0066cc',
                                     }}
                                 >
-                                    {t('application:description.title.deploymentHighlightsTerminology.docsLink')}{' '}
-                                    <ExternalLinkAltIcon />
+                                    {t('View documentation')} <ExternalLinkAltIcon />
                                 </Text>
                             </Text>
                         </TextContent>
