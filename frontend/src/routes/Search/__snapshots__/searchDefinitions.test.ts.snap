@@ -1874,6 +1874,7 @@ exports[`Correctly returns policyreport policies 1`] = `
   expandedText="Show less"
   hasEditableTextArea={false}
   isClosable={false}
+  isCompact={false}
   isEditable={false}
   isVertical={false}
   numLabels={2}
