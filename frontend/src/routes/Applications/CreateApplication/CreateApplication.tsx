@@ -20,7 +20,7 @@ const Portals = Object.freeze({
 })
 
 export default function CreateApplicationPage() {
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation()
 
     // create portals for buttons in header
     const switches = (
@@ -40,10 +40,10 @@ export default function CreateApplicationPage() {
         <AcmPage
             header={
                 <AcmPageHeader
-                    title={t('page.header.create-application')}
+                    title={t('Create application')}
                     breadcrumb={[
-                        { text: t('applications'), to: NavigationPath.applications },
-                        { text: t('page.header.create-application'), to: '' },
+                        { text: t('Applications'), to: NavigationPath.applications },
+                        { text: t('Create application'), to: '' },
                     ]}
                     switches={switches}
                     actions={portals}

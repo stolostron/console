@@ -12,9 +12,31 @@ import '../css/ResourceLabels.css'
 function repoSort(appRepos: any) {
     return _.sortBy(appRepos, ['pathName', 'gitBranch', 'gitPath'])
 }
+
 export function ResourceLabels(props: { appRepos: any[]; showSubscriptionAttributes: boolean; isArgoApp: boolean }) {
-    const { t } = useTranslation(['application'])
+    const { t } = useTranslation()
     const repoMap = groupByRepoType(props.appRepos || [])
+
+    function getRepoTypeLabel(attrib: String, t: (arg: String) => String) {
+        switch (attrib) {
+            case 'gitPath':
+                return t('Path')
+            case 'gitBranch':
+                return t('Branch')
+            case 'targetRevision':
+                return t('Revision')
+            case 'chart':
+                return t('Chart name')
+            case 'package':
+                return t('Chart name')
+            case 'packageFilterVersion':
+                return t('Package version')
+            case 'bucketPath':
+                return t('Subfolder')
+            default:
+                break
+        }
+    }
 
     return (
         <div className="label-with-popover-container channel-labels">
@@ -74,12 +96,12 @@ export function ResourceLabels(props: { appRepos: any[]; showSubscriptionAttribu
                                                                 >
                                                                     <Split hasGutter>
                                                                         <SplitItem className="channel-entry-attribute-name">
-                                                                            {t(`repo.type.label.${attrib}`)}:
+                                                                            {getRepoTypeLabel(attrib, t)}
                                                                         </SplitItem>
                                                                         <SplitItem>
                                                                             {repo[attrib]
                                                                                 ? repo[attrib]
-                                                                                : t('repo.type.label.noData')}
+                                                                                : t('Not selected')}
                                                                         </SplitItem>
                                                                     </Split>
                                                                 </StackItem>

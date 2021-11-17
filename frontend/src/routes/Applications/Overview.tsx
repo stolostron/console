@@ -196,22 +196,20 @@ function getApplicationRepos(resource: IResource) {
     }
 }
 
-function getEmptyMessage(t: TFunction<'application'[]>) {
-    const buttonName = t('table.application.button.create')
-    const buttonText = `<span class="emptyStateButtonReference">${buttonName}</span>`
-    const message = t('no-resource.application.message').replace('{0}', buttonText)
-
+function getEmptyMessage(t: TFunction) {
     return (
         <p>
-            <span dangerouslySetInnerHTML={{ __html: message }} />
+            <span
+                dangerouslySetInnerHTML={{ __html: t('Click the Create application button to create your resource.') }}
+            />
             <br />
-            {t('no-resource.documentation.message')}
+            {t('View the documentation for more information.')}
         </p>
     )
 }
 
 export default function ApplicationsOverview() {
-    const { t } = useTranslation(['application'])
+    const { t } = useTranslation()
 
     const [applications] = useRecoilState(applicationsState)
     const [applicationSets] = useRecoilState(applicationSetsState)
@@ -241,30 +239,32 @@ export default function ApplicationsOverview() {
     const columns = useMemo<IAcmTableColumn<IResource>[]>(
         () => [
             {
-                header: t('table.column.application.name'),
+                header: t('Name'),
                 cell: 'metadata.name',
                 sort: 'metadata.name',
                 search: 'metadata.name',
                 transforms: [cellWidth(20)],
             },
             {
-                header: t('table.column.application.type'),
+                header: t('Type'),
                 cell: (resource) => <span>{getResourceType(resource)}</span>,
                 sort: 'kind',
-                tooltip: t('table.header.application.type.tooltip'),
+                tooltip: t('Link to Learn more about different types'),
                 transforms: [cellWidth(15)],
                 // probably don't need search if we have a type filter
             },
             {
-                header: t('table.column.application.namespace'),
+                header: t('Namespace'),
                 cell: 'metadata.namespace',
                 sort: 'metadata.namespace',
                 search: 'metadata.namespace',
-                tooltip: t('table.header.application.namespace.tooltip'),
+                tooltip: t(
+                    'Displays the namespace of the application resource, which by default is where the application deploys other resources. For Argo applications, this is the destination namespace.'
+                ),
                 transforms: [cellWidth(20)],
             },
             {
-                header: t('table.column.application.clusters'),
+                header: t('Clusters'),
                 cell: (resource) => {
                     let clusterCount = {
                         localPlacement: false,
@@ -289,12 +289,14 @@ export default function ApplicationsOverview() {
                     }
                     return clusterCountString
                 },
-                tooltip: t('table.header.application.clusters.tooltip'),
+                tooltip: t(
+                    'Displays the number of remote and local clusters where resources for the application are deployed. For an individual Argo application, the name of the destination cluster is displayed. Click to search for all related clusters.'
+                ),
                 sort: 'transformed.clusterCount',
                 search: 'transformed.clusterCount',
             },
             {
-                header: t('table.column.application.resource'),
+                header: t('Resource'),
                 cell: (resource) => {
                     const appRepos = getApplicationRepos(resource)
                     return (
@@ -308,12 +310,12 @@ export default function ApplicationsOverview() {
                         />
                     )
                 },
-                tooltip: t('table.header.application.resource.tooltip'),
+                tooltip: t('Provides links to each of the resource repositories used by the application.'),
                 sort: 'transformed.resourceText',
                 search: 'transformed.resourceText',
             },
             {
-                header: t('table.column.application.timeWindow'),
+                header: t('Time window'),
                 cell: () => {
                     // TODO when new appsub specs are finalized
                     return ''
@@ -334,20 +336,20 @@ export default function ApplicationsOverview() {
 
     const filters = [
         {
-            label: t('table.filter.type.acm.application.label'),
+            label: t('Type'),
             id: 'table.filter.type.acm.application.label',
             options: [
                 {
-                    label: t('table.filter.type.acm.application'),
-                    value: t('table.filter.type.acm.application.value'),
+                    label: t('Subscription'),
+                    value: t('application.app.k8s.io/v1beta1'),
                 },
                 {
-                    label: t('table.filter.type.argo.application'),
-                    value: t('table.filter.type.argo.application.value'),
+                    label: t('Argo CD'),
+                    value: t('application.argoproj.io/v1alpha1'),
                 },
                 {
-                    label: t('table.filter.type.appset.application'),
-                    value: t('table.filter.type.appset.application.value'),
+                    label: t('ApplicationSet'),
+                    value: t('applicationset.argoproj.io/v1alpha1'),
                 },
             ],
             tableFilterFn: (selectedValues: string[], item: IResource) => {
@@ -370,23 +372,23 @@ export default function ApplicationsOverview() {
         () => [
             {
                 id: 'viewApplication',
-                title: t('table.actions.applications.view'),
+                title: t('View application'),
                 click: () => {},
             },
             {
                 id: 'editApplication',
-                title: t('table.actions.applications.edit'),
+                title: t('Edit application'),
                 click: () => {},
             },
             {
                 id: 'searchApplication',
-                title: t('table.actions.applications.search'),
+                title: t('Search application'),
                 click: () => {},
                 isDisabled: false, // implement when we use search for remote Argo apps
             },
             {
                 id: 'deleteApplication',
-                title: t('table.actions.applications.delete'),
+                title: t('Delete application'),
                 click: () => {
                     // need custom function to open modal
                 },
@@ -398,7 +400,7 @@ export default function ApplicationsOverview() {
         <PageSection>
             <AcmTable<IResource>
                 key="data-table"
-                plural={t('table.name')}
+                plural={t('Applications')}
                 columns={columns}
                 keyFn={keyFn}
                 items={tableItems}
@@ -406,21 +408,23 @@ export default function ApplicationsOverview() {
                 tableActionButtons={[
                     {
                         id: 'createApplication',
-                        title: t('table.application.button.create'),
+                        title: t('Create application'),
                         click: () => history.push(''), // TODO add link to wizard
                         isDisabled: !canCreateApplication,
-                        tooltip: t('actions.create.application.access.denied'),
+                        tooltip: t(
+                            'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                        ),
                         variant: ButtonVariant.primary,
                     },
                 ]}
                 emptyState={
                     <AcmEmptyState
                         key="appOverviewEmptyState"
-                        title={t('no-resource.application.title')}
+                        title={t('You don’t have any applications')}
                         message={getEmptyMessage(t)}
                         action={
                             <AcmButton component={Link} variant="primary" to={''}>
-                                {t('table.application.button.create')}
+                                {t('Create application')}
                             </AcmButton>
                         }
                     />
