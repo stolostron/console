@@ -18,7 +18,8 @@
         "plugin:build": "CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode production",
         "plugin:watch": "CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode production --watch",
         "plugin:serve": "npx http-server ./dist -p 3000 -c-1 --cors",
-        "plugin": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve -c webpack.plugin.ts --mode production"
+        "plugin": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve -c webpack.plugin.ts --mode production",
+        "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup"
     },
     "dependencies": {
         "@apollo/client": "^3.4.17",
