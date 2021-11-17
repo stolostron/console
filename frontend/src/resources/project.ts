@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { createResource } from '../lib/resource-request'
+import { createResource, replaceResource } from './utils/resource-request'
 import { IResource, IResourceDefinition } from './resource'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from '.'
 
 export const ProjectApiVersion = 'project.openshift.io/v1'
 export type ProjectApiVersionType = 'project.openshift.io/v1'
@@ -38,11 +39,26 @@ export interface ProjectRequest extends IResource {
     metadata: V1ObjectMeta
 }
 
-export const createProject = (name: string | undefined) => {
+export const createProject = (name: string | undefined, labels?: V1ObjectMeta['labels']) => {
     if (!name) throw new Error('Project name is undefined')
-    return createResource<ProjectRequest, Project>({
+    const response = createResource<ProjectRequest, Project>({
         apiVersion: ProjectRequestApiVersion,
         kind: ProjectRequestKind,
         metadata: { name },
     })
+    if (labels) {
+        response.promise
+            .then((project) => {
+                const metadata = { ...project.metadata, labels }
+                return replaceResource<Namespace, Namespace>({
+                    apiVersion: NamespaceApiVersion,
+                    kind: NamespaceKind,
+                    metadata,
+                })
+            })
+            .catch(() => {
+                return undefined // ignore; namespace already existed or error creating namespace
+            })
+    }
+    return response
 }

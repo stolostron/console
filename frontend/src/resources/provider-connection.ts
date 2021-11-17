@@ -2,7 +2,7 @@
 
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { V1Secret } from '@kubernetes/client-node/dist/gen/model/v1Secret'
-import { listResources } from '../lib/resource-request'
+import { listResources } from './utils/resource-request'
 import { IResourceDefinition } from './resource'
 
 export const ProviderConnectionApiVersion = 'v1'
@@ -22,6 +22,7 @@ export interface ProviderConnectionStringData {
 
     baseDomainResourceGroupName?: string
     ['osServicePrincipal.json']?: string
+    cloudName?: string
 
     projectID?: string
     ['osServiceAccount.json']?: string
@@ -81,7 +82,9 @@ export function listProviderConnections() {
 }
 
 export function unpackProviderConnection(secret: ProviderConnection | V1Secret) {
-    const providerConnection: ProviderConnection = { ...secret } as ProviderConnection
+    const providerConnection: ProviderConnection = {
+        ...secret,
+    } as ProviderConnection
     if (providerConnection.data) {
         if (!providerConnection.stringData) providerConnection.stringData = {}
         const data = providerConnection.data as Record<string, string>

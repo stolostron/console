@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ClusterStatus, deleteResource, MachinePool } from '../../../../../../resources'
 import {
     AcmEmptyState,
     AcmPageContent,
@@ -15,15 +16,12 @@ import { useRecoilState } from 'recoil'
 import { machinePoolsState } from '../../../../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../../components/Rbac'
-import { ClusterStatus } from '../../../../../../lib/get-cluster'
+import { TechPreviewAlert } from '../../../../../../components/TechPreviewAlert'
+import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { rbacDelete, rbacPatch } from '../../../../../../lib/rbac-util'
-import { deleteResource } from '../../../../../../lib/resource-request'
-import { MachinePool } from '../../../../../../resources/machine-pool'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
 import { ScaleMachinePoolModal, ScaleMachinePoolModalProps } from './components/ScaleMachinePoolModal'
-import { TechPreviewAlert } from '../../../../../../components/TechPreviewAlert'
-import { DOC_LINKS } from '../../../../../../lib/doc-util'
 
 export function MachinePoolsPageContent() {
     return (
@@ -224,7 +222,6 @@ export function MachinePoolsTable() {
                 columns={columns}
                 keyFn={keyFn}
                 tableActions={[]}
-                bulkActions={[]}
                 rowActions={[]}
                 emptyState={
                     <AcmEmptyState

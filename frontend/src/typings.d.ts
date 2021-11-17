@@ -2,3 +2,5 @@
 
 declare module '@redhat-cloud-services/rule-components/Markdown'
 declare module '*.hbs'
+declare module '*.png'
+declare module '*.svg'

@@ -3,6 +3,7 @@
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { IResourceDefinition } from './resource'
+import { Selector } from './selector'
 
 export const ClusterDeploymentApiVersion = 'hive.openshift.io/v1'
 export type ClusterDeploymentApiVersionType = 'hive.openshift.io/v1'
@@ -40,6 +41,9 @@ export interface ClusterDeployment {
                 }
                 region: string
             }
+            agentBareMetal?: {
+                agentSelector?: Selector
+            }
         }
         powerState?: 'Running' | 'Hibernating'
         provisioning: {
@@ -59,6 +63,12 @@ export interface ClusterDeployment {
             poolName: string
         }
         pullSecretRef: {
+            name: string
+        }
+        clusterInstallRef?: {
+            group: string
+            kind: string
+            version: string
             name: string
         }
     }
@@ -100,5 +110,6 @@ export interface ClusterDeployment {
             name: string
         }
         webConsoleURL?: string
+        installVersion?: string
     }
 }

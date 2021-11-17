@@ -2,17 +2,18 @@
 
 import {
     BareMetalAsset,
-    ImportedBareMetalAsset,
     createBareMetalAssetResource,
     createBareMetalAssetSecret,
+    createProject,
+    getSecret,
+    ImportedBareMetalAsset,
+    IResource,
     listBareMetalAssets,
-} from '../resources/bare-metal-asset'
-import { IResource } from '../resources/resource'
-import { Secret, getSecret } from '../resources/secret'
-import { createProject } from '../resources/project'
-import { patchResource } from '../lib/resource-request'
-import { set, get, keyBy } from 'lodash'
+    patchResource,
+    Secret,
+} from '../resources'
 import yaml from 'js-yaml'
+import { get, keyBy, set } from 'lodash'
 
 const INSTALL_CONFIG = 'install-config.yaml'
 const BMC_USERNAME = 'bmc.username'
@@ -50,9 +51,7 @@ export async function syncBMAs(hosts: ImportedBareMetalAsset[], resources: IReso
     const hostsWithoutCred = hosts.filter((host) => !get(host, BMC_USERNAME))
     const installConfig = (resources as Secret[]).find(({ data }) => data && data[INSTALL_CONFIG])
     if (installConfig?.data) {
-        const installConfigData = yaml.safeLoad(
-            Buffer.from(installConfig.data[INSTALL_CONFIG], 'base64').toString('ascii')
-        )
+        const installConfigData = yaml.load(Buffer.from(installConfig.data[INSTALL_CONFIG], 'base64').toString('ascii'))
         const installConfigHosts = get(installConfigData, 'platform.baremetal.hosts', [])
         const installConfigHostsWithoutCred = installConfigHosts.filter((host: any) => !get(host, BMC_USERNAME))
         if (hostsWithoutCred.length > 0 || installConfigHostsWithoutCred.length > 0) {
@@ -92,7 +91,7 @@ export async function syncBMAs(hosts: ImportedBareMetalAsset[], resources: IReso
             setSecrets(hostsWithoutCred)
             setSecrets(installConfigHostsWithoutCred)
             if (installConfigHostsWithoutCred.length > 0) {
-                installConfig.data[INSTALL_CONFIG] = Buffer.from(yaml.safeDump(installConfigData)).toString('base64')
+                installConfig.data[INSTALL_CONFIG] = Buffer.from(yaml.dump(installConfigData)).toString('base64')
             }
         }
     }

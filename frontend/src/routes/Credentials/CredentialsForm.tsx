@@ -1,5 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+    createResource,
+    getSecret,
+    IResource,
+    patchResource,
+    ProviderConnection,
+    Secret,
+    SecretDefinition,
+    unpackProviderConnection,
+} from '../../resources'
+import {
     AcmEmptyState,
     AcmIcon,
     AcmPage,
@@ -10,6 +20,7 @@ import {
     ProviderLongTextMap,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
+import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router'
@@ -21,10 +32,11 @@ import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
-import { createResource, patchResource } from '../../lib/resource-request'
 import {
+    validateBareMetalOSImageURL,
     validateBaseDomain,
     validateCertificate,
+    validateCloudsYaml,
     validateGCProjectID,
     validateImageMirror,
     validateJSON,
@@ -32,13 +44,9 @@ import {
     validateLibvirtURI,
     validatePrivateSshKey,
     validatePublicSshKey,
-    validateCloudsYaml,
-    validateBareMetalOSImageURL,
+    validateWebURL,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
-import { ProviderConnection, unpackProviderConnection } from '../../resources/provider-connection'
-import { IResource } from '../../resources/resource'
-import { getSecret, Secret, SecretDefinition } from '../../resources/secret'
 
 const credentialProviders: Provider[] = [
     Provider.openstack,
@@ -49,12 +57,14 @@ const credentialProviders: Provider[] = [
     Provider.gcp,
     Provider.vmware,
     Provider.baremetal,
+    Provider.hybrid,
 ]
 
 enum ProviderGroup {
     Automation = 'Automation & other credentials',
     Datacenter = 'Datacenter credentials',
     CloudProvider = 'Cloud provider credentials',
+    CentrallyManaged = 'Centrally managed',
 }
 
 const providerGroup: Record<string, string> = {
@@ -67,6 +77,7 @@ const providerGroup: Record<string, string> = {
     [Provider.openstack]: ProviderGroup.Datacenter,
     [Provider.baremetal]: ProviderGroup.Datacenter,
     [Provider.vmware]: ProviderGroup.Datacenter,
+    [Provider.hybrid]: ProviderGroup.CentrallyManaged,
 }
 
 export default function CredentialsFormPage({ match }: RouteComponentProps<{ namespace: string; name: string }>) {
@@ -185,6 +196,14 @@ export function CredentialsForm(props: {
     const [baseDomainResourceGroupName, setBaseDomainResourceGroupName] = useState(
         providerConnection?.stringData?.baseDomainResourceGroupName ?? ''
     )
+    enum CloudNames {
+        AzurePublicCloud = 'AzurePublicCloud',
+        AzureUSGovernmentCloud = 'AzureUSGovernmentCloud',
+    }
+
+    const [cloudName, setCloudName] = useState<CloudNames | string>(
+        providerConnection?.stringData?.cloudName ?? CloudNames.AzurePublicCloud
+    )
 
     let osServicePrincipalJson:
         | {
@@ -214,7 +233,7 @@ export function CredentialsForm(props: {
         providerConnection?.stringData?.['osServiceAccount.json'] ?? ''
     )
 
-    // VMWare
+    // VMware
     const [vCenter, setVcenter] = useState(providerConnection?.stringData?.vCenter ?? '')
     const [username, setUsername] = useState(providerConnection?.stringData?.username ?? '')
     const [password, setPassword] = useState(providerConnection?.stringData?.password ?? '')
@@ -281,6 +300,7 @@ export function CredentialsForm(props: {
                 break
             case Provider.azure:
                 secret.stringData!.baseDomainResourceGroupName = baseDomainResourceGroupName
+                secret.stringData!.cloudName = cloudName
                 secret.stringData!['osServicePrincipal.json'] = JSON.stringify({
                     clientId,
                     clientSecret,
@@ -334,12 +354,15 @@ export function CredentialsForm(props: {
                 secret.stringData!['ssh-publickey'] = sshPublickey
                 break
             case Provider.ansible:
-                secret.stringData!.host = ansibleHost
+                secret.stringData!.host = _.trimEnd(ansibleHost, '/')
                 secret.stringData!.token = ansibleToken
                 break
-
             case Provider.redhatcloud:
                 secret.stringData!.ocmAPIToken = ocmAPIToken
+                break
+            case Provider.hybrid:
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
                 break
         }
         if (secret.stringData?.pullSecret && !secret.stringData.pullSecret.endsWith('\n')) {
@@ -436,6 +459,19 @@ export function CredentialsForm(props: {
                                         }
                                     }),
                             },
+                            {
+                                group: ProviderGroup.CentrallyManaged,
+                                options: credentialProviders
+                                    .filter((provider) => providerGroup[provider] === ProviderGroup.CentrallyManaged)
+                                    .map((provider) => {
+                                        return {
+                                            id: provider,
+                                            value: provider,
+                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
+                                            text: ProviderLongTextMap[provider],
+                                        }
+                                    }),
+                            },
                         ],
                         isDisabled: isEditing,
                     },
@@ -477,6 +513,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.hybrid,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('credentialsForm.baseDomain.label'),
@@ -485,6 +522,20 @@ export function CredentialsForm(props: {
                         value: baseDomain,
                         onChange: setBaseDomain,
                         validation: (v) => validateBaseDomain(v, t),
+                    },
+                    {
+                        id: 'azureCloudName',
+                        type: 'Select',
+                        label: t('credentialsForm.cloudName.label'),
+                        labelHelp: t('credentialsForm.cloudName.labelHelp'),
+                        value: cloudName,
+                        onChange: setCloudName,
+                        isRequired: true,
+                        options: [
+                            { id: CloudNames.AzurePublicCloud, value: CloudNames.AzurePublicCloud },
+                            { id: CloudNames.AzureUSGovernmentCloud, value: CloudNames.AzureUSGovernmentCloud },
+                        ],
+                        isHidden: credentialsType != Provider.azure,
                     },
                 ],
             },
@@ -865,6 +916,7 @@ export function CredentialsForm(props: {
                         value: ansibleHost,
                         onChange: setAnsibleHost,
                         isRequired: true,
+                        validation: (host) => validateWebURL(host, t),
                     },
                     {
                         id: 'ansibleToken',
@@ -922,6 +974,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.hybrid,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
                         label: t('credentialsForm.pullSecret.label'),

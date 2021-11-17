@@ -1,14 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-// jest-dom adds custom jest matchers for asserting on DOM nodes.
-// allows you to do things like:
-// expect(element).toHaveTextContent(/react/i)
-// learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom'
 import nock from 'nock'
 import { configure } from '@testing-library/dom'
+import JestFetchMock from 'jest-fetch-mock'
+import { noop } from 'lodash'
+
+require('react')
+
+JestFetchMock.enableMocks()
+fetchMock.dontMock()
 
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(30 * 1000)
@@ -78,6 +80,7 @@ expect.extend({
     },
 })
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 console.warn = (message?: any, ..._optionalParams: any[]) => {
     if (typeof message === 'string') {
         if (message.startsWith('You are using a beta component feature (isAriaDisabled).')) return
@@ -85,6 +88,7 @@ console.warn = (message?: any, ..._optionalParams: any[]) => {
     consoleWarnings.push(message)
 }
 // const originalConsoleError = console.error
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 console.error = (message?: any, ..._optionalParams: any[]) => {
     consoleErrors.push(message)
     // originalConsoleError(message, optionalParams)
@@ -134,4 +138,11 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('i18next', () => ({
     t: (key: string) => key,
+    createInstance: () => ({
+        use: () => ({
+            use: () => ({
+                init: noop,
+            }),
+        }),
+    }),
 }))

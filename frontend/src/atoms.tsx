@@ -1,36 +1,103 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Fragment, ReactNode, useEffect, useState } from 'react'
+import { AcmRoute } from '@open-cluster-management/ui-components'
+import { CIM } from 'openshift-assisted-ui-lib'
+import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
-import { AcmRoute } from '@open-cluster-management/ui-components'
-import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset'
-import { AnsibleJob, AnsibleJobKind } from './resources/ansible-job'
-import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'
-import { ClusterClaim, ClusterClaimKind } from './resources/cluster-claim'
-import { ClusterCurator, ClusterCuratorKind } from './resources/cluster-curator'
-import { ClusterDeployment, ClusterDeploymentKind } from './resources/cluster-deployment'
-import { ClusterImageSet, ClusterImageSetKind } from './resources/cluster-image-set'
-import { ClusterPool, ClusterPoolKind } from './resources/cluster-pool'
-import { ClusterProvision, ClusterProvisionKind } from './resources/cluster-provision'
-import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/cluster-management-add-on'
-import { ConfigMap, ConfigMapKind } from './resources/configmap'
-import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
-import { DiscoveredCluster, DiscoveredClusterKind } from './resources/discovered-cluster'
-import { FeatureGate, FeatureGateKind } from './resources/feature-gate'
-import { MachinePool, MachinePoolKind } from './resources/machine-pool'
-import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
-import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/managed-cluster-add-on'
-import { ManagedClusterInfo, ManagedClusterInfoKind } from './resources/managed-cluster-info'
-import { ManagedClusterSet, ManagedClusterSetKind } from './resources/managed-cluster-set'
-import { ManagedClusterSetBinding, ManagedClusterSetBindingKind } from './resources/managed-cluster-set-binding'
-import { MultiClusterHub, MultiClusterHubKind } from './resources/multi-cluster-hub'
-import { Namespace, NamespaceKind } from './resources/namespace'
-import { PolicyReport, PolicyReportKind } from './resources/policy-report'
-import { Secret, SecretKind } from './resources/secret'
-import { SubmarinerConfig, SubmarinerConfigKind } from './resources/submariner-config'
+import {
+    AgentClusterInstallKind,
+    AgentClusterInstallApiVersion,
+    AgentKind,
+    AgentKindVersion,
+    AnsibleJob,
+    AnsibleJobApiVersion,
+    AnsibleJobKind,
+    BareMetalAsset,
+    BareMetalAssetApiVersion,
+    BareMetalAssetKind,
+    BareMetalHostApiVersion,
+    BareMetalHostKind,
+    CertificateSigningRequest,
+    CertificateSigningRequestApiVersion,
+    CertificateSigningRequestKind,
+    ClusterClaim,
+    ClusterClaimApiVersion,
+    ClusterClaimKind,
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    ClusterDeployment,
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+    ClusterImageSet,
+    ClusterImageSetApiVersion,
+    ClusterImageSetKind,
+    ClusterManagementAddOn,
+    ClusterManagementAddOnApiVersion,
+    ClusterManagementAddOnKind,
+    ClusterPool,
+    ClusterPoolApiVersion,
+    ClusterPoolKind,
+    ClusterProvision,
+    ClusterProvisionApiVersion,
+    ClusterProvisionKind,
+    ConfigMap,
+    ConfigMapApiVersion,
+    ConfigMapKind,
+    DiscoveredCluster,
+    DiscoveredClusterApiVersion,
+    DiscoveredClusterKind,
+    DiscoveryConfig,
+    DiscoveryConfigApiVersion,
+    DiscoveryConfigKind,
+    InfraEnvApiVersion,
+    InfraEnvKind,
+    InfrastructureApiVersion,
+    InfrastructureKind,
+    MachinePool,
+    MachinePoolApiVersion,
+    MachinePoolKind,
+    ManagedCluster,
+    ManagedClusterAddOn,
+    ManagedClusterAddOnApiVersion,
+    ManagedClusterAddOnKind,
+    ManagedClusterApiVersion,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
+    ManagedClusterKind,
+    ManagedClusterSet,
+    ManagedClusterSetApiVersion,
+    ManagedClusterSetBinding,
+    ManagedClusterSetBindingKind,
+    ManagedClusterSetBindingApiVersion,
+    ManagedClusterSetKind,
+    MultiClusterHub,
+    MultiClusterHubApiVersion,
+    MultiClusterHubKind,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    PolicyReport,
+    PolicyReportApiVersion,
+    PolicyReportKind,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+    SubmarinerConfig,
+    SubmarinerConfigApiVersion,
+    SubmarinerConfigKind,
+} from './resources'
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
+export const agentClusterInstallsState = atom<CIM.AgentClusterInstallK8sResource[]>({
+    key: 'agentclusterinstalls',
+    default: [],
+})
+export const agentsState = atom<CIM.AgentK8sResource[]>({ key: 'agents', default: [] })
+export const ansibleJobState = atom<AnsibleJob[]>({ key: 'ansiblejobs', default: [] })
 export const bareMetalAssetsState = atom<BareMetalAsset[]>({ key: 'bareMetalAssets', default: [] })
+export const bareMetalHostsState = atom<CIM.BareMetalHostK8sResource[]>({ key: 'baremetalhosts', default: [] })
 export const certificateSigningRequestsState = atom<CertificateSigningRequest[]>({
     key: 'certificateSigningRequests',
     default: [],
@@ -39,35 +106,38 @@ export const clusterClaimsState = atom<ClusterClaim[]>({ key: 'clusterClaims', d
 export const clusterCuratorsState = atom<ClusterCurator[]>({ key: 'clusterCurators', default: [] })
 export const clusterDeploymentsState = atom<ClusterDeployment[]>({ key: 'clusterDeployments', default: [] })
 export const clusterImageSetsState = atom<ClusterImageSet[]>({ key: 'clusterImageSets', default: [] })
-export const clusterPoolsState = atom<ClusterPool[]>({ key: 'clusterPools', default: [] })
-export const clusterProvisionsState = atom<ClusterProvision[]>({ key: 'clusterProvisions', default: [] })
 export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
     key: 'clusterManagementAddons',
     default: [],
 })
+export const clusterPoolsState = atom<ClusterPool[]>({ key: 'clusterPools', default: [] })
+export const clusterProvisionsState = atom<ClusterProvision[]>({ key: 'clusterProvisions', default: [] })
 export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
-export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
 export const discoveredClusterState = atom<DiscoveredCluster[]>({ key: 'discoveredClusters', default: [] })
-export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
+export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
+export const infraEnvironmentsState = atom<CIM.InfraEnvK8sResource[]>({ key: 'infraenvs', default: [] })
+export const infrastructuresState = atom<CIM.InfrastructureK8sResource[]>({ key: 'infrastructures', default: [] })
 export const machinePoolsState = atom<MachinePool[]>({ key: 'machinePools', default: [] })
-export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
 export const managedClusterInfosState = atom<ManagedClusterInfo[]>({ key: 'managedClusterInfos', default: [] })
-export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
 export const managedClusterSetBindingsState = atom<ManagedClusterSetBinding[]>({
     key: 'managedClusterSetBindings',
     default: [],
 })
+export const managedClusterSetsState = atom<ManagedClusterSet[]>({ key: 'managedClusterSets', default: [] })
+export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
 export const multiClusterHubState = atom<MultiClusterHub[]>({ key: 'multiClusterHubs', default: [] })
 export const namespacesState = atom<Namespace[]>({ key: 'namespaces', default: [] })
 export const policyreportState = atom<PolicyReport[]>({ key: 'policyreports', default: [] })
 export const secretsState = atom<Secret[]>({ key: 'secrets', default: [] })
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 export const submarinerConfigsState = atom<SubmarinerConfig[]>({ key: 'submarinerconfigs', default: [] })
-export const ansibleJobState = atom<AnsibleJob[]>({ key: 'ansiblejobs', default: [] })
 
 interface Settings {
     LOG_LEVEL?: string
+    ansibleIntegration?: 'enabled' | 'disabled'
+    singleNodeOpenshift?: 'enabled' | 'disabled'
+    awsPrivateWizardStep?: 'enabled' | 'disabled'
 }
 
 interface WatchEvent {
@@ -92,119 +162,122 @@ type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADE
 
 export function LoadData(props: { children?: ReactNode }) {
     const [loading, setLoading] = useState(true)
+    const [, setAgentClusterInstalls] = useRecoilState(agentClusterInstallsState)
+    const [, setAgents] = useRecoilState(agentsState)
+    const [, setAnsibleJobs] = useRecoilState(ansibleJobState)
     const [, setBareMetalAssets] = useRecoilState(bareMetalAssetsState)
+    const [, setBareMetalHosts] = useRecoilState(bareMetalHostsState)
     const [, setCertificateSigningRequests] = useRecoilState(certificateSigningRequestsState)
     const [, setClusterClaims] = useRecoilState(clusterClaimsState)
     const [, setClusterCurators] = useRecoilState(clusterCuratorsState)
     const [, setClusterDeployments] = useRecoilState(clusterDeploymentsState)
-    const [, setClusterPools] = useRecoilState(clusterPoolsState)
-    const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setClusterImageSets] = useRecoilState(clusterImageSetsState)
     const [, setClusterManagementAddons] = useRecoilState(clusterManagementAddonsState)
+    const [, setClusterPools] = useRecoilState(clusterPoolsState)
+    const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setConfigMaps] = useRecoilState(configMapsState)
-    const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
-    const [, setFeatureGates] = useRecoilState(featureGatesState)
+    const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
+    const [, setInfraEnvironments] = useRecoilState(infraEnvironmentsState)
+    const [, setInfrastructure] = useRecoilState(infrastructuresState)
     const [, setMachinePools] = useRecoilState(machinePoolsState)
-    const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
-    const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
     const [, setManagedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
+    const [, setManagedClusterSets] = useRecoilState(managedClusterSetsState)
+    const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
     const [, setSecrets] = useRecoilState(secretsState)
     const [, setSettings] = useRecoilState(settingsState)
     const [, setSubmarinerConfigs] = useRecoilState(submarinerConfigsState)
-    const [, setAnsibleJobs] = useRecoilState(ansibleJobState)
 
-    const setters: Record<string, SetterOrUpdater<any[]>> = {
-        [AnsibleJobKind]: setAnsibleJobs,
-        [BareMetalAssetKind]: setBareMetalAssets,
-        [CertificateSigningRequestKind]: setCertificateSigningRequests,
-        [ClusterClaimKind]: setClusterClaims,
-        [ClusterCuratorKind]: setClusterCurators,
-        [ClusterDeploymentKind]: setClusterDeployments,
-        [ClusterImageSetKind]: setClusterImageSets,
-        [ClusterPoolKind]: setClusterPools,
-        [ClusterProvisionKind]: setClusterProvisions,
-        [ClusterManagementAddOnKind]: setClusterManagementAddons,
-        [ConfigMapKind]: setConfigMaps,
-        [DiscoveryConfigKind]: setDiscoveryConfigs,
-        [DiscoveredClusterKind]: setDiscoveredClusters,
-        [FeatureGateKind]: setFeatureGates,
-        [MachinePoolKind]: setMachinePools,
-        [ManagedClusterKind]: setManagedClusters,
-        [ManagedClusterAddOnKind]: setManagedClusterAddons,
-        [ManagedClusterInfoKind]: setManagedClusterInfos,
-        [ManagedClusterSetKind]: setManagedClusterSets,
-        [ManagedClusterSetBindingKind]: setManagedClusterSetBindings,
-        [MultiClusterHubKind]: setMultiClusterHubs,
-        [NamespaceKind]: setNamespaces,
-        [PolicyReportKind]: setPolicyReports,
-        [SecretKind]: setSecrets,
-        [SubmarinerConfigKind]: setSubmarinerConfigs,
-    }
+    const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
+        const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
+        function addSetter(apiVersion: string, kind: string, setter: SetterOrUpdater<any[]>) {
+            if (!setters[apiVersion]) setters[apiVersion] = {}
+            setters[apiVersion][kind] = setter
+        }
+        addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
+        addSetter(AgentKindVersion, AgentKind, setAgents)
+        addSetter(AnsibleJobApiVersion, AnsibleJobKind, setAnsibleJobs)
+        addSetter(BareMetalAssetApiVersion, BareMetalAssetKind, setBareMetalAssets)
+        addSetter(BareMetalHostApiVersion, BareMetalHostKind, setBareMetalHosts)
+        addSetter(CertificateSigningRequestApiVersion, CertificateSigningRequestKind, setCertificateSigningRequests)
+        addSetter(ClusterClaimApiVersion, ClusterClaimKind, setClusterClaims)
+        addSetter(ClusterCuratorApiVersion, ClusterCuratorKind, setClusterCurators)
+        addSetter(ClusterDeploymentApiVersion, ClusterDeploymentKind, setClusterDeployments)
+        addSetter(ClusterImageSetApiVersion, ClusterImageSetKind, setClusterImageSets)
+        addSetter(ClusterManagementAddOnApiVersion, ClusterManagementAddOnKind, setClusterManagementAddons)
+        addSetter(ClusterPoolApiVersion, ClusterPoolKind, setClusterPools)
+        addSetter(ClusterProvisionApiVersion, ClusterProvisionKind, setClusterProvisions)
+        addSetter(ConfigMapApiVersion, ConfigMapKind, setConfigMaps)
+        addSetter(DiscoveredClusterApiVersion, DiscoveredClusterKind, setDiscoveredClusters)
+        addSetter(DiscoveryConfigApiVersion, DiscoveryConfigKind, setDiscoveryConfigs)
+        addSetter(InfraEnvApiVersion, InfraEnvKind, setInfraEnvironments)
+        addSetter(InfrastructureApiVersion, InfrastructureKind, setInfrastructure)
+        addSetter(MachinePoolApiVersion, MachinePoolKind, setMachinePools)
+        addSetter(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons)
+        addSetter(ManagedClusterInfoApiVersion, ManagedClusterInfoKind, setManagedClusterInfos)
+        addSetter(ManagedClusterApiVersion, ManagedClusterKind, setManagedClusters)
+        addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
+        addSetter(ManagedClusterSetApiVersion, ManagedClusterSetKind, setManagedClusterSets)
+        addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
+        addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
+        addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
+        addSetter(SecretApiVersion, SecretKind, setSecrets)
+        addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
+        return setters
+    }, [])
 
     useEffect(() => {
-        let eventDataQueue: WatchEvent[] | undefined = []
+        const eventQueue: WatchEvent[] = []
 
-        async function processEvents() {
-            if (!eventDataQueue) return
-            const dataToProcess = eventDataQueue
-            for (const kind in setters) {
-                const setter = setters[kind]
-                setter((resources) => {
-                    const newResources = [...resources]
-                    for (const data of dataToProcess) {
-                        if (data.object?.kind === kind) {
-                            const index = newResources.findIndex(
-                                (resource) =>
-                                    resource.metadata?.name === data.object.metadata.name &&
-                                    resource.metadata?.namespace === data.object.metadata.namespace
-                            )
-                            switch (data.type) {
-                                case 'ADDED':
-                                case 'MODIFIED':
-                                    if (index !== -1) newResources[index] = data.object
-                                    else newResources.push(data.object)
-                                    break
-                                case 'DELETED':
-                                    if (index !== -1) newResources.splice(index, 1)
-                                    break
+        function processEventQueue() {
+            if (eventQueue.length === 0) return
+
+            const resourceTypeMap = eventQueue?.reduce((resourceTypeMap, eventData) => {
+                const apiVersion = eventData.object.apiVersion
+                const kind = eventData.object.kind
+                if (!resourceTypeMap[apiVersion]) resourceTypeMap[apiVersion] = {}
+                if (!resourceTypeMap[apiVersion][kind]) resourceTypeMap[apiVersion][kind] = []
+                resourceTypeMap[apiVersion][kind].push(eventData)
+                return resourceTypeMap
+            }, {} as Record<string, Record<string, WatchEvent[]>>)
+            eventQueue.length = 0
+
+            for (const apiVersion in resourceTypeMap) {
+                for (const kind in resourceTypeMap[apiVersion]) {
+                    const setter = setters[apiVersion]?.[kind]
+                    if (setter) {
+                        setter((resources) => {
+                            const newResources = [...resources]
+                            const watchEvents = resourceTypeMap[apiVersion][kind]
+                            if (watchEvents) {
+                                for (const watchEvent of watchEvents) {
+                                    const index = newResources.findIndex(
+                                        (resource) =>
+                                            resource.metadata?.name === watchEvent.object.metadata.name &&
+                                            resource.metadata?.namespace === watchEvent.object.metadata.namespace
+                                    )
+                                    switch (watchEvent.type) {
+                                        case 'ADDED':
+                                        case 'MODIFIED':
+                                            if (index !== -1) newResources[index] = watchEvent.object
+                                            else newResources.push(watchEvent.object)
+                                            break
+                                        case 'DELETED':
+                                            if (index !== -1) newResources.splice(index, 1)
+                                            break
+                                    }
+                                }
                             }
-                        }
+                            return newResources
+                        })
                     }
-                    return newResources
-                })
-            }
-            eventDataQueue = undefined
-        }
-
-        function processEventData(data: WatchEvent): void {
-            if (!data.object) return
-            const setter = setters[data.object.kind]
-            if (!setter) return
-            setter((resources) => {
-                const newResources = [...resources]
-                const index = resources.findIndex(
-                    (resource) =>
-                        resource.metadata?.name === data.object.metadata.name &&
-                        resource.metadata?.namespace === data.object.metadata.namespace
-                )
-                switch (data.type) {
-                    case 'ADDED':
-                    case 'MODIFIED':
-                        if (index !== -1) newResources[index] = data.object
-                        else newResources.push(data.object)
-                        break
-                    case 'DELETED':
-                        if (index !== -1) newResources.splice(index, 1)
-                        break
                 }
-                return newResources
-            })
+            }
         }
 
         function processMessage(event: MessageEvent) {
@@ -215,14 +288,13 @@ export function LoadData(props: { children?: ReactNode }) {
                         case 'ADDED':
                         case 'MODIFIED':
                         case 'DELETED':
-                            if (eventDataQueue) eventDataQueue.push(data)
-                            else processEventData(data)
+                            eventQueue.push(data)
                             break
                         case 'START':
-                            if (eventDataQueue === undefined) eventDataQueue = []
+                            eventQueue.length = 0
                             break
                         case 'LOADED':
-                            processEvents()
+                            processEventQueue()
                             setLoading(false)
                             break
                         case 'SETTINGS':
@@ -249,11 +321,12 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
         startWatch()
+
+        const timeout = setInterval(processEventQueue, 500)
         return () => {
+            clearInterval(timeout)
             if (evtSource) evtSource.close()
         }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {

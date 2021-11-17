@@ -1,11 +1,58 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import _ from 'lodash'
+import {
+    AgentClusterInstallGroup,
+    AgentClusterInstallKind,
+    AgentClusterInstallVersion,
+    AgentClusterInstallApiVersion,
+    ClusterCurator,
+    ClusterCuratorApiVersion,
+    ClusterCuratorKind,
+    ClusterDeployment,
+    ClusterDeploymentApiVersion,
+    ClusterDeploymentKind,
+    ClusterManagementAddOn,
+    ClusterProvision,
+    ClusterProvisionApiVersion,
+    ClusterProvisionKind,
+    ManagedCluster,
+    ManagedClusterAddOn,
+    ManagedClusterAddOnApiVersion,
+    ManagedClusterAddOnKind,
+    ManagedClusterApiVersion,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
+    ManagedClusterKind,
+    PodApiVersion,
+    PodKind,
+    PodList,
+    SelfSubjectAccessReview,
+} from '../../../../../resources'
+import { AcmRoute } from '@open-cluster-management/ui-components'
+import { CIM } from 'openshift-assisted-ui-lib'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { AcmRoute } from '@open-cluster-management/ui-components'
-import { nockCreate, nockDelete, nockNamespacedList, nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import {
+    acmRouteState,
+    agentClusterInstallsState,
+    certificateSigningRequestsState,
+    clusterCuratorsState,
+    clusterDeploymentsState,
+    clusterManagementAddonsState,
+    clusterProvisionsState,
+    configMapsState,
+    machinePoolsState,
+    managedClusterAddonsState,
+    managedClusterInfosState,
+    managedClusterSetsState,
+    managedClustersState,
+} from '../../../../../atoms'
+import { nockCreate, nockDelete, nockGet, nockIgnoreRBAC, nockNamespacedList } from '../../../../../lib/nock-util'
+import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
     clickByLabel,
     clickByText,
@@ -13,54 +60,17 @@ import {
     waitForCalled,
     waitForNock,
     waitForNocks,
-    waitForText,
     waitForNotText,
+    waitForTestId,
+    waitForText,
 } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import {
-    ClusterDeployment,
-    ClusterDeploymentApiVersion,
-    ClusterDeploymentKind,
-} from '../../../../../resources/cluster-deployment'
-import { ClusterManagementAddOn } from '../../../../../resources/cluster-management-add-on'
-import {
-    ClusterProvision,
-    ClusterProvisionApiVersion,
-    ClusterProvisionKind,
-} from '../../../../../resources/cluster-provision'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources/managed-cluster'
-import {
-    ManagedClusterAddOn,
-    ManagedClusterAddOnApiVersion,
-    ManagedClusterAddOnKind,
-} from '../../../../../resources/managed-cluster-add-on'
-import {
-    ManagedClusterInfo,
-    ManagedClusterInfoApiVersion,
-    ManagedClusterInfoKind,
-} from '../../../../../resources/managed-cluster-info'
-import { MachinePool, MachinePoolApiVersion, MachinePoolKind } from '../../../../../resources/machine-pool'
-import { PodApiVersion, PodKind, PodList } from '../../../../../resources/pod'
-import { SelfSubjectAccessReview } from '../../../../../resources/self-subject-access-review'
 import ClusterDetails from './ClusterDetails'
 import {
-    managedClustersState,
-    managedClusterInfosState,
-    clusterDeploymentsState,
-    certificateSigningRequestsState,
-    clusterManagementAddonsState,
-    managedClusterAddonsState,
-    configMapsState,
-    managedClusterSetsState,
-    acmRouteState,
-    clusterProvisionsState,
-    machinePoolsState,
-    clusterCuratorsState,
-} from '../../../../../atoms'
-import { mockOpenShiftConsoleConfigMap, mockManagedClusterSet } from '../../../../../lib/test-metadata'
-import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../../../../../resources/cluster-curator'
-
-export const clusterName = 'test-cluster'
+    clusterName,
+    mockMachinePoolAuto,
+    mockMachinePoolManual,
+} from './ClusterMachinePools/ClusterDetails.sharedmocks'
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
     apiVersion: ManagedClusterInfoApiVersion,
@@ -219,6 +229,73 @@ const mockClusterDeployment: ClusterDeployment = {
     },
 }
 
+const mockAIClusterDeployment: ClusterDeployment = _.cloneDeep(mockClusterDeployment)
+mockAIClusterDeployment.metadata.labels = {
+    'hive.openshift.io/cluster-platform': 'agent-baremetal',
+}
+mockAIClusterDeployment.metadata.annotations = {
+    'agentBareMetal-agentSelector/autoSelect': 'false',
+}
+mockAIClusterDeployment.spec!.platform = {
+    agentBareMetal: {
+        agentSelector: {},
+    },
+}
+mockAIClusterDeployment.spec!.clusterInstallRef = {
+    group: AgentClusterInstallGroup,
+    kind: AgentClusterInstallKind,
+    name: clusterName,
+    version: AgentClusterInstallVersion,
+}
+
+const mockAgentClusterInstall: CIM.AgentClusterInstallK8sResource = {
+    apiVersion: AgentClusterInstallApiVersion,
+    kind: AgentClusterInstallKind,
+    metadata: {
+        name: clusterName,
+        namespace: clusterName,
+        // skip ownerReference to CD for now
+    },
+    spec: {
+        apiVIP: '192.168.122.152',
+        ingressVIP: '192.168.122.155',
+        clusterDeploymentRef: {
+            name: clusterName,
+        },
+        clusterMetadata: {
+            clusterID: '6aa9cdfe-a13c-4e8c-b7e3-0219fad10163',
+            /* Add when actually needed
+            adminKubeconfigSecretRef: {
+                name: `${clusterName}-admin-kubeconfig`,
+            },
+            adminPasswordSecretRef: {
+                name: `${clusterName}-admin-password`,
+            },
+            */
+            // infraID: '570004e6-c97c-428a-92b7-2d1f7c4adc0f',
+        },
+        imageSetRef: {
+            name: 'img4.8.13-x86-64-appsub',
+        },
+        networking: {
+            clusterNetwork: [{ cidr: '10.128.0.0/14', hostPrefix: 23 }],
+            serviceNetwork: ['172.30.0.0/16'],
+        },
+        provisionRequirements: {
+            controlPlaneAgents: 3,
+        },
+    },
+    status: {
+        conditions: [],
+        debugInfo: {
+            // eventsUrl: '',
+            // logsURL: '',
+            state: 'adding-hosts',
+            stateInfo: '',
+        },
+    },
+}
+
 const mockHiveProvisionPods: PodList = {
     kind: 'PodList',
     apiVersion: 'v1',
@@ -262,7 +339,7 @@ const mockManagedClusterAddOnApp: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Progressing',
                 reason: 'Progressing',
                 status: 'True',
@@ -291,7 +368,7 @@ const mockManagedClusterAddOnWork: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Degraded',
                 reason: 'Degraded',
                 status: 'True',
@@ -320,7 +397,7 @@ const mockManagedClusterAddOnCert: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Available',
                 reason: 'Available',
                 status: 'True',
@@ -350,7 +427,7 @@ const mockManagedClusterAddOnPolicy: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Progressing',
                 reason: 'Progressing',
                 status: 'False',
@@ -380,7 +457,7 @@ const mockManagedClusterAddOnSearch: ManagedClusterAddOn = {
     status: {
         conditions: [
             {
-                lastTransitionTime: '',
+                lastTransitionTime: new Date('2021-05-14T15:11:35Z'),
                 message: 'Unknown',
                 reason: 'Unknown',
                 status: 'True',
@@ -550,7 +627,6 @@ const mockClusterProvisions: ClusterProvision = {
     status: {
         conditions: [
             {
-                lastProbeTime: '2021-01-04T18:23:30Z',
                 lastTransitionTime: '2021-01-04T18:23:30Z',
                 message: 'Install job has been created',
                 reason: 'JobCreated',
@@ -558,149 +634,11 @@ const mockClusterProvisions: ClusterProvision = {
                 type: 'ClusterProvisionJobCreated',
             },
             {
-                lastProbeTime: '2021-01-04T18:23:37Z',
                 lastTransitionTime: '2021-01-04T18:23:37Z',
                 message: 'Invalid GCP project ID',
                 reason: 'GCPInvalidProjectID',
                 status: 'True',
                 type: 'ClusterProvisionFailed',
-            },
-        ],
-    },
-}
-
-export const mockMachinePoolManual: MachinePool = {
-    apiVersion: MachinePoolApiVersion,
-    kind: MachinePoolKind,
-    metadata: {
-        name: `${clusterName}-manual`,
-        namespace: clusterName,
-    },
-    spec: {
-        clusterDeploymentRef: {
-            name: clusterName,
-        },
-        name: 'worker',
-        platform: {
-            aws: {
-                rootVolume: {
-                    iops: 100,
-                    size: 22,
-                    type: 'gp2',
-                },
-                type: 'm4.xlarge',
-            },
-        },
-        replicas: 3,
-    },
-    status: {
-        replicas: 3,
-        machineSets: [
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1a`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1b`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1c`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1d`,
-                replicas: 0,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1e`,
-                replicas: 0,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1f`,
-                replicas: 0,
-            },
-        ],
-    },
-}
-
-export const mockMachinePoolAuto: MachinePool = {
-    apiVersion: MachinePoolApiVersion,
-    kind: MachinePoolKind,
-    metadata: {
-        name: `${clusterName}-auto`,
-        namespace: clusterName,
-    },
-    spec: {
-        clusterDeploymentRef: {
-            name: clusterName,
-        },
-        name: 'worker',
-        platform: {
-            aws: {
-                rootVolume: {
-                    iops: 100,
-                    size: 22,
-                    type: 'gp2',
-                },
-                type: 'm4.xlarge',
-            },
-        },
-        autoscaling: {
-            minReplicas: 1,
-            maxReplicas: 3,
-        },
-    },
-    status: {
-        replicas: 3,
-        machineSets: [
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1a`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1b`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 1,
-                minReplicas: 1,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1c`,
-                replicas: 1,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1d`,
-                replicas: 0,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1e`,
-                replicas: 0,
-            },
-            {
-                maxReplicas: 0,
-                minReplicas: 0,
-                name: `${clusterName}-rxzsv-9k5qn-worker-us-east-1f`,
-                replicas: 0,
             },
         ],
     },
@@ -722,6 +660,22 @@ const mockClusterCurator: ClusterCurator = {
     },
 }
 
+const mockRHACMNamespace = {
+    apiVersion: 'v1',
+    kind: 'Namespace',
+    metadata: {
+        name: 'rhacm',
+    },
+}
+
+const mockOCMNamespace = {
+    apiVersion: 'v1',
+    kind: 'Namespace',
+    metadata: {
+        name: 'open-cluster-management',
+    },
+}
+
 const nockListHiveProvisionJobs = () =>
     nockNamespacedList(
         { apiVersion: PodApiVersion, kind: PodKind, metadata: { namespace: clusterName } },
@@ -729,14 +683,14 @@ const nockListHiveProvisionJobs = () =>
         ['hive.openshift.io/cluster-deployment-name=test-cluster', 'hive.openshift.io/job-type=provision']
     )
 
-const Component = () => (
+const Component = ({ clusterDeployment = mockClusterDeployment }) => (
     <RecoilRoot
         initializeState={(snapshot) => {
             snapshot.set(acmRouteState, AcmRoute.Clusters)
             snapshot.set(managedClusterAddonsState, mockManagedClusterAddOns)
             snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
             snapshot.set(managedClustersState, [mockManagedCluster])
-            snapshot.set(clusterDeploymentsState, [mockClusterDeployment])
+            snapshot.set(clusterDeploymentsState, [clusterDeployment])
             snapshot.set(managedClusterInfosState, [mockManagedClusterInfo])
             snapshot.set(certificateSigningRequestsState, [])
             snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
@@ -744,6 +698,7 @@ const Component = () => (
             snapshot.set(clusterProvisionsState, [mockClusterProvisions])
             snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
             snapshot.set(clusterCuratorsState, [mockClusterCurator])
+            snapshot.set(agentClusterInstallsState, [mockAgentClusterInstall])
         }}
     >
         <MemoryRouter initialEntries={[NavigationPath.clusterDetails.replace(':id', clusterName)]}>
@@ -864,5 +819,39 @@ describe('ClusterDetails', () => {
         )
         await waitForNocks([nock])
         await waitForText('Not found')
+    })
+})
+
+const AIComponent = () => <Component clusterDeployment={mockAIClusterDeployment} />
+
+describe('ClusterDetails for On Premise', () => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+    })
+
+    test('overview page renders AI empty details', async () => {
+        const nocks: Scope[] = [nockGet(mockRHACMNamespace, undefined, 404), nockGet(mockOCMNamespace, undefined, 200)]
+        render(<AIComponent />)
+        await waitForNocks(nocks)
+
+        await waitForText(clusterName, true)
+        await waitForText('tab.overview')
+        await waitForText('table.details')
+
+        await waitForText('Cluster hosts')
+        await waitForTestId('col-header-hostname', true) // Multiple === true since the Empty state reuses the column
+        await waitForTestId('col-header-role')
+        await waitForTestId('col-header-infraenvstatus')
+        await waitForTestId('col-header-infraenv')
+        await waitForTestId('col-header-cpucores')
+        await waitForTestId('col-header-memory')
+        await waitForTestId('col-header-disk')
+
+        await waitForText('Waiting for hosts...')
+
+        // TODO(mlibra): If only we can address titles/headers in the table by ID. That would require changes to the AcmDescriptionList component
+        await waitForText('On Premise')
+
+        // screen.debug(undefined, -1)
     })
 })

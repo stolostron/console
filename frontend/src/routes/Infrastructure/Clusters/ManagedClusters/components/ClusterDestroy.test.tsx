@@ -1,22 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Cluster, ClusterStatus } from '../../../../../resources'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { render, screen } from '@testing-library/react'
-import { ClusterDestroy } from './ClusterDestroy'
-import { ClusterStatus, Cluster } from '../../../../../lib/get-cluster'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import { ClusterDestroy } from './ClusterDestroy'
 
 const mockDestroyCluster: Cluster = {
     name: 'test-cluster',
     displayName: 'test-cluster',
     namespace: 'test-cluster',
     provider: undefined,
+    isCurator: false,
+    owner: {},
     status: ClusterStatus.destroying,
     distribution: {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
+        isManagedOpenShift: false,
     },
     labels: undefined,
     nodes: undefined,
@@ -33,6 +36,7 @@ const mockDestroyCluster: Cluster = {
     },
     isHive: false,
     isManaged: true,
+    isSNOCluster: false,
 }
 
 const mockDetachCluster: Cluster = {
@@ -44,6 +48,7 @@ const mockDetachCluster: Cluster = {
         k8sVersion: '1.19',
         ocp: undefined,
         displayVersion: '1.19',
+        isManagedOpenShift: false,
     },
     labels: undefined,
     nodes: undefined,
@@ -60,6 +65,9 @@ const mockDetachCluster: Cluster = {
     },
     isHive: false,
     isManaged: true,
+    isCurator: false,
+    isSNOCluster: false,
+    owner: {},
 }
 
 describe('ClusterDestroy', () => {

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { IRequestResult, postRequest, backendUrl } from './resource-request'
+import { backendUrl, IRequestResult, postRequest } from '../resources'
 
 export const apiSearchUrl = '/proxy/search'
 

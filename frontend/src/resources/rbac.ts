@@ -2,7 +2,7 @@
 
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { IResourceDefinition } from './resource'
-import { listResources } from '../lib/resource-request'
+import { listResources } from './utils/resource-request'
 
 export const UserApiVersion = 'user.openshift.io/v1'
 export type UserApiVersionType = 'user.openshift.io/v1'

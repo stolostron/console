@@ -1,13 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    ResourceAttributes,
+    Cluster,
     createSubjectAccessReview,
     createSubjectAccessReviews,
-} from '../resources/self-subject-access-review'
-import { Namespace } from '../resources/namespace'
-import { Cluster } from '../lib/get-cluster'
-import { getResourceGroup, getResourcePlural, IResource } from '../resources/resource'
+    getResourceGroup,
+    getResourcePlural,
+    IResource,
+    Namespace,
+    ResourceAttributes,
+} from '../resources'
 
 export function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
     return new Promise<string[]>(async (resolve, reject) => {

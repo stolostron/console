@@ -1,21 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Cluster, ClusterStatus } from '../../../../../lib/get-cluster'
-import { BatchChannelSelectModal } from './BatchChannelSelectModal'
+import { Cluster, ClusterCuratorDefinition, ClusterStatus } from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
 import { nockCreate, nockPatch } from '../../../../../lib/nock-util'
-import { ClusterCuratorDefinition } from '../../../../../resources/cluster-curator'
+import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 const mockClusterNoAvailable: Cluster = {
     name: 'cluster-0-no-available',
     displayName: 'cluster-0-no-available',
     namespace: 'cluster-0-no-available',
     status: ClusterStatus.ready,
     isHive: false,
+    isCurator: false,
+    owner: {},
     distribution: {
         k8sVersion: '1.19',
         displayVersion: 'Openshift 1.2.3',
+        isManagedOpenShift: false,
         upgradeInfo: {
             upgradeFailed: false,
             isUpgrading: false,
@@ -25,6 +27,7 @@ const mockClusterNoAvailable: Cluster = {
             currentVersion: '1.2.3',
             desiredVersion: '1.2.3',
             currentChannel: 'fast-1.2',
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -41,6 +44,7 @@ const mockClusterNoAvailable: Cluster = {
         },
     },
     isManaged: true,
+    isSNOCluster: false,
 }
 const mockClusterReady1: Cluster = {
     name: 'cluster-1-ready1',
@@ -51,6 +55,7 @@ const mockClusterReady1: Cluster = {
     distribution: {
         k8sVersion: '1.19',
         displayVersion: 'Openshift 1.2.3',
+        isManagedOpenShift: false,
         upgradeInfo: {
             upgradeFailed: false,
             isUpgrading: false,
@@ -61,6 +66,7 @@ const mockClusterReady1: Cluster = {
             desiredVersion: '1.2.3',
             currentChannel: 'stable-1.2',
             availableChannels: ['stable-1.3', 'stable-1.2'],
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -77,6 +83,9 @@ const mockClusterReady1: Cluster = {
         },
     },
     isManaged: true,
+    isCurator: false,
+    isSNOCluster: false,
+    owner: {},
 }
 const mockClusterReady2: Cluster = {
     name: 'cluster-2-ready2',
@@ -87,6 +96,7 @@ const mockClusterReady2: Cluster = {
     distribution: {
         k8sVersion: '1.19',
         displayVersion: 'Openshift 2.2.3',
+        isManagedOpenShift: false,
         upgradeInfo: {
             upgradeFailed: false,
             isUpgrading: false,
@@ -97,6 +107,7 @@ const mockClusterReady2: Cluster = {
             desiredVersion: '2.2.3',
             currentChannel: 'stable-2.2',
             availableChannels: ['stable-2.3'],
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -113,6 +124,9 @@ const mockClusterReady2: Cluster = {
         },
     },
     isManaged: true,
+    isCurator: false,
+    isSNOCluster: false,
+    owner: {},
 }
 const mockClusterOffline: Cluster = {
     name: 'cluster-3-offline',
@@ -123,6 +137,7 @@ const mockClusterOffline: Cluster = {
     distribution: {
         k8sVersion: '1.19',
         displayVersion: 'Openshift 1.2.3',
+        isManagedOpenShift: false,
         upgradeInfo: {
             upgradeFailed: false,
             isUpgrading: false,
@@ -133,6 +148,7 @@ const mockClusterOffline: Cluster = {
             desiredVersion: '1.2.3',
             availableChannels: ['stable-2.2', 'stable-2.3'],
             currentChannel: 'fast-2.2',
+            latestJob: {},
         },
     },
     labels: undefined,
@@ -149,6 +165,9 @@ const mockClusterOffline: Cluster = {
         },
     },
     isManaged: true,
+    isCurator: false,
+    isSNOCluster: false,
+    owner: {},
 }
 
 const allClusters: Array<Cluster> = [mockClusterNoAvailable, mockClusterReady1, mockClusterReady2, mockClusterOffline]

@@ -1,0 +1,4 @@
+// https://babeljs.io/docs/en/configuration
+{
+    "presets": ["@babel/env", "@babel/react", "@babel/preset-typescript"]
+}

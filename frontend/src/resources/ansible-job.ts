@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { IResourceDefinition } from './resource'
-import { getLatest } from '../lib/utils'
+import { getLatest } from './utils/utils'
 
 export const AnsibleJobApiVersion = 'tower.ansible.com/v1alpha1'
 export type AnsibleJobApiVersionType = 'tower.ansible.com/v1alpha1'
@@ -49,4 +49,11 @@ export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string
         prehook: prehookJobs,
         posthook: posthookJobs,
     }
+}
+
+export interface AnsibleTowerJobTemplateList {
+    results?: Array<AnsibleTowerJobTemplate>
+}
+export interface AnsibleTowerJobTemplate {
+    name?: string
 }

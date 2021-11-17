@@ -3,6 +3,7 @@
 import YAML from 'yaml'
 
 import { TFunction } from 'i18next'
+import validator from 'validator'
 
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
 export function validateKubernetesDnsName(value: string, t: TFunction) {
@@ -210,4 +211,18 @@ export function validateBareMetalOSImageURL(value: string, t: TFunction) {
     }
 
     return undefined
+}
+
+export function validateWebURL(url: string, t: TFunction) {
+    if (
+        validator.isURL(url, {
+            require_protocol: true,
+            require_valid_protocol: true,
+            protocols: ['http', 'https'],
+            require_host: true,
+        })
+    )
+        return undefined
+
+    return t('validate.ansible.url.not.valid')
 }

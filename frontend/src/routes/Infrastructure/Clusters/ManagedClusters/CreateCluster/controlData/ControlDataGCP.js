@@ -1,17 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+// eslint-disable-next-line no-use-before-define
+import React from 'react'
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     networkingControlData,
+    proxyControlData,
     automationControlData,
     getSimplifiedImageName,
     getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -243,6 +247,12 @@ const GCPworkerInstanceTypes = [
     },
 ]
 
+export const getControlDataGCP = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataGCP)
+    if (includeAutomation) return [...controlDataGCP, ...automationControlData]
+    return [...controlDataGCP]
+}
+
 const controlDataGCP = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -295,18 +305,18 @@ const controlDataGCP = [
     },
     {
         name: 'creation.ocp.addition.labels',
-        tooltip: 'tooltip.creation.ocp.addition.labels',
         id: 'additional',
         type: 'labels',
         active: [],
+        tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
-        id: 'mpoolsStep',
+        id: 'nodePoolsStep',
         type: 'step',
-        title: 'Master node',
+        title: 'Node pools',
     },
     {
         id: 'nodes',
@@ -325,7 +335,7 @@ const controlDataGCP = [
         cacheUserValueKey: 'create.cluster.region',
         reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
-    ///////////////////////  master pool  /////////////////////////////////////
+    ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
         type: 'group',
@@ -335,8 +345,9 @@ const controlDataGCP = [
                 id: 'masterPool',
                 type: 'section',
                 collapsable: true,
-                subtitle: 'creation.ocp.node.master.pool.title',
-                info: 'creation.ocp.node.master.pool.info',
+                collapsed: true,
+                subtitle: 'creation.ocp.node.controlplane.pool.title',
+                info: 'creation.ocp.node.controlplane.pool.info',
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
@@ -357,19 +368,9 @@ const controlDataGCP = [
     },
     ///////////////////////  worker pools  /////////////////////////////////////
     {
-        id: 'wpoolsStep',
-        type: 'step',
-        title: 'Worker pools',
-        hidden: isHidden_SNO,
-    },
-    {
-        id: 'nodes',
-        type: 'title',
-        info: 'creation.ocp.cluster.node.pool.info',
-    },
-    {
         id: 'workerPools',
         type: 'group',
+        hidden: isHidden_SNO,
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',
@@ -381,6 +382,7 @@ const controlDataGCP = [
                 id: 'workerPool',
                 type: 'section',
                 collapsable: true,
+                collapsed: true,
                 subtitle: getWorkerName,
                 info: 'creation.ocp.node.worker.pool.info',
             },
@@ -388,6 +390,7 @@ const controlDataGCP = [
             {
                 name: 'creation.ocp.pool.name',
                 tooltip: 'tooltip.creation.ocp.pool.name',
+                placeholder: 'creation.ocp.pool.placeholder',
                 id: 'workerName',
                 type: 'text',
                 active: 'worker',
@@ -431,7 +434,7 @@ const controlDataGCP = [
         title: 'Networking',
     },
     ...networkingControlData,
-    ...automationControlData,
+    ...proxyControlData,
 ]
 
-export default controlDataGCP
+export default getControlDataGCP

@@ -1,9 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterDeploymentDefinition, ClusterDeployment } from '../resources/cluster-deployment'
-import { ManagedClusterDefinition, ManagedCluster } from '../resources/managed-cluster'
-import { ResourceError, ResourceErrorCode, patchResource } from './resource-request'
-import { managedClusterSetLabel } from '../resources/managed-cluster-set'
+import {
+    ClusterDeployment,
+    ClusterDeploymentDefinition,
+    ManagedCluster,
+    ManagedClusterDefinition,
+    managedClusterSetLabel,
+    patchResource,
+    ResourceError,
+    ResourceErrorCode,
+} from '../resources'
 
 export function patchClusterSetLabel(clusterName: string, op: 'remove' | 'add' | 'replace', value?: string) {
     const patch: { op: 'remove' | 'add' | 'replace'; path: string; value?: string } = {

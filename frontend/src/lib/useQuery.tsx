@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { IRequestResult, ResourceError, ResourceErrorCode } from '../resources'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { IRequestResult, ResourceError, ResourceErrorCode } from './resource-request'
 
 export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData?: T[]) {
     const [data, setData] = useState<T[] | undefined>(initialData)
@@ -12,7 +12,7 @@ export function useQuery<T>(restFunc: () => IRequestResult<T | T[]>, initialData
     const dataRef = useRef<{
         ismounted: boolean
         polling: number
-        timeout?: NodeJS.Timeout
+        timeout?: ReturnType<typeof setTimeout>
         requestResult?: IRequestResult<T | T[]>
     }>({
         ismounted: false,

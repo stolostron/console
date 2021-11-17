@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { ManagedClusterDefinition } from '../../../../../resources/managed-cluster'
+import { ManagedClusterDefinition } from '../../../../../resources'
 
 export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'primary' | 'link' }) {
     const { t } = useTranslation('cluster')

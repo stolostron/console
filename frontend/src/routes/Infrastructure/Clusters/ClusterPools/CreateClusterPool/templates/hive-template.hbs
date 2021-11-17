@@ -21,6 +21,9 @@ metadata:
 spec:
   size: {{{size}}} ##size
   baseDomain: {{{baseDomain}}}  ##baseDomain
+{{#if singleNode}}
+  skipMachinePools: true
+{{/if}}
   installConfigSecretTemplateRef:
     name: {{{name}}}-install-config
 {{#if releaseImageReference}}
@@ -109,25 +112,6 @@ type: Opaque
 data:
   # Base64 encoding of install-config yaml
   install-config.yaml: {{{install-config}}}
-{{#if ssh-privatekey}}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{{name}}}-ssh-private-key
-  namespace: '{{{namespace}}}'
-stringData:
-{{#if showSecrets}}
-  ssh-privatekey: |-
-{{#each ssh-privatekey}}
-    {{{.}}}
-{{/each}}
-{{else}}
-  ssh-privatekey: # injected on create
-{{/if}}
-type: Opaque
-{{/if}}
-
 {{#if_ne infrastructure 'BMC'}}
 ---
 apiVersion: v1
@@ -215,7 +199,7 @@ metadata:
 stringData:
   cloud: '{{{../../cloud}}}'
 {{#if ../../showSecrets}}
-  clouds.yaml: |- 
+  clouds.yaml: |-
     {{{../../clouds.yaml}}}
 {{else}}
   clouds.yaml: # injected on create

@@ -21,7 +21,7 @@ export interface ManagedClusterAddOn extends IResource {
     spec: {}
     status?: {
         conditions: {
-            lastTransitionTime?: string
+            lastTransitionTime?: Date
             message?: string
             reason?: string
             status: string

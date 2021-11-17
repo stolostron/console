@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+// eslint-disable-next-line no-use-before-define
+import React from 'react'
 import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
@@ -7,11 +9,13 @@ import {
     clusterDetailsControlData,
     networkingControlData,
     automationControlData,
+    proxyControlData,
     getSimplifiedImageName,
     getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -70,6 +74,8 @@ export const awsRegions = {
     'eu-west-3': ['eu-west-3a', 'eu-west-3b', 'eu-west-3c'],
     'me-south-1': ['me-south-1a', 'me-south-1b', 'me-south-1c'],
     'sa-east-1': ['sa-east-1a', 'sa-east-1b', 'sa-east-1c'],
+    'us-gov-west-1': ['us-gov-west-1a', 'us-gov-west-1b', 'us-gov-west-1c'],
+    'us-gov-east-1': ['us-gov-east-1a', 'us-gov-east-1b', 'us-gov-east-1c'],
 }
 
 const setAWSZones = (control, controlData) => {
@@ -587,6 +593,14 @@ export const AWSworkerInstanceTypes = [
     },
 ]
 
+export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataAWS)
+    let controlData = [...controlDataAWS]
+    if (includeAwsPrivate) controlData.push(...awsPrivateControlData)
+    if (includeAutomation) controlData.push(...automationControlData)
+    return controlData
+}
+
 const controlDataAWS = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -639,18 +653,18 @@ const controlDataAWS = [
     },
     {
         name: 'creation.ocp.addition.labels',
-        tooltip: 'tooltip.creation.ocp.addition.labels',
         id: 'additional',
         type: 'labels',
         active: [],
+        tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
-        id: 'mpoolsStep',
+        id: 'nodePoolsStep',
         type: 'step',
-        title: 'Master node',
+        title: 'Node pools',
     },
     {
         id: 'nodes',
@@ -670,7 +684,7 @@ const controlDataAWS = [
         onSelect: setAWSZones,
         reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
-    ///////////////////////  master pool  /////////////////////////////////////
+    ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
         type: 'group',
@@ -680,13 +694,14 @@ const controlDataAWS = [
                 id: 'masterPool',
                 type: 'section',
                 collapsable: true,
-                subtitle: 'creation.ocp.node.master.pool.title',
-                info: 'creation.ocp.node.master.pool.info',
+                collapsed: true,
+                subtitle: 'creation.ocp.node.controlplane.pool.title',
+                info: 'creation.ocp.node.controlplane.pool.info',
             },
             ///////////////////////  zone  /////////////////////////////////////
             {
                 name: 'creation.ocp.zones',
-                tooltip: 'tooltip.creation.ocp.master.zones',
+                tooltip: 'tooltip.creation.ocp.controlplane.zones',
                 id: 'masterZones',
                 type: 'multiselect',
                 available: [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],
@@ -726,19 +741,9 @@ const controlDataAWS = [
     },
     ///////////////////////  worker pools  /////////////////////////////////////
     {
-        id: 'wpoolsStep',
-        type: 'step',
-        title: 'Worker pools',
-        hidden: isHidden_SNO,
-    },
-    {
-        id: 'nodes',
-        type: 'title',
-        info: 'creation.ocp.cluster.node.pool.info',
-    },
-    {
         id: 'workerPools',
         type: 'group',
+        hidden: isHidden_SNO,
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',
@@ -750,6 +755,7 @@ const controlDataAWS = [
                 id: 'workerPool',
                 type: 'section',
                 collapsable: true,
+                collapsed: true,
                 subtitle: getWorkerName,
                 info: 'creation.ocp.node.worker.pool.info',
             },
@@ -757,6 +763,7 @@ const controlDataAWS = [
             {
                 name: 'creation.ocp.pool.name',
                 tooltip: 'tooltip.creation.ocp.pool.name',
+                placeholder: 'creation.ocp.pool.placeholder',
                 id: 'workerName',
                 type: 'text',
                 active: 'worker',
@@ -819,7 +826,103 @@ const controlDataAWS = [
         title: 'Networking',
     },
     ...networkingControlData,
-    ...automationControlData,
+    ...proxyControlData,
 ]
 
-export default controlDataAWS
+const awsPrivateControlData = [
+    {
+        id: 'privateAWS',
+        type: 'step',
+        title: 'AWS private configuration',
+    },
+    {
+        id: 'privateAWSTitle',
+        type: 'title',
+        info: 'creation.aws.privateAWS.info',
+    },
+    {
+        name: 'Hosted Zone',
+        tooltip: 'creation.aws.hostedZone.tooltip',
+        id: 'hostedZone',
+        type: 'text',
+        placeholder: 'creation.aws.hostedZone.placeholder',
+        active: '',
+        validation: VALIDATE_ALPHANUMERIC,
+    },
+    {
+        name: 'amiID',
+        tooltip: 'creation.aws.ami.tooltip',
+        id: 'amiID',
+        type: 'text',
+        placeholder: 'creation.aws.ami.placeholder',
+        active: '',
+        validation: VALIDATE_ALPHANUMERIC,
+    },
+    ///////////////////////  subnets  /////////////////////////////////////
+    {
+        id: 'privateLink',
+        type: 'group',
+        onlyOne: true,
+        controlData: [
+            {
+                id: 'subnetSection',
+                type: 'section',
+                collapsable: true,
+                collapsed: true,
+                subtitle: 'creation.aws.subnet.subtitle',
+                info: 'creation.aws.subnet.info',
+            },
+            {
+                name: 'Subnet ID',
+                tooltip: 'creation.aws.subnetID.tooltip',
+                id: 'subnetID',
+                type: 'values',
+                placeholder: 'creation.aws.subnetID.placeholder',
+                active: [],
+                validation: VALIDATE_ALPHANUMERIC,
+            },
+        ],
+    },
+    {
+        id: 'serviceEndpoints',
+        type: 'group',
+        onlyOne: false,
+        prompts: {
+            nameId: 'tester',
+            baseName: 'Subnet ID',
+            addPrompt: 'creation.aws.serviceEndpoint.addPrompt',
+            deletePrompt: 'creation.aws.serviceEndpoint.deletePrompt',
+        },
+        controlData: [
+            ///////////////////////  Service Endpoints  /////////////////////////////////////
+            {
+                id: 'serviceEndpoint',
+                type: 'section',
+                collapsable: true,
+                collapsed: true,
+                subtitle: 'creation.aws.serviceEndpoint.subtitle',
+                info: 'creation.aws.serviceEndpoint.info',
+            },
+            {
+                name: 'Name',
+                tooltip: 'creation.aws.serviceEndpointName.tooltip',
+                id: 'endpointName',
+                type: 'text',
+                placeholder: 'creation.aws.serviceEndpointName.placeholder',
+                active: '',
+                validation: VALIDATE_ALPHANUMERIC,
+            },
+            {
+                name: 'Url',
+                tooltip: 'creation.aws.serviceEndpointUrl.tooltip',
+                id: 'endpointURL',
+                type: 'text',
+                placeholder: 'creation.aws.serviceEndpointUrl.placeholder',
+                active: '',
+                validation: VALIDATE_ALPHANUMERIC,
+            },
+        ],
+    },
+]
+
+export default getControlDataAWS

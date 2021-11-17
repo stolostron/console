@@ -1,40 +1,38 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
-import _ from 'lodash'
+import { makeStyles } from '@material-ui/styles'
+import { PolicyReport, PolicyReportResults } from '../../../../../resources'
+import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
+import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import {
-    Tabs,
-    Tab,
-    TabTitleText,
-    Grid,
-    GridItem,
+    Button,
     Flex,
     FlexItem,
+    Grid,
+    GridItem,
+    Tab,
+    Tabs,
+    TabTitleText,
     Text,
     TextContent,
     TextVariants,
-    Button,
 } from '@patternfly/react-core'
+import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
-import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
+import { TFunction } from 'i18next'
+import _ from 'lodash'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
-import { CriticalRiskIcon, ModerateRiskIcon, ImportantRiskIcon, LowRiskIcon } from './ClusterPolicySidebarIcons'
-import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
-import { makeStyles } from '@material-ui/styles'
-import { useTranslation, TFunction } from 'react-i18next'
-import { PolicyReport, PolicyReportResults } from '../../../../../resources/policy-report'
+import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
 
 const useStyles = makeStyles({
     body: {
         position: 'relative',
         top: '-35px',
         padding: '0 8px',
-        '& h2, h4, p, span, thead': {
-            fontFamily: 'RedHatText-Regular',
-        },
         '& section': {
             paddingTop: 'var(--pf-global--spacer--lg)',
         },
@@ -52,9 +50,6 @@ const useStyles = makeStyles({
     },
     tableTitle: {
         paddingBottom: 'var(--pf-global--spacer--md)',
-        '& h4': {
-            fontFamily: 'RedHatText-Medium',
-        },
     },
     backAction: {
         paddingBottom: 'var(--pf-global--spacer--lg)',
@@ -62,7 +57,6 @@ const useStyles = makeStyles({
     subDetailComponents: {
         paddingBottom: 'var(--pf-global--spacer--xl)',
         '& small': {
-            fontFamily: 'RedHatText-Medium',
             color: 'inherit',
             paddingBottom: 'var(--pf-global--spacer--sm)',
         },
@@ -215,6 +209,19 @@ function DetailsView(props: {
         return d
     }
 
+    function getExtraData() {
+        const extraData = _.get(selectedReport, 'properties.extra_data', {})
+        if (typeof extraData === 'string') {
+            try {
+                return JSON.parse(extraData)
+            } catch (err) {
+                console.error(err)
+                return {}
+            }
+        }
+        return extraData
+    }
+
     return (
         <div className={classes.body}>
             <Flex className={classes.backAction}>
@@ -277,18 +284,12 @@ function DetailsView(props: {
                     title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
                 >
                     <TextContent>
-                        <Markdown
-                            template={policyContentData?.resolution ?? ''}
-                            definitions={_.get(selectedReport, 'properties.extra_data', '')}
-                        />
+                        <Markdown template={policyContentData?.resolution ?? ''} definitions={getExtraData()} />
                     </TextContent>
                 </Tab>
                 <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
                     <TextContent>
-                        <Markdown
-                            template={policyContentData?.reason ?? ''}
-                            definitions={_.get(selectedReport, 'properties.extra_data', '')}
-                        />
+                        <Markdown template={policyContentData?.reason ?? ''} definitions={getExtraData()} />
                     </TextContent>
                 </Tab>
             </Tabs>
@@ -373,7 +374,6 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
                 ]}
                 keyFn={(item: any) => item.policy}
                 tableActions={[]}
-                bulkActions={[]}
                 rowActions={[]}
                 gridBreakPoint={TableGridBreakpoint.none}
             />

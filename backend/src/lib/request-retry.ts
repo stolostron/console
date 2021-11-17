@@ -20,7 +20,7 @@ export function requestRetry(options: {
     timeout?: number // Milliseconds before a request times out.
     body?: unknown
     onResponse: (response: IncomingMessage) => void
-    onClose: () => void
+    onClose: (statusCode?: number) => void
     onError: (err: Error) => void
     signal?: AbortSignal
 }): void {
@@ -40,7 +40,7 @@ export function requestRetry(options: {
     let delay = 10000
     let retries = 0
 
-    function requestAttempt(url: string, requestOptions: RequestOptions): void {
+    function requestAttempt(url?: string, requestOptions?: RequestOptions): void {
         function handleError(err: Error) {
             let retry = false
             if (err instanceof Error) {
@@ -96,15 +96,21 @@ export function requestRetry(options: {
                                 logger.warn({ msg: 'retrying request', status: response.statusCode, url: options.url })
                             } else {
                                 options.onError(new Error(`response error  statusCode:${response.statusCode}`))
-                                options.onClose()
+                                options.onClose(response.statusCode)
                             }
                             break
 
                         default:
                             clientRequest.removeListener('error', handleError)
                             response.on('error', options.onError)
-                            response.on('close', options.onClose)
+                            response.on('close', () => options.onClose(response.statusCode))
                             options.onResponse(response)
+                    }
+                })
+                .on('error', (err) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+                    if ((err as any).code !== 'ABORT_ERR') {
+                        throw err
                     }
                 })
                 .on('timeout', () => {

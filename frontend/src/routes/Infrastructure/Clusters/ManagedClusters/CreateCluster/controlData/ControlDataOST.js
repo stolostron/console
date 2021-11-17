@@ -1,19 +1,29 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+// eslint-disable-next-line no-use-before-define
+import React from 'react'
 import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
     networkingControlData,
+    proxyControlData,
     automationControlData,
     getSimplifiedImageName,
     getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
+
+export const getControlDataOST = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataOST)
+    if (includeAutomation) return [...controlDataOST, ...automationControlData]
+    return [...controlDataOST]
+}
 
 const controlDataOST = [
     ////////////////////////////////////////////////////////////////////////////////////
@@ -67,25 +77,25 @@ const controlDataOST = [
     },
     {
         name: 'creation.ocp.addition.labels',
-        tooltip: 'tooltip.creation.ocp.addition.labels',
         id: 'additional',
         type: 'labels',
         active: [],
+        tip: 'Use labels to organize and place application subscriptions and policies on this cluster. The placement of resources are controlled by label selectors. If your cluster has the labels that match the resource placement’s label selector, the resource will be installed on your cluster after creation.',
     },
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
     {
-        id: 'mpoolsStep',
+        id: 'nodePoolsStep',
         type: 'step',
-        title: 'Master node',
+        title: 'Node pools',
     },
     {
         id: 'nodes',
         type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
-    ///////////////////////  master pool  /////////////////////////////////////
+    ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
         type: 'group',
@@ -95,8 +105,9 @@ const controlDataOST = [
                 id: 'masterPool',
                 type: 'section',
                 collapsable: true,
-                subtitle: 'creation.ocp.node.master.pool.title',
-                info: 'creation.ocp.node.master.pool.info',
+                collapsed: true,
+                subtitle: 'creation.ocp.node.controlplane.pool.title',
+                info: 'creation.ocp.node.controlplane.pool.info',
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
@@ -115,14 +126,9 @@ const controlDataOST = [
     },
     ///////////////////////  worker pools  /////////////////////////////////////
     {
-        id: 'wpoolsStep',
-        type: 'step',
-        title: 'Worker pools',
-        hidden: isHidden_SNO,
-    },
-    {
         id: 'workerPools',
         type: 'group',
+        hidden: isHidden_SNO,
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',
@@ -134,6 +140,7 @@ const controlDataOST = [
                 id: 'workerPool',
                 type: 'section',
                 collapsable: true,
+                collapsed: true,
                 subtitle: getWorkerName,
                 info: 'creation.ocp.node.worker.pool.info',
             },
@@ -141,6 +148,7 @@ const controlDataOST = [
             {
                 name: 'creation.ocp.pool.name',
                 tooltip: 'tooltip.creation.ocp.pool.name',
+                placeholder: 'creation.ocp.pool.placeholder',
                 id: 'workerName',
                 type: 'text',
                 active: 'worker',
@@ -221,7 +229,7 @@ const controlDataOST = [
         validation: VALIDATE_IP_OPTIONAL,
     },
     ...networkingControlData,
-    ...automationControlData,
+    ...proxyControlData,
 ]
 
-export default controlDataOST
+export default getControlDataOST

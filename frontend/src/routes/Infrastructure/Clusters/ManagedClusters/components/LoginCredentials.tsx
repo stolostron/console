@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
+import { getSecret, unpackSecret } from '../../../../../resources'
 import {
     AcmButton,
     AcmIcon,
@@ -12,7 +13,6 @@ import {
 import { ButtonVariant, Tooltip } from '@patternfly/react-core'
 import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getSecret, unpackSecret } from '../../../../../resources/secret'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export type LoginCredential = {
