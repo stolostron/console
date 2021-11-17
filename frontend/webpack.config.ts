@@ -59,9 +59,6 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         plugins: [
             new webpack.DefinePlugin({
                 'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development'),
-                'process.env.REACT_APP_BACKEND_HOST': isProduction
-                    ? JSON.stringify('')
-                    : JSON.stringify('https://localhost:4000'),
                 'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
             }) as unknown as webpack.WebpackPluginInstance,
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
@@ -115,6 +112,8 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 '/multicloud/authenticated': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/common': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/version': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/login': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/logout': { target: 'https://localhost:4000', secure: false },
             },
             open: true,
             historyApiFallback: true,

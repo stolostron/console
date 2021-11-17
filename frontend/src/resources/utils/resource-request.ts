@@ -4,7 +4,7 @@ import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
 
-export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}` + `${process.env.REACT_APP_BACKEND_PATH}`
+export const backendUrl = process.env.REACT_APP_BACKEND_PATH
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -403,7 +403,7 @@ export async function fetchRetry<T>(options: {
                         if (process.env.NODE_ENV === 'production') {
                             window.location.reload()
                         } else {
-                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                            window.location.href = `${backendUrl}/login`
                         }
                         throw new ResourceError(status.message as string, status.code as number)
                     } else if (ResourceErrorCodes.includes(status.code as number)) {
@@ -429,7 +429,7 @@ export async function fetchRetry<T>(options: {
                         if (process.env.NODE_ENV === 'production') {
                             window.location.reload()
                         } else {
-                            window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                            window.location.href = `${backendUrl}/login`
                         }
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
