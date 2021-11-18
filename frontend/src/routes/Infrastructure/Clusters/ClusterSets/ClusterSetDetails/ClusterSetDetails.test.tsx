@@ -497,7 +497,7 @@ describe('ClusterSetDetails page', () => {
         await clickByText('Access management')
         await waitForNocks([nock])
         await clickByText('Add user or group')
-        await waitForText('Adding a user or group')
+        await waitForText('Add user or group')
         await clickByPlaceholderText('Select user')
         await clickByText(mockUser.metadata.name!)
         await clickByText('Select role')

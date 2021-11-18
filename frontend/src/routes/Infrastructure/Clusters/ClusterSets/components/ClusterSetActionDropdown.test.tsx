@@ -88,12 +88,12 @@ describe('ClusterSetActionDropdown', () => {
         render(<Component />)
     })
     test('can edit managed cluster set bindings for a cluster set', async () => {
-        await clickByText('actions')
-        await clickByText('set.edit-bindings')
+        await clickByText('Actions')
+        await clickByText('Edit namespace bindings')
 
         // verify existing binding is selected
         await waitForText(firstNamespaceBinding.metadata.namespace!)
-        await clickByPlaceholderText('clusterSetBinding.edit.select.placeholder')
+        await clickByPlaceholderText('Select namespaces')
 
         // unselect existing binding
         await clickByText(firstNamespaceBinding.metadata.namespace!, 1)
@@ -103,15 +103,15 @@ describe('ClusterSetActionDropdown', () => {
         const deleteNock = nockDelete(firstNamespaceBinding)
         const createNock = nockCreate(createSecondNamespaceBinding)
 
-        await clickByText('common:save')
+        await clickByText('Save')
         await waitForNocks([deleteNock, createNock])
     })
     test('delete action should delete the managed cluster set', async () => {
         const nock = nockDelete(mockManagedClusterSet)
-        await clickByText('actions')
-        await clickByText('set.delete')
+        await clickByText('Actions')
+        await clickByText('Delete cluster set')
         await typeByText('type.to.confirm', mockManagedClusterSet.metadata.name!)
-        await clickByText('delete')
+        await clickByText('Delete')
         await waitForNock(nock)
     })
 })
