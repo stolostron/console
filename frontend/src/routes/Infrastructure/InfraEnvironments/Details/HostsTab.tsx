@@ -8,8 +8,9 @@ import { useState } from 'react'
 import { NavigationPath } from '../../../../NavigationPath'
 import { onEditBMH } from './utils'
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
+import { DOC_VERSION } from '../../../../lib/doc-util'
 
-const { InfraEnvAgentTable, EditBMHModal, AGENT_BMH_HOSTNAME_LABEL_KEY } = CIM
+const { InfraEnvAgentTable, EditBMHModal, AGENT_BMH_HOSTNAME_LABEL_KEY, AgentAlerts } = CIM
 
 type HostsTabProps = {
     infraEnv: CIM.InfraEnvK8sResource
@@ -35,6 +36,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
     return (
         <AcmPageContent id="hosts">
             <PageSection>
+                <AgentAlerts infraEnv={infraEnv} bareMetalHosts={bareMetalHosts} docVersion={DOC_VERSION} />
                 <Card>
                     <CardBody>
                         <InfraEnvAgentTable
