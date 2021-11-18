@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-
 import {
     AcmTablePaginationContextProvider,
     AcmToastGroup,
@@ -30,15 +29,12 @@ import { LoadingPage } from './components/LoadingPage'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 
-const ApplicationsPage = lazy(() => import('./routes/Applications/Applications'))
-const CreateApplication = lazy(() => import('./routes/Applications/CreateApplication/CreateApplication'))
-
-const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
-const CreateBareMetalAssetPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/CreateBareMetalAsset'))
-
+const Applications = lazy(() => import('./routes/Applications/Applications'))
+const Clusters = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
 const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
+const BareMetalAssets = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssets'))
+
 const AnsibleAutomationFormPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomationsForm'))
-const BareMetalAssetsPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssetsPage'))
 const AnsibleAutomationsPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomations'))
 const InfraEnvironmentsPage = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPage'))
 const CreateInfraEnv = lazy(() => import('./routes/Infrastructure/InfraEnvironments/CreateInfraEnv'))
@@ -95,13 +91,13 @@ export default function App() {
                         title: 'Clusters',
                         type: 'route',
                         route: NavigationPath.clusters,
-                        component: ClusterManagementPage,
+                        component: Clusters,
                     },
                     {
                         title: 'Bare metal assets',
                         type: 'route',
                         route: NavigationPath.bareMetalAssets,
-                        component: BareMetalAssetsPage,
+                        component: BareMetalAssets,
                     },
                     {
                         title: 'Automation',
@@ -121,7 +117,7 @@ export default function App() {
                 title: 'Applications',
                 type: 'route',
                 route: NavigationPath.applications,
-                component: ApplicationsPage,
+                component: Applications,
             },
             {
                 title: 'Governance',
@@ -164,21 +160,6 @@ export default function App() {
                                         exact
                                         path={NavigationPath.editAnsibleAutomation}
                                         component={AnsibleAutomationFormPage}
-                                    />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.editBareMetalAsset}
-                                        component={CreateBareMetalAssetPage}
-                                    />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.createApplication}
-                                        component={CreateApplication}
-                                    />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.createBareMetalAsset}
-                                        component={CreateBareMetalAssetPage}
                                     />
                                     <Route
                                         path={NavigationPath.infraEnvironmentDetails}

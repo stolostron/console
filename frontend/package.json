@@ -219,6 +219,8 @@
             "perspective": "./src/perspective",
             "welcome": "./src/routes/Home/Welcome/Welcome.tsx",
             "clusters": "./src/routes/Infrastructure/Clusters/ClustersPlugin.tsx",
+            "baremetalassets": "./src/routes/Infrastructure/BareMetalAssets/BareMetalAssetsPlugin.tsx",
+            "applications": "./src/routes/Applications/ApplicationsPlugin.tsx",
             "credentials": "./src/routes/Credentials/CredentialsPlugin.tsx"
         },
         "dependencies": {
