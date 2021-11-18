@@ -223,7 +223,7 @@
             "clusters": "./src/routes/Infrastructure/Clusters/ClustersPlugin.tsx",
             "baremetalassets": "./src/routes/Infrastructure/BareMetalAssets/BareMetalAssetsPlugin.tsx",
             "automations": "./src/routes/Infrastructure/Automations/AutomationsPlugin.tsx",
-            "environments": "./src/routes/Infrastructure/InfraEnvironments/InfraEnvironments.tsx",
+            "environments": "./src/routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPlugin.tsx",
             "applications": "./src/routes/Applications/ApplicationsPlugin.tsx",
             "governance": "./src/routes/Governance/GovernancePlugin.tsx",
             "credentials": "./src/routes/Credentials/CredentialsPlugin.tsx"

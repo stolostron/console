@@ -8,7 +8,7 @@ import InfraEnvironmentsPage from './InfraEnvironmentsPage'
 export default function InfraEnvironments() {
     return (
         <Switch>
-            <Route path={NavigationPath.infraEnvironmentDetails} component={InfraEnvironmentDetailsPage} />
+            <Route exact path={NavigationPath.infraEnvironmentDetails} component={InfraEnvironmentDetailsPage} />
             <Route exact path={NavigationPath.createInfraEnv} component={CreateInfraEnv} />
             <Route exact path={NavigationPath.infraEnvironments} component={InfraEnvironmentsPage} />
             <Route path="*">
