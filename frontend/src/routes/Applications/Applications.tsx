@@ -8,7 +8,7 @@ export default function Applications() {
     return (
         <Switch>
             <Route exact path={NavigationPath.createApplication} component={CreateApplication} />
-            <Route exact path={NavigationPath.applications} component={ApplicationsPage} />
+            <Route path={NavigationPath.applications} component={ApplicationsPage} />
             <Route path="*">
                 <Redirect to={NavigationPath.applications} />
             </Route>
