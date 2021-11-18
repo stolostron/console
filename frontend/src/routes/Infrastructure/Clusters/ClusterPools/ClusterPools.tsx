@@ -520,11 +520,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                             ]
                             const isAvailable =
                                 !cluster.hive.clusterClaimName && availableStatuses.includes(cluster.status)
-                            return (
-                                <span style={{ whiteSpace: 'nowrap' }}>
-                                    {t(`${isAvailable ? 'Yes' : 'No'}`)}
-                                </span>
-                            )
+                            return <span style={{ whiteSpace: 'nowrap' }}>{t(`${isAvailable ? 'Yes' : 'No'}`)}</span>
                         },
                     },
                 ]}

@@ -215,10 +215,12 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                             }
                                         >
                                             <Link
-                                                to={NavigationPath.clusterSetClusterPools.replace(':id', match.params.id )}
+                                                to={NavigationPath.clusterSetClusterPools.replace(
+                                                    ':id',
+                                                    match.params.id
+                                                )}
                                             >
                                                 {t('Cluster pools')}
-                                                
                                             </Link>
                                         </AcmSecondaryNavItem>
                                         <AcmSecondaryNavItem

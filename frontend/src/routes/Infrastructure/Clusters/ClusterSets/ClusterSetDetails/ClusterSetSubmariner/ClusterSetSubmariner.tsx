@@ -169,10 +169,7 @@ export function ClusterSetSubmarinerPageContent() {
                     'The add-on installation is in progress. It may take a few minutes to complete, the status of the Submariner add-on will be reported upon completion.'
                 )
                 if (nodeLabeledCondition) {
-                    status =
-                        nodeLabeledCondition?.status === 'True'
-                            ? t('Nodes labeled')
-                            : t('Nodes not labeled')
+                    status = nodeLabeledCondition?.status === 'True' ? t('Nodes labeled') : t('Nodes not labeled')
                     type = nodeLabeledCondition?.status === 'True' ? StatusType.healthy : StatusType.danger
                     message = nodeLabeledCondition.message
                 }

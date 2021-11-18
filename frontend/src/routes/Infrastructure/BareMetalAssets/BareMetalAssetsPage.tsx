@@ -189,7 +189,7 @@ export function BareMetalAssetsTable(props: {
         })
     }
 
-    function getBmaStatusMessage(mostCurrentReason: String, t:(string: String)=> string){
+    function getBmaStatusMessage(mostCurrentReason: String, t: (string: String) => string) {
         switch (mostCurrentReason) {
             case 'clusterDeploymentNameNotFound':
                 return t('Cluster deployment name is unspecified')
@@ -220,7 +220,7 @@ export function BareMetalAssetsTable(props: {
             case 'UnexpectedResourceCount':
                 return t('Unexpected number of resources found on SyncSet')
             default:
-                break;
+                break
         }
     }
 
@@ -480,8 +480,8 @@ export function BareMetalAssetsTable(props: {
                         isDisabled: !canCreateCluster,
                         tooltip: !canCreateCluster
                             ? t(
-                                'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
-                            )
+                                  'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                              )
                             : '',
                         variant: 'bulk-action',
                     },
