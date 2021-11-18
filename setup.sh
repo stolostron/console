@@ -17,7 +17,7 @@ echo OAUTH2_CLIENT_ID=$OAUTH2_CLIENT_ID >> ./backend/.env
 OAUTH2_CLIENT_SECRET=multicloudingresssecret
 echo OAUTH2_CLIENT_SECRET=$OAUTH2_CLIENT_SECRET >> ./backend/.env
 
-OAUTH2_REDIRECT_URL=https://localhost:4000/login/callback
+OAUTH2_REDIRECT_URL=https://localhost:3000/multicloud/login/callback
 echo OAUTH2_REDIRECT_URL=$OAUTH2_REDIRECT_URL >> ./backend/.env
 
 BACKEND_URL=https://localhost:4000
