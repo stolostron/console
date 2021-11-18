@@ -15,21 +15,21 @@ export type UpdateReleaseImageModalProps = {
 }
 
 export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [imageSets, setImageSets] = useState<Record<string, string>>({})
     const [clusterImageSets] = useRecoilState(clusterImageSetsState)
 
     const modalColumns = useMemo(
         () => [
             {
-                header: t('table.name'),
+                header: t('Name'),
                 cell: (clusterPool: ClusterPool) => (
                     <span style={{ whiteSpace: 'nowrap' }}>{clusterPool.metadata.name}</span>
                 ),
                 sort: 'metadata.name',
             },
             {
-                header: t('table.namespace'),
+                header: t('Namespace'),
                 sort: 'metadata.namespace',
                 search: 'metadata.namespace',
                 cell: (clusterPool: ClusterPool) => {
@@ -37,7 +37,7 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
                 },
             },
             {
-                header: t('table.currentReleaseImage'),
+                header: t('Current release image'),
                 cell: (clusterPool: ClusterPool) => {
                     const imageSet = clusterImageSets.find(
                         (cis) => cis.metadata.name === clusterPool.spec?.imageSetRef.name
@@ -46,7 +46,7 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
                 },
             },
             {
-                header: t('table.newReleaseImage'),
+                header: t('New release image'),
                 cell: (clusterPool: ClusterPool) => {
                     const currentImageSet = clusterImageSets.find(
                         (cis) => cis.metadata.name === clusterPool.spec?.imageSetRef.name
@@ -57,7 +57,7 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
                             maxHeight={'6em'}
                             isRequired
                             label=""
-                            placeholder={t('clusterPool.selectReleaseImage')}
+                            placeholder={t('Select release image')}
                             value={imageSets[clusterPool.metadata.uid!]}
                             onChange={(cis) => {
                                 imageSets[clusterPool.metadata.uid!] = cis!
@@ -98,15 +98,17 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
     return (
         <BulkActionModel<ClusterPool>
             open={props.clusterPools?.length !== undefined}
-            title={t('bulk.title.updateReleaseImage')}
-            action={t('common:update')}
-            processing={t('common:updating')}
+            title={t('Update release images')}
+            action={t('Update')}
+            processing={t('Updating')}
             resources={props.clusterPools ?? []}
             close={() => {
                 props.close?.()
                 setImageSets({})
             }}
-            description={t('bulk.message.updateReleaseImage')}
+            description={t(
+                'Updating the release image for a cluster pool will change the default distribution version of clusters created from the cluster pool. Only newly created clusters from the cluster pool will be updated to the new version.'
+            )}
             columns={modalColumns}
             keyFn={(clusterPool) => clusterPool.metadata.uid as string}
             actionFn={(clusterPool) => {

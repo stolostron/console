@@ -46,7 +46,7 @@ const Portals = Object.freeze({
 })
 
 export default function CreateClusterPoolPage() {
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation()
 
     // create portals for buttons in header
     const switches = (
@@ -65,23 +65,23 @@ export default function CreateClusterPoolPage() {
         <AcmPage
             header={
                 <AcmPageHeader
-                    title={t('page.header.create-clusterPool')}
+                    title={t('Create cluster pool')}
                     titleTooltip={
                         <>
-                            {t('page.header.create-clusterPool.tooltip')}
+                            {t('Create cluster pools across different providers.')}
                             <a
                                 href={DOC_LINKS.CLUSTER_POOLS}
                                 target="_blank"
                                 rel="noreferrer"
                                 style={{ display: 'block', marginTop: '4px' }}
                             >
-                                {t('learn.more')}
+                                {t('Learn more')}
                             </a>
                         </>
                     }
                     breadcrumb={[
-                        { text: t('clusterPools'), to: NavigationPath.clusterPools },
-                        { text: t('page.header.create-clusterPool'), to: '' },
+                        { text: t('Cluster pools'), to: NavigationPath.clusterPools },
+                        { text: t('Create cluster pool'), to: '' },
                     ]}
                     switches={switches}
                     actions={portals}
@@ -128,7 +128,8 @@ export function CreateClusterPool() {
             if (status === 'DONE') {
                 const name = createResources.find((resource) => resource.kind === 'ClusterPool')?.metadata.name
                 toastContext.addAlert({
-                    title: t('clusterPool.creation.success.title'),
+                    title: t('Cluster pool created'),
+                    // TODO - Handle interpolation
                     message: t('clusterPool.creation.success.message', { name }),
                     type: 'success',
                     autoClose: true,
@@ -147,7 +148,7 @@ export function CreateClusterPool() {
     const pauseCreate = () => {}
 
     // setup translation
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation()
     const i18n = (key: any, arg: any) => {
         return t(key, arg)
     }

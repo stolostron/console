@@ -53,7 +53,7 @@ import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './compone
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     useEffect(() => alertContext.clearAlerts, [])
 
     const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
@@ -63,13 +63,17 @@ export default function ClusterPoolsPage() {
             <PageSection>
                 <TechPreviewAlert i18nKey="cluster:preview.clusterPools" docHref={DOC_LINKS.CLUSTER_POOLS} />
                 <Stack hasGutter style={{ height: 'unset' }}>
-                    <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-pools-learn">
+                    <AcmExpandableCard title={t('Learn more about the terminology')} id="cluster-pools-learn">
                         <Flex style={{ flexWrap: 'inherit' }}>
                             <Flex style={{ maxWidth: '50%' }}>
                                 <FlexItem>
                                     <TextContent>
-                                        <Text component={TextVariants.h4}>{t('clusterPools')}</Text>
-                                        <Text component={TextVariants.p}>{t('learn.clusterPools')}</Text>
+                                        <Text component={TextVariants.h4}>{t('Cluster pools')}</Text>
+                                        <Text component={TextVariants.p}>
+                                            {t(
+                                                'ClusterPools provide rapid and cost-effective access to OpenShift clusters on-demand and at scale.  To accomplish this, ClusterPools maintain a configurable and scalable number of OpenShift clusters in a hibernating state.  They are especially useful when providing or replacing cluster environments for development, continuous integration, and production scenarios.'
+                                            )}
+                                        </Text>
                                     </TextContent>
                                 </FlexItem>
                                 <FlexItem align={{ default: 'alignRight' }}>
@@ -80,15 +84,19 @@ export default function ClusterPoolsPage() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('View documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
                             <Flex>
                                 <FlexItem>
                                     <TextContent>
-                                        <Text component={TextVariants.h4}>{t('clusterClaims')}</Text>
-                                        <Text component={TextVariants.p}>{t('learn.clusterClaims')}</Text>
+                                        <Text component={TextVariants.h4}>{t('Cluster claims')}</Text>
+                                        <Text component={TextVariants.p}>
+                                            {t(
+                                                'ClusterClaim resources are used to checkout clusters from cluster pools. After a cluster is checked out from a cluster pool, a new cluster is automatically created to replace it'
+                                            )}
+                                        </Text>
                                     </TextContent>
                                 </FlexItem>
                                 <FlexItem align={{ default: 'alignRight' }}>
@@ -99,7 +107,7 @@ export default function ClusterPoolsPage() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('View documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
@@ -111,7 +119,7 @@ export default function ClusterPoolsPage() {
                             tableActionButtons={[
                                 {
                                     id: 'createClusterPool',
-                                    title: t('managed.createClusterPool'),
+                                    title: t('Create cluster pool'),
                                     click: () => history.push(NavigationPath.createClusterPool),
                                     variant: ButtonVariant.primary,
                                 },
@@ -119,10 +127,12 @@ export default function ClusterPoolsPage() {
                             emptyState={
                                 <AcmEmptyState
                                     key="mcEmptyState"
-                                    title={t('managed.clusterPools.emptyStateHeader')}
+                                    title={t("You don't have any cluster pools.")}
                                     message={
                                         <Trans
-                                            i18nKey={'cluster:managed.clusterPools.emptyStateMsg'}
+                                            i18nKey={
+                                                'Select <bold>Create cluster pool</bold> to create a cluster pool.'
+                                            }
                                             components={{ bold: <strong />, p: <p /> }}
                                         />
                                     }
@@ -131,7 +141,7 @@ export default function ClusterPoolsPage() {
                                             role="link"
                                             onClick={() => history.push(NavigationPath.createClusterPool)}
                                         >
-                                            {t('managed.createClusterPool')}
+                                            {t('Create cluster pool')}
                                         </AcmButton>
                                     }
                                 />
@@ -162,7 +172,7 @@ export function ClusterPoolsTable(props: {
 }) {
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const { clusterPools } = props
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterPool> | { open: false }>({
         open: false,
     })
@@ -179,14 +189,14 @@ export function ClusterPoolsTable(props: {
     const modalColumns = useMemo(
         () => [
             {
-                header: t('table.name'),
+                header: t('Name'),
                 cell: (clusterPool: ClusterPool) => (
                     <span style={{ whiteSpace: 'nowrap' }}>{clusterPool.metadata.name}</span>
                 ),
                 sort: 'metadata.name',
             },
             {
-                header: t('table.namespace'),
+                header: t('Namespace'),
                 sort: 'metadata.namespace',
                 search: 'metadata.namespace',
                 cell: (clusterPool: ClusterPool) => {
@@ -194,7 +204,7 @@ export function ClusterPoolsTable(props: {
                 },
             },
             {
-                header: t('table.provider'),
+                header: t('Infrastructure provider'),
                 cell: (clusterPool: ClusterPool) => {
                     return <ClusterPoolProvider clusterPool={clusterPool} />
                 },
@@ -236,9 +246,7 @@ export function ClusterPoolsTable(props: {
                                                 {available.length > 0 && (
                                                     <div style={{ marginTop: '16px', marginBottom: '16px' }}>
                                                         <TextContent>
-                                                            <Text component={TextVariants.h3}>
-                                                                {t('clusterPool.clusters')}
-                                                            </Text>
+                                                            <Text component={TextVariants.h3}>{t('Clusters')}</Text>
                                                         </TextContent>
                                                         <ClusterPoolClustersTable clusters={available} />
                                                     </div>
@@ -253,7 +261,7 @@ export function ClusterPoolsTable(props: {
                 }}
                 columns={[
                     {
-                        header: t('table.name'),
+                        header: t('Name'),
                         sort: 'metadata.name',
                         search: 'metadata.name',
                         cell: (clusterPool: ClusterPool) => {
@@ -261,7 +269,7 @@ export function ClusterPoolsTable(props: {
                         },
                     },
                     {
-                        header: t('table.namespace'),
+                        header: t('Namespace'),
                         sort: 'metadata.namespace',
                         search: 'metadata.namespace',
                         cell: (clusterPool: ClusterPool) => {
@@ -269,16 +277,17 @@ export function ClusterPoolsTable(props: {
                         },
                     },
                     {
-                        header: t('table.clusters'),
+                        header: t('Clusters'),
                         cell: (clusterPool: ClusterPool) => {
                             return <ClusterStatuses clusterPool={clusterPool} />
                         },
                     },
                     {
-                        header: t('table.available'),
+                        header: t('Available clusters'),
                         cell: (clusterPool: ClusterPool) => {
                             return (
                                 <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
+                                    {/* TODO - Handle interpolation */}
                                     {t('common:outOf', {
                                         firstNumber: clusterPool?.status?.ready,
                                         secondNumber: clusterPool.spec!.size,
@@ -288,13 +297,13 @@ export function ClusterPoolsTable(props: {
                         },
                     },
                     {
-                        header: t('table.provider'),
+                        header: t('Infrastructure provider'),
                         cell: (clusterPool: ClusterPool) => {
                             return <ClusterPoolProvider clusterPool={clusterPool} />
                         },
                     },
                     {
-                        header: t('table.distribution'),
+                        header: t('Distribution version'),
                         sort: 'spec.imageSetRef.name',
                         search: 'spec.imageSetRef.name',
                         cell: (clusterPool: ClusterPool) => {
@@ -326,7 +335,7 @@ export function ClusterPoolsTable(props: {
                                         style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
                                         rbac={[rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)]}
                                     >
-                                        {t('clusterPool.claim')}
+                                        {t('Claim cluster')}
                                     </RbacButton>
                                 )
                             } else {
@@ -341,7 +350,7 @@ export function ClusterPoolsTable(props: {
                             const actions = [
                                 {
                                     id: 'scaleClusterPool',
-                                    text: t('clusterPool.scale'),
+                                    text: t('Scale cluster pool'),
                                     isDisabled: true,
                                     rbac: [rbacPatch(clusterPool)],
                                     click: (clusterPool: ClusterPool) => {
@@ -353,7 +362,7 @@ export function ClusterPoolsTable(props: {
                                 },
                                 {
                                     id: 'updateReleaseImage',
-                                    text: t('clusterPool.updateReleaseImage'),
+                                    text: t('Update release image'),
                                     isDisabled: true,
                                     rbac: [rbacPatch(clusterPool)],
                                     click: (clusterPool: ClusterPool) => {
@@ -365,16 +374,18 @@ export function ClusterPoolsTable(props: {
                                 },
                                 {
                                     id: 'destroy',
-                                    text: t('clusterPool.destroy'),
+                                    text: t('Destroy cluster pool'),
                                     isDisabled: true,
                                     click: (clusterPool: ClusterPool) => {
                                         setModalProps({
                                             open: true,
-                                            title: t('bulk.title.destroyClusterPool'),
-                                            action: t('common:destroy'),
-                                            processing: t('common:destroying'),
+                                            title: t('Permanently destroy cluster pools?'),
+                                            action: t('Destroy'),
+                                            processing: t('Destroying'),
                                             resources: [clusterPool],
-                                            description: t('bulk.message.destroyClusterPool'),
+                                            description: t(
+                                                'Destroying a cluster pool will destroy any unclaimed clusters in the cluster pool.'
+                                            ),
                                             columns: modalColumns,
                                             keyFn: mckeyFn,
                                             actionFn: deleteResource,
@@ -405,7 +416,7 @@ export function ClusterPoolsTable(props: {
                 tableActions={[
                     {
                         id: 'updateReleaseImages',
-                        title: t('bulk.updateReleaseImages.clusterPools'),
+                        title: t('Update release images'),
                         click: (clusterPools: ClusterPool[]) => {
                             setUpdateReleaseImageModalProps({
                                 clusterPools,
@@ -417,15 +428,17 @@ export function ClusterPoolsTable(props: {
                     { id: 'seperator', variant: 'action-seperator' },
                     {
                         id: 'destroyClusterPools',
-                        title: t('bulk.destroy.clusterPools'),
+                        title: t('Destroy cluster pools'),
                         click: (clusterPools: ClusterPool[]) => {
                             setModalProps({
                                 open: true,
-                                title: t('bulk.destroy.clusterPools'),
-                                action: t('common:destroy'),
-                                processing: t('common:destroying'),
+                                title: t('Destroy cluster pools'),
+                                action: t('Destroy'),
+                                processing: t('Destroying'),
                                 resources: clusterPools,
-                                description: t('bulk.message.destroyClusterPool'),
+                                description: t(
+                                    'Destroying a cluster pool will destroy any unclaimed clusters in the cluster pool.'
+                                ),
                                 columns: modalColumns,
                                 keyFn: mckeyFn,
                                 actionFn: deleteResource,
@@ -456,7 +469,7 @@ const useStyles = makeStyles({
 })
 
 function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const classes = useStyles()
     return (
         <div className={classes.table}>
@@ -470,7 +483,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                 items={props.clusters}
                 columns={[
                     {
-                        header: t('table.name'),
+                        header: t('Name'),
                         sort: 'displayName',
                         cell: (cluster) => (
                             <>
@@ -484,7 +497,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                         ),
                     },
                     {
-                        header: t('table.status'),
+                        header: t('Status'),
                         sort: 'status',
                         search: 'status',
                         cell: (cluster: Cluster) => (
@@ -494,7 +507,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                         ),
                     },
                     {
-                        header: t('table.availableToClaim'),
+                        header: t('Available to claim'),
                         sort: 'hive',
                         search: 'status',
                         cell: (cluster: Cluster) => {
@@ -509,7 +522,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                                 !cluster.hive.clusterClaimName && availableStatuses.includes(cluster.status)
                             return (
                                 <span style={{ whiteSpace: 'nowrap' }}>
-                                    {t(`${isAvailable ? 'common:yes' : 'common:no'}`)}
+                                    {t(`${isAvailable ? 'Yes' : 'No'}`)}
                                 </span>
                             )
                         },

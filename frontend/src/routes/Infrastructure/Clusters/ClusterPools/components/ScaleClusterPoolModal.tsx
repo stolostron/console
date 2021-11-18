@@ -20,7 +20,7 @@ export type ScaleClusterPoolModalProps = {
 }
 
 export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [size, setSize] = useState<number>(0)
 
     useEffect(() => {
@@ -39,7 +39,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={t('clusterPool.modal.scale.title')}
+            title={t('Scale cluster pool')}
             isOpen={!!props.clusterPool}
             onClose={reset}
         >
@@ -49,13 +49,14 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                         <>
                             <div>
                                 <Trans
-                                    i18nKey="cluster:clusterPool.modal.scale.message"
+                                    // TODO - Handle interpolation
+                                    i18nKey="Specify the desired size of <bold>{{clusterPoolName}}</bold>. Adjusting the size of the cluster pool will result in the creation or destruction of clusters; only unclaimed clusters will be destroyed if downsizing."
                                     values={{ clusterPoolName: props.clusterPool?.metadata.name }}
                                     components={{ bold: <strong /> }}
                                 />
                             </div>
                             <AcmNumberInput
-                                label={t('clusterPool.modal.scale.input')}
+                                label={t('Set desired cluster pool size')}
                                 id="scale"
                                 min={0}
                                 value={size}
@@ -63,6 +64,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                 onMinus={() => setSize(size - 1)}
                                 onPlus={() => setSize(size + 1)}
                                 validation={(size: Number) => {
+                                    // TODO - definition never existed
                                     if (size < 0) return t('clusterPool.modal.scale.validation.greaterThanZero')
                                     return undefined
                                 }}
@@ -73,8 +75,8 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                 <AcmSubmit
                                     id="claim"
                                     variant="primary"
-                                    label={t('common:scale')}
-                                    processingLabel={t('common:scaling')}
+                                    label={t('Scale')}
+                                    processingLabel={t('Scaling')}
                                     onClick={() => {
                                         alertContext.clearAlerts()
                                         return patchResource(props.clusterPool!, [
@@ -89,7 +91,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                                 if (e instanceof Error) {
                                                     alertContext.addAlert({
                                                         type: 'danger',
-                                                        title: t('common:request.failed'),
+                                                        title: t('Request failed'),
                                                         message: e.message,
                                                     })
                                                 }
@@ -97,7 +99,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                     }}
                                 />
                                 <AcmButton key="cancel" variant="link" onClick={reset}>
-                                    {t('common:cancel')}
+                                    {t('Cancel')}
                                 </AcmButton>
                             </ActionGroup>
                         </>

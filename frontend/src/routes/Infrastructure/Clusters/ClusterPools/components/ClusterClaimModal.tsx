@@ -36,7 +36,7 @@ export type ClusterClaimModalProps = {
 }
 
 export function ClusterClaimModal(props: ClusterClaimModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const [clusterClaim, setClusterClaim] = useState<ClusterClaim | undefined>()
     const [claimed, setClaimed] = useState<boolean>(false)
@@ -92,7 +92,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={!claimed ? t('clusterClaim.create.title') : t('clusterClaim.create.title.success')}
+            title={!claimed ? t('Claim cluster') : t('Cluster successfully claimed')}
             titleIconVariant={!claimed ? undefined : 'success'}
             isOpen={!!props.clusterPool}
             onClose={reset}
@@ -104,7 +104,8 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                             <>
                                 <div>
                                     <Trans
-                                        i18nKey="cluster:clusterClaim.create.message"
+                                        // TODO : handle interpolation
+                                        i18nKey="Claiming a cluster from <bold>{{clusterPoolName}}</bold> will remove one of the available clusters from the pool and a new cluster will be created to replace it."
                                         values={{ clusterPoolName: props.clusterPool?.metadata.name }}
                                         components={{ bold: <strong /> }}
                                     />
@@ -112,8 +113,8 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                 &nbsp;
                                 <AcmTextInput
                                     id="clusterClaimName"
-                                    label={t('clusterClaim.name.label')}
-                                    placeholder={t('clusterClaim.name.placeholder')}
+                                    label={t('Cluster claim name')}
+                                    placeholder={t('Enter cluster claim name')}
                                     value={clusterClaim?.metadata?.name}
                                     isRequired
                                     onChange={(name) => {
@@ -127,8 +128,8 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                     <AcmSubmit
                                         id="claim"
                                         variant="primary"
-                                        label={t('common:claim')}
-                                        processingLabel={t('common:claiming')}
+                                        label={t('Claim')}
+                                        processingLabel={t('Claiming')}
                                         onClick={async () => {
                                             alertContext.clearAlerts()
                                             return new Promise(async (resolve, reject) => {
@@ -142,8 +143,10 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                         } else {
                                                             alertContext.addAlert({
                                                                 type: 'danger',
-                                                                title: t('common:error'),
-                                                                message: t('clusterClaim.create.timeOut'),
+                                                                title: t('Error'),
+                                                                message: t(
+                                                                    'Timed out waiting for a cluster to be assigned to the claim. Try checking the cluster claim later.'
+                                                                ),
                                                             })
                                                         }
                                                         return resolve()
@@ -152,7 +155,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                         if (e instanceof Error) {
                                                             alertContext.addAlert({
                                                                 type: 'danger',
-                                                                title: t('common:request.failed'),
+                                                                title: t('Request failed'),
                                                                 message: e.message,
                                                             })
                                                             reject(e)
@@ -162,7 +165,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                         }}
                                     />
                                     <AcmButton key="cancel" variant="link" onClick={props.onClose}>
-                                        {t('common:cancel')}
+                                        {t('Cancel')}
                                     </AcmButton>
                                 </ActionGroup>
                             </>
@@ -173,7 +176,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                 <>
                     <p>
                         <Trans
-                            i18nKey="cluster:clusterClaim.create.message.success"
+                            i18nKey="A cluster was successfully claimed from <bold>{{clusterPoolName}}</bold>. The cluster may be resuming from a Hibernating state, and will take a few minutes to power back on."
                             values={{ clusterPoolName: clusterClaim?.spec?.clusterPoolName! }}
                             components={{ bold: <strong /> }}
                         />
@@ -188,7 +191,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                             <DescriptionListDescription>{clusterClaim?.metadata!.name!}</DescriptionListDescription>
                         </DescriptionListGroup> */}
                         <DescriptionListGroup>
-                            <DescriptionListTerm>{t('clusterClaim.cluster.name')}</DescriptionListTerm>
+                            <DescriptionListTerm>{t('Cluster name')}</DescriptionListTerm>
                             <DescriptionListDescription>{clusterClaim?.spec!.namespace!}</DescriptionListDescription>
                         </DescriptionListGroup>
                     </DescriptionList>
@@ -200,10 +203,10 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                             history.push(NavigationPath.clusterOverview.replace(':id', clusterClaim!.spec!.namespace!))
                         }
                     >
-                        {t('clusterClaim.modal.viewCluster')}
+                        {t('View cluster')}
                     </AcmButton>
                     <AcmButton key="cancel" variant="link" onClick={reset}>
-                        {t('common:close')}
+                        {t('Close')}
                     </AcmButton>
                 </>
             )}

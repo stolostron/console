@@ -27,7 +27,8 @@ export const getDistributionTitle = (ctrlData, groupData, i18n) => {
     const active = activeObject['active']
     if (active && activeObject['availableMap']) {
         const title = activeObject['availableMap'][active].title
-        return i18n('creation.ocp.choose.infrastructure', [title])
+        // TODO - Handle interpolation
+        return i18n('Select an infrastructure provider to host your {{0}} cluster.', [title])
     }
     return ''
 }
@@ -35,8 +36,9 @@ export const getDistributionTitle = (ctrlData, groupData, i18n) => {
 const fixupControlsForClusterPool = (controlData) => {
     const map = keyBy(controlData, 'id')
     map['detailStep'].title = 'Cluster pool details'
-    map['name'].name = 'clusterPool.creation.ocp.name'
-    map['name'].tooltip = 'clusterPool.tooltip.creation.ocp.name'
+    map['name'].name = 'Cluster pool name'
+    map['name'].tooltip =
+        'The unique name of your cluster pool. The value must be a string that contains lowercase alphanumeric values, such as dev. Cannot be changed after creation.'
     map['name'].reverse = 'ClusterPool[0].metadata.name'
     map['region'].reverse = 'ClusterPool[0].metadata.labels.region'
 
@@ -48,19 +50,20 @@ const fixupControlsForClusterPool = (controlData) => {
         inx + 1,
         0,
         {
-            name: 'clusterPool.creation.ocp.namespace',
-            tooltip: 'clusterPool.tooltip.creation.ocp.namespace',
+            name: 'Cluster pool namespace',
+            tooltip:
+                'The namespace to create your cluster pool. Multiple cluster pools can be created in the same namespace.',
             id: 'namespace',
             type: 'combobox',
-            placeholder: 'clusterPool.placeholder.creation.ocp.namespace',
+            placeholder: 'Select or create a namespace',
             validation: {
                 required: true,
             },
             available: [],
         },
         {
-            name: 'clusterPool.creation.ocp.size',
-            tooltip: 'clusterPool.tooltip.creation.ocp.size',
+            name: 'Cluster pool size',
+            tooltip: 'The desired number of clusters for the cluster pool.',
             id: 'size',
             type: 'number',
             initial: '1',
@@ -96,8 +99,8 @@ export const getControlData = (includeAwsPrivate = false, snoFeatureGate = false
         {
             id: 'chooseDist',
             type: 'title',
-            info: 'creation.ocp.choose.distribution',
-            tooltip: 'tooltip.creation.ocp.choose.distribution',
+            info: 'Choose an infrastructure type to host your Red Hat OpenShift Container Platform cluster.',
+            tooltip: 'The type of Kubernetes distribution you are using. Cannot be changed after creation.',
         },
         {
             id: 'distribution',
@@ -109,11 +112,11 @@ export const getControlData = (includeAwsPrivate = false, snoFeatureGate = false
                 {
                     id: 'OpenShift',
                     logo: <RedHatLogo />,
-                    title: 'cluster.create.ocp.subtitle',
+                    title: 'Red Hat OpenShift Container Platform',
                 },
             ],
             validation: {
-                notification: 'creation.ocp.cluster.must.select.orchestration',
+                notification: 'Select an orchestration',
                 required: true,
             },
         },
@@ -122,7 +125,8 @@ export const getControlData = (includeAwsPrivate = false, snoFeatureGate = false
             id: 'chooseInfra',
             type: 'title',
             info: getDistributionTitle,
-            tooltip: 'tooltip.creation.ocp.choose.aws.infrastructure',
+            tooltip:
+                'The provider to host the control plane and compute plane machines. Cannot be changed after creation.',
             learnMore: 'https://docs.openshift.com/container-platform/4.3/installing/',
         },
         {
@@ -135,7 +139,7 @@ export const getControlData = (includeAwsPrivate = false, snoFeatureGate = false
                 {
                     id: 'AWS',
                     logo: <AwsLogo />,
-                    title: 'cluster.create.aws.subtitle',
+                    title: 'Amazon Web Services',
                     change: {
                         insertControlData: fixedUpAWS,
                         replacements: {
@@ -146,7 +150,7 @@ export const getControlData = (includeAwsPrivate = false, snoFeatureGate = false
                 {
                     id: 'GCP',
                     logo: <GoogleLogo />,
-                    title: 'cluster.create.google.subtitle',
+                    title: 'Google Cloud',
                     change: {
                         insertControlData: fixedUpGCP,
                         replacements: {
@@ -157,7 +161,7 @@ export const getControlData = (includeAwsPrivate = false, snoFeatureGate = false
                 {
                     id: 'Azure',
                     logo: <AzureLogo />,
-                    title: 'cluster.create.azure.subtitle',
+                    title: 'Microsoft Azure',
                     change: {
                         insertControlData: fixedUpAZR,
                         replacements: {
@@ -201,7 +205,7 @@ export const getControlData = (includeAwsPrivate = false, snoFeatureGate = false
             ],
             active: getActiveCardID,
             validation: {
-                notification: 'creation.ocp.cluster.must.select.infrastructure',
+                notification: 'Select an infrastructure',
                 required: true,
             },
         },
