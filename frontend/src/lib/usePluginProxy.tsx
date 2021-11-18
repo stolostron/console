@@ -30,7 +30,7 @@ export function usePluginProxy() {
             kind: 'ConsolePlugin'
         },
         isList: false,
-        name: 'acm-console-plugin'
+        name: 'acm-plugin'
     })
 
     const proxyService = loaded && data.spec.proxy?.services[0]
