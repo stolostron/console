@@ -38,18 +38,25 @@ export default function DiscoveredClustersPage() {
 }
 
 function EmptyStateNoCRHCredentials() {
-    const { t } = useTranslation(['common', 'discovery'])
+    const { t } = useTranslation()
 
     return (
         <AcmEmptyState
-            title={t('discovery:emptystate.defaultState.title')}
-            message={<Trans i18nKey={'discovery:emptystate.defaultState.msg'} components={{ bold: <strong /> }} />}
+            title={t('No discovered clusters found')}
+            message={
+                <Trans
+                    i18nKey={
+                        "You don't have any discovered clusters. Credentials of <bold>Red Hat OpenShift Cluster Manager</bold> type must be added to configure Discovery."
+                    }
+                    components={{ bold: <strong /> }}
+                />
+            }
             key="dcEmptyState"
             showIcon={true}
             image={AcmEmptyStateImage.folder}
             action={
                 <AcmButton component={Link} to={NavigationPath.addCredentials}>
-                    {t('discovery:emptystate.addCredential')}
+                    {t('Add credential')}
                 </AcmButton>
             }
         />
@@ -57,7 +64,7 @@ function EmptyStateNoCRHCredentials() {
 }
 
 function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] }) {
-    const { t } = useTranslation(['common', 'discovery'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const onSelect = (credential: string) => {
@@ -68,7 +75,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
     const action =
         props.credentials!.length > 1 ? (
             <AcmDropdown
-                text={t('discovery:discovery.addDiscovery')}
+                text={t('Create discovery settings')}
                 onSelect={onSelect}
                 id="configureDiscoveryDropdown"
                 isKebab={false}
@@ -82,16 +89,18 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
             />
         ) : (
             <AcmButton component={Link} to={NavigationPath.createDiscovery}>
-                {t('discovery:emptystate.enableClusterDiscovery')}
+                {t('Configure Discovery')}
             </AcmButton>
         )
     return (
         <AcmEmptyState
             action={action}
-            title={t('discovery:emptystate.credentials.title')}
+            title={t('No discovered clusters found')}
             message={
                 <Trans
-                    i18nKey={'discovery:emptystate.credentials.msg'}
+                    i18nKey={
+                        "You don't have any discovered clusters. You have {{discoveryConfigTotal}} credentials. Click the <bold>Configure Discovery</bold> button to set up a filter for discovered clusters from your connections."
+                    }
                     components={{ bold: <strong /> }}
                     values={{ discoveryConfigTotal: props.credentials?.length }}
                 />
@@ -104,13 +113,15 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
 }
 
 function EmptyStateAwaitingDiscoveredClusters() {
-    const { t } = useTranslation(['common', 'discovery'])
+    const { t } = useTranslation()
     return (
         <AcmEmptyState
-            title={t('discovery:emptystate.discoveryEnabled.title')}
+            title={t('No discovered clusters found')}
             message={
                 <Trans
-                    i18nKey={'discovery:emptystate.discoveryEnabled.msg'}
+                    i18nKey={
+                        "You don't have any discovered clusters. Cluster discovery was configured. Return to this page later, configure Discovery again, or <a>view documentation <icon /></a>"
+                    }
                     components={{
                         a: (
                             <a href={DOC_LINKS.DISCOVERED_CLUSTERS} target="_blank" rel="noreferrer">
@@ -133,7 +144,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
                                 component={Link}
                                 to={NavigationPath.configureDiscovery}
                             >
-                                {t('discovery:discovery.configureDiscovery')}
+                                {t('Configure discovery settings')}
                             </AcmButton>
                         </ActionListItem>
                         <ActionListItem>
@@ -142,7 +153,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
                                 component={Link}
                                 to={NavigationPath.createDiscovery}
                             >
-                                {t('discovery:discovery.addDiscovery')}
+                                {t('Create discovery settings')}
                             </AcmButton>
                         </ActionListItem>
                     </ActionList>
@@ -194,7 +205,7 @@ export function DiscoveredClustersTable(props: {
     credentials?: ProviderConnection[]
     discoveryConfigs?: DiscoveryConfig[]
 }) {
-    const { t } = useTranslation(['discovery'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [emptyState, setEmptyState] = useState<React.ReactNode>()
@@ -214,7 +225,7 @@ export function DiscoveredClustersTable(props: {
 
     const discoveredClusterCols: IAcmTableColumn<DiscoveredCluster>[] = [
         {
-            header: t('dcTbl.name'),
+            header: t('Name'),
             sort: 'spec.displayName',
             search: (discoveredCluster: DiscoveredCluster) => [
                 discoveredCluster.spec.console,
@@ -232,7 +243,7 @@ export function DiscoveredClustersTable(props: {
             ),
         },
         {
-            header: t('dcTbl.lastActive'),
+            header: t('Last active'),
             sort: 'spec.activityTimestamp',
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcLastActive">
@@ -250,14 +261,14 @@ export function DiscoveredClustersTable(props: {
             ),
         },
         {
-            header: t('dcTbl.namespace'),
+            header: t('Namespace'),
             sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
                 compareStrings(a?.metadata.namespace, b?.metadata.namespace),
             search: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
             cell: (discoveredCluster) => discoveredCluster?.metadata.namespace ?? '-',
         },
         {
-            header: t('dcTbl.type'),
+            header: t('Type'),
             sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
                 compareStrings(getFullTypeByAcronym(a?.spec?.type || ''), getFullTypeByAcronym(b?.spec?.type || '')),
             search: (discoveredCluster) => {
@@ -271,7 +282,7 @@ export function DiscoveredClustersTable(props: {
                 discoveredCluster?.spec.type ? getFullTypeByAcronym(discoveredCluster?.spec.type) : '-',
         },
         {
-            header: t('dcTbl.openShiftVersion'),
+            header: t('OpenShift version'),
             sort: 'spec.openshiftVersion',
             search: (discoveredCluster) => {
                 if (discoveredCluster.spec.openshiftVersion) {
@@ -283,7 +294,7 @@ export function DiscoveredClustersTable(props: {
             cell: (discoveredCluster) => discoveredCluster.spec.openshiftVersion ?? '-',
         },
         {
-            header: t('dcTbl.infrastructureProvider'),
+            header: t('Infrastructure provider'),
             sort: 'spec.cloudProvider',
             search: (discoveredCluster) =>
                 discoveredCluster?.spec.cloudProvider ? searchCloudProvider(discoveredCluster.spec.cloudProvider) : '',
@@ -295,7 +306,7 @@ export function DiscoveredClustersTable(props: {
                 ),
         },
         {
-            header: t('dcTbl.created'),
+            header: t('Created'),
             sort: 'spec.creationTimestamp',
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcCreationTimestamp">
@@ -313,7 +324,7 @@ export function DiscoveredClustersTable(props: {
             ),
         },
         {
-            header: t('dcTbl.discovered'),
+            header: t('Discovered'),
             sort: 'metadata.creationTimestamp',
             cell: (discoveredCluster) => (
                 <span style={{ whiteSpace: 'nowrap' }} key="dcObjCreationTimestamp">
@@ -335,17 +346,17 @@ export function DiscoveredClustersTable(props: {
     function getFullTypeByAcronym(acronym: string) {
         switch (acronym.toUpperCase()) {
             case 'MOA':
-                return t('type.rosa')
+                return t('Red Hat OpenShift Service on AWS')
             case 'ROSA':
-                return t('type.rosa')
+                return t('Red Hat OpenShift Service on AWS')
             case 'OCP-ASSISTEDINSTALL':
-                return t('type.ocp')
+                return t('OpenShift Container Platform')
             case 'OCP':
-                return t('type.ocp')
+                return t('OpenShift Container Platform')
             case 'OSD':
-                return t('type.osd')
+                return t('OpenShift Dedicated')
             case 'ARO':
-                return t('type.aro')
+                return t('Azure Red Hat OpenShift')
             default:
                 // Unable to find match, return existing acronym
                 return acronym
@@ -354,9 +365,12 @@ export function DiscoveredClustersTable(props: {
 
     return (
         <Fragment>
-            <TechPreviewAlert i18nKey="discovery:techpreview.msg" docHref={DOC_LINKS.DISCOVERED_CLUSTERS} />
+            <TechPreviewAlert
+                i18nKey="<bold>Technology Preview</bold>: For more information, <a>view documentation</a> on Discovered clusters"
+                docHref={DOC_LINKS.DISCOVERED_CLUSTERS}
+            />
             <AcmTable<DiscoveredCluster>
-                plural={t('discoveredClusters')}
+                plural={t('Discovered clusters')}
                 items={props.discoveredClusters}
                 columns={discoveredClusterCols}
                 keyFn={dckeyFn}
@@ -364,13 +378,13 @@ export function DiscoveredClustersTable(props: {
                 tableActionButtons={[
                     {
                         id: 'configureDiscovery',
-                        title: t('discovery.configureDiscovery'),
+                        title: t('Configure discovery settings'),
                         click: () => history.push(NavigationPath.configureDiscovery),
                         variant: ButtonVariant.primary,
                     },
                     {
                         id: 'addDiscovery',
-                        title: t('discovery.addDiscovery'),
+                        title: t('Create discovery settings'),
                         click: () => history.push(NavigationPath.createDiscovery),
                         variant: ButtonVariant.secondary,
                     },
@@ -378,7 +392,7 @@ export function DiscoveredClustersTable(props: {
                 rowActions={[
                     {
                         id: 'importCluster',
-                        title: t('discovery.import'),
+                        title: t('Import cluster'),
                         click: (item) => {
                             sessionStorage.setItem('DiscoveredClusterDisplayName', item.spec.displayName)
                             sessionStorage.setItem('DiscoveredClusterConsoleURL', item.spec.console)

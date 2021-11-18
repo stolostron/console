@@ -51,7 +51,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 const discoveryVersions = ['4.6', '4.7', '4.8', '4.9']
 
 export default function DiscoveryConfigPage() {
-    const { t } = useTranslation(['discovery'])
+    const { t } = useTranslation()
     const location = useLocation()
 
     return (
@@ -59,20 +59,20 @@ export default function DiscoveryConfigPage() {
             header={
                 location.pathname === NavigationPath.configureDiscovery ? (
                     <AcmPageHeader
-                        title={t('editDiscoveryConfig.title')}
+                        title={t('Configure discovery settings')}
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
-                            { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
-                            { text: t('editDiscoveryConfig.title'), to: '' },
+                            { text: t('Clusters'), to: NavigationPath.clusters },
+                            { text: t('Discovered clusters'), to: NavigationPath.discoveredClusters },
+                            { text: t('Configure discovery settings'), to: '' },
                         ]}
                     />
                 ) : (
                     <AcmPageHeader
-                        title={t('addDiscoveryConfig.title')}
+                        title={t('Create a discovery setting')}
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
-                            { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
-                            { text: t('addDiscoveryConfig.title'), to: '' },
+                            { text: t('Clusters'), to: NavigationPath.clusters },
+                            { text: t('Discovered clusters'), to: NavigationPath.discoveredClusters },
+                            { text: t('Create a discovery setting'), to: '' },
                         ]}
                     />
                 )
@@ -147,7 +147,7 @@ export function DiscoveryConfigPageContent(props: {
         },
     })
     const alertContext = useContext(AcmAlertContext)
-    const { t } = useTranslation(['discovery', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const location = useLocation()
     const [editing] = useState<boolean>(location.pathname === NavigationPath.configureDiscovery)
@@ -200,7 +200,7 @@ export function DiscoveryConfigPageContent(props: {
             try {
                 setModalProps({
                     open: true,
-                    title: t('disable.title'),
+                    title: t('Delete discovery settings'),
                     confirm: async () => {
                         try {
                             if (discoveryConfig) {
@@ -214,8 +214,9 @@ export function DiscoveryConfigPageContent(props: {
                                 })
                                 resolve(deletecmd)
                                 toastContext.addAlert({
-                                    title: t('discovery:alert.deleted.header'),
-                                    message: t('alert.msg'),
+                                    // TODO - Handle interpolation
+                                    title: t('{{credentialName}} discovery setting was removed successfully'),
+                                    message: t('You can configure settings in Clusters > Discovered clusters'),
                                     type: 'success',
                                     autoClose: true,
                                 })
@@ -228,10 +229,12 @@ export function DiscoveryConfigPageContent(props: {
                             alertContext.addAlert(getErrorInfo(err)) //TODO: not currently displaying within modal
                         }
                     },
-                    confirmText: t('discoveryConfig.delete.btn'),
+                    confirmText: t('Delete'),
                     message: (
                         <Trans
-                            i18nKey={'discovery:discoveryConfig.delete.message'}
+                            i18nKey={
+                                'You are deleting the <bold>{{discoveryConfigNamespace}}</bold> discovery setting. All related discovered clusters will be deleted.'
+                            }
                             components={{ bold: <strong /> }}
                             values={{ discoveryConfigNamespace: discoveryConfig!.metadata!.namespace }}
                         />
@@ -252,7 +255,7 @@ export function DiscoveryConfigPageContent(props: {
                 if (err instanceof Error) {
                     alertContext.addAlert({
                         type: 'danger',
-                        title: t('common:request.failed'),
+                        title: t('Request failed'),
                         message: err.message,
                     })
                     reject()
@@ -270,8 +273,9 @@ export function DiscoveryConfigPageContent(props: {
                     const importcmd = await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
                     toastContext.addAlert({
-                        title: t('discovery:alert.created.header'),
-                        message: t('alert.msg'),
+                        // TODO - Handle interpolation
+                        title: t('{{credentialName}} discovery setting was created successfully'),
+                        message: t('You can configure settings in Clusters > Discovered clusters'),
                         type: 'success',
                         autoClose: true,
                     })
@@ -280,8 +284,9 @@ export function DiscoveryConfigPageContent(props: {
                     const importcmd = await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
                     toastContext.addAlert({
-                        title: t('discovery:alert.updated.header'),
-                        message: t('alert.msg'),
+                        // TODO - Handle interpolation
+                        title: t('{{credentialName}} discovery setting was updated successfully'),
+                        message: t('You can configure settings in Clusters > Discovered clusters'),
                         type: 'success',
                         autoClose: true,
                     })
@@ -292,7 +297,7 @@ export function DiscoveryConfigPageContent(props: {
                 if (err instanceof Error) {
                     alertContext.addAlert({
                         type: 'danger',
-                        title: t('common:request.failed'),
+                        title: t('Request failed'),
                         message: err.message,
                     })
                     reject()
@@ -344,16 +349,20 @@ export function DiscoveryConfigPageContent(props: {
         <AcmForm>
             <ConfirmModal {...modalProps} />
             <AcmFormSection
-                title={editing ? t('discoveryConfig.header.edit') : t('discoveryConfig.header.add')}
+                title={editing ? t('Configure discovery settings') : t('Select a credential')}
             ></AcmFormSection>
-            <Text component={TextVariants.h3}>{t('discoveryConfig.subheader')}</Text>
+            <Text component={TextVariants.h3}>
+                {t(
+                    'Red Hat OpenShift Cluster Manager credentials enable you to discover clusters. After you save these changes, the filtered clusters appear in the Discovered clusters tab of the Clusters page.'
+                )}
+            </Text>
             {editing ? (
                 <AcmSelect
                     id="namespaces"
-                    label={t('discoveryConfig.namespaces.label')}
-                    labelHelp={t('discoveryConfig.namespaces.labelHelp')}
+                    label={t('Namespace')}
+                    labelHelp={t('Select the namespace that contains your credentials.')}
                     value={discoveryConfig?.metadata?.namespace}
-                    placeholder={t('discoveryConfig.namespaces.placeholder')}
+                    placeholder={t('Select a namespace')}
                     onChange={(namespace) => {
                         for (let i = 0; i < props.discoveryConfigs.length; i = i + 1) {
                             if (props.discoveryConfigs[i].metadata.namespace === namespace) {
@@ -386,10 +395,10 @@ export function DiscoveryConfigPageContent(props: {
             ) : null}
             <AcmSelect
                 id="credentials"
-                label={t('discoveryConfig.connections.label')}
-                labelHelp={t('discoveryConfig.connections.labelHelp')}
+                label={t('Credential')}
+                labelHelp={t('Select a credential within that namespace.')}
                 value={getDiscoveryConfigCredential(discoveryConfig)}
-                placeholder={t('discoveryConfig.connections.placeholder')}
+                placeholder={t('Select a credential')}
                 onChange={(credential) => {
                     updateDiscoveryConfig((discoveryConfig) => {
                         if (credential) {
@@ -414,18 +423,18 @@ export function DiscoveryConfigPageContent(props: {
             <Flex style={{ marginTop: '0px' }}>
                 <FlexItem align={{ default: 'alignRight' }}>
                     <Link to={NavigationPath.addCredentials}>
-                        {t('discoveryConfig.connections.addCredentials')} <AcmIcon icon={AcmIconVariant.openNewTab} />
+                        {t('Add credential')} <AcmIcon icon={AcmIconVariant.openNewTab} />
                     </Link>
                 </FlexItem>
             </Flex>
             {discoveryConfig.metadata!.namespace ? (
                 <Fragment>
-                    <AcmFormSection title={t('discoveryConfig.filterform.header')}></AcmFormSection>
-                    <Text component={TextVariants.h3}>{t('discoveryConfig.filterform.subheader')}</Text>
+                    <AcmFormSection title={t('Set filters to discover clusters')}></AcmFormSection>
+                    <Text component={TextVariants.h3}>{t('Set filters to discover only relevant clusters.')}</Text>
                     <AcmSelect
                         id="lastActiveFilter"
-                        label={t('discoveryConfig.lastActiveFilter.label')}
-                        labelHelp={t('discoveryConfig.lastActiveFilter.labelHelp')}
+                        label={t('Last active')}
+                        labelHelp={t('Only discovered clusters active within this time period are found.')}
                         value={getDiscoveryConfigLastActive(discoveryConfig)}
                         onChange={(lastActive) => {
                             updateDiscoveryConfig((discoveryConfig) => {
@@ -449,10 +458,12 @@ export function DiscoveryConfigPageContent(props: {
                     </AcmSelect>
                     <AcmMultiSelect
                         id="discoveryVersions"
-                        label={t('discoveryConfig.discoveryVersions.label')}
-                        labelHelp={t('discoveryConfig.discoveryVersions.labelHelp')}
+                        label={t('Red Hat OpenShift version')}
+                        labelHelp={t(
+                            'All Red Hat OpenShift versions are included by default unless specified in this drop-down menu.'
+                        )}
                         value={discoveryConfig?.spec?.filters?.openShiftVersions}
-                        placeholder={t('discoveryConfig.discoveryVersions.placeholder')}
+                        placeholder={t('All available Red Hat OpenShift versions are included by default')}
                         onChange={(versions) => {
                             updateDiscoveryConfig((discoveryConfig) => {
                                 if (!discoveryConfig.spec.filters) {
@@ -472,10 +483,10 @@ export function DiscoveryConfigPageContent(props: {
             ) : null}
             <ActionGroup>
                 <AcmSubmit id="applyDiscoveryConfig" onClick={onSubmit} variant={ButtonVariant.primary}>
-                    {!editing ? t('discoveryConfig.add') : t('discoveryConfig.edit')}
+                    {!editing ? t('Create') : t('Save')}
                 </AcmSubmit>
                 <Link to={NavigationPath.discoveredClusters} id="cancelDiscoveryConfig">
-                    <AcmButton variant={ButtonVariant.link}>{t('discoveryConfig.cancel')}</AcmButton>
+                    <AcmButton variant={ButtonVariant.link}>{t('Cancel')}</AcmButton>
                 </Link>
                 {editing ? <Divider isVertical /> : null}
                 {editing ? (
@@ -486,7 +497,7 @@ export function DiscoveryConfigPageContent(props: {
                         variant={ButtonVariant.danger}
                         isDisabled={discoveryConfig.metadata!.namespace === ''}
                     >
-                        {t('discoveryConfig.delete')}
+                        {t('Delete')}
                     </AcmButton>
                 ) : null}
             </ActionGroup>

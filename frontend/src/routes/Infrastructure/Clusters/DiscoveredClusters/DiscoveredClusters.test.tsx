@@ -61,9 +61,9 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('discovery:emptystate.defaultState.title')
-        await waitForText('discovery:emptystate.defaultState.msg')
-        await waitForText('discovery:emptystate.addCredential')
+        await waitForText('No discovered clusters found')
+        await waitForText('You don\'t have any discovered clusters. Credentials of <bold>Red Hat OpenShift Cluster Manager</bold> type must be added to configure Discovery.')
+        await waitForText('Add credential')
     })
 
     test('CRH credentials exist, but no discoveryconfig (Empty State 2)', async () => {
@@ -86,10 +86,10 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('discovery:emptystate.credentials.title')
-        await waitForText('discovery:emptystate.credentials.msg')
-        await waitForText('discovery:discovery.addDiscovery')
-        await clickByText('discovery:discovery.addDiscovery')
+        await waitForText('No discovered clusters found')
+        await waitForText('You don\'t have any discovered clusters. You have {{discoveryConfigTotal}} credentials. Click the <bold>Configure Discovery</bold> button to set up a filter for discovered clusters from your connections.')
+        await waitForText('Create discovery settings')
+        await clickByText('Create discovery settings')
 
         await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
         await clickByText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
@@ -115,9 +115,9 @@ describe('DiscoveredClusters', () => {
             </RecoilRoot>
         )
 
-        await waitForText('discovery:emptystate.discoveryEnabled.title')
-        await waitForText('discovery:emptystate.discoveryEnabled.msg')
-        await waitForText('discovery:discovery.configureDiscovery')
-        await waitForText('discovery:discovery.addDiscovery')
+        await waitForText('No discovered clusters found')
+        await waitForText('You don\'t have any discovered clusters. Cluster discovery was configured. Return to this page later, configure Discovery again, or <a>view documentation <icon /></a>')
+        await waitForText('Configure discovery settings')
+        await waitForText('Create discovery settings')
     })
 })
