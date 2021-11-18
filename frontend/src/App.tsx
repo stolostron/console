@@ -29,25 +29,25 @@ import { LoadingPage } from './components/LoadingPage'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 
-const Applications = lazy(() => import('./routes/Applications/Applications'))
-const Clusters = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
-const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
-const BareMetalAssets = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssets'))
-
-const AnsibleAutomationFormPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomationsForm'))
-const AnsibleAutomationsPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomations'))
-const InfraEnvironmentsPage = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPage'))
-const CreateInfraEnv = lazy(() => import('./routes/Infrastructure/InfraEnvironments/CreateInfraEnv'))
-const InfraEnvironmentDetailsPage = lazy(
-    () => import('./routes/Infrastructure/InfraEnvironments/Details/InfraEnvironmentDetailsPage')
-)
-
-const GovernancePage = lazy(() => import('./routes/Governance/Governance'))
+// HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
 const OverviewPage = lazy(() => import('./routes/Home/Overview/OverviewPage'))
+const Search = lazy(() => import('./routes/Home/Search/Search'))
 
-const SearchPage = lazy(() => import('./routes/Search/SearchPage'))
-const DetailsPage = lazy(() => import('./routes/Search/Details/DetailsPage'))
+// INFRASTRUCTURE
+const Clusters = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
+const BareMetalAssets = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssets'))
+const Automations = lazy(() => import('./routes/Infrastructure/Automations/Automations'))
+const InfraEnvironments = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironments'))
+
+// GOVERNANCE
+const Governance = lazy(() => import('./routes/Governance/Governance'))
+
+// APPLICATIONS
+const Applications = lazy(() => import('./routes/Applications/Applications'))
+
+// CREDENTIALS
+const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 
 interface IRoute {
     type: 'route'
@@ -81,6 +81,12 @@ export default function App() {
                         route: NavigationPath.overview,
                         component: OverviewPage,
                     },
+                    {
+                        title: 'Search',
+                        type: 'route',
+                        route: NavigationPath.search,
+                        component: Search,
+                    },
                 ],
             },
             {
@@ -103,13 +109,13 @@ export default function App() {
                         title: 'Automation',
                         type: 'route',
                         route: NavigationPath.ansibleAutomations,
-                        component: AnsibleAutomationsPage,
+                        component: Automations,
                     },
                     {
                         title: 'Infrastructure environments',
                         type: 'route',
                         route: NavigationPath.infraEnvironments,
-                        component: InfraEnvironmentsPage,
+                        component: InfraEnvironments,
                     },
                 ],
             },
@@ -123,7 +129,7 @@ export default function App() {
                 title: 'Governance',
                 type: 'route',
                 route: NavigationPath.governance,
-                component: GovernancePage,
+                component: Governance,
             },
 
             {
@@ -151,22 +157,6 @@ export default function App() {
                         <AcmTablePaginationContextProvider localStorageKey="clusters">
                             <Suspense fallback={<LoadingPage />}>
                                 <Switch>
-                                    <Route
-                                        exact
-                                        path={NavigationPath.addAnsibleAutomation}
-                                        component={AnsibleAutomationFormPage}
-                                    />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.editAnsibleAutomation}
-                                        component={AnsibleAutomationFormPage}
-                                    />
-                                    <Route
-                                        path={NavigationPath.infraEnvironmentDetails}
-                                        component={InfraEnvironmentDetailsPage}
-                                    />
-                                    <Route exact path={NavigationPath.createInfraEnv} component={CreateInfraEnv} />
-
                                     {routes.map((route) =>
                                         route.type === 'group' ? (
                                             route.routes.map((route) => (
@@ -176,13 +166,8 @@ export default function App() {
                                             <Route path={route.route} component={route.component} />
                                         )
                                     )}
-
-                                    <Route exact path={NavigationPath.search} component={SearchPage} />
-                                    <Route path={NavigationPath.resources} component={DetailsPage} />
-
-                                    <Route path={NavigationPath.console} component={WelcomePage} />
                                     <Route path="*">
-                                        <Redirect to={NavigationPath.console} />
+                                        <Redirect to={NavigationPath.welcome} />
                                     </Route>
                                 </Switch>
                             </Suspense>

@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { render, screen, waitFor } from '@testing-library/react'
-import { nockGetTextPlain, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { nockGetTextPlain, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import LogsPage from './LogsPage'
 
 beforeEach(() => {

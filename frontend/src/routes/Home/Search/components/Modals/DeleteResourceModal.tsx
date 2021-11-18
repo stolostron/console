@@ -6,14 +6,14 @@ import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import '@patternfly/react-core/dist/styles/base.css'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { canUser } from '../../../../lib/rbac-util'
-import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
-import { searchClient } from '../../../../search-sdk/search-client'
+import { canUser } from '../../../../../lib/rbac-util'
+import { fireManagedClusterAction } from '../../../../../resources/managedclusteraction'
+import { searchClient } from '../../search-sdk/search-client'
 import {
     SearchResultItemsDocument,
     SearchResultRelatedCountDocument,
     SearchResultRelatedItemsDocument,
-} from '../../../../search-sdk/search-sdk'
+} from '../../search-sdk/search-sdk'
 import { convertStringToQuery } from '../../search-helper'
 
 export interface IDeleteModalProps {

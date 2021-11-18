@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { render } from '@testing-library/react'
-import { Message } from '../../../search-sdk/search-sdk'
+import { Message } from '../search-sdk/search-sdk'
 import HeaderWithNotification from './HeaderWithNotification'
 
 // case where we have a message about disabled search (current message)

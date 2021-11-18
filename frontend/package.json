@@ -218,9 +218,14 @@
         "exposedModules": {
             "perspective": "./src/perspective",
             "welcome": "./src/routes/Home/Welcome/Welcome.tsx",
+            "overview": "./src/routes/Home/Overview/OverviewPlugin.tsx",
+            "search": "./src/routes/Home/Search/SearchPlugin.tsx",
             "clusters": "./src/routes/Infrastructure/Clusters/ClustersPlugin.tsx",
             "baremetalassets": "./src/routes/Infrastructure/BareMetalAssets/BareMetalAssetsPlugin.tsx",
+            "automations": "./src/routes/Infrastructure/Automations/AutomationsPlugin.tsx",
+            "environments": "./src/routes/Infrastructure/InfraEnvironments/InfraEnvironments.tsx",
             "applications": "./src/routes/Applications/ApplicationsPlugin.tsx",
+            "governance": "./src/routes/Governance/GovernancePlugin.tsx",
             "credentials": "./src/routes/Credentials/CredentialsPlugin.tsx"
         },
         "dependencies": {
