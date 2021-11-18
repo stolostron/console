@@ -6,13 +6,13 @@ import { createBrowserHistory } from 'history'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing'
 import { GraphQLError } from 'graphql'
-import { wait } from '../../../lib/test-util'
+import { wait } from '../../../../lib/test-util'
 import SearchResults from './SearchResults'
 import {
     SearchResultItemsDocument,
     SearchResultRelatedCountDocument,
     SearchResultRelatedItemsDocument,
-} from '../../../search-sdk/search-sdk'
+} from '../search-sdk/search-sdk'
 
 describe('SearchResults Page', () => {
     it('should render page with correct data from search WITH keyword', async () => {

@@ -13,8 +13,8 @@ import {
     AcmAlert,
 } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
-import { SavedSearchesDocument, useSaveSearchMutation, UserSearch } from '../../../../search-sdk/search-sdk'
-import { searchClient } from '../../../../search-sdk/search-client'
+import { SavedSearchesDocument, useSaveSearchMutation, UserSearch } from '../../search-sdk/search-sdk'
+import { searchClient } from '../../search-sdk/search-client'
 import SuggestQueryTemplates from '../SuggestedQueryTemplates'
 import { makeStyles } from '@material-ui/styles'
 

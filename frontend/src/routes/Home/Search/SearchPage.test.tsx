@@ -9,14 +9,14 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MockedProvider } from '@apollo/client/testing'
 import { GraphQLError } from 'graphql'
-import { wait } from '../../lib/test-util'
+import { wait } from '../../../lib/test-util'
 import SearchPage from './SearchPage'
 import {
     SavedSearchesDocument,
     SearchSchemaDocument,
     SearchCompleteDocument,
     GetMessagesDocument,
-} from '../../search-sdk/search-sdk'
+} from './search-sdk/search-sdk'
 
 describe('SearchPage', () => {
     it('should render default search page correctly', async () => {

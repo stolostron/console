@@ -5,7 +5,7 @@ import { AcmAlert, AcmLoadingPage, AcmLogWindow } from '@open-cluster-management
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { backendUrl, fetchGet } from '../../../resources'
+import { backendUrl, fetchGet } from '../../../../resources'
 
 export default function LogsPage(props: {
     resourceError: string

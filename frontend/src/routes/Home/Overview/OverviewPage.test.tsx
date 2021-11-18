@@ -12,7 +12,7 @@ import { managedClustersState, policiesState } from '../../../atoms'
 import { nockDelete, nockGet } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind, Policy } from '../../../resources'
-import { SearchResultCountDocument, SearchResultItemsDocument } from '../../../search-sdk/search-sdk'
+import { SearchResultCountDocument, SearchResultItemsDocument } from '../Search/search-sdk/search-sdk'
 import OverviewPage, { mapProviderFromLabel } from './OverviewPage'
 
 it('should responsed with correct value for mapProviderFromLabel function', () => {

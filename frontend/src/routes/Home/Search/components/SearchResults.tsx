@@ -15,17 +15,13 @@ import '@patternfly/react-core/dist/styles/base.css'
 import _ from 'lodash'
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { searchClient } from '../../../search-sdk/search-client'
+import { searchClient } from '../search-sdk/search-client'
 import {
     useSearchResultItemsQuery,
     useSearchResultRelatedCountQuery,
     useSearchResultRelatedItemsQuery,
-} from '../../../search-sdk/search-sdk'
-import {
-    ClosedDeleteModalProps,
-    DeleteResourceModal,
-    IDeleteModalProps,
-} from '../components/Modals/DeleteResourceModal'
+} from '../search-sdk/search-sdk'
+import { ClosedDeleteModalProps, DeleteResourceModal, IDeleteModalProps } from './Modals/DeleteResourceModal'
 import { convertStringToQuery } from '../search-helper'
 import searchDefinitions from '../searchDefinitions'
 
