@@ -3,7 +3,7 @@ import { RecoilRoot } from 'recoil'
 import { LoadData } from '../../../atoms'
 import BareMetalAssets from './BareMetalAssets'
 
-export default function ClustersPlugin() {
+export default function BareMetalAssetsPlugin() {
     return (
         <RecoilRoot>
             <LoadData>
