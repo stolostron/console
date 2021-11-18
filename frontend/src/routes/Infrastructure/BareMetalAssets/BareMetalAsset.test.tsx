@@ -172,8 +172,8 @@ describe('bare metal asset page', () => {
         await waitForText(mockBareMetalAssets[0].metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
         await waitForNocks(rbacNocks)
-        await clickByText('bareMetalAsset.rowAction.deleteAsset.title')
-        await clickByText('common:delete')
+        await clickByText('Delete asset')
+        await clickByText('Delete')
         await waitForNock(deleteNock)
     })
 
@@ -190,8 +190,8 @@ describe('bare metal asset page', () => {
         await waitForNock(clusterNock)
         await waitForText(mockBareMetalAssets[0].metadata!.name!)
         await selectTableRow(1)
-        await clickBulkAction('bareMetalAsset.bulkAction.deleteAsset')
-        await clickByText('common:delete')
+        await clickBulkAction('Delete assets')
+        await clickByText('Delete')
         await waitForNock(deleteNock)
     })
 
@@ -218,10 +218,10 @@ describe('bare metal asset page', () => {
         await waitForNock(clusterNock)
 
         // click the Import button
-        await clickByText('bareMetalAsset.bulkAction.importAssets')
+        await clickByText('Import assets')
 
         // click the "Open file" button
-        await clickByText('bareMetalAsset.importAction.button')
+        await clickByText('Open file')
 
         // "click" the file input button
         const fileInput = getByTestId('importBMAs')
@@ -229,7 +229,7 @@ describe('bare metal asset page', () => {
         fireEvent.change(fileInput)
 
         // click the Import button on the dialog
-        await clickByText('common:import')
+        await clickByText('Import')
 
         // wait for bma to be created
         await waitForNock(projectCreateNock)
@@ -248,6 +248,6 @@ describe('bare metal asset page', () => {
         )
         await waitForNock(clusterNock)
         await waitForText(mockBareMetalAssets[0].metadata.name!)
-        await waitForText('bareMetalAsset.statusMessage.SyncSetUpdated')
+        await waitForText('SyncSet updated successfully')
     })
 })

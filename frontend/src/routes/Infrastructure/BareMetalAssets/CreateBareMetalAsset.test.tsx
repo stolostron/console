@@ -114,7 +114,7 @@ describe('CreateBareMetalAsset', () => {
         userEvent.type(getByTestId('password'), createBmaSecret.stringData?.username!)
         userEvent.type(getByTestId('bootMACAddress'), createBareMetalAsset.spec?.bootMACAddress!)
 
-        userEvent.click(getByText('createBareMetalAsset.button.create'))
+        userEvent.click(getByText('Create'))
 
         await waitFor(() => expect(queryAllByText('Required').length).toBe(0))
 
@@ -221,7 +221,7 @@ describe('CreateBareMetalAsset', () => {
         expect(getByTestId('baseboardManagementControllerAddress')).toHaveValue(bareMetalAsset.spec?.bmc.address)
 
         userEvent.type(getByTestId('baseboardManagementControllerAddress'), '/patched')
-        userEvent.click(getByText('editBareMetalAsset.button.submit'))
+        userEvent.click(getByText('Apply'))
 
         await waitFor(() => expect(patchNockSecret.isDone()).toBeTruthy())
         await waitFor(() => expect(patchNock.isDone()).toBeTruthy())
@@ -248,6 +248,12 @@ describe('CreateBareMetalAsset', () => {
 
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNockii.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText('common:rbac.namespaces.unauthorized')).toBeInTheDocument())
+        await waitFor(() =>
+            expect(
+                getByText(
+                    'You are not authorized to complete this action. There is currently no namespace that allows you to create this resource. See your cluster administrator for role-based access control information.'
+                )
+            ).toBeInTheDocument()
+        )
     })
 })

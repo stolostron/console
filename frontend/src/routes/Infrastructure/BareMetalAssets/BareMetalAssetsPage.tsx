@@ -40,24 +40,24 @@ export default function BareMetalAssetsPage() {
     useEffect(() => setRoute(AcmRoute.BareMetalAssets), [setRoute])
 
     const [bareMetalAssets] = useRecoilState(bareMetalAssetsState)
-    const { t } = useTranslation(['bma', 'common'])
+    const { t } = useTranslation()
 
     return (
         <AcmPage
             hasDrawer
             header={
                 <AcmPageHeader
-                    title={t('bma:bmas')}
+                    title={t('Bare metal assets')}
                     titleTooltip={
                         <>
-                            {t('bma:bmas.tooltip')}
+                            {t('View all bare metal assets')}
                             <a
                                 href={DOC_LINKS.BARE_METAL_ASSETS}
                                 target="_blank"
                                 rel="noreferrer"
                                 style={{ display: 'block', marginTop: '4px' }}
                             >
-                                {t('common:learn.more')}
+                                {t('Learn more')}
                             </a>
                         </>
                     }
@@ -89,7 +89,7 @@ export function BareMetalAssetsTable(props: {
         { open: false }
     )
     const history = useHistory()
-    const { t } = useTranslation(['bma', 'common'])
+    const { t } = useTranslation()
 
     useEffect(() => {
         const canCreateManagedCluster = canUser('create', ManagedClusterDefinition)
@@ -107,8 +107,8 @@ export function BareMetalAssetsTable(props: {
         setImportedProps({
             open: true,
             icon: 'default',
-            title: t('bulk.title.import'),
-            action: t('common:import'),
+            title: t('Import bare metal assets'),
+            action: t('Import'),
             processing: '',
             description: '',
             keyFn: (bareMetalAsset: ImportedBareMetalAsset) => bareMetalAsset.uid as string,
@@ -118,8 +118,10 @@ export function BareMetalAssetsTable(props: {
             close: () => setImportedProps({ open: false }),
             emptyState: (
                 <AcmEmptyState
-                    title={t('bareMetalAsset.importAction.title')}
-                    message={t('bareMetalAsset.importAction.message')}
+                    title={t('Specify CSV file')}
+                    message={t(
+                        'The first line of the CSV file must be a comma deliniated header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role (optional), username, password.'
+                    )}
                     showIcon={false}
                     action={
                         <AcmButton
@@ -130,29 +132,29 @@ export function BareMetalAssetsTable(props: {
                                 setImportedProps({
                                     open: true,
                                     icon: 'default',
-                                    title: t('bulk.title.import'),
-                                    action: t('common:import'),
-                                    processing: t('common:importing'),
-                                    description: t('modal.import.content.batch'),
+                                    title: t('Import bare metal assets'),
+                                    action: t('Import'),
+                                    processing: t('Importing'),
+                                    description: t('Importing bare metal assets also creates required namespaces.'),
                                     resources: result,
                                     columns: [
                                         {
-                                            header: t('bareMetalAsset.tableHeader.name'),
+                                            header: t('Name'),
                                             cell: 'name',
                                             sort: 'name',
                                         },
                                         {
-                                            header: t('bareMetalAsset.tableHeader.namespace'),
+                                            header: t('Namespace'),
                                             cell: 'namespace',
                                             sort: 'namespace',
                                         },
                                         {
-                                            header: t('bareMetalAsset.tableHeader.macaddress'),
+                                            header: t('MAC address'),
                                             cell: 'bootMACAddress',
                                             sort: 'bootMACAddress',
                                         },
                                         {
-                                            header: t('bareMetalAsset.tableHeader.address'),
+                                            header: t('Controller address'),
                                             cell: 'bmc.address',
                                             sort: 'bmc.address',
                                         },
@@ -179,12 +181,47 @@ export function BareMetalAssetsTable(props: {
                                 })
                             }}
                         >
-                            {t('bareMetalAsset.importAction.button')}
+                            {t('Open file')}
                         </AcmButton>
                     }
                 />
             ),
         })
+    }
+
+    function getBmaStatusMessage(mostCurrentReason: String, t:(string: String)=> string){
+        switch (mostCurrentReason) {
+            case 'clusterDeploymentNameNotFound':
+                return t('Cluster deployment name is unspecified')
+            case 'SecretFound':
+                return t('Credentials found')
+            case 'SecretNotFound':
+                return t('No credentials found')
+            case 'ClusterDeploymentFound':
+                return t('Cluster deployment found')
+            case 'SyncSetCreationFailed':
+                return t('Failed to create Hive SyncSet')
+            case 'SyncSetCreated':
+                return t('SyncSet created successfully')
+            case 'SyncSetGetFailed':
+                return t('Failed to get SyncSet')
+            case 'SyncSetUpdateFailed':
+                return t('Failed to update SyncSet')
+            case 'SyncSetUpdated':
+                return t('SyncSet updated successfully')
+            case 'SyncStatusNotFound':
+                return t('Problem getting Hive SyncSet')
+            case 'SyncSetNotApplied':
+                return t('SyncSet not yet been applied')
+            case 'SyncSetAppliedSuccessful':
+                return t('Successfully applied SyncSet')
+            case 'SyncSetAppliedFailed':
+                return t('Failed to apply SyncSet')
+            case 'UnexpectedResourceCount':
+                return t('Unexpected number of resources found on SyncSet')
+            default:
+                break;
+        }
     }
 
     return (
@@ -194,10 +231,12 @@ export function BareMetalAssetsTable(props: {
             <AcmTable<BareMetalAsset>
                 emptyState={
                     <AcmEmptyState
-                        title={t('bareMetalAsset.emptyState.title')}
+                        title={t("You don't have any bare metal assets.")}
                         message={
                             <Trans
-                                i18nKey={'bma:bareMetalAsset.emptyState.subtitle'}
+                                i18nKey={
+                                    'Click the <bold>Create bare metal asset</bold> or <bold>Import bare metal assets</bold> button to create your resource'
+                                }
                                 components={{ bold: <strong /> }}
                             />
                         }
@@ -211,7 +250,7 @@ export function BareMetalAssetsTable(props: {
                                                 history.push(NavigationPath.createBareMetalAsset)
                                             }}
                                         >
-                                            {t('createBareMetalAsset.title')}
+                                            {t('Create bare metal asset')}
                                         </AcmButton>
                                     </ActionListItem>
                                     <ActionListItem>
@@ -221,7 +260,7 @@ export function BareMetalAssetsTable(props: {
                                                 setImportModalProps()
                                             }}
                                         >
-                                            {t('importBareMetalAssets.title')}
+                                            {t('Import bare metal assets')}
                                         </AcmButton>
                                     </ActionListItem>
                                 </ActionList>
@@ -233,7 +272,7 @@ export function BareMetalAssetsTable(props: {
                 items={props.bareMetalAssets}
                 columns={[
                     {
-                        header: t('bareMetalAsset.tableHeader.name'),
+                        header: t('Name'),
                         sort: 'metadata.name',
                         search: 'metadata.name',
                         cell: (bareMetalAsset) => (
@@ -249,24 +288,24 @@ export function BareMetalAssetsTable(props: {
                         ),
                     },
                     {
-                        header: t('bareMetalAsset.tableHeader.namespace'),
+                        header: t('Namespace'),
                         cell: 'metadata.namespace',
                         search: 'metadata.namespace',
                     },
                     {
-                        header: t('bareMetalAsset.tableHeader.cluster'),
+                        header: t('Cluster'),
                         cell: (bareMetalAsset: BareMetalAsset) =>
                             bareMetalAsset.metadata.labels?.['metal3.io/cluster-deployment-name'] || '-',
                         search: 'metal3.io/cluster-deployment-name',
                     },
                     {
-                        header: t('bareMetalAsset.tableHeader.role'),
+                        header: t('Role'),
                         cell: (bareMetalAsset: BareMetalAsset) =>
                             bareMetalAsset.metadata.labels?.['metal3.io/role'] || '-',
                         search: 'metal3.io/role',
                     },
                     {
-                        header: t('bareMetalAsset.tableHeader.status'),
+                        header: t('Status'),
                         cell: (bareMetalAsset) => {
                             if (bareMetalAsset.status) {
                                 let mostCurrentStatusTime = new Date(
@@ -298,8 +337,9 @@ export function BareMetalAssetsTable(props: {
                                     mostCurrentReason === BareMetalAssetConditionReasons.NoneSpecified &&
                                     mostCurrentStatus === BareMetalAssetConditionTypes.ConditionClusterDeploymentFound
                                 )
-                                    return t('bareMetalAsset.statusMessage.clusterDeploymentNameNotFound')
-                                else return t(`bareMetalAsset.statusMessage.${mostCurrentReason}`)
+                                    return t('Cluster deployment name is unspecified')
+                                // TODO - Handle interpolation
+                                else return getBmaStatusMessage(mostCurrentReason, t)
                             }
                             return ''
                         },
@@ -311,7 +351,7 @@ export function BareMetalAssetsTable(props: {
                             const actions = [
                                 {
                                     id: 'editAsset',
-                                    text: t('bareMetalAsset.rowAction.editAsset.title'),
+                                    text: t('Edit asset'),
                                     isDisabled: true,
                                     click: (bareMetalAsset: BareMetalAsset) => {
                                         history.push(
@@ -325,24 +365,26 @@ export function BareMetalAssetsTable(props: {
                                 },
                                 {
                                     id: 'deleteAsset',
-                                    text: t('bareMetalAsset.rowAction.deleteAsset.title'),
+                                    text: t('Delete asset'),
                                     isDisabled: true,
                                     click: (bareMetalAsset: BareMetalAsset) => {
                                         setModalProps({
                                             open: true,
-                                            title: t('bulk.title.delete'),
-                                            action: t('common:delete'),
-                                            processing: t('common:deleting'),
+                                            title: t('Permanently delete bare metal assets?'),
+                                            action: t('Delete'),
+                                            processing: t('Deleting'),
                                             resources: [bareMetalAsset],
-                                            description: t('bulk.message.delete'),
+                                            description: t(
+                                                'You are about to delete bare metal assets. The bare metal assets will no longer be available.'
+                                            ),
                                             columns: [
                                                 {
-                                                    header: t('bareMetalAsset.tableHeader.name'),
+                                                    header: t('Name'),
                                                     cell: 'metadata.name',
                                                     sort: 'metadata.name',
                                                 },
                                                 {
-                                                    header: t('bareMetalAsset.tableHeader.namespace'),
+                                                    header: t('Namespace'),
                                                     cell: 'metadata.namespace',
                                                     sort: 'metadata.namespace',
                                                 },
@@ -378,13 +420,13 @@ export function BareMetalAssetsTable(props: {
                 tableActionButtons={[
                     {
                         id: 'createAsset',
-                        title: t('bareMetalAsset.bulkAction.createAsset'),
+                        title: t('Create asset'),
                         click: () => history.push(NavigationPath.createBareMetalAsset),
                         variant: ButtonVariant.primary,
                     },
                     {
                         id: 'importAsset',
-                        title: t('bareMetalAsset.bulkAction.importAssets'),
+                        title: t('Import assets'),
                         click: () => setImportModalProps(),
                         variant: ButtonVariant.secondary,
                     },
@@ -392,23 +434,25 @@ export function BareMetalAssetsTable(props: {
                 tableActions={[
                     {
                         id: 'deleteBareMetalAsset',
-                        title: t('bareMetalAsset.bulkAction.deleteAsset'),
+                        title: t('Delete assets'),
                         click: (bareMetalAssets: BareMetalAsset[]) => {
                             setModalProps({
                                 open: true,
-                                title: t('bulk.title.delete'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                title: t('Permanently delete bare metal assets?'),
+                                action: t('Delete'),
+                                processing: t('Deleting'),
                                 resources: [...bareMetalAssets],
-                                description: t('bulk.message.delete'),
+                                description: t(
+                                    'You are about to delete bare metal assets. The bare metal assets will no longer be available.'
+                                ),
                                 columns: [
                                     {
-                                        header: t('bareMetalAsset.tableHeader.name'),
+                                        header: t('Name'),
                                         cell: 'metadata.name',
                                         sort: 'metadata.name',
                                     },
                                     {
-                                        header: t('bareMetalAsset.tableHeader.namespace'),
+                                        header: t('Namespace'),
                                         cell: 'metadata.namespace',
                                         sort: 'metadata.namespace',
                                     },
@@ -426,7 +470,7 @@ export function BareMetalAssetsTable(props: {
                     },
                     {
                         id: 'createBareMetalAssetCluster',
-                        title: t('bareMetalAsset.bulkAction.createCluster'),
+                        title: t('Create cluster'),
                         click: (items) => {
                             const params = new URLSearchParams()
                             const bmaIDs = items.map((bma) => bma.metadata.uid)
@@ -434,7 +478,11 @@ export function BareMetalAssetsTable(props: {
                             history.push(`${NavigationPath.createCluster}?${params}`)
                         },
                         isDisabled: !canCreateCluster,
-                        tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
+                        tooltip: !canCreateCluster
+                            ? t(
+                                'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                            )
+                            : '',
                         variant: 'bulk-action',
                     },
                 ]}
