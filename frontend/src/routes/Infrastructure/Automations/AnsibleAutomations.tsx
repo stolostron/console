@@ -40,7 +40,7 @@ export default function AnsibleAutomationsPage() {
 
     const alertContext = useContext(AcmAlertContext)
     useEffect(() => alertContext.clearAlerts, [])
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const useStyles = makeStyles({
         hint: {
@@ -65,7 +65,7 @@ export default function AnsibleAutomationsPage() {
     const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
 
     return (
-        <AcmPage hasDrawer header={<AcmPageHeader title={t('cluster:template.title')} />}>
+        <AcmPage hasDrawer header={<AcmPageHeader title={t('Automation')} />}>
             <AcmPageContent id="clusters">
                 <PageSection>
                     <Hint className={classes.hint}>
@@ -84,7 +84,7 @@ export default function AnsibleAutomationsPage() {
                                 isInline
                                 isSmall
                             >
-                                {t('cluster:template.operator.link')}
+                                {t('OperatorHub')}
                                 <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
                             </AcmButton>
                         </div>
@@ -116,7 +116,7 @@ function AnsibleJobTemplateTable() {
     >({
         open: false,
     })
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const history = useHistory()
 
@@ -130,7 +130,7 @@ function AnsibleJobTemplateTable() {
                 items={templatedCurators}
                 columns={[
                     {
-                        header: t('table.name'),
+                        header: t('Name'),
                         sort: 'metadata.name',
                         search: 'metadata.name',
                         cell: (curator) => (
@@ -146,7 +146,7 @@ function AnsibleJobTemplateTable() {
                         ),
                     },
                     {
-                        header: t('table.linkedCred'),
+                        header: t('Credential'),
                         cell: (clusterCurator) => {
                             if (clusterCurator.spec?.install?.towerAuthSecret === undefined) {
                                 //Connect to Modal
@@ -157,7 +157,7 @@ function AnsibleJobTemplateTable() {
                                         isSmall
                                         tooltip={
                                             <Trans
-                                                i18nKey="cluster:template.modal.noCredentials"
+                                                i18nKey="You don't have any Ansible credentials. Visit the <bold>Credentials</bold> tab and select <bold>Add credential</bold> to create an Ansible credential."
                                                 components={{ bold: <strong /> }}
                                             />
                                         }
@@ -165,31 +165,33 @@ function AnsibleJobTemplateTable() {
                                         onClick={() => {
                                             setDropdownModalProps({
                                                 open: true,
-                                                title: t('template.modal.linkProvider.title'),
-                                                action: t('template.modal.linkProvider.submit'),
-                                                processing: t('template.modal.linkProvider.submitting'),
+                                                title: t('Link an Ansible connection'),
+                                                action: t('Link'),
+                                                processing: t('Linking'),
                                                 resource: clusterCurator,
-                                                description: t('template.modal.linkProvider.message'),
+                                                description: t(
+                                                    'Linking an Ansible connection will allow you to run job templates for cluster lifecycle actions when you create a cluster with this template.'
+                                                ),
                                                 actionFn: LinkAnsibleCredential,
                                                 close: () => setDropdownModalProps({ open: false }),
                                                 isDanger: false,
                                                 selectOptions: ansibleCredentials.map(
                                                     (credential) => credential.metadata.name as string
                                                 ),
-                                                selectLabel: t('template.modal.linkProvider.label'),
-                                                selectPlaceholder: t('template.modal.linkProvider.placeholder'),
+                                                selectLabel: t('Ansible connection'),
+                                                selectPlaceholder: t('Select an Ansible connection'),
                                                 confirmText: 'Link',
                                             })
                                         }}
                                     >
-                                        {t('template.link')}
+                                        {t('Link a credential')}
                                     </AcmButton>
                                 )
                             } else return clusterCurator.spec.install.towerAuthSecret
                         },
                     },
                     {
-                        header: t('table.jobTemplate'),
+                        header: t('Job templates'),
                         cell: (clusterCurator) => {
                             return getTemplateJobsNum(clusterCurator)
                         },
@@ -201,7 +203,7 @@ function AnsibleJobTemplateTable() {
                             const actions = [
                                 {
                                     id: 'edit-template',
-                                    text: t('template.edit'),
+                                    text: t('Edit template'),
                                     isDisabled: true,
                                     rbac: [rbacPatch(curator)],
                                     click: (curator: ClusterCurator) => {
@@ -214,20 +216,21 @@ function AnsibleJobTemplateTable() {
                                 },
                                 {
                                     id: 'delete',
-                                    text: t('template.delete'),
+                                    text: t('Delete'),
                                     isDisabled: true,
                                     rbac: [rbacDelete(curator)],
                                     click: (curator: ClusterCurator) => {
                                         setBulkModalProps({
                                             open: true,
-                                            title: t('template.modal.delete.title'),
-                                            action: t('common:delete'),
-                                            processing: t('common:deleting'),
+                                            title: t('Delete template'),
+                                            action: t('Delete'),
+                                            processing: t('Deleting'),
                                             resources: [curator],
                                             description: curator.spec?.install?.towerAuthSecret ? (
                                                 <div>
                                                     <Trans
-                                                        i18nKey="cluster:template.modal.delete.message.linked"
+                                                        // TODO - handle interpolation
+                                                        i18nKey="This action will delete your Ansible job template. Are you sure you want to unlink <bold>{{curatorTemplate}}</bold> from <bold>{{ansibleCredential}}</bold>?"
                                                         values={{
                                                             curatorTemplate: curator.metadata.name as string,
                                                             ansibleCredential: curator.spec.install
@@ -237,16 +240,18 @@ function AnsibleJobTemplateTable() {
                                                     />
                                                 </div>
                                             ) : (
-                                                t('template.modal.delete.message.noLink')
+                                                t(
+                                                    'This action will delete your Ansible job template. Are you sure that you want to continue?'
+                                                )
                                             ),
                                             columns: [
                                                 {
-                                                    header: t('table.name'),
+                                                    header: t('Name'),
                                                     cell: 'metadata.name',
                                                     sort: 'metadata.name',
                                                 },
                                                 {
-                                                    header: t('table.namespace'),
+                                                    header: t('Namespace'),
                                                     cell: 'metadata.namespace',
                                                     sort: 'metadata.namespace',
                                                 },
@@ -279,7 +284,7 @@ function AnsibleJobTemplateTable() {
                 tableActionButtons={[
                     {
                         id: 'add',
-                        title: t('template.create'),
+                        title: t('Create Ansible template'),
                         click: () => {
                             history.push(NavigationPath.addAnsibleAutomation)
                         },
@@ -289,23 +294,25 @@ function AnsibleJobTemplateTable() {
                 tableActions={[
                     {
                         id: 'deleteTemplate',
-                        title: t('bulk.delete.templates'),
+                        title: t('Delete templates'),
                         click: (curators: ClusterCurator[]) => {
                             setBulkModalProps({
                                 open: true,
-                                title: t('bulk.delete.templates'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                title: t('Delete templates'),
+                                action: t('Delete'),
+                                processing: t('Deleting'),
                                 resources: [...curators],
-                                description: t('bulk.delete.templates.message'),
+                                description: t(
+                                    'This action will delete Ansible job templates and will unlink any associated Ansible credential. Are you sure that you want to continue?'
+                                ),
                                 columns: [
                                     {
-                                        header: t('table.name'),
+                                        header: t('Name'),
                                         cell: 'metadata.name',
                                         sort: 'metadata.name',
                                     },
                                     {
-                                        header: t('table.namespace'),
+                                        header: t('Namespace'),
                                         cell: 'metadata.namespace',
                                         sort: 'metadata.namespace',
                                     },
@@ -322,8 +329,15 @@ function AnsibleJobTemplateTable() {
                 ]}
                 emptyState={
                     <AcmEmptyState
-                        title={t('template.emptyStateHeader')}
-                        message={<Trans i18nKey={t('template.emptyStateMsg')} components={{ bold: <strong /> }} />}
+                        title={t("You don't have any Ansible job templates")}
+                        message={
+                            <Trans
+                                i18nKey={t(
+                                    'Select <bold>Create Ansible template</bold> to create an Ansible job template.'
+                                )}
+                                components={{ bold: <strong /> }}
+                            />
+                        }
                         action={
                             <AcmButton
                                 role="link"
@@ -335,7 +349,7 @@ function AnsibleJobTemplateTable() {
                                 // tooltip={t('common:rbac.unauthorized')}
                                 hidden
                             >
-                                {t('template.create')}
+                                {t('Create Ansible template')}
                             </AcmButton>
                         }
                     />

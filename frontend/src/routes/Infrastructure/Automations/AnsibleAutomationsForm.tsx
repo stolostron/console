@@ -104,7 +104,7 @@ export function AnsibleAutomationsForm(props: {
     isEditing: boolean
     isViewing: boolean
 }) {
-    const { t } = useTranslation(['cluster', 'common', 'credentials', 'create'])
+    const { t } = useTranslation()
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
     const [settings] = useRecoilState(settingsState)
@@ -234,29 +234,39 @@ export function AnsibleAutomationsForm(props: {
     }
 
     const formData: FormData = {
-        title: isEditing ? t('create:template.edit.title') : t('create:template.create.title'),
-        titleTooltip: isEditing ? t('create:template.edit.tooltip') : t('create:template.create.tooltip'),
+        title: isEditing ? t('Edit Ansible template') : t('Create Ansible template'),
+        titleTooltip: isEditing
+            ? t(
+                  "Edit a job template to alter the order of Ansible jobs that run at different stages of a cluster's life cycle"
+              )
+            : t(
+                  "Create a job template to automatically run Ansible jobs at different stages of a cluster's life cycle"
+              ),
         breadcrumb: [
-            { text: t('template.title'), to: NavigationPath.ansibleAutomations },
-            { text: isEditing ? t('create:template.edit.title') : t('create:template.create.title') },
+            { text: t('Automation'), to: NavigationPath.ansibleAutomations },
+            { text: isEditing ? t('Edit Ansible template') : t('Create Ansible template') },
         ],
-        reviewDescription: t('template.create.review.description'),
-        reviewTitle: t('template.create.review.title'),
-        cancelLabel: t('common:cancel'),
-        nextLabel: t('common:next'),
-        backLabel: t('common:back'),
+        reviewDescription: t(
+            'Review your choices for default job templates. Go back to a step if you have any changes to make.'
+        ),
+        reviewTitle: t('Review your default job templates'),
+        cancelLabel: t('Cancel'),
+        nextLabel: t('Next'),
+        backLabel: t('Back'),
         sections: [
             {
                 type: 'Section',
-                title: t('template.information.title'),
-                wizardTitle: t('template.create.config.wizard.title'),
-                description: t('template.information.description'),
+                title: t('Basic information'),
+                wizardTitle: t('Configure Ansible job template name and Ansible credential'),
+                description: t(
+                    'The default job templates that you select appear automatically during cluster creation. To create a sequence of events, select multiple jobs. Drag and drop the job templates to reorder the sequence.'
+                ),
                 inputs: [
                     {
                         id: 'Template',
                         type: 'Text',
-                        label: t('template.create.name'),
-                        placeholder: t('template.create.placeholder'),
+                        label: t('Template name'),
+                        placeholder: t('Enter the name for the template'),
                         value: templateName,
                         onChange: setTemplateName,
                         isRequired: true,
@@ -266,8 +276,8 @@ export function AnsibleAutomationsForm(props: {
                     {
                         id: 'ansibleSecrets',
                         type: 'Select',
-                        label: t('credentials:credentialsForm.ansibleCredentials.label'),
-                        placeholder: t('credentials:credentialsForm.ansibleCredentials.placeholder'),
+                        label: t('Ansible Automation Platform credential'),
+                        placeholder: t('Select an existing Ansible credential'),
                         value: ansibleSelection,
                         onChange: setAnsibleSelection,
                         isRequired: true,
@@ -277,7 +287,7 @@ export function AnsibleAutomationsForm(props: {
                         })),
                         isDisabled: isEditing,
                         prompt: {
-                            text: t('create:creation.ocp.cloud.add.connection'),
+                            text: t('Add credential'),
                             linkType: LinkType.internalNewTab,
                             callback: () => history.push(NavigationPath.addCredentials),
                         },
@@ -289,18 +299,18 @@ export function AnsibleAutomationsForm(props: {
             },
             {
                 type: 'SectionGroup',
-                title: t('template.templates.title'),
+                title: t('Ansible job templates'),
                 sections: [
                     {
                         type: 'Section',
-                        title: t('template.create.install'),
-                        wizardTitle: t('template.create.install.wizard.title'),
+                        title: t('Install'),
+                        wizardTitle: t('Configure Ansible job templates to run for your cluster at install'),
                         inputs: [
                             {
                                 id: 'installPreJob',
                                 type: 'OrderedItems',
-                                label: t('template.preInstall.label'),
-                                placeholder: t('template.job.placeholder'),
+                                label: t('Pre-install Ansible job templates'),
+                                placeholder: t('Add an Ansible job template'),
                                 value: installPreJobs,
                                 onChange: setInstallPreJobs,
                                 keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
@@ -317,8 +327,8 @@ export function AnsibleAutomationsForm(props: {
                             {
                                 id: 'installPostJob',
                                 type: 'OrderedItems',
-                                label: t('template.postInstall.label'),
-                                placeholder: t('template.job.placeholder'),
+                                label: t('Post-install Ansible job templates'),
+                                placeholder: t('Add an Ansible job template'),
                                 value: installPostJobs,
                                 onChange: setInstallPostJobs,
                                 keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
@@ -336,14 +346,14 @@ export function AnsibleAutomationsForm(props: {
                     },
                     {
                         type: 'Section',
-                        title: t('template.create.upgrade'),
-                        wizardTitle: t('template.create.upgrade.wizard.title'),
+                        title: t('Upgrade'),
+                        wizardTitle: t('Configure Ansible job templates to run for your cluster at upgrade'),
                         inputs: [
                             {
                                 id: 'upgradePreJob',
                                 type: 'OrderedItems',
-                                label: t('template.preUpgrade.label'),
-                                placeholder: t('template.job.placeholder'),
+                                label: t('Pre-upgrade Ansible job templates'),
+                                placeholder: t('Add an Ansible job template'),
                                 value: upgradePreJobs,
                                 onChange: setUpgradePreJobs,
                                 keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
@@ -360,8 +370,8 @@ export function AnsibleAutomationsForm(props: {
                             {
                                 id: 'upgradePostJob',
                                 type: 'OrderedItems',
-                                label: t('template.postUpgrade.label'),
-                                placeholder: t('template.job.placeholder'),
+                                label: t('Post-upgrade Ansible job templates'),
+                                placeholder: t('Add an Ansible job template'),
                                 value: upgradePostJobs,
                                 onChange: setUpgradePostJobs,
                                 keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
@@ -381,14 +391,14 @@ export function AnsibleAutomationsForm(props: {
                         ? ([
                               {
                                   type: 'Section',
-                                  title: t('template.create.scale'),
-                                  wizardTitle: t('template.create.scale.wizard.title'),
+                                  title: t('Scale'),
+                                  wizardTitle: t('Configure Ansible job templates to run for your cluster at scaling'),
                                   inputs: [
                                       {
                                           id: 'scalePreJob',
                                           type: 'OrderedItems',
-                                          label: t('template.preScale.label'),
-                                          placeholder: t('template.job.placeholder'),
+                                          label: t('Pre-scale Ansible job templates'),
+                                          placeholder: t('Add an Ansible job template'),
                                           value: scalePreJobs,
                                           onChange: setScalePreJobs,
                                           keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
@@ -405,8 +415,8 @@ export function AnsibleAutomationsForm(props: {
                                       {
                                           id: 'scalePostJob',
                                           type: 'OrderedItems',
-                                          label: t('template.postScale.label'),
-                                          placeholder: t('template.job.placeholder'),
+                                          label: t('Post-scale Ansible job templates'),
+                                          placeholder: t('Add an Ansible job template'),
                                           value: scalePostJobs,
                                           onChange: setScalePostJobs,
                                           keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
@@ -424,14 +434,14 @@ export function AnsibleAutomationsForm(props: {
                               },
                               {
                                   type: 'Section',
-                                  title: t('template.create.destroy'),
-                                  wizardTitle: t('template.create.destroy.wizard.title'),
+                                  title: t('Destroy'),
+                                  wizardTitle: t('Configure Ansible job templates to run for your cluster at destroy'),
                                   inputs: [
                                       {
                                           id: 'destroyPreJob',
                                           type: 'OrderedItems',
-                                          label: t('template.preDestroy.label'),
-                                          placeholder: t('template.job.placeholder'),
+                                          label: t('Pre-destroy Ansible job templates'),
+                                          placeholder: t('Add an Ansible job template'),
                                           value: destroyPreJobs,
                                           onChange: setDestroyPreJobs,
                                           keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
@@ -454,8 +464,8 @@ export function AnsibleAutomationsForm(props: {
                                       {
                                           id: 'destroyPostJob',
                                           type: 'OrderedItems',
-                                          label: t('template.postDestroy.label'),
-                                          placeholder: t('template.job.placeholder'),
+                                          label: t('Post-destroy Ansible job templates'),
+                                          placeholder: t('Add an Ansible job template'),
                                           value: destroyPostJobs,
                                           onChange: setDestroyPostJobs,
                                           keyFn: (ansibleJob: ClusterCuratorAnsibleJob) => ansibleJob.name,
@@ -497,8 +507,8 @@ export function AnsibleAutomationsForm(props: {
                 })
             }
         },
-        submitText: isEditing ? t('common:save') : t('common:add'),
-        submittingText: isEditing ? t('common:saving') : t('common:adding'),
+        submitText: isEditing ? t('Save') : t('Add'),
+        submittingText: isEditing ? t('Saving') : t('Adding'),
         cancel: () => history.push(NavigationPath.ansibleAutomations),
         stateToData,
     }
@@ -526,17 +536,13 @@ function EditAnsibleJobModal(props: {
     ansibleJobList?: ClusterCuratorAnsibleJob[]
     setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
 }) {
-    const { t } = useTranslation(['common', 'cluster'])
+    const { t } = useTranslation()
     const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={
-                props.ansibleJob?.name !== ''
-                    ? t('cluster:template.modal.title.edit')
-                    : t('cluster:template.modal.title.add')
-            }
+            title={props.ansibleJob?.name !== '' ? t('Edit Ansible job') : t('Add Ansible job')}
             isOpen={props.ansibleJob !== undefined}
             onClose={() => props.setAnsibleJob()}
         >
@@ -544,10 +550,12 @@ function EditAnsibleJobModal(props: {
                 <AcmSelect
                     maxHeight="18em"
                     menuAppendTo="parent"
-                    label={t('cluster:template.modal.name.label')}
+                    label={t('Ansible job template name')}
                     id="job-name"
                     value={ansibleJob?.name}
-                    helperText={t('cluster:template.modal.name.helper.text')}
+                    helperText={t(
+                        'The Ansible job template name must match the name of the job on the Ansible Tower. If the names are not the same, the hook cannot run the job.'
+                    )}
                     onChange={(name) => {
                         if (ansibleJob) {
                             const copy = { ...ansibleJob }
@@ -556,12 +564,14 @@ function EditAnsibleJobModal(props: {
                         }
                     }}
                     variant={SelectVariant.typeahead}
-                    placeholder={t('cluster:template.modal.name.placeholder')}
+                    placeholder={t('Enter or select Ansible job template name')}
                     validation={(name) => {
                         const selectedJobs = _.map(props.ansibleJobList, 'name')
                         if (name && selectedJobs.includes(name)) {
                             // no duplicate job names can be added
-                            return t('cluster:template.job.duplicate.error')
+                            return t(
+                                'The job name already exists in this hook. The job list cannot contain duplicates.'
+                            )
                         }
                     }}
                     isRequired
@@ -577,7 +587,7 @@ function EditAnsibleJobModal(props: {
 
                 <AcmLabelsInput
                     id="job-settings"
-                    label={t('cluster:template.modal.settings.label')}
+                    label={t('Extra variables')}
                     value={ansibleJob?.extra_vars}
                     onChange={(labels) => {
                         if (ansibleJob) {
@@ -587,7 +597,7 @@ function EditAnsibleJobModal(props: {
                         }
                     }}
                     buttonLabel=""
-                    placeholder={t('cluster:template.modal.settings.placeholder')}
+                    placeholder={t('Enter key=value pairs')}
                 />
                 <ActionGroup>
                     <AcmSubmit
@@ -597,11 +607,11 @@ function EditAnsibleJobModal(props: {
                             props.setAnsibleJob()
                         }}
                     >
-                        {t('common:save')}
+                        {t('Save')}
                     </AcmSubmit>
 
                     <Button variant="link" onClick={() => props.setAnsibleJob()} key="cancel">
-                        {t('common:cancel')}
+                        {t('Cancel')}
                     </Button>
                 </ActionGroup>
             </AcmForm>
