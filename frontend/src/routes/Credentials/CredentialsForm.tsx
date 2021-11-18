@@ -88,7 +88,7 @@ export default function CredentialsFormPage() {
     const params = useParams<{ namespace: string; name: string }>()
     const location = useLocation()
     const { name, namespace } = params
-    const { t } = useTranslation(['credentials', 'common'])
+    const { t } = useTranslation()
 
     let isEditing = false
     let isViewing = false
@@ -140,18 +140,20 @@ export default function CredentialsFormPage() {
                 <AcmPage
                     header={
                         <AcmPageHeader
-                            title={t('credentialsForm.title.add')}
+                            title={t('Add credential')}
                             breadcrumb={[
-                                { text: t('credentialsPage.title'), to: NavigationPath.credentials },
-                                { text: t('credentialsForm.title.add') },
+                                { text: t('Credentials'), to: NavigationPath.credentials },
+                                { text: t('Add credential') },
                             ]}
                         />
                     }
                 >
                     <PageSection variant="light" isFilled>
                         <AcmEmptyState
-                            title={t('common:rbac.title.unauthorized')}
-                            message={t('common:rbac.namespaces.unauthorized')}
+                            title={t('Unauthorized')}
+                            message={t(
+                                'You are not authorized to complete this action. There is currently no namespace that allows you to create this resource. See your cluster administrator for role-based access control information.'
+                            )}
                             showIcon={false}
                         />
                     </PageSection>
@@ -168,7 +170,7 @@ export function CredentialsForm(props: {
     isEditing: boolean
     isViewing: boolean
 }) {
-    const { t } = useTranslation(['credentials', 'common'])
+    const { t } = useTranslation()
     const { namespaces, providerConnection, isEditing, isViewing } = props
     const toastContext = useContext(AcmToastContext)
 
@@ -420,17 +422,17 @@ export function CredentialsForm(props: {
         return secret
         // return packProviderConnection(secret)
     }
-    const title = isViewing ? name : isEditing ? t('credentialsForm.title.edit') : t('credentialsForm.title.add')
+    const title = isViewing ? name : isEditing ? t('Edit credential') : t('Add credential')
     const titleTooltip = (
         <Fragment>
-            {t('credentialsForm.title.tooltip')}
+            {t('A credential stores the access credentials and configuration information for creating clusters.')}
             <a
                 href={DOC_LINKS.CREATE_CONNECTION}
                 target="_blank"
                 rel="noreferrer"
                 style={{ display: 'block', marginTop: '4px' }}
             >
-                {t('common:learn.more')}
+                {t('Learn more')}
             </a>
         </Fragment>
     )
@@ -438,27 +440,25 @@ export function CredentialsForm(props: {
     const formData: FormData = {
         title,
         titleTooltip,
-        breadcrumb: [{ text: t('credentialsPage.title'), to: NavigationPath.credentials }, { text: title }],
+        breadcrumb: [{ text: t('Credentials'), to: NavigationPath.credentials }, { text: title }],
         sections: [
             {
                 type: 'Section',
-                title: credentialsType
-                    ? t('credentialsForm.basicInformation.title')
-                    : t('credentialsForm.credentialsType.title'),
+                title: credentialsType ? t('Basic information') : t('Credential type'),
                 wizardTitle: credentialsType
-                    ? t('credentialsForm.basicInformation.wizardTitle')
-                    : t('credentialsForm.credentialsType.wizardTitle'),
+                    ? t('Enter the basic credentials information')
+                    : t('Select the credentials type'),
                 description: !credentialsType && (
                     <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.credentialsType.wizardDescription')}
+                        {t('What are the different credentials types?')}
                     </a>
                 ),
                 inputs: [
                     {
                         id: 'credentialsType',
                         type: isEditing || credentialsType ? 'GroupedSelect' : 'GroupedTiles',
-                        label: t('credentialsForm.credentialsType.label'),
-                        placeholder: t('credentialsForm.credentialsType.placeholder'),
+                        label: t('Credential type'),
+                        placeholder: t('Select the credentials type'),
                         value: credentialsType,
                         onChange: setCredentialsType,
                         isRequired: true,
@@ -521,9 +521,9 @@ export function CredentialsForm(props: {
                     {
                         id: 'credentialsName',
                         type: 'Text',
-                        label: t('credentialsForm.credentialsName.label'),
-                        placeholder: t('credentialsForm.credentialsName.placeholder'),
-                        labelHelp: t('credentialsForm.credentialsName.labelHelp'),
+                        label: t('Credential name'),
+                        placeholder: t('Enter the name for the credential'),
+                        labelHelp: t('The name for the credential.'),
                         value: name,
                         onChange: setName,
                         validation: (value) => validateKubernetesDnsName(value, t),
@@ -534,9 +534,9 @@ export function CredentialsForm(props: {
                     {
                         id: 'namespaceName',
                         type: 'Select',
-                        label: t('credentialsForm.namespaceName.label'),
-                        placeholder: t('credentialsForm.namespaceName.placeholder'),
-                        labelHelp: t('credentialsForm.namespaceName.labelHelp'),
+                        label: t('Namespace'),
+                        placeholder: t('Select a namespace for the credential'),
+                        labelHelp: t('The existing namespace where the credential secret will be stored.'),
                         value: namespace,
                         onChange: setNamespace,
                         isRequired: true,
@@ -559,9 +559,11 @@ export function CredentialsForm(props: {
                             Provider.hybrid,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('credentialsForm.baseDomain.label'),
-                        placeholder: t('credentialsForm.baseDomain.placeholder'),
-                        labelHelp: t('credentialsForm.baseDomain.labelHelp'),
+                        label: t('Base DNS domain'),
+                        placeholder: t('Enter the base DNS domain'),
+                        labelHelp: t(
+                            "Optional: The base domain of your provider, which is used to create routes to your OpenShift Container Platform cluster components. It is configured in your cloud provider's DNS as a Start Of Authority (SOA) record."
+                        ),
                         value: baseDomain,
                         onChange: setBaseDomain,
                         validation: (v) => validateBaseDomain(v, t),
@@ -569,8 +571,8 @@ export function CredentialsForm(props: {
                     {
                         id: 'azureCloudName',
                         type: 'Select',
-                        label: t('credentialsForm.cloudName.label'),
-                        labelHelp: t('credentialsForm.cloudName.labelHelp'),
+                        label: t('Cloud name'),
+                        labelHelp: t('Select an active cloud name for the credential.'),
                         value: cloudName,
                         onChange: setCloudName,
                         isRequired: true,
@@ -584,11 +586,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('credentialsForm.awsCredentials.title'),
-                wizardTitle: t('credentialsForm.awsCredentials.wizardTitle'),
+                title: t('Amazon Web Services'),
+                wizardTitle: t('Enter the Amazon Web Services credentials'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION_AWS} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.awsCredentials.wizardDescription')}
+                        {t('How do I get Amazon Web Service credentials?')}
                     </a>
                 ),
                 inputs: [
@@ -596,9 +598,11 @@ export function CredentialsForm(props: {
                         id: 'aws_access_key_id',
                         isHidden: credentialsType !== Provider.aws,
                         type: 'Text',
-                        label: t('credentialsForm.aws_access_key_id.label'),
-                        placeholder: t('credentialsForm.aws_access_key_id.placeholder'),
-                        labelHelp: t('credentialsForm.aws_access_key_id.labelHelp'),
+                        label: t('Access key ID'),
+                        placeholder: t('Enter your AWS access key ID'),
+                        labelHelp: t(
+                            'You use access keys to sign programmatic requests that you make to AWS. The access key is equivalent to a username in a username/password combination.'
+                        ),
                         value: aws_access_key_id,
                         onChange: setAwsAccessKeyID,
                         isRequired: true,
@@ -607,9 +611,11 @@ export function CredentialsForm(props: {
                         id: 'aws_secret_access_key',
                         isHidden: credentialsType !== Provider.aws,
                         type: 'Text',
-                        label: t('credentialsForm.aws_secret_access_key.label'),
-                        placeholder: t('credentialsForm.aws_secret_access_key.placeholder'),
-                        labelHelp: t('credentialsForm.aws_secret_access_key.labelHelp'),
+                        label: t('Secret access key'),
+                        placeholder: t('Enter your AWS secret access key'),
+                        labelHelp: t(
+                            'You use access keys to sign programmatic requests that you make to AWS. The secret access key is equivalent to a password in a username/password combination.'
+                        ),
                         value: aws_secret_access_key,
                         onChange: setAwsSecretAccessKeyID,
                         isRequired: true,
@@ -619,11 +625,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('credentialsForm.gcpCredentials.title'),
-                wizardTitle: t('credentialsForm.gcpCredentials.wizardTitle'),
+                title: t('Google Cloud Platform'),
+                wizardTitle: t('Enter the Google Cloud Platform credentials'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION_GCP} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.gcpCredentials.wizardDescription')}
+                        {t('How do I get Google Cloud Platform credentials?')}
                     </a>
                 ),
                 inputs: [
@@ -631,9 +637,11 @@ export function CredentialsForm(props: {
                         id: 'projectID',
                         isHidden: credentialsType !== Provider.gcp,
                         type: 'Text',
-                        label: t('credentialsForm.projectID.label'),
-                        placeholder: t('credentialsForm.projectID.placeholder'),
-                        labelHelp: t('credentialsForm.projectID.labelHelp'),
+                        label: t('Project ID'),
+                        placeholder: t('Enter your Google Cloud Platform project ID'),
+                        labelHelp: t(
+                            'A project organizes all of your Google Cloud resources. A project consists of a set of users; a set of APIs; and billing, authentication, and monitoring settings for those APIs. So, for example, all of your Cloud Storage buckets and objects, along with user permissions for accessing them, reside in a project.'
+                        ),
                         value: projectID,
                         onChange: setGcProjectID,
                         validation: (value) => validateGCProjectID(value, t),
@@ -643,9 +651,11 @@ export function CredentialsForm(props: {
                         id: 'osServiceAccount.json',
                         isHidden: credentialsType !== Provider.gcp,
                         type: 'TextArea',
-                        label: t('credentialsForm.osServiceAccount.json.label'),
-                        placeholder: t('credentialsForm.osServiceAccount.json.placeholder'),
-                        labelHelp: t('credentialsForm.osServiceAccount.json.labelHelp'),
+                        label: t('Service account JSON key'),
+                        placeholder: t('Enter your Google Cloud Platform service account JSON key'),
+                        labelHelp: t(
+                            'Creating a service account is similar to adding a member to your project, but the service account belongs to your applications rather than an individual end user.'
+                        ),
                         value: osServiceAccountJson,
                         onChange: setGcServiceAccountKey,
                         validation: (value) => validateJSON(value, t),
@@ -656,11 +666,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('credentialsForm.azureCredentials.title'),
-                wizardTitle: t('credentialsForm.azureCredentials.wizardTitle'),
+                title: t('Microsoft Azure'),
+                wizardTitle: t('Enter the Microsoft Azure credentials'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION_AZURE} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.azureCredentials.wizardDescription')}
+                        {t('How do I get Microsoft Azure credentials?')}
                     </a>
                 ),
                 inputs: [
@@ -668,9 +678,11 @@ export function CredentialsForm(props: {
                         id: 'baseDomainResourceGroupName',
                         isHidden: credentialsType !== Provider.azure,
                         type: 'Text',
-                        label: t('credentialsForm.baseDomainResourceGroupName.label'),
-                        placeholder: t('credentialsForm.baseDomainResourceGroupName.placeholder'),
-                        labelHelp: t('credentialsForm.baseDomainResourceGroupName.labelHelp'),
+                        label: t('Base domain resource group name'),
+                        placeholder: t('Enter your base domain resource group name'),
+                        labelHelp: t(
+                            'Azure Resources Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. Typically, users group related resources for an application, divided into groups for production and non-production.'
+                        ),
                         value: baseDomainResourceGroupName,
                         onChange: setBaseDomainResourceGroupName,
                         isRequired: true,
@@ -679,9 +691,11 @@ export function CredentialsForm(props: {
                         id: 'clientId',
                         isHidden: credentialsType !== Provider.azure,
                         type: 'Text',
-                        label: t('credentialsForm.clientId.label'),
-                        placeholder: t('credentialsForm.clientId.placeholder'),
-                        labelHelp: t('credentialsForm.clientId.labelHelp'),
+                        label: t('Client ID'),
+                        placeholder: t('Enter your client ID'),
+                        labelHelp: t(
+                            "Your client ID. This value is generated as the 'appId' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal>'."
+                        ),
                         value: clientId,
                         onChange: setClientId,
                         isRequired: true,
@@ -690,9 +704,11 @@ export function CredentialsForm(props: {
                         id: 'clientSecret',
                         isHidden: credentialsType !== Provider.azure,
                         type: 'Text',
-                        label: t('credentialsForm.clientSecret.label'),
-                        placeholder: t('credentialsForm.clientSecret.placeholder'),
-                        labelHelp: t('credentialsForm.clientSecret.labelHelp'),
+                        label: t('Client secret'),
+                        placeholder: t('Enter your client secret'),
+                        labelHelp: t(
+                            "Your client password. This value is generated as the 'password' property when you create a service principal with the command: 'az ad sp create-for-rbac --role Contributor --name <service_principal>'."
+                        ),
                         isRequired: true,
                         value: clientSecret,
                         onChange: setClientSecret,
@@ -702,9 +718,11 @@ export function CredentialsForm(props: {
                         id: 'subscriptionId',
                         isHidden: credentialsType !== Provider.azure,
                         type: 'Text',
-                        label: t('credentialsForm.subscriptionId.label'),
-                        placeholder: t('credentialsForm.subscriptionId.placeholder'),
-                        labelHelp: t('credentialsForm.subscriptionId.labelHelp'),
+                        label: t('Subscription ID'),
+                        placeholder: t('Enter your subscription ID'),
+                        labelHelp: t(
+                            "Your subscription ID. This is the value of the 'id' property in the output of the command: 'az account show'"
+                        ),
                         value: subscriptionId,
                         onChange: setSubscriptionId,
                         isRequired: true,
@@ -713,9 +731,11 @@ export function CredentialsForm(props: {
                         id: 'tenantId',
                         isHidden: credentialsType !== Provider.azure,
                         type: 'Text',
-                        label: t('credentialsForm.tenantId.label'),
-                        placeholder: t('credentialsForm.tenantId.placeholder'),
-                        labelHelp: t('credentialsForm.tenantId.labelHelp'),
+                        label: t('Tenant ID'),
+                        placeholder: t('Enter your tenant ID'),
+                        labelHelp: t(
+                            "Your tenant ID. This is the value of the 'tenantId' property in the output of the command: 'az account show'"
+                        ),
                         value: tenantId,
                         onChange: setTenantId,
                         isRequired: true,
@@ -724,11 +744,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('credentialsForm.vCenter.title'),
-                wizardTitle: t('credentialsForm.vCenter.wizardTitle'),
+                title: t('VMware'),
+                wizardTitle: t('Enter the VMware credentials'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION_VMWARE} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.vCenter.wizardDescription')}
+                        {t('How do I get VMware credentials?')}
                     </a>
                 ),
                 inputs: [
@@ -736,9 +756,11 @@ export function CredentialsForm(props: {
                         id: 'vCenter',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.vCenter.label'),
-                        placeholder: t('credentialsForm.vCenter.placeholder'),
-                        labelHelp: t('credentialsForm.vCenter.labelHelp'),
+                        label: t('vCenter server'),
+                        placeholder: t('Enter your vCenter server'),
+                        labelHelp: t(
+                            'The fully-qualified host name or IP address of the vCenter server. The value must be defined in the vCenter server root CA certificate.'
+                        ),
                         value: vCenter,
                         onChange: setVcenter,
                         isRequired: true,
@@ -747,9 +769,11 @@ export function CredentialsForm(props: {
                         id: 'username',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.username.label'),
-                        placeholder: t('credentialsForm.username.placeholder'),
-                        labelHelp: t('credentialsForm.username.labelHelp'),
+                        label: t('vCenter username'),
+                        placeholder: t('Enter your vCenter username'),
+                        labelHelp: t(
+                            'The name of the user that is required to access the vCenter server. This user must have at least the roles and privileges that are required for static or dynamic persistent volume provisioning in vSphere.'
+                        ),
                         value: username,
                         onChange: setUsername,
                         isRequired: true,
@@ -758,9 +782,9 @@ export function CredentialsForm(props: {
                         id: 'password',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.password.label'),
-                        placeholder: t('credentialsForm.password.placeholder'),
-                        labelHelp: t('credentialsForm.password.labelHelp'),
+                        label: t('vCenter password'),
+                        placeholder: t('Enter your vCenter password'),
+                        labelHelp: t('The password associated with the vCenter username.'),
                         value: password,
                         onChange: setPassword,
                         isRequired: true,
@@ -770,9 +794,11 @@ export function CredentialsForm(props: {
                         id: 'cacertificate',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'TextArea',
-                        label: t('credentialsForm.cacertificate.label'),
-                        placeholder: t('credentialsForm.cacertificate.placeholder'),
-                        labelHelp: t('credentialsForm.cacertificate.labelHelp'),
+                        label: t('vCenter root CA certificate'),
+                        placeholder: t('Enter your vCenter root CA certificate'),
+                        labelHelp: t(
+                            'A vCenter server root CA certificate that, when added, reduces the number of web browser certificate warnings.'
+                        ),
                         value: cacertificate,
                         onChange: setCacertificate,
                         validation: (value) => validateCertificate(value, t),
@@ -782,9 +808,9 @@ export function CredentialsForm(props: {
                         id: 'cluster',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.cluster.label'),
-                        placeholder: t('credentialsForm.cluster.placeholder'),
-                        labelHelp: t('credentialsForm.cluster.labelHelp'),
+                        label: t('vSphere cluster name'),
+                        placeholder: t('Enter your vSphere cluster name'),
+                        labelHelp: t('The name of the vSphere cluster to use.'),
                         value: cluster,
                         onChange: setVmClusterName,
                         isRequired: true,
@@ -793,9 +819,9 @@ export function CredentialsForm(props: {
                         id: 'datacenter',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.datacenter.label'),
-                        placeholder: t('credentialsForm.datacenter.placeholder'),
-                        labelHelp: t('credentialsForm.datacenter.labelHelp'),
+                        label: t('vSphere datacenter'),
+                        placeholder: t('Enter your vSphere datacenter'),
+                        labelHelp: t('The name of the vSphere datacenter to use.'),
                         value: datacenter,
                         onChange: setDatacenter,
                         isRequired: true,
@@ -804,9 +830,9 @@ export function CredentialsForm(props: {
                         id: 'defaultDatastore',
                         isHidden: credentialsType !== Provider.vmware,
                         type: 'Text',
-                        label: t('credentialsForm.defaultDatastore.label'),
-                        placeholder: t('credentialsForm.defaultDatastore.placeholder'),
-                        labelHelp: t('credentialsForm.defaultDatastore.labelHelp'),
+                        label: t('vSphere default defaultDatastore'),
+                        placeholder: t('Enter your vSphere default defaultDatastore'),
+                        labelHelp: t('The name of the default vSphere defaultDatastore to use.'),
                         value: defaultDatastore,
                         onChange: setDatastore,
                         isRequired: true,
@@ -815,11 +841,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('credentialsForm.openStackCredentials.title'),
-                wizardTitle: t('credentialsForm.openStackCredentials.wizardTitle'),
+                title: t('Red Hat OpenStack Platform'),
+                wizardTitle: t('Enter the OpenStack credentials'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION_OPENSTACK} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.openStackCredentials.wizardDescription')}
+                        {t('How do I get OpenStack credentials?')}
                     </a>
                 ),
                 inputs: [
@@ -827,9 +853,11 @@ export function CredentialsForm(props: {
                         id: 'clouds.yaml',
                         isHidden: credentialsType !== Provider.openstack,
                         type: 'TextArea',
-                        label: t('credentialsForm.clouds.yaml.label'),
-                        placeholder: t('credentialsForm.clouds.yaml.placeholder'),
-                        labelHelp: t('credentialsForm.clouds.yaml.labelHelp'),
+                        label: t('OpenStack clouds.yaml'),
+                        placeholder: t('Enter the contents of the OpenStack clouds.yaml'),
+                        labelHelp: t(
+                            'The OpenStack clouds.yaml file, including the password, to connect to the OpenStack server.'
+                        ),
                         value: cloudsYaml,
                         onChange: setOpenstackCloudsYaml,
                         isRequired: true,
@@ -840,9 +868,11 @@ export function CredentialsForm(props: {
                         id: 'cloud',
                         isHidden: credentialsType !== Provider.openstack,
                         type: 'Text',
-                        label: t('credentialsForm.cloud.label'),
-                        placeholder: t('credentialsForm.cloud.placeholder'),
-                        labelHelp: t('credentialsForm.cloud.labelHelp'),
+                        label: t('Cloud name'),
+                        placeholder: t('Enter the OpenStack cloud name to reference in the clouds.yaml'),
+                        labelHelp: t(
+                            'The name of the cloud section of the clouds.yaml to use for establishing communication to the OpenStack server.'
+                        ),
                         value: cloud,
                         onChange: setOpenstackCloud,
                         isRequired: true,
@@ -851,11 +881,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('credentialsForm.bareMetalCredentials.title'),
-                wizardTitle: t('credentialsForm.bareMetalCredentials.wizardTitle'),
+                title: t('Bare metal credentials'),
+                wizardTitle: t('Enter the bare metal credentials'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION_BAREMETAL} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.bareMetalCredentials.wizardDescription')}
+                        {t('How do I get bare metal credentials?')}
                     </a>
                 ),
                 inputs: [
@@ -863,9 +893,11 @@ export function CredentialsForm(props: {
                         id: 'libvirtURI',
                         isHidden: credentialsType !== Provider.baremetal,
                         type: 'Text',
-                        label: t('credentialsForm.libvirtURI.label'),
-                        placeholder: t('credentialsForm.libvirtURI.placeholder'),
-                        labelHelp: t('credentialsForm.libvirtURI.labelHelp'),
+                        label: t('libvirt URI'),
+                        placeholder: t('Enter your libvirt URI'),
+                        labelHelp: t(
+                            'The URI of the libvirt which is an open-source API, daemon and management tool for managing platform virtualization. It can be used to manage KVM, Xen, VMware ESXi, QEMU and other virtualization technologies. These APIs are widely used in the orchestration layer of hypervisors in the development of a cloud-based solution.'
+                        ),
                         value: libvirtURI,
                         onChange: setLibvirtURI,
                         validation: (value) => validateLibvirtURI(value, t),
@@ -875,9 +907,11 @@ export function CredentialsForm(props: {
                         id: 'sshKnownHosts',
                         isHidden: credentialsType !== Provider.baremetal,
                         type: 'TextArea',
-                        label: t('credentialsForm.sshKnownHosts.label'),
-                        placeholder: t('credentialsForm.sshKnownHosts.placeholder'),
-                        labelHelp: t('credentialsForm.sshKnownHosts.labelHelp'),
+                        label: t('List of SSH known hosts'),
+                        placeholder: t('Enter your list of SSH known hosts'),
+                        labelHelp: t(
+                            'SSH clients store host keys for hosts to which they have previously connected. These stored host keys are called known host keys, and the collection is often called known hosts.'
+                        ),
                         value: sshKnownHosts,
                         onChange: setSshKnownHosts,
                         isRequired: true,
@@ -886,11 +920,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('credentialsForm.bareMetalDisconnected.title'),
-                wizardTitle: t('credentialsForm.bareMetalDisconnected.wizardTitle'),
+                title: t('Configuration for disconnected installation'),
+                wizardTitle: t('Enter the configuration for disconnected installation'),
                 description: (
                     <a href={DOC_LINKS.CONFIG_DISCONNECTED_INSTALL} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.bareMetalDisconnected.wizardDescription')}
+                        {t('How do I configure for disconnected installation?')}
                     </a>
                 ),
                 inputs: [
@@ -898,9 +932,11 @@ export function CredentialsForm(props: {
                         id: 'imageMirror',
                         isHidden: credentialsType !== Provider.baremetal,
                         type: 'Text',
-                        label: t('credentialsForm.imageMirror.label'),
-                        placeholder: t('credentialsForm.imageMirror.placeholder'),
-                        labelHelp: t('credentialsForm.imageMirror.labelHelp'),
+                        label: t('Image registry mirror'),
+                        placeholder: t('Enter your image registry mirror'),
+                        labelHelp: t(
+                            'Optional: Disconnected registry path, defined as hostname, port and repository path. It must contain all the installation images, and is used in disconnected installations. Example: repository.com:5000/openshift/ocp-release.'
+                        ),
                         value: imageMirror,
                         onChange: setImageMirror,
                         validation: (value) => validateImageMirror(value, t),
@@ -909,9 +945,13 @@ export function CredentialsForm(props: {
                         id: 'bootstrapOSImage',
                         isHidden: credentialsType !== Provider.baremetal,
                         type: 'Text',
-                        label: t('credentialsForm.bootstrapOSImage.label'),
-                        placeholder: t('credentialsForm.bootstrapOSImage.placeholder'),
-                        labelHelp: t('credentialsForm.bootstrapOSImage.labelHelp'),
+                        label: t('Bootstrap OS image'),
+                        placeholder: t(
+                            'Enter your bootstrap OS image.  The value must also contain the SHA-256 hash of the image.'
+                        ),
+                        labelHelp: t(
+                            'This value contains the URL to the image to use for the bootstrap machine. The value must also contain the SHA-256 hash of the image.'
+                        ),
                         value: bootstrapOSImage,
                         onChange: setBootstrapOSImage,
                         validation: (value) => validateBareMetalOSImageURL(value, t),
@@ -920,9 +960,13 @@ export function CredentialsForm(props: {
                         id: 'clusterOSImage',
                         isHidden: ![Provider.baremetal, Provider.openstack].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('credentialsForm.clusterOSImage.label'),
-                        placeholder: t('credentialsForm.clusterOSImage.placeholder'),
-                        labelHelp: t('credentialsForm.clusterOSImage.labelHelp'),
+                        label: t('Cluster OS image'),
+                        placeholder: t(
+                            'Enter your cluster OS image.  The value must also contain the SHA-256 hash of the image.'
+                        ),
+                        labelHelp: t(
+                            'This value contains the URL to the image to use for Red Hat OpenShift Container Platform cluster machines.  The value must also contain the SHA-256 hash of the image.'
+                        ),
                         value: clusterOSImage,
                         onChange: setClusterOSImage,
                         validation: (value) => validateBareMetalOSImageURL(value, t),
@@ -931,10 +975,12 @@ export function CredentialsForm(props: {
                         id: 'imageContentSources',
                         isHidden: ![Provider.openstack, Provider.vmware].includes(credentialsType as Provider),
                         type: 'TextArea',
-                        label: t('credentialsForm.imageContentSources.label'),
+                        label: t('Image Content Sources'),
                         placeholder:
                             '- mirrors:\n        - <mirror_host_name>:5000/<repo_name>/release\n        source: quay.example.com/openshift-release-dev/ocp-release',
-                        labelHelp: t('credentialsForm.imageContentSources.labelHelp'),
+                        labelHelp: t(
+                            'To complete these values, use the imageContentSources that you recorded during mirror registry creation.'
+                        ),
                         value: imageContentSources,
                         onChange: setImageContentSources,
                         validation: (value) => validateImageContentSources(value, t),
@@ -945,9 +991,11 @@ export function CredentialsForm(props: {
                             credentialsType as Provider
                         ),
                         type: 'TextArea',
-                        label: t('credentialsForm.additionalTrustBundle.label'),
-                        placeholder: t('credentialsForm.additionalTrustBundle.placeholder'),
-                        labelHelp: t('credentialsForm.additionalTrustBundle.labelHelp'),
+                        label: t('Additional trust bundle'),
+                        placeholder: t('Enter your additional trust bundle'),
+                        labelHelp: t(
+                            'This value provides the contents of the certificate file that is required to access the mirror registry.'
+                        ),
                         value: additionalTrustBundle,
                         onChange: setAdditionalTrustBundle,
                     },
@@ -955,11 +1003,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('credentialsForm.proxy.title'),
-                wizardTitle: t('credentialsForm.proxy.wizardTitle'),
+                title: t('Proxy'),
+                wizardTitle: t('proxy'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION_PROXY} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.proxy.wizardDescription')}
+                        {t('How do I configure a proxy?')}
                     </a>
                 ),
                 inputs: [
@@ -974,9 +1022,11 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('credentialsForm.httpProxy.label'),
-                        placeholder: t('credentialsForm.httpProxy.placeholder'),
-                        labelHelp: t('credentialsForm.httpProxy.labelHelp'),
+                        label: t('HTTP Proxy'),
+                        placeholder: t('Enter the HTTP Proxy url'),
+                        labelHelp: t(
+                            'A proxy URL to use for creating HTTP connections outside the cluster. The URL scheme must be http.'
+                        ),
                         value: httpProxy,
                         onChange: setHttpProxy,
                         validation: (value) => validateHttpProxy(value, t),
@@ -992,9 +1042,11 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('credentialsForm.httpsProxy.label'),
-                        placeholder: t('credentialsForm.httpsProxy.placeholder'),
-                        labelHelp: t('credentialsForm.httpsProxy.labelHelp'),
+                        label: t('HTTPS Proxy'),
+                        placeholder: t('Enter the HTTPS Proxy url'),
+                        labelHelp: t(
+                            'A proxy URL to use for creating HTTPS connections outside the cluster. If this is not specified, then httpProxy is used for both HTTP and HTTPS connections.'
+                        ),
                         value: httpsProxy,
                         onChange: setHttpsProxy,
                         validation: (value) => validateHttpsProxy(value, t),
@@ -1010,9 +1062,11 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('credentialsForm.noProxy.label'),
-                        placeholder: t('credentialsForm.noProxy.placeholder'),
-                        labelHelp: t('credentialsForm.noProxy.labelHelp'),
+                        label: t('No Proxy'),
+                        placeholder: t('Enter the comma delimited list of urls that do not require a proxy'),
+                        labelHelp: t(
+                            'A comma-separated list of destination domain names, domains, IP addresses or other network CIDRs to exclude proxying. Preface a domain with . to include all subdomains of that domain. Use * to bypass proxy for all destinations. Note that if you scale up workers not included in networking.machineCIDR from the installation configuration, you must add them to this list to prevent connection issues.'
+                        ),
                         value: noProxy,
                         onChange: setNoProxy,
                         validation: (value) => validateNoProxy(value, t),
@@ -1028,9 +1082,11 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
-                        label: t('credentialsForm.additionalTrustBundle.label'),
-                        placeholder: t('credentialsForm.additionalTrustBundle.placeholder'),
-                        labelHelp: t('credentialsForm.additionalTrustBundle.labelHelp'),
+                        label: t('Additional trust bundle'),
+                        placeholder: t('Enter your additional trust bundle'),
+                        labelHelp: t(
+                            'This value provides the contents of the certificate file that is required to access the mirror registry.'
+                        ),
                         value: additionalTrustBundle,
                         onChange: setAdditionalTrustBundle,
                     },
@@ -1038,11 +1094,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('credentialsForm.ansibleCredentials.title'),
-                wizardTitle: t('credentialsForm.ansibleCredentials.wizardTitle'),
+                title: t('Ansible Automation Platform'),
+                wizardTitle: t('Enter the Ansible Automation Platform credentials'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION_ANSIBLE} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.ansibleCredentials.wizardDescription')}
+                        {t('How do I get Ansible Automation Platform credentials?')}
                     </a>
                 ),
                 inputs: [
@@ -1050,8 +1106,8 @@ export function CredentialsForm(props: {
                         id: 'ansibleHost',
                         isHidden: credentialsType !== Provider.ansible,
                         type: 'Text',
-                        label: t('credentialsForm.ansibleHost.label'),
-                        placeholder: t('credentialsForm.ansibleHost.placeholder'),
+                        label: t('Ansible Tower host'),
+                        placeholder: t('Enter the Ansible Tower host URL'),
                         // labelHelp: t('credentialsForm.ansibleHost.labelHelp'), // TODO
                         value: ansibleHost,
                         onChange: setAnsibleHost,
@@ -1062,8 +1118,8 @@ export function CredentialsForm(props: {
                         id: 'ansibleToken',
                         isHidden: credentialsType !== Provider.ansible,
                         type: 'Text',
-                        label: t('credentialsForm.ansibleToken.label'),
-                        placeholder: t('credentialsForm.ansibleToken.placeholder'),
+                        label: t('Ansible Tower token'),
+                        placeholder: t('Enter the Ansible Tower token'),
                         // labelHelp: t('credentialsForm.ansibleToken.labelHelp'), // TODO
                         value: ansibleToken,
                         onChange: setAnsibleToken,
@@ -1074,11 +1130,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('credentialsForm.openshiftCredentials.title'),
-                wizardTitle: t('credentialsForm.openshiftCredentials.wizardTitle'),
+                title: t('OpenShift Cluster Manager'),
+                wizardTitle: t('Enter the OpenShift Cluster Manager API token'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION_REDHATCLOUD} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.openshiftCredentials.wizardDescription')}
+                        {t('How do I get the OpenShift Cluster Manager API Token?')}
                     </a>
                 ),
                 inputs: [
@@ -1086,8 +1142,8 @@ export function CredentialsForm(props: {
                         id: 'ocmAPIToken',
                         isHidden: credentialsType !== Provider.redhatcloud,
                         type: 'Text',
-                        label: t('credentialsForm.ocmapitoken.label'),
-                        placeholder: t('credentialsForm.ocmapitoken.placeholder'),
+                        label: t('OpenShift Cluster Manager API token'),
+                        placeholder: t('Enter the OpenShift Cluster Manager API token'),
                         value: ocmAPIToken,
                         onChange: setOcmAPIToken,
                         isRequired: true,
@@ -1097,11 +1153,11 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
-                title: t('credentialsForm.pullSecret.title'),
-                wizardTitle: t('credentialsForm.pullSecret.wizardTitle'),
+                title: t('Pull secret and SSH'),
+                wizardTitle: t('Enter the pull secret and SSH keys'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
-                        {t('credentialsForm.pullSecret.wizardDescription')}
+                        {t('How do I get the Red Hat OpenShift Container Platform pull secret?')}
                     </a>
                 ),
                 inputs: [
@@ -1117,9 +1173,11 @@ export function CredentialsForm(props: {
                             Provider.hybrid,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
-                        label: t('credentialsForm.pullSecret.label'),
-                        placeholder: t('credentialsForm.pullSecret.placeholder'),
-                        labelHelp: t('credentialsForm.pullSecret.labelHelp'),
+                        label: t('Pull secret'),
+                        placeholder: t('Enter Red Hat OpenShift Container Platform pull secret'),
+                        labelHelp: t(
+                            'The pull secret that you obtained from the pull secret page on the Red Hat OpenShift Cluster Manager site. Use this pull secret to authenticate with the services that are provided by the included authorities, including Quay.io, which serves the container images for OpenShift Container Platform components.'
+                        ),
                         value: pullSecret,
                         onChange: setPullSecret,
                         validation: (value) => validateJSON(value, t),
@@ -1137,9 +1195,9 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
-                        label: t('credentialsForm.sshPrivateKey.label'),
-                        placeholder: t('credentialsForm.sshPrivateKey.placeholder'),
-                        labelHelp: t('credentialsForm.sshPrivateKey.labelHelp'),
+                        label: t('SSH private key'),
+                        placeholder: t('Enter your SSH private key'),
+                        labelHelp: t('The private SSH key to use to access your cluster machines.'),
                         value: sshPrivatekey,
                         onChange: setSshPrivatekey,
                         validation: (value) => validatePrivateSshKey(value, t, false),
@@ -1157,9 +1215,9 @@ export function CredentialsForm(props: {
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
-                        label: t('credentialsForm.sshPublicKey.label'),
-                        placeholder: t('credentialsForm.sshPublicKey.placeholder'),
-                        labelHelp: t('credentialsForm.sshPublicKey.labelHelp'),
+                        label: t('SSH public key'),
+                        placeholder: t('Enter your SSH public key'),
+                        labelHelp: t('The public SSH key to use to access your cluster machines.'),
                         value: sshPublickey,
                         onChange: setSshPublickey,
                         validation: (value) => validatePublicSshKey(value, t),
@@ -1177,8 +1235,12 @@ export function CredentialsForm(props: {
                     patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
                 }
                 return patchResource(secret, patch).promise.then(() => {
+                    console.log('name', name)
                     toastContext.addAlert({
-                        title: t('credentialsForm.updated.title'),
+                        title: t('Credentials updated'),
+                        /*
+                            t('name')
+                        */
                         message: t('credentialsForm.updated.message', { name }),
                         type: 'success',
                         autoClose: true,
@@ -1188,7 +1250,7 @@ export function CredentialsForm(props: {
             } else {
                 return createResource(stateToData() as IResource).promise.then(() => {
                     toastContext.addAlert({
-                        title: t('credentialsForm.created.title'),
+                        title: t('Credentials created'),
                         message: t('credentialsForm.created.message', { name }),
                         type: 'success',
                         autoClose: true,
@@ -1197,13 +1259,13 @@ export function CredentialsForm(props: {
                 })
             }
         },
-        submitText: isEditing ? t('credentialsForm.submitButton.save') : t('credentialsForm.submitButton.add'),
-        submittingText: isEditing ? t('credentialsForm.submitButton.saving') : t('credentialsForm.submitButton.adding'),
-        reviewTitle: t('common:wizard.review.title'),
-        reviewDescription: t('common:wizard.review.description'),
-        cancelLabel: t('common:cancel'),
-        nextLabel: t('common:next'),
-        backLabel: t('common:back'),
+        submitText: isEditing ? t('Save') : t('Add'),
+        submittingText: isEditing ? t('Saving') : t('Adding'),
+        reviewTitle: t('Review your selections'),
+        reviewDescription: t('Return to a step to make changes'),
+        cancelLabel: t('Cancel'),
+        nextLabel: t('Next'),
+        backLabel: t('Back'),
         cancel: () => history.push(NavigationPath.credentials),
         stateToData,
     }

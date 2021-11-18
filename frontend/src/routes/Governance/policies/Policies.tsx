@@ -9,6 +9,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import {
     ButtonVariant,
+    Checkbox,
     Chip,
     DescriptionList,
     DescriptionListDescription,
@@ -16,7 +17,6 @@ import {
     DescriptionListTerm,
     PageSection,
 } from '@patternfly/react-core'
-import _ from 'lodash'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import moment from 'moment'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
@@ -24,18 +24,19 @@ import { useTranslation } from 'react-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { NoWrap } from '../../../components/NoWrap'
 import { deletePolicy } from '../../../lib/delete-policy'
-import { ResourceErrorCode } from '../../../resources'
-import { Policy } from '../../../resources/policy'
+import { patchResource, ResourceErrorCode, Policy, PolicyApiVersion, PolicyKind } from '../../../resources'
 import { PolicyRiskLabels } from '../components/PolicyRiskLabels'
 import { IGovernanceData, IPolicy } from '../useGovernanceData'
 
 export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
     const { governanceData } = props
 
-    const { t } = useTranslation(['govenance'])
+    const { t } = useTranslation(['governance', 'common'])
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Policy> | { open: false }>({
         open: false,
     })
+    const [placementBindingChecked] = useState(false)
+    const [placementRuleChecked] = useState(false)
     const policyKeyFn = useCallback(
         (resource: Policy) => resource.metadata.uid ?? `${resource.metadata.name}/${resource.metadata.namespace}`,
         []
@@ -125,6 +126,16 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             //     sort: (lhs, rhs) => compareNumbers(getPolicySeverity(lhs), getPolicySeverity(rhs)),
             // },
             {
+                header: t('Status'),
+                cell: (policy: Policy) => (
+                    <span>
+                        {policy.spec.disabled === true
+                            ? t('policy.table.actionGroup.status.disabled')
+                            : t('policy.table.actionGroup.status.enabled')}
+                    </span>
+                ),
+            },
+            {
                 header: t('Remediation'),
                 cell: 'spec.remediationAction',
                 sort: 'spec.remediationAction',
@@ -210,55 +221,285 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
         []
     )
 
+    let pbcheck = false
+    let prcheck = false
+
+    const renderRelatedResourceCheckbox = (placementBindingChecked: boolean, placementRuleChecked: boolean) => {
+        const handlePlacementBindingChecked = () => {
+            return (pbcheck = !placementBindingChecked)
+        }
+        const handlePlacementRuleChecked = () => {
+            return (prcheck = !placementRuleChecked)
+        }
+        return (
+            <Fragment>
+                <Checkbox
+                    id={'remove-placementBinding'}
+                    isChecked={placementBindingChecked}
+                    onClick={() => handlePlacementBindingChecked()}
+                    label={t('policy.modal.delete.associatedResources.placementBinding')}
+                />
+                <Checkbox
+                    id={'remove-placementRule'}
+                    isChecked={placementRuleChecked}
+                    onClick={() => handlePlacementRuleChecked()}
+                    label={t('policy.modal.delete.associatedResources.placementRule')}
+                />
+            </Fragment>
+        )
+    }
+
+    const bulkModalStatusColumns = [
+        {
+            header: t('policy.tableHeader.name'),
+            cell: 'metadata.name',
+            sort: 'metadata.name',
+        },
+        {
+            header: t('policy.table.actionGroup.status'),
+            cell: (policy: Policy) => (
+                <span>
+                    {policy.spec.disabled === true
+                        ? t('policy.table.actionGroup.status.disabled')
+                        : t('policy.table.actionGroup.status.enabled')}
+                </span>
+            ),
+        },
+    ]
+
+    const bulkModalRemediationColumns = [
+        {
+            header: t('policy.tableHeader.name'),
+            cell: 'metadata.name',
+            sort: 'metadata.name',
+        },
+        {
+            header: t('policy.table.actionGroup.status'),
+            cell: (policy: Policy) => (
+                <span>
+                    {policy.spec.remediationAction === t('policy.table.actions.inform').toLowerCase()
+                        ? t('policy.table.actions.inform')
+                        : t('policy.table.actions.enforce')}
+                </span>
+            ),
+        },
+    ]
+
     const tableActions = useMemo<IAcmTableAction<Policy>[]>(
         () => [
-            {
+            // TODO: Revisit bulk deletion
+            /*{
                 variant: 'bulk-action',
                 id: 'delete-policy',
                 title: t('Delete'),
                 click: (policies: Policy[]) => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.delete'),
+                        title: t('policy.bulk.title.delete'),
                         action: t('common:delete'),
                         processing: t('common:deleting'),
                         resources: [...policies],
                         description: t('bulk.message.delete'),
                         columns: [
                             {
-                                header: t('policies.tableHeader.name'),
+                                header: t('policy.tableHeader.name'),
                                 cell: 'metadata.name',
                                 sort: 'metadata.name',
                             },
-                            {
-                                header: t('policies.tableHeader.placementRule'),
-                                cell: 'status.placement[0].placementRule',
-                            },
-                            {
-                                header: t('policies.tableHeader.placementBinding'),
-                                cell: 'status.placement[0].placementBinding',
-                            },
                         ],
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
-                        actionFn: (policy) => deletePolicy(policy),
-                        close: () => setModalProps({ open: false }),
+                        actionFn: (policy) => deletePolicy(policy, pbcheck, prcheck),
+                        close: () => {
+                            setModalProps({ open: false })
+                            pbcheck = false
+                            prcheck = false
+                        },
+                        checkBox: renderRelatedResourceCheckbox(placementRuleChecked, placementBindingChecked),
                         isDanger: true,
                         icon: 'warning',
+                        confirmText: 'confirm',
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                     })
                 },
+            }, */
+            {
+                variant: 'bulk-action',
+                id: 'add-to-set',
+                title: t('policy.table.actions.addToPolicySet'),
+                click: () => {},
             },
             {
                 id: 'seperator-1',
                 variant: 'action-seperator',
             },
             {
-                variant: 'bulk-action',
-                id: 'add-to-set',
-                title: t('Add to policy set'),
-                click: () => {},
+                variant: 'action-group',
+                id: 'status',
+                title: t('policy.table.actionGroup.status'),
+                actions: [
+                    {
+                        variant: 'bulk-action',
+                        id: 'enable',
+                        title: t('policy.table.actions.enable'),
+                        click: (policies) => {
+                            setModalProps({
+                                open: true,
+                                title: t('policy.modal.title.enable'),
+                                action: t('policy.table.actions.enable'),
+                                processing: t('policy.table.actions.enabling'),
+                                resources: [...policies],
+                                description: t('policy.modal.message.enable'),
+                                columns: bulkModalStatusColumns,
+                                keyFn: (policy: Policy) => policy.metadata.uid as string,
+                                actionFn: (policy) => {
+                                    return patchResource(
+                                        {
+                                            apiVersion: PolicyApiVersion,
+                                            kind: PolicyKind,
+                                            metadata: {
+                                                name: policy.metadata.name,
+                                                namespace: policy.metadata.namespace,
+                                            },
+                                        } as Policy,
+                                        [{ op: 'replace', path: '/spec/disabled', value: false }]
+                                    )
+                                },
+                                close: () => {
+                                    setModalProps({ open: false })
+                                },
+                            })
+                        },
+                    },
+                    {
+                        variant: 'bulk-action',
+                        id: 'disable',
+                        title: t('policy.table.actions.disable'),
+                        click: (policies) => {
+                            setModalProps({
+                                open: true,
+                                title: t('policy.modal.title.disable'),
+                                action: t('policy.table.actions.disable'),
+                                processing: t('policy.table.actions.disabling'),
+                                resources: [...policies],
+                                description: t('policy.modal.message.disable'),
+                                columns: [
+                                    {
+                                        header: t('policy.tableHeader.name'),
+                                        cell: 'metadata.name',
+                                        sort: 'metadata.name',
+                                    },
+                                    {
+                                        header: t('policy.table.actionGroup.status'),
+                                        cell: (policy) => (
+                                            <span>
+                                                {policy.spec.disabled === true
+                                                    ? t('policy.table.actionGroup.status.disabled')
+                                                    : t('policy.table.actionGroup.status.enabled')}
+                                            </span>
+                                        ),
+                                    },
+                                ],
+                                keyFn: (policy: Policy) => policy.metadata.uid as string,
+                                actionFn: (policy) => {
+                                    return patchResource(
+                                        {
+                                            apiVersion: PolicyApiVersion,
+                                            kind: PolicyKind,
+                                            metadata: {
+                                                name: policy.metadata.name,
+                                                namespace: policy.metadata.namespace,
+                                            },
+                                        } as Policy,
+                                        [{ op: 'replace', path: '/spec/disabled', value: true }]
+                                    )
+                                },
+                                close: () => {
+                                    setModalProps({ open: false })
+                                },
+                            })
+                        },
+                    },
+                ],
+            },
+            {
+                id: 'seperator-2',
+                variant: 'action-seperator',
+            },
+            {
+                variant: 'action-group',
+                id: 'remediation',
+                title: t('policy.table.actionGroup.remediation'),
+                actions: [
+                    {
+                        variant: 'bulk-action',
+                        id: 'inform',
+                        title: t('policy.table.actions.inform'),
+                        click: (policies) => {
+                            setModalProps({
+                                open: true,
+                                title: t('policy.modal.title.inform'),
+                                action: t('policy.table.actions.inform'),
+                                processing: t('policy.table.actions.informing'),
+                                resources: [...policies],
+                                description: t('policy.modal.message.inform'),
+                                columns: bulkModalRemediationColumns,
+                                keyFn: (policy: Policy) => policy.metadata.uid as string,
+                                actionFn: (policy) => {
+                                    return patchResource(
+                                        {
+                                            apiVersion: PolicyApiVersion,
+                                            kind: PolicyKind,
+                                            metadata: {
+                                                name: policy.metadata.name,
+                                                namespace: policy.metadata.namespace,
+                                            },
+                                        } as Policy,
+                                        [{ op: 'replace', path: '/spec/remediationAction', value: 'inform' }]
+                                    )
+                                },
+                                close: () => {
+                                    setModalProps({ open: false })
+                                },
+                            })
+                        },
+                    },
+                    {
+                        variant: 'bulk-action',
+                        id: 'enforce',
+                        title: t('policy.table.actions.enforce'),
+                        click: (policies) => {
+                            setModalProps({
+                                open: true,
+                                title: t('policy.modal.title.enforce'),
+                                action: t('policy.table.actions.enforce'),
+                                processing: t('policy.table.actions.enforcing'),
+                                resources: [...policies],
+                                description: t('policy.modal.message.enforce'),
+                                columns: bulkModalRemediationColumns,
+                                keyFn: (policy: Policy) => policy.metadata.uid as string,
+                                actionFn: (policy) => {
+                                    return patchResource(
+                                        {
+                                            apiVersion: PolicyApiVersion,
+                                            kind: PolicyKind,
+                                            metadata: {
+                                                name: policy.metadata.name,
+                                                namespace: policy.metadata.namespace,
+                                            },
+                                        } as Policy,
+                                        [{ op: 'replace', path: '/spec/remediationAction', value: 'enforce' }]
+                                    )
+                                },
+                                close: () => {
+                                    setModalProps({ open: false })
+                                },
+                            })
+                        },
+                    },
+                ],
             },
         ],
-        []
+        [placementRuleChecked, placementBindingChecked]
     )
 
     const policyRowActions = useMemo<IAcmRowAction<Policy>[]>(
@@ -269,14 +510,19 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 click: (policy: Policy) => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.delete'),
+                        title: t('policy.modal.title.delete'),
                         action: t('common:delete'),
                         processing: t('common:deleting'),
                         resources: [policy],
-                        description: t('bulk.message.delete'),
+                        description: t('policy.modal.message.confirm'),
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
-                        actionFn: (policy) => deletePolicy(policy),
-                        close: () => setModalProps({ open: false }),
+                        actionFn: (policy) => deletePolicy(policy, pbcheck, prcheck),
+                        close: () => {
+                            setModalProps({ open: false })
+                            pbcheck = false
+                            prcheck = false
+                        },
+                        checkBox: renderRelatedResourceCheckbox(placementRuleChecked, placementBindingChecked),
                         isDanger: true,
                         icon: 'warning',
                         confirmText: 'confirm',
@@ -285,35 +531,141 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 },
             },
             {
-                id: 'inform-policy',
-                title: t('Inform'),
+                id: 'enable-policy',
+                title: t('policy.table.actions.enable'),
                 tooltip: 'desc or disabled message',
-                isDisabled: true,
-                click: () => {},
-            },
-            {
-                id: 'enforce-policy',
-                title: t('Enforce'),
-                tooltip: 'desc or disabled message',
-                isDisabled: true,
-                click: () => {},
+                addSeparator: true,
+                isDisabled: false,
+                click: (policy) => {
+                    setModalProps({
+                        open: true,
+                        title: t('policy.modal.title.enable'),
+                        action: t('policy.table.actions.enable'),
+                        processing: t('policy.table.actions.enabling'),
+                        resources: [policy],
+                        description: t('policy.modal.message.enable'),
+                        keyFn: (policy: Policy) => policy.metadata.uid as string,
+                        actionFn: (policy) => {
+                            return patchResource(
+                                {
+                                    apiVersion: PolicyApiVersion,
+                                    kind: PolicyKind,
+                                    metadata: {
+                                        name: policy.metadata.name,
+                                        namespace: policy.metadata.namespace,
+                                    },
+                                } as Policy,
+                                [{ op: 'replace', path: '/spec/disabled', value: false }]
+                            )
+                        },
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                    })
+                },
             },
             {
                 id: 'disable-policy',
-                title: t('Disable'),
+                title: t('policy.table.actions.disable'),
                 tooltip: 'desc or disabled message',
-                isDisabled: true,
-                click: () => {},
+                isDisabled: false,
+                click: (policy) => {
+                    setModalProps({
+                        open: true,
+                        title: t('policy.modal.title.disable'),
+                        action: t('policy.table.actions.disable'),
+                        processing: t('policy.table.actions.disabling'),
+                        resources: [policy],
+                        description: t('policy.modal.message.disable'),
+                        keyFn: (policy: Policy) => policy.metadata.uid as string,
+                        actionFn: (policy) => {
+                            return patchResource(
+                                {
+                                    apiVersion: PolicyApiVersion,
+                                    kind: PolicyKind,
+                                    metadata: {
+                                        name: policy.metadata.name,
+                                        namespace: policy.metadata.namespace,
+                                    },
+                                } as Policy,
+                                [{ op: 'replace', path: '/spec/disabled', value: true }]
+                            )
+                        },
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                    })
+                },
             },
             {
-                id: 'enable-policy',
-                title: t('Enable'),
+                id: 'inform-policy',
+                title: t('policy.table.actions.inform'),
                 tooltip: 'desc or disabled message',
-                isDisabled: true,
-                click: () => {},
+                addSeparator: true,
+                isDisabled: false,
+                click: (policy: Policy) => {
+                    setModalProps({
+                        open: true,
+                        title: t('policy.modal.title.inform'),
+                        action: t('policy.table.actions.inform'),
+                        processing: t('policy.table.actions.informing'),
+                        resources: [policy],
+                        description: t('policy.modal.message.inform'),
+                        keyFn: (policy: Policy) => policy.metadata.uid as string,
+                        actionFn: (policy) => {
+                            return patchResource(
+                                {
+                                    apiVersion: PolicyApiVersion,
+                                    kind: PolicyKind,
+                                    metadata: {
+                                        name: policy.metadata.name,
+                                        namespace: policy.metadata.namespace,
+                                    },
+                                } as Policy,
+                                [{ op: 'replace', path: '/spec/remediationAction', value: 'inform' }]
+                            )
+                        },
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                    })
+                },
+            },
+            {
+                id: 'enforce-policy',
+                title: t('policy.table.actions.enforce'),
+                tooltip: 'desc or disabled message',
+                isDisabled: false,
+                click: (policy) => {
+                    setModalProps({
+                        open: true,
+                        title: t('policy.modal.title.enforce'),
+                        action: t('policy.table.actions.enforce'),
+                        processing: t('policy.table.actions.enforcing'),
+                        resources: [policy],
+                        description: t('policy.modal.message.enforce'),
+                        keyFn: (policy: Policy) => policy.metadata.uid as string,
+                        actionFn: (policy) => {
+                            return patchResource(
+                                {
+                                    apiVersion: PolicyApiVersion,
+                                    kind: PolicyKind,
+                                    metadata: {
+                                        name: policy.metadata.name,
+                                        namespace: policy.metadata.namespace,
+                                    },
+                                } as Policy,
+                                [{ op: 'replace', path: '/spec/remediationAction', value: 'enforce' }]
+                            )
+                        },
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                    })
+                },
             },
         ],
-        []
+        [placementRuleChecked, placementBindingChecked]
     )
 
     const namespaces = useMemo(() => {
