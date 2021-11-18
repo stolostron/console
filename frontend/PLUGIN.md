@@ -26,6 +26,15 @@ In the case of 4.10+ we will install addition [resources](https://github.com/ope
 
 ## Development
 
+### Running console as an OCP dynamic plugin
+
+From the root of the `console` repository run:
+```
+npm run plugin
+```
+
+This will concurrently start the backend server, webpack build watching for updates, and http-server to serve the plugin for the OCP console.   
+
 ### [OCP Console Git Repo](https://github.com/openshift/console)
 
 ```
@@ -47,13 +56,13 @@ source ./contrib/oc-environment.sh
 ```
 
 ```
-./bin/bridge -plugins acm-plugin=http://localhost:3000 --plugin-proxy='{"services":[{"consoleAPIPath":"/api/proxy/namespace/open-cluster-management/service/serviceName:9991/","endpoint":"https://localhost:4000","authorize":true}]}'
+./bin/bridge -plugins acm-plugin=http://localhost:3000 --plugin-proxy='{"services":[{"consoleAPIPath":"/api/proxy/acm-console-plugin/","endpoint":"https://localhost:4000","authorize":true}]}'
 ```
 
 Bridge variables can also be passes in as environment variables
 
 ```
-BRIDGE_PLUGIN_PROXY='{"services":[{"consoleAPIPath":"/api/proxy/namespace/open-cluster-management/service/serviceName:9991/","endpoint":"https://localhost:4000","authorize":true}]}'
+BRIDGE_PLUGIN_PROXY='{"services":[{"consoleAPIPath":"/api/proxy/acm-console-plugin/","endpoint":"https://localhost:4000","authorize":true}]}'
 ```
 
 ### Dynamic Plugin support for getting resources

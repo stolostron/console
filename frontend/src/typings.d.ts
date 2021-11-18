@@ -13,3 +13,6 @@ declare module '*.svg' {
     export { ReactComponent }
     export default content
 }
+export declare global {
+    interface Window { acmConsolePluginProxyPath: string }
+}

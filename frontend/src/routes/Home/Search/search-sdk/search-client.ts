@@ -3,10 +3,11 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { ApolloClient, InMemoryCache } from '@apollo/client'
+import { getBackendUrl } from '../../../../resources'
 
 export const searchClient = new ApolloClient({
     connectToDevTools: process.env.NODE_ENV === 'development',
-    uri: '/multicloud/proxy/search',
+    uri: `${getBackendUrl()}/proxy/search`,
     cache: new InMemoryCache(),
     credentials: 'same-origin',
     defaultOptions: {

@@ -5,7 +5,7 @@ import { AcmAlert, AcmLoadingPage, AcmLogWindow } from '@open-cluster-management
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { backendUrl, fetchGet } from '../../../../resources'
+import { getBackendUrl, fetchGet } from '../../../../resources'
 
 export default function LogsPage(props: {
     resourceError: string
@@ -30,7 +30,7 @@ export default function LogsPage(props: {
     if (cluster !== 'local-cluster' && container !== '') {
         const abortController = new AbortController()
         const logsResult = fetchGet(
-            backendUrl +
+            getBackendUrl() +
                 `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${namespace}/${name}/${container}?tailLines=1000`,
             abortController.signal
         )
@@ -44,7 +44,7 @@ export default function LogsPage(props: {
     } else if (cluster === 'local-cluster' && container !== '') {
         const abortController = new AbortController()
         const logsResult = fetchGet(
-            backendUrl + `/api/v1/namespaces/${namespace}/pods/${name}/log?container=${container}&tailLines=1000`,
+            getBackendUrl() + `/api/v1/namespaces/${namespace}/pods/${name}/log?container=${container}&tailLines=1000`,
             abortController.signal
         )
         logsResult
