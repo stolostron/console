@@ -365,45 +365,45 @@ describe('ClusterSetDetails page', () => {
     })
     test('renders', async () => {
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await waitForText('table.details')
+        await waitForText('Details')
 
-        await clickByText('tab.clusters')
+        await clickByText('Managed clusters')
         await waitForText(clusterSetCluster.metadata.name!)
 
-        await clickByText('tab.clusterPools')
+        await clickByText('Cluster pools')
     })
     test('can install submariner add-ons', async () => {
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await waitForText('table.details')
+        await waitForText('Details')
 
-        await clickByText('tab.submariner')
+        await clickByText('Submariner add-ons')
 
         await waitForText(mockSubmarinerAddon!.metadata.namespace!)
 
         const nockListExtraSecrets = nockNamespacedList(mockManagedClusterExtraSecret, [mockManagedClusterExtraSecret])
         const nockListNoCredsSecrets = nockNamespacedList(mockManagedClusterNoCredentialsSecret, [])
-        await clickByText('managed.clusterSets.submariner.addons.install', 0)
+        await clickByText('Install Submariner add-ons', 0)
         await waitForNocks([nockListExtraSecrets, nockListNoCredsSecrets])
 
-        await waitForText('submariner.install.step.clusters.title', true)
+        await waitForText('Select clusters', true)
 
-        await clickByPlaceholderText('submariner.install.form.clusters.placeholder')
+        await clickByPlaceholderText('Select clusters')
         await clickByText(mockManagedClusterExtra!.metadata.name!)
         await clickByText(mockManagedClusterNoCredentials!.metadata.name!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // mockManagedClusterExtra
         await waitForTestId('credential-secret')
         await waitForNotTestId('awsAccessKeyID')
         await waitForNotTestId('awsSecretAccessKeyID')
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // mockManagedClusterNoCredentials
         await waitForNotTestId('credential-secret')
         await typeByTestId('awsAccessKeyID', mockManagedClusterNoCredentialsSecret.data!.aws_access_key_id)
         await typeByTestId('awsSecretAccessKeyID', mockManagedClusterNoCredentialsSecret.data!.aws_secret_access_key)
 
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // mockManagedClusterExtra
         const nockMCAExtra = nockCreate(mockSubmarinerAddonExtra)
@@ -417,36 +417,36 @@ describe('ClusterSetDetails page', () => {
         )
         const nockSCNoCreds = nockCreate(mockManagedClusterNoCredentialsSubmarinerConfig)
 
-        await clickByText('common:install')
+        await clickByText('Install')
         await waitForNocks([nockMCAExtra, nockSCExtra, nockMCANoCreds, nockSecretNoCreds, nockSCNoCreds])
     })
     test('can uninstall submariner add-ons', async () => {
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await waitForText('table.details')
+        await waitForText('Details')
 
-        await clickByText('tab.submariner')
+        await clickByText('Submariner add-ons')
 
         await waitForText(mockSubmarinerAddon!.metadata.namespace!)
         await clickByLabel('Actions', 0)
-        await clickByText('uninstall.add-on')
-        await waitForText('bulk.title.uninstallSubmariner')
+        await clickByText('Uninstall add-on')
+        await waitForText('Uninstall Submariner add-ons?')
 
         const deleteAddon = nockDelete(mockSubmarinerAddon)
         const deleteConfig = nockDelete(mockSubmarinerConfig)
-        await clickByText('common:uninstall')
+        await clickByText('Uninstall')
         await waitForNocks([deleteAddon, deleteConfig])
     })
     test('can update a submariner config', async () => {
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await waitForText('table.details')
+        await waitForText('Details')
 
-        await clickByText('tab.submariner')
+        await clickByText('Submariner add-ons')
 
         await waitForText(mockSubmarinerAddon!.metadata.namespace!)
 
         await clickByLabel('Actions', 0)
-        await clickByText('submariner.config.edit')
-        await waitForText('submariner.update.form.title')
+        await clickByText('Edit configuration')
+        await waitForText('Edit Submariner configuration')
 
         const patch = nockPatch(mockSubmarinerConfig, [
             {
@@ -471,7 +471,7 @@ describe('ClusterSetDetails page', () => {
                 value: submarinerConfigDefault.gateways,
             },
         ])
-        await clickByText('common:save')
+        await clickByText('Save')
         await waitForNocks([patch])
     })
     test('can remove users from cluster set', async () => {
@@ -479,14 +479,14 @@ describe('ClusterSetDetails page', () => {
             mockClusterRoleBinding,
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await clickByText('tab.access')
+        await clickByText('Access management')
         await waitForNocks([nock])
         await waitForText('mock-user')
         await clickByLabel('Actions', 0)
-        await clickByText('access.remove')
-        await waitForText('bulk.title.removeAuthorization')
+        await clickByText('Remove')
+        await waitForText('Remove users or groups?')
         const deleteNock = nockDelete(mockClusterRoleBinding)
-        await clickByText('remove')
+        await clickByText('Remove')
         await waitForNocks([deleteNock])
     })
     test('can add users to the cluster set', async () => {
@@ -494,14 +494,14 @@ describe('ClusterSetDetails page', () => {
             mockClusterRoleBinding,
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await clickByText('tab.access')
+        await clickByText('Access management')
         await waitForNocks([nock])
-        await clickByText('access.add')
-        await waitForText('access.add.title')
-        await clickByPlaceholderText('access.select.user')
+        await clickByText('Add user or group')
+        await waitForText('Adding a user or group')
+        await clickByPlaceholderText('Select user')
         await clickByText(mockUser.metadata.name!)
-        await clickByText('access.select.role')
-        await clickByText('access.clusterSet.role.admin', 1)
+        await clickByText('Select role')
+        await clickByText('Cluster set admin', 1)
         const createNock = nockCreate({
             apiVersion: RbacApiVersion,
             kind: ClusterRoleBindingKind,
@@ -521,7 +521,7 @@ describe('ClusterSetDetails page', () => {
                 name: `open-cluster-management:managedclusterset:admin:${mockManagedClusterSet!.metadata.name!}`,
             },
         })
-        await clickByText('common:add')
+        await clickByText('Add')
         await waitForNocks([createNock])
     })
     test('can add groups to the cluster set', async () => {
@@ -529,15 +529,15 @@ describe('ClusterSetDetails page', () => {
             mockClusterRoleBinding,
         ])
         await waitForText(mockManagedClusterSet.metadata.name!, true)
-        await clickByText('tab.access')
+        await clickByText('Access management')
         await waitForNocks([nock])
-        await clickByText('access.add')
-        await waitForText('access.add.title')
-        await clickByText('access.groups')
-        await clickByPlaceholderText('access.select.group')
+        await clickByText('Add user or group')
+        await waitForText('Select user or group')
+        await clickByText('Groups')
+        await clickByPlaceholderText('Select group')
         await clickByText(mockGroup.metadata.name!)
-        await clickByText('access.select.role')
-        await clickByText('access.clusterSet.role.view')
+        await clickByPlaceholderText('Select role')
+        await clickByText('Cluster set view')
         const createNock = nockCreate({
             apiVersion: RbacApiVersion,
             kind: ClusterRoleBindingKind,
@@ -557,7 +557,7 @@ describe('ClusterSetDetails page', () => {
                 name: `open-cluster-management:managedclusterset:view:${mockManagedClusterSet!.metadata.name!}`,
             },
         })
-        await clickByText('common:add')
+        await clickByText('Add')
         await waitForNocks([createNock])
     })
 })
@@ -612,6 +612,6 @@ describe('ClusterSetDetails deletion', () => {
     )
     test('renders deletion page when the cluster set has a deletionTimestamp', async () => {
         render(<Component />)
-        await waitForText('deleting.managedClusterSet.inprogress')
+        await waitForText('{{managedClusterSetName}} is being deleted.')
     })
 })

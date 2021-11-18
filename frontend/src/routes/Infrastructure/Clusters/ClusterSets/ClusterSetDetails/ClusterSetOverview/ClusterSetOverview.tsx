@@ -19,7 +19,7 @@ import { ClusterSetContext } from '../ClusterSetDetails'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
 
 export function ClusterSetOverviewPageContent() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { push } = useHistory()
     const { clusterSet, clusters, clusterPools, submarinerAddons, clusterSetBindings } = useContext(ClusterSetContext)
 
@@ -31,25 +31,25 @@ export function ClusterSetOverviewPageContent() {
         <AcmPageContent id="overview">
             <PageSection>
                 <AcmDescriptionList
-                    title={t('table.details')}
+                    title={t('Details')}
                     leftItems={[
                         {
-                            key: t('table.name'),
+                            key: t('Name'),
                             value: clusterSet?.metadata.name,
                         },
                         {
-                            key: t('table.networkStatus'),
+                            key: t('Multi-cluster network status'),
                             value: <MultiClusterNetworkStatus clusterSet={clusterSet!} />,
                         },
                     ]}
                     rightItems={[
                         {
-                            key: t('table.clusterSetBinding'),
+                            key: t('Namespace bindings'),
                             keyAction: (
                                 <Popover
                                     bodyContent={
                                         <Trans
-                                            i18nKey="cluster:clusterSetBinding.edit.message"
+                                            i18nKey="A <bold>ManagedClusterSetBinding</bold> resource binds a <bold>ManagedClusterSet</bold> resource to a namespace. Placement resources that are created in the same namespace can only access managed clusters that are included in the bound <bold>ManagedClusterSet</bold> resource."
                                             components={{ bold: <strong /> }}
                                         />
                                     }
@@ -70,13 +70,13 @@ export function ClusterSetOverviewPageContent() {
                 <div style={{ marginTop: '24px' }}>
                     <AcmCountCardSection
                         id="summary-status"
-                        title={t('summary.status')}
+                        title={t('Status')}
                         cards={[
                             {
                                 id: 'submariners',
                                 count: submarinerAddons!.length,
-                                title: t('submariner.addons'),
-                                linkText: t('summary.submariner.launch'),
+                                title: t('Submariner add-ons'),
+                                linkText: t('Go to Submariner add-ons'),
                                 onLinkClick: () =>
                                     push(
                                         NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)
@@ -90,8 +90,8 @@ export function ClusterSetOverviewPageContent() {
                             {
                                 id: 'clusters',
                                 count: clusters!.length,
-                                title: t('clusters'),
-                                linkText: t('summary.clusters.launch'),
+                                title: t('Clusters'),
+                                linkText: t('Go to Managed clusters'),
                                 onLinkClick: () =>
                                     push(NavigationPath.clusterSetClusters.replace(':id', clusterSet!.metadata.name!)),
                                 countClick: () =>
@@ -103,8 +103,8 @@ export function ClusterSetOverviewPageContent() {
                             {
                                 id: 'clusterPools',
                                 count: clusterPools!.length,
-                                title: t('clusterPools'),
-                                linkText: t('summary.clusterPools.launch'),
+                                title: t('Cluster pools'),
+                                linkText: t('Go to Cluster pools'),
                                 onLinkClick: () =>
                                     push(
                                         NavigationPath.clusterSetClusterPools.replace(':id', clusterSet!.metadata.name!)

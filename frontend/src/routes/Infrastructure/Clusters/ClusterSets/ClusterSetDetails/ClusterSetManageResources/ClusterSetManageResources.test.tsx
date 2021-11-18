@@ -228,7 +228,7 @@ describe('ClusterSetManageClusters', () => {
         // verify cluster to add is not assigned
         expect(
             container.querySelector(
-                `[data-ouia-component-id=${mockManagedClusterAdd.metadata.name!}] td[data-label="table.assignedToSet"]`
+                `[data-ouia-component-id=${mockManagedClusterAdd.metadata.name!}] td[data-label="Current cluster set"]`
             )!.innerHTML
         ).toEqual('-')
 
@@ -236,7 +236,7 @@ describe('ClusterSetManageClusters', () => {
         expect(
             container.querySelector(
                 `[data-ouia-component-id=${mockManagedClusterRemove.metadata
-                    .name!}] td[data-label="table.assignedToSet"]`
+                    .name!}] td[data-label="Current cluster set"]`
             )!.innerHTML
         ).toEqual(mockManagedClusterSet.metadata.name!)
 
@@ -244,7 +244,7 @@ describe('ClusterSetManageClusters', () => {
         expect(
             container.querySelector(
                 `[data-ouia-component-id=${mockManagedClusterUnchanged.metadata
-                    .name!}] td[data-label="table.assignedToSet"]`
+                    .name!}] td[data-label="Current cluster set"]`
             )!.innerHTML
         ).toEqual(mockManagedClusterSet.metadata.name!)
 
@@ -252,7 +252,7 @@ describe('ClusterSetManageClusters', () => {
         expect(
             container.querySelector(
                 `[data-ouia-component-id=${mockManagedClusterTransfer.metadata
-                    .name!}] td[data-label="table.assignedToSet"]`
+                    .name!}] td[data-label="Current cluster set"]`
             )!.innerHTML
         ).toEqual(mockManagedClusterSetTransfer.metadata.name!)
 
@@ -263,17 +263,17 @@ describe('ClusterSetManageClusters', () => {
         // select the cluster to transfer
         await clickByLabel('Select row 3')
 
-        await clickByText('common:review')
+        await clickByText('Review')
 
         // confirm modal
-        await waitForText('manageClusterSet.form.modal.title')
+        await waitForText('Confirm changes')
 
-        await waitForText('managedClusterSet.form.added')
-        await waitForText('managedClusterSet.form.removed')
-        await waitForText('managedClusterSet.form.unchanged')
-        await waitForText('managedClusterSet.form.transferred')
+        await waitForText('Added')
+        await waitForText('Removed')
+        await waitForText('No change')
+        await waitForText('Transferred')
 
-        await clickByText('common:save')
+        await clickByText('Save')
 
         await waitForNocks([
             // remove cluster

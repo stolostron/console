@@ -31,7 +31,7 @@ import { useCanJoinClusterSets } from '../../components/useCanJoinClusterSets'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetManageResourcesPage() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     return (
         <AcmPage
@@ -39,14 +39,14 @@ export function ClusterSetManageResourcesPage() {
             header={
                 <AcmPageHeader
                     breadcrumb={[
-                        { text: t('clusterSets'), to: NavigationPath.clusterSets },
+                        { text: t('Cluster sets'), to: NavigationPath.clusterSets },
                         {
                             text: clusterSet?.metadata.name!,
                             to: NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!),
                         },
-                        { text: t('page.header.cluster-set.manage-assignments'), to: '' },
+                        { text: t('Manage resource assignments'), to: '' },
                     ]}
-                    title={t('page.header.cluster-set.manage-assignments')}
+                    title={t('Manage resource assignments')}
                 />
             }
         >
@@ -60,7 +60,7 @@ export function ClusterSetManageResourcesPage() {
 }
 
 export function ClusterSetManageResourcesContent() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const { clusterSet } = useContext(ClusterSetContext)
     const [managedClusters, clusterPools, managedClusterSets] = useRecoilValue(
@@ -100,13 +100,19 @@ export function ClusterSetManageResourcesContent() {
         <>
             <AcmForm>
                 <Title headingLevel="h4" size="xl">
-                    {t('manageClusterSet.form.section.table')}
+                    {t('Select resources to toggle their assignments to the cluster set')}
                 </Title>
 
-                <div>{t('manageClusterSet.form.section.table.description')}</div>
+                <div>
+                    {t(
+                        'Resources can be added, removed, and transferred from other cluster sets (if you have permissions to remove from them from their assigned set).'
+                    )}
+                </div>
                 <div>
                     <Trans
-                        i18nKey={'cluster:manageClusterSet.form.section.table.description.second'}
+                        i18nKey={
+                            "<bold>Important:</bold> assigning a resource to the cluster set will give all cluster set users permissions to the resource's namespace."
+                        }
                         components={{ bold: <strong />, p: <p /> }}
                     />
                 </div>
@@ -119,7 +125,7 @@ export function ClusterSetManageResourcesContent() {
                     key="clusterSetManageClustersTable"
                     columns={[
                         {
-                            header: t('table.name'),
+                            header: t('Name'),
                             sort: 'metadata.name',
                             search: 'metadata.name',
                             cell: (resource: IResource) => (
@@ -127,13 +133,13 @@ export function ClusterSetManageResourcesContent() {
                             ),
                         },
                         {
-                            header: t('table.kind'),
+                            header: t('Kind'),
                             sort: 'kind',
                             search: 'kind',
                             cell: (resource: IResource) => resource.kind,
                         },
                         {
-                            header: t('table.assignedToSet'),
+                            header: t('Current cluster set'),
                             sort: (a: IResource, b: IResource) =>
                                 compareStrings(
                                     a?.metadata!.labels?.[managedClusterSetLabel],
@@ -146,11 +152,13 @@ export function ClusterSetManageResourcesContent() {
                     emptyState={
                         <AcmEmptyState
                             key="mcEmptyState"
-                            title={t('createClusterSet.form.section.clusters.emptyTitle')}
-                            message={t('createClusterSet.form.section.clusters.emptyMessage')}
+                            title={t('No assignable resources found')}
+                            message={t(
+                                "You don't have any clusters or cluster pools available to assign to this cluster set."
+                            )}
                             action={
                                 <AcmButton onClick={() => history.push(NavigationPath.clusterSets)} role="link">
-                                    {t('managedClusterSet.form.emptyStateButton')}
+                                    {t('Back to cluster sets')}
                                 </AcmButton>
                             }
                         />
@@ -161,7 +169,7 @@ export function ClusterSetManageResourcesContent() {
                 {availableResources.length > 0 && (
                     <ActionGroup>
                         <AcmButton id="save" variant="primary" onClick={() => setShowConfirmModal(true)}>
-                            {t('common:review')}
+                            {t('Review')}
                         </AcmButton>
                         <AcmButton
                             variant="link"
@@ -171,57 +179,61 @@ export function ClusterSetManageResourcesContent() {
                                 )
                             }
                         >
-                            {t('common:cancel')}
+                            {t('Cancel')}
                         </AcmButton>
                     </ActionGroup>
                 )}
             </AcmForm>
             <BulkActionModel<IResource>
                 open={showConfirmModal}
-                title={t('manageClusterSet.form.modal.title')}
-                action={t('common:save')}
-                processing={t('common:saving')}
+                title={t('Confirm changes')}
+                action={t('Save')}
+                processing={t('Saving')}
                 onCancel={() => setShowConfirmModal(false)}
                 close={() => history.push(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
                 isValidError={errorIsNot([ResourceErrorCode.NotFound])}
                 resources={[...removedResources, ...selectedResources]}
                 hideTableAfterSubmit={true}
                 description={
-                    <div style={{ marginBottom: '12px' }}>{t('manageClusterSet.form.review.description')}</div>
+                    <div style={{ marginBottom: '12px' }}>
+                        {t(
+                            'Adding or removing resources from a cluster will affect access control permissions in this set for all assigned cluster set users. The clusters can be added or removed to the cluster set at any time.'
+                        )}
+                    </div>
                 }
                 columns={[
                     {
-                        header: t('table.name'),
+                        header: t('Name'),
                         sort: 'metadata.name',
                         cell: (resource) => <span style={{ whiteSpace: 'nowrap' }}>{resource.metadata!.name}</span>,
                     },
                     {
-                        header: t('table.kind'),
+                        header: t('Kind'),
                         sort: 'kind',
                         cell: (resource: IResource) => resource.kind,
                     },
                     {
-                        header: t('table.change'),
+                        header: t('Change'),
                         cell: (resource) => {
                             if (
                                 removedResources.find(
                                     (removedResource) => removedResource.metadata!.uid === resource.metadata!.uid
                                 )
                             ) {
-                                return t('managedClusterSet.form.removed')
+                                return t('Removed')
                             } else if (
                                 resource.metadata!.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
                             ) {
-                                return t('managedClusterSet.form.unchanged')
+                                return t('No change')
                             } else {
                                 return resource.metadata!.labels?.[managedClusterSetLabel] === undefined
-                                    ? t('managedClusterSet.form.added')
-                                    : t('managedClusterSet.form.transferred')
+                                    ? t('Added')
+                                    : t('Transferred')
                             }
                         },
                     },
                     {
-                        header: t('table.assignedToSet'),
+                        header: t('Current cluster set'),
                         sort: (a: IResource, b: IResource) =>
                             compareStrings(
                                 a?.metadata!.labels?.[managedClusterSetLabel],

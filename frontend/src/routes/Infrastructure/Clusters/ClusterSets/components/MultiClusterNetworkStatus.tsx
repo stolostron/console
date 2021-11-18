@@ -12,7 +12,7 @@ import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetDetails/Cl
 import { useClusters } from './useClusters'
 
 export function MultiClusterNetworkStatus(props: { clusterSet: ManagedClusterSet }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet } = props
     const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
 
@@ -25,19 +25,23 @@ export function MultiClusterNetworkStatus(props: { clusterSet: ManagedClusterSet
     let status = ''
     let message = ''
     let path = NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)
-    let linkText = t('view.submariner')
+    let linkText = t('View Submariner add-ons')
 
     if (clusters.length < 2 || submarinerAddons.length < 2) {
         if (clusters.length < 2) {
-            status = t('status.submariner.network.insufficientClusters')
-            message = t('status.submariner.network.insufficientClusters.message')
+            status = t('Add clusters')
+            message = t(
+                'At least two clusters must be added to the cluster set in order to begin forming a multi-cluster network.'
+            )
             path = NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)
-            linkText = t('page.header.cluster-set.manage-assignments')
+            linkText = t('Manage resource assignments')
         } else {
-            status = t('status.submariner.network.insufficientSubmariners')
-            message = t('status.submariner.network.insufficientSubmariners.message')
+            status = t('Install add-ons')
+            message = t(
+                'At least two clusters in the cluster set must have the Submariner add-on installed in order to begin forming a multi-cluster network.'
+            )
             path = NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)
-            linkText = t('summary.submariner.launch')
+            linkText = t('Go to Submariner add-ons')
         }
 
         return (
@@ -53,21 +57,25 @@ export function MultiClusterNetworkStatus(props: { clusterSet: ManagedClusterSet
         )
         if (unhealthySubmariners.length > 0) {
             type = StatusType.danger
-            status = t('status.submariner.network.degraded')
-            message = t('status.submariner.network.degraded.message')
+            status = t('Degraded')
+            message = t(
+                'One or more of the Submariner add-ons installed in the multi-cluster network are in a degraded state.'
+            )
         } else {
             const hasProgressingSubmariners = submarinerAddons!.filter(
                 (mca) => submarinerHealthCheck(mca) === SubmarinerStatus.progressing
             )
             if (hasProgressingSubmariners.length > 0) {
                 type = StatusType.progress
-                status = t('status.submariner.network.progressing')
-                message = t('status.submariner.network.progressing.message')
+                status = t('Progressing')
+                message = t(
+                    'One or more of the Submariner add-ons installed in the multi-cluster network are in a progressing state.'
+                )
             } else {
                 // healthy
                 type = StatusType.healthy
-                status = t('status.submariner.network.healthy')
-                message = t('status.submariner.network.healthy.message')
+                status = t('Healthy')
+                message = t('All Submariner add-ons installed in the multi-cluster network are in a healthy state.')
             }
         }
 

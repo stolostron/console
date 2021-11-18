@@ -13,7 +13,7 @@ import { ClusterPoolsTable } from '../../../ClusterPools/ClusterPools'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetClusterPoolsPageContent() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet, clusterPools } = useContext(ClusterSetContext)
     return (
         <AcmPageContent id="cluster-pools">
@@ -23,10 +23,12 @@ export function ClusterSetClusterPoolsPageContent() {
                     emptyState={
                         <AcmEmptyState
                             key="mcEmptyState"
-                            title={t('managed.clusterSets.clusterPools.emptyStateHeader')}
+                            title={t("You don't have any cluster pools assigned to this cluster set")}
                             message={
                                 <Trans
-                                    i18nKey={'cluster:managed.clusterSets.clusterPools.emptyStateMsg'}
+                                    i18nKey={
+                                        'Select the <bold>Manage resource assignments</bold> button to add a cluster pool.'
+                                    }
                                     components={{ bold: <strong /> }}
                                 />
                             }
@@ -44,7 +46,7 @@ export function ClusterSetClusterPoolsPageContent() {
                                         ),
                                     ]}
                                 >
-                                    {t('managed.clusterSets.clusters.emptyStateButton')}
+                                    {t('Manage resource assignments')}
                                 </RbacButton>
                             }
                         />

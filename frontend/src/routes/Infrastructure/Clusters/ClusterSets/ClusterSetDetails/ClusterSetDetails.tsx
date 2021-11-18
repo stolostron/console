@@ -60,7 +60,7 @@ export const ClusterSetContext = createContext<{
 export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
     const location = useLocation()
     const history = useHistory()
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
@@ -87,34 +87,37 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
         return (
             <AcmPageProcess
                 isLoading={clusterSet !== undefined}
-                loadingTitle={t('deleting.managedClusterSet.inprogress', {
+                // TODO - Handle interpolation
+                loadingTitle={t('{{managedClusterSetName}} is being deleted.', {
                     managedClusterSetName: prevClusterSet!.metadata.name,
                 })}
                 loadingMessage={
                     <Trans
-                        i18nKey="cluster:deleting.managedClusterSet.inprogress.message"
+                        i18nKey="It might take a few minutes for the delete process to complete. Select <bold>Back to cluster sets</bold> or wait here."
                         components={{ bold: <strong /> }}
                         values={{ managedClusterSetName: prevClusterSet!.metadata.name }}
                     />
                 }
-                successTitle={t('deleting.managedClusterSet.success', {
+                // TODO - Handle interpolation
+                successTitle={t('{{managedClusterSetName}} was successfully deleted.', {
                     managedClusterSetName: prevClusterSet!.metadata.name,
                 })}
                 successMessage={
                     <Trans
-                        i18nKey="cluster:deleting.managedClusterSet.success.message"
+                        // TODO - Handle interpolation
+                        i18nKey="{{managedClusterSetName}} was successfully deleted. Select <bold>Back to cluster sets</bold> to go back to your cluster set list."
                         components={{ bold: <strong /> }}
                         values={{ managedClusterSetName: prevClusterSet!.metadata.name }}
                     />
                 }
                 loadingPrimaryAction={
                     <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
-                        {t('button.backToClusterSets')}
+                        {t('Back to cluster sets')}
                     </AcmButton>
                 }
                 primaryAction={
                     <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
-                        {t('button.backToClusterSets')}
+                        {t('Back to cluster sets')}
                     </AcmButton>
                 }
             />
@@ -128,7 +131,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                     error={new ResourceError('Not found', 404)}
                     actions={
                         <AcmButton role="link" onClick={() => history.push(NavigationPath.clusterSets)}>
-                            {t('button.backToClusterSets')}
+                            {t('Back to cluster sets')}
                         </AcmButton>
                     }
                 />
@@ -162,7 +165,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                         header={
                             <AcmPageHeader
                                 breadcrumb={[
-                                    { text: t('clusterSets'), to: NavigationPath.clusterSets },
+                                    { text: t('Cluster sets'), to: NavigationPath.clusterSets },
                                     { text: match.params.id, to: '' },
                                 ]}
                                 title={match.params.id}
@@ -178,7 +181,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                             <Link
                                                 to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)}
                                             >
-                                                {t('tab.overview')}
+                                                {t('Overview')}
                                             </Link>
                                         </AcmSecondaryNavItem>
                                         <AcmSecondaryNavItem
@@ -190,7 +193,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                             <Link
                                                 to={NavigationPath.clusterSetSubmariner.replace(':id', match.params.id)}
                                             >
-                                                {t('tab.submariner')}
+                                                {t('Submariner add-ons')}
                                             </Link>
                                         </AcmSecondaryNavItem>
                                         <AcmSecondaryNavItem
@@ -202,7 +205,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                             <Link
                                                 to={NavigationPath.clusterSetClusters.replace(':id', match.params.id)}
                                             >
-                                                {t('tab.clusters')}
+                                                {t('Managed clusters')}
                                             </Link>
                                         </AcmSecondaryNavItem>
                                         <AcmSecondaryNavItem
@@ -212,12 +215,10 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                             }
                                         >
                                             <Link
-                                                to={NavigationPath.clusterSetClusterPools.replace(
-                                                    ':id',
-                                                    match.params.id
-                                                )}
+                                                to={NavigationPath.clusterSetClusterPools.replace(':id', match.params.id )}
                                             >
-                                                {t('tab.clusterPools')}
+                                                {t('Cluster pools')}
+                                                
                                             </Link>
                                         </AcmSecondaryNavItem>
                                         <AcmSecondaryNavItem
@@ -227,7 +228,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                             }
                                         >
                                             <Link to={NavigationPath.clusterSetAccess.replace(':id', match.params.id)}>
-                                                {t('tab.access')}
+                                                {t('Access management')}
                                             </Link>
                                         </AcmSecondaryNavItem>
                                     </AcmSecondaryNav>

@@ -44,7 +44,7 @@ import { NavigationPath } from '../../../../../../NavigationPath'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function InstallSubmarinerFormPage() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const history = useHistory()
     const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
     const [availableClusters] = useState<Cluster[]>(
@@ -59,23 +59,25 @@ export function InstallSubmarinerFormPage() {
             <AcmPage
                 header={
                     <AcmPageHeader
-                        title={t('managed.clusterSets.submariner.addons.install')}
+                        title={t('Install Submariner add-ons')}
                         titleTooltip={
                             <>
-                                {t('page.header.install-submariner.tooltip')}
+                                {t(
+                                    'Install the Submariner add-on to managed clusters to create a multi-cluster network.'
+                                )}
                                 <a
                                     href={DOC_LINKS.SUBMARINER}
                                     target="_blank"
                                     rel="noreferrer"
                                     style={{ display: 'block', marginTop: '4px' }}
                                 >
-                                    {t('learn.more')}
+                                    {t('Learn more')}
                                 </a>
                             </>
                         }
                         breadcrumb={[
                             {
-                                text: t('clusterSets'),
+                                text: t('Cluster sets'),
                                 to: NavigationPath.clusterSets,
                             },
                             {
@@ -83,7 +85,7 @@ export function InstallSubmarinerFormPage() {
                                 to: NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!),
                             },
                             {
-                                text: t('managed.clusterSets.submariner.addons.install'),
+                                text: t('Install Submariner add-ons'),
                             },
                         ]}
                     />
@@ -91,10 +93,12 @@ export function InstallSubmarinerFormPage() {
             >
                 <PageSection variant="light" isFilled>
                     <AcmEmptyState
-                        title={t('submariner.clusters.empty.title')}
+                        title={t('No available clusters found')}
                         message={
                             <Trans
-                                i18nKey={'cluster:submariner.clusters.empty.message'}
+                                i18nKey={
+                                    'All clusters in the cluster set already have the Submariner add-on installed. Select the <bold>Manage resource assignments</bold> button to add more clusters.'
+                                }
                                 components={{ bold: <strong />, p: <p /> }}
                             />
                         }
@@ -113,7 +117,7 @@ export function InstallSubmarinerFormPage() {
                                         ),
                                     ]}
                                 >
-                                    {t('managed.clusterSets.clusters.emptyStateButton')}
+                                    {t('Manage resource assignments')}
                                 </RbacButton>
                                 <AcmButton
                                     style={{ marginLeft: '16px' }}
@@ -127,7 +131,7 @@ export function InstallSubmarinerFormPage() {
                                         )
                                     }
                                 >
-                                    {t('submariner.clusters.back', { name: clusterSet?.metadata.name! })}
+                                    {t('Back to Submariner add-ons', { name: clusterSet?.metadata.name! })}
                                 </AcmButton>
                             </>
                         }
@@ -159,7 +163,7 @@ const providerAutoDetectSecret: Record<string, (secrets: Secret[]) => Secret | u
 }
 
 export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
-    const { t } = useTranslation(['cluster', 'credentials', 'common'])
+    const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     const history = useHistory()
 
@@ -221,10 +225,12 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     }
 
     const formData: FormData = {
-        title: t('managed.clusterSets.submariner.addons.install'),
+        title: t('Install Submariner add-ons'),
         titleTooltip: (
             <>
-                {t('submariner.title.tooltip')}
+                {t(
+                    'Submariner enables direct networking between Pods and Services in different Kubernetes clusters, either on-premises or in the cloud.'
+                )}
                 <AcmButton
                     style={{ display: 'block', marginTop: '8px' }}
                     onClick={() => window.open(DOC_LINKS.SUBMARINER, '_blank')}
@@ -233,13 +239,13 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     variant="link"
                     isInline
                 >
-                    {t('common:learn.more')}
+                    {t('Learn more')}
                 </AcmButton>
             </>
         ),
         breadcrumb: [
             {
-                text: t('clusterSets'),
+                text: t('Cluster sets'),
                 to: NavigationPath.clusterSets,
             },
             {
@@ -247,22 +253,22 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 to: NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!),
             },
             {
-                text: t('managed.clusterSets.submariner.addons.install'),
+                text: t('Install Submariner add-ons'),
             },
         ],
-        submitText: t('common:install'),
-        submittingText: t('common:installing'),
-        reviewTitle: t('common:wizard.review.title'),
-        reviewDescription: t('common:wizard.review.description'),
-        cancelLabel: t('common:cancel'),
-        nextLabel: t('common:next'),
-        backLabel: t('common:back'),
+        submitText: t('Install'),
+        submittingText: t('Installing'),
+        reviewTitle: t('Review your selections'),
+        reviewDescription: t('Return to a step to make changes'),
+        cancelLabel: t('Cancel'),
+        nextLabel: t('Next'),
+        backLabel: t('Back'),
         cancel: () => history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)),
         stateToData,
         sections: [
             {
-                title: t('submariner.install.step.clusters.title'),
-                wizardTitle: t('submariner.install.step.clusters.wizardTitle'),
+                title: t('Select clusters'),
+                wizardTitle: t('Select clusters for add-on installation'),
                 type: 'Section',
                 alerts: (
                     <>
@@ -271,11 +277,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 variant="info"
                                 isInline
                                 noClose
-                                title={t('common:important')}
+                                title={t('Important')}
                                 message={
                                     <>
                                         <Trans
-                                            i18nKey="cluster:managed.clusterSets.submariner.addons.config.notSupported"
+                                            i18nKey="One or more of the selected clusters are deployed on a provider that does not support configuration by a <bold>SubmarinerConfig</bold> resource. The Submariner add-on can still be installed, but you may need to follow a few manual configuration steps, view the <button>Submariner documentation</button> for more information."
                                             components={{
                                                 bold: <strong />,
                                                 button: (
@@ -291,7 +297,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                             }}
                                         />
                                         <AcmExpandableSection
-                                            label={t('managed.clusterSets.submariner.addons.config.notSupported.view', {
+                                            // TODO - Handle interpolation
+                                            label={t('View unsupported clusters ({{number}})', {
                                                 number: withoutSubmarinerConfigClusters.length,
                                             })}
                                         >
@@ -299,7 +306,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                                 {withoutSubmarinerConfigClusters.map((cluster) => (
                                                     <ListItem>
                                                         {t(
-                                                            'managed.clusterSets.submariner.addons.config.notSupported.provider',
+                                                            // TODO - Handle interpolation
+                                                            '{{clusterName}} (Provider not supported)',
                                                             { clusterName: cluster.displayName! }
                                                         )}
                                                     </ListItem>
@@ -316,8 +324,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     {
                         id: 'available-clusters',
                         type: 'Multiselect',
-                        label: t('submariner.install.form.clusters'),
-                        placeholder: t('submariner.install.form.clusters.placeholder'),
+                        label: t('Target clusters'),
+                        placeholder: t('Select clusters'),
                         value: selectedClusters,
                         onChange: (clusters) => {
                             setSelectedClusters(clusters)
@@ -343,7 +351,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             },
             {
                 type: 'SectionGroup',
-                title: t('submariner.install.step.configure.title'),
+                title: t('Configure clusters'),
                 sections: selectedClusters
                     .filter((selected) => !withoutSubmarinerConfigClusters.find((c) => c.displayName === selected))
                     .map((c) => {
@@ -351,7 +359,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         const clusterName = cluster.displayName!
                         return {
                             title: clusterName,
-                            wizardTitle: t('submariner.install.form.config.title', {
+                            // TODO - Handle interpolation
+                            wizardTitle: t('Enter the configuration for {{clusterName}} on {{provider}}', {
                                 clusterName,
                                 provider: ProviderLongTextMap[cluster.provider!],
                             }),
@@ -364,16 +373,18 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                     variant="link"
                                     isInline
                                 >
-                                    {t('submariner.install.form.config.doc')}
+                                    {t('How do I configure Submariner?')}
                                 </AcmButton>
                             ),
                             inputs: [
                                 {
                                     id: 'credential-secret',
                                     type: 'Text',
-                                    label: t('submariner.install.form.credential.secret'),
+                                    label: t('Provider credential secret'),
                                     placeholder: '',
-                                    labelHelp: t('submariner.install.form.credential.secret.labelHelp'),
+                                    labelHelp: t(
+                                        'The reference to the Secret in the cluster namespace that contains the provider credentials. The credentials will be used to prepare the Submariner environment on the provider.'
+                                    ),
                                     value: providerSecretMap[clusterName],
                                     isHidden:
                                         providerSecretMap[clusterName] === null || cluster.provider === Provider.vmware,
@@ -386,9 +397,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'awsAccessKeyID',
                                     type: 'Text',
-                                    label: t('credentials:credentialsForm.aws_access_key_id.label'),
-                                    placeholder: t('credentials:credentialsForm.aws_access_key_id.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.aws_access_key_id.labelHelp'),
+                                    label: t('Access key ID'),
+                                    placeholder: t('Enter your AWS access key ID'),
+                                    labelHelp: t(
+                                        'You use access keys to sign programmatic requests that you make to AWS. The access key is equivalent to a username in a username/password combination.'
+                                    ),
                                     value: awsAccessKeyIDs[clusterName] ?? '', // without the ?? '' the UI repeats the values across sub-pages
                                     onChange: (value: string) => {
                                         const copy = { ...awsAccessKeyIDs }
@@ -403,9 +416,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'awsSecretAccessKeyID',
                                     type: 'Text',
-                                    label: t('credentials:credentialsForm.aws_secret_access_key.label'),
-                                    placeholder: t('credentials:credentialsForm.aws_secret_access_key.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.aws_secret_access_key.labelHelp'),
+                                    label: t('Secret access key'),
+                                    placeholder: t('Enter your AWS secret access key'),
+                                    labelHelp: t(
+                                        'You use access keys to sign programmatic requests that you make to AWS. The secret access key is equivalent to a password in a username/password combination.'
+                                    ),
                                     value: awsSecretAccessKeyIDs[clusterName] ?? '',
                                     onChange: (value: string) => {
                                         const copy = { ...awsSecretAccessKeyIDs }
@@ -421,9 +436,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'gcServiceAccountKey',
                                     type: 'TextArea',
-                                    label: t('credentials:credentialsForm.osServiceAccount.json.label'),
-                                    placeholder: t('credentials:credentialsForm.osServiceAccount.json.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.osServiceAccount.json.labelHelp'),
+                                    label: t('Service account JSON key'),
+                                    placeholder: t('Enter your Google Cloud Platform service account JSON key'),
+                                    labelHelp: t(
+                                        'Creating a service account is similar to adding a member to your project, but the service account belongs to your applications rather than an individual end user.'
+                                    ),
                                     value: gcServiceAccountKeys[clusterName] ?? '',
                                     onChange: (value) => {
                                         const copy = { ...gcServiceAccountKeys }
@@ -440,9 +457,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'aws-instance-type',
                                     type: 'Text',
-                                    label: t('submariner.install.form.instancetype'),
-                                    placeholder: t('submariner.install.form.instancetype.placeholder'),
-                                    labelHelp: t('submariner.install.form.instancetype.labelHelp'),
+                                    label: t('Instance type'),
+                                    placeholder: t('Select instance type'),
+                                    labelHelp: t(
+                                        'The Amazon Web Services EC2 instance type of the gateway node that will be created on the managed cluster. (default c5d.large)'
+                                    ),
                                     value: awsInstanceTypes[clusterName] ?? submarinerConfigDefault.awsInstanceType,
                                     isHidden: cluster.provider !== Provider.aws,
                                     onChange: (value) => {
@@ -454,9 +473,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'natt-port',
                                     type: 'TextNumber',
-                                    label: t('submariner.install.form.nattport'),
-                                    placeholder: t('submariner.install.form.port.placeholder'),
-                                    labelHelp: t('submariner.install.form.nattport.labelHelp'),
+                                    label: t('IPSec NAT-T port'),
+                                    placeholder: t('Enter port number'),
+                                    labelHelp: t(
+                                        'The Submariner creates the IPsec tunnel between the clusters.  This port is used for IPsec NAT traversal. (default 4500)'
+                                    ),
                                     value: nattPorts[clusterName] ?? submarinerConfigDefault.nattPort.toString(),
                                     onChange: (value: number) => {
                                         const copy = { ...nattPorts }
@@ -467,9 +488,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'natt-enable',
                                     type: 'Checkbox',
-                                    label: t('submariner.install.form.nattenable'),
-                                    // placeholder: t('submariner.install.form.nattenable.placeholder'),
-                                    // labelHelp: t('submariner.install.form.nattenable.labelHelp'),
+                                    label: t('Enable NAT-T'),
+                                    // placeholder: t('Select NAT-T enabled'),
+                                    // labelHelp: t('Submariner can use NAT Traversal for IPsec tunnels between clusters. Set this to true to enable NAT Traversal and false otherwise (default true)'),
                                     value:
                                         nattEnables[clusterName] !== undefined
                                             ? nattEnables[clusterName]
@@ -483,9 +504,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'gateways',
                                     type: 'Number',
-                                    label: t('submariner.install.form.gateways'),
-                                    placeholder: t('submariner.install.form.gateways.placeholder'),
-                                    labelHelp: t('submariner.install.form.gateways.labelHelp'),
+                                    label: t('Gateway count'),
+                                    placeholder: t('Enter gateway count'),
+                                    labelHelp: t(
+                                        'The number of worker nodes  that will be used to deploy the Submariner gateway component on the managed cluster. If the value is greater than 1, the Submariner gateway HA will be enabled automatically. (default 1)'
+                                    ),
                                     value: gateways[clusterName] ?? submarinerConfigDefault.gateways,
                                     onChange: (value: number) => {
                                         const copy = { ...gateways }
@@ -498,9 +521,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'cable-driver',
                                     type: 'Select',
-                                    label: t('submariner.install.form.cabledriver'),
-                                    placeholder: t('submariner.install.form.cabledriver.placeholder'),
-                                    labelHelp: t('submariner.install.form.cabledriver.labelHelp'),
+                                    label: t('Cable driver'),
+                                    placeholder: t('Select cable driver'),
+                                    labelHelp: t(
+                                        'The Submariner gateway cable driver, Available options are: libreswan (default), wireguard, and vxlan.'
+                                    ),
                                     value: cableDrivers[clusterName] ?? submarinerConfigDefault.cableDriver,
                                     onChange: (value) => {
                                         const copy = { ...cableDrivers }

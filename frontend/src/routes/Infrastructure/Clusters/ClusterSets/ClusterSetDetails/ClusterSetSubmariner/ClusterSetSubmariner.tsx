@@ -78,7 +78,7 @@ export const submarinerHealthCheck = (mca: ManagedClusterAddOn) => {
 }
 
 export function ClusterSetSubmarinerPageContent() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
     const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
@@ -94,7 +94,7 @@ export function ClusterSetSubmarinerPageContent() {
 
     const columns = [
         {
-            header: t('table.cluster'),
+            header: t('Cluster'),
             sort: 'metadata.namespace',
             search: 'metadata.namespace',
             cell: (mca: ManagedClusterAddOn) => {
@@ -103,26 +103,25 @@ export function ClusterSetSubmarinerPageContent() {
             },
         },
         {
-            header: t('table.provider'),
+            header: t('Infrastructure provider'),
             cell: (mca: ManagedClusterAddOn) => {
                 const matchedCluster = clusters!.find((c) => c.namespace === mca.metadata.namespace)
                 return matchedCluster?.provider ? <AcmInlineProvider provider={matchedCluster!.provider!} /> : '-'
             },
         },
         {
-            header: t('table.submariner.connection'),
+            header: t('Connection status'),
             cell: (mca: ManagedClusterAddOn) => {
                 const connectionDegradedCondition = mca.status?.conditions?.find(
                     (c) => c.type === SubmarinerConnectionDegraded
                 )
                 let type: StatusType = StatusType.progress
-                let status: string = t('status.submariner.progressing')
-                let message: string | undefined = t('status.submariner.progressing.message')
+                let status: string = t('Progressing')
+                let message: string | undefined = t(
+                    'The add-on installation is in progress. It may take a few minutes to complete, the status of the Submariner add-on will be reported upon completion.'
+                )
                 if (connectionDegradedCondition) {
-                    status =
-                        connectionDegradedCondition?.status === 'True'
-                            ? t('status.submariner.connection.degraded')
-                            : t('status.submariner.connection.healthy')
+                    status = connectionDegradedCondition?.status === 'True' ? t('Degraded') : t('Healthy')
                     type = connectionDegradedCondition?.status === 'True' ? StatusType.danger : StatusType.healthy
                     message = connectionDegradedCondition.message
                 }
@@ -136,17 +135,16 @@ export function ClusterSetSubmarinerPageContent() {
             },
         },
         {
-            header: t('table.submariner.agent'),
+            header: t('Agent status'),
             cell: (mca: ManagedClusterAddOn) => {
                 const agentCondition = mca.status?.conditions?.find((c) => c.type === SubmarinerAgentDegraded)
                 let type: StatusType = StatusType.progress
-                let status: string = t('status.submariner.progressing')
-                let message: string | undefined = t('status.submariner.progressing.message')
+                let status: string = t('Progressing')
+                let message: string | undefined = t(
+                    'The add-on installation is in progress. It may take a few minutes to complete, the status of the Submariner add-on will be reported upon completion.'
+                )
                 if (agentCondition) {
-                    status =
-                        agentCondition?.status === 'True'
-                            ? t('status.submariner.agent.degraded')
-                            : t('status.submariner.agent.healthy')
+                    status = agentCondition?.status === 'True' ? t('Degraded') : t('Healthy')
                     type = agentCondition?.status === 'True' ? StatusType.danger : StatusType.healthy
                     message = agentCondition.message
                 }
@@ -160,19 +158,21 @@ export function ClusterSetSubmarinerPageContent() {
             },
         },
         {
-            header: t('table.submariner.nodes'),
+            header: t('Gateway nodes labeled'),
             cell: (mca: ManagedClusterAddOn) => {
                 const nodeLabeledCondition = mca.status?.conditions?.find(
                     (c) => c.type === SubmarinerGatewayNodesLabeled
                 )
                 let type: StatusType = StatusType.progress
-                let status: string = t('status.submariner.progressing')
-                let message: string | undefined = t('status.submariner.progressing.message')
+                let status: string = t('Progressing')
+                let message: string | undefined = t(
+                    'The add-on installation is in progress. It may take a few minutes to complete, the status of the Submariner add-on will be reported upon completion.'
+                )
                 if (nodeLabeledCondition) {
                     status =
                         nodeLabeledCondition?.status === 'True'
-                            ? t('status.submariner.nodes.labeled')
-                            : t('status.submariner.nodes.notLabeled')
+                            ? t('Nodes labeled')
+                            : t('Nodes not labeled')
                     type = nodeLabeledCondition?.status === 'True' ? StatusType.healthy : StatusType.danger
                     message = nodeLabeledCondition.message
                 }
@@ -194,15 +194,21 @@ export function ClusterSetSubmarinerPageContent() {
                 <BulkActionModel<ManagedClusterAddOn> {...modalProps} />
                 <Stack hasGutter>
                     <StackItem>
-                        <AcmExpandableCard title={t('multi-cluster.networking')} id="submariner-info">
+                        <AcmExpandableCard title={t('Multi-cluster networking')} id="submariner-info">
                             <Flex spaceItems={{ default: 'spaceItemsLg' }}>
                                 <FlexItem flex={{ default: 'flex_1' }}>
                                     <TextContent>
-                                        <Text component={TextVariants.h4}>{t('submariner')}</Text>
-                                        <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
+                                        <Text component={TextVariants.h4}>{t('Submariner')}</Text>
+                                        <Text component={TextVariants.p}>
+                                            {t(
+                                                'Submariner is an open-source tool that can be used to provide direct networking between two or more Kubernetes clusters in a given ManagedClusterSet, either on-premises or in the cloud.'
+                                            )}
+                                        </Text>
                                         <Text component={TextVariants.p}>
                                             <Trans
-                                                i18nKey={'cluster:learn.submariner.additional'}
+                                                i18nKey={
+                                                    '<bold>Important: </bold>To get started with Submariner, your clusters must meet pre-requisite criteria and configurations before installing the Submariner add-on. Read the documentation for more information on how to use Submariner.'
+                                                }
                                                 components={{ bold: <strong /> }}
                                             />
                                         </Text>
@@ -218,7 +224,7 @@ export function ClusterSetSubmarinerPageContent() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('View documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
@@ -241,17 +247,19 @@ export function ClusterSetSubmarinerPageContent() {
                                         const actions = [
                                             {
                                                 id: 'uninstall-submariner',
-                                                text: t('uninstall.add-on'),
+                                                text: t('Uninstall add-on'),
                                                 isDisabled: true,
                                                 rbac: [rbacDelete(mca)],
                                                 click: (mca: ManagedClusterAddOn) => {
                                                     setModalProps({
                                                         open: true,
-                                                        title: t('bulk.title.uninstallSubmariner'),
-                                                        action: t('common:uninstall'),
-                                                        processing: t('common:uninstalling'),
+                                                        title: t('Uninstall Submariner add-ons?'),
+                                                        action: t('Uninstall'),
+                                                        processing: t('Uninstalling'),
                                                         resources: [mca],
-                                                        description: t('bulk.message.uninstallSubmariner'),
+                                                        description: t(
+                                                            'Uninstalling the Submariner add-on from a managed cluster will remove it from the multi-cluster network. This may result in disruption to your applications or services. Are you sure you want to continue?'
+                                                        ),
                                                         columns,
                                                         icon: 'warning',
                                                         keyFn: (mca) => mca.metadata.namespace as string,
@@ -276,7 +284,7 @@ export function ClusterSetSubmarinerPageContent() {
                                         if (submarinerConfig !== undefined) {
                                             actions.unshift({
                                                 id: 'edit-submariner-config',
-                                                text: t('submariner.config.edit'),
+                                                text: t('Edit configuration'),
                                                 isDisabled: true,
                                                 rbac: [rbacPatch(submarinerConfig!)],
                                                 click: () => {
@@ -306,15 +314,17 @@ export function ClusterSetSubmarinerPageContent() {
                             tableActions={[
                                 {
                                     id: 'uninstall-submariner',
-                                    title: t('bulk.title.uninstallSubmariner.action'),
+                                    title: t('Uninstall Submariner add-ons'),
                                     click: (mcas: ManagedClusterAddOn[]) => {
                                         setModalProps({
                                             open: true,
-                                            title: t('bulk.title.uninstallSubmariner'),
-                                            action: t('common:uninstall'),
-                                            processing: t('common:uninstalling'),
+                                            title: t('Uninstall Submariner add-ons?'),
+                                            action: t('Uninstall'),
+                                            processing: t('Uninstalling'),
                                             resources: mcas,
-                                            description: t('bulk.message.uninstallSubmariner'),
+                                            description: t(
+                                                'Uninstalling the Submariner add-on from a managed cluster will remove it from the multi-cluster network. This may result in disruption to your applications or services. Are you sure you want to continue?'
+                                            ),
                                             columns,
                                             icon: 'warning',
                                             keyFn: (mca) => mca.metadata.namespace as string,
@@ -336,7 +346,7 @@ export function ClusterSetSubmarinerPageContent() {
                             tableActionButtons={[
                                 {
                                     id: 'install-submariner',
-                                    title: t('managed.clusterSets.submariner.addons.install'),
+                                    title: t('Install Submariner add-ons'),
                                     click: () =>
                                         history.push(
                                             NavigationPath.clusterSetSubmarinerInstall.replace(
@@ -352,20 +362,22 @@ export function ClusterSetSubmarinerPageContent() {
                                     key="mcEmptyState"
                                     title={
                                         clusters!.length === 0
-                                            ? t('managed.clusterSets.clusters.emptyStateHeader')
-                                            : t('empty-state.submariner.title')
+                                            ? t("You don't have any clusters assigned to this cluster set")
+                                            : t('No Submariner add-ons found')
                                     }
                                     message={
                                         clusters!.length === 0 ? (
                                             <Trans
                                                 i18nKey={
-                                                    'cluster:managed.clusterSets.submariner.clusters.emptyStateMsg'
+                                                    'At least two clusters must be assigned to the cluster set to create a multi-cluster network. Select the <bold>Manage resource assignments</bold> button to add clusters.'
                                                 }
                                                 components={{ bold: <strong />, p: <p /> }}
                                             />
                                         ) : (
                                             <Trans
-                                                i18nKey={'cluster:managed.clusterSets.submariner.addons.emptyStateMsg'}
+                                                i18nKey={
+                                                    'No clusters in this cluster set have the Submariner add-on installed. Select the <bold>Install Submariner add-ons</bold> button to install the add-on on any available clusters in this cluster set.'
+                                                }
                                                 components={{ bold: <strong />, p: <p /> }}
                                             />
                                         )
@@ -388,7 +400,7 @@ export function ClusterSetSubmarinerPageContent() {
                                                     ),
                                                 ]}
                                             >
-                                                {t('managed.clusterSets.clusters.emptyStateButton')}
+                                                {t('Manage resource assignments')}
                                             </RbacButton>
                                         ) : (
                                             <AcmButton
@@ -403,7 +415,7 @@ export function ClusterSetSubmarinerPageContent() {
                                                     )
                                                 }
                                             >
-                                                {t('managed.clusterSets.submariner.addons.install')}
+                                                {t('Install Submariner add-ons')}
                                             </AcmButton>
                                         )
                                     }

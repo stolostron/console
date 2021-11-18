@@ -34,7 +34,7 @@ export function useClusterSetBindings(clusterSet?: ManagedClusterSet) {
 }
 
 export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClusterSet; onClose: () => void }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [namespaces] = useRecoilState(namespacesState)
     const clusterSetBindings = useClusterSetBindings(props.clusterSet)
     const [selectedNamespaces, setSelectedNamespaces] = useState<string[] | undefined>(undefined)
@@ -56,7 +56,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
 
     return (
         <AcmModal
-            title={t('clusterSetBinding.edit.title')}
+            title={t('Edit namespace bindings')}
             isOpen={props.clusterSet !== undefined}
             variant={ModalVariant.medium}
             onClose={reset}
@@ -65,14 +65,17 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                 {(alertContext) => (
                     <AcmForm style={{ gap: 0 }}>
                         <div style={{ marginBottom: '16px' }}>
-                            <Trans i18nKey="cluster:clusterSetBinding.edit.message" components={{ bold: <strong /> }} />
+                            <Trans
+                                i18nKey="A <bold>ManagedClusterSetBinding</bold> resource binds a <bold>ManagedClusterSet</bold> resource to a namespace. Placement resources that are created in the same namespace can only access managed clusters that are included in the bound <bold>ManagedClusterSet</bold> resource."
+                                components={{ bold: <strong /> }}
+                            />
                         </div>
 
                         <AcmMultiSelect
                             id="namespaces"
                             variant={SelectVariant.typeaheadMulti}
-                            label={t('clusterSetBinding.edit.select.label')}
-                            placeholder={t('clusterSetBinding.edit.select.placeholder')}
+                            label={t('Namespaces')}
+                            placeholder={t('Select namespaces')}
                             value={selectedNamespaces}
                             onChange={(namespaces) => setSelectedNamespaces(namespaces)}
                         >
@@ -90,8 +93,8 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                             <AcmSubmit
                                 id="save-bindings"
                                 variant="primary"
-                                label={t('common:save')}
-                                processingLabel={t('common:saving')}
+                                label={t('Save')}
+                                processingLabel={t('Saving')}
                                 onClick={() => {
                                     alertContext.clearAlerts()
                                     return new Promise(async (resolve, reject) => {
@@ -138,7 +141,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                                         if (errors.length > 0) {
                                             alertContext.addAlert({
                                                 type: 'danger',
-                                                title: t('common:request.failed'),
+                                                title: t('Request failed'),
                                                 message: `${errors.map((error) => `${error} \n`)}`,
                                             })
                                             reject()
@@ -150,7 +153,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                                 }}
                             />
                             <Button variant="link" onClick={reset}>
-                                {t('common:cancel')}
+                                {t('Cancel')}
                             </Button>
                         </ActionGroup>
                     </AcmForm>

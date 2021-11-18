@@ -49,7 +49,7 @@ import { useQuery } from '../../../../../../lib/useQuery'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetAccessManagement() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterRoleBinding> | { open: false }>({
         open: false,
@@ -78,7 +78,7 @@ export function ClusterSetAccessManagement() {
     const columns = useMemo<IAcmTableColumn<ClusterRoleBinding>[]>(
         () => [
             {
-                header: t('table.name'),
+                header: t('Name'),
                 sort: (a: ClusterRoleBinding, b: ClusterRoleBinding) => {
                     const aValue = a.subjects?.[0]?.name ?? ''
                     const bValue = b.subjects?.[0]?.name ?? ''
@@ -104,7 +104,7 @@ export function ClusterSetAccessManagement() {
                 },
             },
             {
-                header: t('table.displayRole'),
+                header: t('Display role'),
                 sort: 'roleRef.name',
                 search: 'roleRef.name',
                 cell: (clusterRoleBinding: ClusterRoleBinding) => {
@@ -112,24 +112,24 @@ export function ClusterSetAccessManagement() {
                         clusterRoleBinding.roleRef.name ===
                         `open-cluster-management:managedclusterset:admin:${clusterSet!.metadata.name!}`
                     ) {
-                        return t('access.clusterSet.role.admin')
+                        return t('Cluster set admin')
                     } else if (
                         clusterRoleBinding.roleRef.name ===
                         `open-cluster-management:managedclusterset:view:${clusterSet!.metadata.name!}`
                     ) {
-                        return t('access.clusterSet.role.view')
+                        return t('Cluster set view')
                     }
                     return '-'
                 },
             },
             {
-                header: t('table.clusterRole'),
+                header: t('Cluster role'),
                 sort: 'roleRef.name',
                 search: 'roleRef.name',
                 cell: 'roleRef.name',
             },
             {
-                header: t('table.type'),
+                header: t('Type'),
                 sort: (a: ClusterRoleBinding, b: ClusterRoleBinding) => {
                     const aValue = a.subjects?.[0]?.kind ?? ''
                     const bValue = b.subjects?.[0]?.kind ?? ''
@@ -168,7 +168,7 @@ export function ClusterSetAccessManagement() {
                     tableActionButtons={[
                         {
                             id: 'addUserGroup',
-                            title: t('access.add'),
+                            title: t('Add user or group'),
                             click: () => setAddModalOpen(true),
                             variant: ButtonVariant.primary,
                         },
@@ -176,15 +176,17 @@ export function ClusterSetAccessManagement() {
                     tableActions={[
                         {
                             id: 'removeAuthorization',
-                            title: t('access.remove'),
+                            title: t('Remove'),
                             click: (clusterRoleBindings: ClusterRoleBinding[]) => {
                                 setModalProps({
                                     open: true,
-                                    title: t('bulk.title.removeAuthorization'),
-                                    action: t('remove'),
-                                    processing: t('removing'),
+                                    title: t('Remove users or groups?'),
+                                    action: t('Remove'),
+                                    processing: t('Removing'),
                                     resources: clusterRoleBindings,
-                                    description: t('bulk.message.removeAuthorization'),
+                                    description: t(
+                                        'Removing a user or group revokes access permissions to the cluster set and all of its associated clusters. These permissions can be re-assigned to users and groups at any time.'
+                                    ),
                                     columns: columns,
                                     keyFn,
                                     actionFn: deleteResource,
@@ -203,15 +205,17 @@ export function ClusterSetAccessManagement() {
                     rowActions={[
                         {
                             id: 'removeAuthorization',
-                            title: t('access.remove'),
+                            title: t('Remove'),
                             click: (clusterRoleBinding: ClusterRoleBinding) => {
                                 setModalProps({
                                     open: true,
-                                    title: t('bulk.title.removeAuthorization'),
-                                    action: t('remove'),
-                                    processing: t('removing'),
+                                    title: t('Remove users or groups?'),
+                                    action: t('Remove'),
+                                    processing: t('Removing'),
                                     resources: [clusterRoleBinding],
-                                    description: t('bulk.message.removeAuthorization'),
+                                    description: t(
+                                        'Removing a user or group revokes access permissions to the cluster set and all of its associated clusters. These permissions can be re-assigned to users and groups at any time.'
+                                    ),
                                     columns: columns,
                                     keyFn,
                                     actionFn: deleteResource,
@@ -229,13 +233,18 @@ export function ClusterSetAccessManagement() {
                     emptyState={
                         <AcmEmptyState
                             key="accessEmptyState"
-                            title={t('access.emptyTitle')}
+                            title={t('No users or groups found')}
                             message={
-                                <Trans i18nKey={'cluster:access.emptyMessage'} components={{ bold: <strong /> }} />
+                                <Trans
+                                    i18nKey={
+                                        "This cluster set doesn't have any users or groups, yet. Click the <bold>Add user or group</bold> button to add a user or group."
+                                    }
+                                    components={{ bold: <strong /> }}
+                                />
                             }
                             action={
                                 <AcmButton variant="primary" onClick={() => setAddModalOpen(true)}>
-                                    {t('access.emptyStateButton')}
+                                    {t('Add user or group')}
                                 </AcmButton>
                             }
                         />
@@ -266,7 +275,7 @@ function AddUsersModal(props: {
     groups?: Group[]
 }) {
     const classes = useStyles()
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     const [type, setType] = useState<'User' | 'Group'>('User')
     const [userGroup, setUserGroup] = useState<string | undefined>()
@@ -301,12 +310,16 @@ function AddUsersModal(props: {
     }
 
     return (
-        <AcmModal variant={ModalVariant.medium} title={t('access.add.title')} isOpen={props.isOpen} onClose={reset}>
+        <AcmModal variant={ModalVariant.medium} title={t('Add user or group')} isOpen={props.isOpen} onClose={reset}>
             <AcmForm style={{ gap: 0 }}>
                 <AcmAlertContext.Consumer>
                     {(alertContext) => (
                         <>
-                            <div>{t('access.add.message')}</div>
+                            <div>
+                                {t(
+                                    'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
+                                )}
+                            </div>
                             &nbsp;
                             <div className={classes.container}>
                                 <AcmSelect
@@ -314,8 +327,8 @@ function AddUsersModal(props: {
                                     variant="typeahead"
                                     maxHeight="6em"
                                     isRequired
-                                    label={t('access.add.userGroup')}
-                                    placeholder={type === 'User' ? t('access.select.user') : t('access.select.group')}
+                                    label={t('Select user or group')}
+                                    placeholder={type === 'User' ? t('Select user') : t('Select group')}
                                     value={userGroup}
                                     onChange={(userGroup) => setUserGroup(userGroup)}
                                 >
@@ -333,13 +346,13 @@ function AddUsersModal(props: {
                                 </AcmSelect>
                                 <ToggleGroup>
                                     <ToggleGroupItem
-                                        text={t('access.users')}
+                                        text={t('Users')}
                                         buttonId="user"
                                         isSelected={type === 'User'}
                                         onChange={() => selectType('User')}
                                     />
                                     <ToggleGroupItem
-                                        text={t('access.groups')}
+                                        text={t('Groups')}
                                         buttonId="group"
                                         isSelected={type === 'Group'}
                                         onChange={() => selectType('Group')}
@@ -356,19 +369,19 @@ function AddUsersModal(props: {
                                 id="role"
                                 maxHeight="6em"
                                 isRequired
-                                label={t('access.add.role')}
-                                placeholder={t('access.select.role')}
+                                label={t('Select role')}
+                                placeholder={t('Select role')}
                                 value={role}
                                 onChange={(role) => setRole(role)}
                             >
                                 {[
                                     {
-                                        displayName: t('access.clusterSet.role.admin'),
+                                        displayName: t('Cluster set admin'),
                                         role: `open-cluster-management:managedclusterset:admin:${clusterSet!.metadata
                                             .name!}`,
                                     },
                                     {
-                                        displayName: t('access.clusterSet.role.view'),
+                                        displayName: t('Cluster set view'),
                                         role: `open-cluster-management:managedclusterset:view:${clusterSet!.metadata
                                             .name!}`,
                                     },
@@ -383,8 +396,8 @@ function AddUsersModal(props: {
                                 <AcmSubmit
                                     id="add-access"
                                     variant="primary"
-                                    label={t('common:add')}
-                                    processingLabel={t('common:adding')}
+                                    label={t('Add')}
+                                    processingLabel={t('Adding')}
                                     onClick={() => {
                                         alertContext.clearAlerts()
                                         const resource: ClusterRoleBinding = {
@@ -419,7 +432,7 @@ function AddUsersModal(props: {
                                     }}
                                 />
                                 <AcmButton key="cancel" variant="link" onClick={reset}>
-                                    {t('common:cancel')}
+                                    {t('Cancel')}
                                 </AcmButton>
                             </ActionGroup>
                         </>
@@ -431,25 +444,25 @@ function AddUsersModal(props: {
 }
 
 function GroupUsersPopover(props: { group?: Group; useIcon?: boolean }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     if (!props.group) {
         return null
     }
     return (
         <div>
-            <Popover headerContent={t('access.usersInGroup')} bodyContent={<AcmLabels labels={props.group.users} />}>
+            <Popover headerContent={t('Users in group')} bodyContent={<AcmLabels labels={props.group.users} />}>
                 <AcmButton
                     style={{ padding: props.useIcon ? 0 : undefined, paddingLeft: '4px' }}
                     variant={props.useIcon ? ButtonVariant.plain : ButtonVariant.link}
-                    aria-label={t('access.usersInGroup.view')}
+                    aria-label={t('View users in group')}
                 >
                     {props.useIcon ? (
                         <OutlinedQuestionCircleIcon
                             style={{ width: '14px', fill: 'var(--pf-global--link--Color)', paddingTop: '2px' }}
                         />
                     ) : (
-                        t('access.usersInGroup.view')
+                        t('View users in group')
                     )}
                 </AcmButton>
             </Popover>

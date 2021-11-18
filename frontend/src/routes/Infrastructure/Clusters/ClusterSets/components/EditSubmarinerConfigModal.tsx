@@ -30,7 +30,7 @@ export type EditSubmarinerConfigModalProps = {
 }
 
 export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const [nattPort, setNattPort] = useState<string | undefined>()
     const [nattEnable, setNattEnable] = useState(submarinerConfigDefault.nattEnable)
@@ -68,7 +68,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
 
     return (
         <AcmModal
-            title={t('submariner.update.form.title')}
+            title={t('Edit Submariner configuration')}
             isOpen={props.submarinerConfig !== undefined}
             variant={ModalVariant.medium}
             onClose={reset}
@@ -77,29 +77,36 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                 {(alertContext) => (
                     <AcmForm>
                         <div>
-                            <Trans i18nKey="cluster:submariner.update.form.message" components={{ bold: <strong /> }} />
+                            <Trans
+                                i18nKey="Editing the <bold>SubmarinerConfig</bold> will update the configurations of the Submariner add-on on the managed cluster. It may take a few minutes for the changes to take effect."
+                                components={{ bold: <strong /> }}
+                            />
                         </div>
                         <AcmTextInput
                             id="natt-port"
                             type="number"
-                            label={t('submariner.install.form.nattport')}
-                            placeholder={t('submariner.install.form.port.placeholder')}
-                            labelHelp={t('submariner.install.form.nattport.labelHelp')}
+                            label={t('IPSec NAT-T port')}
+                            placeholder={t('Enter port number')}
+                            labelHelp={t(
+                                'The Submariner creates the IPsec tunnel between the clusters.  This port is used for IPsec NAT traversal. (default 4500)'
+                            )}
                             value={nattPort}
                             onChange={(port) => setNattPort(port)}
                         />
 
                         <Checkbox
                             id="natt-enable"
-                            label={t('submariner.install.form.nattenable')}
+                            label={t('Enable NAT-T')}
                             isChecked={nattEnable}
                             onChange={setNattEnable}
                         />
                         <AcmSelect
                             id="cable-driver"
-                            label={t('submariner.install.form.cabledriver')}
-                            placeholder={t('submariner.install.form.cabledriver.placeholder')}
-                            labelHelp={t('submariner.install.form.cabledriver.labelHelp')}
+                            label={t('Cable driver')}
+                            placeholder={t('Select cable driver')}
+                            labelHelp={t(
+                                'The Submariner gateway cable driver, Available options are: libreswan (default), wireguard, and vxlan.'
+                            )}
                             value={cableDriver}
                             onChange={(driver) => setCableDriver(CableDriver[driver as keyof typeof CableDriver])}
                         >
@@ -112,18 +119,22 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                         <AcmTextInput
                             id="gateways"
                             type="number"
-                            label={t('submariner.install.form.gateways')}
-                            placeholder={t('submariner.install.form.gateways.placeholder')}
-                            labelHelp={t('submariner.install.form.gateways.labelHelp')}
+                            label={t('Gateway count')}
+                            placeholder={t('Enter gateway count')}
+                            labelHelp={t(
+                                'The number of worker nodes  that will be used to deploy the Submariner gateway component on the managed cluster. If the value is greater than 1, the Submariner gateway HA will be enabled automatically. (default 1)'
+                            )}
                             value={gateways}
                             onChange={(gateways) => setGateways(gateways)}
                         />
                         {props.cluster?.provider === Provider.aws && (
                             <AcmTextInput
                                 id="aws-instance-type"
-                                label={t('submariner.install.form.instancetype')}
-                                placeholder={t('submariner.install.form.instancetype.placeholder')}
-                                labelHelp={t('submariner.install.form.instancetype.labelHelp')}
+                                label={t('Instance type')}
+                                placeholder={t('Select instance type')}
+                                labelHelp={t(
+                                    'The Amazon Web Services EC2 instance type of the gateway node that will be created on the managed cluster. (default c5d.large)'
+                                )}
                                 value={awsInstanceType}
                                 onChange={(instanceType) => setAwsInstanceType(instanceType)}
                             />
@@ -134,8 +145,8 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                             <AcmSubmit
                                 id="save"
                                 variant="primary"
-                                label={t('common:save')}
-                                processingLabel={t('common:saving')}
+                                label={t('Save')}
+                                processingLabel={t('Saving')}
                                 onClick={() => {
                                     alertContext.clearAlerts()
 
@@ -193,7 +204,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                                 }}
                             />
                             <AcmButton variant="link" onClick={reset}>
-                                {t('common:cancel')}
+                                {t('Cancel')}
                             </AcmButton>
                         </ActionGroup>
                     </AcmForm>

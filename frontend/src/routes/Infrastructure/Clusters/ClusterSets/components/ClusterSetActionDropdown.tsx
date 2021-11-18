@@ -17,7 +17,7 @@ import { ClusterStatuses } from './ClusterStatuses'
 import { ManagedClusterSetBindingModal } from './ManagedClusterSetBindingModal'
 
 export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClusterSet; isKebab?: boolean }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
         open: false,
@@ -28,14 +28,14 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
     const modalColumns = useMemo(
         () => [
             {
-                header: t('table.name'),
+                header: t('Name'),
                 cell: (managedClusterSet: ManagedClusterSet) => (
                     <span style={{ whiteSpace: 'nowrap' }}>{managedClusterSet.metadata.name}</span>
                 ),
                 sort: 'name',
             },
             {
-                header: t('table.clusters'),
+                header: t('Clusters'),
                 sort: 'status',
                 cell: (managedClusterSet: ManagedClusterSet) => (
                     <ClusterStatuses managedClusterSet={managedClusterSet} />
@@ -48,14 +48,14 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
     const actions = [
         {
             id: 'edit-bindings',
-            text: t('set.edit-bindings'),
+            text: t('Edit namespace bindings'),
             click: () => setShowManagedClusterSetBindingModal(true),
             isDisabled: true,
             rbac: [rbacCreate(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name, 'bind')],
         },
         {
             id: 'manage-clusterSet-resources',
-            text: t('set.manage-resources'),
+            text: t('Manage resource assignments'),
             click: (managedClusterSet: ManagedClusterSet) => {
                 history.push(NavigationPath.clusterSetManage.replace(':id', managedClusterSet.metadata.name!))
             },
@@ -64,17 +64,19 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
         },
         {
             id: 'delete-clusterSet',
-            text: t('set.delete'),
+            text: t('Delete cluster set'),
             click: (managedClusterSet: ManagedClusterSet) => {
                 setModalProps({
                     open: true,
                     isDanger: true,
                     icon: 'warning',
-                    title: t('bulk.title.deleteSet'),
-                    action: t('delete'),
-                    processing: t('deleting'),
+                    title: t('Delete cluster sets?'),
+                    action: t('Delete'),
+                    processing: t('Deleting'),
                     resources: [managedClusterSet],
-                    description: t('bulk.message.deleteSet'),
+                    description: t(
+                        'Deleting a cluster set will remove all access control permissions to resources in this set for all assigned cluster set users. Resources currently in this cluster set will not be deleted.'
+                    ),
                     columns: modalColumns,
                     keyFn: (managedClusterSet) => managedClusterSet.metadata.name! as string,
                     actionFn: deleteResource,
@@ -101,7 +103,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
                 id={`${props.managedClusterSet.metadata.name}-actions`}
                 item={props.managedClusterSet}
                 isKebab={props.isKebab}
-                text={t('actions')}
+                text={t('Actions')}
                 actions={actions}
             />
         </>

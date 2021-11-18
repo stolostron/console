@@ -33,7 +33,7 @@ function getEmptySet() {
 }
 
 export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => void }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [created, setCreated] = useState<boolean>()
@@ -48,7 +48,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={!created ? t('createClusterSet.title') : t('createClusterSet.success.title')}
+            title={!created ? t('Create cluster set') : t('Cluster set successfully created')}
             titleIconVariant={!created ? undefined : 'success'}
             isOpen={props.isOpen}
             onClose={reset}
@@ -60,14 +60,14 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                             <>
                                 <div>
                                     <Trans
-                                        i18nKey="cluster:createClusterSet.description"
+                                        i18nKey="Creating a <bold>ManagedClusterSet</bold> will allow you to group resources and manage access control to all of the resources in the group together. You will be able to manage the resource assignments for access control after creating the cluster set."
                                         components={{ bold: <strong /> }}
                                     />
                                 </div>
                                 <AcmTextInput
                                     id="clusterSetName"
-                                    label={t('createClusterSet.form.name.label')}
-                                    placeholder={t('createClusterSet.form.name.placeholder')}
+                                    label={t('Cluster set name')}
+                                    placeholder={t('Enter cluster set name')}
                                     value={managedClusterSet.metadata.name}
                                     isRequired
                                     onChange={(name) => {
@@ -82,8 +82,8 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                                     <AcmSubmit
                                         id="submit"
                                         variant="primary"
-                                        label={t('common:create')}
-                                        processingLabel={t('common:creating')}
+                                        label={t('Create')}
+                                        processingLabel={t('Creating')}
                                         onClick={() => {
                                             alertContext.clearAlerts()
                                             return createResource<ManagedClusterSet>(managedClusterSet)
@@ -98,7 +98,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                                         }}
                                     />
                                     <AcmButton variant="link" onClick={reset}>
-                                        {t('common:cancel')}
+                                        {t('Cancel')}
                                     </AcmButton>
                                 </ActionGroup>
                             </>
@@ -109,7 +109,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                 <>
                     <div style={{ marginBottom: '24px' }}>
                         <Trans
-                            i18nKey="cluster:createClusterSet.success.description"
+                            i18nKey="<bold>{{clusterSetName}}</bold> was successfully created. Click the <bold>Manage resource assignments</bold> button to assign resources to this cluster set."
                             values={{ clusterSetName: managedClusterSet.metadata.name }}
                             components={{ bold: <strong /> }}
                         />
@@ -123,10 +123,10 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                                 )
                             }}
                         >
-                            {t('set.manage-resources')}
+                            {t('Manage resource assignments')}
                         </AcmButton>
                         <AcmButton variant="link" onClick={reset}>
-                            {t('common:close')}
+                            {t('Close')}
                         </AcmButton>
                     </ActionGroup>
                 </>
