@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
-import ClusterManagementPage from './Clusters'
+import { ClustersPage } from './ClustersPage'
 
 describe('Cluster Management', () => {
     test('Discovery Feature Flag Enabled', async () => {
@@ -13,7 +13,7 @@ describe('Cluster Management', () => {
         render(
             <RecoilRoot>
                 <MemoryRouter>
-                    <ClusterManagementPage />
+                    <ClustersPage />
                 </MemoryRouter>
             </RecoilRoot>
         )

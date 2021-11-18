@@ -69,7 +69,7 @@ export enum NavigationPath {
     // Applications
     advancedConfiguration = '/multicloud/applications/advanced',
     applications = '/multicloud/applications',
-    createApplication = '/multicloud/create-application',
+    createApplication = '/multicloud/applications/create',
 
     // Governance
     governance = '/multicloud/governance',

@@ -76,23 +76,23 @@
             "component": { "$codeRef": "clusters.default" }
         }
     },
-    // {
-    //     "type": "console.navigation/href",
-    //     "properties": {
-    //         "perspective": "acm",
-    //         "section": "acm-infrastructure",
-    //         "id": "acm-bare-metal-assets",
-    //         "name": "Bare metal assets",
-    //         "href": "/multicloud/infrastructure/bare-metal-assets"
-    //     }
-    // },
-    // {
-    //     "type": "console.page/route",
-    //     "properties": {
-    //         "path": "/multicloud/infrastructure/bare-metal-assets",
-    //         "component": { "$codeRef": "welcome.default" }
-    //     }
-    // },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-infrastructure",
+            "id": "acm-bare-metal-assets",
+            "name": "Bare metal assets",
+            "href": "/multicloud/infrastructure/bare-metal-assets"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/infrastructure/bare-metal-assets",
+            "component": { "$codeRef": "baremetalassets.default" }
+        }
+    },
     // {
     //     "type": "console.navigation/href",
     //     "properties": {
@@ -127,22 +127,22 @@
     //         "component": { "$codeRef": "welcome.default" }
     //     }
     // },
-    // {
-    //     "type": "console.navigation/href",
-    //     "properties": {
-    //         "perspective": "acm",
-    //         "id": "acm-applications",
-    //         "name": "Applications",
-    //         "href": "/multicloud/applications"
-    //     }
-    // },
-    // {
-    //     "type": "console.page/route",
-    //     "properties": {
-    //         "path": "/multicloud/applications",
-    //         "component": { "$codeRef": "welcome.default" }
-    //     }
-    // },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "id": "acm-applications",
+            "name": "Applications",
+            "href": "/multicloud/applications"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/applications",
+            "component": { "$codeRef": "applications.default" }
+        }
+    },
     // {
     //     "type": "console.navigation/href",
     //     "properties": {

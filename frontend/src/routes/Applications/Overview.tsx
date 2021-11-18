@@ -13,23 +13,24 @@ import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TFunction, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router'
+import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { applicationsState, applicationSetsState, argoApplicationsState } from '../../atoms'
+import { applicationSetsState, applicationsState, argoApplicationsState } from '../../atoms'
+import { canUser } from '../../lib/rbac-util'
+import { NavigationPath } from '../../NavigationPath'
 import {
     ApplicationApiVersion,
+    ApplicationDefinition,
     ApplicationKind,
+    ApplicationSet,
+    ApplicationSetKind,
     ArgoApplication,
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
-    ApplicationSetKind,
     IResource,
-    ApplicationSet,
-    ApplicationDefinition,
 } from '../../resources'
 import ResourceLabels from './components/ResourceLabels'
 import { getAge } from './helpers/resource-helper'
-import { canUser } from '../../lib/rbac-util'
-import { Link } from 'react-router-dom'
 
 // Map resource kind to type column
 function getResourceType(resource: IResource) {
@@ -49,7 +50,7 @@ function getResourceType(resource: IResource) {
 // Check if server URL matches hub URL, doesn't work when testing locally
 function isLocalClusterURL(url: string) {
     let argoServerURL
-    let localClusterURL = new URL(window.location.href)
+    const localClusterURL = new URL(window.location.href)
 
     try {
         argoServerURL = new URL(url)
@@ -143,7 +144,7 @@ function generateTransformData(tableItem: IResource, argoApplications: ArgoAppli
     // Resource column
     const resourceMap: { [key: string]: string } = {}
     const appRepos = getApplicationRepos(tableItem)
-    let resourceText: string = ''
+    let resourceText = ''
     appRepos?.forEach((repo) => {
         if (!resourceMap[repo.type]) {
             resourceText = resourceText + repo.type
@@ -266,7 +267,7 @@ export default function ApplicationsOverview() {
             {
                 header: t('Clusters'),
                 cell: (resource) => {
-                    let clusterCount = {
+                    const clusterCount = {
                         localPlacement: false,
                         remoteCount: 0,
                     }
@@ -409,7 +410,7 @@ export default function ApplicationsOverview() {
                     {
                         id: 'createApplication',
                         title: t('Create application'),
-                        click: () => history.push(''), // TODO add link to wizard
+                        click: () => history.push(NavigationPath.createApplication), // TODO add link to wizard
                         isDisabled: !canCreateApplication,
                         tooltip: t(
                             'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
