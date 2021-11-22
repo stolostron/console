@@ -1,12 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import { Cluster, ClusterProvision, ClusterStatus, ConfigMap, getHivePod, getLatest } from '../../../../../resources'
+import {
+    Cluster,
+    ClusterDeploymentApiVersionType,
+    ClusterDeploymentKind,
+    ClusterDeploymentKindType,
+    ClusterPoolKind,
+    ClusterPoolKindType,
+    ClusterProvision,
+    ClusterStatus,
+    ConfigMap,
+    getHivePod,
+    getLatest,
+} from '../../../../../resources'
 import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Namespace, useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { clusterProvisionsState, configMapsState } from '../../../../../atoms'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -86,6 +98,7 @@ export function HiveNotification() {
 export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
     const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
     const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
+    console.log('cluster: ', cluster)
     if (cluster && openShiftConsoleUrl) {
         const response = getHivePod(cluster.namespace!, cluster.name!, cluster.status!)
         response.then((job) => {
@@ -94,4 +107,18 @@ export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
                 window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace!}/pods/${podName}/logs?container=hive`)
         })
     }
+}
+
+export function launchToYaml(cluster: Cluster, configMaps: ConfigMap[]) {
+    let kind = ClusterDeploymentKind
+    let namespace = cluster.namespace
+    let name = cluster.name
+    if (cluster.hive.clusterPool) {
+        kind = ClusterPoolKind
+        name = cluster.hive.clusterPool
+        namespace = cluster.hive.clusterPoolNamespace
+    }
+    const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
+    const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
+    window.open(`${openShiftConsoleUrl}/k8s/ns/${namespace}/hive.openshift.io~v1~${kind}/${name}/yaml`)
 }
