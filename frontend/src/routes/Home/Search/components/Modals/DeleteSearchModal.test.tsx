@@ -5,9 +5,9 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MockedProvider } from '@apollo/client/testing'
 import { GraphQLError } from 'graphql'
-import { wait } from '../../../../lib/test-util'
+import { wait } from '../../../../../lib/test-util'
 import { DeleteSearchModal } from './DeleteSearchModal'
-import { DeleteSearchDocument, SavedSearchesDocument } from '../../../../search-sdk/search-sdk'
+import { DeleteSearchDocument, SavedSearchesDocument } from '../../search-sdk/search-sdk'
 
 describe('DeleteSearchModal', () => {
     it('should call the delete mutation with a successful response', async () => {

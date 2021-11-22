@@ -11,8 +11,8 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import MonacoEditor, { monaco } from 'react-monaco-editor'
-import { canUser } from '../../../lib/rbac-util'
-import { fireManagedClusterAction } from '../../../resources/managedclusteraction'
+import { canUser } from '../../../../lib/rbac-util'
+import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
 import './YAMLEditor.css'
 
 monaco.editor.defineTheme('console', {

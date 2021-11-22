@@ -5,7 +5,7 @@ import { AcmInlineStatus, AcmPageHeader, StatusType } from '@open-cluster-manage
 import { Card, CardBody } from '@patternfly/react-core'
 import '@patternfly/react-core/dist/styles/base.css'
 import { useTranslation } from 'react-i18next'
-import { Message } from '../../../search-sdk/search-sdk'
+import { Message } from '../search-sdk/search-sdk'
 
 export default function HeaderWithNotification(props: { messages: Message[] }) {
     const { t } = useTranslation(['search'])

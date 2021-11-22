@@ -5,9 +5,9 @@ import { Router } from 'react-router-dom'
 import { createBrowserHistory } from 'history'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing'
-import { wait } from '../../../lib/test-util'
+import { wait } from '../../../../lib/test-util'
 import SavedSearchQueries from './SavedSearchQueries'
-import { SavedSearchesDocument, SearchResultCountDocument } from '../../../search-sdk/search-sdk'
+import { SavedSearchesDocument, SearchResultCountDocument } from '../search-sdk/search-sdk'
 
 describe('SavedSearchQueries Page', () => {
     it('should render page with correct data', async () => {

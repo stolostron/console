@@ -21,15 +21,15 @@ import _ from 'lodash'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
-import { acmRouteState } from '../../atoms'
-import { searchClient } from '../../search-sdk/search-client'
+import { acmRouteState } from '../../../atoms'
+import { searchClient } from './search-sdk/search-client'
 import {
     useGetMessagesQuery,
     UserSearch,
     useSavedSearchesQuery,
     useSearchCompleteQuery,
     useSearchSchemaQuery,
-} from '../../search-sdk/search-sdk'
+} from './search-sdk/search-sdk'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'

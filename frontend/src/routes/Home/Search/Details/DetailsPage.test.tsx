@@ -6,8 +6,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { nockDelete, nockGet } from '../../../lib/nock-util'
-import { waitForNocks } from '../../../lib/test-util'
+import { nockDelete, nockGet } from '../../../../lib/nock-util'
+import { waitForNocks } from '../../../../lib/test-util'
 import DetailsPage from './DetailsPage'
 
 jest.mock('react-router-dom', () => {
