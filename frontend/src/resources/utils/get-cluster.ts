@@ -21,6 +21,7 @@ export enum ClusterStatus {
     'pending' = 'pending',
     'destroying' = 'destroying',
     'creating' = 'creating',
+    'notstarted' = 'notstarted',
     'provisionfailed' = 'provisionfailed',
     'deprovisionfailed' = 'deprovisionfailed',
     'failed' = 'failed',
@@ -46,6 +47,7 @@ export enum ClusterStatus {
 }
 
 export const clusterDangerStatuses = [
+    ClusterStatus.notstarted,
     ClusterStatus.provisionfailed,
     ClusterStatus.deprovisionfailed,
     ClusterStatus.failed,
@@ -740,6 +742,10 @@ export function getClusterStatus(
             'ClusterImageSetNotFound',
             cdConditions
         )
+        const hasInvalidInstallConfig = checkForRequirementsMetConditionFailureReason(
+            'InstallConfigValidationFailed',
+            cdConditions
+        )
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
@@ -786,6 +792,12 @@ export function getClusterStatus(
                 )
                 cdStatus = ClusterStatus.provisionfailed
                 statusMessage = invalidImageSetCondition?.message
+            } else if (hasInvalidInstallConfig) {
+                const invalidInstallConfigCondition = cdConditions.find(
+                    (c) => c.type === 'RequirementsMet' && c.reason === 'InstallConfigValidationFailed'
+                )
+                cdStatus = ClusterStatus.notstarted
+                statusMessage = invalidInstallConfigCondition?.message
             } else if (provisionFailed) {
                 const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
                 const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''
