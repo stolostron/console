@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { RecoilRoot } from 'recoil'
-import { LoadData } from '../../../atoms'
+import { PluginData } from '../../../components/PluginData'
 import BareMetalAssets from './BareMetalAssets'
 
 export default function BareMetalAssetsPlugin() {
     return (
         <RecoilRoot>
-            <LoadData>
+            <PluginData>
                 <BareMetalAssets />
-            </LoadData>
+            </PluginData>
         </RecoilRoot>
     )
 }

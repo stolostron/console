@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { RecoilRoot } from 'recoil'
-import { LoadData } from '../../../atoms'
+import { PluginData } from '../../../components/PluginData'
 import Search from './Search'
 
 export default function SearchPlugin() {
     return (
         <RecoilRoot>
-            <LoadData>
+            <PluginData>
                 <Search />
-            </LoadData>
+            </PluginData>
         </RecoilRoot>
     )
 }

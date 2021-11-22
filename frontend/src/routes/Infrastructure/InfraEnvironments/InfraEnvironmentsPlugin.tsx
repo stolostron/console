@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { RecoilRoot } from 'recoil'
-import { LoadData } from '../../../atoms'
+import { PluginData } from '../../../components/PluginData'
 import InfraEnvironments from './InfraEnvironments'
 
 export default function InfraEnvironmentsPlugin() {
     return (
         <RecoilRoot>
-            <LoadData>
+            <PluginData>
                 <InfraEnvironments />
-            </LoadData>
+            </PluginData>
         </RecoilRoot>
     )
 }

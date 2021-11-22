@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { RecoilRoot } from 'recoil'
-import { LoadData } from '../../../atoms'
+import { PluginData } from '../../../components/PluginData'
 import Clusters from './Clusters'
 
 export default function ClustersPlugin() {
     return (
         <RecoilRoot>
-            <LoadData>
+            <PluginData>
                 <Clusters />
-            </LoadData>
+            </PluginData>
         </RecoilRoot>
     )
 }

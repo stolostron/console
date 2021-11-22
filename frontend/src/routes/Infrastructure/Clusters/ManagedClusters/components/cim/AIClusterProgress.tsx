@@ -4,7 +4,7 @@ import { AcmExpandableCard } from '@open-cluster-management/ui-components'
 import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
-import { backendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
+import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 
 const {
     ClusterDeploymentProgress,
@@ -34,7 +34,7 @@ const fetchSecret: CIM.FetchSecret = (name, namespace) =>
 
 const fetchEvents = async (url: string) => {
     const abortController = new AbortController()
-    const result = await fetchGet(`${backendUrl}${url}`, abortController.signal)
+    const result = await fetchGet(`${getBackendUrl()}${url}`, abortController.signal)
     return result.data as string
 }
 
