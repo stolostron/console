@@ -70,7 +70,6 @@ export function StatusField(props: { cluster: Cluster }) {
     let Action = () => <></>
     switch (props.cluster?.status) {
         case ClusterStatus.notstarted:
-            console.log('cluster: ', props.cluster)
             hasAction = true
             Action = () => (
                 <AcmButton
