@@ -62,6 +62,7 @@
     "managed.clusterSets.submariner.addons.config.notSupported.provider": "{{clusterName}} (Provider not supported)",
     "managed.editAI": "Edit cluster",
     "managed.ai.scaleUp": "Add hosts",
+
     "submariner.title.tooltip": "Submariner enables direct networking between Pods and Services in different Kubernetes clusters, either on-premises or in the cloud.",
     "submariner.clusters.empty.title": "No available clusters found",
     "submariner.clusters.empty.message": "All clusters in the cluster set already have the Submariner add-on installed. Select the <bold>Manage resource assignments</bold> button to add more clusters.",
@@ -94,6 +95,7 @@
     "submariner.update.form.title": "Edit Submariner configuration",
     "submariner.update.form.message": "Editing the <bold>SubmarinerConfig</bold> will update the configurations of the Submariner add-on on the managed cluster. It may take a few minutes for the changes to take effect.",
     "submariner.config.edit": "Edit configuration",
+
     "managed.cluster.machinePools.emptyStateHeader": "No machine pools found.",
     "managed.cluster.machinePools.emptyStateButton": "This cluster doesn't have any machine pools.",
     "managed.import": "Import cluster",
@@ -133,9 +135,12 @@
     "machinePool.disableAutoscale": "Disable autoscale",
     "machinePool.delete": "Delete machine pool",
     "template.create": "Create Ansible template",
+
     "hibernating.tooltip": "This action is currently unavailable because the cluster is powered down.",
+
     "button.backToClusters": "Back to clusters",
     "button.backToClusterSets": "Back to cluster sets",
+
     "detaching.inprogress": "{{clusterName}} is being detached",
     "destroying.inprogress": "{{clusterName}} is being destroyed",
     "detaching.inprogress.message": "It might take a few minutes for the detach process to complete. Select <bold>Back to clusters</bold> or wait here.",
@@ -144,12 +149,15 @@
     "destroying.success": "{{clusterName}} was successfully destroyed",
     "detaching.success.message": "{{clusterName}} was successfully detached. Select <bold>Back to clusters</bold> or create a new cluster.",
     "destroying.success.message": "{{clusterName}} was successfully destroyed. Select <bold>Back to clusters</bold> or create a new cluster.",
+
     "deleting.managedClusterSet.inprogress": "{{managedClusterSetName}} is being deleted.",
     "deleting.managedClusterSet.inprogress.message": "It might take a few minutes for the delete process to complete. Select <bold>Back to cluster sets</bold> or wait here.",
     "deleting.managedClusterSet.success": "{{managedClusterSetName}} was successfully deleted.",
     "deleting.managedClusterSet.success.message": "{{managedClusterSetName}} was successfully deleted. Select <bold>Back to cluster sets</bold> to go back to your cluster set list.",
+
     "configuration.download": "Download configuration",
     "actions": "Actions",
+
     "table.name": "Name",
     "table.cluster": "Cluster",
     "table.name.helperText": "The common Kubernetes resource name shared by multiple resources generated from cluster creation or import; including the <bold>Namespace</bold>, <bold>ManagedCluster</bold>, or <bold>ClusterDeployment</bold>. The cluster claim name will be displayed under the cluster name if it was claimed from a cluster pool.",
@@ -207,15 +215,18 @@
     "table.submariner.agent": "Agent status",
     "table.submariner.connection": "Connection status",
     "table.clusterSetBinding": "Namespace bindings",
+
     "credentials.show": "Reveal credentials",
     "credentials.hide": "Hide credentials",
     "credentials.loading": "Loading credentials",
     "credentials.failed": "Failed",
+
     "empty-state.submariner.title": "No submariner add-ons found",
     "empty-state.cluster.title": "No clusters found",
     "empty-state.cluster.subtitle": "Ask your administrator to provide a cluster if the Import an existing cluster and Create a cluster buttons are disabled.",
     "empty-state.node.title": "No nodes found",
     "empty-state.node.subtitle": "This cluster doesn't have any nodes.",
+
     "import.no.cluster.sets.available": "No cluster sets available",
     "import.manage.cluster.sets": " Manage cluster sets",
     "import.form.header": "Cluster information",
@@ -299,6 +310,7 @@
     "status.install.text": "Cluster install",
     "status.import.text": "Cluster import",
     "status.posthook.text": "Posthook",
+
     "status.subtitle.healthy": "Complete",
     "status.subtitle.progress": "In progress",
     "status.subtitle.pending": "Pending",
@@ -312,6 +324,7 @@
     "status.subtitle.nojobs": "No jobs selected",
     "status.link.info": "Learn more about automation",
     "status.link.logs": "View logs",
+
     "status.submariner.progressing": "Progressing",
     "status.submariner.progressing.message": "The add-on installation is in progress. It may take a few minutes to complete, the status of the Submariner add-on will be reported upon completion.",
     "status.submariner.connection.degraded": "Degraded",
@@ -407,6 +420,7 @@
     "view.addons": "View add-ons",
     "view.releaseNotes": "View release notes",
     "view.submariner": "View Submariner add-ons",
+
     "modal.destroy.title": "Permanently destroy managed cluster",
     "modal.detach.title": "Detach managed cluster",
     "modal.destroy.content": "Are you sure that you want to continue?",
@@ -419,12 +433,14 @@
     "tab.clusters": "Managed clusters",
     "tab.clusterPools": "Cluster pools",
     "tab.access": "Access management",
+
     "labels.capital": "Labels",
     "labels.lower": "{{resourceName}} labels",
     "labels.button.add": "Add label",
     "labels.edit.title": "Edit labels",
     "labels.description": "Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.",
     "labels.edit.placeholder": "Enter key=value, then press enter, space, or comma",
+
     "summary.status": "Status",
     "summary.nodes": "Nodes",
     "summary.applications": "Applications",
@@ -437,11 +453,14 @@
     "summary.violations.launch": "Go to Policies",
     "summary.cluster.issues.description": "By total risk:",
     "summary.status.loading": "Loading application and violation status",
+
     "summary.submariner.launch": "Go to Submariner add-ons",
     "summary.clusters.launch": "Go to Managed clusters",
     "summary.clusterPools.launch": "Go to Cluster pools",
+
     "clusterPools.one": "1 pool",
     "clusterPools.multiple": "{{number}} pools",
+
     "policy.report.flyout.title": "{{count}} identified issues",
     "policy.report.flyout.description": "Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.",
     "policy.report.flyout.back": "Back",
@@ -460,6 +479,7 @@
     "policy.report.low": "Low",
     "policy.report.flyout.matched": "Matched on",
     "policy.report.riskLevel": "The impact of the problem would be {{totalRisk}} if it occurred",
+
     "bulk.delete.sets": "Delete cluster sets",
     "bulk.updateReleaseImages.clusterPools": "Update release images",
     "bulk.destroy.clusterPools": "Destroy cluster pools",
@@ -500,7 +520,9 @@
     "bulk.title.uninstallSubmariner": "Uninstall Submariner add-ons?",
     "bulk.title.uninstallSubmariner.action": "Uninstall Submariner add-ons",
     "bulk.message.uninstallSubmariner": "Uninstalling the Submariner add-on from a managed cluster will remove it from the multi-cluster network. This may result in disruption to your applications or services. Are you sure you want to continue?",
+
     "uninstall.add-on": "Uninstall add-on",
+
     "createClusterSet.title": "Create cluster set",
     "createClusterSet.success.title": "Cluster set successfully created",
     "createClusterSet.description": "Creating a <bold>ManagedClusterSet</bold> will allow you to group resources and manage access control to all of the resources in the group together. You will be able to manage the resource assignments for access control after creating the cluster set.",
@@ -509,6 +531,7 @@
     "createClusterSet.form.name.placeholder": "Enter cluster set name",
     "createClusterSet.form.section.clusters.emptyTitle": "No assignable resources found",
     "createClusterSet.form.section.clusters.emptyMessage": "You don't have any clusters or cluster pools available to assign to this cluster set.",
+
     "manageClusterSet.form.section.table": "Select resources to toggle their assignments to the cluster set",
     "manageClusterSet.form.section.table.description": "Resources can be added, removed, and transferred from other cluster sets (if you have permissions to remove from them from their assigned set).",
     "manageClusterSet.form.section.table.description.second": "<bold>Important:</bold> assigning a resource to the cluster set will give all cluster set users permissions to the resource's namespace.",
@@ -522,6 +545,7 @@
     "managedClusterSet.form.unchanged": "No change",
     "managedClusterSet.form.transferred": "Transferred",
     "managedClusterSet.form.emptyStateButton": "Back to cluster sets",
+
     "clusterClaim.create.title": "Claim cluster",
     "clusterClaim.create.title.success": "Cluster successfully claimed",
     "clusterClaim.create.message": "Claiming a cluster from <bold>{{clusterPoolName}}</bold> will remove one of the available clusters from the pool and a new cluster will be created to replace it.",
@@ -532,12 +556,15 @@
     "clusterClaim.name.placeholder": "Enter cluster claim name",
     "clusterClaim.modal.viewCluster": "View cluster",
     "clusterClaim.create.timeOut": "Timed out waiting for a cluster to be assigned to the claim. Try checking the cluster claim later.",
+
     "clusterPool.clusters": "Clusters",
+
     "clusterPool.modal.scale.title": "Scale cluster pool",
     "clusterPool.modal.scale.message": "Specify the desired size of <bold>{{clusterPoolName}}</bold>. Adjusting the size of the cluster pool will result in the creation or destruction of clusters; only unclaimed clusters will be destroyed if downsizing.",
     "clusterPool.modal.scale.poolName": "Cluster pool name",
     "clusterPool.modal.scale.poolNamespace": "Cluster pool namespace",
     "clusterPool.modal.scale.input": "Set desired cluster pool size",
+
     "template.title": "Automation",
     "template.emptyStateHeader": "You don't have any Ansible job templates",
     "template.emptyStateMsg": "Select <bold>Create Ansible template</bold> to create an Ansible job template.",
@@ -564,6 +591,7 @@
     "template.information.title": "Basic information",
     "template.information.description": "The default job templates that you select appear automatically during cluster creation. To create a sequence of events, select multiple jobs. Drag and drop the job templates to reorder the sequence.",
     "template.job.duplicate.error": "The job name already exists in this hook. The job list cannot contain duplicates.",
+
     "template.create.name": "Template name",
     "template.create.placeholder": "Enter the name for the template",
     "template.create.config.wizard.title": "Configure Ansible job template name and Ansible credential",
@@ -577,6 +605,7 @@
     "template.create.destroy.wizard.title": "Configure Ansible job templates to run for your cluster at destroy",
     "template.create.review.title": "Review your default job templates",
     "template.create.review.description": "Review your choices for default job templates. Go back to a step if you have any changes to make.",
+
     "template.preInstall.label": "Pre-install Ansible job templates",
     "template.postInstall.label": " Post-install Ansible job templates",
     "template.preUpgrade.label": "Pre-upgrade Ansible job templates",
@@ -586,6 +615,7 @@
     "template.preDestroy.label": "Pre-destroy Ansible job templates",
     "template.postDestroy.label": " Post-destroy Ansible job templates",
     "template.job.placeholder": "Add an Ansible job template",
+
     "template.modal.title.add": "Add Ansible job",
     "template.modal.title.edit": "Edit Ansible job",
     "template.modal.name.label": "Ansible job template name",
@@ -593,6 +623,7 @@
     "template.modal.name.helper.text": "The Ansible job template name must match the name of the job on the Ansible Tower. If the names are not the same, the hook cannot run the job.",
     "template.modal.settings.label": "Extra variables",
     "template.modal.settings.placeholder": "Enter key=value pairs",
+
     "machinePool.alert.scaling.increase.title": "Scaling up in progress",
     "machinePool.alert.scaling.decrease.title": "Scaling down in progress",
     "machinePool.alert.scaling.increase.message": "Worker nodes are currently being added to this cluster. Click the <bold>View machines</bold> button to see the status of the scaling operations (it may take a few minutes for the changes to be reflected on this console).",
@@ -613,6 +644,7 @@
     "machinePool.modal.scale.minReplicas.label": "Minimum replicas",
     "machinePool.modal.scale.maxReplicas.label": "Maximum replicas",
     "machinePool.modal.scale.maxReplicas.validation.greater": "Maximum replicas must be greater than minimum replicas",
+
     "access.emptyTitle": "No users or groups found",
     "access.emptyMessage": "This cluster set doesn't have any users or groups, yet. Click the <bold>Add user or group</bold> button to add a user or group.",
     "access.emptyStateButton": "Add user or group",
@@ -632,6 +664,7 @@
     "access.usersInGroup.view": "View users in group",
     "access.clusterSet.role.admin": "Cluster set admin",
     "access.clusterSet.role.view": "Cluster set view",
+
     "clusterSetBinding.edit.title": "Edit namespace bindings",
     "clusterSetBinding.edit.message": "A <bold>ManagedClusterSetBinding</bold> resource binds a <bold>ManagedClusterSet</bold> resource to a namespace. Placement resources that are created in the same namespace can only access managed clusters that are included in the bound <bold>ManagedClusterSet</bold> resource.",
     "clusterSetBinding.edit.message.noBold": "A ManagedClusterSetBinding resource binds a ManagedClusterSet resource to a namespace. Placement resources that are created in the same namespace can only access managed clusters that are included in the bound ManagedClusterSet resource.",
