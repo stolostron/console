@@ -14,5 +14,7 @@ declare module '*.svg' {
     export default content
 }
 export declare global {
-    interface Window { acmConsolePluginProxyPath: string }
+    interface Window {
+        acmConsolePluginProxyPath: string
+    }
 }

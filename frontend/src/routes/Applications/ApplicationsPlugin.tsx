@@ -1,18 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { RecoilRoot } from 'recoil'
-import { LoadData } from '../../atoms'
-import { usePluginProxy } from '../../lib/usePluginProxy'
+import { PluginData } from '../../components/PluginData'
 import Applications from './Applications'
 
 export default function ApplicationsPlugin() {
-
-    usePluginProxy()
-    
     return (
         <RecoilRoot>
-            <LoadData>
+            <PluginData>
                 <Applications />
-            </LoadData>
+            </PluginData>
         </RecoilRoot>
     )
 }
