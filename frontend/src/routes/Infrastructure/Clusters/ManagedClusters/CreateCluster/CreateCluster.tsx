@@ -240,7 +240,7 @@ export default function CreateClusterPage() {
     const pauseCreate = () => {}
 
     // setup translation
-    const { t } = useTranslation(['create', 'cim'])
+    const { t } = useTranslation()
     const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
@@ -396,9 +396,11 @@ export default function CreateClusterPage() {
         if (control.controlId === 'infrastructure') {
             if (control.active?.includes('AI') && !isInfraEnvAvailable) {
                 setWarning({
-                    title: t('cim:cim.infra.missing.warning.title'),
-                    text: t('cim:cim.infra.missing.warning.text'),
-                    linkText: t('cim:cim.infra.manage.link'),
+                    title: t('No infrastructure environments available'),
+                    text: t(
+                        'An infrastructure environment must be available with hosts to proceed with the On premise option.'
+                    ),
+                    linkText: t('Manage infrastructure environments'),
                     linkTo: NavigationPath.infraEnvironments,
                 })
             } else {
@@ -418,23 +420,23 @@ export default function CreateClusterPage() {
         <AcmPage
             header={
                 <AcmPageHeader
-                    title={t('page.header.create-cluster')}
+                    title={t('Create cluster')}
                     titleTooltip={
                         <>
-                            {t('page.header.create-cluster.tooltip')}
+                            {t('Create clusters across different providers.')}
                             <a
                                 href={DOC_LINKS.CREATE_CLUSTER}
                                 target="_blank"
                                 rel="noreferrer"
                                 style={{ display: 'block', marginTop: '4px' }}
                             >
-                                {t('learn.more')}
+                                {t('Learn more')}
                             </a>
                         </>
                     }
                     breadcrumb={[
-                        { text: t('clusters'), to: NavigationPath.clusters },
-                        { text: t('page.header.create-cluster'), to: '' },
+                        { text: t('Managed clusters'), to: NavigationPath.clusters },
+                        { text: t('Create cluster'), to: '' },
                     ]}
                     switches={switches}
                     actions={portals}
