@@ -22,7 +22,7 @@ export function StatusSummaryCount() {
     const [policyReports] = useRecoilState(policyreportState)
     const { cluster } = useContext(ClusterContext)
     const { setDrawerContext } = useContext(AcmDrawerContext)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { push } = useHistory()
     /* istanbul ignore next */
     const { data, loading, startPolling } = useQuery(
@@ -58,18 +58,18 @@ export function StatusSummaryCount() {
         <div style={{ marginTop: '24px' }}>
             <AcmCountCardSection
                 id="summary-status"
-                title={t('summary.status')}
+                title={t('Status')}
                 loading={loading}
-                loadingAriaLabel={t('summary.status.loading')}
+                loadingAriaLabel={t('Loading application and violation status')}
                 cards={[
                     {
                         id: 'nodes',
                         count: /* istanbul ignore next */ cluster?.nodes?.nodeList?.length ?? 0,
                         countClick: () => push(NavigationPath.clusterNodes.replace(':id', cluster?.name!)),
-                        title: t('summary.nodes'),
+                        title: t('Nodes'),
                         description: (
                             <Trans
-                                i18nKey="cluster:summary.nodes.inactive"
+                                i18nKey="{{number}} nodes inactive"
                                 values={{
                                     number:
                                         /* istanbul ignore next */ cluster?.nodes?.unhealthy! +
@@ -87,8 +87,8 @@ export function StatusSummaryCount() {
                                 buildSearchLink({ cluster: cluster?.name!, kind: 'subscription' }, 'application'),
                                 '_self'
                             ),
-                        title: t('summary.applications'),
-                        linkText: t('summary.applications.launch'),
+                        title: t('Applications'),
+                        linkText: t('Go to Applications'),
                         onLinkClick: () => window.open('/multicloud/applications', '_self'),
                     },
                     {
@@ -104,8 +104,8 @@ export function StatusSummaryCount() {
                                 }),
                                 '_self'
                             ),
-                        title: t('summary.violations'),
-                        linkText: t('summary.violations.launch'),
+                        title: t('Policy violations'),
+                        linkText: t('Go to Policies'),
                         onLinkClick: () => window.open('/multicloud/policies', '_self'),
                         isDanger: true,
                     },
@@ -121,17 +121,19 @@ export function StatusSummaryCount() {
                             })
                         },
                         title:
-                            policyReportViolationsCount > 0
-                                ? t('summary.cluster.issues')
-                                : t('summary.cluster.no.issues'),
+                            policyReportViolationsCount > 0 ? t('Identified issues') : t('No potential issues found'),
                         description:
                             policyReportViolationsCount > 0
-                                ? t('summary.cluster.issues.description.count', {
-                                      criticalCount,
-                                      importantCount,
-                                      moderateCount,
-                                      lowCount,
-                                  })
+                                ? // TODO - Handle interpolation
+                                  t(
+                                      '{{criticalCount}} Critical, {{importantCount}} Important, {{moderateCount}} Moderate, {{lowCount}} Low',
+                                      {
+                                          criticalCount,
+                                          importantCount,
+                                          moderateCount,
+                                          lowCount,
+                                      }
+                                  )
                                 : '',
                         // Show the card in danger mode if there is a Critical or Major violation on the cluster
                         isDanger: policyReportViolations.some((item) => parseInt(item.properties?.total_risk, 10) >= 3),

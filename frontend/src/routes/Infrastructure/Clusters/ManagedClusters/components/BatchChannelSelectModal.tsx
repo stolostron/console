@@ -54,7 +54,7 @@ export function BatchChannelSelectModal(props: {
     open: boolean
     clusters: Cluster[] | undefined
 }): JSX.Element {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [selectChannels, setSelectChannels] = useState<Record<string, string>>({})
     const [channelSelectableClusters, setChannelSelectableClusters] = useState<Array<Cluster>>([])
 
@@ -68,19 +68,21 @@ export function BatchChannelSelectModal(props: {
     return (
         <BulkActionModel<Cluster>
             open={props.open}
-            title={t('bulk.title.selectChannel')}
-            plural={t('bulk.plural.selectChannel')}
-            action={t('upgrade.selectChannel.submit')}
-            processing={t('upgrade.selectChannel.submit.processing')}
+            title={t('Select channels')}
+            plural={t('channels')}
+            action={t('Save')}
+            processing={t('Saving')}
             resources={channelSelectableClusters}
             close={() => {
                 setSelectChannels({})
                 props.close()
             }}
-            description={t('bulk.message.selectChannel')}
+            description={t(
+                'Select channels for the clusters. Only the selected clusters that have available channels are listed.'
+            )}
             columns={[
                 {
-                    header: t('upgrade.table.name'),
+                    header: t('Name'),
                     sort: 'displayName',
                     cell: (cluster) => (
                         <>
@@ -94,14 +96,14 @@ export function BatchChannelSelectModal(props: {
                     ),
                 },
                 {
-                    header: t('upgrade.table.currentchannel'),
+                    header: t('Current channel'),
                     cell: (item: Cluster) => {
                         const currentChannel = item?.distribution?.upgradeInfo?.currentChannel || ''
                         return <span>{currentChannel}</span>
                     },
                 },
                 {
-                    header: t('upgrade.table.newchannel'),
+                    header: t('New channel'),
                     cell: (cluster: Cluster) => {
                         const availableChannels = cluster.distribution?.upgradeInfo?.availableChannels || []
                         const isReadySelectChannels = cluster.distribution?.upgradeInfo?.isReadySelectChannels

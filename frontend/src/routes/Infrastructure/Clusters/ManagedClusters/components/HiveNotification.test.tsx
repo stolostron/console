@@ -138,7 +138,7 @@ describe('HiveNotification', () => {
         )
         render(<Component />)
         await waitForTestId('hive-notification-provisionfailed')
-        await waitForText('provision.notification.provisionfailed')
+        await waitForText('Cluster creation failed:')
         await waitForText('Invalid GCP project ID')
         await clickByTestId('view-logs')
         await waitForNock(podScope)
@@ -164,7 +164,7 @@ describe('HiveNotification', () => {
         )
         render(<Component />)
         await waitForTestId('hive-notification-destroying')
-        await waitForText('provision.notification.destroying')
+        await waitForText('Cluster creation is in progress:')
         await clickByTestId('view-logs')
         await waitForNock(podScope)
         await waitFor(() =>

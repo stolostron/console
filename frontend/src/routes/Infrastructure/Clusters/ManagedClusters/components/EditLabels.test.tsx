@@ -23,7 +23,7 @@ describe('EditLabels', () => {
             { op: 'add', path: `/metadata/labels/abc`, value: '123' },
             { op: 'add', path: `/metadata/labels/foo`, value: 'bar' },
         ])
-        getByText('common:save').click()
+        getByText('Save').click()
         await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
     })
 
@@ -43,7 +43,7 @@ describe('EditLabels', () => {
             ],
             mockBadRequestStatus
         )
-        getByText('common:save').click()
+        getByText('Save').click()
         await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
         waitFor(() => expect('There was bad data sent for accessing resources.').toBeInTheDocument())
     })

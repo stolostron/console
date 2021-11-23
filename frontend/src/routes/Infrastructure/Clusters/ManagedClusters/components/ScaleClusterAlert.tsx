@@ -10,7 +10,7 @@ import { machinePoolsState, submarinerConfigsState } from '../../../../../atoms'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function ScaleClusterAlert() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
     const [machinePoolState] = useRecoilState(machinePoolsState)
     const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
@@ -53,17 +53,15 @@ export function ScaleClusterAlert() {
                 style={{ marginBottom: '24px' }}
                 variant="info"
                 title={t(
-                    totalDesiredReplicas > workerNodeCount
-                        ? 'machinePool.alert.scaling.increase.title'
-                        : 'machinePool.alert.scaling.decrease.title'
+                    totalDesiredReplicas > workerNodeCount ? 'Scaling up in progress' : 'Scaling down in progress'
                 )}
                 message={
                     <>
                         <Trans
-                            i18nKey={`cluster:${
+                            i18nKey={`${
                                 totalDesiredReplicas > workerNodeCount
-                                    ? 'machinePool.alert.scaling.increase.message'
-                                    : 'machinePool.alert.scaling.decrease.message'
+                                    ? 'Worker nodes are currently being added to this cluster. Click the <bold>View machines</bold> button to see the status of the scaling operations (it may take a few minutes for the changes to be reflected on this console).'
+                                    : 'Worker nodes are currently being removed from this cluster. Click the <bold>View machines</bold> button to see the status of the scaling operations (it may take a few minutes for the changes to be reflected on this console).'
                             }`}
                             components={{ bold: <strong /> }}
                         />
@@ -73,7 +71,7 @@ export function ScaleClusterAlert() {
                             rel="noreferrer"
                             style={{ display: 'block' }}
                         >
-                            {t('machinePool.view.machines')} <ExternalLinkAltIcon />
+                            {t('View machines')} <ExternalLinkAltIcon />
                         </a>
                     </>
                 }

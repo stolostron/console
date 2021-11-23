@@ -36,7 +36,7 @@ export function OnPremiseBanner({
     textKey,
     footerKey,
 }: OnPremisebannerProps) {
-    const { t } = useTranslation(['cim'])
+    const { t } = useTranslation()
     const localStorageKey = `OnPremiseBannerDismissed.${id}`
     const [dismissed, setDismissed] = useState<Boolean>(localStorage.getItem(localStorageKey) === 'true')
 
@@ -79,7 +79,7 @@ export function OnPremiseBanner({
                             <ActionGroup>
                                 {extraButton}
                                 <AcmButton variant={ButtonVariant.link} onClick={dismiss} style={{ paddingLeft: 0 }}>
-                                    {t('cim.banner.dismiss')}
+                                    {t('Dismiss')}
                                 </AcmButton>
                             </ActionGroup>
                         </CardFooter>

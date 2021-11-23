@@ -74,20 +74,20 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
     const clusterRiskScores = data.map((issue) => issue.properties.total_risk)
     const formattedData = [
         {
-            key: t('policy.report.critical'),
+            key: t('Critical'),
             value: clusterRiskScores.filter((score: string) => score === '4').length,
             isPrimary: true,
         },
         {
-            key: t('policy.report.important'),
+            key: t('Important'),
             value: clusterRiskScores.filter((score: string) => score === '3').length,
         },
         {
-            key: t('policy.report.moderate'),
+            key: t('Moderate'),
             value: clusterRiskScores.filter((score: string) => score === '2').length,
         },
         {
-            key: t('policy.report.low'),
+            key: t('Low'),
             value: clusterRiskScores.filter((score: string) => score === '1').length,
         },
     ]
@@ -98,8 +98,8 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
 
     return (
         <ChartDonut
-            ariaTitle={t('policy.report.flyout.donut.chart.ariaTitle')}
-            ariaDesc={t('policy.report.flyout.donut.chart.ariaDesc')}
+            ariaTitle={t('Cluster violations')}
+            ariaDesc={t('Donut chart of cluster violations')}
             legendOrientation="vertical"
             legendPosition="right"
             constrainToVisibleArea={true}
@@ -120,7 +120,7 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
                 top: 20,
             }}
             title={`${data.length}`}
-            subTitle={t('policy.report.flyout.donut.chart.text')}
+            subTitle={t('Total issues')}
             width={400}
             height={200}
             colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
@@ -137,7 +137,7 @@ function DetailsView(props: {
     const contentMap = configmaps.find((cm) => cm.metadata.name === 'insight-content-data')
     let policyContentData = contentMap?.data && contentMap?.data[selectedReport?.policy ?? '']
     policyContentData = policyContentData && JSON.parse(policyContentData)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [tabState, setTabState] = useState<React.ReactText>(0)
     const classes = useStyles()
 
@@ -165,7 +165,10 @@ function DetailsView(props: {
                     <FlexItem>
                         <TextContent>
                             <Text component={TextVariants.p}>
-                                {t('policy.report.riskLevel', { totalRisk: totalRisk })}
+                                {/* TODO - Handle Interpolation */}
+                                {t('The impact of the problem would be {{totalRisk}} if it occurred', {
+                                    totalRisk: totalRisk,
+                                })}
                             </Text>
                         </TextContent>
                     </FlexItem>
@@ -175,19 +178,19 @@ function DetailsView(props: {
 
         switch (riskScore) {
             case '4':
-                totalRisk = t('policy.report.critical')
+                totalRisk = t('Critical')
                 riskIcon = <CriticalRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '3':
-                totalRisk = t('policy.report.important')
+                totalRisk = t('Important')
                 riskIcon = <ImportantRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '2':
-                totalRisk = t('policy.report.moderate')
+                totalRisk = t('Moderate')
                 riskIcon = <ModerateRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             case '1':
-                totalRisk = t('policy.report.low')
+                totalRisk = t('Low')
                 riskIcon = <LowRiskIcon />
                 return riskComponent(totalRisk, riskIcon)
             default:
@@ -230,7 +233,7 @@ function DetailsView(props: {
                 </FlexItem>
                 <FlexItem>
                     <Button variant="link" isInline component="span" onClick={() => setDetailsView(false)}>
-                        {t('policy.report.flyout.back')}
+                        {t('Back')}
                     </Button>
                 </FlexItem>
             </Flex>
@@ -245,7 +248,7 @@ function DetailsView(props: {
                         </FlexItem>
                         <FlexItem>
                             <TextContent>
-                                <Text component={TextVariants.small}>{t('policy.report.table.totalRisk')}</Text>
+                                <Text component={TextVariants.small}>{t('Total risk')}</Text>
                             </TextContent>
                         </FlexItem>
                     </Flex>
@@ -258,7 +261,7 @@ function DetailsView(props: {
                         </FlexItem>
                         <FlexItem>
                             <TextContent>
-                                <Text component={TextVariants.small}>{t('policy.report.table.category')}</Text>
+                                <Text component={TextVariants.small}>{t('Category')}</Text>
                             </TextContent>
                         </FlexItem>
                     </Flex>
@@ -271,7 +274,7 @@ function DetailsView(props: {
                         </FlexItem>
                         <FlexItem>
                             <TextContent>
-                                <Text component={TextVariants.small}>{t('policy.report.flyout.matched')}</Text>
+                                <Text component={TextVariants.small}>{t('Matched on')}</Text>
                             </TextContent>
                         </FlexItem>
                     </Flex>
@@ -279,15 +282,12 @@ function DetailsView(props: {
                 </GridItem>
             </Grid>
             <Tabs activeKey={tabState} onSelect={(_e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
-                <Tab
-                    eventKey={0}
-                    title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
-                >
+                <Tab eventKey={0} title={<TabTitleText>{t('How to remediate')}</TabTitleText>}>
                     <TextContent>
                         <Markdown template={policyContentData?.resolution ?? ''} definitions={getExtraData()} />
                     </TextContent>
                 </Tab>
-                <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
+                <Tab eventKey={1} title={<TabTitleText>{t('Reason')}</TabTitleText>}>
                     <TextContent>
                         <Markdown template={policyContentData?.reason ?? ''} definitions={getExtraData()} />
                     </TextContent>
@@ -299,7 +299,7 @@ function DetailsView(props: {
 
 export function ClusterPolicySidebar(props: { data: PolicyReport }) {
     const classes = useStyles()
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [detailsView, setDetailsView] = useState<boolean>(false)
     const [selectedReport, setSelectedReport] = useState<PolicyReportResults>()
     const policyReportViolations = props.data?.results?.filter((violation) => violation.source === 'insights')
@@ -310,13 +310,18 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
         <div className={classes.body}>
             <TextContent className={classes.titleText}>
                 <Text component={TextVariants.h2}>
-                    {t('policy.report.flyout.title', { count: policyReportViolations.length })}
+                    {/* TODO - Handle interpolation */}
+                    {t('{{count}} identified issues', { count: policyReportViolations.length })}
                 </Text>
-                <Text component={TextVariants.p}>{t('policy.report.flyout.description')}</Text>
+                <Text component={TextVariants.p}>
+                    {t(
+                        'Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.'
+                    )}
+                </Text>
             </TextContent>
             <div className={classes.donutContainer}>{renderDonutChart(policyReportViolations, t)}</div>
             <TextContent className={classes.tableTitle}>
-                <Text component={TextVariants.h4}>{t('policy.report.flyout.table.header')}</Text>
+                <Text component={TextVariants.h4}>{t('Recommendations with remediation')}</Text>
             </TextContent>
             <AcmTable<PolicyReportResults>
                 plural="Recommendations"
@@ -327,7 +332,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
                 }}
                 columns={[
                     {
-                        header: t('policy.report.table.description'),
+                        header: t('Description'),
                         search: (report) => report.policy + ': ' + report.message,
                         sort: (a: PolicyReportResults, b: PolicyReportResults) =>
                             compareStrings(a.policy + ': ' + a.message, b.policy + ': ' + b.message),
@@ -346,7 +351,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
                         ),
                     },
                     {
-                        header: t('policy.report.table.category'),
+                        header: t('Category'),
                         search: (policyReport) => {
                             if (policyReport.category && policyReport.category !== '') {
                                 return policyReport.category.split(',')
@@ -363,7 +368,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
                         },
                     },
                     {
-                        header: t('policy.report.table.totalRisk'),
+                        header: t('Total risk'),
                         search: (policyReport) => policyReport.properties.total_risk,
                         sort: (a: PolicyReportResults, b: PolicyReportResults) =>
                             compareStrings(a.properties.total_risk, b.properties.total_risk),

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmAlert } from '@open-cluster-management/ui-components'
 import { useTranslation } from 'react-i18next'
-import { Cluster, clusterDangerStatuses } from '../../../../../resources'
+import { Cluster, clusterDangerStatuses, ClusterStatus } from '../../../../../resources'
 
 export function ClusterStatusMessageAlert(props: {
     cluster: Cluster
@@ -9,7 +9,29 @@ export function ClusterStatusMessageAlert(props: {
     padTop?: boolean
     padBottom?: boolean
 }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
+
+    function getClusterStatus(clusterStatus: ClusterStatus, t: (string: String) => string) {
+        switch (clusterStatus) {
+            case 'unknown':
+                return t('The cluster is not reachable')
+            case 'offline':
+                return t('The cluster is not available')
+            case 'prehookfailed':
+                return t('The cluster prehook jobs failed')
+            case 'posthookfailed':
+                return t('The cluster posthook jobs failed')
+            case 'importfailed':
+                return t('The cluster failed to import to the hub')
+            case 'failed':
+                return t('The cluster failed to upgrade')
+            case 'provisionfailed':
+                return t('The cluster creation failed')
+            default:
+                break
+        }
+    }
+
     if (props.cluster.statusMessage) {
         return (
             <AcmAlert
@@ -20,7 +42,7 @@ export function ClusterStatusMessageAlert(props: {
                 isInline
                 noClose
                 variant={clusterDangerStatuses.includes(props.cluster.status) ? 'danger' : 'info'}
-                title={t(`status.${props.cluster.status}.alert.title`)}
+                title={getClusterStatus(props.cluster!.status, t)}
                 message={
                     <>
                         <div>{props.cluster.statusMessage}</div>

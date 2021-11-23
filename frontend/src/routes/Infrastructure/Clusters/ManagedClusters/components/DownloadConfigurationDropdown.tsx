@@ -8,7 +8,7 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const downloadConfig = async (id: string) => {
         /* istanbul ignore next */
@@ -38,21 +38,29 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
             id: 'install-config.yaml',
             text: 'install-config',
             isDisabled: !props.canGetSecret,
-            tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
+            tooltip: !props.canGetSecret
+                ? t(
+                      'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                  )
+                : undefined,
         })
     cluster?.hive.secrets?.kubeconfig &&
         dropdownItems.push({
             id: 'kubeconfig',
             text: 'kubeconfig',
             isDisabled: !props.canGetSecret,
-            tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
+            tooltip: !props.canGetSecret
+                ? t(
+                      'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                  )
+                : undefined,
         })
     return (
         <AcmDropdown
             isPlain={true}
             dropdownItems={dropdownItems}
             onSelect={(id: string) => downloadConfig(id)}
-            text={t('configuration.download')}
+            text={t('Download configuration')}
             id="download-configuration"
         />
     )

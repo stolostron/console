@@ -77,8 +77,8 @@ describe('ClusterDestroy', () => {
                 <ClusterDestroy isLoading={true} cluster={mockDestroyCluster} />
             </RecoilRoot>
         )
-        expect(screen.getByText('destroying.inprogress')).toBeInTheDocument()
-        expect(screen.getByText('view.logs')).toBeInTheDocument()
+        expect(screen.getByText('{{clusterName}} is being destroyed')).toBeInTheDocument()
+        expect(screen.getByText('View logs')).toBeInTheDocument()
     })
     test('renders the detaching state', async () => {
         render(
@@ -86,8 +86,8 @@ describe('ClusterDestroy', () => {
                 <ClusterDestroy isLoading={true} cluster={mockDetachCluster} />
             </RecoilRoot>
         )
-        expect(screen.getByText('detaching.inprogress')).toBeInTheDocument()
-        expect(screen.queryByText('view.logs')).toBeNull()
+        expect(screen.getByText('{{clusterName}} is being detached')).toBeInTheDocument()
+        expect(screen.queryByText('View logs')).toBeNull()
     })
     test('renders success state', async () => {
         nockIgnoreRBAC()
@@ -98,6 +98,6 @@ describe('ClusterDestroy', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        expect(screen.getByText('detaching.success')).toBeInTheDocument()
+        expect(screen.getByText('{{clusterName}} was successfully detached')).toBeInTheDocument()
     })
 })

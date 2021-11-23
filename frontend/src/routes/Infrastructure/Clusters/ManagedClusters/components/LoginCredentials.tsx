@@ -58,7 +58,7 @@ const useStyles = makeStyles({
 
 export function LoginCredentials(props: { canGetSecret?: boolean }) {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [isVisible, setVisible] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [error, setError] = useState<boolean>(false)
@@ -115,12 +115,16 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
                     <Fragment>
                         {(() => {
                             if (error) {
-                                return <AcmInlineStatus type={StatusType.danger} status={t('credentials.failed')} />
+                                return <AcmInlineStatus type={StatusType.danger} status={t('Failed')} />
                             } else if (loading) {
-                                return <AcmInlineStatus type={StatusType.progress} status={t('credentials.loading')} />
+                                return <AcmInlineStatus type={StatusType.progress} status={t('Loading credentials')} />
                             } else if (!props.canGetSecret) {
                                 return (
-                                    <Tooltip content={t('common:rbac.unauthorized')}>
+                                    <Tooltip
+                                        content={t(
+                                            'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                                        )}
+                                    >
                                         <div className="credentials-toggle">
                                             <AcmIcon
                                                 icon={
@@ -129,7 +133,7 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
                                                         : AcmIconVariant.visibilityon
                                                 }
                                             />
-                                            {isVisible ? t('credentials.hide') : t('credentials.show')}
+                                            {isVisible ? t('Hide credentials') : t('Reveal credentials')}
                                         </div>
                                     </Tooltip>
                                 )
@@ -141,7 +145,7 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
                                                 isVisible ? AcmIconVariant.visibilityoff : AcmIconVariant.visibilityon
                                             }
                                         />
-                                        {isVisible ? t('credentials.hide') : t('credentials.show')}
+                                        {isVisible ? t('Hide credentials') : t('Reveal credentials')}
                                     </div>
                                 )
                             }

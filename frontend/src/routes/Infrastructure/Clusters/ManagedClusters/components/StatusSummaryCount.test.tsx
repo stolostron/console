@@ -224,19 +224,21 @@ describe('StatusSummaryCount', () => {
             await clickByText('4')
             expect(window.open).toHaveBeenCalled()
 
-            await clickByText('summary.applications.launch')
+            await clickByText('Go to Applications')
             expect(window.open).toHaveBeenCalled()
 
             await clickByText('1')
             expect(window.open).toHaveBeenCalled()
 
-            await clickByText('summary.violations.launch')
+            await clickByText('Go to Policies')
             expect(window.open).toHaveBeenCalled()
 
             await clickByText('6')
 
-            await waitForText('summary.cluster.issues')
-            await waitForText('summary.cluster.issues.description.count')
+            await waitForText('Identified issues')
+            await waitForText(
+                '{{criticalCount}} Critical, {{importantCount}} Important, {{moderateCount}} Moderate, {{lowCount}} Low'
+            )
         })
     })
 })

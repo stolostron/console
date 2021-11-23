@@ -12,7 +12,7 @@ import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
 import { launchLogs } from './HiveNotification'
 
 export function StatusField(props: { cluster: Cluster }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [configMaps] = useRecoilState(configMapsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
     const latestJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.name!)
@@ -82,7 +82,7 @@ export function StatusField(props: { cluster: Cluster }) {
                     iconPosition="right"
                     isDisabled={!latestJob.prehook?.status?.ansibleJobResult?.url}
                 >
-                    {t('view.logs')}
+                    {t('View logs')}
                 </AcmButton>
             )
             break
@@ -100,7 +100,7 @@ export function StatusField(props: { cluster: Cluster }) {
                     iconPosition="right"
                     isDisabled={!latestJob.posthook?.status?.ansibleJobResult?.url}
                 >
-                    {t('view.logs')}
+                    {t('View logs')}
                 </AcmButton>
             )
             break
@@ -118,7 +118,7 @@ export function StatusField(props: { cluster: Cluster }) {
                     icon={<ExternalLinkAltIcon />}
                     iconPosition="right"
                 >
-                    {t('view.logs')}
+                    {t('View logs')}
                 </AcmButton>
             )
             break
@@ -126,21 +126,68 @@ export function StatusField(props: { cluster: Cluster }) {
             hasAction = true
             Action = () => (
                 <Link to={`${NavigationPath.clusterSettings.replace(':id', props.cluster?.name!)}`}>
-                    {t('view.addons')}
+                    {t('View add-ons')}
                 </Link>
             )
             break
     }
 
+    function getStatusField(status: ClusterStatus, t: (string: String) => string) {
+        switch (status) {
+            case 'pending':
+                return t('Pending')
+            case 'destroying':
+                return t('Destroying')
+            case 'provisionfailed':
+            case 'deprovisionfailed':
+            case 'prehookfailed':
+            case 'importfailed':
+            case 'failed':
+                return t('Failed')
+            case 'detached':
+                return t('Detached')
+            case 'detaching':
+                return t('Detaching')
+            case 'notaccepted':
+                return t('Not accepted')
+            case 'needsapproval':
+                return t('Needs approval')
+            case 'pendingimport':
+                return t('Pending import')
+            case 'importing':
+                return t('Ready')
+            case 'offline':
+                return t('Offline')
+            case 'hibernating':
+                return t('Hibernating')
+            case 'stopping':
+                return t('Stopping')
+            case 'resuming':
+                return t('Resuming')
+            case 'degraded':
+                return t('Degraded')
+            case 'unknown':
+                return t('Unknown')
+            case 'prehookjob':
+                return t('Prehook')
+            case 'posthookjob':
+                return t('Posthook')
+            case 'draft':
+                return t('Draft')
+            default:
+                break
+        }
+    }
+
     return (
         <AcmInlineStatus
             type={type}
-            status={t(`status.${props.cluster?.status}`)}
+            status={getStatusField(props.cluster?.status, t)}
             popover={{
                 maxWidth: '448px',
                 bodyContent: (
                     <>
-                        <Trans i18nKey={`cluster:status.${props.cluster?.status}`} components={{ bold: <strong /> }} />
+                        <Trans i18nKey={getStatusField(props.cluster?.status, t)} components={{ bold: <strong /> }} />
                         <ClusterStatusMessageAlert cluster={props.cluster!} padTop />
                     </>
                 ),

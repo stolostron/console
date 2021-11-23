@@ -25,7 +25,7 @@ import { secretsState } from '../../../../../atoms'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function ImportCommandContainer() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [secrets] = useRecoilState(secretsState)
     const { cluster } = useContext(ClusterContext)
     const [error, setError] = useState<string | undefined>()
@@ -62,21 +62,21 @@ export function ImportCommandContainer() {
         return (
             <Card style={{ height: '276px', marginBottom: '24px' }}>
                 <CardBody>
-                    <Skeleton height="100%" role="progressbar" screenreaderText={t('import.command.fetching')} />
+                    <Skeleton height="100%" role="progressbar" screenreaderText={t('Loading cluster import command')} />
                 </CardBody>
             </Card>
         )
     }
 
     if (error) {
-        return <AcmAlert isInline variant="danger" title={t('common:request.failed')} message={error} />
+        return <AcmAlert isInline variant="danger" title={t('Request failed')} message={error} />
     }
 
     if (cluster?.status === ClusterStatus.pendingimport && !autoImportSecret) {
         return (
             <>
                 <div style={{ marginBottom: '12px' }}>
-                    <AcmAlert isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} />
+                    <AcmAlert isInline variant={AlertVariant.info} title={t('Cluster is pending import')} />
                 </div>
                 <ImportCommand importSecret={importSecret} />
             </>
@@ -94,7 +94,7 @@ type ImportCommandProps = {
 }
 
 export function ImportCommand(props: ImportCommandProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const [copied, setCopied] = useState<boolean>(false)
     useEffect(() => {
@@ -115,14 +115,14 @@ export function ImportCommand(props: ImportCommandProps) {
         <Fragment>
             <Card style={{ marginBottom: '24px' }}>
                 <Tabs activeKey={'first'}>
-                    <Tab eventKey={'first'} title={<TabTitleText>{t('import.command.runcommand')}</TabTitleText>}>
+                    <Tab eventKey={'first'} title={<TabTitleText>{t('Run a command')}</TabTitleText>}>
                         <Card>
-                            <CardTitle>{t('import.command.generated')}</CardTitle>
+                            <CardTitle>{t('1. Copy this command')}</CardTitle>
                             <CardBody>
                                 <strong style={{ marginBottom: '12px', fontSize: '14px', display: 'block' }}>
-                                    {t('import.command.copy.description')}
+                                    {t('For OpenShift 4 and Kubernetes 1.16.0 clusters or above')}
                                 </strong>
-                                <Tooltip isVisible={copied} content={t('common:copied')} trigger="click">
+                                <Tooltip isVisible={copied} content={t('Copied')} trigger="click">
                                     <AcmButton
                                         id="import-command"
                                         variant="secondary"
@@ -133,25 +133,35 @@ export function ImportCommand(props: ImportCommandProps) {
                                             setCopied(true)
                                         }}
                                     >
-                                        {t('import.command.copy')}
+                                        {t('Copy command')}
                                     </AcmButton>
                                 </Tooltip>
                                 <Alert
                                     isInline
-                                    title={t('import.command.311.title')}
+                                    title={t('Support for OpenShift 3.11 clusters')}
                                     variant={AlertVariant.info}
                                     style={{ marginTop: '16px' }}
                                 >
-                                    <div>{t('import.command.311.description')}</div>
+                                    <div>
+                                        {t(
+                                            'The latest distributions of OpenShift no longer support the v1beta1 API version. For continued compatibility support, use the command below to import your OpenShift 3.11 cluster.'
+                                        )}
+                                    </div>
                                     <AcmInlineCopy
                                         text={v1beta1ImportCommand}
-                                        displayText={t('import.command.311.copyText')}
+                                        displayText={t('Copy command for OpenShift 3.11')}
                                         id="3.11-copy"
                                     />
                                 </Alert>
                             </CardBody>
-                            <CardTitle>{t('import.command.configurecluster')}</CardTitle>
-                            <CardBody>{t('import.command.configureclusterdescription')}</CardBody>
+                            <CardTitle>
+                                {t(
+                                    '2. Run this command with kubectl configured for your targeted cluster to start the import'
+                                )}
+                            </CardTitle>
+                            <CardBody>
+                                {t('Log in to the existing cluster in your terminal and run the command.')}
+                            </CardBody>
                             {sessionStorage.getItem('DiscoveredClusterConsoleURL') && (
                                 <CardFooter>
                                     <AcmButton
@@ -165,7 +175,7 @@ export function ImportCommand(props: ImportCommandProps) {
                                         }}
                                         role="link"
                                     >
-                                        {t('import.command.launchconsole')}
+                                        {t('Launch console')}
                                     </AcmButton>
                                 </CardFooter>
                             )}

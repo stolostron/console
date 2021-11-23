@@ -9,7 +9,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../../resources'
 
 export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'primary' | 'link' }) {
-    const { t } = useTranslation('cluster')
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
@@ -29,22 +29,26 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                         <AcmButton
                             component={Link}
                             isDisabled={!canCreateCluster}
-                            tooltip={t('common:rbac.unauthorized')}
+                            tooltip={t(
+                                'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                            )}
                             variant={props.buttonType ?? 'primary'}
                             to={NavigationPath.createCluster}
                         >
-                            {t('managed.createCluster')}
+                            {t('Create cluster')}
                         </AcmButton>
                     </ActionListItem>
                     <ActionListItem>
                         <AcmButton
                             component={Link}
                             isDisabled={!canCreateCluster}
-                            tooltip={t('common:rbac.unauthorized')}
+                            tooltip={t(
+                                'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                            )}
                             variant={props.buttonType ?? 'primary'}
                             to={NavigationPath.importCluster}
                         >
-                            {t('managed.importCluster')}
+                            {t('Import cluster')}
                         </AcmButton>
                     </ActionListItem>
                 </ActionList>
@@ -66,18 +70,26 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                 dropdownItems={[
                     {
                         id: 'create-cluster',
-                        text: t('managed.createCluster'),
+                        text: t('Create cluster'),
                         isDisabled: !canCreateCluster,
-                        tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
+                        tooltip: !canCreateCluster
+                            ? t(
+                                  'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                              )
+                            : '',
                     },
                     {
                         id: 'import-cluster',
-                        text: t('managed.importCluster'),
+                        text: t('Import cluster'),
                         isDisabled: !canCreateCluster,
-                        tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
+                        tooltip: !canCreateCluster
+                            ? t(
+                                  'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                              )
+                            : '',
                     },
                 ]}
-                text={t('managed.addCluster')}
+                text={t('Add cluster')}
                 onSelect={onSelect}
                 id="cluster-actions"
                 isKebab={false}

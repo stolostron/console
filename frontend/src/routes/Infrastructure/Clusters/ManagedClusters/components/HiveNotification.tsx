@@ -24,7 +24,7 @@ const useStyles = makeStyles({
 
 export function HiveNotification() {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const classes = useStyles()
 
     const [clusterProvisions] = useRecoilState(clusterProvisionsState)
@@ -52,6 +52,21 @@ export function HiveNotification() {
         return null
     }
 
+    function getProvisionNotification(clusterStatus: ClusterStatus, t: (string: String) => string) {
+        switch (clusterStatus) {
+            case 'creating':
+                return t('Cluster creation is in progress:')
+            case 'deprovisionfailed':
+                return t('Cluster destroy failed:')
+            case 'provisionfailed':
+                return t('Cluster creation failed:')
+            case 'destroying':
+                return t('Cluster creating is in progress:')
+            default:
+                break
+        }
+    }
+
     return (
         <div style={{ marginBottom: '1rem' }} id={`hive-notification-${cluster?.status}`}>
             <AcmAlert
@@ -64,7 +79,7 @@ export function HiveNotification() {
                 }
                 title={
                     <Fragment>
-                        {t(`provision.notification.${cluster?.status}`)}
+                        {getProvisionNotification(cluster!.status, t)}
                         <AcmButton
                             onClick={() => launchLogs(cluster!, configMaps)}
                             variant={ButtonVariant.link}
@@ -72,7 +87,7 @@ export function HiveNotification() {
                             id="view-logs"
                             className={classes.logsButton}
                         >
-                            {t('view.logs')}
+                            {t('View logs')}
                             <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
                         </AcmButton>
                     </Fragment>

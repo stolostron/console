@@ -130,7 +130,7 @@ export function getClusterActions(cluster: Cluster) {
 }
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
@@ -146,7 +146,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     const modalColumns = useMemo(
         () => [
             {
-                header: t('table.name'),
+                header: t('Name'),
                 cell: (cluster: Cluster) => (
                     <>
                         <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
@@ -160,7 +160,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 sort: 'displayName',
             },
             {
-                header: t('table.status'),
+                header: t('Status'),
                 sort: 'status',
                 cell: (cluster: Cluster) => (
                     <span style={{ whiteSpace: 'nowrap' }}>
@@ -169,7 +169,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 ),
             },
             {
-                header: t('table.provider'),
+                header: t('Infrastructure provider'),
                 sort: 'provider',
                 cell: (cluster: Cluster) =>
                     cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
@@ -187,14 +187,14 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         () => [
             {
                 id: 'edit-labels',
-                text: t('managed.editLabels'),
+                text: t('Edit labels'),
                 click: () => setShowEditLabels(true),
                 isDisabled: true,
                 rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
             },
             {
                 id: 'upgrade-cluster',
-                text: t('managed.upgrade'),
+                text: t('Upgrade cluster'),
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 click: (_cluster: Cluster) => setShowUpgradeModal(true),
                 isDisabled: true,
@@ -205,7 +205,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             {
                 id: 'select-channel',
-                text: t('managed.selectChannel'),
+                text: t('Select channel'),
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 click: (_cluster: Cluster) => setShowChannelSelectModal(true),
                 isDisabled: true,
@@ -216,27 +216,29 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             {
                 id: 'search-cluster',
-                text: t('managed.search'),
+                text: t('Search cluster'),
                 click: (cluster: Cluster) =>
                     window.location.assign(`/multicloud/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`),
             },
             {
                 id: 'import-cluster',
-                text: t('managed.import'),
+                text: t('Import cluster'),
                 click: (cluster: Cluster) => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.import'),
-                        action: t('common:import'),
-                        processing: t('common:importing'),
+                        title: t('Import clusters'),
+                        action: t('Import'),
+                        processing: t('Importing'),
                         resources: [cluster],
                         close: () => {
                             setModalProps({ open: false })
                         },
-                        description: t('bulk.message.import'),
+                        description: t(
+                            'Importing the clusters will attach them to the hub cluster. The kubeadmin user must be enabled on the target clusters to import them successfully.'
+                        ),
                         columns: [
                             {
-                                header: t('upgrade.table.name'),
+                                header: t('Name'),
                                 sort: 'displayName',
                                 cell: (cluster) => (
                                     <>
@@ -252,7 +254,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                                 ),
                             },
                             {
-                                header: t('table.provider'),
+                                header: t('Infrastructure provider'),
                                 sort: 'provider',
                                 cell: (cluster: Cluster) =>
                                     cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
@@ -266,15 +268,17 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             {
                 id: 'hibernate-cluster',
-                text: t('managed.hibernate'),
+                text: t('Hibernate cluster'),
                 click: () => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.hibernate'),
-                        action: t('hibernate'),
-                        processing: t('hibernating'),
+                        title: t('Hibernate clusters'),
+                        action: t('Hibernate'),
+                        processing: t('Hibernating'),
                         resources: [cluster],
-                        description: t('bulk.message.hibernate'),
+                        description: t(
+                            'Moving to the Hibernating state blocks any operations for the clusters. While hibernating, the cluster does not consume any virtual machine or network resources. This can be undone at any time. Only clusters that support hibernation are shown.'
+                        ),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
                         actionFn: (cluster) => {
@@ -300,15 +304,17 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             {
                 id: 'resume-cluster',
-                text: t('managed.resume'),
+                text: t('Resume cluster'),
                 click: () => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.resume'),
-                        action: t('resume'),
-                        processing: t('resuming'),
+                        title: t('Resume clusters'),
+                        action: t('Resume'),
+                        processing: t('Resuming'),
                         resources: [cluster],
-                        description: t('bulk.message.resume'),
+                        description: t(
+                            'Moving out of Hibernating state resumes all operations for the clusters. After powering back on, the cluster resumes consumption of any virtual machine and network resources. Only clusters that support hibernation are shown.'
+                        ),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
                         actionFn: (cluster) => {
@@ -334,15 +340,17 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             {
                 id: 'detach-cluster',
-                text: t('managed.detach'),
+                text: t('Detach cluster'),
                 click: (cluster: Cluster) => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.detach'),
-                        action: t('detach'),
-                        processing: t('detaching'),
+                        title: t('Detach clusters?'),
+                        action: t('Detach'),
+                        processing: t('Detaching'),
                         resources: [cluster],
-                        description: t('bulk.message.detach'),
+                        description: t(
+                            'Detaching a cluster removes it from management, but does not destroy it. You can import the clusters again to manage them.'
+                        ),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
                         actionFn: (cluster) => detachCluster(cluster.name!),
@@ -360,15 +368,17 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             {
                 id: 'destroy-cluster',
-                text: t('managed.destroy'),
+                text: t('Destroy cluster'),
                 click: (cluster: Cluster) => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.destroy'),
-                        action: t('destroy'),
-                        processing: t('destroying'),
+                        title: t('Permanently destroy clusters?'),
+                        action: t('Destroy'),
+                        processing: t('Destroying'),
                         resources: [cluster],
-                        description: t('bulk.message.destroy'),
+                        description: t(
+                            'This action detaches the cluster and if possible the cluster will be destroyed.'
+                        ),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
                         actionFn: (cluster) => deleteCluster(cluster),
@@ -386,7 +396,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             {
                 id: 'ai-edit',
-                text: t('managed.editAI'),
+                text: t('Edit cluster'),
                 click: (cluster: Cluster) =>
                     history.push(
                         NavigationPath.editCluster
@@ -397,7 +407,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             },
             {
                 id: 'ai-scale-up',
-                text: t('managed.ai.scaleUp'),
+                text: t('Add hosts'),
                 click: () => setScaleUpModalOpen(true),
             },
         ],
@@ -428,7 +438,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     id={`${cluster.name}-actions`}
                     item={cluster}
                     isKebab={props.isKebab}
-                    text={t('actions')}
+                    text={t('Actions')}
                     actions={actions}
                 />
             )}

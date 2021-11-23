@@ -11,7 +11,7 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { launchLogs } from './HiveNotification'
 
 export function ProgressStepBar() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
     const [curators] = useRecoilState(clusterCuratorsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
@@ -108,14 +108,31 @@ export function ProgressStepBar() {
             ClusterStatus.posthookjob,
             ClusterStatus.posthookfailed,
         ]
+
+        const getStatusSubtitle = (status: StatusType, t: (string: String) => string) => {
+            switch (status) {
+                case StatusType.pending:
+                case StatusType.empty:
+                    return t('Pending')
+                case StatusType.healthy:
+                    return t('Complete')
+                case StatusType.danger:
+                    return t('Failed')
+                case StatusType.progress:
+                    return t('In progress')
+                default:
+                    break
+            }
+        }
+
         const steps: ProgressTrackerStep[] = [
             {
                 statusType: prehookStatus,
-                statusText: t('status.prehook.text'),
-                statusSubtitle: prehooks ? t(`status.subtitle.${prehookStatus}`) : t('status.subtitle.nojobs'),
+                statusText: t('Prehook'),
+                statusSubtitle: prehooks ? getStatusSubtitle(prehookStatus, t) : t('No jobs selected'),
                 // will render link when prehook job url is defined or when there are no job hooks setup
                 link: {
-                    linkName: !prehooks && !posthooks ? t('status.link.info') : t('status.link.logs'),
+                    linkName: !prehooks && !posthooks ? t('Learn more about automation') : t('View logs'),
                     // TODO: add ansible documentation url
                     linkUrl:
                         !prehooks && !posthooks
@@ -129,28 +146,28 @@ export function ProgressStepBar() {
             },
             {
                 statusType: creatingStatus,
-                statusText: t('status.install.text'),
-                statusSubtitle: t(`status.subtitle.${creatingStatus}`),
+                statusText: t('Cluster install'),
+                statusSubtitle: getStatusSubtitle(creatingStatus, t),
                 ...(provisionStatus.includes(cluster?.status!) && {
                     link: {
-                        linkName: t('status.link.logs'),
+                        linkName: t('View logs'),
                         linkCallback: () => launchLogs(cluster!, configMaps),
                     },
                 }),
             },
             {
                 statusType: importStatus,
-                statusText: t('status.import.text'),
-                statusSubtitle: t(`status.subtitle.${importStatus}`),
+                statusText: t('Cluster import'),
+                statusSubtitle: getStatusSubtitle(importStatus, t),
             },
             {
                 statusType: posthookStatus,
-                statusText: t('status.posthook.text'),
-                statusSubtitle: posthooks ? t(`status.subtitle.${posthookStatus}`) : t('status.subtitle.nojobs'),
+                statusText: t('Posthook'),
+                statusSubtitle: posthooks ? getStatusSubtitle(posthookStatus, t) : t('No jobs selected'),
                 ...(posthooks &&
                     latestJobs.posthook?.status?.ansibleJobResult?.url && {
                         link: {
-                            linkName: t('status.link.logs'),
+                            linkName: t('View logs'),
                             linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url,
                             isDisabled: !latestJobs.posthook?.status?.ansibleJobResult?.url,
                         },
@@ -168,8 +185,12 @@ export function ProgressStepBar() {
                 <Card>
                     <CardBody>
                         <AcmProgressTracker
-                            Title={t('status.stepbar.title')}
-                            Subtitle={t('status.stepbar.subtitle', { stepsDone: completedSteps, steps: steps.length })}
+                            Title={t('Creating cluster')}
+                            // TODO - Handle interpolation
+                            Subtitle={t('{{stepsDone}} of {{steps}} steps completed', {
+                                stepsDone: completedSteps,
+                                steps: steps.length,
+                            })}
                             isStacked={false}
                             steps={steps}
                             isCentered={true}

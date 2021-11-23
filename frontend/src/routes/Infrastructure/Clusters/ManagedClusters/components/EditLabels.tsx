@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
 
 export function EditLabels(props: { resource?: IResource; displayName?: string; close: () => void }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [labels, setLabels] = useState<Record<string, string>>({})
 
     useLayoutEffect(() => {
@@ -26,7 +26,7 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
 
     return (
         <AcmModal
-            title={t('labels.edit.title')}
+            title={t('Edit labels')}
             isOpen={props.resource !== undefined}
             variant={ModalVariant.medium}
             onClose={props.close}
@@ -34,17 +34,22 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
             <AcmAlertContext.Consumer>
                 {(alertContext) => (
                     <AcmForm style={{ gap: 0 }}>
-                        <div>{t('labels.description')}</div>
+                        <div>
+                            {t(
+                                'Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.'
+                            )}
+                        </div>
                         &nbsp;
                         <AcmLabelsInput
                             id="labels-input"
-                            label={t('labels.lower', {
+                            // TODO - Handle interpolation
+                            label={t('{{resourceName}} labels', {
                                 resourceName: props.displayName ?? props.resource?.metadata?.name,
                             })}
-                            buttonLabel={t('labels.button.add')}
+                            buttonLabel={t('Add label')}
                             value={labels}
                             onChange={(labels) => setLabels(labels!)}
-                            placeholder={t('labels.edit.placeholder')}
+                            placeholder={t('Enter key=value, then press enter, space, or comma')}
                         />
                         <AcmAlertGroup isInline canClose />
                         <ActionGroup>
@@ -109,11 +114,11 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
                                             })
                                         })
                                 }}
-                                label={t('common:save')}
-                                processingLabel={t('common:saving')}
+                                label={t('Save')}
+                                processingLabel={t('Saving')}
                             />
                             <Button variant="link" onClick={props.close}>
-                                {t('common:cancel')}
+                                {t('Cancel')}
                             </Button>
                         </ActionGroup>
                     </AcmForm>

@@ -66,7 +66,7 @@ export function BatchUpgradeModal(props: {
     open: boolean
     clusters: Cluster[] | undefined
 }): JSX.Element {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [selectVersions, setSelectVersions] = useState<Record<string, string>>({})
     const [upgradeableClusters, setUpgradeableClusters] = useState<Array<Cluster>>([])
 
@@ -80,19 +80,21 @@ export function BatchUpgradeModal(props: {
     return (
         <BulkActionModel<Cluster>
             open={props.open}
-            title={t('bulk.title.upgrade')}
-            plural={t('bulk.plural.upgrade')}
-            action={t('upgrade.submit')}
-            processing={t('upgrade.submit.processing')}
+            title={t('Upgrade clusters')}
+            plural={t('clusters')}
+            action={t('Upgrade')}
+            processing={t('Upgrading')}
             resources={upgradeableClusters}
             close={() => {
                 setSelectVersions({})
                 props.close()
             }}
-            description={t('bulk.message.upgrade')}
+            description={t(
+                'Select the new versions for the clusters that you want to upgrade. Only the selected clusters that can be upgraded and have available upgrades are listed. This action is irreversible.'
+            )}
             columns={[
                 {
-                    header: t('upgrade.table.name'),
+                    header: t('Name'),
                     sort: 'displayName',
                     cell: (cluster) => (
                         <>
@@ -106,14 +108,14 @@ export function BatchUpgradeModal(props: {
                     ),
                 },
                 {
-                    header: t('upgrade.table.currentversion'),
+                    header: t('Current version'),
                     cell: (item: Cluster) => {
                         const currentVersion = item?.distribution?.upgradeInfo?.currentVersion || ''
                         return <span>{currentVersion}</span>
                     },
                 },
                 {
-                    header: t('upgrade.table.newversion'),
+                    header: t('New version'),
                     cell: (cluster: Cluster) => {
                         const availableUpdates =
                             cluster.distribution?.upgradeInfo?.availableUpdates &&

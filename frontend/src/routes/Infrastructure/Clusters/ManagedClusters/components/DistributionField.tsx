@@ -21,7 +21,7 @@ import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 
 export function DistributionField(props: { cluster?: Cluster; clusterCurator?: ClusterCurator | undefined }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
@@ -43,12 +43,12 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
         let statusType = StatusType.progress
         let statusTitle =
             props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
-                ? t('upgrade.ansible.posthookjob.title')
-                : t('upgrade.ansible.prehookjob.title')
+                ? t('Upgrade posthook')
+                : t('Upgrade prehook')
         let statusMessage: ReactNode | string =
             props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
-                ? t('upgrade.ansible.posthook')
-                : t('upgrade.ansible.prehook')
+                ? t('Upgrade posthook jobs are running')
+                : t('Upgrade prehook jobs are running')
 
         const jobUrl =
             props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
@@ -66,7 +66,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 iconPosition="right"
                 isDisabled={!jobUrl}
             >
-                {t('view.logs')}
+                {t('View logs')}
             </AcmButton>
         )
 
@@ -74,18 +74,18 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
         if (props.cluster?.distribution?.upgradeInfo?.hookFailed) {
             statusType = StatusType.warning
             if (props.cluster?.distribution?.upgradeInfo?.prehooks?.failed) {
-                statusTitle = 'upgrade.ansible.prehookjob.title'
+                statusTitle = 'Upgrade prehook'
                 statusMessage = (
                     <Fragment>
-                        {t('upgrade.ansible.prehook.failure')}
+                        {t('Upgrade prehook jobs have failed:')}
                         <div>{props.cluster?.distribution?.upgradeInfo?.latestJob?.conditionMessage}</div>
                     </Fragment>
                 )
             } else {
-                statusTitle = 'upgrade.ansible.posthookjob.title'
+                statusTitle = 'Upgrade posthook'
                 statusMessage = (
                     <Fragment>
-                        {t('upgrade.ansible.posthook.failure')}
+                        {t('Upgrade posthook jobs have failed:')}
                         <div>{props.cluster?.distribution?.upgradeInfo?.latestJob?.conditionMessage}</div>
                     </Fragment>
                 )
@@ -116,7 +116,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 <div>{props.cluster?.distribution.displayVersion}</div>
                 <AcmInlineStatus
                     type={StatusType.danger}
-                    status={t('upgrade.upgradefailed', {
+                    status={t('Upgrade failing', {
                         version: props.cluster?.consoleURL
                             ? ''
                             : props.cluster?.distribution.upgradeInfo.desiredVersion,
@@ -124,10 +124,10 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                     popover={
                         props.cluster?.consoleURL
                             ? {
-                                  headerContent: t('upgrade.upgradefailed', {
+                                  headerContent: t('Upgrade failing', {
                                       version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
-                                  bodyContent: t('upgrade.upgradefailed.message', {
+                                  bodyContent: t('Upgrading {{clusterName}} to OpenShift {{version}} is failing.', {
                                       clusterName: props.cluster?.name,
                                       version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
@@ -137,7 +137,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                                           target="_blank"
                                           rel="noreferrer"
                                       >
-                                          {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                                          {t('View upgrade details')} <ExternalLinkAltIcon />
                                       </a>
                                   ),
                               }
@@ -154,7 +154,8 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                 <AcmInlineStatus
                     type={StatusType.progress}
                     status={
-                        t('upgrade.upgrading.version', {
+                        // TODO - Handle interpolation
+                        t('Upgrading to {{version}}', {
                             version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                         }) +
                         (props.cluster?.distribution.upgradeInfo.upgradePercentage
@@ -164,16 +165,22 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                     popover={
                         props.cluster?.consoleURL
                             ? {
-                                  headerContent: t('upgrade.upgrading', {
+                                  // TODO - Handle interpolation
+                                  headerContent: t('Upgrading cluster', {
                                       version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                   }),
                                   bodyContent: props.cluster?.distribution.upgradeInfo.upgradePercentage
-                                      ? t('upgrade.upgrading.message.percentage', {
-                                            clusterName: props.cluster?.name,
-                                            version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                                            percentage: props.cluster?.distribution.upgradeInfo.upgradePercentage,
-                                        })
-                                      : t('upgrade.upgrading.message', {
+                                      ? t(
+                                            //   TODO - Handle interpolation
+                                            'Upgrading {{clusterName}} to OpenShift {{version}}: {{percentage}} complete.',
+                                            {
+                                                clusterName: props.cluster?.name,
+                                                version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                                                percentage: props.cluster?.distribution.upgradeInfo.upgradePercentage,
+                                            }
+                                        )
+                                      : // TODO - Handle interpolation
+                                        t('Upgrading {{clusterName}} to OpenShift {{version}}.', {
                                             clusterName: props.cluster?.name,
                                             version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                                         }),
@@ -183,7 +190,8 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                                           target="_blank"
                                           rel="noreferrer"
                                       >
-                                          {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                                          {/* TODO : Handle interolation */}
+                                          {t('View upgrade details')} <ExternalLinkAltIcon />
                                       </a>
                                   ),
                               }
@@ -208,7 +216,7 @@ export function DistributionField(props: { cluster?: Cluster; clusterCurator?: C
                             rbacPatch(ClusterCuratorDefinition, props.cluster?.namespace),
                         ]}
                     >
-                        {t('upgrade.available')}
+                        {t('Upgrade available')}
                     </RbacButton>
                     <BatchUpgradeModal clusters={[props.cluster]} open={open} close={toggle} />
                 </span>
