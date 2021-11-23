@@ -70,6 +70,7 @@ export function startWatching(): void {
         labelSelector: { 'open-cluster-management.io/cluster-name': '' },
     })
     watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
+    watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'placements')
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'managedClusterSetBindings')
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'managedClusterSets')
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clusterCurators')

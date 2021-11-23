@@ -2,11 +2,11 @@
 
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { NavigationPath } from '../../../NavigationPath'
 import { useTranslation } from 'react-i18next'
+import { listPlacements } from '../../../resources'
 import { listAvailableArgoServerNS } from '../../../resources/gitops-cluster'
-
 // interface CreationStatus {
 //     status: string
 //     messages: any[] | null
@@ -64,13 +64,18 @@ export default function CreateApplicationPage() {
 export function CreateApplication() {
     // will need to pass argoNs to AppForm to get argo namespaces
     const [argoNs, setArgoNs] = useState<string[]>([])
+    const [availablePlacements, setAvailablePlacements] = useState<string[]>([])
+
     useEffect(() => {
         const fetchNs = async () => {
             try {
                 let newNs = await listAvailableArgoServerNS().promise
+                let newPlacements = await listPlacements().promise
                 setArgoNs(newNs)
+                setAvailablePlacements(newPlacements)
             } catch {
                 setArgoNs([])
+                setAvailablePlacements([])
             }
         }
         fetchNs()
@@ -78,5 +83,20 @@ export function CreateApplication() {
     // will wait to adopt AppForm
 
     // return <AppForm />
-    return <h1>{argoNs}</h1>
+    return (
+        <Fragment>
+            <h1>Argo Namespaces:</h1>
+            <ul>
+                {argoNs.map((ns) => {
+                    return <li>{ns}</li>
+                })}
+            </ul>
+            <h1>Existing Placements:</h1>
+            <ul>
+                {availablePlacements.map((placement) => {
+                    return <li>{placement}</li>
+                })}
+            </ul>
+        </Fragment>
+    )
 }
