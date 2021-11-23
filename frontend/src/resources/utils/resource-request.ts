@@ -57,14 +57,20 @@ export function createResource<Resource extends IResource, ResultType = Resource
     resource: Resource
 ): IRequestResult<ResultType> {
     const url = getBackendUrl() + getResourceApiPath(resource)
-    return postRequest<Resource, ResultType>(url, resource)
+    let headers: Record<string, string> | undefined = undefined
+    const csrfToken = getCookie('csrf-token')
+    if (csrfToken) headers = { 'X-CSRFToken': csrfToken }
+    return postRequest<Resource, ResultType>(url, resource, headers)
 }
 
 export function replaceResource<Resource extends IResource, ResultType = Resource>(
     resource: Resource
 ): IRequestResult<ResultType> {
     const url = getBackendUrl() + getResourceNameApiPath(resource)
-    return putRequest<Resource, ResultType>(url, resource)
+    let headers: Record<string, string> | undefined = undefined
+    const csrfToken = getCookie('csrf-token')
+    if (csrfToken) headers = { 'X-CSRFToken': csrfToken }
+    return putRequest<Resource, ResultType>(url, resource, headers)
 }
 
 export function patchResource<Resource extends IResource, ResultType = Resource>(
@@ -78,6 +84,8 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     } else {
         headers['Content-Type'] = 'application/merge-patch+json'
     }
+    const csrfToken = getCookie('csrf-token')
+    if (csrfToken) headers['X-CSRFToken'] = csrfToken
     return patchRequest<unknown, ResultType>(url, data, headers)
 }
 
@@ -85,7 +93,10 @@ export function deleteResource<Resource extends IResource>(resource: Resource): 
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
     const url = getBackendUrl() + getResourceNameApiPath(resource)
-    return deleteRequest(url)
+    let headers: Record<string, string> | undefined = undefined
+    const csrfToken = getCookie('csrf-token')
+    if (csrfToken) headers = { 'X-CSRFToken': csrfToken }
+    return deleteRequest(url, headers)
 }
 
 export function getResource<Resource extends IResource>(
@@ -242,18 +253,26 @@ export function getRequest<ResultT>(url: string): IRequestResult<ResultT> {
     }
 }
 
-export function putRequest<DataT, ResultT>(url: string, data: DataT): IRequestResult<ResultT> {
+export function putRequest<DataT, ResultT>(
+    url: string,
+    data: DataT,
+    headers?: Record<string, string>
+): IRequestResult<ResultT> {
     const abortController = new AbortController()
     return {
-        promise: fetchPut<ResultT>(url, data, abortController.signal).then((result) => result.data),
+        promise: fetchPut<ResultT>(url, data, abortController.signal, headers).then((result) => result.data),
         abort: () => abortController.abort(),
     }
 }
 
-export function postRequest<DataT, ResultT>(url: string, data: DataT): IRequestResult<ResultT> {
+export function postRequest<DataT, ResultT>(
+    url: string,
+    data: DataT,
+    headers?: Record<string, string>
+): IRequestResult<ResultT> {
     const abortController = new AbortController()
     return {
-        promise: fetchPost<ResultT>(url, data, abortController.signal).then((result) => result.data),
+        promise: fetchPost<ResultT>(url, data, abortController.signal, headers).then((result) => result.data),
         abort: () => abortController.abort(),
     }
 }
@@ -270,10 +289,10 @@ export function patchRequest<DataT, ResultT>(
     }
 }
 
-export function deleteRequest(url: string): IRequestResult {
+export function deleteRequest(url: string, headers?: Record<string, string>): IRequestResult {
     const abortController = new AbortController()
     return {
-        promise: fetchDelete(url, abortController.signal),
+        promise: fetchDelete(url, abortController.signal, headers),
         abort: () => abortController.abort(),
     }
 }
@@ -289,12 +308,22 @@ export function fetchGet<T = unknown>(url: string, signal: AbortSignal) {
     })
 }
 
-export function fetchPut<T = unknown>(url: string, data: unknown, signal: AbortSignal) {
-    return fetchRetry<T>({ method: 'PUT', url, signal, data })
+export function fetchPut<T = unknown>(
+    url: string,
+    data: unknown,
+    signal: AbortSignal,
+    headers?: Record<string, string>
+) {
+    return fetchRetry<T>({ method: 'PUT', url, signal, data, headers })
 }
 
-export function fetchPost<T = unknown>(url: string, data: unknown, signal: AbortSignal) {
-    return fetchRetry<T>({ method: 'POST', url, signal, data })
+export function fetchPost<T = unknown>(
+    url: string,
+    data: unknown,
+    signal: AbortSignal,
+    headers?: Record<string, string>
+) {
+    return fetchRetry<T>({ method: 'POST', url, signal, data, headers })
 }
 
 export function fetchPatch<T = unknown>(
@@ -306,8 +335,8 @@ export function fetchPatch<T = unknown>(
     return fetchRetry<T>({ method: 'PATCH', url, signal, data, headers })
 }
 
-export function fetchDelete(url: string, signal: AbortSignal) {
-    return fetchRetry<unknown>({ method: 'DELETE', url, signal })
+export function fetchDelete(url: string, signal: AbortSignal, headers?: Record<string, string>) {
+    return fetchRetry<unknown>({ method: 'DELETE', url, signal, headers })
 }
 
 export async function fetchRetry<T>(options: {
@@ -476,5 +505,14 @@ export async function fetchRetry<T>(options: {
         await new Promise((resolve) => setTimeout(resolve, ms))
         delay *= 2
         retries--
+    }
+}
+
+function getCookie(name: string) {
+    const value = `; ${document.cookie}`
+    const parts = value.split(`; ${name}=`)
+    if (parts.length === 2) {
+        const cookie = parts.pop()
+        if (cookie) return cookie.split(';').shift()
     }
 }
