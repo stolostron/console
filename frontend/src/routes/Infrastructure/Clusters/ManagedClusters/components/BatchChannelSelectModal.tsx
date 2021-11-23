@@ -17,7 +17,6 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BulkActionModel } from '../../../../../components/BulkActionModel'
 import './style.css'
-export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
 const isChannelSelectable = (c: Cluster) => {
     const isReadySelectChannels = c.distribution?.upgradeInfo?.isReadySelectChannels

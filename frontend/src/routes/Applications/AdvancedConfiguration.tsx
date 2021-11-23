@@ -32,7 +32,7 @@ import { IResource } from '../../resources'
 import _ from 'lodash'
 
 export default function AdvancedConfiguration() {
-    const { t } = useTranslation(['application'])
+    const { t } = useTranslation('application')
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [placementrules] = useRecoilState(placementRulesState)
@@ -131,32 +131,6 @@ export default function AdvancedConfiguration() {
         (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.name}/${resource.metadata!.namespace}`,
         []
     )
-    const columns = useMemo<IAcmTableColumn<IResource>[]>(
-        () => [
-            {
-                header: t('Name'),
-                cell: 'metadata.name',
-                sort: 'metadata.name',
-                search: 'metadata.name',
-            },
-            {
-                header: t('Namespace'),
-                cell: 'metadata.namespace',
-                sort: 'metadata.namespace',
-            },
-            {
-                header: t('Channel'),
-                cell: 'spec.channel',
-                sort: 'spec.channel',
-            },
-            {
-                header: t('Created'),
-                cell: 'metadata.creationTimestamp',
-                sort: 'metadata.creationTimestamp',
-            },
-        ],
-        []
-    )
 
     function TerminologyCard(props: { title: string; description: string }) {
         return (
@@ -181,23 +155,25 @@ export default function AdvancedConfiguration() {
 
     function ApplicationDeploymentHighlights() {
         return (
-            <AcmExpandableCard title={t('application:description.title.deploymentHighlightsTerminology')}>
+            <AcmExpandableCard title={t('Learn more about the terminology')}>
                 <Split hasGutter>
                     <TerminologyCard
-                        title={t('application:description.title.deploymentHighlightsTerminology.subscriptions')}
+                        title={t('Subsciptions')}
                         description={t(
-                            'application:description.title.deploymentHighlightsTerminology.subscriptionsSummary'
+                            'Subscriptions identify Kubernetes resources within channels (source repositories). Then, the subscription places the Kubernetes resources on the target clusters.'
                         )}
                     />
                     <TerminologyCard
-                        title={t('application:description.title.deploymentHighlightsTerminology.placementRules')}
+                        title={t('Placement rules')}
                         description={t(
-                            'application:description.title.deploymentHighlightsTerminology.placementRulesSummary'
+                            'Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
                         )}
                     />
                     <TerminologyCard
-                        title={t('application:description.title.deploymentHighlightsTerminology.channels')}
-                        description={t('application:description.title.deploymentHighlightsTerminology.channelsSummary')}
+                        title={t('Channels')}
+                        description={t(
+                            'Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories, or Namespaces on the local cluster. Channels support multiple subscriptions from multiple targets.'
+                        )}
                     />
                 </Split>
                 <TextContent>
@@ -223,8 +199,7 @@ export default function AdvancedConfiguration() {
                                 color: '#0066cc',
                             }}
                         >
-                            {t('application:description.title.deploymentHighlightsTerminology.docsLink')}{' '}
-                            <ExternalLinkAltIcon />
+                            {t('View documentation')} <ExternalLinkAltIcon />
                         </Text>
                     </Text>
                 </TextContent>

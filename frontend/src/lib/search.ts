@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { backendUrl, IRequestResult, postRequest } from '../resources'
+import { getBackendUrl, IRequestResult, postRequest } from '../resources'
 
 export const apiSearchUrl = '/proxy/search'
 
@@ -29,7 +29,7 @@ export type SearchQuery = {
 }
 
 export function queryStatusCount(cluster: string): IRequestResult<ISearchResult> {
-    return postRequest<SearchQuery, ISearchResult>(backendUrl + apiSearchUrl, {
+    return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
         operationName: 'searchResult',
         variables: {
             input: [

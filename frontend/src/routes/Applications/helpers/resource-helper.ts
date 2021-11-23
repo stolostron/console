@@ -14,9 +14,25 @@ export const normalizeRepoType = (type: string) => {
 
 export const groupByRepoType = (repos: any) => _.groupBy(repos, (repo) => normalizeRepoType(repo.type))
 
+function getResourceType(type: String, t: (arg: String) => String) {
+    switch (type) {
+        case 'git':
+            return t('Git')
+        case 'helmrepo':
+            return t('Helm')
+        case 'namespace':
+            return t('Namespace')
+        case 'objectbucket':
+            return t('Object storage')
+        default:
+            break
+    }
+}
+
 export const getResourceLabel = (type: string, count: number) => {
-    const { t } = useTranslation(['application'])
-    const label = t(`resource.type.${type}`)
+    const { t } = useTranslation()
+    // const label = t(`resource.type.${type}`)
+    const label = getResourceType(type, t)
     const optionalCount = count > 1 ? ` (${count})` : ''
     return label + optionalCount
 }

@@ -5,6 +5,7 @@ import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import {
+    getBackendUrl,
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
     AgentClusterInstallVersion,
@@ -368,7 +369,7 @@ export function LoadData(props: { children?: ReactNode }) {
 
         let evtSource: EventSource | undefined
         function startWatch() {
-            evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/events`, { withCredentials: true })
+            evtSource = new EventSource(`${getBackendUrl()}/events`, { withCredentials: true })
             evtSource.onmessage = processMessage
             evtSource.onerror = function () {
                 console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
@@ -390,7 +391,7 @@ export function LoadData(props: { children?: ReactNode }) {
 
     useEffect(() => {
         function checkLoggedIn() {
-            fetch(`${process.env.REACT_APP_BACKEND_PATH}/authenticated`, {
+            fetch(`${getBackendUrl()}/authenticated`, {
                 credentials: 'include',
                 headers: { accept: 'application/json' },
             })
@@ -402,7 +403,7 @@ export function LoadData(props: { children?: ReactNode }) {
                             if (process.env.NODE_ENV === 'production') {
                                 window.location.reload()
                             } else {
-                                window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                                window.location.href = `${getBackendUrl()}/login`
                             }
                             break
                     }
@@ -411,7 +412,7 @@ export function LoadData(props: { children?: ReactNode }) {
                     if (process.env.NODE_ENV === 'production') {
                         window.location.reload()
                     } else {
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                        window.location.href = `${getBackendUrl()}/login`
                     }
                 })
                 .finally(() => {
@@ -421,7 +422,7 @@ export function LoadData(props: { children?: ReactNode }) {
         checkLoggedIn()
     }, [])
 
-    if (loading) return <LoadingPage />
+    if (loading || getBackendUrl() === undefined) return <LoadingPage />
 
     return <Fragment>{props.children}</Fragment>
 }
