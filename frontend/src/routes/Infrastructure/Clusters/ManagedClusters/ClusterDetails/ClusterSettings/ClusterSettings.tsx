@@ -19,20 +19,20 @@ export function ClustersSettingsPageContent() {
 }
 
 export function ClusterSettingsTable(props: { addons: Addon[] | undefined }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     return (
         <AcmTable<Addon>
             plural="add-ons"
             items={props.addons}
             columns={[
                 {
-                    header: t('table.name'),
+                    header: t('Name'),
                     sort: 'name',
                     search: 'name',
                     cell: 'name',
                 },
                 {
-                    header: t('table.status'),
+                    header: t('Status'),
                     cell: (item: Addon) => {
                         let type
                         switch (item.status) {
@@ -57,7 +57,7 @@ export function ClusterSettingsTable(props: { addons: Addon[] | undefined }) {
                     search: 'status',
                 },
                 {
-                    header: t('table.message'),
+                    header: t('Messaged'),
                     cell: 'message',
                 },
             ]}

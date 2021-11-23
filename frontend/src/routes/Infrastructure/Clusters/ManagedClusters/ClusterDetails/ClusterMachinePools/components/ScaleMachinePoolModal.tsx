@@ -21,7 +21,7 @@ export type ScaleMachinePoolModalProps = {
 }
 
 export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [minReplicas, setMinReplicas] = useState<number>(0)
     const [maxReplicas, setMaxReplicas] = useState<number>(0)
     const [replicas, setReplicas] = useState<number>(0)
@@ -43,10 +43,45 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
         setReplicas(0)
     }
 
+    function getAcmModalTitle(props: ScaleMachinePoolModalProps, t:(string: String) => string){
+        switch (props.mode) {
+            case 'enable-autoscale':
+                return t('Enable autoscale')
+            case 'disable-autoscale':
+                return t('Disable autoscale')
+            case 'edit-autoscale':
+                return t('Edit autoscale')
+            case 'edit-manualscale':
+                return t('Scale machine pool')
+            default:
+                break;
+        }
+    }
+    function getAcmModalMessage(props: ScaleMachinePoolModalProps, t:(string: String) => string){
+        switch (props.mode) {
+            case 'enable-autoscale':
+                return t(
+                    'This will automatically scale the machine sets in <bold>{{name}}</bold>. You can disable this later if you need to update the machine set replica count manually.'
+                )
+            case 'disable-autoscale':
+                return t(
+                    'This will require manually scaling the machine sets in <bold>{{name}}</bold>. There are currently {{number}} active machine set replicas in this machine pool.'
+                )
+            case 'edit-autoscale':
+                return t('Specify the minimum and maximum replicas for <bold>{{name}}</bold>')
+            case 'edit-manualscale':
+                return t(
+                    'Specify the desired machine set replica count for the <bold>{{name}}</bold>. Adjusting the size of the machine pool will result in the creation or destruction of nodes on the cluster.'
+                )
+            default:
+                break
+        }
+    }
+
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={t(`machinePool.modal.scale.${props.mode}.title`)}
+            title={getAcmModalTitle(props, t)}
             isOpen={props.machinePool !== undefined}
             onClose={reset}
         >
@@ -56,7 +91,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                         <>
                             <p>
                                 <Trans
-                                    i18nKey={`cluster:machinePool.modal.scale.${props.mode}.message`}
+                                    i18nKey={getAcmModalMessage(props, t)}
                                     values={{
                                         name: props.machinePool!.metadata.name,
                                         number: props.machinePool?.status?.replicas,
@@ -67,7 +102,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                             {props.mode === 'disable-autoscale' || props.mode === 'edit-manualscale' ? (
                                 <AcmNumberInput
                                     required
-                                    label={t('machinePool.modal.scale.replicas.label')}
+                                    label={t('Machine set replica count')}
                                     id="scale"
                                     min={0}
                                     value={replicas}
@@ -75,7 +110,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                     onMinus={() => setReplicas(replicas - 1)}
                                     onPlus={() => setReplicas(replicas + 1)}
                                     validation={(count: number) => {
-                                        if (count < 0) return t('machinePool.modal.scale.validation.positive')
+                                        if (count < 0) return t('Replica count must be a positive number.')
                                         return undefined
                                     }}
                                 />
@@ -83,7 +118,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                 <>
                                     <AcmNumberInput
                                         required
-                                        label={t('machinePool.modal.scale.minReplicas.label')}
+                                        label={t('Minimum replicas')}
                                         id="scale-min"
                                         min={machineSetCount}
                                         value={minReplicas}
@@ -93,13 +128,13 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                         onMinus={() => setMinReplicas(minReplicas - 1)}
                                         onPlus={() => setMinReplicas(minReplicas + 1)}
                                         validation={(count: number) => {
-                                            if (count < 0) return t('machinePool.modal.scale.validation.positive')
+                                            if (count < 0) return t('Replica count must be a positive number.')
                                             return undefined
                                         }}
                                     />
                                     <AcmNumberInput
                                         required
-                                        label={t('machinePool.modal.scale.maxReplicas.label')}
+                                        label={t('Maximum replicas')}
                                         id="scale-max"
                                         min={props.machinePool?.status?.machineSets?.length}
                                         value={maxReplicas}
@@ -109,7 +144,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                         onMinus={() => setMaxReplicas(maxReplicas - 1)}
                                         onPlus={() => setMaxReplicas(maxReplicas + 1)}
                                         validation={(count: number) => {
-                                            if (count < 0) return t('machinePool.modal.scale.validation.positive')
+                                            if (count < 0) return t('Replica count must be a positive number.')
                                             return undefined
                                         }}
                                     />
@@ -121,8 +156,8 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                 <AcmSubmit
                                     id="submit"
                                     variant="primary"
-                                    label={t('common:scale')}
-                                    processingLabel={t('common:scaling')}
+                                    label={t('Scale')}
+                                    processingLabel={t('Scaling')}
                                     onClick={() => {
                                         alertContext.clearAlerts()
                                         const patches = []
@@ -155,7 +190,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                                 if (e instanceof Error) {
                                                     alertContext.addAlert({
                                                         type: 'danger',
-                                                        title: t('common:request.failed'),
+                                                        title: t('Request failed'),
                                                         message: e.message,
                                                     })
                                                 }
@@ -163,7 +198,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                     }}
                                 />
                                 <AcmButton key="cancel" variant="link" onClick={reset}>
-                                    {t('common:cancel')}
+                                    {t('Cancel')}
                                 </AcmButton>
                             </ActionGroup>
                         </>

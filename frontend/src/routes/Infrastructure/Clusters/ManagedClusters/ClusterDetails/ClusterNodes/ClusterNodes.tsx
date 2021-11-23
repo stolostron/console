@@ -28,7 +28,7 @@ export function NodePoolsPageContent() {
 }
 
 export function NodesPoolsTable() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
 
     const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
@@ -90,7 +90,7 @@ export function NodesPoolsTable() {
 
     const columns: IAcmTableColumn<NodeInfo>[] = [
         {
-            header: t('table.name'),
+            header: t('Name'),
             sort: 'name',
             search: 'name',
             cell: (node: NodeInfo) => {
@@ -111,7 +111,7 @@ export function NodesPoolsTable() {
             },
         },
         {
-            header: t('table.status'),
+            header: t('Status'),
             sort: (a: NodeInfo, b: NodeInfo) => {
                 const aReadyCondition = a.conditions?.find((condition) => condition.type === 'Ready')?.status ?? ''
                 const bReadyCondition = b.conditions?.find((condition) => condition.type === 'Ready')?.status ?? ''
@@ -124,47 +124,47 @@ export function NodesPoolsTable() {
                 switch (readyCondition?.status) {
                     case 'True':
                         type = StatusType.healthy
-                        status = t('node.status.ready')
+                        status = t('Ready')
                         break
                     case 'False':
                         type = StatusType.danger
-                        status = t('node.status.unhealthy')
+                        status = t('Unhealthy')
                         break
                     case 'Unknown':
                     default:
                         type = StatusType.unknown
-                        status = t('node.status.unknown')
+                        status = t('Unknown')
                 }
                 return <AcmInlineStatus type={type} status={status} />
             },
         },
         {
-            header: t('table.role'),
+            header: t('Role'),
             sort: rolesSortFn,
             cell: rolesCellFn,
         },
         {
-            header: t('table.region'),
+            header: t('Region'),
             sort: getLabelSortFn('failure-domain.beta.kubernetes.io/region'),
             cell: getLabelCellFn('failure-domain.beta.kubernetes.io/region'),
         },
         {
-            header: t('table.zone'),
+            header: t('Zone'),
             sort: getLabelSortFn('failure-domain.beta.kubernetes.io/zone'),
             cell: getLabelCellFn('failure-domain.beta.kubernetes.io/zone'),
         },
         {
-            header: t('table.instanceType'),
+            header: t('Instance type'),
             sort: getLabelSortFn('beta.kubernetes.io/instance-type'),
             cell: getLabelCellFn('beta.kubernetes.io/instance-type'),
         },
         {
-            header: t('table.cpu'),
+            header: t('CPU'),
             sort: 'capacity.cpu',
             cell: (node) => node.capacity?.cpu ?? '-',
         },
         {
-            header: t('table.memory'),
+            header: t('RAM'),
             sort: memorySortFn,
             cell: memoryCellFn,
         },

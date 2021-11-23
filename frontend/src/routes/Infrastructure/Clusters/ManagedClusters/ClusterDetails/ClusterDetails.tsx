@@ -74,7 +74,7 @@ export const ClusterContext = createContext<{
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
     const location = useLocation()
     const history = useHistory()
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
@@ -167,7 +167,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                     error={new ResourceError('Not found', 404)}
                     actions={
                         <AcmButton role="link" onClick={() => history.push(NavigationPath.clusters)}>
-                            {t('button.backToClusters')}
+                            {t('Back to clusters')}
                         </AcmButton>
                     }
                 />
@@ -211,7 +211,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 header={
                     <AcmPageHeader
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
+                            { text: t('Managed clusters'), to: NavigationPath.clusters },
                             { text: cluster.displayName!, to: '' },
                         ]}
                         title={cluster.displayName!}
@@ -231,7 +231,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     }
                                 >
                                     <Link to={NavigationPath.clusterOverview.replace(':id', match.params.id)}>
-                                        {t('tab.overview')}
+                                        {t('Overview')}
                                     </Link>
                                 </AcmSecondaryNavItem>
                                 <AcmSecondaryNavItem
@@ -241,7 +241,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     }
                                 >
                                     <Link to={NavigationPath.clusterNodes.replace(':id', match.params.id)}>
-                                        {t('tab.nodes')}
+                                        {t('Nodes')}
                                     </Link>
                                 </AcmSecondaryNavItem>
                                 {showMachinePoolTab && (
@@ -252,7 +252,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                         }
                                     >
                                         <Link to={NavigationPath.clusterMachinePools.replace(':id', match.params.id)}>
-                                            {t('tab.machinepools')}
+                                            {t('Machine pools')}
                                         </Link>
                                     </AcmSecondaryNavItem>
                                 )}
@@ -263,7 +263,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                     }
                                 >
                                     <Link to={NavigationPath.clusterSettings.replace(':id', match.params.id)}>
-                                        {t('tab.addons')}
+                                        {t('Add-ons')}
                                     </Link>
                                 </AcmSecondaryNavItem>
                             </AcmSecondaryNav>

@@ -35,7 +35,7 @@ export function MachinePoolsPageContent() {
 }
 
 export function MachinePoolsTable() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<MachinePool> | { open: false }>({
         open: false,
@@ -55,7 +55,7 @@ export function MachinePoolsTable() {
     }
 
     function getAutoscaling(machinePool: MachinePool) {
-        return machinePool.spec?.autoscaling ? t('common:enabled') : t('common:disabled')
+        return machinePool.spec?.autoscaling ? t('Enabled') : t('Disabled')
     }
 
     function keyFn(machinePool: MachinePool) {
@@ -64,20 +64,21 @@ export function MachinePoolsTable() {
 
     const columns: IAcmTableColumn<MachinePool>[] = [
         {
-            header: t('table.name'),
+            header: t('Name'),
             sort: 'metadata.name',
             search: 'metadata.name',
             cell: 'metadata.name',
         },
         {
-            header: t('table.machineSetReplicas'),
+            header: t('Machine set replicas'),
             sort: 'status.replicas',
             search: 'status.replicas',
             cell: (machinePool: MachinePool) => {
                 if (machinePool.spec?.replicas !== undefined) {
                     return (
                         <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
-                            {t('common:outOf', {
+                            {/* TODO - Handle interpolation */}
+                            {t('{{firstNumber}} out of {{secondNumber}}', {
                                 firstNumber: machinePool.status?.replicas ?? 0,
                                 secondNumber: machinePool.spec.replicas,
                             })}
@@ -89,21 +90,22 @@ export function MachinePoolsTable() {
             },
         },
         {
-            header: t('table.autoscale'),
+            header: t('Autoscale'),
             sort: (a: MachinePool, b: MachinePool) => compareStrings(getAutoscaling(a), getAutoscaling(b)),
             search: (machinePool: MachinePool) => getAutoscaling(machinePool),
             cell: (machinePool: MachinePool) => {
                 if (machinePool.spec?.replicas !== undefined) {
                     return getAutoscaling(machinePool)
                 } else {
-                    return `${getAutoscaling(machinePool)}, ${t('machinePool.replica.count', {
+                    // TODO - Handle interpolation
+                    return `${getAutoscaling(machinePool)}, ${t('{{range}} replicas', {
                         range: `${machinePool.spec?.autoscaling?.minReplicas}-${machinePool.spec?.autoscaling?.maxReplicas}`,
                     })}`
                 }
             },
         },
         {
-            header: t('table.instanceType'),
+            header: t('Instance type'),
             sort: (a: MachinePool, b: MachinePool) => compareStrings(getInstanceType(a), getInstanceType(b)),
             search: (machinePool: MachinePool) => getInstanceType(machinePool),
             cell: (machinePool: MachinePool) => getInstanceType(machinePool),
@@ -115,7 +117,7 @@ export function MachinePoolsTable() {
                 let actions = [
                     {
                         id: 'scaleMachinePool',
-                        text: t('machinePool.scale'),
+                        text: t('Scale machine pool'),
                         isDisabled: true,
                         rbac: [rbacPatch(machinePool)],
                         click: (machinePool: MachinePool) =>
@@ -123,7 +125,7 @@ export function MachinePoolsTable() {
                     },
                     {
                         id: 'editAutoscale',
-                        text: t('machinePool.editAutoscale'),
+                        text: t('Edit autoscale'),
                         isDisabled: true,
                         rbac: [rbacPatch(machinePool)],
                         click: (machinePool: MachinePool) =>
@@ -131,7 +133,7 @@ export function MachinePoolsTable() {
                     },
                     {
                         id: 'enableAutoscale',
-                        text: t('machinePool.enableAutoscale'),
+                        text: t('Enable autoscale'),
                         isDisabled: true,
                         rbac: [rbacPatch(machinePool)],
                         click: (machinePool: MachinePool) =>
@@ -139,7 +141,7 @@ export function MachinePoolsTable() {
                     },
                     {
                         id: 'disableAutoscale',
-                        text: t('machinePool.disableAutoscale'),
+                        text: t('Disable autoscale'),
                         isDisabled: true,
                         rbac: [rbacPatch(machinePool)],
                         click: (machinePool: MachinePool) =>
@@ -147,17 +149,19 @@ export function MachinePoolsTable() {
                     },
                     {
                         id: 'deleteMachinePool',
-                        text: t('machinePool.delete'),
+                        text: t('Delete machine pool'),
                         isDisabled: true,
                         rbac: [rbacDelete(machinePool)],
                         click: (machinePool: MachinePool) => {
                             setModalProps({
                                 open: true,
-                                title: t('bulk.title.deleteMachinePool'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                title: t('Permanently delete machine pools?'),
+                                action: t('Delete'),
+                                processing: t('Deleting'),
                                 resources: [machinePool],
-                                description: t('bulk.message.deleteMachinePool'),
+                                description: t(
+                                    'Deleting a machine pool will destroy any machine sets in the machine pool and associated nodes will be deprovisioned. Deleting a machine pool may result in insufficient resources for applications running on this cluster.'
+                                ),
                                 keyFn,
                                 actionFn: deleteResource,
                                 confirmText: machinePool.metadata.name!,
@@ -166,13 +170,13 @@ export function MachinePoolsTable() {
                                 icon: 'warning',
                                 columns: [
                                     {
-                                        header: t('table.name'),
+                                        header: t('Name'),
                                         sort: 'metadata.name',
                                         search: 'metadata.name',
                                         cell: 'metadata.name',
                                     },
                                     {
-                                        header: t('table.machineSetReplicas'),
+                                        header: t('Machine set replicas'),
                                         sort: 'status.replicas',
                                         search: 'status.replicas',
                                         cell: (machinePool: MachinePool) => {
@@ -196,6 +200,99 @@ export function MachinePoolsTable() {
                     actions = actions.filter((action) => action.id !== 'editAutoscale')
                 }
 
+                function getMenuTooltip(cStatus: ClusterStatus, t: (string: String) => string) {
+                    switch (cStatus) {
+                        case 'pending':
+                            return t(
+                                'The current status of the cluster (Pending) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'destroying':
+                            return t(
+                                'The current status of the cluster (Destroying) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'creating':
+                            return t(
+                                'The current status of the cluster (Creating) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'detached':
+                            return t(
+                                'The current status of the cluster (Detached) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'detaching':
+                            return t(
+                                'The current status of the cluster (Detaching) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'notaccepted':
+                            return t(
+                                'The current status of the cluster (Not accepted) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'needsapproval':
+                            return t(
+                                'The current status of the cluster (Needs approval) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'pendingimport':
+                            return t(
+                                'The current status of the cluster (Pending import) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'importing':
+                            return t(
+                                'The current status of the cluster (Importing) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'ready':
+                            return t(
+                                'The current status of the cluster (Ready) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'offline':
+                            return t(
+                                'The current status of the cluster (Offline) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'hibernating':
+                            return t(
+                                'The current status of the cluster (Hibernating) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'stopping':
+                            return t(
+                                'The current status of the cluster (Stopping) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'resuming':
+                            return t(
+                                'The current status of the cluster (Resuming) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'degraded':
+                            return t(
+                                'The current status of the cluster (Degraded) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'unknown':
+                            return t(
+                                'The current status of the cluster (Unknown) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'prehookjob':
+                            return t(
+                                'The current status of the cluster (Prehook) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'posthookjob':
+                            return t(
+                                'The current status of the cluster (Posthook) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'draft':
+                            return t(
+                                'The current status of the cluster (Draft) does not allow any actions to be taken on the machine pool.'
+                            )
+                        case 'failed':
+                        case 'provisionfailed':
+                        case 'deprovisionfailed':
+                        case 'prehookfailed':
+                        case 'posthookfailed':
+                        case 'importfailed':
+                            return t(
+                                'The current status of the cluster (Failed) does not allow any actions to be taken on the machine pool.'
+                            )
+
+                        default:
+                            break
+                    }
+                }
+
                 return (
                     <RbacDropdown<MachinePool>
                         id={`${machinePool.metadata.name}-actions`}
@@ -203,7 +300,7 @@ export function MachinePoolsTable() {
                         isKebab={true}
                         text={`${machinePool.metadata.name}-actions`}
                         actions={actions}
-                        tooltip={t('machinePool.menu.disabled.tooltip', { status: t(`status.${cluster!.status}`) })}
+                        tooltip={getMenuTooltip(cluster!.status, t)}
                         isDisabled={![ClusterStatus.ready, ClusterStatus.degraded].includes(cluster!.status)}
                     />
                 )
@@ -226,10 +323,10 @@ export function MachinePoolsTable() {
                 emptyState={
                     <AcmEmptyState
                         key="mcEmptyState"
-                        title={t('managed.cluster.machinePools.emptyStateHeader')}
+                        title={t('No machine pools found.')}
                         message={
                             <Trans
-                                i18nKey={'cluster:managed.cluster.machinePools.emptyStateButton'}
+                                i18nKey={'This cluster doesn\'t have any machine pools.'}
                                 components={{ bold: <strong /> }}
                             />
                         }

@@ -39,21 +39,21 @@ const { getClusterProperties } = CIM
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster, clusterCurator, clusterDeployment, agentClusterInstall } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
 
     const clusterProperties: { [key: string]: { key: string; value?: React.ReactNode; keyAction?: React.ReactNode } } =
         {
             clusterName: {
-                key: t('table.clusterName'),
+                key: t('Cluster resource name'),
                 value: (
                     <span>
                         {cluster!.name}
                         <Popover
                             bodyContent={
                                 <Trans
-                                    i18nKey="cluster:table.clusterName.helperText"
+                                    i18nKey="Channels help to control the pace of upgrades and recommend the approporiate release versions. Update channels are tied to a minor version of Openshift Container Platform, for example 4.6."
                                     components={{ bold: <strong /> }}
                                 />
                             }
@@ -66,14 +66,14 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 ),
             },
             clusterClaim: {
-                key: t('table.clusterClaim'),
+                key: t('Cluster claim name'),
                 value: cluster?.hive?.clusterClaimName && (
                     <span>
                         {cluster?.hive?.clusterClaimName}
                         <Popover
                             bodyContent={
                                 <Trans
-                                    i18nKey="cluster:table.clusterClaim.helperText"
+                                    i18nKey="The name of the <bold>ClusterClaim</bold> resource used to claim this cluster from a cluster pool. For any direct interactions with underlying cluster resources, such as command line actions, use the <bold>Cluster resource name</bold> for those operations."
                                     components={{ bold: <strong /> }}
                                 />
                             }
@@ -86,27 +86,28 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 ),
             },
             status: {
-                key: t('table.status'),
+                key: t('Status'),
                 value: cluster?.status && <StatusField cluster={cluster} />,
             },
             provider: {
-                key: t('table.provider'),
+                key: t('Infrastructure provider'),
                 value: cluster?.provider && <AcmInlineProvider provider={cluster.provider} />,
             },
             distribution: {
-                key: t('table.distribution'),
+                key: t('Distribution version'),
                 value: cluster?.distribution?.displayVersion && (
                     <DistributionField cluster={cluster} clusterCurator={clusterCurator} />
                 ),
             },
             channel: {
-                key: t('table.channel'),
+                key: t('Channel'),
                 value: (
                     <span>
                         {cluster?.distribution?.upgradeInfo?.isSelectingChannel ? (
                             <AcmInlineStatus
                                 type={StatusType.progress}
-                                status={t('upgrade.selecting.channel', {
+                                // TODO - Handle interpolation
+                                status={t('Selecting {{channel}}', {
                                     channel: cluster?.distribution?.upgradeInfo.desiredChannel,
                                 })}
                             ></AcmInlineStatus>
@@ -116,7 +117,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         <Popover
                             bodyContent={
                                 <Trans
-                                    i18nKey="cluster:table.clusterChannel.helperText"
+                                    i18nKey="Channels help to control the pace of upgrades and recommend the approporiate release versions. Update channels are tied to a minor version of Openshift Container Platform, for example 4.6."
                                     components={{ bold: <strong /> }}
                                 />
                             }
@@ -135,7 +136,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                             }
                         }}
                         variant={ButtonVariant.plain}
-                        aria-label={t('cluster:bulk.title.selectChannel')}
+                        aria-label={t('Select channels')}
                         rbac={[
                             rbacPatch(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),
                             rbacCreate(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),
@@ -146,13 +147,13 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 ),
             },
             labels: {
-                key: t('table.labels'),
+                key: t('Labels'),
                 value: cluster?.labels && <AcmLabels labels={cluster?.labels} />,
                 keyAction: cluster?.isManaged && (
                     <RbacButton
                         onClick={() => setShowEditLabels(true)}
                         variant={ButtonVariant.plain}
-                        aria-label={t('common:labels.edit.title')}
+                        aria-label={t('Edit labels')}
                         rbac={[rbacPatch(ManagedClusterDefinition, undefined, cluster?.name)]}
                     >
                         <PencilAltIcon />
@@ -160,18 +161,18 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 ),
             },
             kubeApiServer: {
-                key: t('table.kubeApiServer'),
+                key: t('Cluster API address'),
                 value: cluster?.kubeApiServer && <AcmInlineCopy text={cluster?.kubeApiServer} id="kube-api-server" />,
             },
             consoleUrl: {
-                key: t('table.consoleUrl'),
+                key: t('Console URL'),
                 value: cluster?.consoleURL && (
                     <AcmButton
                         variant="link"
                         isInline
                         onClick={() => window.open(cluster.consoleURL!, '_blank')}
                         isDisabled={cluster.status === ClusterStatus.hibernating}
-                        tooltip={t('hibernating.tooltip')}
+                        tooltip={t('This action is currently unavailable because the cluster is powered down.')}
                         icon={<ExternalLinkAltIcon />}
                         iconPosition="right"
                     >
@@ -180,7 +181,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 ),
             },
             clusterId: {
-                key: t('table.clusterId'),
+                key: t('Cluster ID'),
                 value: cluster?.labels?.clusterID && (
                     <>
                         <div>{cluster?.labels?.clusterID}</div>
@@ -189,21 +190,21 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                             target="_blank"
                             rel="noreferrer"
                         >
-                            {t('common:openshift.cluster.manager')} <ExternalLinkAltIcon />
+                            {t('OpenShift Cluster Manager')} <ExternalLinkAltIcon />
                         </a>
                     </>
                 ),
             },
             credentials: {
-                key: t('table.credentials'),
+                key: t('Credentials'),
                 value: <LoginCredentials canGetSecret={props.canGetSecret} />,
             },
             claimedBy: {
-                key: cluster?.owner.claimedBy ? t('table.claimedBy') : t('table.createdBy'),
+                key: cluster?.owner.claimedBy ? t('Claimed by') : t('Created by'),
                 value: cluster?.owner.claimedBy ?? cluster?.owner.createdBy,
             },
             clusterSet: {
-                key: t('table.clusterSet'),
+                key: t('Cluster set'),
                 value: cluster?.clusterSet! && (
                     <Link to={NavigationPath.clusterSetOverview.replace(':id', cluster?.clusterSet!)}>
                         {cluster?.clusterSet}
@@ -211,7 +212,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 ),
             },
             clusterPool: {
-                key: t('table.clusterPool'),
+                key: t('Cluster pool'),
                 value: cluster?.hive?.clusterPool,
             },
         }
@@ -283,7 +284,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                 />
                 {isHybrid && <AIClusterErrors />}
                 {isHybrid ? <AIClusterProgress /> : <ProgressStepBar />}
-                <AcmDescriptionList title={t('table.details')} leftItems={leftItems} rightItems={rightItems} />
+                <AcmDescriptionList title={t('Details')} leftItems={leftItems} rightItems={rightItems} />
                 {cluster!.isManaged &&
                     [
                         ClusterStatus.ready,
