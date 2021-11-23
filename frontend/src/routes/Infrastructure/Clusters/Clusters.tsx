@@ -17,8 +17,8 @@ export default function Clusters() {
             <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
             <Route exact path={NavigationPath.clusterCreateProgress} component={ClusterCreateProgress} />
             <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
-            <Route exact path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
-            <Route exact path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
+            <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
+            <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />
             <Route exact path={NavigationPath.createClusterPool} component={CreateClusterPoolPage} />
             <Route exact path={NavigationPath.editCluster} component={EditAICluster} />
             <Route exact path={NavigationPath.configureDiscovery} component={DiscoveryConfigPage} />
