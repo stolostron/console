@@ -2,14 +2,19 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { ApolloClient, InMemoryCache } from '@apollo/client'
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import { getBackendUrl } from '../../../../resources'
+
+const httpLink = new HttpLink({
+    uri: () => `${getBackendUrl()}/proxy/search`
+})
 
 export const searchClient = new ApolloClient({
     connectToDevTools: process.env.NODE_ENV === 'development',
-    uri: `${getBackendUrl()}/proxy/search`,
+    link: httpLink,
     cache: new InMemoryCache(),
     credentials: 'same-origin',
+
     defaultOptions: {
         watchQuery: {
             fetchPolicy: 'network-only',
