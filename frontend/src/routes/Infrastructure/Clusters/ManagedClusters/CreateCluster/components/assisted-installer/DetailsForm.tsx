@@ -55,7 +55,7 @@ const fields: any = {
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
     const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
     const formRef = useRef<FormikProps<any>>(null)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
@@ -135,20 +135,20 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         name: (
             <AcmSelect
                 id="managedClusterSet"
-                label={t('import.form.managedClusterSet.label')}
+                label={t('Cluster set')}
                 placeholder={
-                    canJoinClusterSets?.length === 0
-                        ? t('import.no.cluster.sets.available')
-                        : t('import.form.managedClusterSet.placeholder')
+                    canJoinClusterSets?.length === 0 ? t('No cluster sets available') : t('Select a cluster set')
                 }
-                labelHelp={t('import.form.managedClusterSet.labelHelp')}
+                labelHelp={t(
+                    'A ManagedClusterSet is a group of managed clusters. With a ManagedClusterSet, you can manage access to all of the managed clusters in the group together.'
+                )}
                 value={managedClusterSet}
                 onChange={(mcs) => setManagedClusterSet(mcs)}
                 isDisabled={canJoinClusterSets === undefined || canJoinClusterSets.length === 0}
                 hidden={canJoinClusterSets === undefined}
                 helperText={
                     <Text component="small">
-                        <Link to={NavigationPath.clusterSets}>{t('import.manage.cluster.sets')}</Link>
+                        <Link to={NavigationPath.clusterSets}>{t('Manage cluster sets')}</Link>
                     </Text>
                 }
                 isRequired={mustJoinClusterSet}
@@ -163,11 +163,11 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         openshiftVersion: (
             <AcmLabelsInput
                 id="additionalLabels"
-                label={t('import.form.labels.label')}
-                buttonLabel={t('common:label.add')}
+                label={t('Additional labels')}
+                buttonLabel={t('Add label')}
                 value={additionalLabels}
                 onChange={(label) => setAdditionaLabels(label)}
-                placeholder={t('labels.edit.placeholder')}
+                placeholder={t('Enter key=value, then press enter, space, or comma')}
                 isDisabled={false}
             />
         ),

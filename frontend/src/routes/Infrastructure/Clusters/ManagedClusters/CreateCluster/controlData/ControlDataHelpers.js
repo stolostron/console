@@ -23,7 +23,7 @@ const OpenNewTab = () => (
 )
 
 export const CREATE_CLOUD_CONNECTION = {
-    prompt: 'creation.ocp.cloud.add.connection',
+    prompt: 'Add credential',
     type: 'link',
     url: NavigationPath.addCredentials,
     positionBottomRight: true,
@@ -32,7 +32,7 @@ export const CREATE_CLOUD_CONNECTION = {
 }
 
 export const CREATE_AUTOMATION_TEMPLATE = {
-    prompt: 'creation.ocp.cloud.add.template',
+    prompt: 'Add automation template',
     type: 'link',
     url: NavigationPath.addAnsibleAutomation,
     positionBottomRight: true,
@@ -44,8 +44,8 @@ export const LOAD_OCP_IMAGES = (provider) => {
         query: () => {
             return listClusterImageSets().promise
         },
-        emptyDesc: 'creation.ocp.cloud.no.ocp.images',
-        loadingDesc: 'creation.ocp.cloud.loading.ocp.images',
+        emptyDesc: 'No default images. Enter a release image path.',
+        loadingDesc: 'Loading release image sets...',
         setAvailable: setAvailableOCPImages.bind(null, provider),
         setAvailableMap: setAvailableOCPMap.bind(null),
     }
@@ -292,40 +292,45 @@ export const clusterDetailsControlData = [
         title: 'Cluster details',
     },
     {
-        name: 'creation.ocp.name',
-        tooltip: 'tooltip.creation.ocp.name',
-        placeholder: 'creation.ocp.name.placeholder',
+        name: 'Cluster name',
+        tooltip:
+            'The namespace of your cluster. Must be a string that contains lowercase alphanumeric values. Cannot be changed after creation.',
+        placeholder: 'Enter cluster name',
         id: 'name',
         type: 'text',
         validation: {
             constraint: VALID_DNS_LABEL,
-            notification: 'import.form.invalid.dns.label',
+            notification:
+                'The value must be a valid DNS label that consists of up to 63 lowercase alphanumeric characters. The character ' -
+                ' is also permitted, as long as it does not appear in the first or last position.',
             required: true,
         },
         reverse: 'ClusterDeployment[0].metadata.name',
     },
     {
-        name: 'creation.ocp.clusterSet',
-        tooltip: 'tooltip.creation.ocp.clusterSet',
+        name: 'Cluster set',
+        tooltip:
+            'A ManagedClusterSet is a group of managed clusters. With a ManagedClusterSet, you can manage access to all of the managed clusters in the group together.',
         id: 'clusterSet',
         type: 'singleselect',
-        placeholder: 'placeholder.creation.ocp.clusterSet',
+        placeholder: 'Select a cluster set',
         validation: {
             required: false,
         },
         available: [],
     },
     {
-        name: 'creation.ocp.baseDomain',
-        tooltip: 'tooltip.creation.ocp.baseDomain',
-        placeholder: 'placeholder.creation.ocp.baseDomain',
+        name: 'Base DNS domain',
+        tooltip:
+            "The base domain of your provider, which is used to create routes to your OpenShift Container Platform cluster components. It is configured in your cloud provider's DNS as a Start Of Authority record (SOA). Cannot be changed after creation.",
+        placeholder: 'Enter base DNS domain',
         id: 'baseDomain',
         type: 'text',
         validation: VALIDATE_BASE_DNS_NAME_REQUIRED,
         tip: 'All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.',
     },
     {
-        name: 'cluster.create.ocp.fips',
+        name: 'FIPS',
         id: 'fips',
         type: 'checkbox',
         active: false,
@@ -342,13 +347,14 @@ export const networkingControlData = [
     },
     {
         id: 'networkType',
-        name: 'creation.ocp.cluster.network.type',
-        tooltip: 'tooltip.creation.ocp.cluster.network.type',
+        name: 'Network type',
+        tooltip:
+            'The pod network provider plug-in to deploy. OVNKubernetes is required for IPv6. The default value is OpenShiftSDN.',
         type: 'singleselect',
         active: 'OpenShiftSDN',
         available: ['OpenShiftSDN', 'OVNKubernetes'],
         validation: {
-            notification: 'creation.ocp.cluster.valid.key',
+            notification: 'Value must be a valid security key.',
             required: true,
         },
     },
@@ -356,50 +362,54 @@ export const networkingControlData = [
         id: 'networks',
         type: 'group',
         prompts: {
-            addPrompt: 'creation.ocp.cluster.add.network',
-            deletePrompt: 'creation.ocp.cluster.delete.node.pool',
+            addPrompt: 'Add network',
+            deletePrompt: 'Delete node pool',
         },
         controlData: [
             {
                 id: 'networkGroup',
                 type: 'section',
                 collapsable: true,
-                subtitle: 'creation.ocp.node.network.title',
-                info: 'creation.ocp.node.network.info',
+                subtitle: 'Network {{0}}',
+                info: 'Specify at least one network. Multiple are required for IPv6.',
             },
             {
                 id: 'clusterNetwork',
                 type: 'text',
-                name: 'creation.ocp.cluster.network',
-                tooltip: 'tooltip.creation.ocp.cluster.network',
-                placeholder: 'creation.ocp.cluster.network.placeholder',
+                name: 'Cluster network CIDR',
+                tooltip:
+                    'A block of IP addresses from which pod IP addresses are allocated. The OpenShiftSDN network plug-in supports multiple cluster networks. The address blocks for multiple cluster networks must not overlap. Select address pools large enough to fit your anticipated workload. The default value is 10.128.0.0/14.',
+                placeholder: 'Enter cluster network CIDR',
                 active: '10.128.0.0/14',
                 validation: VALIDATE_CIDR,
             },
             {
                 id: 'hostPrefix',
                 type: 'text',
-                name: 'creation.ocp.cluster.network.host.prefix',
-                tooltip: 'tooltip.creation.ocp.cluster.network.host.prefix',
-                placeholder: 'creation.ocp.cluster.network.host.prefix.placeholder',
+                name: 'Network host prefix',
+                tooltip:
+                    'The subnet prefix length to assign to each individual node. For example, if hostPrefix is set to 23, then each node is assigned a /23 subnet out of the given CIDR, allowing for 510 (2^(32 - 23) - 2) pod IP addresses. The default is 23.',
+                placeholder: 'Enter network host prefix',
                 active: '23',
                 validation: VALIDATE_NUMERIC,
             },
             {
                 id: 'serviceNetwork',
                 type: 'text',
-                name: 'creation.ocp.service.network',
-                tooltip: 'tooltip.creation.ocp.service.network',
-                placeholder: 'creation.ocp.service.network.placeholder',
+                name: 'Service network CIDR',
+                tooltip:
+                    'A block of IP addresses for services. OpenShiftSDN allows only one serviceNetwork block. The address block must not overlap any other network block. The default value is 172.30.0.0/16.',
+                placeholder: 'Enter service network CIDR',
                 active: '172.30.0.0/16',
                 validation: VALIDATE_CIDR,
             },
             {
                 id: 'machineCIDR',
                 type: 'text',
-                name: 'creation.ocp.machine.cidr',
-                tooltip: 'tooltip.creation.ocp.machine.cidr',
-                placeholder: 'creation.ocp.machine.cidr.placeholder',
+                name: 'Machine CIDR',
+                tooltip:
+                    'A block of IP addresses used by the OpenShift Container Platform hosts.The address block must not overlap any other network block. The default value is 10.0.0.0/16.',
+                placeholder: 'Enter machine CIDR',
                 active: '10.0.0.0/16',
                 validation: VALIDATE_CIDR,
             },
@@ -463,18 +473,18 @@ export const automationControlData = [
     {
         id: 'automationStep',
         type: 'step',
-        title: 'template.clusterCreate.title',
+        title: 'Automation',
     },
     {
         id: 'chooseTemplate',
         type: 'title',
-        info: 'template.clusterCreate.info',
+        info: "(Optional) Choose an automation job template to automatically run Ansible jobs at different stages of a cluster's life cycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed.",
     },
     {
-        name: 'template.clusterCreate.name',
+        name: 'Ansible Automation Template',
         id: 'templateName',
         type: 'combobox',
-        placeholder: 'template.clusterCreate.select.placeholder',
+        placeholder: 'Select an Ansible job template',
         validation: {
             required: false,
         },
@@ -520,5 +530,6 @@ export const onChangeSNO = (control, controlData) => {
 export const addSnoText = (controlData) => {
     const masterPool = controlData.find((object) => object.id == 'masterPool')
     const poolControlData = masterPool.controlData.find((object) => object.id == 'masterPool')
-    poolControlData.info = 'creation.ocp.node.controlplane.pool.info.sno_enabled'
+    poolControlData.info =
+        'Three control plane nodes will be created to control this cluster unless single node is enabled, in which case there will only be one control plane node.'
 }

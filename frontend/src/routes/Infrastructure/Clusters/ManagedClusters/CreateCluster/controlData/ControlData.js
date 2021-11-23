@@ -64,7 +64,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
             {
                 id: 'AWS',
                 logo: <AwsLogo />,
-                title: 'cluster.create.aws.subtitle',
+                title: 'Amazon Web Services',
                 change: {
                     insertControlData: getControlDataAWS(true, awsPrivateFeatureGate, snoFeatureGate),
                     replacements: {
@@ -76,7 +76,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
             {
                 id: 'GCP',
                 logo: <GoogleLogo />,
-                title: 'cluster.create.google.subtitle',
+                title: 'Google Cloud',
                 change: {
                     insertControlData: getControlDataGCP(true, snoFeatureGate),
                     replacements: {
@@ -88,7 +88,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
             {
                 id: 'Azure',
                 logo: <AzureLogo />,
-                title: 'cluster.create.azure.subtitle',
+                title: 'Microsoft Azure',
                 change: {
                     insertControlData: getControlDataAZR(true, snoFeatureGate),
                     replacements: {
@@ -100,7 +100,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
             {
                 id: 'vSphere',
                 logo: <VMwareLogo />,
-                title: 'cluster.create.vmware.subtitle',
+                title: 'VMware vSphere',
                 change: {
                     insertControlData: getControlDataVMW(true, snoFeatureGate),
                     replacements: {
@@ -112,7 +112,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
             {
                 id: 'OpenStack',
                 logo: <RedHatLogo />,
-                title: 'cluster.create.redhat.subtitle',
+                title: 'Red Hat OpenStack Platform',
                 change: {
                     insertControlData: getControlDataOST(true, snoFeatureGate),
                     replacements: {
@@ -124,8 +124,8 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
             {
                 id: 'AI',
                 logo: <AcmIcon icon={AcmIconVariant.hybrid} />,
-                title: 'cluster.create.ai.subtitle',
-                tooltip: 'cluster.create.ai.tooltip',
+                title: 'On-premises',
+                tooltip: 'Create a cluster from hosts that have been discovered and made available.',
                 text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
                 change: {
                     insertControlData: controlDataAI,
@@ -137,7 +137,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
             {
                 id: 'BMC',
                 logo: <ServerIcon color="slategray" />,
-                title: 'cluster.create.baremetal.subtitle',
+                title: 'Bare metal',
                 // text: <Deprecated />,
                 change: {
                     insertControlData: getControlDataBMC(),
@@ -149,11 +149,13 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
             },
         ],
         sectionTooltips: {
-            'Centrally managed': <Trans i18nKey="create:cluster.create.centrallymanaged.section.tooltip" />,
+            'Centrally managed': (
+                <Trans i18nKey="Simplify cluster self-service with infrastructure environments, which enable you to manage hosts, create ready-to-use host groups, and quickly create clusters based on provided infrastructure. To use infrastructure environments, select <strong>On Premise</strong>." />
+            ),
         },
         active: getActiveCardID,
         validation: {
-            notification: 'creation.ocp.cluster.must.select.infrastructure',
+            notification: 'Select an infrastructure',
             required: true,
         },
     },

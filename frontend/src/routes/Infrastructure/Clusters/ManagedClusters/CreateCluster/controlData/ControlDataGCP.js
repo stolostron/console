@@ -258,14 +258,15 @@ const controlDataGCP = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        name: 'Infrastructure provider credential',
+        tooltip:
+            'The settings that are required for the selected provider. You can select an existing connection, or add a new connection. Cannot be changed after creation.',
         id: 'connection',
         type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
+        placeholder: 'Select a credential',
         providerId: 'gcp',
         validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
+            notification: 'Select a connection',
             required: true,
         },
         available: [],
@@ -276,15 +277,16 @@ const controlDataGCP = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
-        name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image',
+        name: 'Release image',
+        tooltip:
+            'URL to the OpenShift install image set to use. Available images are listed, or you can enter your own path to add an image to the list.',
         id: 'imageSet',
         type: 'combobox',
         simplified: getSimplifiedImageName,
-        placeholder: 'creation.ocp.cloud.select.ocp.image',
+        placeholder: 'Select or enter a release image',
         fetchAvailable: LOAD_OCP_IMAGES('gcp'),
         validation: {
-            notification: 'creation.ocp.cluster.must.select.ocp.image',
+            notification: 'Select a release image',
             required: true,
         },
     },
@@ -296,8 +298,9 @@ const controlDataGCP = [
         hidden: true,
     },
     {
-        name: 'cluster.create.ocp.singleNode',
-        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+        name: 'Single Node OpenShift',
+        tooltip:
+            'To enable a single node OpenShift cluster with one control plane node and zero worker nodes. Only available in OpenShift 4.8 and higher.',
         id: 'singleNode',
         type: 'checkbox',
         active: false,
@@ -306,7 +309,7 @@ const controlDataGCP = [
         icon: <DevPreviewLabel />,
     },
     {
-        name: 'creation.ocp.addition.labels',
+        name: 'Additional labels',
         id: 'additional',
         type: 'labels',
         active: [],
@@ -323,12 +326,13 @@ const controlDataGCP = [
     {
         id: 'nodes',
         type: 'title',
-        info: 'creation.ocp.cluster.node.pool.info',
+        info: 'The instance type and quantity of control plane and worker nodes to create for your cluster. Additional worker nodes can be added after the cluster is created.',
     },
     ///////////////////////  region  /////////////////////////////////////
     {
-        name: 'creation.ocp.region',
-        tooltip: 'tooltip.creation.ocp.gcp.region',
+        name: 'Region',
+        tooltip:
+            'The GCP region where you deploy your cluster. You can select zones within the region for your control plane and worker pools.',
         id: 'region',
         type: 'combobox',
         active: 'us-east1',
@@ -348,13 +352,13 @@ const controlDataGCP = [
                 type: 'section',
                 collapsable: true,
                 collapsed: true,
-                subtitle: 'creation.ocp.node.controlplane.pool.title',
-                info: 'creation.ocp.node.controlplane.pool.info',
+                subtitle: 'Control plane pool',
+                info: 'Three control plane nodes will be created to control this cluster.',
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
-                name: 'creation.ocp.instance.type',
-                tooltip: 'tooltip.creation.ocp.gcp.instance.type',
+                name: 'Instance type',
+                tooltip: 'The GCP machine type.',
                 learnMore: 'https://cloud.google.com/compute/docs/machine-types',
                 id: 'masterType',
                 type: 'combobox',
@@ -362,7 +366,7 @@ const controlDataGCP = [
                 active: 'n1-standard-4',
                 validation: {
                     constraint: '[A-Za-z0-9-]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
+                    notification: 'Value must be alphanumeric, including periods.',
                     required: false,
                 },
             },
@@ -376,8 +380,8 @@ const controlDataGCP = [
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',
-            addPrompt: 'creation.ocp.cluster.add.node.pool',
-            deletePrompt: 'creation.ocp.cluster.delete.node.pool',
+            addPrompt: 'Add worker pool',
+            deletePrompt: 'Delete node pool',
         },
         controlData: [
             {
@@ -386,26 +390,26 @@ const controlDataGCP = [
                 collapsable: true,
                 collapsed: true,
                 subtitle: getWorkerName,
-                info: 'creation.ocp.node.worker.pool.info',
+                info: 'One or more worker nodes will be created to run the container workloads in this cluster.',
             },
             ///////////////////////  pool name  /////////////////////////////////////
             {
-                name: 'creation.ocp.pool.name',
-                tooltip: 'tooltip.creation.ocp.pool.name',
-                placeholder: 'creation.ocp.pool.placeholder',
+                name: 'Pool name',
+                tooltip: 'The name for your worker pool.',
+                placeholder: 'Enter pool name',
                 id: 'workerName',
                 type: 'text',
                 active: 'worker',
                 validation: {
                     constraint: '[A-Za-z0-9-_]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric',
+                    notification: 'Value must be alphanumeric.',
                     required: true,
                 },
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
-                name: 'creation.ocp.instance.type',
-                tooltip: 'tooltip.creation.ocp.gcp.instance.type',
+                name: 'Instance type',
+                tooltip: 'The GCP machine type.',
                 learnMore: 'https://cloud.google.com/compute/docs/machine-types',
                 id: 'workerType',
                 type: 'treeselect',
@@ -413,15 +417,15 @@ const controlDataGCP = [
                 active: 'n1-standard-4',
                 validation: {
                     constraint: '[A-Za-z0-9-]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
+                    notification: 'Value must be alphanumeric, including periods.',
                     required: false,
                 },
                 cacheUserValueKey: 'create.cluster.worker.type',
             },
             ///////////////////////  compute node count  /////////////////////////////////////
             {
-                name: 'creation.ocp.compute.node.count',
-                tooltip: 'tooltip.creation.ocp.compute.node.count',
+                name: 'Node count',
+                tooltip: 'The number of nodes in this node pool.',
                 id: 'computeNodeCount',
                 type: 'number',
                 initial: '3',

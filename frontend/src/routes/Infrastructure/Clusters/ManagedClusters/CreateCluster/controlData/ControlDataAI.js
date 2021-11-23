@@ -8,14 +8,15 @@ import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHel
 const controlDataAI = [
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        name: 'Infrastructure provider credential',
+        tooltip:
+            'The settings that are required for the selected provider. You can select an existing connection, or add a new connection. Cannot be changed after creation.',
         id: 'connection',
         type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
+        placeholder: 'Select a credential',
         providerId: 'hybrid',
         validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
+            notification: 'Select a connection',
             required: false,
         },
         available: [],

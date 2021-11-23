@@ -30,14 +30,15 @@ const controlDataVMW = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        name: 'Infrastructure provider credential',
+        tooltip:
+            'The settings that are required for the selected provider. You can select an existing connection, or add a new connection. Cannot be changed after creation.',
         id: 'connection',
         type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
+        placeholder: 'Select a credential',
         providerId: 'vmw',
         validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
+            notification: 'Select a connection',
             required: true,
         },
         available: [],
@@ -49,15 +50,16 @@ const controlDataVMW = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
-        name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image.vmw',
+        name: 'Release image',
+        tooltip:
+            'URL to the OpenShift install image set to use. Available images are listed, or you can enter your own path to add an image to the list. Only versions 4.5, and later, are supported for VMware vSphere.',
         id: 'imageSet',
         type: 'combobox',
         simplified: getSimplifiedImageName,
-        placeholder: 'creation.ocp.cloud.select.ocp.image',
+        placeholder: 'Select or enter a release image',
         fetchAvailable: LOAD_OCP_IMAGES('vmw'),
         validation: {
-            notification: 'creation.ocp.cluster.must.select.ocp.image',
+            notification: 'Select a release image',
             required: true,
         },
     },
@@ -69,8 +71,9 @@ const controlDataVMW = [
         hidden: true,
     },
     {
-        name: 'cluster.create.ocp.singleNode',
-        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+        name: 'Single Node OpenShift',
+        tooltip:
+            'To enable a single node OpenShift cluster with one control plane node and zero worker nodes. Only available in OpenShift 4.8 and higher.',
         id: 'singleNode',
         type: 'checkbox',
         active: false,
@@ -79,7 +82,7 @@ const controlDataVMW = [
         icon: <DevPreviewLabel />,
     },
     {
-        name: 'creation.ocp.addition.labels',
+        name: 'Additional labels',
         id: 'additional',
         type: 'labels',
         active: [],
@@ -96,7 +99,7 @@ const controlDataVMW = [
     {
         id: 'nodes',
         type: 'title',
-        info: 'creation.ocp.cluster.node.pool.info',
+        info: 'The instance type and quantity of control plane and worker nodes to create for your cluster. Additional worker nodes can be added after the cluster is created.',
     },
     ///////////////////////  control plane pool  /////////////////////////////////////
     {
@@ -109,13 +112,13 @@ const controlDataVMW = [
                 type: 'section',
                 collapsable: true,
                 collapsed: true,
-                subtitle: 'creation.ocp.node.controlplane.pool.title',
-                info: 'creation.ocp.node.controlplane.pool.info',
+                subtitle: 'Control plane pool',
+                info: 'Three control plane nodes will be created to control this cluster.',
             },
             ///////////////////////  coresPerSocket  /////////////////////////////////////
             {
-                name: 'creation.ocp.cores.per.socket',
-                tooltip: 'tooltip.creation.ocp.cores.per.socket',
+                name: 'Cores per socket',
+                tooltip: 'Cores per socket',
                 id: 'masterCoresPerSocket',
                 type: 'number',
                 initial: '2',
@@ -123,8 +126,8 @@ const controlDataVMW = [
             },
             ///////////////////////  cpus  /////////////////////////////////////
             {
-                name: 'creation.ocp.cpus',
-                tooltip: 'tooltip.creation.ocp.cpus',
+                name: 'CPUs',
+                tooltip: 'CPUs',
                 id: 'masterCpus',
                 type: 'number',
                 initial: '4',
@@ -132,8 +135,8 @@ const controlDataVMW = [
             },
             ///////////////////////  memoryMB  /////////////////////////////////////
             {
-                name: 'creation.ocp.memoryMB',
-                tooltip: 'tooltip.creation.ocp.memoryMB',
+                name: 'Memory (MB)',
+                tooltip: 'Memory (MB)',
                 id: 'masterMemoryMB',
                 type: 'number',
                 initial: '16384',
@@ -141,8 +144,8 @@ const controlDataVMW = [
             },
             ///////////////////////  root volume  /////////////////////////////////////
             {
-                name: 'creation.ocp.diskSizeGB',
-                tooltip: 'tooltip.creation.ocp.diskSizeGB',
+                name: 'Disk size (GiB)',
+                tooltip: 'Disk size (GiB)',
                 id: 'masterRootStorage',
                 type: 'number',
                 initial: '120',
@@ -158,8 +161,8 @@ const controlDataVMW = [
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',
-            addPrompt: 'creation.ocp.cluster.add.node.pool',
-            deletePrompt: 'creation.ocp.cluster.delete.node.pool',
+            addPrompt: 'Add worker pool',
+            deletePrompt: 'Delete node pool',
         },
         controlData: [
             {
@@ -168,26 +171,26 @@ const controlDataVMW = [
                 collapsable: true,
                 collapsed: true,
                 subtitle: getWorkerName,
-                info: 'creation.ocp.node.worker.pool.info',
+                info: 'One or more worker nodes will be created to run the container workloads in this cluster.',
             },
             ///////////////////////  pool name  /////////////////////////////////////
             {
-                name: 'creation.ocp.pool.name',
-                tooltip: 'tooltip.creation.ocp.pool.name',
-                placeholder: 'creation.ocp.pool.placeholder',
+                name: 'Pool name',
+                tooltip: 'The name for your worker pool.',
+                placeholder: 'Enter pool name',
                 id: 'workerName',
                 type: 'text',
                 active: 'worker',
                 validation: {
                     constraint: '[A-Za-z0-9-_]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric',
+                    notification: 'Value must be alphanumeric.',
                     required: true,
                 },
             },
             ///////////////////////  coresPerSocket  /////////////////////////////////////
             {
-                name: 'creation.ocp.cores.per.socket',
-                tooltip: 'tooltip.creation.ocp.cores.per.socket',
+                name: 'Cores per socket',
+                tooltip: 'Cores per socket',
                 id: 'coresPerSocket',
                 type: 'number',
                 initial: '2',
@@ -195,8 +198,8 @@ const controlDataVMW = [
             },
             ///////////////////////  cpus  /////////////////////////////////////
             {
-                name: 'creation.ocp.cpus',
-                tooltip: 'tooltip.creation.ocp.cpus',
+                name: 'CPUs',
+                tooltip: 'CPUs',
                 id: 'cpus',
                 type: 'number',
                 initial: '4',
@@ -204,8 +207,8 @@ const controlDataVMW = [
             },
             ///////////////////////  memoryMB  /////////////////////////////////////
             {
-                name: 'creation.ocp.memoryMB',
-                tooltip: 'tooltip.creation.ocp.memoryMB',
+                name: 'Memory (MB)',
+                tooltip: 'Memory (MB)',
                 id: 'memoryMB',
                 type: 'number',
                 initial: '16384',
@@ -213,8 +216,8 @@ const controlDataVMW = [
             },
             ///////////////////////  diskSizeGB  /////////////////////////////////////
             {
-                name: 'creation.ocp.diskSizeGB',
-                tooltip: 'tooltip.creation.ocp.diskSizeGB',
+                name: 'Disk size (GiB)',
+                tooltip: 'Disk size (GiB)',
                 id: 'diskSizeGB',
                 type: 'number',
                 initial: '120',
@@ -222,8 +225,8 @@ const controlDataVMW = [
             },
             ///////////////////////  compute node count  /////////////////////////////////////
             {
-                name: 'creation.ocp.compute.node.count',
-                tooltip: 'tooltip.creation.ocp.compute.node.count',
+                name: 'Node count',
+                tooltip: 'The number of nodes in this node pool.',
                 id: 'computeNodeCount',
                 type: 'number',
                 initial: '3',
@@ -241,26 +244,28 @@ const controlDataVMW = [
     },
     {
         id: 'networkType',
-        name: 'creation.ocp.cluster.vmw.network.type',
-        tooltip: 'tooltip.creation.ocp.cluster.vmw.network.type',
-        placeholder: 'creation.ocp.cluster.vmw.network.type',
+        name: 'vSphere network name',
+        tooltip: 'The name of the vSphere network to use.',
+        placeholder: 'vSphere network name',
         type: 'text',
         active: '',
     },
     {
         id: 'apiVIP',
         type: 'text',
-        name: 'creation.ocp.api.vip',
-        tooltip: 'tooltip.creation.ocp.api.vip',
+        name: 'API VIP',
+        tooltip:
+            'The Virtual IP to use for internal API communication. The DNS must be pre-configured with an A/AAAA or CNAME record so the api.<cluster name>.<Base DNS domain> path resolves correctly.',
         active: '',
         validation: VALIDATE_IP,
     },
     {
         id: 'ingressVIP',
         type: 'text',
-        name: 'creation.ocp.ingress.vip',
-        tooltip: 'tooltip.creation.ocp.ingress.vip',
-        placeholder: 'creation.ocp.ingress.vip.placeholder',
+        name: 'Ingress VIP',
+        tooltip:
+            'The Virtual IP to use for ingress traffic. The DNS must be pre-configured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.',
+        placeholder: 'Enter ingress VIP',
         active: '',
         validation: VALIDATE_IP,
     },

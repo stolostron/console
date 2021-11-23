@@ -15,14 +15,16 @@ class WrappedImportBareMetalAssetsButton extends Component {
         const { t } = this.props
         return (
             <div>
-                <Button
-                    id={t('modal.import-acmbaremetalasset.button.key')}
-                    onClick={this.importCSV.bind(this)}
-                    variant="secondary"
-                >
-                    {t('modal.import-acmbaremetalasset.button.text')}
+                <Button id={t('Create asset')} onClick={this.importCSV.bind(this)} variant="secondary">
+                    {t('Import assets')}
                 </Button>
-                <Tooltip control={{ tooltip: t('modal.import-acmbaremetalasset.button.tooltip') }} />
+                <Tooltip
+                    control={{
+                        tooltip: t(
+                            'Imports a CSV (comma-separated values) file. The first line must be a header row that defines the following columns: hostName, hostNamespace, bmcAddress, macAddress, role, username, password.'
+                        ),
+                    }}
+                />
             </div>
         )
     }

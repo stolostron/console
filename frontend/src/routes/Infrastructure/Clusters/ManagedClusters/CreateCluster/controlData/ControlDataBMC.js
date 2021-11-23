@@ -147,11 +147,11 @@ const validateTable = (active = [], control, controlData) => {
     //SNO only needs one master
     if (snoEnabled) {
         if (master !== 1) {
-            return 'creation.ocp.validation.errors.hosts.sno'
+            return '* A bare metal single node cluster requires one (1) control plane node.'
         }
     } else {
         if (master < 3) {
-            return 'creation.ocp.validation.errors.hosts'
+            return '* A bare metal cluster requires at least three (3) control plane nodes.'
         }
     }
     return null
@@ -169,9 +169,9 @@ const getActiveRole = (active = []) => {
 
 const getHostsTitle = (control, controlData, i18n) => {
     if (isHidden_SNO(control, controlData)) {
-        return i18n('creation.ocp.choose.hosts.sno')
+        return i18n('Select 1 bare metal asset that is on the same bridge networks as the hypervisor.')
     } else {
-        return i18n('creation.ocp.choose.hosts')
+        return i18n('Select at least 3 bare metal assets that are on the same bridge networks as the hypervisor.')
     }
 }
 
@@ -184,14 +184,15 @@ const controlDataBMC = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        name: 'Infrastructure provider credential',
+        tooltip:
+            'The settings that are required for the selected provider. You can select an existing connection, or add a new connection. Cannot be changed after creation.',
         id: 'connection',
         type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
+        placeholder: 'Select a credential',
         providerId: 'bmc',
         validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
+            notification: 'Select a connection',
             required: true,
         },
         available: [],
@@ -202,20 +203,21 @@ const controlDataBMC = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
-        name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image',
+        name: 'Release image',
+        tooltip:
+            'URL to the OpenShift install image set to use. Available images are listed, or you can enter your own path to add an image to the list.',
         id: 'imageSet',
         type: 'combobox',
         simplified: getSimplifiedImageName,
-        placeholder: 'creation.ocp.cloud.select.ocp.image',
+        placeholder: 'Select or enter a release image',
         fetchAvailable: LOAD_OCP_IMAGES('bmc'),
         validation: {
-            notification: 'creation.ocp.cluster.must.select.ocp.image',
+            notification: 'Select a release image',
             required: true,
         },
     },
     {
-        name: 'creation.ocp.addition.labels',
+        name: 'Additional labels',
         id: 'additional',
         type: 'labels',
         active: [],
@@ -231,7 +233,7 @@ const controlDataBMC = [
     {
         id: 'hostsSections',
         type: 'title',
-        tooltip: 'tooltip.creation.ocp.cluster.hosts',
+        tooltip: 'The bare metal assets which will serve as the hosts of this cluster.',
     },
     {
         id: 'chooseHosts',
@@ -252,47 +254,47 @@ const controlDataBMC = [
         controlData: [
             ///////////////////////  host name  /////////////////////////////////////
             {
-                name: 'creation.ocp.host.name',
+                name: 'Name',
                 id: 'hostName',
                 type: 'text',
                 width: '25%',
                 validation: VALIDATE_ALPHANUMERIC,
             },
             {
-                name: 'creation.ocp.host.namespace',
+                name: 'Namespace',
                 id: 'hostNamespace',
                 type: 'text',
                 width: '40%',
                 validation: VALIDATE_ALPHANUMERIC,
             },
             {
-                name: 'creation.ocp.host.role',
+                name: 'Role',
                 id: 'role',
                 type: 'toggle',
                 active: getActiveRole,
                 width: '20%',
                 available: ['master', 'worker'],
                 validation: {
-                    notification: 'creation.ocp.cluster.valid.key',
+                    notification: 'Value must be a valid security key.',
                     required: true,
                 },
             },
             {
-                name: 'creation.ocp.host.bmc.address',
+                name: 'BMC address',
                 id: 'bmcAddress',
                 type: 'text',
                 width: '50%',
                 validation: VALIDATE_BMC_ADDR,
             },
             {
-                name: 'creation.ocp.host.mac.address',
+                name: 'MAC address',
                 id: 'macAddress',
                 type: 'text',
                 validation: VALIDATE_MAC_ADDRESS,
                 mode: ControlMode.PROMPT_ONLY,
             },
             {
-                name: 'creation.ocp.host.user',
+                name: 'User',
                 id: 'username',
                 type: 'text',
                 active: '# injected by server',
@@ -300,7 +302,7 @@ const controlDataBMC = [
                 mode: ControlMode.PROMPT_ONLY,
             },
             {
-                name: 'creation.ocp.host.password',
+                name: 'Password',
                 id: 'password',
                 type: 'password',
                 active: '# injected by server',
@@ -319,8 +321,9 @@ const controlDataBMC = [
     {
         id: 'disableCertificateVerification',
         type: 'checkbox',
-        name: 'creation.ocp.host.disable.certificate.verification',
-        tooltip: 'tooltip.creation.ocp.host.disable.certificate.verification',
+        name: 'Disable certificate verification',
+        tooltip:
+            'By default, hosts require valid certificates signed by a known certificate authority. Enable this option for environments where certificates are signed by unknown authorities.',
         hidden: (control, controlData) => {
             const hosts = controlData.find(({ id }) => id === 'hosts')
             return !hosts || !hosts.available || hosts.available.length === 0
@@ -346,45 +349,46 @@ const controlDataBMC = [
     {
         id: 'provisioningNetworkCIDR',
         type: 'text',
-        name: 'creation.ocp.network.cidr',
-        tooltip: 'tooltip.creation.ocp.network.cidr',
-        placeholder: 'creation.ocp.network.cidr.placeholder',
+        name: 'Provisioning network CIDR',
+        tooltip: 'The CIDR for the network to use for provisioning. Example: 172.22.0.0/24',
+        placeholder: 'Enter provisioning network CIDR',
         active: '',
         validation: VALIDATE_CIDR,
     },
     {
         id: 'provisioningNetworkInterface',
         type: 'text',
-        name: 'creation.ocp.network.interface',
-        tooltip: 'tooltip.creation.ocp.network.interface',
-        placeholder: 'creation.ocp.network.interface.placeholder',
+        name: 'Provisioning network interface',
+        tooltip:
+            'The name of the network interface on the control plane nodes that are connected to the provisioning network.',
+        placeholder: 'Enter provisioning network interface',
         active: 'enp1s0',
         validation: VALIDATE_ALPHANUMERIC,
     },
     {
         id: 'provisioningNetworkBridge',
         type: 'text',
-        name: 'creation.ocp.network.bridge',
-        tooltip: 'tooltip.creation.ocp.network.bridge',
-        placeholder: 'creation.ocp.network.bridge.placeholder',
+        name: 'Provisioning network bridge',
+        tooltip: 'The name of the bridge on the hypervisor that is attached to the provisioning network.',
+        placeholder: 'Enter provisioning network bridge',
         active: 'provisioning',
         validation: VALIDATE_ALPHANUMERIC_PERIOD,
     },
     {
         id: 'externalNetworkBridge',
         type: 'text',
-        name: 'creation.ocp.external.bridge',
-        tooltip: 'tooltip.creation.ocp.external.bridge',
-        placeholder: 'creation.ocp.external.bridge.placeholder',
+        name: 'External network bridge',
+        tooltip: 'The name of the bridge of the hypervisor that is attached to the external network.',
+        placeholder: 'Enter external network bridge',
         active: 'baremetal',
         validation: VALIDATE_ALPHANUMERIC_PERIOD,
     },
     {
         id: 'dnsVIP',
         type: 'text',
-        name: 'creation.ocp.dns.vip',
+        name: 'DNS VIP',
         hidden: isHidden_gt_OCP44,
-        tooltip: 'tooltip.creation.ocp.dns.vip',
+        tooltip: 'The Virtual IP to use for internal DNS communication.',
         active: '',
         validation: VALIDATE_IP_AGAINST_MACHINE_CIDR,
     },
@@ -396,18 +400,20 @@ const controlDataBMC = [
     {
         id: 'apiVIP',
         type: 'text',
-        name: 'creation.ocp.api.vip',
-        placeholder: 'creation.ocp.api.vip.placeholder',
-        tooltip: 'tooltip.creation.ocp.api.vip',
+        name: 'API VIP',
+        placeholder: 'Enter API VIP',
+        tooltip:
+            'The Virtual IP to use for internal API communication. The DNS must be pre-configured with an A/AAAA or CNAME record so the api.<cluster name>.<Base DNS domain> path resolves correctly.',
         active: '',
         validation: VALIDATE_IP_AGAINST_MACHINE_CIDR_OPTIONAL,
     },
     {
         id: 'ingressVIP',
         type: 'text',
-        name: 'creation.ocp.ingress.vip',
-        tooltip: 'tooltip.creation.ocp.ingress.vip',
-        placeholder: 'creation.ocp.ingress.vip.placeholder',
+        name: 'Ingress VIP',
+        tooltip:
+            'The Virtual IP to use for ingress traffic. The DNS must be pre-configured with an A/AAAA or CNAME record so the *.apps.<cluster name>.<Base DNS domain> path resolves correctly.',
+        placeholder: 'Enter ingress VIP',
         active: '',
         validation: VALIDATE_IP_AGAINST_MACHINE_CIDR_OPTIONAL,
     },

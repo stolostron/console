@@ -31,14 +31,15 @@ const controlDataOST = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        name: 'Infrastructure provider credential',
+        tooltip:
+            'The settings that are required for the selected provider. You can select an existing connection, or add a new connection. Cannot be changed after creation.',
         id: 'connection',
         type: 'singleselect',
-        placeholder: 'creation.ocp.cloud.select.connection',
+        placeholder: 'Select a credential',
         providerId: 'ost',
         validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
+            notification: 'Select a connection',
             required: true,
         },
         available: [],
@@ -49,15 +50,16 @@ const controlDataOST = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
-        name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image',
+        name: 'URL to the OpenShift install image set to use. Available images are listed, or you can enter your own path to add an image to the list.',
+        tooltip:
+            'URL to the OpenShift install image set to use. Available images are listed, or you can enter your own path to add an image to the list.',
         id: 'imageSet',
         type: 'combobox',
         simplified: getSimplifiedImageName,
-        placeholder: 'creation.ocp.cloud.select.ocp.image',
+        placeholder: 'Select or enter a release image',
         fetchAvailable: LOAD_OCP_IMAGES('ost'),
         validation: {
-            notification: 'creation.ocp.cluster.must.select.ocp.image',
+            notification: 'Select a release image',
             required: true,
         },
     },
@@ -69,8 +71,9 @@ const controlDataOST = [
         hidden: true,
     },
     {
-        name: 'cluster.create.ocp.singleNode',
-        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+        name: 'Single Node OpenShift',
+        tooltip:
+            'To enable a single node OpenShift cluster with one control plane node and zero worker nodes. Only available in OpenShift 4.8 and higher.',
         id: 'singleNode',
         type: 'checkbox',
         active: false,
@@ -79,7 +82,7 @@ const controlDataOST = [
         icon: <DevPreviewLabel />,
     },
     {
-        name: 'creation.ocp.addition.labels',
+        name: 'Additional labels',
         id: 'additional',
         type: 'labels',
         active: [],
@@ -96,7 +99,7 @@ const controlDataOST = [
     {
         id: 'nodes',
         type: 'title',
-        info: 'creation.ocp.cluster.node.pool.info',
+        info: 'The instance type and quantity of control plane and worker nodes to create for your cluster. Additional worker nodes can be added after the cluster is created.',
     },
     ///////////////////////  control plane pool  /////////////////////////////////////
     {
@@ -109,19 +112,19 @@ const controlDataOST = [
                 type: 'section',
                 collapsable: true,
                 collapsed: true,
-                subtitle: 'creation.ocp.node.controlplane.pool.title',
-                info: 'creation.ocp.node.controlplane.pool.info',
+                subtitle: 'Control plane pool',
+                info: 'Three control plane nodes will be created to control this cluster.',
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
-                name: 'creation.ocp.instance.type',
-                tooltip: 'tooltip.creation.ocp.otp.instance.type',
+                name: 'Instance type',
+                tooltip: 'The OpenStack compute flavor.',
                 id: 'masterType',
                 type: 'text',
                 active: 'm1.xlarge',
                 validation: {
                     constraint: '[A-Za-z0-9-_.]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
+                    notification: 'Value must be alphanumeric, including periods.',
                     required: true,
                 },
             },
@@ -135,8 +138,8 @@ const controlDataOST = [
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',
-            addPrompt: 'creation.ocp.cluster.add.node.pool',
-            deletePrompt: 'creation.ocp.cluster.delete.node.pool',
+            addPrompt: 'Add worker pool',
+            deletePrompt: 'Delete node pool',
         },
         controlData: [
             {
@@ -145,40 +148,40 @@ const controlDataOST = [
                 collapsable: true,
                 collapsed: true,
                 subtitle: getWorkerName,
-                info: 'creation.ocp.node.worker.pool.info',
+                info: 'One or more worker nodes will be created to run the container workloads in this cluster.',
             },
             ///////////////////////  pool name  /////////////////////////////////////
             {
-                name: 'creation.ocp.pool.name',
-                tooltip: 'tooltip.creation.ocp.pool.name',
-                placeholder: 'creation.ocp.pool.placeholder',
+                name: 'Pool name',
+                tooltip: 'The name for your worker pool.',
+                placeholder: 'Enter pool name',
                 id: 'workerName',
                 type: 'text',
                 active: 'worker',
                 validation: {
                     constraint: '[A-Za-z0-9-_]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric',
+                    notification: 'Value must be alphanumeric.',
                     required: true,
                 },
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
-                name: 'creation.ocp.instance.type',
-                tooltip: 'tooltip.creation.ocp.otp.instance.type',
+                name: 'Instance type',
+                tooltip: 'The OpenStack compute flavor.',
                 id: 'workerType',
                 type: 'text',
                 active: 'm1.xlarge',
                 validation: {
                     constraint: '[A-Za-z0-9-_.]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
+                    notification: 'Value must be alphanumeric, including periods.',
                     required: true,
                 },
                 cacheUserValueKey: 'create.cluster.worker.type',
             },
             ///////////////////////  compute node count  /////////////////////////////////////
             {
-                name: 'creation.ocp.compute.node.count',
-                tooltip: 'tooltip.creation.ocp.compute.node.count',
+                name: 'Node count',
+                tooltip: 'The number of nodes in this node pool.',
                 id: 'computeNodeCount',
                 type: 'number',
                 initial: '3',
@@ -195,39 +198,39 @@ const controlDataOST = [
     },
     {
         id: 'externalNetworkName',
-        name: 'creation.ocp.cluster.ost.external.network.name',
-        tooltip: 'tooltip.creation.ocp.cluster.ost.external.network.name',
+        name: 'External network name',
+        tooltip: 'The name for the external OpenStack network.',
         type: 'text',
         active: '',
         validation: {
-            notification: 'creation.ocp.cluster.ost.must.enter.external.network.name',
+            notification: 'External network name is required.',
             required: true,
         },
     },
     {
         id: 'apiFloatingIP',
         type: 'text',
-        name: 'creation.ocp.cluster.ost.api.floating.ip',
-        placeholder: 'placeholder.creation.ocp.cluster.ost.api.floating.ip',
-        tooltip: 'tooltip.creation.ocp.cluster.ost.api.floating.ip',
+        name: 'API floating IP',
+        placeholder: 'Enter API floating IP',
+        tooltip: 'The existing floating IP address on the external network for the OpenShift API.',
         active: '',
         validation: VALIDATE_IP,
     },
     {
         id: 'ingressFloatingIP',
         type: 'text',
-        name: 'creation.ocp.cluster.ost.ingress.floating.ip',
-        placeholder: 'placeholder.creation.ocp.cluster.ost.ingress.floating.ip',
-        tooltip: 'tooltip.creation.ocp.cluster.ost.ingress.floating.ip',
+        name: 'Ingress floating IP',
+        placeholder: 'Enter ingress floating IP',
+        tooltip: 'The existing floating IP address on the external network for the ingress port.',
         active: '',
         validation: VALIDATE_IP,
     },
     {
         id: 'externalDNS',
         type: 'values',
-        name: 'creation.ocp.cluster.ost.external.dns',
-        placeholder: 'placeholder.creation.ocp.cluster.ost.external.dns',
-        tooltip: 'tooltip.creation.ocp.cluster.ost.external.dns',
+        name: 'External DNS IP addresses',
+        placeholder: '(Optional) Enter one or more external DNS IP addresses',
+        tooltip: 'The external DNS IP addresses for name resolution on the private network.',
         active: [],
         validation: VALIDATE_IP_OPTIONAL,
     },

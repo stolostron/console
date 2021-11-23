@@ -460,15 +460,16 @@ const setRegions = (control, controlData) => {
 const controlDataAZR = [
     ///////////////////////  connection  /////////////////////////////////////
     {
-        name: 'creation.ocp.cloud.connection',
-        tooltip: 'tooltip.creation.ocp.cloud.connection',
+        name: 'Infrastructure provider credential',
+        tooltip:
+            'The settings that are required for the selected provider. You can select an existing connection, or add a new connection. Cannot be changed after creation.',
         id: 'connection',
         type: 'singleselect',
         onSelect: setRegions,
-        placeholder: 'creation.ocp.cloud.select.connection',
+        placeholder: 'Select a credential',
         providerId: 'azr',
         validation: {
-            notification: 'creation.ocp.cluster.must.select.connection',
+            notification: 'Select a connection',
             required: true,
         },
         available: [],
@@ -478,15 +479,16 @@ const controlDataAZR = [
     ...clusterDetailsControlData,
     ///////////////////////  imageset  /////////////////////////////////////
     {
-        name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image',
+        name: 'Release image',
+        tooltip:
+            'URL to the OpenShift install image set to use. Available images are listed, or you can enter your own path to add an image to the list.',
         id: 'imageSet',
         type: 'combobox',
         simplified: getSimplifiedImageName,
-        placeholder: 'creation.ocp.cloud.select.ocp.image',
+        placeholder: 'Select or enter a release image',
         fetchAvailable: LOAD_OCP_IMAGES('azr'),
         validation: {
-            notification: 'creation.ocp.cluster.must.select.ocp.image',
+            notification: 'Select a release image',
             required: true,
         },
     },
@@ -498,8 +500,9 @@ const controlDataAZR = [
         hidden: true,
     },
     {
-        name: 'cluster.create.ocp.singleNode',
-        tooltip: 'tooltip.cluster.create.ocp.singleNode',
+        name: 'Single Node OpenShift',
+        tooltip:
+            'To enable a single node OpenShift cluster with one control plane node and zero worker nodes. Only available in OpenShift 4.8 and higher.',
         id: 'singleNode',
         type: 'checkbox',
         active: false,
@@ -508,7 +511,7 @@ const controlDataAZR = [
         icon: <DevPreviewLabel />,
     },
     {
-        name: 'creation.ocp.addition.labels',
+        name: 'Additional labels',
         id: 'additional',
         type: 'labels',
         active: [],
@@ -525,18 +528,20 @@ const controlDataAZR = [
     {
         id: 'nodes',
         type: 'title',
-        info: 'creation.ocp.cluster.node.pool.info',
+        info: 'The instance type and quantity of control plane and worker nodes to create for your cluster. Additional worker nodes can be added after the cluster is created.',
     },
     ///////////////////////  region  /////////////////////////////////////
     {
-        name: 'creation.ocp.region',
-        tooltip: 'tooltip.creation.ocp.azr.region',
+        name: 'Region',
+        tooltip:
+            'The name of the Azure region where your cluster is hosted. For example, centralus for Azure. You can select zones within the region for your control plane and worker pools.',
         id: 'region',
         type: 'combobox',
         active: 'centralus',
         available: regions,
         validation: VALIDATE_ALPHANUMERIC,
-        cacheUserValueKey: 'create.cluster.region',
+        cacheUserValueKey:
+            'The name of the Azure region where your cluster is hosted. For example, centralus for Azure. You can select zones within the region for your control plane and worker pools.',
         reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
     ///////////////////////  control plane pool  /////////////////////////////////////
@@ -550,13 +555,14 @@ const controlDataAZR = [
                 type: 'section',
                 collapsable: true,
                 collapsed: true,
-                subtitle: 'creation.ocp.node.controlplane.pool.title',
-                info: 'creation.ocp.node.controlplane.pool.info',
+                subtitle: 'Control plane pool',
+                info: 'Three control plane nodes will be created to control this cluster.',
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
-                name: 'creation.ocp.instance.type',
-                tooltip: 'tooltip.creation.ocp.azr.instance.type',
+                name: 'Instance type',
+                tooltip:
+                    'The name of the Azure region where your cluster is hosted. For example, centralus for Azure. You can select zones within the region for your control plane and worker pools.',
                 learnMore: 'https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general',
                 id: 'masterType',
                 type: 'combobox',
@@ -564,15 +570,15 @@ const controlDataAZR = [
                 active: 'Standard_D4s_v3',
                 validation: {
                     constraint: '[A-Za-z0-9_]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
+                    notification: 'Value must be alphanumeric, including periods.',
                     required: false,
                 },
                 cacheUserValueKey: 'create.cluster.master.type',
             },
             ///////////////////////  root volume  /////////////////////////////////////
             {
-                name: 'creation.ocp.root.storage',
-                tooltip: 'tooltip.creation.ocp.azr.root.storage',
+                name: 'Root storage (GiB)',
+                tooltip: 'The Azure disk size for the VM.',
                 id: 'masterRootStorage',
                 type: 'combobox',
                 active: '128',
@@ -590,8 +596,8 @@ const controlDataAZR = [
         prompts: {
             nameId: 'workerName',
             baseName: 'worker',
-            addPrompt: 'creation.ocp.cluster.add.node.pool',
-            deletePrompt: 'creation.ocp.cluster.delete.node.pool',
+            addPrompt: 'Add worker pool',
+            deletePrompt: 'Delete node pool',
         },
         controlData: [
             {
@@ -600,26 +606,27 @@ const controlDataAZR = [
                 collapsable: true,
                 collapsed: true,
                 subtitle: getWorkerName,
-                info: 'creation.ocp.node.worker.pool.info',
+                info: 'One or more worker nodes will be created to run the container workloads in this cluster.',
             },
             ///////////////////////  pool name  /////////////////////////////////////
             {
-                name: 'creation.ocp.pool.name',
-                tooltip: 'tooltip.creation.ocp.pool.name',
-                placeholder: 'creation.ocp.pool.placeholder',
+                name: 'Pool name',
+                tooltip: 'The name for your worker pool.',
+                placeholder: 'Enter pool name',
                 id: 'workerName',
                 type: 'text',
                 active: 'worker',
                 validation: {
                     constraint: '[A-Za-z0-9-_]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric',
+                    notification: 'Value must be alphanumeric.',
                     required: true,
                 },
             },
             ///////////////////////  zone  /////////////////////////////////////
             {
-                name: 'creation.ocp.zones',
-                tooltip: 'tooltip.creation.ocp.worker.zones',
+                name: 'Zones',
+                tooltip:
+                    'The availability zones where your worker pools are located. You can select more than one zone to meet availability or user proximity needs. If you do not select any zones, all available zones are used.',
                 id: 'workerZones',
                 type: 'multiselect',
                 active: ['1', '2', '3'],
@@ -630,8 +637,8 @@ const controlDataAZR = [
             },
             ///////////////////////  instance type  /////////////////////////////////////
             {
-                name: 'creation.ocp.instance.type',
-                tooltip: 'tooltip.creation.ocp.azr.instance.type',
+                name: 'Instance type',
+                tooltip: 'The Azure VM instance type.',
                 learnMore: 'https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general',
                 id: 'workerType',
                 type: 'treeselect',
@@ -639,15 +646,15 @@ const controlDataAZR = [
                 active: 'Standard_D2s_v3',
                 validation: {
                     constraint: '[A-Za-z0-9_]+',
-                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
+                    notification: 'Value must be alphanumeric, including periods.',
                     required: false,
                 },
                 cacheUserValueKey: 'create.cluster.worker.type',
             },
             ///////////////////////  compute node count  /////////////////////////////////////
             {
-                name: 'creation.ocp.compute.node.count',
-                tooltip: 'tooltip.creation.ocp.compute.node.count',
+                name: 'Node count',
+                tooltip: 'The number of nodes in this node pool.',
                 id: 'computeNodeCount',
                 type: 'number',
                 initial: '3',
@@ -656,8 +663,8 @@ const controlDataAZR = [
             },
             ///////////////////////  storage  /////////////////////////////////////
             {
-                name: 'creation.ocp.root.storage',
-                tooltip: 'tooltip.creation.ocp.azr.root.storage',
+                name: 'Root storage (GiB)',
+                tooltip: 'The Azure disk size for the VM.',
                 id: 'workerStorage',
                 type: 'combobox',
                 active: '128',
