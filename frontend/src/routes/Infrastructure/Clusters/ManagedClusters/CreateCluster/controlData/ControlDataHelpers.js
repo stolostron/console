@@ -424,7 +424,7 @@ export const isHidden_gt_OCP46 = (control, controlData) => {
         singleNodeFeatureFlag.active &&
         imageSet &&
         imageSet.active &&
-        (imageSet.active.includes('release:4.6'))
+        imageSet.active.includes('release:4.6')
     ) {
         return false
     }
