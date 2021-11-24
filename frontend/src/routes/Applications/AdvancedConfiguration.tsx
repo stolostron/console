@@ -219,7 +219,9 @@ export default function AdvancedConfiguration() {
             query = location && queryString.parse(location.search)
         }
         const validOptionIds = options.map((o) => o.id)
-        return queryParam && validOptionIds.includes(query[queryParam]) ? query[queryParam] : defaultOption
+        const isQueryParam = query && queryParam ? (query[queryParam] as string) : undefined
+        const isValidOptionIds = isQueryParam ? validOptionIds.includes(isQueryParam) : false
+        return queryParam && query && isValidOptionIds ? query[queryParam] : defaultOption
     }
 
     function QuerySwitcher(props: IQuerySwitcherInterface) {
@@ -235,7 +237,7 @@ export default function AdvancedConfiguration() {
         let history = useHistory()
 
         const isSelected = (id: string) => id === selectedId
-        const handleChange = (_, event) => {
+        const handleChange = (_: any, event: any) => {
             const id = event.currentTarget.id
             if (queryParam) {
                 query[queryParam] = id
