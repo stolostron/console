@@ -2,8 +2,8 @@
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
-export const CertificateSigningRequestApiVersion = 'certificates.k8s.io/v1beta1'
-export type CertificateSigningRequestApiVersionType = 'certificates.k8s.io/v1beta1'
+export const CertificateSigningRequestApiVersion = 'certificates.k8s.io/v1'
+export type CertificateSigningRequestApiVersionType = 'certificates.k8s.io/v1'
 
 export const CertificateSigningRequestKind = 'CertificateSigningRequest'
 export type CertificateSigningRequestKindType = 'CertificateSigningRequest'
@@ -22,8 +22,8 @@ export interface CertificateSigningRequest extends IResource {
     }
 }
 
-export const CertificateSigningRequestListApiVersion = 'certificates.k8s.io/v1beta1'
-export type CertificateSigningRequestListApiVersionType = 'certificates.k8s.io/v1beta1'
+export const CertificateSigningRequestListApiVersion = 'certificates.k8s.io/v1'
+export type CertificateSigningRequestListApiVersionType = 'certificates.k8s.io/v1'
 
 export const CertificateSigningRequestListKind = 'CertificateSigningRequestList'
 export type CertificateSigningRequestListKindType = 'CertificateSigningRequestList'
