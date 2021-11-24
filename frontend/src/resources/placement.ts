@@ -1,10 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
 import { Selector } from './selector'
-import { isType } from '../lib/is-type'
-import { IResource, IResourceDefinition } from './resource'
-import { listResources } from '.'
 
+import { IResource, IResourceDefinition } from './resource'
 export const PlacementApiVersion = 'cluster.open-cluster-management.io/v1alpha1'
 export type PlacementApiVersionType = 'cluster.open-cluster-management.io/v1alpha1'
 
@@ -38,18 +36,5 @@ export interface Placement extends IResource {
             type: string
         }>
         numberOfSelectedClusters?: number
-    }
-}
-
-export function listPlacements() {
-    const placements = listResources<Placement>({
-        apiVersion: PlacementApiVersion,
-        kind: PlacementKind,
-    })
-    return {
-        promise: placements.promise.then((placements) => {
-            return placements.map((placement) => placement.metadata.name).filter(isType)
-        }),
-        abort: placements.abort,
     }
 }

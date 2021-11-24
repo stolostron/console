@@ -2,11 +2,13 @@
 
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment } from 'react'
 import { NavigationPath } from '../../../NavigationPath'
 import { useTranslation } from 'react-i18next'
-import { listPlacements } from '../../../resources'
-import { listAvailableArgoServerNS } from '../../../resources/gitops-cluster'
+import { useRecoilState } from 'recoil'
+import { isType } from '../../../lib/is-type'
+import { gitOpsClustersState, placementsState } from '../../../atoms'
+
 // interface CreationStatus {
 //     status: string
 //     messages: any[] | null
@@ -62,24 +64,14 @@ export default function CreateApplicationPage() {
 }
 
 export function CreateApplication() {
-    // will need to pass argoNs to AppForm to get argo namespaces
-    const [argoNs, setArgoNs] = useState<string[]>([])
-    const [availablePlacements, setAvailablePlacements] = useState<string[]>([])
+    const [placements] = useRecoilState(placementsState)
+    const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
 
-    useEffect(() => {
-        const fetchNs = async () => {
-            try {
-                let newNs = await listAvailableArgoServerNS().promise
-                let newPlacements = await listPlacements().promise
-                setArgoNs(newNs)
-                setAvailablePlacements(newPlacements)
-            } catch {
-                setArgoNs([])
-                setAvailablePlacements([])
-            }
-        }
-        fetchNs()
-    }, [])
+    const availableArgoNS = gitOpsClusters
+        .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
+        .filter(isType)
+    const availablePlacements = placements.map((placement) => placement.metadata.name).filter(isType)
+
     // will wait to adopt AppForm
 
     // return <AppForm />
@@ -87,7 +79,7 @@ export function CreateApplication() {
         <Fragment>
             <h1>Argo Namespaces:</h1>
             <ul>
-                {argoNs.map((ns) => {
+                {availableArgoNS.map((ns) => {
                     return <li>{ns}</li>
                 })}
             </ul>

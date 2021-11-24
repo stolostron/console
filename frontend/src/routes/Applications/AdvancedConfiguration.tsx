@@ -358,7 +358,7 @@ export default function AdvancedConfiguration() {
         return (
             <AcmTablePaginationContextProvider localStorageKey="advanced-tables-pagination">
                 <AcmTable<IResource>
-                    plural={t('Applications')}
+                    plural=""
                     columns={selectedResources.columns}
                     keyFn={keyFn}
                     items={selectedResources.items}
