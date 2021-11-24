@@ -48,16 +48,16 @@ const InfraEnvironmentsPage: React.FC = () => {
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
 
     const [infraEnvs, agents] = useRecoilValue(waitForAll([infraEnvironmentsState, agentsState]))
-    const { t } = useTranslation(['infraenv', 'common'])
+    const { t } = useTranslation()
 
     return (
-        <AcmPage hasDrawer header={<AcmPageHeader title={t('infraenv:infraenvs')} />}>
+        <AcmPage hasDrawer header={<AcmPageHeader title={t('Infrastructure environments')} />}>
             <AcmPageContent id="infra-environments">
                 <OnPremiseBanner
                     id="banner.infraenv"
                     WrappingComponent={PageSection}
-                    titleKey="cim:cim.infra.banner.header"
-                    textKey="cim:cim.infra.banner.body"
+                    titleKey="A pool of hosts, ready for cluster creation"
+                    textKey="Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it."
                 />
 
                 <PageSection>
@@ -76,7 +76,7 @@ type InfraEnvsTableProps = {
 }
 
 const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) => {
-    const { t } = useTranslation(['infraenv', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const getDetailsLink = (infraEnv: CIM.InfraEnvK8sResource) =>
         NavigationPath.infraEnvironmentDetails
@@ -97,7 +97,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                 plural="infra environments"
                 columns={[
                     {
-                        header: t('infraEnv.tableHeader.name'),
+                        header: t('Name'),
                         sort: 'metadata.name',
                         search: 'metadata.name',
                         cell: (infraEnv) => (
@@ -107,12 +107,12 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                         ),
                     },
                     {
-                        header: t('infraEnv.tableHeader.namespace'),
+                        header: t('Namespace'),
                         cell: 'metadata.namespace',
                         search: 'metadata.namespace',
                     },
                     {
-                        header: t('infraEnv.tableHeader.labels'),
+                        header: t('Labels'),
                         cell: (infraEnv) => {
                             if (infraEnv.metadata.labels) {
                                 const labelKeys = Object.keys(infraEnv.metadata.labels)
@@ -130,8 +130,9 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 return (
                                     <AcmLabels
                                         labels={infraEnv.metadata.labels}
-                                        expandedText={t('common:show.less')}
-                                        collapsedText={t('common:show.more', { number: collapse.length })}
+                                        expandedText={t('Show less')}
+                                        // TODO - Handle interpolation
+                                        collapsedText={t('{{number}} more', { number: collapse.length })}
                                         collapse={collapse}
                                     />
                                 )
@@ -142,11 +143,11 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                         search: (infraEnv) => JSON.stringify(infraEnv.metadata?.labels) || '',
                     },
                     {
-                        header: t('infraEnv.tableHeader.location'),
+                        header: t('Location'),
                         cell: (infraEnv) => infraEnv.metadata?.labels?.[AGENT_LOCATION_LABEL_KEY] ?? '-',
                     },
                     {
-                        header: t('infraEnv.tableHeader.hosts'),
+                        header: t('Hosts available'),
                         cell: (infraEnv) => {
                             const infraAgents = agents.filter((a) =>
                                 isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
@@ -176,24 +177,26 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                             const actions = [
                                 {
                                     id: 'delete',
-                                    text: t('infraEnv.rowAction.delete.title'),
+                                    text: t('Delete infrastructure environment'),
                                     isDisabled: true,
                                     click: (infraEnv: CIM.InfraEnvK8sResource) => {
                                         setModalProps({
                                             open: true,
-                                            title: t('action.title.delete'),
-                                            action: t('common:delete'),
-                                            processing: t('common:deleting'),
+                                            title: t('Delete infrastructure environment?'),
+                                            action: t('Delete'),
+                                            processing: t('Deleting'),
                                             resources: [infraEnv],
-                                            description: t('action.message.delete'),
+                                            description: t(
+                                                'You are about to delete infrastructure environment. The infrastructure environment will no longer be available.'
+                                            ),
                                             columns: [
                                                 {
-                                                    header: t('infraEnv.tableHeader.name'),
+                                                    header: t('Name'),
                                                     cell: 'metadata.name',
                                                     sort: 'metadata.name',
                                                 },
                                                 {
-                                                    header: t('infraEnv.tableHeader.namespace'),
+                                                    header: t('Namespace'),
                                                     cell: 'metadata.namespace',
                                                     sort: 'metadata.namespace',
                                                 },
@@ -227,7 +230,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                 tableActionButtons={[
                     {
                         id: 'createInfraEnv',
-                        title: t('infraEnv.bulkAction.createInfraEnv'),
+                        title: t('Create infrastructure environment'),
                         click: () => history.push(NavigationPath.createInfraEnv),
                         variant: ButtonVariant.primary,
                     },
@@ -235,23 +238,25 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                 tableActions={[
                     {
                         id: 'delete',
-                        title: t('infraEnv.delete.plural'),
+                        title: t('Delete infrastructure environments'),
                         click: (infraEnvs: CIM.InfraEnvK8sResource[]) => {
                             setModalProps({
                                 open: true,
-                                title: t('bulk.title.delete'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                title: t('Delete infrastructure environments?'),
+                                action: t('Delete'),
+                                processing: t('Deleting'),
                                 resources: infraEnvs,
-                                description: t('bulk.message.delete'),
+                                description: t(
+                                    'You are about to delete infrastructure environments. The infrastructure environments will no longer be available.'
+                                ),
                                 columns: [
                                     {
-                                        header: t('infraEnv.tableHeader.name'),
+                                        header: t('Name'),
                                         cell: 'metadata.name',
                                         sort: 'metadata.name',
                                     },
                                     {
-                                        header: t('infraEnv.tableHeader.namespace'),
+                                        header: t('Namespace'),
                                         cell: 'metadata.namespace',
                                         sort: 'metadata.namespace',
                                     },
@@ -271,10 +276,10 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                 emptyState={
                     <AcmEmptyState
                         key="ieEmptyState"
-                        title={t('infraEnv.emptyStateHeader')}
+                        title={t("You don't have any infrastructure environments.")}
                         action={
                             <AcmButton component={Link} variant="primary" to={NavigationPath.createInfraEnv}>
-                                {t('infraEnv.createCluster')}
+                                {t('Create infrastructure environment')}
                             </AcmButton>
                         }
                     />

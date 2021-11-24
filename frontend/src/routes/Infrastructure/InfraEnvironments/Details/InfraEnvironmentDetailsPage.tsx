@@ -36,7 +36,7 @@ const {
 type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
 
 const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = ({ match }) => {
-    const { t } = useTranslation(['infraenv'])
+    const { t } = useTranslation()
     const history = useHistory()
     const location = useLocation()
     const [, setRoute] = useRecoilState(acmRouteState)
@@ -70,7 +70,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                     error={new ResourceError('Not found', 404)}
                     actions={
                         <AcmButton role="link" onClick={() => history.push(NavigationPath.infraEnvironments)}>
-                            {t('button.backToInfraEnvs')}
+                            {t('Back to infrastructure environments')}
                         </AcmButton>
                     }
                 />
@@ -85,7 +85,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 header={
                     <AcmPageHeader
                         breadcrumb={[
-                            { text: t('infraenvs'), to: NavigationPath.infraEnvironments },
+                            { text: t('Infrastructure environments'), to: NavigationPath.infraEnvironments },
                             { text: infraEnv.metadata.name, to: '' },
                         ]}
                         title={infraEnv.metadata.name}
@@ -104,7 +104,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                                             .replace(':namespace', match.params.namespace)
                                             .replace(':name', match.params.name)}
                                     >
-                                        {t('tab.details')}
+                                        {t('Details')}
                                     </Link>
                                 </AcmSecondaryNavItem>
                                 <AcmSecondaryNavItem
@@ -120,7 +120,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                                             .replace(':namespace', match.params.namespace)
                                             .replace(':name', match.params.name)}
                                     >
-                                        {t('tab.hosts')}
+                                        {t('Hosts')}
                                         <InfraEnvHostsTabAgentsWarning infraAgents={infraAgents} />
                                     </Link>
                                 </AcmSecondaryNavItem>
