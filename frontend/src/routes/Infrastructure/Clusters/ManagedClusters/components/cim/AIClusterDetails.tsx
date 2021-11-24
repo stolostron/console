@@ -38,7 +38,7 @@ const fetchEvents = async (url: string) => {
     return result.data as string
 }
 
-const AIClusterProgress: React.FC = () => {
+const AIClusterDetails: React.FC = () => {
     const { clusterDeployment, agentClusterInstall, agents } = useContext(ClusterContext)
     const [aiNamespace, setAiNamespace] = useState<string>('')
     const [namespaceError, setNamespaceError] = useState<boolean>()
@@ -157,4 +157,4 @@ const AIClusterProgress: React.FC = () => {
     )
 }
 
-export default AIClusterProgress
+export default AIClusterDetails
