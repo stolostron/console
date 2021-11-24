@@ -21,6 +21,7 @@ import {
     ToggleGroupItem,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { cellWidth } from '@patternfly/react-table'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { useCallback, useMemo } from 'react'
 import queryString from 'query-string'
@@ -29,6 +30,8 @@ import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { channelsState, placementRulesState, placementsState, subscriptionsState } from '../../atoms'
 import { IResource } from '../../resources'
+import { getAge } from './helpers/resource-helper'
+
 import _ from 'lodash'
 
 export default function AdvancedConfiguration() {
@@ -47,20 +50,45 @@ export default function AdvancedConfiguration() {
                         cell: 'metadata.name',
                         sort: 'metadata.name',
                         search: 'metadata.name',
+                        transforms: [cellWidth(20)],
                     },
                     {
                         header: t('Namespace'),
                         cell: 'metadata.namespace',
                         sort: 'metadata.namespace',
+                        transforms: [cellWidth(20)],
                     },
                     {
                         header: t('Channel'),
                         cell: 'spec.channel',
                         sort: 'spec.channel',
+                        transforms: [cellWidth(20)],
+                        tooltip:
+                            'Displays the name of the channel used by the subscription. Click to search for the channel.',
+                    },
+                    {
+                        header: t('Applications'),
+                        cell: '',
+                        tooltip:
+                            'Displays the number of applications using the subscription. Click to search for all related applications.',
+                    },
+                    {
+                        header: t('Clusters'),
+                        cell: '',
+                        tooltip:
+                            'Displays the number of remote and local clusters where resources for the subscription are deployed. Click to search for all related clusters.',
+                    },
+                    {
+                        header: t('Time window'),
+                        cell: '',
+                        tooltip:
+                            'Indicates if updates to the subscription resources are subject to an active or blocked deployment time window.',
                     },
                     {
                         header: t('Created'),
-                        cell: 'metadata.creationTimestamp',
+                        cell: (resource) => {
+                            return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
+                        },
                         sort: 'metadata.creationTimestamp',
                     },
                 ],
@@ -76,11 +104,37 @@ export default function AdvancedConfiguration() {
                         cell: 'metadata.name',
                         sort: 'metadata.name',
                         search: 'metadata.name',
+                        transforms: [cellWidth(20)],
                     },
                     {
                         header: t('Namespace'),
                         cell: 'metadata.namespace',
                         sort: 'metadata.namespace',
+                        transforms: [cellWidth(20)],
+                    },
+                    {
+                        header: t('Type'),
+                        cell: '',
+                        tooltip: 'Provides a link to the resource repository that is represented by the channel.',
+                    },
+                    {
+                        header: t('Subscriptions'),
+                        cell: '',
+                        tooltip:
+                            'Displays the number of local subscriptions using the channel. Click to search for all related subscriptions.',
+                    },
+                    {
+                        header: t('Clusters'),
+                        cell: '',
+                        tooltip:
+                            'Displays the number of remote and local clusters where resources from the channel are deployed.',
+                    },
+                    {
+                        header: t('Created'),
+                        cell: (resource) => {
+                            return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
+                        },
+                        sort: 'metadata.creationTimestamp',
                     },
                 ],
                 []
@@ -101,6 +155,13 @@ export default function AdvancedConfiguration() {
                         cell: 'metadata.namespace',
                         sort: 'metadata.namespace',
                     },
+                    {
+                        header: t('Created'),
+                        cell: (resource) => {
+                            return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
+                        },
+                        sort: 'metadata.creationTimestamp',
+                    },
                 ],
                 []
             ),
@@ -119,6 +180,26 @@ export default function AdvancedConfiguration() {
                         header: t('Namespace'),
                         cell: 'metadata.namespace',
                         sort: 'metadata.namespace',
+                    },
+                    {
+                        header: t('Clusters'),
+                        cell: '',
+                        tooltip:
+                            'Displays the number of remote and local clusters where resources are deployed because of the placement rule.',
+                    },
+                    {
+                        header: t('Replicas'),
+                        cell: 'spec.clusterReplicas',
+                        sort: 'spec.clusterReplicas',
+                        tooltip:
+                            'Displays the desired number of clusters to which subscriptions that use this placement rule should be propagated.',
+                    },
+                    {
+                        header: t('Created'),
+                        cell: (resource) => {
+                            return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
+                        },
+                        sort: 'metadata.creationTimestamp',
                     },
                 ],
                 []
