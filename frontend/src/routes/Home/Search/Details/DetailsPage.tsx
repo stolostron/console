@@ -62,7 +62,7 @@ function getResourceData() {
 }
 
 export default function DetailsPage() {
-    const { t } = useTranslation(['details'])
+    const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
     const [resource, setResource] = useState(undefined)
     const [resourceError, setResourceError] = useState('')
@@ -112,7 +112,7 @@ export default function DetailsPage() {
                                 }
                             }}
                         >
-                            {t('details.breadcrumb.search')}
+                            {t('Search')}
                         </AcmButton>
                     </div>
                     <AcmPageHeader
