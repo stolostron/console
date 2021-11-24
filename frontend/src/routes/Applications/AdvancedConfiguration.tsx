@@ -32,7 +32,7 @@ import { IResource } from '../../resources'
 import _ from 'lodash'
 
 export default function AdvancedConfiguration() {
-    const { t } = useTranslation('application')
+    const { t } = useTranslation()
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [placementrules] = useRecoilState(placementRulesState)
@@ -164,15 +164,21 @@ export default function AdvancedConfiguration() {
                         )}
                     />
                     <TerminologyCard
-                        title={t('Placement rules')}
-                        description={t(
-                            'Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
-                        )}
-                    />
-                    <TerminologyCard
                         title={t('Channels')}
                         description={t(
                             'Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories, or Namespaces on the local cluster. Channels support multiple subscriptions from multiple targets.'
+                        )}
+                    />
+                    <TerminologyCard
+                        title={t('Placements')}
+                        description={t(
+                            'Placements define the target clusters that must subscribe to a ClusterSet where subscriptions and applicationSets are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
+                        )}
+                    />
+                    <TerminologyCard
+                        title={t('Placement rules')}
+                        description={t(
+                            'Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
                         )}
                     />
                 </Split>
@@ -210,7 +216,7 @@ export default function AdvancedConfiguration() {
     function getSelectedId(props: ISelectedIds) {
         let { options, query, queryParam, defaultOption, location } = props
         if (!query) {
-            query = queryString.parse(location.search)
+            query = location && queryString.parse(location.search)
         }
         const validOptionIds = options.map((o) => o.id)
         return queryParam && validOptionIds.includes(query[queryParam]) ? query[queryParam] : defaultOption
@@ -256,10 +262,15 @@ export default function AdvancedConfiguration() {
 
     function AdvancedConfigurationTable() {
         const defaultOption = 'subscriptions'
-        const options = [{ id: 'subscriptions' }, { id: 'channels' }, { id: 'placements' }, { id: 'placementrules' }]
+        const options = [
+            { id: 'subscriptions', title: 'Subscriptions' },
+            { id: 'channels', title: 'Channels' },
+            { id: 'placements', title: 'Placements' },
+            { id: 'placementrules', title: 'Placement rules' },
+        ]
 
         const selectedId = getSelectedId({ location, options, defaultOption, queryParam: 'resources' })
-        const selectedResources = _.get(table, selectedId)
+        const selectedResources = _.get(table, `${selectedId}`)
 
         return (
             <AcmTablePaginationContextProvider localStorageKey="advanced-tables-pagination">
@@ -271,9 +282,9 @@ export default function AdvancedConfiguration() {
                     extraToolbarControls={
                         <QuerySwitcher
                             key="switcher"
-                            options={options.map(({ id }) => ({
+                            options={options.map(({ id, title }) => ({
                                 id,
-                                contents: t(`application:resource.${id}`),
+                                contents: t(title),
                             }))}
                             defaultOption={defaultOption}
                         />
@@ -300,7 +311,7 @@ export default function AdvancedConfiguration() {
 export interface IQuerySwitcherInterface {
     options: { id: string; contents: string }[]
     defaultOption: String
-    queryParam: string
+    queryParam?: string
 }
 
 export interface ISelectedIds {
