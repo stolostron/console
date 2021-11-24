@@ -350,64 +350,64 @@ describe('Clusters Page', () => {
     })
 
     test('should be able to delete cluster using row action', async () => {
-        await clickRowAction(1, 'managed.destroy')
+        await clickRowAction(1, 'Destroy cluster')
         await typeByText('type.to.confirm', mockManagedCluster0.metadata!.name!)
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
-        await clickByText('destroy')
+        await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
 
     test('should be able to delete cluster using bulk action', async () => {
         await selectTableRow(1)
-        await clickBulkAction('managed.destroy.plural')
+        await clickBulkAction('Destroy clusters')
         await typeByText('type.to.confirm', 'confirm')
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
-        await clickByText('destroy')
+        await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
 
     test('should be able to detach cluster using row action', async () => {
-        await clickRowAction(1, 'managed.detach')
+        await clickRowAction(1, 'Detach cluster')
         await typeByText('type.to.confirm', mockManagedCluster0.metadata!.name!)
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0)]
-        await clickByText('detach')
+        await clickByText('Detach')
         await waitForNocks(deleteNocks)
     })
 
     test('should be able to detach cluster using bulk action', async () => {
         await selectTableRow(2)
-        await clickBulkAction('managed.detach.plural')
+        await clickBulkAction('Detach clusters')
         await typeByText('type.to.confirm', 'confirm')
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
-        await clickByText('detach')
+        await clickByText('Detach')
         await waitForNocks(deleteNocks)
     })
 
     test('overflow menu should hide upgrade option if no available upgrade', async () => {
         await clickByLabel('Actions', 2)
-        await waitForNotText('managed.upgrade')
+        await waitForNotText('Upgrade cluster')
     })
     test('overflow menu should hide channel select option if no available channels', async () => {
         await clickByLabel('Actions', 2)
-        await waitForNotText('managed.selectChannel')
+        await waitForNotText('Select channel')
     })
 
     test('overflow menu should hide upgrade and channel select options if currently upgrading', async () => {
         await clickByLabel('Actions', 4)
-        await waitForNotText('managed.upgrade')
-        await waitForNotText('managed.selectChannel')
+        await waitForNotText('Upgrade cluster')
+        await waitForNotText('Select channel')
     })
 
     test('overflow menu should allow upgrade if has available upgrade', async () => {
         await clickByLabel('Actions', 3)
-        await clickByText('managed.upgrade')
-        await waitForText('upgrade.table.name')
+        await clickByText('Upgrade cluster')
+        await waitForText('Name')
     })
 
     test('overflow menu should allow channel select if has available channels', async () => {
         await clickByLabel('Actions', 3)
-        await clickByText('managed.selectChannel')
-        await waitForText('upgrade.table.currentchannel')
+        await clickByText('Select channel')
+        await waitForText('Current channel')
     })
 
     test('batch upgrade support when upgrading multiple clusters', async () => {
@@ -415,16 +415,16 @@ describe('Clusters Page', () => {
         await selectTableRow(2)
         await selectTableRow(3)
         await selectTableRow(4)
-        await clickBulkAction('managed.upgrade.plural')
-        await waitForText(`upgrade.table.currentversion`)
+        await clickBulkAction('Upgrade clusters')
+        await waitForText(`Current version`)
     })
     test('batch select channel support when updating multiple clusters', async () => {
         await selectTableRow(1)
         await selectTableRow(2)
         await selectTableRow(3)
         await selectTableRow(4)
-        await clickBulkAction('managed.selectChannel.plural')
-        await waitForText('upgrade.table.currentchannel')
+        await clickBulkAction('Select channels')
+        await waitForText('Current channel')
     })
 })
 

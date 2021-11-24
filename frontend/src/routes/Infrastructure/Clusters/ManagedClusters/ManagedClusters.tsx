@@ -51,18 +51,18 @@ import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
 
 function InfraEnvLinkButton() {
-    const { t } = useTranslation(['cim'])
+    const { t } = useTranslation()
 
     return (
         <Link to={NavigationPath.infraEnvironments} style={{ marginRight: '16px' }}>
             <AcmButton key="enableDiscovery" variant={ButtonVariant.primary}>
-                {t('cim.onpremise.banner.infraenv.link')}
+                {t('Get started with infrastructure environments')}
             </AcmButton>
         </Link>
     )
 }
 export default function ManagedClusters() {
-    const { t } = useTranslation(['cluster', 'discovery'])
+    const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
     let clusters = useAllClusters()
     clusters = clusters.filter((cluster) => {
@@ -95,8 +95,8 @@ export default function ManagedClusters() {
                     <OnPremiseBanner
                         id="banner.managedclusters"
                         extraButton={<InfraEnvLinkButton />}
-                        titleKey="cim:cim.onpremise.banner.header"
-                        textKey="cim:cim.onpremise.banner.body"
+                        titleKey="Create Cluster on Premise with a cloud like experience"
+                        textKey="<p>The best solution for creating cluster on an <bold>On Premise</bold> at scale. Easily create ready to go clusters for your applications.</p><p>Easily create and re-create clusters from hosts that are provided by an infrastructure environment.</p>"
                     />
                     <StackItem>
                         <ClustersTable
@@ -104,28 +104,34 @@ export default function ManagedClusters() {
                             tableButtonActions={[
                                 {
                                     id: 'createCluster',
-                                    title: t('managed.createCluster'),
+                                    title: t('Create cluster'),
                                     click: () => history.push(NavigationPath.createCluster),
                                     isDisabled: !canCreateCluster,
-                                    tooltip: t('common:rbac.unauthorized'),
+                                    tooltip: t(
+                                        'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                                    ),
                                     variant: ButtonVariant.primary,
                                 },
                                 {
                                     id: 'importCluster',
-                                    title: t('managed.importCluster'),
+                                    title: t('Import cluster'),
                                     click: () => history.push(NavigationPath.importCluster),
                                     isDisabled: !canCreateCluster,
-                                    tooltip: t('common:rbac.unauthorized'),
+                                    tooltip: t(
+                                        'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                                    ),
                                     variant: ButtonVariant.secondary,
                                 },
                             ]}
                             emptyState={
                                 <AcmEmptyState
                                     key="mcEmptyState"
-                                    title={t('managed.emptyStateHeader')}
+                                    title={t("You don't have any clusters.")}
                                     message={
                                         <Trans
-                                            i18nKey={'cluster:managed.emptyStateMsg'}
+                                            i18nKey={
+                                                'Click the <bold>Create a cluster</bold> or <bold>Import an existing cluster</bold> button to add a managed cluster.'
+                                            }
                                             components={{ bold: <strong /> }}
                                         />
                                     }
@@ -170,7 +176,7 @@ export function ClustersTable(props: {
 
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
 
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
     const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
@@ -184,7 +190,7 @@ export function ClustersTable(props: {
     const modalColumns = useMemo(
         () => [
             {
-                header: t('table.name'),
+                header: t('Name'),
                 sort: 'displayName',
                 cell: (cluster: Cluster) => (
                     <>
@@ -198,7 +204,7 @@ export function ClustersTable(props: {
                 ),
             },
             {
-                header: t('table.status'),
+                header: t('Status'),
                 sort: 'status',
                 cell: (cluster: Cluster) => (
                     <span style={{ whiteSpace: 'nowrap' }}>
@@ -207,7 +213,7 @@ export function ClustersTable(props: {
                 ),
             },
             {
-                header: t('table.provider'),
+                header: t('Infrastructure provider'),
                 sort: 'provider',
                 cell: (cluster: Cluster) =>
                     cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
@@ -219,8 +225,10 @@ export function ClustersTable(props: {
     const columns = useMemo<IAcmTableColumn<Cluster>[]>(
         () => [
             {
-                header: t('table.name'),
-                tooltip: t('table.name.helperText.noBold'),
+                header: t('Name'),
+                tooltip: t(
+                    'The common Kubernetes resource name shared by multiple resources generated from cluster creation or import; including the Namespace, ManagedCluster, or ClusterDeployment. The cluster claim name will be displayed under the cluster name if it was claimed from a cluster pool.'
+                ),
                 sort: 'displayName',
                 search: (cluster) => [cluster.displayName as string, cluster.hive.clusterClaimName as string],
                 cell: (cluster) => (
@@ -239,7 +247,7 @@ export function ClustersTable(props: {
                 ),
             },
             {
-                header: t('table.status'),
+                header: t('Status'),
                 sort: 'status',
                 search: 'status',
                 cell: (cluster) => (
@@ -249,13 +257,13 @@ export function ClustersTable(props: {
                 ),
             },
             {
-                header: t('table.provider'),
+                header: t('Infrastructure provider'),
                 sort: 'provider',
                 search: 'provider',
                 cell: (cluster) => (cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-'),
             },
             {
-                header: t('table.distribution'),
+                header: t('Distribution version'),
                 sort: 'distribution.displayVersion',
                 search: 'distribution.displayVersion',
                 cell: (cluster) => (
@@ -266,7 +274,7 @@ export function ClustersTable(props: {
                 ),
             },
             {
-                header: t('table.labels'),
+                header: t('Labels'),
                 search: (cluster) =>
                     cluster.labels ? Object.keys(cluster.labels).map((key) => `${key}=${cluster.labels![key]}`) : '',
                 cell: (cluster) => {
@@ -294,9 +302,10 @@ export function ClustersTable(props: {
                         return (
                             <AcmLabels
                                 labels={cluster.labels}
-                                expandedText={t('common:show.less')}
-                                collapsedText={t('common:show.more', { number: collapse.length })}
-                                allCollapsedText={t('common:count.labels', { number: collapse.length })}
+                                expandedText={t('Show less')}
+                                // TODO - Handle interpolation
+                                collapsedText={t('{{number}} more', { number: collapse.length })}
+                                allCollapsedText={t('{{number}} labels', { number: collapse.length })}
                                 collapse={collapse}
                             />
                         )
@@ -306,7 +315,7 @@ export function ClustersTable(props: {
                 },
             },
             {
-                header: t('table.nodes'),
+                header: t('Nodes'),
                 cell: (cluster) => {
                     return cluster.nodes!.nodeList!.length > 0 ? (
                         <AcmInlineStatusGroup
@@ -334,7 +343,7 @@ export function ClustersTable(props: {
         () => [
             {
                 id: 'upgradeClusters',
-                title: t('managed.upgrade.plural'),
+                title: t('Upgrade clusters'),
                 click: (managedClusters: Array<Cluster>) => {
                     if (!managedClusters) return
                     setUpgradeClusters(managedClusters)
@@ -343,7 +352,7 @@ export function ClustersTable(props: {
             },
             {
                 id: 'selectChannels',
-                title: t('managed.selectChannel.plural'),
+                title: t('Select channels'),
                 click: (managedClusters: Array<Cluster>) => {
                     if (!managedClusters) return
                     setSelectChannels(managedClusters)
@@ -353,15 +362,17 @@ export function ClustersTable(props: {
             { id: 'seperator-1', variant: 'action-seperator' },
             {
                 id: 'hibernate-cluster',
-                title: t('managed.hibernate.plural'),
+                title: t('Hibernate clusters'),
                 click: (clusters) => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.hibernate'),
-                        action: t('hibernate'),
-                        processing: t('hibernating'),
+                        title: t('Hibernate clusters'),
+                        action: t('Hibernate'),
+                        processing: t('Hibernating'),
                         resources: clusters.filter((cluster) => cluster.hive.isHibernatable),
-                        description: t('bulk.message.hibernate'),
+                        description: t(
+                            'Moving to the Hibernating state blocks any operations for the clusters. While hibernating, the cluster does not consume any virtual machine or network resources. This can be undone at any time. Only clusters that support hibernation are shown.'
+                        ),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
                         actionFn: (cluster) => {
@@ -381,22 +392,24 @@ export function ClustersTable(props: {
                             setModalProps({ open: false })
                         },
                         isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                        plural: t('hibernatable.clusters'),
+                        plural: t('hibernatable clusters'),
                     })
                 },
                 variant: 'bulk-action',
             },
             {
                 id: 'resume-cluster',
-                title: t('managed.resume.plural'),
+                title: t('Resume clusters'),
                 click: (clusters) => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.resume'),
-                        action: t('resume'),
-                        processing: t('resuming'),
+                        title: t('Resume clusters'),
+                        action: t('Resume'),
+                        processing: t('Resuming'),
                         resources: clusters.filter((cluster) => cluster.status === ClusterStatus.hibernating),
-                        description: t('bulk.message.resume'),
+                        description: t(
+                            'Moving out of Hibernating state resumes all operations for the clusters. After powering back on, the cluster resumes consumption of any virtual machine and network resources. Only clusters that support hibernation are shown.'
+                        ),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
                         actionFn: (cluster) => {
@@ -416,7 +429,7 @@ export function ClustersTable(props: {
                             setModalProps({ open: false })
                         },
                         isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                        plural: t('hibernatable.clusters'),
+                        plural: t('hibernatable clusters'),
                     })
                 },
                 variant: 'bulk-action',
@@ -424,22 +437,24 @@ export function ClustersTable(props: {
             { id: 'seperator-2', variant: 'action-seperator' },
             {
                 id: 'detachCluster',
-                title: t('managed.detach.plural'),
+                title: t('Detach clusters'),
                 click: (clusters) => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.detach'),
-                        action: t('detach'),
-                        processing: t('detaching'),
+                        title: t('Detach clusters?'),
+                        action: t('Detach'),
+                        processing: t('Detaching'),
                         resources: clusters,
-                        description: t('bulk.message.detach'),
+                        description: t(
+                            'Detaching a cluster removes it from management, but does not destroy it. You can import the clusters again to manage them.'
+                        ),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
                         actionFn: (cluster) => detachCluster(cluster.name!),
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
                         icon: 'warning',
-                        confirmText: t('confirm').toLowerCase(),
+                        confirmText: t('Confirm').toLowerCase(),
                         isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                     })
                 },
@@ -447,22 +462,24 @@ export function ClustersTable(props: {
             },
             {
                 id: 'destroyCluster',
-                title: t('managed.destroy.plural'),
+                title: t('Destroy clusters'),
                 click: (clusters) => {
                     setModalProps({
                         open: true,
-                        title: t('bulk.title.destroy'),
-                        action: t('destroy'),
-                        processing: t('destroying'),
+                        title: t('Permanently destroy clusters?'),
+                        action: t('Destroy'),
+                        processing: t('Destroying'),
                         resources: clusters,
-                        description: t('bulk.message.destroy'),
+                        description: t(
+                            'This action detaches the cluster and if possible the cluster will be destroyed.'
+                        ),
                         columns: modalColumns,
                         keyFn: (cluster) => cluster.name as string,
                         actionFn: (cluster) => deleteCluster(cluster, true),
                         close: () => setModalProps({ open: false }),
                         isDanger: true,
                         icon: 'warning',
-                        confirmText: t('confirm').toLowerCase(),
+                        confirmText: t('Confirm').toLowerCase(),
                         isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                     })
                 },
@@ -478,7 +495,7 @@ export function ClustersTable(props: {
         return [
             {
                 id: 'provider',
-                label: t('table.provider'),
+                label: t('Infrastructure provider'),
                 options: Object.values(Provider)
                     .map((key) => ({
                         label: ProviderLongTextMap[key],
@@ -490,8 +507,9 @@ export function ClustersTable(props: {
             },
             {
                 id: 'status',
-                label: t('table.status'),
+                label: t('Status'),
                 options: Object.keys(ClusterStatus)
+                    // TODO - REVISIT I18N
                     .map((key) => ({
                         label: t(`status.${key}`),
                         value: t(`status.${key}`),

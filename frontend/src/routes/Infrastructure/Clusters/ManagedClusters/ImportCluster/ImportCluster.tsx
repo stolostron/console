@@ -40,26 +40,26 @@ import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 
 export default function ImportClusterPage() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     return (
         <AcmPage
             header={
                 <AcmPageHeader
-                    title={t('page.header.import-cluster')}
+                    title={t('Import an existing cluster')}
                     breadcrumb={[
-                        { text: t('clusters'), to: NavigationPath.clusters },
-                        { text: t('page.header.import-cluster'), to: '' },
+                        { text: t('Managed clusters'), to: NavigationPath.clusters },
+                        { text: t('Import an existing cluster'), to: '' },
                     ]}
                     titleTooltip={
                         <>
-                            {t('page.header.import-cluster.tooltip')}
+                            {t('Import clusters from different providers to manage them from this console.')}
                             <a
                                 href={DOC_LINKS.IMPORT_CLUSTER}
                                 target="_blank"
                                 rel="noreferrer"
                                 style={{ display: 'block', marginTop: '4px' }}
                             >
-                                {t('common:learn.more')}
+                                {t('Learn more')}
                             </a>
                         </>
                     }
@@ -82,7 +82,7 @@ enum ImportMode {
 }
 
 export function ImportClusterPageContent() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const { canJoinClusterSets } = useCanJoinClusterSets()
@@ -111,29 +111,29 @@ export function ImportClusterPageContent() {
             <AcmForm id="import-cluster-form">
                 <AcmTextInput
                     id="clusterName"
-                    label={t('import.form.clusterName.label')}
+                    label={t('Name')}
                     value={clusterName}
                     isDisabled={submitted}
                     onChange={(name) => setClusterName(name)}
-                    placeholder={t('import.form.clusterName.placeholder')}
+                    placeholder={t('Enter cluster name')}
                     isRequired
                 />
                 <AcmSelect
                     id="managedClusterSet"
-                    label={t('import.form.managedClusterSet.label')}
+                    label={t('Cluster set')}
                     placeholder={
-                        canJoinClusterSets?.length === 0
-                            ? t('import.no.cluster.sets.available')
-                            : t('import.form.managedClusterSet.placeholder')
+                        canJoinClusterSets?.length === 0 ? t('No cluster sets available') : t('Select a cluster set')
                     }
-                    labelHelp={t('import.form.managedClusterSet.labelHelp')}
+                    labelHelp={t(
+                        'A ManagedClusterSet is a group of managed clusters. With a ManagedClusterSet, you can manage access to all of the managed clusters in the group together.'
+                    )}
                     value={managedClusterSet}
                     onChange={(mcs) => setManagedClusterSet(mcs)}
                     isDisabled={canJoinClusterSets === undefined || canJoinClusterSets.length === 0 || submitted}
                     hidden={canJoinClusterSets === undefined}
                     helperText={
                         <Text component="small">
-                            <Link to={NavigationPath.clusterSets}>{t('import.manage.cluster.sets')}</Link>
+                            <Link to={NavigationPath.clusterSets}>{t('Manage cluster sets')}</Link>
                         </Text>
                     }
                     isRequired={mustJoinClusterSet}
@@ -146,50 +146,54 @@ export function ImportClusterPageContent() {
                 </AcmSelect>
                 <AcmLabelsInput
                     id="additionalLabels"
-                    label={t('import.form.labels.label')}
-                    buttonLabel={t('common:label.add')}
+                    label={t('Additional labels')}
+                    buttonLabel={t('Add label')}
                     value={additionalLabels}
                     onChange={(label) => setAdditionaLabels(label)}
-                    placeholder={t('labels.edit.placeholder')}
+                    placeholder={t('Enter key=value, then press enter, space, or comma')}
                     isDisabled={submitted}
                 />
                 <AcmSelect
                     id="import-mode"
-                    label={t('import.mode.select')}
-                    placeholder={t('import.mode.default')}
+                    label={t('Import mode')}
+                    placeholder={t('Select an import option for your existing cluster')}
                     value={
                         importMode === ImportMode.manual
-                            ? t('import.mode.manual')
+                            ? t('Run import commands manually')
                             : importMode === ImportMode.token
-                            ? t('import.mode.token')
+                            ? t('Enter your server URL and API token for the existing cluster')
                             : importMode === ImportMode.kubeconfig
-                            ? t('import.mode.kubeconfig')
+                            ? t('Kubeconfig')
                             : ''
                     }
                     onChange={(value) => setImportMode(value as unknown as ImportMode)}
                     helperText={
                         importMode === ImportMode.manual
-                            ? t('import.description')
+                            ? t(
+                                  'Once you click on "Save import and generate code", the information you entered is used to generate the code and cannot be modified anymore. If you wish to change any information, you will have to delete and re-import this cluster.'
+                              )
                             : importMode === ImportMode.kubeconfig
-                            ? t('import.credential.explanation')
+                            ? t(
+                                  "You need the kubeconfig file for the cluster that you're importing. Import information is used one time and is not saved."
+                              )
                             : ''
                     }
                     isRequired
                 >
                     <SelectOption key="manual-import" value={ImportMode.manual}>
-                        {t('import.mode.manual')}
+                        {t('Run import commands manually')}
                     </SelectOption>
                     <SelectOption key="credentials" value={ImportMode.token}>
-                        {t('import.mode.token')}
+                        {t('Enter your server URL and API token for the existing cluster')}
                     </SelectOption>
                     <SelectOption key="kubeconfig" value={ImportMode.kubeconfig}>
-                        {t('import.mode.kubeconfig')}
+                        {t('Kubeconfig')}
                     </SelectOption>
                 </AcmSelect>
                 <AcmTextInput
                     id="server"
-                    label={t('import.server')}
-                    placeholder={t('import.server.place')}
+                    label={t('Server URL')}
+                    placeholder={t('Enter your server URL')}
                     value={server}
                     onChange={(server) => setServer(server)}
                     isRequired
@@ -197,8 +201,8 @@ export function ImportClusterPageContent() {
                 />
                 <AcmTextInput
                     id="token"
-                    label={t('import.token')}
-                    placeholder={t('import.token.place')}
+                    label={t('API Token')}
+                    placeholder={t('Enter your API token')}
                     value={token}
                     onChange={(token) => setToken(token)}
                     isRequired
@@ -206,8 +210,8 @@ export function ImportClusterPageContent() {
                 />
                 <AcmTextArea
                     id="kubeConfigEntry"
-                    label={t('import.auto.config.label')}
-                    placeholder={t('import.auto.config.prompt')}
+                    label={t('Kubeconfig')}
+                    placeholder={t('Copy and paste your kubeconfig content')}
                     value={kubeConfig}
                     onChange={(file) => setKubeConfig(file)}
                     hidden={importMode !== ImportMode.kubeconfig}
@@ -323,21 +327,21 @@ export function ImportClusterPageContent() {
                         }}
                         label={
                             submitted
-                                ? t('import.form.submitted')
+                                ? t('Code generated successfully')
                                 : importMode === ImportMode.manual
-                                ? t('import.form.submit')
-                                : t('import.auto.button')
+                                ? t('Save import and generate code')
+                                : t('Import')
                         }
                         processingLabel={t('import.generating')}
                     />
 
                     {submitted ? (
                         <Label variant="outline" color="blue" icon={<CheckCircleIcon />}>
-                            {t('import.importmode.importsaved')}
+                            {t('Import saved')}
                         </Label>
                     ) : (
                         <Link to={NavigationPath.clusters} id="cancel">
-                            <Button variant="link">{t('common:cancel')}</Button>
+                            <Button variant="link">{t('Cancel')}</Button>
                         </Link>
                     )}
                 </ActionGroup>
@@ -346,7 +350,7 @@ export function ImportClusterPageContent() {
                         <ImportCommand importSecret={importSecret}>
                             <ActionGroup>
                                 <Link to={NavigationPath.clusterDetails.replace(':id', clusterName as string)}>
-                                    <Button variant="primary">{t('import.footer.viewcluster')}</Button>
+                                    <Button variant="primary">{t('View cluster')}</Button>
                                 </Link>
                                 <AcmButton
                                     variant="secondary"
@@ -357,7 +361,7 @@ export function ImportClusterPageContent() {
                                             : onReset()
                                     }}
                                 >
-                                    {t('import.footer.importanother')}
+                                    {t('Import another')}
                                 </AcmButton>
                             </ActionGroup>
                         </ImportCommand>

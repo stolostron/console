@@ -300,20 +300,20 @@ describe('ImportCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
         await typeByTestId('clusterName', 'foobar')
 
-        await clickByText('import.form.managedClusterSet.placeholder')
+        await clickByText('Select a cluster set')
         await clickByText(mockManagedClusterSet.metadata.name!)
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
-        expect(getByText('import.form.submit')).toHaveAttribute('aria-disabled', 'false')
-        await clickByText('import.form.submit')
+        expect(getByText('Save import and generate code')).toHaveAttribute('aria-disabled', 'false')
+        await clickByText('Save import and generate code')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importSecretNock])
 
         await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
 
         // reset form
-        await waitForText('import.footer.importanother')
-        await clickByText('import.footer.importanother')
+        await waitForText('Import another')
+        await clickByText('Import another')
         await waitFor(() => expect(queryByTestId('import-command')).toBeNull())
         expect(getByTestId('clusterName')).toHaveValue('')
     })
@@ -329,11 +329,11 @@ describe('ImportCluster', () => {
         await typeByTestId('clusterName', 'foobar')
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
-        await clickByText('import.mode.manual')
-        await clickByText('import.mode.kubeconfig')
+        await clickByText('Run import commands manually')
+        await clickByText('Kubeconfig')
         await clickByTestId('kubeConfigEntry')
         await typeByTestId('kubeConfigEntry', 'Test text')
-        await clickByText('import.auto.button')
+        await clickByText('Import')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importAutoSecretNock])
     })
@@ -349,13 +349,13 @@ describe('ImportCluster', () => {
         await typeByTestId('clusterName', 'foobar')
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
-        await clickByText('import.mode.manual')
-        await clickByText('import.mode.token')
+        await clickByText('Run import commands manually')
+        await clickByText('Enter your server URL and API token for the existing cluster')
         await clickByTestId('token')
         await typeByTestId('token', 'Test token')
         await clickByTestId('server')
         await typeByTestId('server', 'Test server')
-        await clickByText('import.auto.button')
+        await clickByText('Import')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importAutoTokenSecretNock])
     })
@@ -364,9 +364,9 @@ describe('ImportCluster', () => {
         const projectNock = nockCreate(mockProject, mockBadRequestStatus)
         const { getByText } = render(<Component />)
         await typeByTestId('clusterName', 'foobar')
-        expect(getByText('import.form.submit')).toHaveAttribute('aria-disabled', 'false')
-        await clickByText('import.form.submit')
-        await waitForText('import.generating')
+        expect(getByText('Save import and generate code')).toHaveAttribute('aria-disabled', 'false')
+        await clickByText('Save import and generate code')
+        await waitForText('Generating')
         await waitForNocks([projectNock])
         await waitForText(mockBadRequestStatus.message, true)
     })
@@ -380,7 +380,7 @@ describe('ImportCluster', () => {
         await typeByTestId('clusterName', 'foobar')
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
-        await clickByText('import.form.submit')
+        await clickByText('Save import and generate code')
         await waitForNocks([createProjectNock, badRequestNock])
         await waitForText(mockBadRequestStatus.message, true)
     })
@@ -437,8 +437,8 @@ describe('Import Discovered Cluster', () => {
         await waitFor(() => expect(getAllByText(mockDiscoveredClusters[0].metadata.name!)[0]!).toBeInTheDocument()) // Wait for DiscoveredCluster to appear in table
         userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
 
-        await clickByText('discovery.import')
-        await waitForText('import.form.submit')
+        await clickByText('Import cluster')
+        await waitForText('Save import and generate code')
 
         const projectNock = nockCreate(mockProject, mockProjectResponse)
         const managedClusterNock = nockCreate(mockManagedDiscoveredCluster, mockManagedDiscoveredClusterResponse)
@@ -449,7 +449,7 @@ describe('Import Discovered Cluster', () => {
         await clickByTestId('label-input-button')
         await typeByTestId('additionalLabels', 'foo=bar{enter}')
 
-        await clickByText('import.form.submit')
+        await clickByText('Save import and generate code')
 
         await waitForNocks([projectNock, managedClusterNock, kacNock, importCommandNock])
 
