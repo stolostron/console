@@ -64,6 +64,7 @@ import {
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
+    GitOpsCluster,
     GitOpsClusterApiVersion,
     GitOpsClusterKind,
     InfraEnvApiVersion,
@@ -146,7 +147,7 @@ export const clusterProvisionsState = AtomArray<ClusterProvision>()
 export const configMapsState = AtomArray<ConfigMap>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
-export const gitOpsClustersState = AtomArray<IResource>()
+export const gitOpsClustersState = AtomArray<GitOpsCluster>()
 export const infraEnvironmentsState = AtomArray<CIM.InfraEnvK8sResource>()
 export const infrastructuresState = AtomArray<CIM.InfrastructureK8sResource>()
 export const machinePoolsState = AtomArray<MachinePool>()

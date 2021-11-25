@@ -10,7 +10,6 @@ export interface IResourceDefinition {
 }
 
 export interface IResource extends IResourceDefinition {
-    spec?: any
     apiVersion: string
     kind: string
     metadata?: Metadata
