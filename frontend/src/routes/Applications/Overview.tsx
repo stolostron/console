@@ -324,7 +324,7 @@ export default function ApplicationsOverview() {
                 tooltip: t('table.header.application.timeWindow.tooltip'),
             },
             {
-                header: t('table.column.application.created'),
+                header: t('Created'),
                 cell: (resource) => {
                     return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
                 },
