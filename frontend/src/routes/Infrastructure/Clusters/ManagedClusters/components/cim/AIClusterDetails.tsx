@@ -1,10 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo, useContext, useEffect, useState } from 'react'
+import { useHistory } from 'react-router-dom'
 import { AcmExpandableCard } from '@open-cluster-management/ui-components'
 import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
+import {
+    ClusterDeploymentValidationsOverview,
+    getClusterStatus,
+    shouldShowClusterDeploymentValidationOverview,
+} from 'openshift-assisted-ui-lib/cim'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
 import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
+import { NavigationPath } from '../../../../../../NavigationPath'
 
 const {
     ClusterDeploymentProgress,
@@ -42,6 +49,7 @@ const AIClusterDetails: React.FC = () => {
     const { clusterDeployment, agentClusterInstall, agents } = useContext(ClusterContext)
     const [aiNamespace, setAiNamespace] = useState<string>('')
     const [namespaceError, setNamespaceError] = useState<boolean>()
+    const history = useHistory()
     useEffect(() => {
         const checkNs = async () => {
             try {
@@ -85,6 +93,21 @@ const AIClusterDetails: React.FC = () => {
 
     return (
         <>
+            {clusterDeployment && shouldShowClusterDeploymentValidationOverview(agentClusterInstall) && (
+                <div style={{ marginBottom: '24px' }}>
+                    <ClusterDeploymentValidationsOverview
+                        validationsInfo={agentClusterInstall?.status?.validationsInfo!}
+                        clusterStatus={getClusterStatus(agentClusterInstall)}
+                        onContinueClusterConfiguration={() =>
+                            history.push(
+                                NavigationPath.editCluster
+                                    .replace(':namespace', clusterDeployment.metadata.namespace!)
+                                    .replace(':name', clusterDeployment.metadata.name!)
+                            )
+                        }
+                    />
+                </div>
+            )}
             {shouldShowClusterInstallationProgress(agentClusterInstall) && (
                 <div style={{ marginBottom: '24px' }}>
                     <AcmExpandableCard title="Cluster installation progress" id="aiprogress">

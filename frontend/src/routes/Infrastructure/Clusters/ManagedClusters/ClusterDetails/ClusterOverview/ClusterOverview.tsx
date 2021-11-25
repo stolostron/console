@@ -33,7 +33,6 @@ import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails'
 import AIClusterDetails from '../../components/cim/AIClusterDetails'
-import AIClusterErrors from '../../components/cim/AIClusterErrors'
 
 const { getClusterProperties } = CIM
 
@@ -281,7 +280,6 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     displayName={cluster!.displayName}
                     close={() => setShowEditLabels(false)}
                 />
-                {isHybrid && <AIClusterErrors />}
                 {isHybrid ? <AIClusterDetails /> : <ProgressStepBar />}
                 <AcmDescriptionList title={t('table.details')} leftItems={leftItems} rightItems={rightItems} />
                 {cluster!.isManaged &&
