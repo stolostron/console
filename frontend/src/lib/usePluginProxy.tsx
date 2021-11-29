@@ -23,7 +23,7 @@ type ConsolePluginKind = K8sResourceCommon & {
 }
 
 export function usePluginProxy() {
-    const [data, loaded] = useK8sWatchResource<ConsolePluginKind>({
+    const [data, loaded, error] = useK8sWatchResource<ConsolePluginKind>({
         groupVersionKind: {
             group: 'console.openshift.io',
             version: 'v1alpha1',
@@ -37,5 +37,5 @@ export function usePluginProxy() {
     if (loaded && proxyService) {
         window.acmConsolePluginProxyPath = `/api/proxy/namespace/${proxyService.namespace}/service/${proxyService.name}:${proxyService.port}`
     }
-    return loaded && proxyService
+    return loaded || error
 }
