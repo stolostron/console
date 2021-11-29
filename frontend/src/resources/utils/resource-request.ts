@@ -3,6 +3,7 @@
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
+import { getCookie } from '.'
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -325,6 +326,11 @@ export async function fetchRetry<T>(options: {
 
     const headers: Record<string, string> = options.headers ?? {
         Accept: 'application/json',
+    }
+
+    const csrfToken = getCookie('csrf-token')
+    if (csrfToken && (options.method ?? 'GET') !== 'GET' && options.url.startsWith('/')) {
+        headers['X-CSRFToken'] = csrfToken
     }
 
     let fetchBody: string | undefined

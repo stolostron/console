@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { listResources } from './utils/resource-request'
-import { isType } from '../lib/is-type'
-import { IResource, IResourceDefinition } from './resource'
+import { IResourceDefinition } from './resource'
 import { Metadata } from './metadata'
 
 export const GitOpsClusterApiVersion = 'apps.open-cluster-management.io/v1beta1'
@@ -15,7 +13,7 @@ export const GitopsClusterDefinition: IResourceDefinition = {
     kind: GitOpsClusterKind,
 }
 
-export interface GitOpsCluster extends IResource {
+export interface GitOpsCluster {
     apiVersion: GitOpsClusterApiVersionType
     kind: GitOpsClusterKindType
     metadata: Metadata
@@ -24,22 +22,5 @@ export interface GitOpsCluster extends IResource {
             argoNamespace: string
             cluster?: string
         }
-    }
-}
-
-export function listGitOpsClusters() {
-    return listResources<GitOpsCluster>({
-        apiVersion: GitOpsClusterApiVersion,
-        kind: GitOpsClusterKind,
-    })
-}
-
-export function listAvailableArgoServerNS() {
-    const gitOpsClusters = listGitOpsClusters()
-    return {
-        promise: gitOpsClusters.promise.then((gitOpsClusters) => {
-            return gitOpsClusters.map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace).filter(isType)
-        }),
-        abort: gitOpsClusters.abort,
     }
 }
