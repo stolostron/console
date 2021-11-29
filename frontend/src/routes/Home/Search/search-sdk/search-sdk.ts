@@ -1,10 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// Copyright (c) 2021 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
-
-import { gql } from '@apollo/client'
 import * as Apollo from '@apollo/client'
+import { gql } from '@apollo/client'
 export type Maybe<T> = T | null
+export type InputMaybe<T> = Maybe<T>
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] }
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> }
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> }
@@ -25,47 +23,47 @@ export type Scalars = {
 export type Application = {
     _uid?: Maybe<Scalars['String']>
     apiVersion?: Maybe<Scalars['String']>
+    applicationSet?: Maybe<Scalars['String']>
+    chart?: Maybe<Scalars['String']>
+    cluster?: Maybe<Scalars['String']>
+    clusterCount?: Maybe<Scalars['JSON']>
     created?: Maybe<Scalars['String']>
     dashboard?: Maybe<Scalars['String']>
+    destinationCluster?: Maybe<Scalars['String']>
+    destinationName?: Maybe<Scalars['String']>
+    destinationNamespace?: Maybe<Scalars['String']>
+    destinationServer?: Maybe<Scalars['String']>
+    hubChannels?: Maybe<Array<Maybe<Scalars['JSON']>>>
+    hubSubscriptions?: Maybe<Array<Maybe<Subscription>>>
     labels?: Maybe<Array<Maybe<Scalars['String']>>>
     name?: Maybe<Scalars['String']>
     namespace?: Maybe<Scalars['String']>
-    cluster?: Maybe<Scalars['String']>
-    clusterCount?: Maybe<Scalars['JSON']>
-    hubChannels?: Maybe<Array<Maybe<Scalars['JSON']>>>
-    hubSubscriptions?: Maybe<Array<Maybe<Subscription>>>
-    applicationSet?: Maybe<Scalars['String']>
-    destinationName?: Maybe<Scalars['String']>
-    destinationServer?: Maybe<Scalars['String']>
-    destinationCluster?: Maybe<Scalars['String']>
-    destinationNamespace?: Maybe<Scalars['String']>
-    repoURL?: Maybe<Scalars['String']>
     path?: Maybe<Scalars['String']>
-    chart?: Maybe<Scalars['String']>
+    repoURL?: Maybe<Scalars['String']>
     targetRevision?: Maybe<Scalars['String']>
 }
 
 export enum CacheControlScope {
-    Public = 'PUBLIC',
     Private = 'PRIVATE',
+    Public = 'PUBLIC',
 }
 
 export type Channel = {
     _uid?: Maybe<Scalars['String']>
+    clusterCount?: Maybe<Scalars['JSON']>
+    created?: Maybe<Scalars['String']>
+    localPlacement?: Maybe<Scalars['Boolean']>
     name?: Maybe<Scalars['String']>
     namespace?: Maybe<Scalars['String']>
-    created?: Maybe<Scalars['String']>
-    type?: Maybe<Scalars['String']>
     pathname?: Maybe<Scalars['String']>
-    localPlacement?: Maybe<Scalars['Boolean']>
     subscriptionCount?: Maybe<Scalars['Int']>
-    clusterCount?: Maybe<Scalars['JSON']>
+    type?: Maybe<Scalars['String']>
 }
 
 export type Message = {
+    description?: Maybe<Scalars['String']>
     id: Scalars['String']
     kind?: Maybe<Scalars['String']>
-    description?: Maybe<Scalars['String']>
 }
 
 export type Mutation = {
@@ -74,80 +72,80 @@ export type Mutation = {
 }
 
 export type MutationDeleteSearchArgs = {
-    resource?: Maybe<Scalars['JSON']>
+    resource?: InputMaybe<Scalars['JSON']>
 }
 
 export type MutationSaveSearchArgs = {
-    resource?: Maybe<Scalars['JSON']>
+    resource?: InputMaybe<Scalars['JSON']>
 }
 
 export type PlacementRule = {
     _uid?: Maybe<Scalars['String']>
+    clusterCount?: Maybe<Scalars['JSON']>
+    created?: Maybe<Scalars['String']>
     name?: Maybe<Scalars['String']>
     namespace?: Maybe<Scalars['String']>
-    created?: Maybe<Scalars['String']>
-    clusterCount?: Maybe<Scalars['JSON']>
     replicas?: Maybe<Scalars['Int']>
 }
 
 export type Query = {
     applications?: Maybe<Array<Maybe<Application>>>
-    subscriptions?: Maybe<Array<Maybe<Subscription>>>
-    placementRules?: Maybe<Array<Maybe<PlacementRule>>>
     channels?: Maybe<Array<Maybe<Channel>>>
-    search?: Maybe<Array<Maybe<SearchResult>>>
     messages?: Maybe<Array<Maybe<Message>>>
+    placementRules?: Maybe<Array<Maybe<PlacementRule>>>
+    savedSearches?: Maybe<Array<Maybe<UserSearch>>>
+    search?: Maybe<Array<Maybe<SearchResult>>>
     searchComplete?: Maybe<Array<Maybe<Scalars['String']>>>
     searchSchema?: Maybe<Scalars['JSON']>
-    savedSearches?: Maybe<Array<Maybe<UserSearch>>>
+    subscriptions?: Maybe<Array<Maybe<Subscription>>>
 }
 
 export type QueryApplicationsArgs = {
-    name?: Maybe<Scalars['String']>
-    namespace?: Maybe<Scalars['String']>
-}
-
-export type QuerySubscriptionsArgs = {
-    name?: Maybe<Scalars['String']>
-    namespace?: Maybe<Scalars['String']>
-}
-
-export type QueryPlacementRulesArgs = {
-    name?: Maybe<Scalars['String']>
-    namespace?: Maybe<Scalars['String']>
+    name?: InputMaybe<Scalars['String']>
+    namespace?: InputMaybe<Scalars['String']>
 }
 
 export type QueryChannelsArgs = {
-    name?: Maybe<Scalars['String']>
-    namespace?: Maybe<Scalars['String']>
+    name?: InputMaybe<Scalars['String']>
+    namespace?: InputMaybe<Scalars['String']>
+}
+
+export type QueryPlacementRulesArgs = {
+    name?: InputMaybe<Scalars['String']>
+    namespace?: InputMaybe<Scalars['String']>
 }
 
 export type QuerySearchArgs = {
-    input?: Maybe<Array<Maybe<SearchInput>>>
+    input?: InputMaybe<Array<InputMaybe<SearchInput>>>
 }
 
 export type QuerySearchCompleteArgs = {
+    limit?: InputMaybe<Scalars['Int']>
     property: Scalars['String']
-    query?: Maybe<SearchInput>
-    limit?: Maybe<Scalars['Int']>
+    query?: InputMaybe<SearchInput>
+}
+
+export type QuerySubscriptionsArgs = {
+    name?: InputMaybe<Scalars['String']>
+    namespace?: InputMaybe<Scalars['String']>
 }
 
 export type SearchFilter = {
     property: Scalars['String']
-    values?: Maybe<Array<Maybe<Scalars['String']>>>
+    values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>
 }
 
 export type SearchInput = {
-    keywords?: Maybe<Array<Maybe<Scalars['String']>>>
-    filters?: Maybe<Array<Maybe<SearchFilter>>>
-    limit?: Maybe<Scalars['Int']>
-    relatedKinds?: Maybe<Array<Maybe<Scalars['String']>>>
+    filters?: InputMaybe<Array<InputMaybe<SearchFilter>>>
+    keywords?: InputMaybe<Array<InputMaybe<Scalars['String']>>>
+    limit?: InputMaybe<Scalars['Int']>
+    relatedKinds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>
 }
 
 export type SearchRelatedResult = {
-    kind: Scalars['String']
     count?: Maybe<Scalars['Int']>
     items?: Maybe<Scalars['JSON']>
+    kind: Scalars['String']
 }
 
 export type SearchResult = {
@@ -158,102 +156,474 @@ export type SearchResult = {
 
 export type Subscription = {
     _uid?: Maybe<Scalars['String']>
+    appCount?: Maybe<Scalars['Int']>
+    channel?: Maybe<Scalars['String']>
+    clusterCount?: Maybe<Scalars['JSON']>
+    created?: Maybe<Scalars['String']>
+    localPlacement?: Maybe<Scalars['Boolean']>
     name?: Maybe<Scalars['String']>
     namespace?: Maybe<Scalars['String']>
-    created?: Maybe<Scalars['String']>
-    channel?: Maybe<Scalars['String']>
-    appCount?: Maybe<Scalars['Int']>
-    clusterCount?: Maybe<Scalars['JSON']>
-    timeWindow?: Maybe<Scalars['String']>
-    localPlacement?: Maybe<Scalars['Boolean']>
     status?: Maybe<Scalars['String']>
+    timeWindow?: Maybe<Scalars['String']>
 }
 
 export type UserSearch = {
+    description?: Maybe<Scalars['String']>
     id?: Maybe<Scalars['String']>
     name?: Maybe<Scalars['String']>
-    description?: Maybe<Scalars['String']>
     searchText?: Maybe<Scalars['String']>
+}
+
+export type GetApplicationsQueryVariables = Exact<{ [key: string]: never }>
+
+export type GetApplicationsQuery = {
+    applications?:
+        | Array<
+              | {
+                    _uid?: string | null | undefined
+                    apiVersion?: string | null | undefined
+                    created?: string | null | undefined
+                    dashboard?: string | null | undefined
+                    labels?: Array<string | null | undefined> | null | undefined
+                    name?: string | null | undefined
+                    namespace?: string | null | undefined
+                    cluster?: string | null | undefined
+                    clusterCount?: any | null | undefined
+                    hubChannels?: Array<any | null | undefined> | null | undefined
+                    applicationSet?: string | null | undefined
+                    destinationName?: string | null | undefined
+                    destinationServer?: string | null | undefined
+                    destinationCluster?: string | null | undefined
+                    destinationNamespace?: string | null | undefined
+                    repoURL?: string | null | undefined
+                    path?: string | null | undefined
+                    chart?: string | null | undefined
+                    targetRevision?: string | null | undefined
+                    hubSubscriptions?:
+                        | Array<
+                              | {
+                                    _uid?: string | null | undefined
+                                    name?: string | null | undefined
+                                    localPlacement?: boolean | null | undefined
+                                    timeWindow?: string | null | undefined
+                                    status?: string | null | undefined
+                                    channel?: string | null | undefined
+                                }
+                              | null
+                              | undefined
+                          >
+                        | null
+                        | undefined
+                }
+              | null
+              | undefined
+          >
+        | null
+        | undefined
+}
+
+export type GetSubscriptionsQueryVariables = Exact<{ [key: string]: never }>
+
+export type GetSubscriptionsQuery = {
+    subscriptions?:
+        | Array<
+              | {
+                    _uid?: string | null | undefined
+                    name?: string | null | undefined
+                    namespace?: string | null | undefined
+                    created?: string | null | undefined
+                    timeWindow?: string | null | undefined
+                    localPlacement?: boolean | null | undefined
+                    status?: string | null | undefined
+                    channel?: string | null | undefined
+                    appCount?: number | null | undefined
+                    clusterCount?: any | null | undefined
+                }
+              | null
+              | undefined
+          >
+        | null
+        | undefined
+}
+
+export type GetPlacementRulesQueryVariables = Exact<{ [key: string]: never }>
+
+export type GetPlacementRulesQuery = {
+    placementRules?:
+        | Array<
+              | {
+                    _uid?: string | null | undefined
+                    name?: string | null | undefined
+                    namespace?: string | null | undefined
+                    created?: string | null | undefined
+                    replicas?: number | null | undefined
+                    clusterCount?: any | null | undefined
+                }
+              | null
+              | undefined
+          >
+        | null
+        | undefined
+}
+
+export type GetChannelsQueryVariables = Exact<{ [key: string]: never }>
+
+export type GetChannelsQuery = {
+    channels?:
+        | Array<
+              | {
+                    _uid?: string | null | undefined
+                    name?: string | null | undefined
+                    namespace?: string | null | undefined
+                    created?: string | null | undefined
+                    type?: string | null | undefined
+                    pathname?: string | null | undefined
+                    localPlacement?: boolean | null | undefined
+                    subscriptionCount?: number | null | undefined
+                    clusterCount?: any | null | undefined
+                }
+              | null
+              | undefined
+          >
+        | null
+        | undefined
 }
 
 export type SaveSearchMutationVariables = Exact<{
     resource: Scalars['JSON']
 }>
 
-export type SaveSearchMutation = Pick<Mutation, 'saveSearch'>
+export type SaveSearchMutation = { saveSearch?: any | null | undefined }
 
 export type DeleteSearchMutationVariables = Exact<{
     resource: Scalars['JSON']
 }>
 
-export type DeleteSearchMutation = Pick<Mutation, 'deleteSearch'>
+export type DeleteSearchMutation = { deleteSearch?: any | null | undefined }
 
 export type SavedSearchesQueryVariables = Exact<{ [key: string]: never }>
 
 export type SavedSearchesQuery = {
-    items?: Maybe<Array<Maybe<Pick<UserSearch, 'id' | 'name' | 'description' | 'searchText'>>>>
+    items?:
+        | Array<
+              | {
+                    id?: string | null | undefined
+                    name?: string | null | undefined
+                    description?: string | null | undefined
+                    searchText?: string | null | undefined
+                }
+              | null
+              | undefined
+          >
+        | null
+        | undefined
 }
 
 export type SearchSchemaQueryVariables = Exact<{ [key: string]: never }>
 
-export type SearchSchemaQuery = Pick<Query, 'searchSchema'>
+export type SearchSchemaQuery = { searchSchema?: any | null | undefined }
 
 export type SearchCompleteQueryVariables = Exact<{
     property: Scalars['String']
-    query?: Maybe<SearchInput>
-    limit?: Maybe<Scalars['Int']>
+    query?: InputMaybe<SearchInput>
+    limit?: InputMaybe<Scalars['Int']>
 }>
 
-export type SearchCompleteQuery = Pick<Query, 'searchComplete'>
+export type SearchCompleteQuery = { searchComplete?: Array<string | null | undefined> | null | undefined }
 
 export type SearchResultItemsQueryVariables = Exact<{
-    input?: Maybe<Array<Maybe<SearchInput>> | Maybe<SearchInput>>
+    input?: InputMaybe<Array<InputMaybe<SearchInput>> | InputMaybe<SearchInput>>
 }>
 
-export type SearchResultItemsQuery = { searchResult?: Maybe<Array<Maybe<Pick<SearchResult, 'items'>>>> }
+export type SearchResultItemsQuery = {
+    searchResult?: Array<{ items?: any | null | undefined } | null | undefined> | null | undefined
+}
 
 export type SearchResultCountQueryVariables = Exact<{
-    input?: Maybe<Array<Maybe<SearchInput>> | Maybe<SearchInput>>
+    input?: InputMaybe<Array<InputMaybe<SearchInput>> | InputMaybe<SearchInput>>
 }>
 
-export type SearchResultCountQuery = { searchResult?: Maybe<Array<Maybe<Pick<SearchResult, 'count'>>>> }
+export type SearchResultCountQuery = {
+    searchResult?: Array<{ count?: number | null | undefined } | null | undefined> | null | undefined
+}
 
 export type SearchResultCountAndRelatedCountQueryVariables = Exact<{
-    input?: Maybe<Array<Maybe<SearchInput>> | Maybe<SearchInput>>
+    input?: InputMaybe<Array<InputMaybe<SearchInput>> | InputMaybe<SearchInput>>
 }>
 
 export type SearchResultCountAndRelatedCountQuery = {
-    searchResult?: Maybe<
-        Array<
-            Maybe<
-                Pick<SearchResult, 'count'> & {
-                    related?: Maybe<Array<Maybe<Pick<SearchRelatedResult, 'kind' | 'count'>>>>
+    searchResult?:
+        | Array<
+              | {
+                    count?: number | null | undefined
+                    related?:
+                        | Array<{ kind: string; count?: number | null | undefined } | null | undefined>
+                        | null
+                        | undefined
                 }
-            >
-        >
-    >
+              | null
+              | undefined
+          >
+        | null
+        | undefined
 }
 
 export type SearchResultRelatedCountQueryVariables = Exact<{
-    input?: Maybe<Array<Maybe<SearchInput>> | Maybe<SearchInput>>
+    input?: InputMaybe<Array<InputMaybe<SearchInput>> | InputMaybe<SearchInput>>
 }>
 
 export type SearchResultRelatedCountQuery = {
-    searchResult?: Maybe<Array<Maybe<{ related?: Maybe<Array<Maybe<Pick<SearchRelatedResult, 'kind' | 'count'>>>> }>>>
+    searchResult?:
+        | Array<
+              | {
+                    related?:
+                        | Array<{ kind: string; count?: number | null | undefined } | null | undefined>
+                        | null
+                        | undefined
+                }
+              | null
+              | undefined
+          >
+        | null
+        | undefined
 }
 
 export type SearchResultRelatedItemsQueryVariables = Exact<{
-    input?: Maybe<Array<Maybe<SearchInput>> | Maybe<SearchInput>>
+    input?: InputMaybe<Array<InputMaybe<SearchInput>> | InputMaybe<SearchInput>>
 }>
 
 export type SearchResultRelatedItemsQuery = {
-    searchResult?: Maybe<Array<Maybe<{ related?: Maybe<Array<Maybe<Pick<SearchRelatedResult, 'kind' | 'items'>>>> }>>>
+    searchResult?:
+        | Array<
+              | {
+                    related?:
+                        | Array<{ kind: string; items?: any | null | undefined } | null | undefined>
+                        | null
+                        | undefined
+                }
+              | null
+              | undefined
+          >
+        | null
+        | undefined
 }
 
 export type GetMessagesQueryVariables = Exact<{ [key: string]: never }>
 
-export type GetMessagesQuery = { messages?: Maybe<Array<Maybe<Pick<Message, 'id' | 'kind' | 'description'>>>> }
+export type GetMessagesQuery = {
+    messages?:
+        | Array<
+              | { id: string; kind?: string | null | undefined; description?: string | null | undefined }
+              | null
+              | undefined
+          >
+        | null
+        | undefined
+}
 
+export const GetApplicationsDocument = gql`
+    query getApplications {
+        applications {
+            _uid
+            apiVersion
+            created
+            dashboard
+            labels
+            name
+            namespace
+            cluster
+            clusterCount
+            hubChannels
+            hubSubscriptions {
+                _uid
+                name
+                localPlacement
+                timeWindow
+                status
+                channel
+            }
+            applicationSet
+            destinationName
+            destinationServer
+            destinationCluster
+            destinationNamespace
+            repoURL
+            path
+            chart
+            targetRevision
+        }
+    }
+`
+
+/**
+ * __useGetApplicationsQuery__
+ *
+ * To run a query within a React component, call `useGetApplicationsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetApplicationsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetApplicationsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetApplicationsQuery(
+    baseOptions?: Apollo.QueryHookOptions<GetApplicationsQuery, GetApplicationsQueryVariables>
+) {
+    const options = { ...defaultOptions, ...baseOptions }
+    return Apollo.useQuery<GetApplicationsQuery, GetApplicationsQueryVariables>(GetApplicationsDocument, options)
+}
+export function useGetApplicationsLazyQuery(
+    baseOptions?: Apollo.LazyQueryHookOptions<GetApplicationsQuery, GetApplicationsQueryVariables>
+) {
+    const options = { ...defaultOptions, ...baseOptions }
+    return Apollo.useLazyQuery<GetApplicationsQuery, GetApplicationsQueryVariables>(GetApplicationsDocument, options)
+}
+export type GetApplicationsQueryHookResult = ReturnType<typeof useGetApplicationsQuery>
+export type GetApplicationsLazyQueryHookResult = ReturnType<typeof useGetApplicationsLazyQuery>
+export type GetApplicationsQueryResult = Apollo.QueryResult<GetApplicationsQuery, GetApplicationsQueryVariables>
+export const GetSubscriptionsDocument = gql`
+    query getSubscriptions {
+        subscriptions {
+            _uid
+            name
+            namespace
+            created
+            timeWindow
+            localPlacement
+            status
+            channel
+            appCount
+            clusterCount
+        }
+    }
+`
+
+/**
+ * __useGetSubscriptionsQuery__
+ *
+ * To run a query within a React component, call `useGetSubscriptionsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSubscriptionsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetSubscriptionsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetSubscriptionsQuery(
+    baseOptions?: Apollo.QueryHookOptions<GetSubscriptionsQuery, GetSubscriptionsQueryVariables>
+) {
+    const options = { ...defaultOptions, ...baseOptions }
+    return Apollo.useQuery<GetSubscriptionsQuery, GetSubscriptionsQueryVariables>(GetSubscriptionsDocument, options)
+}
+export function useGetSubscriptionsLazyQuery(
+    baseOptions?: Apollo.LazyQueryHookOptions<GetSubscriptionsQuery, GetSubscriptionsQueryVariables>
+) {
+    const options = { ...defaultOptions, ...baseOptions }
+    return Apollo.useLazyQuery<GetSubscriptionsQuery, GetSubscriptionsQueryVariables>(GetSubscriptionsDocument, options)
+}
+export type GetSubscriptionsQueryHookResult = ReturnType<typeof useGetSubscriptionsQuery>
+export type GetSubscriptionsLazyQueryHookResult = ReturnType<typeof useGetSubscriptionsLazyQuery>
+export type GetSubscriptionsQueryResult = Apollo.QueryResult<GetSubscriptionsQuery, GetSubscriptionsQueryVariables>
+export const GetPlacementRulesDocument = gql`
+    query getPlacementRules {
+        placementRules {
+            _uid
+            name
+            namespace
+            created
+            replicas
+            clusterCount
+        }
+    }
+`
+
+/**
+ * __useGetPlacementRulesQuery__
+ *
+ * To run a query within a React component, call `useGetPlacementRulesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPlacementRulesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPlacementRulesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetPlacementRulesQuery(
+    baseOptions?: Apollo.QueryHookOptions<GetPlacementRulesQuery, GetPlacementRulesQueryVariables>
+) {
+    const options = { ...defaultOptions, ...baseOptions }
+    return Apollo.useQuery<GetPlacementRulesQuery, GetPlacementRulesQueryVariables>(GetPlacementRulesDocument, options)
+}
+export function useGetPlacementRulesLazyQuery(
+    baseOptions?: Apollo.LazyQueryHookOptions<GetPlacementRulesQuery, GetPlacementRulesQueryVariables>
+) {
+    const options = { ...defaultOptions, ...baseOptions }
+    return Apollo.useLazyQuery<GetPlacementRulesQuery, GetPlacementRulesQueryVariables>(
+        GetPlacementRulesDocument,
+        options
+    )
+}
+export type GetPlacementRulesQueryHookResult = ReturnType<typeof useGetPlacementRulesQuery>
+export type GetPlacementRulesLazyQueryHookResult = ReturnType<typeof useGetPlacementRulesLazyQuery>
+export type GetPlacementRulesQueryResult = Apollo.QueryResult<GetPlacementRulesQuery, GetPlacementRulesQueryVariables>
+export const GetChannelsDocument = gql`
+    query getChannels {
+        channels {
+            _uid
+            name
+            namespace
+            created
+            type
+            pathname
+            localPlacement
+            subscriptionCount
+            clusterCount
+        }
+    }
+`
+
+/**
+ * __useGetChannelsQuery__
+ *
+ * To run a query within a React component, call `useGetChannelsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetChannelsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetChannelsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetChannelsQuery(
+    baseOptions?: Apollo.QueryHookOptions<GetChannelsQuery, GetChannelsQueryVariables>
+) {
+    const options = { ...defaultOptions, ...baseOptions }
+    return Apollo.useQuery<GetChannelsQuery, GetChannelsQueryVariables>(GetChannelsDocument, options)
+}
+export function useGetChannelsLazyQuery(
+    baseOptions?: Apollo.LazyQueryHookOptions<GetChannelsQuery, GetChannelsQueryVariables>
+) {
+    const options = { ...defaultOptions, ...baseOptions }
+    return Apollo.useLazyQuery<GetChannelsQuery, GetChannelsQueryVariables>(GetChannelsDocument, options)
+}
+export type GetChannelsQueryHookResult = ReturnType<typeof useGetChannelsQuery>
+export type GetChannelsLazyQueryHookResult = ReturnType<typeof useGetChannelsLazyQuery>
+export type GetChannelsQueryResult = Apollo.QueryResult<GetChannelsQuery, GetChannelsQueryVariables>
 export const SaveSearchDocument = gql`
     mutation saveSearch($resource: JSON!) {
         saveSearch(resource: $resource)

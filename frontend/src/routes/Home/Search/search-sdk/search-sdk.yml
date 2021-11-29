@@ -2,9 +2,9 @@
 # Copyright Contributors to the Open Cluster Management project
 overwrite: true
 schema: https://localhost:4010/searchapi/graphql
-documents: ./src/search-sdk/*.graphql
+documents: ./src/routes/Home/Search/search-sdk/*.graphql
 generates:
-    src/search-sdk/search-sdk.ts:
+    src/routes/Home/Search/search-sdk/search-sdk.ts:
         plugins:
             - typescript
             - typescript-operations

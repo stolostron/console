@@ -1,0 +1,71 @@
+query getApplications {
+    applications {
+        _uid
+        apiVersion
+        created
+        dashboard
+        labels
+        name
+        namespace
+        cluster
+        clusterCount
+        hubChannels
+        hubSubscriptions {
+            _uid
+            name
+            localPlacement
+            timeWindow
+            status
+            channel
+        }
+        applicationSet
+        destinationName
+        destinationServer
+        destinationCluster
+        destinationNamespace
+        repoURL
+        path
+        chart
+        targetRevision
+    }
+}
+
+query getSubscriptions {
+    subscriptions {
+        _uid
+        name
+        namespace
+        created
+        timeWindow
+        localPlacement
+        status
+        channel
+        appCount
+        clusterCount
+    }
+}
+
+query getPlacementRules {
+    placementRules {
+        _uid
+        name
+        namespace
+        created
+        replicas
+        clusterCount
+    }
+}
+
+query getChannels {
+    channels {
+        _uid
+        name
+        namespace
+        created
+        type
+        pathname
+        localPlacement
+        subscriptionCount
+        clusterCount
+    }
+}
