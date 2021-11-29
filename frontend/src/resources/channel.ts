@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
-import { IResource, IResourceDefinition } from './resource'
+import { IResourceDefinition } from './resource'
 
 export const ChannelApiVersion = 'apps.open-cluster-management.io/v1'
 export type ChannelApiVersionType = 'apps.open-cluster-management.io/v1'
@@ -13,7 +13,7 @@ export const ChannelDefinition: IResourceDefinition = {
     kind: ChannelKind,
 }
 
-export interface Channel extends IResource {
+export interface Channel {
     apiVersion: ChannelApiVersionType
     kind: ChannelKindType
     metadata: Metadata

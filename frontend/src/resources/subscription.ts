@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
-import { IResource, IResourceDefinition } from './resource'
+import { IResourceDefinition } from './resource'
 
 export const SubscriptionApiVersion = 'apps.open-cluster-management.io/v1'
 export type SubscriptionApiVersionType = 'apps.open-cluster-management.io/v1'
@@ -13,7 +13,7 @@ export const SubscriptionDefinition: IResourceDefinition = {
     kind: SubscriptionKind,
 }
 
-export interface Subscription extends IResource {
+export interface Subscription {
     apiVersion: SubscriptionApiVersionType
     kind: SubscriptionKindType
     metadata: Metadata
