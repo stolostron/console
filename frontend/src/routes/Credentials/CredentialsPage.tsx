@@ -27,7 +27,7 @@ import { NavigationPath } from '../../NavigationPath'
 import { deleteResource, DiscoveryConfig, ProviderConnection, Secret, unpackProviderConnection } from '../../resources'
 
 export default function CredentialsPage() {
-    const { t } = useTranslation()
+    const { t } = useTranslation('plugin__acm-plugin')
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)

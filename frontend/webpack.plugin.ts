@@ -53,10 +53,9 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             new ConsoleRemotePlugin(),
             new webpack.DefinePlugin({
                 'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development'),
-                'process.env.REACT_APP_BACKEND_HOST': JSON.stringify(''),
-                'process.env.REACT_APP_BACKEND_PATH': JSON.stringify(
-                    '/api/proxy/namespace/open-cluster-management/service/serviceName:9991/multicloud'
-                ),
+                'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
+                'process.env.MODE': JSON.stringify('plugin'),
+                'process.env.PLUGIN_PROXY_PATH': isProduction ? JSON.stringify('') : JSON.stringify('/api/proxy/acm-plugin'),
             }) as unknown as webpack.WebpackPluginInstance,
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
             new MonacoWebpackPlugin({ languages: ['yaml'] }),
@@ -73,9 +72,9 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             ],
         },
         devServer: {
-            port: 3000,
+            port: 3001,
             compress: true,
-            https: true,
+            https: false,
             hot: true,
         },
     }

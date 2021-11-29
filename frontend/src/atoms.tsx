@@ -5,7 +5,7 @@ import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import {
-    backendUrl,
+    getBackendUrl,
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
     AgentClusterInstallVersion,
@@ -64,6 +64,7 @@ import {
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
+    GitOpsCluster,
     GitOpsClusterApiVersion,
     GitOpsClusterKind,
     InfraEnvApiVersion,
@@ -95,6 +96,9 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
+    Placement,
+    PlacementApiVersion,
+    PlacementKind,
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
@@ -143,7 +147,7 @@ export const clusterProvisionsState = AtomArray<ClusterProvision>()
 export const configMapsState = AtomArray<ConfigMap>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
-export const gitOpsClustersState = AtomArray<IResource>()
+export const gitOpsClustersState = AtomArray<GitOpsCluster>()
 export const infraEnvironmentsState = AtomArray<CIM.InfraEnvK8sResource>()
 export const infrastructuresState = AtomArray<CIM.InfrastructureK8sResource>()
 export const machinePoolsState = AtomArray<MachinePool>()
@@ -156,6 +160,7 @@ export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
 export const policiesState = AtomArray<Policy>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
+export const placementsState = AtomArray<Placement>()
 export const placementRulesState = AtomArray<PlacementRule>()
 export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
@@ -228,6 +233,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setPoliciesState] = useRecoilState(policiesState)
     const [, setPlacementBindingsState] = useRecoilState(placementBindingsState)
+    const [, setPlacementsState] = useRecoilState(placementsState)
     const [, setPlacementRulesState] = useRecoilState(placementRulesState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
     const [, setSecrets] = useRecoilState(secretsState)
@@ -244,6 +250,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
         addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
+        addSetter(PlacementApiVersion, PlacementKind, setPlacementsState)
         addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
         addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
         addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)
@@ -363,7 +370,7 @@ export function LoadData(props: { children?: ReactNode }) {
 
         let evtSource: EventSource | undefined
         function startWatch() {
-            evtSource = new EventSource(`${backendUrl}/events`, { withCredentials: true })
+            evtSource = new EventSource(`${getBackendUrl()}/events`, { withCredentials: true })
             evtSource.onmessage = processMessage
             evtSource.onerror = function () {
                 console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
@@ -385,7 +392,7 @@ export function LoadData(props: { children?: ReactNode }) {
 
     useEffect(() => {
         function checkLoggedIn() {
-            fetch(`${backendUrl}/authenticated`, {
+            fetch(`${getBackendUrl()}/authenticated`, {
                 credentials: 'include',
                 headers: { accept: 'application/json' },
             })
@@ -397,7 +404,7 @@ export function LoadData(props: { children?: ReactNode }) {
                             if (process.env.NODE_ENV === 'production') {
                                 window.location.reload()
                             } else {
-                                window.location.href = `${backendUrl}/login`
+                                window.location.href = `${getBackendUrl()}/login`
                             }
                             break
                     }
@@ -406,7 +413,7 @@ export function LoadData(props: { children?: ReactNode }) {
                     if (process.env.NODE_ENV === 'production') {
                         window.location.reload()
                     } else {
-                        window.location.href = `${backendUrl}/login`
+                        window.location.href = `${getBackendUrl()}/login`
                     }
                 })
                 .finally(() => {
@@ -416,7 +423,7 @@ export function LoadData(props: { children?: ReactNode }) {
         checkLoggedIn()
     }, [])
 
-    if (loading) return <LoadingPage />
+    if (loading || getBackendUrl() === undefined) return <LoadingPage />
 
     return <Fragment>{props.children}</Fragment>
 }

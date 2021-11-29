@@ -1,11 +1,12 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { Policy, PolicyApiVersion, PolicyKind, IResource, ResourceError, ResourceErrorCode } from '../resources'
-// import { PlacementBindingApiVersion, PlacementBindingKind } from '../resources/placement-binding'
+import { PlacementBindingApiVersion, PlacementBindingKind } from '../resources/placement-binding'
+import { PlacementRuleApiVersion, PlacementRuleKind } from '../resources/placement-rule'
 
 import { deleteResources } from './delete-resources'
 
-export function deletePolicy(policy: Policy) {
+export function deletePolicy(policy: Policy, placementBindingChecked?: Boolean, placementRuleChecked?: Boolean) {
     const resources: IResource[] = [
         {
             apiVersion: PolicyApiVersion,
@@ -13,11 +14,20 @@ export function deletePolicy(policy: Policy) {
             metadata: { name: policy.metadata.name!, namespace: policy.metadata.namespace! },
         },
     ]
-    // resources.push({
-    //     apiVersion: PlacementBindingApiVersion,
-    //     kind: PlacementBindingKind,
-    //     metadata: { name: policy.metadata.name },
-    // })
+    placementBindingChecked &&
+        resources.push({
+            apiVersion: PlacementBindingApiVersion,
+            kind: PlacementBindingKind,
+            metadata: { name: `binding-${policy.metadata.name}`, namespace: policy.metadata.namespace! },
+        })
+
+    placementRuleChecked &&
+        resources.push({
+            apiVersion: PlacementRuleApiVersion,
+            kind: PlacementRuleKind,
+            metadata: { name: `placement-${policy.metadata.name}`, namespace: policy.metadata.namespace! },
+        })
+
     const deleteResourcesResult = deleteResources(resources)
 
     return {

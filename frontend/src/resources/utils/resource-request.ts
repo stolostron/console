@@ -3,8 +3,7 @@
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
-
-export const backendUrl = process.env.REACT_APP_BACKEND_PATH
+import { getCookie } from '.'
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -47,17 +46,25 @@ export class ResourceError extends Error {
     }
 }
 
+export function getBackendUrl() {
+    if (process.env.MODE === 'plugin') {
+        const proxyPath = process.env.PLUGIN_PROXY_PATH || window.acmConsolePluginProxyPath
+        return proxyPath ? `${proxyPath}${process.env.REACT_APP_BACKEND_PATH}` : undefined
+    }
+    return process.env.REACT_APP_BACKEND_PATH
+}
+
 export function createResource<Resource extends IResource, ResultType = Resource>(
     resource: Resource
 ): IRequestResult<ResultType> {
-    const url = backendUrl + getResourceApiPath(resource)
+    const url = getBackendUrl() + getResourceApiPath(resource)
     return postRequest<Resource, ResultType>(url, resource)
 }
 
 export function replaceResource<Resource extends IResource, ResultType = Resource>(
     resource: Resource
 ): IRequestResult<ResultType> {
-    const url = backendUrl + getResourceNameApiPath(resource)
+    const url = getBackendUrl() + getResourceNameApiPath(resource)
     return putRequest<Resource, ResultType>(url, resource)
 }
 
@@ -65,7 +72,7 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     resource: Resource,
     data: unknown
 ): IRequestResult<ResultType> {
-    const url = backendUrl + getResourceNameApiPath(resource)
+    const url = getBackendUrl() + getResourceNameApiPath(resource)
     const headers: Record<string, string> = {}
     if (Array.isArray(data)) {
         headers['Content-Type'] = 'application/json-patch+json'
@@ -78,7 +85,7 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
 export function deleteResource<Resource extends IResource>(resource: Resource): IRequestResult {
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
-    const url = backendUrl + getResourceNameApiPath(resource)
+    const url = getBackendUrl() + getResourceNameApiPath(resource)
     return deleteRequest(url)
 }
 
@@ -93,7 +100,7 @@ export function getResource<Resource extends IResource>(
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
     }
 
-    let url = backendUrl + getResourceNameApiPath(resource)
+    let url = getBackendUrl() + getResourceNameApiPath(resource)
 
     let queryString = undefined
 
@@ -127,7 +134,7 @@ export function listResources<Resource extends IResource>(
     labels?: string[],
     query?: Record<string, string>
 ): IRequestResult<Resource[]> {
-    let url = backendUrl + getResourceApiPath(resource)
+    let url = getBackendUrl() + getResourceApiPath(resource)
     if (labels) {
         url += '?labelSelector=' + labels.join(',')
         if (query)
@@ -163,7 +170,7 @@ export function listClusterResources<Resource extends IResource>(
     resource: { apiVersion: string; kind: string },
     labels?: string[]
 ): IRequestResult<Resource[]> {
-    let url = backendUrl + getResourceApiPath(resource)
+    let url = getBackendUrl() + getResourceApiPath(resource)
     if (labels) url += '?labelSelector=' + labels.join(',')
     const result = getRequest<ResourceList<Resource>>(url)
     return {
@@ -180,7 +187,7 @@ export function listNamespacedResources<Resource extends IResource>(
     },
     labels?: string[]
 ): IRequestResult<Resource[]> {
-    let url = backendUrl + getResourceApiPath(resource)
+    let url = getBackendUrl() + getResourceApiPath(resource)
     if (labels) url += '?labelSelector=' + labels.join(',')
     const result = getRequest<ResourceList<Resource>>(url)
     return {
@@ -194,7 +201,7 @@ export function listAnsibleTowerJobs(
     ansibleHostUrl: string,
     token: string
 ): IRequestResult<AnsibleTowerJobTemplateList> {
-    const backendURLPath = backendUrl + '/ansibletower'
+    const backendURLPath = getBackendUrl() + '/ansibletower'
     const ansibleJobsUrl = ansibleHostUrl + '/api/v2/job_templates/'
     const abortController = new AbortController()
     return {
@@ -321,6 +328,11 @@ export async function fetchRetry<T>(options: {
         Accept: 'application/json',
     }
 
+    const csrfToken = getCookie('csrf-token')
+    if (csrfToken && (options.method ?? 'GET') !== 'GET' && options.url.startsWith('/')) {
+        headers['X-CSRFToken'] = csrfToken
+    }
+
     let fetchBody: string | undefined
     if (options.data) {
         try {
@@ -403,7 +415,7 @@ export async function fetchRetry<T>(options: {
                         if (process.env.NODE_ENV === 'production') {
                             window.location.reload()
                         } else {
-                            window.location.href = `${backendUrl}/login`
+                            window.location.href = `${getBackendUrl()}/login`
                         }
                         throw new ResourceError(status.message as string, status.code as number)
                     } else if (ResourceErrorCodes.includes(status.code as number)) {
@@ -429,7 +441,7 @@ export async function fetchRetry<T>(options: {
                         if (process.env.NODE_ENV === 'production') {
                             window.location.reload()
                         } else {
-                            window.location.href = `${backendUrl}/login`
+                            window.location.href = `${getBackendUrl()}/login`
                         }
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)

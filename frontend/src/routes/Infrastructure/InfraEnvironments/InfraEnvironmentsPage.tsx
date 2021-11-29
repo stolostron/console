@@ -14,6 +14,7 @@ import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import isMatch from 'lodash/isMatch'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { InfraEnvK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'
@@ -28,7 +29,7 @@ import { OnPremiseBanner } from '../Clusters/ManagedClusters/components/cim/OnPr
 
 const { AGENT_LOCATION_LABEL_KEY, getAgentStatus } = CIM
 
-const deleteInfraEnv = (infraEnv: CIM.InfraEnvK8sResource) => {
+const deleteInfraEnv = (infraEnv: InfraEnvK8sResource) => {
     const resources = [infraEnv]
     if (infraEnv.spec?.pullSecretRef?.name) {
         resources.push({

@@ -40,7 +40,7 @@ import {
     patchResource,
     ResourceErrorCode,
 } from '../../../../resources'
-import { usePageContext } from '../Clusters'
+import { usePageContext } from '../ClustersPage'
 import { AddCluster } from './components/AddCluster'
 import { BatchChannelSelectModal } from './components/BatchChannelSelectModal'
 import { BatchUpgradeModal } from './components/BatchUpgradeModal'

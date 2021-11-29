@@ -28,7 +28,7 @@ export async function login(_req: Http2ServerRequest, res: Http2ServerResponse):
     const queryString = stringifyQuery({
         response_type: `code`,
         client_id: process.env.OAUTH2_CLIENT_ID,
-        redirect_uri: `${process.env.BACKEND_URL}/login/callback`,
+        redirect_uri: process.env.OAUTH2_REDIRECT_URL,
         scope: `user:full`,
         state: '',
     })
@@ -46,7 +46,7 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
         const requestQuery: Record<string, string> = {
             grant_type: `authorization_code`,
             code: code,
-            redirect_uri: `${process.env.BACKEND_URL}/login/callback`,
+            redirect_uri: process.env.OAUTH2_REDIRECT_URL,
             client_id: process.env.OAUTH2_CLIENT_ID,
             client_secret: process.env.OAUTH2_CLIENT_SECRET,
         }

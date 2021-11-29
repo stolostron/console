@@ -37,8 +37,8 @@ import { NavigationPath } from '../../../NavigationPath'
 import { Policy } from '../../../resources'
 import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
-import { searchClient } from '../../../search-sdk/search-client'
-import { useSearchResultCountLazyQuery, useSearchResultItemsLazyQuery } from '../../../search-sdk/search-sdk'
+import { searchClient } from '../Search/search-sdk/search-client'
+import { useSearchResultCountLazyQuery, useSearchResultItemsLazyQuery } from '../Search/search-sdk/search-sdk'
 
 export function mapProviderFromLabel(provider: string): Provider {
     switch (provider.toLowerCase()) {

@@ -53,7 +53,7 @@ import {
     mapClusters,
     ResourceErrorCode,
 } from '../../../../resources'
-import { usePageContext } from '../Clusters'
+import { usePageContext } from '../ClustersPage'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
 import { MultiClusterNetworkStatus } from './components/MultiClusterNetworkStatus'
