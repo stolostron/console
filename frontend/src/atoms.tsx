@@ -5,7 +5,6 @@ import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import {
-    getBackendUrl,
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
     AgentClusterInstallVersion,
@@ -14,15 +13,15 @@ import {
     AnsibleJob,
     AnsibleJobApiVersion,
     AnsibleJobKind,
-    ArgoApplication,
-    ArgoApplicationApiVersion,
-    ArgoApplicationKind,
     Application,
     ApplicationApiVersion,
     ApplicationKind,
     ApplicationSet,
     ApplicationSetApiVersion,
     ApplicationSetKind,
+    ArgoApplication,
+    ArgoApplicationApiVersion,
+    ArgoApplicationKind,
     BareMetalAsset,
     BareMetalAssetApiVersion,
     BareMetalAssetKind,
@@ -64,6 +63,7 @@ import {
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
+    getBackendUrl,
     GitOpsCluster,
     GitOpsClusterApiVersion,
     GitOpsClusterKind,
@@ -108,12 +108,12 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
-    Subscription,
-    SubscriptionApiVersion,
-    SubscriptionKind,
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
+    Subscription,
+    SubscriptionApiVersion,
+    SubscriptionKind,
 } from './resources'
 import { PlacementBinding, PlacementBindingApiVersion, PlacementBindingKind } from './resources/placement-binding'
 import { Policy, PolicyApiVersion, PolicyKind } from './resources/policy'
@@ -376,7 +376,9 @@ export function LoadData(props: { children?: ReactNode }) {
                 console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
                 switch (evtSource?.readyState) {
                     case EventSource.CLOSED:
-                        startWatch()
+                        setTimeout(() => {
+                            startWatch()
+                        }, 1000)
                         break
                 }
             }
