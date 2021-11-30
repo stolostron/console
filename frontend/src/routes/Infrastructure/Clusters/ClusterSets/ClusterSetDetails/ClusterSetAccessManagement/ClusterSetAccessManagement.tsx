@@ -303,7 +303,6 @@ function AddUsersModal(props: {
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            style={{ overflow: 'visible' }}
             title={t('access.add.title')}
             isOpen={props.isOpen}
             onClose={reset}
@@ -361,6 +360,7 @@ function AddUsersModal(props: {
                             <AcmSelect
                                 id="role"
                                 maxHeight="10em"
+                                menuAppendTo="parent"
                                 isRequired
                                 label={t('access.add.role')}
                                 placeholder={t('access.select.role')}
