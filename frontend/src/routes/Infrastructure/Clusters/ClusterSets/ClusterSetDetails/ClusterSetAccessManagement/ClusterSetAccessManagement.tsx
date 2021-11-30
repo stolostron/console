@@ -360,7 +360,7 @@ function AddUsersModal(props: {
                             &nbsp;
                             <AcmSelect
                                 id="role"
-                                maxHeight="25em"
+                                maxHeight="10em"
                                 isRequired
                                 label={t('access.add.role')}
                                 placeholder={t('access.select.role')}
