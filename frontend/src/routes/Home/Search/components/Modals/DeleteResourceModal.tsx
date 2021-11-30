@@ -3,7 +3,6 @@
 // Copyright Contributors to the Open Cluster Management project
 import { AcmAlert, AcmButton, AcmModal } from '@open-cluster-management/ui-components'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import '@patternfly/react-core/dist/styles/base.css'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
