@@ -301,7 +301,7 @@ function AddUsersModal(props: {
     }
 
     return (
-        <AcmModal variant={ModalVariant.medium} title={t('access.add.title')} isOpen={props.isOpen} onClose={reset}>
+        <AcmModal variant={ModalVariant.medium} style={{overflow:'visible'}} title={t('access.add.title')} isOpen={props.isOpen} onClose={reset}>
             <AcmForm style={{ gap: 0 }}>
                 <AcmAlertContext.Consumer>
                     {(alertContext) => (
@@ -354,7 +354,7 @@ function AddUsersModal(props: {
                             &nbsp;
                             <AcmSelect
                                 id="role"
-                                maxHeight="6em"
+                                maxHeight="25em"
                                 isRequired
                                 label={t('access.add.role')}
                                 placeholder={t('access.select.role')}
