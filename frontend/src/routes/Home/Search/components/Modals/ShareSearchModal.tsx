@@ -8,7 +8,7 @@ import { AcmCodeSnippet, AcmModal } from '@open-cluster-management/ui-components
 import { useTranslation } from 'react-i18next'
 
 export const ShareSearchModal = (props: any) => {
-    const { t } = useTranslation(['search'])
+    const { t } = useTranslation()
     function GetUrl() {
         let url = decodeURIComponent(window.location.origin + window.location.pathname)
         let search = props.shareSearch ? props.shareSearch.searchText : ''
@@ -18,7 +18,7 @@ export const ShareSearchModal = (props: any) => {
     return (
         <Fragment>
             <AcmModal
-                title={t('search.modal.share.title')}
+                title={t('Share search')}
                 variant={ModalVariant.small}
                 isOpen={props.shareSearch !== undefined}
                 onClose={props.onClose}
@@ -28,8 +28,8 @@ export const ShareSearchModal = (props: any) => {
                 <AcmCodeSnippet
                     id="snippet"
                     command={GetUrl()}
-                    copyTooltipText={t('search.modal.share.copy.button')}
-                    copySuccessText={t('search.modal.share.copied')}
+                    copyTooltipText={t('Copy to clipboard')}
+                    copySuccessText={t('Copied!')}
                 />
             </AcmModal>
         </Fragment>

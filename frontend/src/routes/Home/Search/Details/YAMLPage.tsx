@@ -78,7 +78,7 @@ export default function YAMLPage(props: {
     apiversion: string
 }) {
     const { resource, loading, error, name, namespace, cluster, kind, apiversion } = props
-    const { t } = useTranslation(['details'])
+    const { t } = useTranslation()
     const [editMode, setEditMode] = useState<boolean>(false)
     const [userCanEdit, setUserCanEdit] = useState<boolean | undefined>(undefined)
     const [editedResourceYaml, setEditedResourceYaml] = useState<string>('')
@@ -145,7 +145,7 @@ export default function YAMLPage(props: {
                     noClose={true}
                     variant={'danger'}
                     isInline={true}
-                    title={`${t('yaml.getresource.error')} ${name}`}
+                    title={`${t('Error querying for resource:')} ${name}`}
                     subtitle={error}
                 />
             </PageSection>
@@ -157,11 +157,11 @@ export default function YAMLPage(props: {
             </PageSection>
         )
     }
-    let tooltipMessage = t('yaml.tooltip.enable')
+    let tooltipMessage = t('Enable resource editing')
     if (!userCanEdit) {
-        tooltipMessage = t('yaml.tooltip.unauthorized')
+        tooltipMessage = t('You are not allowed to edit this resource')
     } else if (editMode) {
-        tooltipMessage = t('yaml.tooltip.cancel')
+        tooltipMessage = t('Cancel Edits')
     }
     return (
         <PageSection>
@@ -170,7 +170,7 @@ export default function YAMLPage(props: {
                     noClose={true}
                     variant={'danger'}
                     isInline={true}
-                    title={`${t('yaml.update.resource.error')} ${name}`}
+                    title={`${t('Error occurred while updating resource:')} ${name}`}
                     subtitle={updateResourceError}
                 />
             )}
@@ -183,9 +183,7 @@ export default function YAMLPage(props: {
                 <p className={classes.textTitle}>{'Namespace:'}</p>
                 <p className={classes.textContent}>{namespace}</p>
                 <div className={classes.editButtonContainer}>
-                    <p className={classes.editButtonLabel}>
-                        {editMode ? t('yaml.editor.mode.editing') : t('yaml.editor.mode.readonly')}
-                    </p>
+                    <p className={classes.editButtonLabel}>{editMode ? t('Editing mode') : t('Read only mode')}</p>
                     <AcmButton
                         variant={'primary'}
                         isDisabled={!userCanEdit}
@@ -198,7 +196,7 @@ export default function YAMLPage(props: {
                         }}
                         tooltip={tooltipMessage}
                     >
-                        {editMode ? t('yaml.editor.cancel') : t('yaml.editor.edit')}
+                        {editMode ? t('Cancel') : t('Edit')}
                     </AcmButton>
                     {editMode && (
                         <AcmButton
@@ -206,7 +204,7 @@ export default function YAMLPage(props: {
                             variant={'primary'}
                             onClick={() => fireUpdateResource()}
                         >
-                            {t('yaml.editor.save')}
+                            {t('Save')}
                         </AcmButton>
                     )}
                 </div>

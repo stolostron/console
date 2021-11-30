@@ -42,7 +42,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                     exclude: /node_modules/,
                     loader: 'ts-loader',
                     options: {
-                        configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
+                        configFile: isDevelopment ? 'tsconfig.json' : 'tsconfig.json',
                         transpileOnly: true,
                     },
                     type: 'javascript/auto',
@@ -52,10 +52,12 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         plugins: [
             new ConsoleRemotePlugin(),
             new webpack.DefinePlugin({
-                'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development'),
+                'process.env.NODE_ENV': JSON.stringify('production'),
                 'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
                 'process.env.MODE': JSON.stringify('plugin'),
-                'process.env.PLUGIN_PROXY_PATH': isProduction ? JSON.stringify('') : JSON.stringify('/api/proxy/acm-plugin'),
+                'process.env.PLUGIN_PROXY_PATH': isProduction
+                    ? JSON.stringify('')
+                    : JSON.stringify('/api/proxy/acm-plugin'),
             }) as unknown as webpack.WebpackPluginInstance,
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
             new MonacoWebpackPlugin({ languages: ['yaml'] }),

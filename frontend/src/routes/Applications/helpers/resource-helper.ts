@@ -2,6 +2,7 @@
 
 import _ from 'lodash'
 import { useTranslation } from 'react-i18next'
+import queryString from 'query-string'
 import moment from 'moment'
 import { IResource } from '../../../resources'
 
@@ -50,4 +51,39 @@ export const getAge = (item: IResource, locale: string, timestampKey: string) =>
         return getMoment(createdTime, locale).fromNow()
     }
     return '-'
+}
+
+export const getSearchLink = (params: any) => {
+    const { properties, showRelated } = params
+    const queryParams = []
+    let textSearch = ''
+
+    _.entries(properties).forEach(([key, value]) => {
+        textSearch = `${textSearch}${textSearch ? ' ' : ''}${key}:${Array.isArray(value) ? value.join() : value}`
+    })
+
+    if (textSearch) {
+        queryParams.push(`filters={"textsearch":"${encodeURIComponent(textSearch)}"}`)
+    }
+    if (showRelated) {
+        queryParams.push(`showrelated=${showRelated}`)
+    }
+    return `/search${queryParams.length ? '?' : ''}${queryParams.join('&')}`
+}
+
+export const getEditLink = (params: {
+    name: string
+    namespace: string
+    kind: string
+    apiversion: string
+    cluster: string
+}) => {
+    const { name, namespace, kind, apiversion, cluster } = params
+    return `/resources?${queryString.stringify({
+        cluster,
+        name,
+        namespace,
+        kind,
+        apiversion,
+    })}`
 }

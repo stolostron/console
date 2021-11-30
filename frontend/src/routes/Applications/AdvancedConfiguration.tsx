@@ -29,8 +29,8 @@ import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { channelsState, placementRulesState, placementsState, subscriptionsState } from '../../atoms'
-import { IResource } from '../../resources'
-import { getAge } from './helpers/resource-helper'
+import { IResource, SubscriptionApiVersion, PlacementApiVersion } from '../../resources'
+import { getAge, getEditLink } from './helpers/resource-helper'
 
 import _ from 'lodash'
 
@@ -47,7 +47,24 @@ export default function AdvancedConfiguration() {
                 () => [
                     {
                         header: t('Name'),
-                        cell: 'metadata.name',
+                        cell: (resource) => {
+                            if (resource.metadata) {
+                                const { name, namespace } = resource.metadata
+                                if (name) {
+                                    const searchParams: any = {
+                                        properties: {
+                                            name,
+                                            namespace,
+                                            kind: 'subscription',
+                                            cluster: 'local-cluster',
+                                            apiversion: SubscriptionApiVersion,
+                                        },
+                                    }
+                                    const subscriptionLink = getEditLink(searchParams)
+                                    return <a href={subscriptionLink}>{name}</a>
+                                }
+                            }
+                        },
                         sort: 'metadata.name',
                         search: 'metadata.name',
                         transforms: [cellWidth(20)],
@@ -60,7 +77,23 @@ export default function AdvancedConfiguration() {
                     },
                     {
                         header: t('Channel'),
-                        cell: 'spec.channel',
+                        cell: (resource) => {
+                            const channel = _.get(resource, 'spec.channel')
+                            if (channel) {
+                                const [namespace, name] = channel.split('/')
+                                const searchParams: any = {
+                                    properties: {
+                                        name,
+                                        namespace,
+                                        kind: 'channel',
+                                    },
+                                }
+                                const channelLink = getEditLink(searchParams)
+
+                                return <a href={channelLink}>{name}</a>
+                            }
+                            return '-'
+                        },
                         sort: 'spec.channel',
                         transforms: [cellWidth(20)],
                         tooltip:
@@ -80,7 +113,14 @@ export default function AdvancedConfiguration() {
                     },
                     {
                         header: t('Time window'),
-                        cell: '',
+                        cell: (resource) => {
+                            const timeWindow = _.get(resource, 'spec.timewindow.windowtype', '')
+                            if (['active', 'blocked'].includes(timeWindow)) {
+                                return <span>{_.upperFirst(_.toLower(timeWindow))}</span>
+                            }
+                            return ''
+                        },
+                        sort: 'spec.timewindow.windowtype',
                         tooltip:
                             'Indicates if updates to the subscription resources are subject to an active or blocked deployment time window.',
                     },
@@ -114,7 +154,13 @@ export default function AdvancedConfiguration() {
                     },
                     {
                         header: t('Type'),
-                        cell: '',
+                        cell: (resource) => {
+                            const channelType = _.get(resource, 'spec.type')
+                            if (channelType) {
+                                return <span>{channelType}</span>
+                            }
+                            return ''
+                        },
                         tooltip: 'Provides a link to the resource repository that is represented by the channel.',
                     },
                     {
@@ -146,7 +192,22 @@ export default function AdvancedConfiguration() {
                 () => [
                     {
                         header: t('Name'),
-                        cell: 'metadata.name',
+                        cell: (resource) => {
+                            if (resource.metadata) {
+                                const { name, namespace } = resource.metadata
+                                if (name) {
+                                    const searchParams: any = {
+                                        name,
+                                        namespace,
+                                        kind: 'placement',
+                                        cluster: 'local-cluster',
+                                        apiversion: PlacementApiVersion,
+                                    }
+                                    const placementLink = getEditLink(searchParams)
+                                    return <a href={placementLink}>{name}</a>
+                                }
+                            }
+                        },
                         sort: 'metadata.name',
                         search: 'metadata.name',
                     },
