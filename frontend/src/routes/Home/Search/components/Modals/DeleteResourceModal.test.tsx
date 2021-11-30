@@ -213,7 +213,7 @@ describe('DeleteResourceModal', () => {
             await waitForNocks([deleteResourceSelfSubjectAccessNock])
 
             // find the button and simulate a click
-            const submitButton = screen.getByText('search.modal.delete.resource.action.delete')
+            const submitButton = screen.getByText('Delete')
             expect(submitButton).toBeTruthy()
             userEvent.click(submitButton)
 

@@ -56,7 +56,7 @@ function RenderRelatedTables(
     selectedKinds: string[],
     setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
 ) {
-    const { t } = useTranslation(['search'])
+    const { t } = useTranslation()
     const queryFilters = convertStringToQuery(currentQuery)
     const { data, loading, error } = useSearchResultRelatedItemsQuery({
         skip: selectedKinds.length === 0 || queryFilters.keywords.length > 0,
@@ -83,7 +83,7 @@ function RenderRelatedTables(
                     noClose={true}
                     variant={'danger'}
                     isInline={true}
-                    title={t('search.results.related.resources.error')}
+                    title={t('Error querying related resources')}
                     subtitle={error ? error.message : ''}
                 />
             </PageSection>
@@ -110,7 +110,8 @@ function RenderRelatedTables(
                             keyFn={(item: any) => item._uid.toString()}
                             rowActions={GetRowActions(
                                 kind,
-                                t('search.results.delete.resource', { resourceKind: kind }),
+                                // TODO - Handle interpolation
+                                t('Delete {{resourceKind}}', { resourceKind: kind }),
                                 currentQuery,
                                 true,
                                 setDeleteResource
@@ -129,7 +130,7 @@ function RenderRelatedTiles(
     selectedKinds: string[],
     setSelected: React.Dispatch<React.SetStateAction<string[]>>
 ) {
-    const { t } = useTranslation(['search'])
+    const { t } = useTranslation()
     const queryFilters = convertStringToQuery(currentQuery)
     const { data, error, loading } = useSearchResultRelatedCountQuery({
         skip: queryFilters.keywords.length > 0,
@@ -156,7 +157,7 @@ function RenderRelatedTiles(
                     noClose={true}
                     variant={'danger'}
                     isInline={true}
-                    title={t('search.results.related.error')}
+                    title={t('Query error related to the search results.')}
                     subtitle={error ? error.message : ''}
                 />
             </PageSection>
@@ -195,7 +196,7 @@ function RenderSearchTables(
     setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>,
     selectedRelatedKinds: string[]
 ) {
-    const { t } = useTranslation(['search'])
+    const { t } = useTranslation()
     const { data, error, loading } = useSearchResultItemsQuery({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
@@ -216,7 +217,7 @@ function RenderSearchTables(
                     noClose={true}
                     variant={'danger'}
                     isInline={true}
-                    title={t('search.results.error')}
+                    title={t('Error querying search results')}
                     subtitle={error ? error.message : ''}
                 />
             </PageSection>
@@ -228,7 +229,12 @@ function RenderSearchTables(
     if (searchResultItems.length === 0) {
         return (
             <PageSection>
-                <AcmAlert noClose={true} variant={'info'} isInline={true} title={t('search.results.no.results')} />
+                <AcmAlert
+                    noClose={true}
+                    variant={'info'}
+                    isInline={true}
+                    title={t('No results found for the current search criteria.')}
+                />
             </PageSection>
         )
     }
@@ -241,7 +247,9 @@ function RenderSearchTables(
                         noClose={true}
                         variant={'warning'}
                         isInline={true}
-                        title={t('search.results.limited.results')}
+                        title={t(
+                            'The search criteria matched too many resources, the results are truncated. Add more conditions to your search.'
+                        )}
                     />
                 </PageSection>
             ) : null}
@@ -266,7 +274,8 @@ function RenderSearchTables(
                                 keyFn={(item: any) => item._uid.toString()}
                                 rowActions={GetRowActions(
                                     kind,
-                                    t('search.results.delete.resource', { resourceKind: kind }),
+                                    // TODO - Handle interpolation
+                                    t('Delete {{resourceKind}}', { resourceKind: kind }),
                                     currentQuery,
                                     false,
                                     setDeleteResource

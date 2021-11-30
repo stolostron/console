@@ -48,7 +48,7 @@ exports[`renders clusters disabled message 1`] = `
                                 data-ouia-component-type="PF4/Title"
                                 data-ouia-safe="true"
                               >
-                                search
+                                Search
                               </h1>
                             </div>
                           </div>
@@ -117,7 +117,7 @@ exports[`renders clusters disabled message 1`] = `
                 data-ouia-safe="true"
                 type="button"
               >
-                messages.S20.short
+                Search is disabled on some clusters.
               </button>
             </span>
           </div>
@@ -176,7 +176,7 @@ exports[`renders empty message 1`] = `
                                 data-ouia-component-type="PF4/Title"
                                 data-ouia-safe="true"
                               >
-                                search
+                                Search
                               </h1>
                             </div>
                           </div>
@@ -255,7 +255,7 @@ exports[`renders unknown message 1`] = `
                                 data-ouia-component-type="PF4/Title"
                                 data-ouia-safe="true"
                               >
-                                search
+                                Search
                               </h1>
                             </div>
                           </div>
@@ -324,7 +324,7 @@ exports[`renders unknown message 1`] = `
                 data-ouia-safe="true"
                 type="button"
               >
-                messages.S90.short
+                Search is disabled on some clusters.
               </button>
             </span>
           </div>

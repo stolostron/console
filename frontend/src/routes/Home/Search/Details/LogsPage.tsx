@@ -15,7 +15,7 @@ export default function LogsPage(props: {
     name: string
 }) {
     const { resourceError, containers, cluster, namespace, name } = props
-    const { t } = useTranslation(['details'])
+    const { t } = useTranslation()
     const [logs, setLogs] = useState<string>('')
     const [logsError, setLogsError] = useState<string>()
     const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) || '')
@@ -63,7 +63,7 @@ export default function LogsPage(props: {
                     noClose={true}
                     variant={'danger'}
                     isInline={true}
-                    title={`${t('logs.request.error')} ${name}`}
+                    title={`${t('Error querying resource logs:')} ${name}`}
                     subtitle={resourceError}
                 />
             </PageSection>
@@ -82,7 +82,7 @@ export default function LogsPage(props: {
                     noClose={true}
                     variant={'danger'}
                     isInline={true}
-                    title={`${t('logs.request.error')} ${name}`}
+                    title={`${t('Error querying resource logs:')} ${name}`}
                     subtitle={logsError}
                 />
             </PageSection>

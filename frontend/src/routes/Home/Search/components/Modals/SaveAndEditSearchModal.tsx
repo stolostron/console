@@ -40,7 +40,7 @@ const useStyles = makeStyles({
 })
 
 export const SaveAndEditSearchModal = (props: any) => {
-    const { t } = useTranslation(['search'])
+    const { t } = useTranslation()
     const [state, dispatch] = useReducer(reducer, initState)
     const { searchName, searchDesc } = state
     const [saveSearchMutation, { error }] = useSaveSearchMutation({ client: searchClient })
@@ -120,7 +120,7 @@ export const SaveAndEditSearchModal = (props: any) => {
             <AcmModal
                 variant={ModalVariant.small}
                 isOpen={props.editSearch !== undefined || props.saveSearch !== undefined}
-                title={t('search.modal.save.title')}
+                title={t('Save search')}
                 onClose={props.onClose}
                 actions={[
                     <AcmButton
@@ -129,21 +129,25 @@ export const SaveAndEditSearchModal = (props: any) => {
                         variant={ButtonVariant.primary}
                         onClick={SaveSearch}
                     >
-                        {t('search.modal.save.action.save')}
+                        {t('Save')}
                     </AcmButton>,
                     <AcmButton key="cancel" variant={ButtonVariant.link} onClick={props.onClose}>
-                        {t('search.modal.save.action.cancel')}
+                        {t('Cancel')}
                     </AcmButton>,
                 ]}
             >
-                {<p className={classes.prompt}>{t('search.modal.save.text')}</p>}
+                {
+                    <p className={classes.prompt}>
+                        {t('Name your search and provide a description so that you can access it in the future.')}
+                    </p>
+                }
                 {props.saveSearch === '' && !props.editSearch && (
                     <AcmAlert
                         noClose
                         variant={'danger'}
                         isInline={true}
-                        title={t('search.modal.save.input.error.title')}
-                        subtitle={t('search.modal.save.input.error.desc')}
+                        title={t('Error')}
+                        subtitle={t('Enter search text')}
                     />
                 )}
                 {isError && <AcmAlert noClose variant={'danger'} title={error!.message} />}
@@ -152,29 +156,33 @@ export const SaveAndEditSearchModal = (props: any) => {
                         isInline
                         noClose
                         variant={'warning'}
-                        title={t('search.modal.save.name.conflict.error', { searchName })}
+                        title={t(
+                            // TODO - Handle interpolation
+                            'A saved search query is already using the name {{searchName}}. Please choose a different name.',
+                            { searchName }
+                        )}
                     />
                 )}
                 <AcmForm>
                     <AcmTextInput
                         id="add-query-name"
                         name="searchName"
-                        label={t('search.modal.save.input.name')}
+                        label={t('Search name (50 character limit)')}
                         value={searchName}
                         onChange={onChange}
                         maxLength={50}
-                        placeholder={t('search.modal.save.input.name.placeholder')}
+                        placeholder={t('Enter a name for this search query')}
                         isRequired={true}
                     />
                     <AcmTextArea
                         id="add-query-desc"
                         name="searchDesc"
-                        label={t('search.modal.save.input.description')}
+                        label={t('Description (120 character limit)')}
                         value={searchDesc}
                         onChange={onChange}
                         required
                         maxLength={120}
-                        placeholder={t('search.modal.save.input.description.placeholder')}
+                        placeholder={t('Optional: Enter a description for this search query')}
                     />
                 </AcmForm>
             </AcmModal>
