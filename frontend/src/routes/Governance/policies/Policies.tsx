@@ -31,7 +31,7 @@ import { IGovernanceData, IPolicy } from '../useGovernanceData'
 export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
     const { governanceData } = props
 
-    const { t } = useTranslation(['governance', 'common'])
+    const { t } = useTranslation()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Policy> | { open: false }>({
         open: false,
     })
@@ -127,13 +127,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             // },
             {
                 header: t('Status'),
-                cell: (policy: Policy) => (
-                    <span>
-                        {policy.spec.disabled === true
-                            ? t('policy.table.actionGroup.status.disabled')
-                            : t('policy.table.actionGroup.status.enabled')}
-                    </span>
-                ),
+                cell: (policy: Policy) => <span>{policy.spec.disabled === true ? t('Disabled') : t('Enabled')}</span>,
             },
             {
                 header: t('Remediation'),
@@ -237,13 +231,13 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                     id={'remove-placementBinding'}
                     isChecked={placementBindingChecked}
                     onClick={() => handlePlacementBindingChecked()}
-                    label={t('policy.modal.delete.associatedResources.placementBinding')}
+                    label={t('Associated PlacementBindings')}
                 />
                 <Checkbox
                     id={'remove-placementRule'}
                     isChecked={placementRuleChecked}
                     onClick={() => handlePlacementRuleChecked()}
-                    label={t('policy.modal.delete.associatedResources.placementRule')}
+                    label={t('Associated PlacementRules')}
                 />
             </Fragment>
         )
@@ -251,36 +245,26 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
 
     const bulkModalStatusColumns = [
         {
-            header: t('policy.tableHeader.name'),
+            header: t('Policy name'),
             cell: 'metadata.name',
             sort: 'metadata.name',
         },
         {
-            header: t('policy.table.actionGroup.status'),
-            cell: (policy: Policy) => (
-                <span>
-                    {policy.spec.disabled === true
-                        ? t('policy.table.actionGroup.status.disabled')
-                        : t('policy.table.actionGroup.status.enabled')}
-                </span>
-            ),
+            header: t('Status'),
+            cell: (policy: Policy) => <span>{policy.spec.disabled === true ? t('Disabled') : t('Enabled')}</span>,
         },
     ]
 
     const bulkModalRemediationColumns = [
         {
-            header: t('policy.tableHeader.name'),
+            header: t('Policy name'),
             cell: 'metadata.name',
             sort: 'metadata.name',
         },
         {
-            header: t('policy.table.actionGroup.status'),
+            header: t('Status'),
             cell: (policy: Policy) => (
-                <span>
-                    {policy.spec.remediationAction === t('policy.table.actions.inform').toLowerCase()
-                        ? t('policy.table.actions.inform')
-                        : t('policy.table.actions.enforce')}
-                </span>
+                <span>{policy.spec.remediationAction === t('Inform').toLowerCase() ? t('Inform') : t('Enforce')}</span>
             ),
         },
     ]
@@ -325,7 +309,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             {
                 variant: 'bulk-action',
                 id: 'add-to-set',
-                title: t('policy.table.actions.addToPolicySet'),
+                title: t('Add to Policy Set'),
                 click: () => {},
             },
             {
@@ -335,20 +319,22 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             {
                 variant: 'action-group',
                 id: 'status',
-                title: t('policy.table.actionGroup.status'),
+                title: t('Status'),
                 actions: [
                     {
                         variant: 'bulk-action',
                         id: 'enable',
-                        title: t('policy.table.actions.enable'),
+                        title: t('Enable'),
                         click: (policies) => {
                             setModalProps({
                                 open: true,
-                                title: t('policy.modal.title.enable'),
-                                action: t('policy.table.actions.enable'),
-                                processing: t('policy.table.actions.enabling'),
+                                title: t('Enable policy'),
+                                action: t('Enable'),
+                                processing: t('Enabling'),
                                 resources: [...policies],
-                                description: t('policy.modal.message.enable'),
+                                description: t(
+                                    'After you enable the selected policies, policies are ready to report violations or run remediations as defined in the source.'
+                                ),
                                 columns: bulkModalStatusColumns,
                                 keyFn: (policy: Policy) => policy.metadata.uid as string,
                                 actionFn: (policy) => {
@@ -373,29 +359,27 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                     {
                         variant: 'bulk-action',
                         id: 'disable',
-                        title: t('policy.table.actions.disable'),
+                        title: t('Disable'),
                         click: (policies) => {
                             setModalProps({
                                 open: true,
-                                title: t('policy.modal.title.disable'),
-                                action: t('policy.table.actions.disable'),
-                                processing: t('policy.table.actions.disabling'),
+                                title: t('Disable policy'),
+                                action: t('Disable'),
+                                processing: t('Disabling'),
                                 resources: [...policies],
-                                description: t('policy.modal.message.disable'),
+                                description: t(
+                                    'After you disable the selected policies, violations are no longer reported and remediation actions cease.'
+                                ),
                                 columns: [
                                     {
-                                        header: t('policy.tableHeader.name'),
+                                        header: t('Policy name'),
                                         cell: 'metadata.name',
                                         sort: 'metadata.name',
                                     },
                                     {
-                                        header: t('policy.table.actionGroup.status'),
+                                        header: t('Status'),
                                         cell: (policy) => (
-                                            <span>
-                                                {policy.spec.disabled === true
-                                                    ? t('policy.table.actionGroup.status.disabled')
-                                                    : t('policy.table.actionGroup.status.enabled')}
-                                            </span>
+                                            <span>{policy.spec.disabled === true ? t('Disabled') : t('Enabled')}</span>
                                         ),
                                     },
                                 ],
@@ -428,20 +412,22 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             {
                 variant: 'action-group',
                 id: 'remediation',
-                title: t('policy.table.actionGroup.remediation'),
+                title: t('Remediation'),
                 actions: [
                     {
                         variant: 'bulk-action',
                         id: 'inform',
-                        title: t('policy.table.actions.inform'),
+                        title: t('Inform'),
                         click: (policies) => {
                             setModalProps({
                                 open: true,
-                                title: t('policy.modal.title.inform'),
-                                action: t('policy.table.actions.inform'),
-                                processing: t('policy.table.actions.informing'),
+                                title: t('Inform policy'),
+                                action: t('Inform'),
+                                processing: t('Informing'),
                                 resources: [...policies],
-                                description: t('policy.modal.message.inform'),
+                                description: t(
+                                    'After you set the selected policies to inform, violations are reported and manual remediation is required.'
+                                ),
                                 columns: bulkModalRemediationColumns,
                                 keyFn: (policy: Policy) => policy.metadata.uid as string,
                                 actionFn: (policy) => {
@@ -466,15 +452,17 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                     {
                         variant: 'bulk-action',
                         id: 'enforce',
-                        title: t('policy.table.actions.enforce'),
+                        title: t('Enforce'),
                         click: (policies) => {
                             setModalProps({
                                 open: true,
-                                title: t('policy.modal.title.enforce'),
-                                action: t('policy.table.actions.enforce'),
-                                processing: t('policy.table.actions.enforcing'),
+                                title: t('Enforce policy'),
+                                action: t('Enforce'),
+                                processing: t('Enforcing'),
                                 resources: [...policies],
-                                description: t('policy.modal.message.enforce'),
+                                description: t(
+                                    'After you set the selected policies to enforce, remediation actions run automatically as defined in the resource.'
+                                ),
                                 columns: bulkModalRemediationColumns,
                                 keyFn: (policy: Policy) => policy.metadata.uid as string,
                                 actionFn: (policy) => {
@@ -510,11 +498,14 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 click: (policy: Policy) => {
                     setModalProps({
                         open: true,
-                        title: t('policy.modal.title.delete'),
-                        action: t('common:delete'),
-                        processing: t('common:deleting'),
+                        title: t('Permanently delete policy?'),
+                        action: t('Delete'),
+                        processing: t('Deleting'),
                         resources: [policy],
-                        description: t('policy.modal.message.confirm'),
+                        // TODO - Handle interpolation
+                        description: t(
+                            'Removing {{name}} is irreversible. Select any associated resources that need to be deleted in addition to {{name}}.'
+                        ),
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
                         actionFn: (policy) => deletePolicy(policy, pbcheck, prcheck),
                         close: () => {
@@ -532,18 +523,20 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             },
             {
                 id: 'enable-policy',
-                title: t('policy.table.actions.enable'),
+                title: t('Enable'),
                 tooltip: 'desc or disabled message',
                 addSeparator: true,
                 isDisabled: false,
                 click: (policy) => {
                     setModalProps({
                         open: true,
-                        title: t('policy.modal.title.enable'),
-                        action: t('policy.table.actions.enable'),
-                        processing: t('policy.table.actions.enabling'),
+                        title: t('Enable policy'),
+                        action: t('Enable'),
+                        processing: t('Enabling'),
                         resources: [policy],
-                        description: t('policy.modal.message.enable'),
+                        description: t(
+                            'After you enable the selected policies, policies are ready to report violations or run remediations as defined in the source.'
+                        ),
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
                         actionFn: (policy) => {
                             return patchResource(
@@ -566,17 +559,19 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             },
             {
                 id: 'disable-policy',
-                title: t('policy.table.actions.disable'),
+                title: t('Disable'),
                 tooltip: 'desc or disabled message',
                 isDisabled: false,
                 click: (policy) => {
                     setModalProps({
                         open: true,
-                        title: t('policy.modal.title.disable'),
-                        action: t('policy.table.actions.disable'),
-                        processing: t('policy.table.actions.disabling'),
+                        title: t('Disable policy'),
+                        action: t('Disable'),
+                        processing: t('Disabling'),
                         resources: [policy],
-                        description: t('policy.modal.message.disable'),
+                        description: t(
+                            'After you disable the selected policies, violations are no longer reported and remediation actions cease.'
+                        ),
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
                         actionFn: (policy) => {
                             return patchResource(
@@ -599,18 +594,20 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             },
             {
                 id: 'inform-policy',
-                title: t('policy.table.actions.inform'),
+                title: t('Inform'),
                 tooltip: 'desc or disabled message',
                 addSeparator: true,
                 isDisabled: false,
                 click: (policy: Policy) => {
                     setModalProps({
                         open: true,
-                        title: t('policy.modal.title.inform'),
-                        action: t('policy.table.actions.inform'),
-                        processing: t('policy.table.actions.informing'),
+                        title: t('Inform policy'),
+                        action: t('Inform'),
+                        processing: t('Informing'),
                         resources: [policy],
-                        description: t('policy.modal.message.inform'),
+                        description: t(
+                            'After you set the selected policies to inform, violations are reported and manual remediation is required.'
+                        ),
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
                         actionFn: (policy) => {
                             return patchResource(
@@ -633,17 +630,19 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             },
             {
                 id: 'enforce-policy',
-                title: t('policy.table.actions.enforce'),
+                title: t('Enforce'),
                 tooltip: 'desc or disabled message',
                 isDisabled: false,
                 click: (policy) => {
                     setModalProps({
                         open: true,
-                        title: t('policy.modal.title.enforce'),
-                        action: t('policy.table.actions.enforce'),
-                        processing: t('policy.table.actions.enforcing'),
+                        title: t('Enforce policy'),
+                        action: t('Enforce'),
+                        processing: t('Enforcing'),
                         resources: [policy],
-                        description: t('policy.modal.message.enforce'),
+                        description: t(
+                            'After you set the selected policies to enforce, remediation actions run automatically as defined in the resource.'
+                        ),
                         keyFn: (policy: Policy) => policy.metadata.uid as string,
                         actionFn: (policy) => {
                             return patchResource(

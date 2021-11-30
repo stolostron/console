@@ -22,7 +22,7 @@ import { useGovernanceData } from './useGovernanceData'
 export default function GovernancePage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const location = useLocation()
-    const { t } = useTranslation(['governance'])
+    const { t } = useTranslation()
 
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Governance), [setRoute])
