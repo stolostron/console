@@ -301,12 +301,7 @@ function AddUsersModal(props: {
     }
 
     return (
-        <AcmModal
-            variant={ModalVariant.medium}
-            title={t('access.add.title')}
-            isOpen={props.isOpen}
-            onClose={reset}
-        >
+        <AcmModal variant={ModalVariant.medium} title={t('access.add.title')} isOpen={props.isOpen} onClose={reset}>
             <AcmForm style={{ gap: 0 }}>
                 <AcmAlertContext.Consumer>
                     {(alertContext) => (
