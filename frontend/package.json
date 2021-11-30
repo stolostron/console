@@ -17,7 +17,7 @@
         "update": "npx npm-check-updates -x @testing-library/user-event,monaco-editor,eslint,react-router-dom --doctor --upgrade && npm audit fix && npm dedup",
         "plugin:build": "CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode production",
         "plugin:build:dev": "CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode development",
-        "plugin:watch": "npm run plugin:build:dev && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode development --watch",
+        "plugin:watch": "RUN_LOCAL=true CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode production --watch",
         "plugin:serve": "npx http-server ./dist -p 3000 -c-1 --cors",
         "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup"
     },
