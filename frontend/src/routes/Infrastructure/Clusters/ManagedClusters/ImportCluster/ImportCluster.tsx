@@ -1,11 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    createKlusterletAddonConfig,
-    createManagedCluster,
     createProject,
     createResource,
-    IResource,
     KlusterletAddonConfigApiVersion,
     KlusterletAddonConfigKind,
     ManagedClusterApiVersion,
@@ -190,6 +187,7 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
     const [kubeConfig, setKubeConfig] = useState<string | undefined>()
     const [importMode, setImportMode] = useState<ImportMode>(ImportMode.manual)
     const [discovered] = useState<boolean>(sessionStorage.getItem('DiscoveredClusterDisplayName') ? true : false)
+    const [importResources, setImportResources] = useState<any | undefined>([])
 
     useEffect(() => {
         /* istanbul ignore next */
@@ -268,6 +266,7 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                 version: '2.2.0',
             },
         })
+        setImportResources(resources)
         onFormChange(resources)
     }, [importMode, discovered, clusterName, additionalLabels, kubeConfig, managedClusterSet, token, server])
 
@@ -405,84 +404,40 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                         onClick={async () => {
                             setSubmitted(true)
                             alertContext.clearAlerts()
+
+                            // creating pure form resources or form resources modified by editor
+                            let resources = importResources
+                            let createName = clusterName
+                            if (editorChanges?.resources) {
+                                resources = editorChanges?.resources
+                                const managedCluster = resources.find(
+                                    (resource: { kind: string }) => resource.kind === 'ManagedCluster'
+                                )
+                                createName = managedCluster?.metadata?.name ?? createName
+                            }
+
                             /* istanbul ignore next */
-                            const clusterLabels: Record<string, string> = {
-                                cloud: 'auto-detect',
-                                vendor: 'auto-detect',
-                                name: clusterName,
-                                ...additionalLabels,
-                            }
-                            if (managedClusterSet) {
-                                clusterLabels[managedClusterSetLabel] = managedClusterSet
-                            }
-                            let clusterAnnotations: Record<string, string> = {}
-                            if (discovered) {
-                                clusterAnnotations = {
-                                    'open-cluster-management/created-via': 'discovery',
-                                }
-                            }
-                            const createdResources: IResource[] = []
                             return new Promise(async (resolve, reject) => {
                                 try {
+                                    // create the project
                                     try {
-                                        createdResources.push(await createProject(clusterName).promise)
+                                        await createProject(createName).promise
                                     } catch (err) {
                                         const resourceError = err as ResourceError
                                         if (resourceError.code !== ResourceErrorCode.Conflict) {
                                             throw err
                                         }
                                     }
-                                    createdResources.push(
-                                        await createManagedCluster({ clusterName, clusterLabels, clusterAnnotations })
-                                            .promise
-                                    )
-                                    createdResources.push(
-                                        await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise
-                                    )
 
-                                    if (importMode === ImportMode.kubeconfig) {
-                                        createdResources.push(
-                                            await createResource<Secret>({
-                                                apiVersion: SecretApiVersion,
-                                                kind: SecretKind,
-                                                metadata: {
-                                                    name: 'auto-import-secret',
-                                                    namespace: clusterName,
-                                                },
-                                                stringData: {
-                                                    autoImportRetry: '2',
-                                                    kubeconfig: kubeConfig,
-                                                },
-                                                type: 'Opaque',
-                                            } as Secret).promise
-                                        )
-                                            ? history.push(
-                                                  NavigationPath.clusterDetails.replace(':id', clusterName as string)
-                                              )
-                                            : onReset()
-                                    } else if (importMode === ImportMode.token) {
-                                        createdResources.push(
-                                            await createResource<Secret>({
-                                                apiVersion: SecretApiVersion,
-                                                kind: SecretKind,
-                                                metadata: {
-                                                    name: 'auto-import-secret',
-                                                    namespace: clusterName,
-                                                },
-                                                stringData: {
-                                                    autoImportRetry: '2',
-                                                    token: token,
-                                                    server: server,
-                                                },
-                                                type: 'Opaque',
-                                            } as Secret).promise
-                                        )
-                                            ? history.push(
-                                                  NavigationPath.clusterDetails.replace(':id', clusterName as string)
-                                              )
-                                            : onReset()
+                                    // create the ManagedCluster/KlusterletAddonConfig/Secret(optional)
+                                    const results = resources.map((resource: any) => createResource(resource))
+                                    await Promise.allSettled(results.map((result: any) => result.promise))
+
+                                    // open cluster page or import secret
+                                    if (importMode === ImportMode.kubeconfig || importMode === ImportMode.token) {
+                                        history.push(NavigationPath.clusterDetails.replace(':id', createName as string))
                                     } else {
-                                        setImportSecret(await pollImportYamlSecret(clusterName))
+                                        setImportSecret(await pollImportYamlSecret(createName))
                                     }
                                 } catch (err) {
                                     if (err instanceof Error) {
