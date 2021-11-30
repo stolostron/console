@@ -30,7 +30,7 @@ import {
     IResource,
 } from '../../resources'
 import ResourceLabels from './components/ResourceLabels'
-import { getAge } from './helpers/resource-helper'
+import { getAge, getSearchLink } from './helpers/resource-helper'
 
 // Map resource kind to type column
 function getResourceType(resource: IResource) {
@@ -89,24 +89,6 @@ function calculateClusterCount(resource: ArgoApplication, clusterCount: any, clu
             clusterList.push(resource.spec.destination?.name)
         }
     }
-}
-
-function getSearchLink(params: any) {
-    const { properties, showRelated } = params
-    const queryParams = []
-    let textSearch = ''
-
-    _.entries(properties).forEach(([key, value]) => {
-        textSearch = `${textSearch}${textSearch ? ' ' : ''}${key}:${Array.isArray(value) ? value.join() : value}`
-    })
-
-    if (textSearch) {
-        queryParams.push(`filters={"textsearch":"${encodeURIComponent(textSearch)}"}`)
-    }
-    if (showRelated) {
-        queryParams.push(`showrelated=${showRelated}`)
-    }
-    return `/search${queryParams.length ? '?' : ''}${queryParams.join('&')}`
 }
 
 function createClustersText(
