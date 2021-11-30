@@ -39,6 +39,7 @@ import {
     DrawerContent,
     DrawerContentBody,
     DrawerPanelContent,
+    FormGroup,
     Label,
     PageSection,
     SelectOption,
@@ -57,6 +58,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
+import { SyncDiff, SyncDiffProps } from '../../../../../components/SyncEditor/SyncDiff'
 import schema from './schema.json'
 
 const minWizardSize = 1000
@@ -79,6 +81,7 @@ export default function ImportClusterPage() {
     function onFormChange(resources: any) {
         setImportResources(resources)
     }
+    const [editorChanges, setEditorChanges] = useState<SyncDiffProps>()
 
     return (
         <div ref={pageRef} style={{ height: '100%' }}>
@@ -112,6 +115,7 @@ export default function ImportClusterPage() {
                                         onChange={() => {
                                             localStorage.setItem('yaml', (!drawerExpanded).toString())
                                             setDrawerExpanded(!drawerExpanded)
+                                            setEditorChanges(undefined)
                                         }}
                                     />
                                 </Fragment>
@@ -136,13 +140,12 @@ export default function ImportClusterPage() {
                                     id="code-content"
                                     editorTitle={'Import Cluster YAML'}
                                     schema={schema}
-                                    immutables={['ManagedCluster[0].spec.hubAcceptsClient']}
                                     resources={importResources}
                                     onClose={(): void => {
                                         setDrawerExpanded(false)
                                     }}
-                                    onChange={(): void => {
-                                        throw new Error('Function not implemented.')
+                                    onEditorChange={(editorChanges: SyncDiffProps): void => {
+                                        setEditorChanges(editorChanges)
                                     }}
                                 />
                             </DrawerPanelContent>
@@ -151,7 +154,10 @@ export default function ImportClusterPage() {
                         <DrawerContentBody>
                             <AcmPageContent id="import-cluster">
                                 <PageSection variant="light" isFilled>
-                                    <ImportClusterPageContent onFormChange={onFormChange} />
+                                    <ImportClusterPageContent
+                                        onFormChange={onFormChange}
+                                        editorChanges={editorChanges}
+                                    />
                                 </PageSection>
                             </AcmPageContent>
                         </DrawerContentBody>
@@ -168,7 +174,7 @@ enum ImportMode {
     kubeconfig,
 }
 
-const ImportClusterPageContent: React.FC<any> = ({ onFormChange }) => {
+const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }) => {
     const { t } = useTranslation(['cluster', 'common'])
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
@@ -380,6 +386,11 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange }) => {
                     hidden={importMode !== ImportMode.kubeconfig}
                     isRequired
                 />
+                {editorChanges?.changes?.length > 0 && (
+                    <FormGroup fieldId="diffs" label="Editor changes">
+                        <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
+                    </FormGroup>
+                )}
                 <AcmAlertGroup isInline canClose />
                 <ActionGroup>
                     <AcmSubmit

@@ -1,0 +1,38 @@
+.pf-c-code-changes__container .diff-row {
+    background-color: #fffafa;
+    cursor: pointer;
+}
+
+.pf-c-code-changes__container .diff-row.last {
+    border-bottom: 6pt solid white;
+}
+
+.pf-c-code-changes__container .diff-table {
+    max-width: 800px;
+}
+
+.pf-c-code-changes__container .diff-line {
+    width: 1%;
+    min-width: 50px;
+    text-align: center;
+    padding: 0;
+}
+
+.pf-c-code-changes__container .diff-line.right {
+    border-left: 6pt solid white;
+}
+
+.pf-c-code-changes__container .diff-line.green {
+    background-color: #ccffd8;
+}
+
+.pf-c-code-changes__container .diff-value {
+    width: 50%;
+    text-align: left;
+    padding: 4px;
+}
+
+.pf-c-code-changes__container .diff-value.last {
+    background-color: #e6ffec;
+    white-space: pre-wrap;
+}
