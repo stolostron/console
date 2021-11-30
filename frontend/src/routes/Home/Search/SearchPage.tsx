@@ -16,7 +16,6 @@ import {
     AcmSearchbar,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
-import '@patternfly/react-core/dist/styles/base.css'
 import _ from 'lodash'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

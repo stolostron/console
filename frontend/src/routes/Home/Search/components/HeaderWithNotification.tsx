@@ -3,7 +3,6 @@
 // Copyright Contributors to the Open Cluster Management project
 import { AcmInlineStatus, AcmPageHeader, StatusType } from '@open-cluster-management/ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
-import '@patternfly/react-core/dist/styles/base.css'
 import { useTranslation } from 'react-i18next'
 import { Message } from '../search-sdk/search-sdk'
 

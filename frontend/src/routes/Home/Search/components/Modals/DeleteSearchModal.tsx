@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import '@patternfly/react-core/dist/styles/base.css'
 import { Fragment, useState, useEffect } from 'react'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { AcmModal, AcmButton, AcmAlert } from '@open-cluster-management/ui-components'

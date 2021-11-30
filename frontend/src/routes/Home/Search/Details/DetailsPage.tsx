@@ -11,7 +11,6 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
-import '@patternfly/react-core/dist/styles/base.css'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

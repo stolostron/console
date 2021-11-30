@@ -2,7 +2,6 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import React, { useState } from 'react'
-import '@patternfly/react-core/dist/styles/base.css'
 import { useTranslation } from 'react-i18next'
 import { searchClient } from '../search-sdk/search-client'
 import { useSavedSearchesQuery, useSearchResultCountQuery, UserSearch } from '../search-sdk/search-sdk'

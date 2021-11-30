@@ -11,7 +11,6 @@ import {
     AcmTile,
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import '@patternfly/react-core/dist/styles/base.css'
 import _ from 'lodash'
 import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
