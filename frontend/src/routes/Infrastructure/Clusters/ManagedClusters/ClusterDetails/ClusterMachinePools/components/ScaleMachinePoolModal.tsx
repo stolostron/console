@@ -43,7 +43,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
         setReplicas(0)
     }
 
-    function getAcmModalTitle(props: ScaleMachinePoolModalProps, t:(string: String) => string){
+    function getAcmModalTitle(props: ScaleMachinePoolModalProps, t: (string: String) => string) {
         switch (props.mode) {
             case 'enable-autoscale':
                 return t('Enable autoscale')
@@ -54,10 +54,10 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
             case 'edit-manualscale':
                 return t('Scale machine pool')
             default:
-                break;
+                break
         }
     }
-    function getAcmModalMessage(props: ScaleMachinePoolModalProps, t:(string: String) => string){
+    function getAcmModalMessage(props: ScaleMachinePoolModalProps, t: (string: String) => string) {
         switch (props.mode) {
             case 'enable-autoscale':
                 return t(

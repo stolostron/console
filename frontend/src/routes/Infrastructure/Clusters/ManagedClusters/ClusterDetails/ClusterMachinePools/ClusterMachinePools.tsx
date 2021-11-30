@@ -326,7 +326,7 @@ export function MachinePoolsTable() {
                         title={t('No machine pools found.')}
                         message={
                             <Trans
-                                i18nKey={'This cluster doesn\'t have any machine pools.'}
+                                i18nKey={"This cluster doesn't have any machine pools."}
                                 components={{ bold: <strong /> }}
                             />
                         }

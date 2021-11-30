@@ -62,7 +62,9 @@ describe('DiscoveredClusters', () => {
             </RecoilRoot>
         )
         await waitForText('No discovered clusters found')
-        await waitForText('You don\'t have any discovered clusters. Credentials of <bold>Red Hat OpenShift Cluster Manager</bold> type must be added to configure Discovery.')
+        await waitForText(
+            "You don't have any discovered clusters. Credentials of <bold>Red Hat OpenShift Cluster Manager</bold> type must be added to configure Discovery."
+        )
         await waitForText('Add credential')
     })
 
@@ -87,7 +89,9 @@ describe('DiscoveredClusters', () => {
             </RecoilRoot>
         )
         await waitForText('No discovered clusters found')
-        await waitForText('You don\'t have any discovered clusters. You have {{discoveryConfigTotal}} credentials. Click the <bold>Configure Discovery</bold> button to set up a filter for discovered clusters from your connections.')
+        await waitForText(
+            "You don't have any discovered clusters. You have {{discoveryConfigTotal}} credentials. Click the <bold>Configure Discovery</bold> button to set up a filter for discovered clusters from your connections."
+        )
         await waitForText('Create discovery settings')
         await clickByText('Create discovery settings')
 
@@ -116,7 +120,9 @@ describe('DiscoveredClusters', () => {
         )
 
         await waitForText('No discovered clusters found')
-        await waitForText('You don\'t have any discovered clusters. Cluster discovery was configured. Return to this page later, configure Discovery again, or <a>view documentation <icon /></a>')
+        await waitForText(
+            "You don't have any discovered clusters. Cluster discovery was configured. Return to this page later, configure Discovery again, or <a>view documentation <icon /></a>"
+        )
         await waitForText('Configure discovery settings')
         await waitForText('Create discovery settings')
     })
