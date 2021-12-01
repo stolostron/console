@@ -1057,7 +1057,7 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('Bare metal')
+        await clickByTestId('bare-metal')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -1130,7 +1130,7 @@ describe('CreateCluster', () => {
         await clickByText('Create')
 
         expect(consoleInfos).hasNoConsoleLogs()
-        await waitForText('Creating {{0}} ...')
+        await waitForText('success.create.creating')
 
         // make sure creating
         await waitForNocks(createNocks)
@@ -1150,7 +1150,7 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('Bare metal')
+        await clickByTestId('bare-metal')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -1225,7 +1225,7 @@ describe('CreateCluster', () => {
         await clickByText('Create')
 
         // expect(consoleInfos).hasNoConsoleLogs()
-        await waitForText('Creating {{0}} ...')
+        await waitForText('success.create.creating')
 
         // make sure creating
         await waitForNocks(createNocks)
@@ -1242,7 +1242,7 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('Amazon Web Services')
+        await clickByTestId('amazon-web-services')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -1294,7 +1294,7 @@ describe('CreateCluster', () => {
         await clickByText('Create')
 
         // expect(consoleInfos).hasNoConsoleLogs()
-        await waitForText('Creating {{0}} ...')
+        await waitForText('success.create.creating')
 
         // make sure creating
         await waitForNocks(createNocks)
@@ -1311,7 +1311,7 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('Amazon Web Services')
+        await clickByTestId('amazon-web-services')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -1369,7 +1369,7 @@ describe('CreateCluster', () => {
         // click create button
         await clickByText('Create')
 
-        await waitForText('Creating {{0}} ...')
+        await waitForText('success.create.creating')
 
         // make sure creating
         await waitForNocks(createNocks)
@@ -1381,7 +1381,7 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // Create On Premise cluster
-        await clickByTestId('On-premises')
+        await clickByTestId('on-premises')
         await clickByText('Next')
 
         // wait for tables/combos to fill in
