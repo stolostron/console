@@ -14,11 +14,6 @@ export interface SyncDiffType {
 
 export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: string }): JSX.Element {
     const { editorChanges, errorMessage } = props
-    const keyStyle: React.CSSProperties = {
-        color: '#04c',
-        //display: 'inline-block',
-    }
-
     const highlight = (line: string) => {
         const parts = line.split(':')
         return (
@@ -60,7 +55,6 @@ export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: str
 
     const diffEdit = (previous: any, latest: string[], path: any[], line: number, rowIndex: number, reveal: any) => {
         const key = path.slice(-1).pop()
-        const indent = { textIndent: `${path.length * 2}px` }
         const diff = diffChars(String(previous), String(latest))
         const hasAdded = diff.some((d) => d.added)
         const hasRemoved = diff.some((d) => d.removed)
@@ -80,7 +74,7 @@ export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: str
                     key={`${rowIndex}_1`}
                     style={hasRemoved ? { backgroundColor: '#ffebe9' } : {}}
                 >
-                    <span style={{ ...indent, ...keyStyle }}>{key}</span>
+                    <span style={{ color: '#04c' }}>{key}</span>
                     <span>: </span>
                     {diff.map((part) => {
                         if (part.added) {
@@ -101,7 +95,7 @@ export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: str
                     {line}
                 </Td>
                 <Td className="diff-value" key={`${rowIndex}_3`} style={hasAdded ? { backgroundColor: '#e6ffec' } : {}}>
-                    <span style={keyStyle}>{key}</span>
+                    <span style={{ color: '#04c' }}>{key}</span>
                     <span>: </span>
                     {diff.map((part) => {
                         if (part.removed) {

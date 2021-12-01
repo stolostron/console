@@ -13,6 +13,16 @@ export interface ChangeType {
     $p: string | string[] // the path to the value in a parsed object
 }
 
+export interface FormattedChangeType {
+    type: string
+    line: number
+    path: string | string[]
+    previous?: string
+    latest?: string | string[]
+    length: number
+    reveal?: () => void
+}
+
 export const getFormChanges = (
     errors: any[],
     change: {
@@ -251,28 +261,16 @@ export const formatChanges = (
     changes: any[],
     changeWithSecrets: { yaml?: string; mappings: any; parsed: any; resources?: any[]; hiddenSecretsValues?: any[] }
 ) => {
-    return changes
+    changes = changes
         .filter((change: ChangeType) => get(changeWithSecrets.parsed, change.$p) !== undefined)
         .map((change: ChangeType) => {
             const obj = get(changeWithSecrets.parsed, change.$p)
             const objVs = get(changeWithSecrets.mappings, change.$a)
-            const formatted: {
-                type: string
-                line: number
-                path: string | string[]
-                previous?: string
-                latest?: string | string[]
-                length: number
-                reveal: () => void
-            } = {
+            const formatted: FormattedChangeType = {
                 type: change.$t,
                 line: objVs?.$r ?? 1,
                 path: change.$p,
                 length: objVs.$l,
-                reveal: () => {
-                    editor.revealLineInCenter(objVs?.$r)
-                    editor.setSelection(new monaco.Selection(objVs?.$r, 1, objVs?.$r + objVs.$l, 1))
-                },
             }
             switch (change.$t) {
                 case 'N':
@@ -290,4 +288,57 @@ export const formatChanges = (
         .sort((a: { line: number }, b: { line: number }) => {
             return a.line - b.line
         })
+    changes = consolidate(changes)
+    changes.forEach((change) => {
+        change.reveal = () => {
+            editor.revealLineInCenter(change.line)
+            editor.setSelection(new monaco.Selection(change.line, 1, change.line + change.length, 1))
+        }
+    })
+    return changes
+}
+
+const consolidate = (changes: FormattedChangeType[]) => {
+    let lastChange: FormattedChangeType
+    return changes.filter((change: FormattedChangeType) => {
+        if (lastChange) {
+            const { type, line, length } = lastChange
+            if (type === 'N') {
+                switch (change.type) {
+                    case 'N':
+                        // if last change was new and this change is new
+                        // and last ends where this change begins
+                        // consolidate this change into the last change
+                        if (change.latest && lastChange.latest) {
+                            if (line + length === change.line) {
+                                if (!Array.isArray(change.latest)) {
+                                    change.latest = [change.latest]
+                                }
+                                if (!Array.isArray(lastChange.latest)) {
+                                    lastChange.latest = [lastChange.latest]
+                                }
+                                lastChange.latest = [...lastChange.latest, ...change.latest]
+                                lastChange.length += change.length
+                                return false
+                            }
+                        }
+                        lastChange = change
+                        break
+                    case 'E':
+                        // if last change was new and this change is edit
+                        // and edit change falls with new
+                        // just ignore this change
+                        if (change.line < line + length) {
+                            return false
+                        }
+                        break
+                }
+            } else {
+                lastChange = change
+            }
+        } else {
+            lastChange = change
+        }
+        return true
+    })
 }
