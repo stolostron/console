@@ -5,14 +5,14 @@ import { TableComposable, Tbody, Tr, Td } from '@patternfly/react-table'
 import { diffChars } from 'diff'
 import './SyncDiff.css'
 
-export interface SyncDiffProps {
+export interface SyncDiffType {
     changes: any[]
     errors: any[]
     warnings: any[]
     resources: any[]
 }
 
-export function SyncDiff(props: { editorChanges: SyncDiffProps; errorMessage: string }): JSX.Element {
+export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: string }): JSX.Element {
     const { editorChanges, errorMessage } = props
     const keyStyle: React.CSSProperties = {
         color: '#04c',

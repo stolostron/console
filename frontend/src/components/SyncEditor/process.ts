@@ -3,6 +3,41 @@ import YAML from 'yaml'
 import stringSimilarity from 'string-similarity'
 import { isEmpty, get, set, keyBy, cloneDeep, has } from 'lodash'
 import { reconcile } from './reconcile'
+import { ChangeType } from './changes'
+
+export interface ProcessedType {
+    parsed: {
+        [name: string]: any[]
+    }
+    mappings: {
+        [name: string]: any[]
+    }
+    resources: any[]
+    yaml?: string
+    hiddenSecretsValues?: any[]
+}
+
+export interface MappingType {
+    $k: string // what's it's key
+    $r: number //what line is it on in the yaml
+    $l: number // how many lines does it use in the yaml
+    $v: any // what's its value
+    $gk: any // the start/stop of the key in the yaml
+    $gv: any // what's the start/stop of the value in yaml
+}
+
+export interface SecretsValuesType {
+    path: string
+    value: string
+}
+export interface ErrorMessageType {
+    linePos: {
+        end: { line: 1; col: 1 }
+        start: { line: 1; col: 1 }
+    }
+    message: string
+    isWarning?: boolean
+}
 
 export const processForm = (
     monacoRef: any,
@@ -14,7 +49,7 @@ export const processForm = (
     },
     secrets?: (string | string[])[],
     immutables?: (string | string[])[],
-    userEdits?: any[],
+    userEdits?: ChangeType[],
     validators?: any
 ) => {
     // get yaml, documents, resource, mapped
@@ -33,7 +68,7 @@ export const processForm = (
     const comparison = cloneDeep(parsed)
 
     // reconcile form changes with user changes
-    if (errors.length === 0 && changeStack) {
+    if (errors.length === 0 && changeStack && userEdits) {
         const customResources = reconcile(changeStack, userEdits, resources)
         yaml = stringify(customResources)
         documents = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
@@ -48,7 +83,7 @@ export const processUser = (
     monacoRef: any,
     yaml: string,
     secrets?: (string | string[])[],
-    secretsValues?: any,
+    secretsValues?: SecretsValuesType[],
     immutables?: (string | string[])[],
     validators?: any
 ) => {
@@ -73,7 +108,7 @@ const process = (
     documents: any,
     errors: any[],
     secrets?: (string | string[])[],
-    secretsValues?: any,
+    secretsValues?: SecretsValuesType[],
     immutables?: (string | string[])[],
     validators?: any
 ) => {
@@ -173,9 +208,9 @@ function validateResource(
 ) {
     const valid = validator(resource)
     if (!valid) {
-        validator.errors.forEach((error: { instancePath: string; keyword: string; message: string }) => {
+        validator.errors.forEach((error: { instancePath: string; keyword: string; message: string; params: any }) => {
             const { instancePath, keyword, message, params } = error
-            const errorMsg = {
+            const errorMsg: ErrorMessageType = {
                 linePos: {
                     end: { line: 1, col: 1 },
                     start: { line: 1, col: 1 },
@@ -360,4 +395,18 @@ export const stringify = (resources: any[]) => {
         }
     })
     return yamls.join('---\n')
+}
+
+export const formatErrors = (errors: ErrorMessageType[], warnings?: boolean) => {
+    return errors
+        .filter(({ isWarning }) => {
+            return warnings ? isWarning === true : isWarning !== true
+        })
+        .map((error) => {
+            return {
+                line: error.linePos.start.line,
+                col: error.linePos.start.col,
+                message: error.message,
+            }
+        })
 }

@@ -55,7 +55,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
-import { SyncDiff, SyncDiffProps } from '../../../../../components/SyncEditor/SyncDiff'
+import { SyncDiff, SyncDiffType } from '../../../../../components/SyncEditor/SyncDiff'
 import schema from './schema.json'
 
 const minWizardSize = 1000
@@ -78,7 +78,7 @@ export default function ImportClusterPage() {
     function onFormChange(resources: any) {
         setImportResources(resources)
     }
-    const [editorChanges, setEditorChanges] = useState<SyncDiffProps>()
+    const [editorChanges, setEditorChanges] = useState<SyncDiffType>()
 
     return (
         <div ref={pageRef} style={{ height: '100%' }}>
@@ -141,7 +141,7 @@ export default function ImportClusterPage() {
                                     onClose={(): void => {
                                         setDrawerExpanded(false)
                                     }}
-                                    onEditorChange={(editorChanges: SyncDiffProps): void => {
+                                    onEditorChange={(editorChanges: SyncDiffType): void => {
                                         setEditorChanges(editorChanges)
                                     }}
                                 />

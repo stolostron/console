@@ -133,23 +133,6 @@ const addChangeDecorations = (
     })
 }
 
-export const clearFormChangeDecorations = (editorRef: any) => {
-    // const clearHandles: string[] = []
-    // const injectedTextDecoration: any[] = []
-    // let decorations: any[] = getResourceEditorDecorations(editorRef)
-    // decorations = decorations.filter((decoration) => {
-    //     if (decoration.options.linesDecorationsClassName === 'insertedLineDecoration' || decoration.options.after) {
-    //         if (decoration.options.after) {
-    //             injectedTextDecoration.push(decoration)
-    //         }
-    //         clearHandles.push(decoration.id)
-    //         return false
-    //     }
-    //     return true
-    // })
-    // editorRef.current.deltaDecorations(clearHandles, [...decorations, ...injectedTextDecoration])
-}
-
 export const getResourceEditorDecorations = (editorRef: any) => {
     // clear resource-editor decorations
     const model = editorRef.current?.getModel()

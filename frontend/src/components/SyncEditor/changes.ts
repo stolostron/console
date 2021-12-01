@@ -1,8 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import YAML from 'yaml'
 import { diff } from 'deep-diff'
 import { get, isEmpty, keyBy } from 'lodash'
 import { getPathArray } from './process'
 import { normalize } from './reconcile'
+import { MappingType } from './process'
+
+export interface ChangeType {
+    $t: string // type of change (N, E)
+    $f?: any // the previous value in the form when the user has edited
+    $a: string | string[] // the path to the value in a mapped object
+    $p: string | string[] // the path to the value in a parsed object
+}
 
 export const getFormChanges = (
     errors: any[],
@@ -31,9 +40,9 @@ export const getFormChanges = (
                 const changeMap = keyBy(changes, (edit) => {
                     return JSON.stringify(edit.$p)
                 })
-                userEdits = userEdits.filter((edit) => {
+                userEdits = userEdits.filter((edit: ChangeType) => {
                     const { $a, $f, $p } = edit
-                    const val = get(change.mappings, $a)
+                    const val = get(change.mappings, $a) as MappingType
                     // if there's no value at this path anymore, just filter out this user edit (may have deleted)
                     if (val) {
                         // use any form change on top of a user edit
@@ -92,10 +101,10 @@ export const getUserChanges = (
                 })
                 // for each older user edit...
                 lastUserEdits.forEach((oldEdit) => {
-                    const { $a, $f, $p, $h } = oldEdit
+                    const { $a, $f, $p } = oldEdit
                     // a form change has canceled out this user edit
                     // (the form has changed the value to equal what the user edit )
-                    const val = get(change.mappings, $a)
+                    const val = get(change.mappings, $a) as unknown as MappingType
                     // if there's no value at this path anymore, ignore this old edit
                     // ---the form has probably deleted where the edit was from the yaml
                     if (val) {
@@ -212,7 +221,7 @@ const getChanges = (
                             case 'E': {
                                 // edited
                                 if ((obj.$v || obj.$v === false) && rhs !== undefined) {
-                                    const chng = { $t: 'E', $a: pathArr, $p: path }
+                                    const chng: ChangeType = { $t: 'E', $a: pathArr, $p: path }
                                     if (isCustomEdit) {
                                         chng.$f = lhs
                                     }
@@ -221,7 +230,7 @@ const getChanges = (
                                 break
                             }
                             case 'N': // new
-                                const chng = { $t: 'N', $a: pathArr, $p: path }
+                                const chng: ChangeType = { $t: 'N', $a: pathArr, $p: path }
                                 if (isCustomEdit) {
                                     chng.$f = 'new'
                                 }
@@ -234,4 +243,51 @@ const getChanges = (
         }
     }
     return changes
+}
+
+export const formatChanges = (
+    editor: { revealLineInCenter: (arg0: any) => void; setSelection: (arg0: any) => void },
+    monaco: { Selection: new (arg0: any, arg1: number, arg2: any, arg3: number) => any },
+    changes: any[],
+    changeWithSecrets: { yaml?: string; mappings: any; parsed: any; resources?: any[]; hiddenSecretsValues?: any[] }
+) => {
+    return changes
+        .filter((change: ChangeType) => !!get(changeWithSecrets.parsed, change.$p))
+        .map((change: ChangeType) => {
+            const obj = get(changeWithSecrets.parsed, change.$p)
+            const objVs = get(changeWithSecrets.mappings, change.$a)
+            const formatted: {
+                type: string
+                line: number
+                path: string | string[]
+                previous?: string
+                latest?: string | string[]
+                length: number
+                reveal: () => void
+            } = {
+                type: change.$t,
+                line: objVs?.$r ?? 1,
+                path: change.$p,
+                length: objVs.$l,
+                reveal: () => {
+                    editor.revealLineInCenter(objVs?.$r)
+                    editor.setSelection(new monaco.Selection(objVs?.$r, 1, objVs?.$r + objVs.$l, 1))
+                },
+            }
+            switch (change.$t) {
+                case 'N':
+                    formatted.latest = YAML.stringify({ [objVs.$k]: obj }, { indent: 4 })
+                        .trim()
+                        .split('\n')
+                    break
+                case 'E':
+                    formatted.previous = change.$f
+                    formatted.latest = objVs?.$v ?? ''
+                    break
+            }
+            return formatted
+        })
+        .sort((a: { line: number }, b: { line: number }) => {
+            return a.line - b.line
+        })
 }

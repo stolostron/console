@@ -2,10 +2,15 @@
 import { diff } from 'deep-diff'
 import { uniqWith, get, isEqual, cloneDeep, groupBy, set, unset, omitBy, keyBy, isEmpty } from 'lodash'
 import stringSimilarity from 'string-similarity'
+import { ChangeType } from './changes'
+
+interface IndexedType {
+    __id__: number
+}
 
 export const reconcile = (
     changeStack: { baseResources: any[]; customResources: any[] },
-    userEdits: any[],
+    userEdits: ChangeType[],
     resources: any[]
 ) => {
     let customResources = mergeResources(changeStack.customResources, changeStack.baseResources, userEdits, resources)
@@ -43,7 +48,7 @@ const mergeResources = (
     // else there's a match between all three
     // so find any changes between current and base and merge just those changes into custom
     const kindMap = {}
-    customResources.forEach((resource: object, inx) => {
+    customResources.forEach((resource, inx) => {
         let val, idx
         const kind = resource.kind
         let d: number = get(kindMap, kind, 0)
@@ -52,7 +57,8 @@ const mergeResources = (
         const current = weakCurrent.get(resource)
         const diffs = diff(base, current)
         if (diffs) {
-            diffs.forEach(({ kind, path, rhs, item }) => {
+            diffs.forEach((diff: any) => {
+                const { kind, item, path, rhs } = diff
                 if (path) {
                     switch (kind) {
                         // array modification
@@ -135,10 +141,10 @@ const mapResources = (customResources: any[], formResources: any[]) => {
     const usedSet = new Set()
     const weakMap = new WeakMap()
     const removedSet = new Set()
-    formResources.forEach((res: { __id__: any }, inx: any) => (res.__id__ = inx))
+    formResources.forEach((res: IndexedType, inx: number) => (res.__id__ = inx))
 
     // do everything in our power to find a reasonable match
-    customResources.forEach((resource: object) => {
+    customResources.forEach((resource) => {
         let resourceID = getResourceID(resource)
         if (resourceID) {
             // see if kind/name/namespace match
@@ -166,7 +172,7 @@ const mapResources = (customResources: any[], formResources: any[]) => {
                                 return JSON.stringify(res)
                             })
                         )
-                        const res = resources.splice(matches?.bestMatchIndex ?? 0, 1)
+                        const res = resources.splice(matches?.bestMatchIndex ?? 0, 1) as unknown as IndexedType
                         inx = formResources.findIndex(({ __id__ }) => __id__ === res.__id__)
                         weakMap.set(resource, formResources[inx])
                     } else {
@@ -186,7 +192,7 @@ const mapResources = (customResources: any[], formResources: any[]) => {
     return { weakMap, addedResources, removedSet }
 }
 
-export const getResourceID = (resource: { kind: any }) => {
+export const getResourceID = (resource: { kind?: any }) => {
     return (
         get(resource, 'metadata.selfLink') ||
         (

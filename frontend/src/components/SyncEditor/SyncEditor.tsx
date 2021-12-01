@@ -11,14 +11,13 @@ import {
     EyeSlashIcon,
     CloseIcon,
 } from '@patternfly/react-icons/dist/esm/icons'
-import YAML from 'yaml'
 import { ClipboardCopyButton } from '@patternfly/react-core'
 import Ajv from 'ajv'
-import { debounce, get } from 'lodash'
-import { processForm, processUser } from './process'
-import { getFormChanges, getUserChanges } from './changes'
-import { decorate, getResourceEditorDecorations, clearFormChangeDecorations } from './decorate'
-import { SyncDiffProps } from './SyncDiff'
+import { debounce } from 'lodash'
+import { processForm, processUser, formatErrors, ProcessedType } from './process'
+import { getFormChanges, getUserChanges, formatChanges } from './changes'
+import { decorate, getResourceEditorDecorations } from './decorate'
+import { SyncDiffType } from './SyncDiff'
 import './SyncEditor.css'
 
 export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
@@ -46,28 +45,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const [prohibited, setProhibited] = useState<any>([])
     const [showsFormChanges, setShowsFormChanges] = useState<boolean>(false)
     const [userEdits, setUserEdits] = useState<any>([])
-    const [editorChanges, setEditorChanges] = useState<SyncDiffProps>()
+    const [editorChanges, setEditorChanges] = useState<SyncDiffType>()
     const [lastUserEdits, setLastUserEdits] = useState<any>([])
     const [squigglyTooltips, setSquigglyTooltips] = useState<any>([])
-    const [lastChange, setLastChange] = useState<{
-        parsed: {
-            [name: string]: any[]
-        }
-        mappings: {
-            [name: string]: any[]
-        }
-        resources: any[]
-    }>()
-    const [lastChangeWithSecrets, setLastChangeWithSecrets] = useState<{
-        parsed: {
-            [name: string]: any[]
-        }
-        mappings: {
-            [name: string]: any[]
-        }
-        resources: any[]
-        yaml: string
-    }>()
+    const [lastChange, setLastChange] = useState<ProcessedType>()
+    const [lastChangeWithSecrets, setLastChangeWithSecrets] = useState<ProcessedType>()
     const [lastFormComparison, setLastFormComparison] = useState<{
         [name: string]: any[]
     }>()
@@ -185,7 +167,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         debounce(() => {
             if (showsFormChanges) {
                 setShowsFormChanges(false)
-                clearFormChangeDecorations(editorRef)
             }
         }, 100),
         [showsFormChanges]
@@ -253,65 +234,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         if (changes.length || errors.length) {
             const editor = editorRef?.current
             const monaco = monacoRef?.current
-            const formatChanges = () => {
-                return changes
-                    .filter((change) => !!get(changeWithSecrets.parsed, change.$p))
-                    .map((change) => {
-                        const obj = get(changeWithSecrets.parsed, change.$p)
-                        const objVs = get(changeWithSecrets.mappings, change.$a)
-                        const formatted: {
-                            type: string
-                            line: number
-                            path: string[]
-                            previous?: string
-                            latest?: string | string[]
-                            length: number
-                            reveal: () => void
-                        } = {
-                            type: change.$t,
-                            line: objVs?.$r ?? 1,
-                            path: change.$p,
-                            length: change.$l,
-                            reveal: () => {
-                                editor.revealLineInCenter(objVs?.$r)
-                                editor.setSelection(new monaco.Selection(objVs?.$r, 1, objVs?.$r + objVs.$l, 1))
-                            },
-                        }
-                        switch (change.$t) {
-                            case 'N':
-                                formatted.latest = YAML.stringify({ [objVs.$k]: obj }, { indent: 4 })
-                                    .trim()
-                                    .split('\n')
-                                break
-                            case 'E':
-                                formatted.previous = change.$f
-                                formatted.latest = objVs?.$v ?? ''
-                                break
-                        }
-                        return formatted
-                    })
-                    .sort((a, b) => {
-                        return a.line - b.line
-                    })
-            }
-            const formatErrors = (warnings?: boolean) => {
-                return errors
-                    .filter(({ isWarning }) => {
-                        return warnings ? isWarning === true : isWarning !== true
-                    })
-                    .map((error) => {
-                        return {
-                            line: error.linePos.start.line,
-                            col: error.linePos.start.col,
-                            message: error.message,
-                        }
-                    })
-            }
             setEditorChanges({
                 resources: changeWithSecrets.resources,
-                warnings: formatErrors(true),
-                errors: formatErrors(),
-                changes: formatChanges(),
+                warnings: formatErrors(errors, true),
+                errors: formatErrors(errors),
+                changes: formatChanges(editor, monaco, changes, changeWithSecrets),
             })
         } else {
             setEditorChanges(undefined)
