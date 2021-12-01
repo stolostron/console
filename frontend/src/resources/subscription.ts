@@ -19,13 +19,19 @@ export interface Subscription extends IResource {
     metadata: Metadata
     spec: {
         channel?: string
+        name?: string
         placement?: {
             placementRef?: {
                 kind: string
                 name: string
             }
         }
+        packageOverrides: any[]
+        packageFilter?: {
+            version: string
+        }
         secondaryChannel?: string
+        timewindow: any[]
     }
     status: {
         message?: string
