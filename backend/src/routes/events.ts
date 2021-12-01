@@ -66,10 +66,12 @@ export function startWatching(): void {
     watchResource(token, 'argoproj.io/v1alpha1', 'applicationSets')
     watchResource(token, 'argoproj.io/v1alpha1', 'argoCDs')
     watchResource(token, 'config.openshift.io/v1', 'infrastructures')
-    watchResource(token, 'certificates.k8s.io/v1beta1', 'certificateSigningRequests', {
+
+    watchResource(token, 'certificates.k8s.io/v1', 'certificateSigningRequests', {
         labelSelector: { 'open-cluster-management.io/cluster-name': '' },
     })
     watchResource(token, 'cluster.open-cluster-management.io/v1', 'managedClusters')
+    watchResource(token, 'cluster.open-cluster-management.io/v1alpha1', 'placements')
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'managedClusterSetBindings')
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'managedClusterSets')
     watchResource(token, 'cluster.open-cluster-management.io/v1beta1', 'clusterCurators')

@@ -3,7 +3,6 @@
 // Copyright Contributors to the Open Cluster Management project
 import { AcmAlert, AcmButton, AcmModal } from '@open-cluster-management/ui-components'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import '@patternfly/react-core/dist/styles/base.css'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
@@ -33,7 +32,7 @@ export const ClosedDeleteModalProps: IDeleteModalProps = {
 }
 
 export const DeleteResourceModal = (props: any) => {
-    const { t } = useTranslation(['search'])
+    const { t } = useTranslation()
     const { open, close, resource, currentQuery, relatedResource } = props
     const [canDelete, setCanDelete] = useState<boolean>(false)
     const [accessError, setAccessError] = useState(null)
@@ -208,7 +207,8 @@ export const DeleteResourceModal = (props: any) => {
             <AcmModal
                 variant={ModalVariant.medium}
                 isOpen={open}
-                title={t('search.modal.delete.resource.title', { resourceKind: resource?.kind })}
+                // TODO - Handle interpolation
+                title={t('Delete {{resourceKind}}?', { resourceKind: resource?.kind })}
                 titleIconVariant={'warning'}
                 onClose={close}
                 actions={[
@@ -218,10 +218,10 @@ export const DeleteResourceModal = (props: any) => {
                         variant={ButtonVariant.danger}
                         onClick={() => deleteResourceFn()}
                     >
-                        {t('search.modal.delete.resource.action.delete')}
+                        {t('Delete')}
                     </AcmButton>,
                     <AcmButton key="cancel" variant={ButtonVariant.secondary} onClick={close}>
-                        {t('search.modal.delete.resource.action.cancel')}
+                        {t('Cancel')}
                     </AcmButton>,
                 ]}
             >
@@ -232,7 +232,7 @@ export const DeleteResourceModal = (props: any) => {
                     <AcmAlert
                         noClose={true}
                         variant={'danger'}
-                        title={t('search.modal.delete.resource.unauthorized.error')}
+                        title={t('You are not authorized to delete this resource.')}
                     />
                 ) : null}
                 {deleteResourceError ? (
@@ -244,7 +244,8 @@ export const DeleteResourceModal = (props: any) => {
                     />
                 ) : null}
                 <div style={{ paddingTop: '1rem' }}>
-                    {t('search.modal.delete.resource.text', { resourceName: resource?.name })}
+                    {/* TODO - Handle interpolation */}
+                    {t('Are you sure that you want to delete {{resourceName}}?', { resourceName: resource?.name })}
                 </div>
             </AcmModal>
         </Fragment>

@@ -16,7 +16,6 @@ import {
     AcmSearchbar,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
-import '@patternfly/react-core/dist/styles/base.css'
 import _ from 'lodash'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -56,7 +55,7 @@ const useStyles = makeStyles({
 
 // Adds AcmAlert to page if there's errors from the Apollo queries.
 function HandleErrors(schemaError: ApolloError | undefined, completeError: ApolloError | undefined) {
-    const { t } = useTranslation(['search'])
+    const { t } = useTranslation()
     if (schemaError || completeError) {
         return (
             <div style={{ marginBottom: '1rem' }}>
@@ -89,7 +88,7 @@ function RenderSearchBar(props: {
     savedSearchQueries: UserSearch[]
 }) {
     const { searchQuery, setCurrentQuery, queryErrors, setQueryErrors, savedSearchQueries } = props
-    const { t } = useTranslation(['search'])
+    const { t } = useTranslation()
     const [saveSearch, setSaveSearch] = useState<string>()
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
@@ -164,7 +163,7 @@ function RenderSearchBar(props: {
                         onClick={() => setSaveSearch(searchQuery)}
                         isDisabled={searchQuery === ''}
                     >
-                        {t('searchbar.button.save.search')}
+                        {t('Save search')}
                     </AcmButton>
                 </div>
             </PageSection>
@@ -179,7 +178,7 @@ function RenderDropDownAndNewTab(props: {
     savedSearchQueries: UserSearch[]
 }) {
     const classes = useStyles()
-    const { t } = useTranslation(['search'])
+    const { t } = useTranslation()
 
     const SelectQuery = (id: string) => {
         if (id === 'savedSearchesID') {
@@ -234,7 +233,7 @@ function RenderDropDownAndNewTab(props: {
                     icon={<AcmIcon icon={AcmIconVariant.openNewTab} />}
                     iconPosition="right"
                 >
-                    {t('search.new.tab')}
+                    {t('Open new search tab')}
                 </AcmButton>
             </AcmActionGroup>
         </div>

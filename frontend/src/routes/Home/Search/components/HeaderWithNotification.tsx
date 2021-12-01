@@ -3,24 +3,26 @@
 // Copyright Contributors to the Open Cluster Management project
 import { AcmInlineStatus, AcmPageHeader, StatusType } from '@open-cluster-management/ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
-import '@patternfly/react-core/dist/styles/base.css'
 import { useTranslation } from 'react-i18next'
 import { Message } from '../search-sdk/search-sdk'
 
 export default function HeaderWithNotification(props: { messages: Message[] }) {
-    const { t } = useTranslation(['search'])
+    const { t } = useTranslation()
     const { messages } = props
 
     return (
         <div style={{ outline: 'none', display: 'flex', justifyContent: 'flex-end' }}>
             <div style={{ flex: 1 }}>
-                <AcmPageHeader title={t('search')} />
+                <AcmPageHeader title={t('Search')} />
             </div>
 
             {messages.map((msg, index) => {
-                const displayShortText = t(`messages.${msg.id}.short`) || msg?.description
-                const displayLongText = t(`messages.${msg.id}.long`) || msg?.description
-                const footerText = t(`messages.${msg.id}.additional.info`)
+                const displayShortText = t('Search is disabled on some clusters.') || msg?.description
+                const displayLongText =
+                    t(
+                        'Currently, search is disabled on some of your managed clusters. Some data might be missing from the console view.'
+                    ) || msg?.description
+                const footerText = t('View clusters with search add-on disabled.')
 
                 return (
                     <Card key={msg.id + index} style={{ border: 'none', boxShadow: 'none' }}>

@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import '@patternfly/react-core/dist/styles/base.css'
 import { Fragment, useState, useEffect } from 'react'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { AcmModal, AcmButton, AcmAlert } from '@open-cluster-management/ui-components'
@@ -10,7 +9,7 @@ import { SavedSearchesDocument, useDeleteSearchMutation } from '../../search-sdk
 import { searchClient } from '../../search-sdk/search-client'
 
 export const DeleteSearchModal = (props: any) => {
-    const { t } = useTranslation(['search'])
+    const { t } = useTranslation()
     const [deleteSearchMutation, { error }] = useDeleteSearchMutation({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     })
@@ -43,15 +42,15 @@ export const DeleteSearchModal = (props: any) => {
             <AcmModal
                 variant={ModalVariant.medium}
                 isOpen={props.deleteSearch !== undefined}
-                title={t('search.modal.delete.search.title')}
+                title={t('Delete saved search?')}
                 titleIconVariant={'warning'}
                 onClose={props.onClose}
                 actions={[
                     <AcmButton key="confirm" variant={ButtonVariant.danger} onClick={() => deleteSearch()}>
-                        {t('search.modal.delete.search.action.delete')}
+                        {t('Delete')}
                     </AcmButton>,
                     <AcmButton key="cancel" variant={ButtonVariant.link} onClick={props.onClose}>
-                        {t('search.modal.delete.search.action.cancel')}
+                        {t('Cancel')}
                     </AcmButton>,
                 ]}
             >
@@ -63,7 +62,12 @@ export const DeleteSearchModal = (props: any) => {
                         title={error!.message}
                     />
                 )}
-                <p>{t('search.modal.delete.search.text', { savedSearchName: props.deleteSearch?.name })}</p>
+                {/* TODO - Handle interpolation */}
+                <p>
+                    {t('Are you sure that you want to delete saved search {{savedSearchName}}?', {
+                        savedSearchName: props.deleteSearch?.name,
+                    })}
+                </p>
             </AcmModal>
         </Fragment>
     )

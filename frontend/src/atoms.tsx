@@ -5,7 +5,6 @@ import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
 import {
-    getBackendUrl,
     AgentClusterInstallApiVersion,
     AgentClusterInstallKind,
     AgentClusterInstallVersion,
@@ -14,15 +13,15 @@ import {
     AnsibleJob,
     AnsibleJobApiVersion,
     AnsibleJobKind,
-    ArgoApplication,
-    ArgoApplicationApiVersion,
-    ArgoApplicationKind,
     Application,
     ApplicationApiVersion,
     ApplicationKind,
     ApplicationSet,
     ApplicationSetApiVersion,
     ApplicationSetKind,
+    ArgoApplication,
+    ArgoApplicationApiVersion,
+    ArgoApplicationKind,
     BareMetalAsset,
     BareMetalAssetApiVersion,
     BareMetalAssetKind,
@@ -64,6 +63,8 @@ import {
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
+    getBackendUrl,
+    GitOpsCluster,
     GitOpsClusterApiVersion,
     GitOpsClusterKind,
     InfraEnvApiVersion,
@@ -95,6 +96,9 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
+    Placement,
+    PlacementApiVersion,
+    PlacementKind,
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
@@ -104,12 +108,12 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
-    Subscription,
-    SubscriptionApiVersion,
-    SubscriptionKind,
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
+    Subscription,
+    SubscriptionApiVersion,
+    SubscriptionKind,
 } from './resources'
 import { PlacementBinding, PlacementBindingApiVersion, PlacementBindingKind } from './resources/placement-binding'
 import { Policy, PolicyApiVersion, PolicyKind } from './resources/policy'
@@ -143,7 +147,7 @@ export const clusterProvisionsState = AtomArray<ClusterProvision>()
 export const configMapsState = AtomArray<ConfigMap>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
-export const gitOpsClustersState = AtomArray<IResource>()
+export const gitOpsClustersState = AtomArray<GitOpsCluster>()
 export const infraEnvironmentsState = AtomArray<CIM.InfraEnvK8sResource>()
 export const infrastructuresState = AtomArray<CIM.InfrastructureK8sResource>()
 export const machinePoolsState = AtomArray<MachinePool>()
@@ -156,6 +160,7 @@ export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
 export const policiesState = AtomArray<Policy>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
+export const placementsState = AtomArray<Placement>()
 export const placementRulesState = AtomArray<PlacementRule>()
 export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
@@ -228,6 +233,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setPoliciesState] = useRecoilState(policiesState)
     const [, setPlacementBindingsState] = useRecoilState(placementBindingsState)
+    const [, setPlacementsState] = useRecoilState(placementsState)
     const [, setPlacementRulesState] = useRecoilState(placementRulesState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
     const [, setSecrets] = useRecoilState(secretsState)
@@ -244,6 +250,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
         addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
+        addSetter(PlacementApiVersion, PlacementKind, setPlacementsState)
         addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
         addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
         addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)
@@ -369,7 +376,9 @@ export function LoadData(props: { children?: ReactNode }) {
                 console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
                 switch (evtSource?.readyState) {
                     case EventSource.CLOSED:
-                        startWatch()
+                        setTimeout(() => {
+                            startWatch()
+                        }, 1000)
                         break
                 }
             }

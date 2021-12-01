@@ -76,7 +76,7 @@ describe('SearchPage', () => {
         // This wait pauses till apollo query is returning data
         await wait()
         // Test that the component has rendered correctly with data
-        await waitFor(() => expect(screen.queryByText('search.new.tab')).toBeTruthy())
+        await waitFor(() => expect(screen.queryByText('Open new search tab')).toBeTruthy())
         await waitFor(() => expect(screen.queryByText('Saved searches')).toBeTruthy())
 
         // Validate that message about disabled cluster doesn't appear.
@@ -228,7 +228,7 @@ describe('SearchPage', () => {
         // This wait pauses till apollo query is returning data
         await wait()
         // Test that the component has rendered correctly with data
-        await waitFor(() => expect(screen.queryByText('search.new.tab')).toBeTruthy())
+        await waitFor(() => expect(screen.queryByText('Open new search tab')).toBeTruthy())
         await waitFor(() => expect(screen.queryByText('Saved searches')).toBeTruthy())
 
         const searchbar = screen.getByText('Search items')
@@ -250,6 +250,6 @@ describe('SearchPage', () => {
         await waitFor(() => expect(screen.queryByText('kind:deployment')).toBeTruthy())
 
         // Validate message when managed clusters are disabled. We don't have translation in this context.
-        await waitFor(() => expect(screen.queryByText('messages.S20.short')).toBeTruthy())
+        await waitFor(() => expect(screen.queryByText('Search is disabled on some clusters.')).toBeTruthy())
     })
 })

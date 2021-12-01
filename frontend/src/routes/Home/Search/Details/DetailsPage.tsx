@@ -11,7 +11,6 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
-import '@patternfly/react-core/dist/styles/base.css'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -62,7 +61,7 @@ function getResourceData() {
 }
 
 export default function DetailsPage() {
-    const { t } = useTranslation(['details'])
+    const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
     const [resource, setResource] = useState(undefined)
     const [resourceError, setResourceError] = useState('')
@@ -112,7 +111,7 @@ export default function DetailsPage() {
                                 }
                             }}
                         >
-                            {t('details.breadcrumb.search')}
+                            {t('Search')}
                         </AcmButton>
                     </div>
                     <AcmPageHeader

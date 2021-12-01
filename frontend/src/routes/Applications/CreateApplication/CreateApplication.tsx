@@ -2,10 +2,12 @@
 
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { useEffect, useState } from 'react'
+import { Fragment } from 'react'
 import { NavigationPath } from '../../../NavigationPath'
 import { useTranslation } from 'react-i18next'
-import { listAvailableArgoServerNS } from '../../../resources/gitops-cluster'
+import { useRecoilState } from 'recoil'
+import { isType } from '../../../lib/is-type'
+import { gitOpsClustersState, placementsState } from '../../../atoms'
 
 // interface CreationStatus {
 //     status: string
@@ -62,21 +64,31 @@ export default function CreateApplicationPage() {
 }
 
 export function CreateApplication() {
-    // will need to pass argoNs to AppForm to get argo namespaces
-    const [argoNs, setArgoNs] = useState<string[]>([])
-    useEffect(() => {
-        const fetchNs = async () => {
-            try {
-                let newNs = await listAvailableArgoServerNS().promise
-                setArgoNs(newNs)
-            } catch {
-                setArgoNs([])
-            }
-        }
-        fetchNs()
-    }, [])
+    const [placements] = useRecoilState(placementsState)
+    const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
+
+    const availableArgoNS = gitOpsClusters
+        .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
+        .filter(isType)
+    const availablePlacements = placements.map((placement) => placement.metadata.name).filter(isType)
+
     // will wait to adopt AppForm
 
     // return <AppForm />
-    return <h1>{argoNs}</h1>
+    return (
+        <Fragment>
+            <h1>Argo Namespaces:</h1>
+            <ul>
+                {availableArgoNS.map((ns) => {
+                    return <li>{ns}</li>
+                })}
+            </ul>
+            <h1>Existing Placements:</h1>
+            <ul>
+                {availablePlacements.map((placement) => {
+                    return <li>{placement}</li>
+                })}
+            </ul>
+        </Fragment>
+    )
 }
