@@ -62,7 +62,7 @@ export const processForm = (
     }
     let documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
     let errors = getErrors(documents)
-    let { parsed, resources } = getMappings(documents)
+    const { parsed, resources } = getMappings(documents)
 
     // save a version of parsed for change comparison later in decorations--in this case for form changes
     const comparison = cloneDeep(parsed)
@@ -88,8 +88,8 @@ export const processUser = (
     validators?: any
 ) => {
     // get yaml, documents, resource, mapped
-    let documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-    let errors = getErrors(documents)
+    const documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
+    const errors = getErrors(documents)
     const { parsed } = getMappings(documents)
 
     // save a version of parsed for change comparison later in decorations--in this case for user changes
@@ -235,12 +235,12 @@ function validateResource(
             if (mapping) {
                 errorMsg.linePos.start.line = errorMsg.linePos.end.line = mapping?.kind?.$r ?? mapping?.$r ?? 1
                 errorMsg.isWarning = true
+                let matches
                 switch (keyword) {
                     // missing a key
                     case 'required':
                         // see if there's a misspelled key
                         mapping = mapping.$v || mapping
-                        let matches
                         if (!isEmpty(mapping)) {
                             matches = stringSimilarity.findBestMatch(params.missingProperty, Object.keys(mapping))
                         }
@@ -355,7 +355,7 @@ function getMappingItems(
 }
 
 export const getPathArray = (path: string[] | string) => {
-    let pathArr: string[] = []
+    const pathArr: string[] = []
     if (!Array.isArray(path)) {
         path = path.split('.')
         const convert = path[0].replace('[', '.').replace(']', '').split('.')

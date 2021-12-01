@@ -227,11 +227,12 @@ const getChanges = (
                             }
                         }
 
+                        let chng: ChangeType
                         switch (kind) {
                             case 'E': {
                                 // edited
                                 if ((obj.$v || obj.$v === false) && rhs !== undefined) {
-                                    const chng: ChangeType = { $t: 'E', $a: pathArr, $p: path }
+                                    chng = { $t: 'E', $a: pathArr, $p: path }
                                     if (isCustomEdit) {
                                         chng.$f = lhs
                                     }
@@ -240,7 +241,7 @@ const getChanges = (
                                 break
                             }
                             case 'N': // new
-                                const chng: ChangeType = { $t: 'N', $a: pathArr, $p: path }
+                                chng = { $t: 'N', $a: pathArr, $p: path }
                                 if (isCustomEdit) {
                                     chng.$f = 'new'
                                 }

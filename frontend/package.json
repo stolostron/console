@@ -11,7 +11,7 @@
         "jest": "jest --runInBand",
         "jest:parallel": "jest",
         "eslint": "eslint src --ext .ts --max-warnings=0",
-        "eslint:fix": "eslint src test --ext .ts --fix",
+        "eslint:fix": "eslint src --ext .ts --fix",
         "prettier": "prettier --check src public",
         "prettier:fix": "prettier --write src public",
         "update": "npx npm-check-updates -x @testing-library/user-event,monaco-editor,eslint,react-router-dom --doctor --upgrade && npm audit fix && npm dedup",

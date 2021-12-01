@@ -145,7 +145,7 @@ const mapResources = (customResources: any[], formResources: any[]) => {
 
     // do everything in our power to find a reasonable match
     customResources.forEach((resource) => {
-        let resourceID = getResourceID(resource)
+        const resourceID = getResourceID(resource)
         if (resourceID) {
             // see if kind/name/namespace match
             let inx = formResources.findIndex((res: { kind: any }) => {
