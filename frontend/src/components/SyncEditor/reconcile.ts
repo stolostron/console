@@ -157,9 +157,9 @@ const mapResources = (customResources: any[], formResources: any[]) => {
             } else if (resource.kind) {
                 // try by resource kind
                 const groupByKind = groupBy(formResources, 'kind')
-                let resources = groupByKind[resource.kind]
+                let resources: IndexedType[] = groupByKind[resource.kind]
                 if (resources?.length) {
-                    resources = resources.filter(({ __inx__ }) => !usedSet.has(__inx__))
+                    resources = resources.filter(({ __id__ }) => !usedSet.has(__id__))
                     if (resources.length === 1) {
                         // if only one resource of that kind, assume that's the one
                         inx = formResources.findIndex(({ __id__ }) => __id__ === resources[0].__id__)
