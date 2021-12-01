@@ -401,7 +401,7 @@ describe('Clusters Page', () => {
     test('overflow menu should allow upgrade if has available upgrade', async () => {
         await clickByLabel('Actions', 3)
         await clickByText('Upgrade cluster')
-        await waitForText('Name')
+        await waitForText('Upgrade')
     })
 
     test('overflow menu should allow channel select if has available channels', async () => {

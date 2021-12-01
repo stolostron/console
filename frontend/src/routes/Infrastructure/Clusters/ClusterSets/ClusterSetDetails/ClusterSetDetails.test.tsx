@@ -376,7 +376,7 @@ describe('ClusterSetDetails page', () => {
         await waitForText(mockManagedClusterSet.metadata.name!, true)
         await waitForText('Details')
 
-        await clickByText('Submariner add-ons')
+        await clickByText('Go to Submariner add-ons')
 
         await waitForText(mockSubmarinerAddon!.metadata.namespace!)
 
@@ -424,7 +424,7 @@ describe('ClusterSetDetails page', () => {
         await waitForText(mockManagedClusterSet.metadata.name!, true)
         await waitForText('Details')
 
-        await clickByText('Submariner add-ons')
+        await clickByText('Go to Submariner add-ons')
 
         await waitForText(mockSubmarinerAddon!.metadata.namespace!)
         await clickByLabel('Actions', 0)
@@ -440,7 +440,7 @@ describe('ClusterSetDetails page', () => {
         await waitForText(mockManagedClusterSet.metadata.name!, true)
         await waitForText('Details')
 
-        await clickByText('Submariner add-ons')
+        await clickByText('Go to Submariner add-ons')
 
         await waitForText(mockSubmarinerAddon!.metadata.namespace!)
 
@@ -497,7 +497,9 @@ describe('ClusterSetDetails page', () => {
         await clickByText('Access management')
         await waitForNocks([nock])
         await clickByText('Add user or group')
-        await waitForText('Add user or group')
+        await waitForText(
+            'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
+        )
         await clickByPlaceholderText('Select user')
         await clickByText(mockUser.metadata.name!)
         await clickByText('Select role')

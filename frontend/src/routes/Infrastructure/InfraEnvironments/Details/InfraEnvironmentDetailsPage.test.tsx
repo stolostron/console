@@ -54,7 +54,7 @@ describe('Infrastructure Environment Details page', () => {
         await waitForNotText('Download Discovery ISO')
 
         // The Hosts tab
-        await clickByText('tab.hosts')
+        await clickByText('Hosts')
         await waitForText('Hosts may take a few minutes to appear here after booting.')
 
         // screen.debug(undefined, -1)

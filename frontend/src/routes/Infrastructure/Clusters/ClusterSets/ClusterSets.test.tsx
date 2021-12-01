@@ -54,7 +54,7 @@ describe('ClusterSets page', () => {
     })
     test('can create a managed cluster set', async () => {
         await clickByText('Create cluster set')
-        await waitForText('Create cluster set')
+        await waitForText('Cluster set name')
         await typeByTestId('clusterSetName', mockManagedClusterSet.metadata.name!)
         const createNock = nockCreate(mockManagedClusterSet)
         await clickByText('Create')
