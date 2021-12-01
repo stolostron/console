@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-
 import {
     AcmTablePaginationContextProvider,
     AcmToastGroup,
@@ -30,24 +29,25 @@ import { LoadingPage } from './components/LoadingPage'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 
-const ApplicationsPage = lazy(() => import('./routes/Applications/Applications'))
-
-const ClusterManagementPage = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
-const CreateBareMetalAssetPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/CreateBareMetalAsset'))
-
-const CredentialPage = lazy(() => import('./routes/Credentials/CredentialsForm'))
-const CredentialsPage = lazy(() => import('./routes/Credentials/Credentials'))
-const AnsibleAutomationFormPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomationsForm'))
-const BareMetalAssetsPage = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssetsPage'))
-const AnsibleAutomationsPage = lazy(() => import('./routes/Infrastructure/Automations/AnsibleAutomations'))
-const InfraEnvironmentsPage = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPage'))
-const CreateInfraEnv = lazy(() => import('./routes/Infrastructure/InfraEnvironments/CreateInfraEnv'))
-const InfraEnvironmentDetailsPage = lazy(
-    () => import('./routes/Infrastructure/InfraEnvironments/Details/InfraEnvironmentDetailsPage')
-)
-
-const GovernancePage = lazy(() => import('./routes/Governance/Governance'))
+// HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
+const OverviewPage = lazy(() => import('./routes/Home/Overview/OverviewPage'))
+const Search = lazy(() => import('./routes/Home/Search/Search'))
+
+// INFRASTRUCTURE
+const Clusters = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
+const BareMetalAssets = lazy(() => import('./routes/Infrastructure/BareMetalAssets/BareMetalAssets'))
+const Automations = lazy(() => import('./routes/Infrastructure/Automations/Automations'))
+const InfraEnvironments = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironments'))
+
+// GOVERNANCE
+const Governance = lazy(() => import('./routes/Governance/Governance'))
+
+// APPLICATIONS
+const Applications = lazy(() => import('./routes/Applications/Applications'))
+
+// CREDENTIALS
+const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 
 interface IRoute {
     type: 'route'
@@ -75,12 +75,18 @@ export default function App() {
                         route: NavigationPath.welcome,
                         component: WelcomePage,
                     },
-                    // {
-                    //     title: 'Overview',
-                    //     type: 'route',
-                    //     route: NavigationPath.overview,
-                    //     component: OverviewPage,
-                    // },
+                    {
+                        title: 'Overview',
+                        type: 'route',
+                        route: NavigationPath.overview,
+                        component: OverviewPage,
+                    },
+                    {
+                        title: 'Search',
+                        type: 'route',
+                        route: NavigationPath.search,
+                        component: Search,
+                    },
                 ],
             },
             {
@@ -91,25 +97,25 @@ export default function App() {
                         title: 'Clusters',
                         type: 'route',
                         route: NavigationPath.clusters,
-                        component: ClusterManagementPage,
+                        component: Clusters,
                     },
                     {
                         title: 'Bare metal assets',
                         type: 'route',
                         route: NavigationPath.bareMetalAssets,
-                        component: BareMetalAssetsPage,
+                        component: BareMetalAssets,
                     },
                     {
                         title: 'Automation',
                         type: 'route',
                         route: NavigationPath.ansibleAutomations,
-                        component: AnsibleAutomationsPage,
+                        component: Automations,
                     },
                     {
                         title: 'Infrastructure environments',
                         type: 'route',
                         route: NavigationPath.infraEnvironments,
-                        component: InfraEnvironmentsPage,
+                        component: InfraEnvironments,
                     },
                 ],
             },
@@ -117,20 +123,20 @@ export default function App() {
                 title: 'Applications',
                 type: 'route',
                 route: NavigationPath.applications,
-                component: ApplicationsPage,
+                component: Applications,
             },
             {
                 title: 'Governance',
                 type: 'route',
                 route: NavigationPath.governance,
-                component: GovernancePage,
+                component: Governance,
             },
 
             {
                 title: 'Credentials',
                 type: 'route',
                 route: NavigationPath.credentials,
-                component: CredentialsPage,
+                component: Credentials,
             },
         ],
         []
@@ -151,37 +157,6 @@ export default function App() {
                         <AcmTablePaginationContextProvider localStorageKey="clusters">
                             <Suspense fallback={<LoadingPage />}>
                                 <Switch>
-                                    <Route path={NavigationPath.addCredentials} component={CredentialPage} />
-                                    <Route path={NavigationPath.editCredentials} component={CredentialPage} />
-                                    <Route path={NavigationPath.viewCredentials} component={CredentialPage} />
-
-                                    <Route
-                                        exact
-                                        path={NavigationPath.addAnsibleAutomation}
-                                        component={AnsibleAutomationFormPage}
-                                    />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.editAnsibleAutomation}
-                                        component={AnsibleAutomationFormPage}
-                                    />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.editBareMetalAsset}
-                                        component={CreateBareMetalAssetPage}
-                                    />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.createBareMetalAsset}
-                                        component={CreateBareMetalAssetPage}
-                                    />
-                                    <Route
-                                        exact
-                                        path={NavigationPath.infraEnvironmentDetails}
-                                        component={InfraEnvironmentDetailsPage}
-                                    />
-                                    <Route exact path={NavigationPath.createInfraEnv} component={CreateInfraEnv} />
-
                                     {routes.map((route) =>
                                         route.type === 'group' ? (
                                             route.routes.map((route) => (
@@ -191,10 +166,8 @@ export default function App() {
                                             <Route path={route.route} component={route.component} />
                                         )
                                     )}
-
-                                    <Route path={NavigationPath.console} component={WelcomePage} />
                                     <Route path="*">
-                                        <Redirect to={NavigationPath.console} />
+                                        <Redirect to={NavigationPath.welcome} />
                                     </Route>
                                 </Switch>
                             </Suspense>
@@ -269,6 +242,7 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                             {routes.map((route) =>
                                 route.type === 'group' ? (
                                     <NavExpandable
+                                        key={route.title}
                                         title={route.title}
                                         isExpanded
                                         isActive={!!route.routes.find((route) => location.pathname === route.route)}

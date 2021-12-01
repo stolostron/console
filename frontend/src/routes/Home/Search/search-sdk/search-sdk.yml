@@ -1,0 +1,13 @@
+# Copyright (c) 2021 Red Hat, Inc.
+# Copyright Contributors to the Open Cluster Management project
+overwrite: true
+schema: https://localhost:4010/searchapi/graphql
+documents: ./src/search-sdk/*.graphql
+generates:
+    src/search-sdk/search-sdk.ts:
+        plugins:
+            - typescript
+            - typescript-operations
+            - typescript-react-apollo
+        config:
+            skipTypename: true

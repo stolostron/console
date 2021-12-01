@@ -1,15 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import {
-    DiscoveryConfig,
-    DiscoveryConfigApiVersion,
-    DiscoveryConfigKind,
-    ProviderConnection,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-    ResourceAttributes,
-    Secret,
-} from '../../resources'
 import { Provider } from '@open-cluster-management/ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
@@ -28,7 +17,17 @@ import {
     waitForText,
 } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
-import CredentialsPage from './Credentials'
+import {
+    DiscoveryConfig,
+    DiscoveryConfigApiVersion,
+    DiscoveryConfigKind,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    ResourceAttributes,
+    Secret,
+} from '../../resources'
+import CredentialsPage from './CredentialsPage'
 
 const mockProviderConnection1: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
@@ -146,7 +145,7 @@ describe('provider connections page', () => {
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.credentials))
-        await clickByText('credentials.tableAction.edit')
+        await clickByText('Edit credential')
         await waitFor(() =>
             expect(testLocation.pathname).toEqual(
                 NavigationPath.editCredentials
@@ -161,8 +160,8 @@ describe('provider connections page', () => {
         render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
-        await clickByText('credentials.tableAction.deleteSingle')
-        await clickByText('common:delete')
+        await clickByText('Delete credential')
+        await clickByText('Delete')
         await waitForNock(deleteNock)
     })
 
@@ -171,8 +170,8 @@ describe('provider connections page', () => {
         render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
-        await clickByText('credentials.tableAction.deleteSingle')
-        await clickByText('common:delete')
+        await clickByText('Delete credential')
+        await clickByText('Delete')
         await waitForNock(badRequestStatus)
         await waitForText(`Could not process request because of invalid data.`)
     })
@@ -181,7 +180,7 @@ describe('provider connections page', () => {
         render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
-        await clickByText('credentials.tableAction.deleteSingle')
+        await clickByText('Delete credential')
         await clickByText('common:cancel')
         await waitForNotText('common:cancel')
     })
@@ -191,8 +190,8 @@ describe('provider connections page', () => {
         render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await selectTableRow(1)
-        await clickBulkAction('credentials.tableAction.deleteMultiple')
-        await clickByText('common:delete')
+        await clickBulkAction('Delete credentials')
+        await clickByText('Delete')
         await waitForNock(deleteNock)
     })
 
@@ -200,7 +199,7 @@ describe('provider connections page', () => {
         render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
         await waitForText(mockProviderConnection1.metadata!.name!)
         await selectTableRow(1)
-        await clickBulkAction('credentials.tableAction.deleteMultiple')
+        await clickBulkAction('Delete credentials')
         await clickByText('common:cancel')
         await waitForNotText('common:cancel')
     })
@@ -208,7 +207,7 @@ describe('provider connections page', () => {
     test('If cloud.redhat.com credential and no discoveryconfig configured, show action available', async () => {
         render(<TestProviderConnectionsPage providerConnections={[cloudRedHatProviderConnection]} />)
         await waitForText(cloudRedHatProviderConnection.metadata!.name!)
-        await waitForText('credentials.additionalActions.enableClusterDiscovery')
+        await waitForText('Create cluster discovery')
     })
 
     test('If cloud.redhat.com providerconnection and discoveryconfig configured, do not show action available', async () => {
@@ -219,7 +218,7 @@ describe('provider connections page', () => {
             />
         )
         await waitForText(cloudRedHatProviderConnection.metadata!.name!)
-        await waitForText('credentials.additionalActions.editClusterDiscovery')
+        await waitForText('Configure cluster discovery')
     })
 })
 

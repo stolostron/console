@@ -10,8 +10,11 @@
         "frontend:reinstall": "cd frontend && npm reinstall",
         "backend:reinstall": "cd backend && npm reinstall",
         "start": "concurrently npm:frontend npm:backend -n frontend,backend -c green,blue",
+        "plugin": "concurrently npm:backend npm:plugin:watch npm:plugin:serve -n backend,watch,serve -c green,blue,magenta",
         "backend": "cd backend && npm start",
         "frontend": "cd frontend && npm start",
+        "plugin:watch": "cd frontend && npm run plugin:watch",
+        "plugin:serve": "cd frontend && npm run plugin:serve",
         "test": "concurrently --kill-others-on-fail npm:frontend:test npm:backend:test -n frontend,backend -c green,blue",
         "frontend:test": "cd frontend && npm test",
         "backend:test": "cd backend && npm test",
@@ -36,12 +39,12 @@
         "prepare": "husky install"
     },
     "devDependencies": {
-        "@types/node": "^16.9.4",
-        "concurrently": "^6.2.1",
-        "husky": "^7.0.2",
+        "@types/node": "^16.11.7",
+        "concurrently": "^6.4.0",
+        "husky": "^7.0.4",
         "prettier": "^2.4.1",
-        "ts-node": "^10.2.1",
-        "typescript": "^4.4.3"
+        "ts-node": "^10.4.0",
+        "typescript": "^4.4.4"
     },
     "prettier": {
         "printWidth": 120,

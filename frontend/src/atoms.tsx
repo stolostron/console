@@ -13,6 +13,15 @@ import {
     AnsibleJob,
     AnsibleJobApiVersion,
     AnsibleJobKind,
+    Application,
+    ApplicationApiVersion,
+    ApplicationKind,
+    ApplicationSet,
+    ApplicationSetApiVersion,
+    ApplicationSetKind,
+    ArgoApplication,
+    ArgoApplicationApiVersion,
+    ArgoApplicationKind,
     BareMetalAsset,
     BareMetalAssetApiVersion,
     BareMetalAssetKind,
@@ -21,6 +30,9 @@ import {
     CertificateSigningRequest,
     CertificateSigningRequestApiVersion,
     CertificateSigningRequestKind,
+    Channel,
+    ChannelApiVersion,
+    ChannelKind,
     ClusterClaim,
     ClusterClaimApiVersion,
     ClusterClaimKind,
@@ -51,6 +63,10 @@ import {
     DiscoveryConfig,
     DiscoveryConfigApiVersion,
     DiscoveryConfigKind,
+    getBackendUrl,
+    GitOpsCluster,
+    GitOpsClusterApiVersion,
+    GitOpsClusterKind,
     InfraEnvApiVersion,
     InfraEnvKind,
     InfrastructureApiVersion,
@@ -80,6 +96,12 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
+    Placement,
+    PlacementApiVersion,
+    PlacementKind,
+    PlacementRule,
+    PlacementRuleApiVersion,
+    PlacementRuleKind,
     PolicyReport,
     PolicyReportApiVersion,
     PolicyReportKind,
@@ -89,10 +111,11 @@ import {
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
+    Subscription,
+    SubscriptionApiVersion,
+    SubscriptionKind,
 } from './resources'
-import { ApplicationApiVersion, ApplicationKind } from './resources/application'
 import { PlacementBinding, PlacementBindingApiVersion, PlacementBindingKind } from './resources/placement-binding'
-import { PlacementRule } from './resources/placement-rule'
 import { Policy, PolicyApiVersion, PolicyKind } from './resources/policy'
 
 let atomArrayKey = 0
@@ -106,14 +129,14 @@ export const agentClusterInstallsState = AtomArray<CIM.AgentClusterInstallK8sRes
 export const agentsState = AtomArray<CIM.AgentK8sResource>()
 export const ansibleJobState = AtomArray<AnsibleJob>()
 export const appProjectsState = AtomArray<IResource>()
-export const applicationSetsState = AtomArray<IResource>()
-export const applicationsState = AtomArray<IResource>()
-export const argoApplicationsState = AtomArray<IResource>()
+export const applicationSetsState = AtomArray<ApplicationSet>()
+export const applicationsState = AtomArray<Application>()
+export const argoApplicationsState = AtomArray<ArgoApplication>()
 export const argoCDsState = AtomArray<IResource>()
 export const bareMetalAssetsState = AtomArray<BareMetalAsset>()
 export const bareMetalHostsState = AtomArray<CIM.BareMetalHostK8sResource>()
 export const certificateSigningRequestsState = AtomArray<CertificateSigningRequest>()
-export const channelsState = AtomArray<IResource>()
+export const channelsState = AtomArray<Channel>()
 export const clusterClaimsState = AtomArray<ClusterClaim>()
 export const clusterCuratorsState = AtomArray<ClusterCurator>()
 export const clusterDeploymentsState = AtomArray<ClusterDeployment>()
@@ -124,7 +147,7 @@ export const clusterProvisionsState = AtomArray<ClusterProvision>()
 export const configMapsState = AtomArray<ConfigMap>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
-export const gitOpsClustersState = AtomArray<IResource>()
+export const gitOpsClustersState = AtomArray<GitOpsCluster>()
 export const infraEnvironmentsState = AtomArray<CIM.InfraEnvK8sResource>()
 export const infrastructuresState = AtomArray<CIM.InfrastructureK8sResource>()
 export const machinePoolsState = AtomArray<MachinePool>()
@@ -137,11 +160,12 @@ export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
 export const policiesState = AtomArray<Policy>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
+export const placementsState = AtomArray<Placement>()
 export const placementRulesState = AtomArray<PlacementRule>()
 export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
-export const subscriptionsState = AtomArray<IResource>()
+export const subscriptionsState = AtomArray<Subscription>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
@@ -209,6 +233,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setPoliciesState] = useRecoilState(policiesState)
     const [, setPlacementBindingsState] = useRecoilState(placementBindingsState)
+    const [, setPlacementsState] = useRecoilState(placementsState)
     const [, setPlacementRulesState] = useRecoilState(placementRulesState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
     const [, setSecrets] = useRecoilState(secretsState)
@@ -224,13 +249,14 @@ export function LoadData(props: { children?: ReactNode }) {
         }
         addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
-        addSetter('apps.open-cluster-management.io/v1', 'Channel', setChannelsState)
-        addSetter('apps.open-cluster-management.io/v1', 'PlacementRule', setPlacementRulesState)
-        addSetter('apps.open-cluster-management.io/v1', 'Subscription', setSubscriptionsState)
-        addSetter('apps.open-cluster-management.io/v1alpha1', 'GitOpsCluster', setGitOpsClustersState)
+        addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
+        addSetter(PlacementApiVersion, PlacementKind, setPlacementsState)
+        addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
+        addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
+        addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)
         addSetter('argoproj.io/v1alpha1', 'appProjects', setAppProjectsState)
-        addSetter('argoproj.io/v1alpha1', 'applicationSets', setApplicationSetsState)
-        addSetter('argoproj.io/v1alpha1', 'applications', setArgoApplicationsState)
+        addSetter(ApplicationSetApiVersion, ApplicationSetKind, setApplicationSetsState)
+        addSetter(ArgoApplicationApiVersion, ArgoApplicationKind, setArgoApplicationsState)
         addSetter('argoproj.io/v1alpha1', 'argoCDs', setArgoCDsState)
         addSetter(AgentClusterInstallVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(AgentKindVersion, AgentKind, setAgents)
@@ -344,13 +370,15 @@ export function LoadData(props: { children?: ReactNode }) {
 
         let evtSource: EventSource | undefined
         function startWatch() {
-            evtSource = new EventSource(`${process.env.REACT_APP_BACKEND_PATH}/events`, { withCredentials: true })
+            evtSource = new EventSource(`${getBackendUrl()}/events`, { withCredentials: true })
             evtSource.onmessage = processMessage
             evtSource.onerror = function () {
                 console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
                 switch (evtSource?.readyState) {
                     case EventSource.CLOSED:
-                        startWatch()
+                        setTimeout(() => {
+                            startWatch()
+                        }, 1000)
                         break
                 }
             }
@@ -366,7 +394,7 @@ export function LoadData(props: { children?: ReactNode }) {
 
     useEffect(() => {
         function checkLoggedIn() {
-            fetch(`${process.env.REACT_APP_BACKEND_PATH}/authenticated`, {
+            fetch(`${getBackendUrl()}/authenticated`, {
                 credentials: 'include',
                 headers: { accept: 'application/json' },
             })
@@ -378,7 +406,7 @@ export function LoadData(props: { children?: ReactNode }) {
                             if (process.env.NODE_ENV === 'production') {
                                 window.location.reload()
                             } else {
-                                window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                                window.location.href = `${getBackendUrl()}/login`
                             }
                             break
                     }
@@ -387,7 +415,7 @@ export function LoadData(props: { children?: ReactNode }) {
                     if (process.env.NODE_ENV === 'production') {
                         window.location.reload()
                     } else {
-                        window.location.href = `${process.env.REACT_APP_BACKEND_HOST}${process.env.REACT_APP_BACKEND_PATH}/login`
+                        window.location.href = `${getBackendUrl()}/login`
                     }
                 })
                 .finally(() => {
@@ -397,7 +425,7 @@ export function LoadData(props: { children?: ReactNode }) {
         checkLoggedIn()
     }, [])
 
-    if (loading) return <LoadingPage />
+    if (loading || getBackendUrl() === undefined) return <LoadingPage />
 
     return <Fragment>{props.children}</Fragment>
 }

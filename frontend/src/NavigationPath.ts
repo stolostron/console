@@ -10,6 +10,10 @@ export enum NavigationPath {
     welcome = '/multicloud/home/welcome',
     overview = '/multicloud/home/overview',
 
+    // Home - Search
+    search = '/multicloud/home/search',
+    resources = '/multicloud/home/search/resources',
+
     // Infrastructure
     infrastructure = '/multicloud/infrastructure',
 
@@ -67,7 +71,9 @@ export enum NavigationPath {
     viewAnsibleAutomation = '/multicloud/infrastructure/automations/details/:namespace/:name',
 
     // Applications
+    advancedConfiguration = '/multicloud/applications/advanced',
     applications = '/multicloud/applications',
+    createApplication = '/multicloud/applications/create',
 
     // Governance
     governance = '/multicloud/governance',

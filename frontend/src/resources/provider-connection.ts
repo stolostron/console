@@ -51,6 +51,11 @@ export interface ProviderConnectionStringData {
     ['ssh-privatekey']?: string
     ['ssh-publickey']?: string
 
+    httpProxy?: any
+    httpsProxy?: any
+    noProxy?: any
+    imageContentSources?: any
+
     host?: string
     token?: string
 }

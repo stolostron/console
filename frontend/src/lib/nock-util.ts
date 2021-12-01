@@ -24,7 +24,7 @@ export function nockGet<Resource extends IResource>(
     statusCode = 200,
     polling = true
 ) {
-    const nockScope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
+    const nockScope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
         getResourceNameApiPath(resource)
     )
     const finalNockScope = nockScope.reply(statusCode, response ?? resource, {
@@ -45,8 +45,27 @@ export function nockGet<Resource extends IResource>(
     return finalNockScope
 }
 
+export function nockGetTextPlain(response: string, statusCode = 200, polling = true, customUri = '') {
+    const nockScope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(customUri)
+    const finalNockScope = nockScope.reply(statusCode, response, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+        'Content-Type': 'text/plain',
+    })
+    if (polling) {
+        nockScope.optionally().times(20).reply(statusCode, response, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Credentials': 'true',
+            'Content-Type': 'text/plain',
+        })
+    }
+    return finalNockScope
+}
+
 export function nockOptions<Resource extends IResource>(resource: Resource, response?: IResource, statusCode = 200) {
-    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
         .optionally()
         .reply(statusCode, response ?? resource, {
@@ -62,7 +81,7 @@ export function nockList<Resource extends IResource>(
     labels?: string[],
     query?: object
 ) {
-    let nockScope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
+    let nockScope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
         getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind })
     )
 
@@ -98,7 +117,7 @@ export function nockClusterList<Resource extends IResource>(
     polling = true
 ) {
     const data = Array.isArray(resources) ? { items: resources } : resources
-    let networkMock = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
+    let networkMock = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
         getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind })
     )
 
@@ -130,7 +149,7 @@ export function nockNamespacedList<Resource extends IResource>(
     polling = true
 ) {
     const data = Array.isArray(resources) ? { items: resources } : resources
-    let networkMock = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).get(
+    let networkMock = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
         getResourceApiPath(resource)
     )
 
@@ -156,7 +175,7 @@ export function nockNamespacedList<Resource extends IResource>(
 }
 
 export function nockCreate(resource: IResource | ClusterRoleBinding, response?: IResource, statusCode = 201) {
-    const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+    const scope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .post(getResourceApiPath(resource), (body) => {
             // if (!isEqual(body, resource)) {
             //     console.log(body)
@@ -173,7 +192,7 @@ export function nockCreate(resource: IResource | ClusterRoleBinding, response?: 
 }
 
 export function nockIgnoreRBAC() {
-    const scope = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+    const scope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .persist()
         .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', () => true)
         .optionally()
@@ -225,7 +244,7 @@ export function nockAnsibleTower(
     response: AnsibleTowerJobTemplateList,
     statusCode = 200
 ) {
-    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .post('/ansibletower', (body) => isEqual(body, data))
         .reply(statusCode, response, {
             'Access-Control-Allow-Origin': '*',
@@ -235,7 +254,7 @@ export function nockAnsibleTower(
 }
 
 export function nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource, statusCode = 204) {
-    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
         .optionally()
         .reply(200, undefined, {
@@ -252,7 +271,7 @@ export function nockPatch(resource: IResource, data: unknown[] | unknown, respon
 }
 
 export function nockReplace(resource: IResource, response?: IResource, statusCode = 200) {
-    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
         .optionally()
         .reply(204, undefined, {
@@ -269,7 +288,7 @@ export function nockReplace(resource: IResource, response?: IResource, statusCod
 }
 
 export function nockDelete(resource: IResource, response?: IResource) {
-    return nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+    return nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(getResourceNameApiPath(resource))
         .optionally()
         .reply(204, undefined, {
@@ -286,7 +305,7 @@ export function nockDelete(resource: IResource, response?: IResource) {
 }
 
 export function nockSearch(query: SearchQuery, response?: ISearchResult, statusCode = 201, polling = true) {
-    nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true })
+    nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
         .options(apiSearchUrl)
         .optionally()
         .reply(204, undefined, {
@@ -295,7 +314,7 @@ export function nockSearch(query: SearchQuery, response?: ISearchResult, statusC
             'Access-Control-Allow-Credentials': 'true',
         })
 
-    const networkMock = nock(process.env.REACT_APP_BACKEND_HOST as string, { encodedQueryParams: true }).post(
+    const networkMock = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).post(
         apiSearchUrl,
         JSON.stringify(query)
     )

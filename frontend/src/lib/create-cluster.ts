@@ -9,6 +9,7 @@ import {
     ManagedClusterApiVersion,
     ManagedClusterKind,
     clusterPoolNamespaceLabels,
+    AgentClusterInstallKind,
 } from '../resources'
 import { get, keyBy } from 'lodash'
 import { attachBMAs, syncBMAs } from './bare-metal-assets'
@@ -104,7 +105,7 @@ export async function createCluster(resources: any[]) {
 
     // if there were errors, delete any cluster resources
     if (errors.length > 0) {
-        const resources: IResource[] = [
+        let resourcesToDelete: IResource[] = [
             {
                 apiVersion: ManagedClusterApiVersion,
                 kind: ManagedClusterKind,
@@ -116,8 +117,31 @@ export async function createCluster(resources: any[]) {
                 metadata: { name: namespace, namespace },
             },
         ]
+        if (resources.find((r) => r.kind === AgentClusterInstallKind)) {
+            resourcesToDelete = resources
+                .filter((r) => r.apiVersion && r.kind && r.metadata?.name && r.metadata?.namespace)
+                .map(
+                    (r) =>
+                        ({
+                            apiVersion: r.apiVersion,
+                            kind: r.kind,
+                            metadata: { name: r.metadata.name, namespace: r.metadata.namespace },
+                        } as IResource)
+                )
+        }
 
-        await deleteResources(resources).promise
+        try {
+            await deleteResources(resourcesToDelete).promise
+            return {
+                status: 'ERROR',
+                messages: errors,
+            }
+        } catch {
+            return {
+                status: 'ERROR',
+                messages: errors,
+            }
+        }
     }
     // if this was a bare metal cluster mark the bare metal assets that are used
     else if (assets) {

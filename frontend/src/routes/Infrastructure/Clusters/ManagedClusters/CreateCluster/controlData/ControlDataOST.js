@@ -2,7 +2,7 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL } from 'temptifly'
+import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL, VALIDATE_URL } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
@@ -15,6 +15,8 @@ import {
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    onChangeConnection,
+    onChangeDisconnect,
     addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
@@ -40,6 +42,7 @@ const controlDataOST = [
             required: true,
         },
         available: [],
+        onSelect: onChangeConnection,
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,
@@ -230,6 +233,47 @@ const controlDataOST = [
     },
     ...networkingControlData,
     ...proxyControlData,
+    ///////////////////////  openstack  /////////////////////////////////////
+    {
+        id: 'disconnectedStep',
+        type: 'step',
+        title: 'Disconnected installation',
+    },
+    {
+        id: 'disconnectedInfo',
+        type: 'title',
+        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS (RHCOS) image.',
+    },
+    {
+        name: 'Create disconnected installation',
+        id: 'isDisconnected',
+        type: 'checkbox',
+        active: false,
+        onSelect: onChangeDisconnect,
+    },
+    {
+        id: 'clusterOSImage',
+        type: 'text',
+        name: 'Cluster OS Image',
+        disabled: true,
+        tip: 'The location of the Red Hat Enterprise Linux CoreOS (RHCOS) image in your local registry.',
+        validation: VALIDATE_URL,
+    },
+    {
+        id: 'imageContentSources',
+        type: 'textarea',
+        name: 'Image Content Sources',
+        disabled: true,
+        tip: 'The imageContentSources values that were generated during mirror registry creation.',
+    },
+    {
+        id: 'disconnectedAdditionalTrustBundle',
+        type: 'textarea',
+        name: 'Additional Trust Bundle',
+        disabled: true,
+        placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
+        tip: 'The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.',
+    },
 ]
 
 export default getControlDataOST

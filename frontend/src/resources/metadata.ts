@@ -11,4 +11,5 @@ export interface Metadata {
     deletionTimestamp?: string
     selfLink?: string
     finalizers?: string[]
+    ownerReferences?: any[]
 }
