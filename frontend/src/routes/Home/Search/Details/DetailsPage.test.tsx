@@ -16,7 +16,7 @@ jest.mock('react-router-dom', () => {
         __esModule: true,
         ...originalModule,
         useLocation: () => ({
-            pathname: '/multicloud/resources',
+            pathname: '/multicloud/home/search/resources',
             search: '?cluster=testCluster&kind=pods&apiversion=v1&namespace=testNamespace&name=testPod',
         }),
         useHistory: () => ({
@@ -26,7 +26,7 @@ jest.mock('react-router-dom', () => {
 })
 Object.defineProperty(window, 'location', {
     value: {
-        pathname: '/multicloud/resources',
+        pathname: '/multicloud/home/search/resources',
         search: '?cluster=testCluster&kind=pods&apiversion=v1&namespace=testNamespace&name=testPod',
     },
 })
