@@ -252,7 +252,7 @@ export const formatChanges = (
     changeWithSecrets: { yaml?: string; mappings: any; parsed: any; resources?: any[]; hiddenSecretsValues?: any[] }
 ) => {
     return changes
-        .filter((change: ChangeType) => !!get(changeWithSecrets.parsed, change.$p))
+        .filter((change: ChangeType) => get(changeWithSecrets.parsed, change.$p) !== undefined)
         .map((change: ChangeType) => {
             const obj = get(changeWithSecrets.parsed, change.$p)
             const objVs = get(changeWithSecrets.mappings, change.$a)
