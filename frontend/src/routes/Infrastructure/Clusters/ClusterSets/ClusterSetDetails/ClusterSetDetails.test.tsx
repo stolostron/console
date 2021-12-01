@@ -502,7 +502,7 @@ describe('ClusterSetDetails page', () => {
         )
         await clickByPlaceholderText('Select user')
         await clickByText(mockUser.metadata.name!)
-        await clickByText('Select role')
+        await clickByText('Select role', 1)
         await clickByText('Cluster set admin', 1)
         const createNock = nockCreate({
             apiVersion: RbacApiVersion,
@@ -526,6 +526,7 @@ describe('ClusterSetDetails page', () => {
         await clickByText('Add')
         await waitForNocks([createNock])
     })
+
     test('can add groups to the cluster set', async () => {
         const nock = nockClusterList({ apiVersion: RbacApiVersion, kind: ClusterRoleBindingKind }, [
             mockClusterRoleBinding,
@@ -538,7 +539,7 @@ describe('ClusterSetDetails page', () => {
         await clickByText('Groups')
         await clickByPlaceholderText('Select group')
         await clickByText(mockGroup.metadata.name!)
-        await clickByPlaceholderText('Select role')
+        await clickByText('Select role', 1)
         await clickByText('Cluster set view')
         const createNock = nockCreate({
             apiVersion: RbacApiVersion,
