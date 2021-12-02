@@ -35,6 +35,7 @@ type FormControl = {
     validate?: VoidFunction
     summary?: VoidFunction
     step?: any
+    additionalProps?: { [x: string]: string }
 }
 
 type DetailsFormProps = {
@@ -47,9 +48,6 @@ const fields: any = {
     baseDnsDomain: { path: 'ClusterDeployment[0].spec.baseDomain' },
     openshiftVersion: { path: 'AgentClusterInstall[0].spec.imageSetRef.name' },
     pullSecret: {},
-    // managedClusterSet: {
-    //     path: 'ClusterDeployment[0].metadata.labels["cluster.open-cluster-management.io/clusterset"]',
-    // },
 }
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
@@ -171,6 +169,9 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 isDisabled={false}
             />
         ),
+        // pullSecret: control.additionalProps?.['promptSshPublicKey'] ? (
+        //     <ClusterSshKeyFields clusterSshKey="" imageSshKey="" /* Props are empty since we are in the Create flow ...*/ />
+        // ) : null,
     }
 
     useEffect(() => {

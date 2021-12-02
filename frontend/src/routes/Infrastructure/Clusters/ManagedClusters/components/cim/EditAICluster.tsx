@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'
@@ -11,11 +11,28 @@ import {
     clusterImageSetsState,
     configMapsState,
 } from '../../../../../../atoms'
-import { getAIConfigMap, onHostsNext, onSaveNetworking } from '../../CreateCluster/components/assisted-installer/utils'
+import {
+    canDeleteAgent,
+    fetchNMState,
+    fetchSecret,
+    getAIConfigMap,
+    getClusterDeploymentLink,
+    getOnDeleteHost,
+    getOnSaveISOParams,
+    onApproveAgent,
+    onHostsNext,
+    onSaveAgent,
+    onSaveBMH,
+    onSaveNetworking,
+    useBMHsOfAIFlow,
+    useInfraEnv,
+} from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
+import { isBMPlatform } from '../../../../InfraEnvironments/utils'
 
-const { ClusterDeploymentWizard, FeatureGateContextProvider, ACM_ENABLED_FEATURES, LoadingState } = CIM
+const { ClusterDeploymentWizard, FeatureGateContextProvider, ACM_ENABLED_FEATURES, LoadingState, getAgentsHostsNames } =
+    CIM
 
 type EditAIClusterProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -43,6 +60,11 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const agentClusterInstall = agentClusterInstalls.find(
         (aci) => aci.metadata.name === name && aci.metadata.namespace === namespace
     )
+    const infraEnv = useInfraEnv({ name, namespace })
+    // TODO(mlibra): Arn't we missing Bare Metal Hosts in the tables???
+    const filteredBMHs = useBMHsOfAIFlow({ name, namespace })
+
+    const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
 
     const aiConfigMap = getAIConfigMap(configMaps)
 
@@ -123,20 +145,29 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 clusterDeployment={clusterDeployment}
                 agentClusterInstall={agentClusterInstall}
                 agents={agents}
-                usedClusterNames={
-                    [
-                        /* Not needed for the Edit flow */
-                    ]
-                }
+                usedClusterNames={[]}
                 onClose={history.goBack}
                 onSaveDetails={onSaveDetails}
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
                 onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents })}
+                onApproveAgent={onApproveAgent}
+                onDeleteHost={getOnDeleteHost(filteredBMHs)}
+                canDeleteAgent={canDeleteAgent}
+                onSaveAgent={onSaveAgent}
+                onSaveBMH={onSaveBMH}
+                onSaveISOParams={getOnSaveISOParams(infraEnv)}
+                // onFormSaveError={setErrorHandler}
+                // just for Day 2: onSaveHostsDiscovery={(values) => onDiscoverHostsNext({ values, clusterDeployment, agents })}
+                fetchSecret={fetchSecret}
+                fetchNMState={fetchNMState}
+                isBMPlatform={isBMPlatform(infraEnv)}
+                getClusterDeploymentLink={getClusterDeploymentLink}
                 hostActions={hostActions}
                 onFinish={onFinish}
                 aiConfigMap={aiConfigMap}
+                infraEnv={infraEnv}
             />
-            <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
+            <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
         </FeatureGateContextProvider>
     )
 }

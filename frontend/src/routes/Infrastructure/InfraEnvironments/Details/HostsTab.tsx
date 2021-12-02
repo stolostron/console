@@ -1,15 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { patchResource, deleteResource, getResource, listNamespacedResources } from '../../../../resources'
 import { AcmPageContent } from '@open-cluster-management/ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
-import { NavigationPath } from '../../../../NavigationPath'
-import { onEditBMH } from './utils'
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
+import {
+    canDeleteAgent,
+    fetchNMState,
+    fetchSecret,
+    getClusterDeploymentLink,
+    getOnDeleteHost,
+    onApproveAgent,
+    onSaveBMH,
+} from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 
-const { InfraEnvAgentTable, EditBMHModal, AGENT_BMH_HOSTNAME_LABEL_KEY } = CIM
+const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames } = CIM
 
 type HostsTabProps = {
     infraEnv: CIM.InfraEnvK8sResource
@@ -17,20 +23,11 @@ type HostsTabProps = {
     bareMetalHosts: CIM.BareMetalHostK8sResource[]
 }
 
-const fetchSecret = (namespace: string, name: string) =>
-    getResource({ apiVersion: 'v1', kind: 'Secret', metadata: { namespace, name } }).promise
-
-const fetchNMState = async (namespace: string, bmhName: string) => {
-    const nmStates = await listNamespacedResources(
-        { apiVersion: 'agent-install.openshift.io/v1beta1', kind: 'NMStateConfig', metadata: { namespace } },
-        [AGENT_BMH_HOSTNAME_LABEL_KEY]
-    ).promise
-    return nmStates.find((nm) => nm.metadata?.labels?.[AGENT_BMH_HOSTNAME_LABEL_KEY] === bmhName)
-}
-
 const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts }) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
+
+    const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents), [infraAgents])
 
     return (
         <AcmPageContent id="hosts">
@@ -41,48 +38,11 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                             agents={infraAgents}
                             bareMetalHosts={bareMetalHosts}
                             infraEnv={infraEnv}
-                            getClusterDeploymentLink={({ name }) => NavigationPath.clusterDetails.replace(':id', name)}
+                            getClusterDeploymentLink={getClusterDeploymentLink}
                             onEditHost={setEditAgent}
-                            onApprove={(agent) => {
-                                patchResource(agent, [
-                                    {
-                                        op: 'replace',
-                                        path: '/spec/approved',
-                                        value: true,
-                                    },
-                                ])
-                            }}
-                            canDelete={(agent, bmh) => !!agent || !!bmh}
-                            onDeleteHost={async (agent, bareMetalHost) => {
-                                let bmh = bareMetalHost
-                                if (agent) {
-                                    await deleteResource(agent).promise
-                                    const bmhName = agent.metadata.labels?.[AGENT_BMH_HOSTNAME_LABEL_KEY]
-                                    if (bmhName) {
-                                        bmh = bareMetalHosts.find(
-                                            ({ metadata }) =>
-                                                metadata.name === bmhName &&
-                                                metadata.namespace === agent.metadata.namespace
-                                        )
-                                    }
-                                }
-                                if (bmh) {
-                                    await deleteResource(bmh).promise
-                                    deleteResource({
-                                        apiVersion: 'v1',
-                                        kind: 'Secret',
-                                        metadata: {
-                                            namespace: bmh.metadata.namespace,
-                                            name: bmh.spec.bmc.credentialsName,
-                                        },
-                                    })
-
-                                    const nmState = await fetchNMState(bmh.metadata.namespace, bmh.metadata.name)
-                                    if (nmState) {
-                                        await deleteResource(nmState).promise
-                                    }
-                                }
-                            }}
+                            onApprove={onApproveAgent}
+                            canDelete={canDeleteAgent}
+                            onDeleteHost={getOnDeleteHost(bareMetalHosts)}
                             onEditBMH={setEditBMH}
                         />
                         <EditBMHModal
@@ -90,11 +50,11 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                             bmh={editBMH}
                             isOpen={!!editBMH}
                             onClose={() => setEditBMH(undefined)}
-                            onEdit={onEditBMH}
+                            onEdit={onSaveBMH}
                             fetchSecret={fetchSecret}
                             fetchNMState={fetchNMState}
                         />
-                        <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
+                        <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
                     </CardBody>
                 </Card>
             </PageSection>
