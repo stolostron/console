@@ -3,14 +3,7 @@ import { ReactNode, useRef, useEffect, useState, useCallback } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
-import {
-    RedoIcon,
-    UndoIcon,
-    SearchIcon,
-    EyeIcon,
-    EyeSlashIcon,
-    CloseIcon,
-} from '@patternfly/react-icons/dist/esm/icons'
+import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons/dist/js/icons'
 import { ClipboardCopyButton } from '@patternfly/react-core'
 import Ajv from 'ajv'
 import { debounce } from 'lodash'
@@ -144,7 +137,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     useResizeObserver(pageRef, (entry) => {
         const { width } = entry.contentRect
         let { height } = entry.contentRect
-        if (variant === 'complete') {
+        if (variant === 'toolbar') {
             height -= 36
         }
         editorRef?.current?.layout({ width, height })
@@ -472,7 +465,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 isMinimapVisible={true}
                 onChange={onChange}
                 language={Language.yaml}
-                customControls={variant === 'complete' ? toolbarControls : undefined}
+                customControls={variant === 'toolbar' ? toolbarControls : undefined}
                 onEditorDidMount={onEditorDidMount}
                 options={{
                     wordWrap: 'wordWrapColumn',

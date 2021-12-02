@@ -54,6 +54,7 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
+import { keyBy } from 'lodash'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { SyncDiff, SyncDiffType } from '../../../../../components/SyncEditor/SyncDiff'
 import schema from './schema.json'
@@ -133,7 +134,7 @@ export default function ImportClusterPage() {
                                 colorVariant={DrawerColorVariant.light200}
                             >
                                 <SyncEditor
-                                    variant="complete"
+                                    variant="toolbar"
                                     id="code-content"
                                     editorTitle={'Import Cluster YAML'}
                                     schema={schema}
@@ -429,12 +430,22 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                                         }
                                     }
 
-                                    // create the ManagedCluster/KlusterletAddonConfig/Secret(optional)
-                                    const results = resources.map((resource: any) => createResource(resource))
-                                    await Promise.allSettled(results.map((result: any) => result.promise))
+                                    const resourceMap = keyBy(resources, 'kind')
+                                    // create ManagedCluster
+                                    if (resourceMap['ManagedCluster']) {
+                                        await createResource(resourceMap['ManagedCluster']).promise
+                                    }
+                                    // create KlusterletAddonConfig
+                                    if (resourceMap['KlusterletAddonConfig']) {
+                                        await createResource(resourceMap['KlusterletAddonConfig']).promise
+                                    }
 
                                     // open cluster page or import secret
                                     if (importMode === ImportMode.kubeconfig || importMode === ImportMode.token) {
+                                        // create Secret
+                                        if (resourceMap['Secret']) {
+                                            await createResource(resourceMap['Secret']).promise
+                                        }
                                         history.push(NavigationPath.clusterDetails.replace(':id', createName as string))
                                     } else {
                                         setImportSecret(await pollImportYamlSecret(createName))
