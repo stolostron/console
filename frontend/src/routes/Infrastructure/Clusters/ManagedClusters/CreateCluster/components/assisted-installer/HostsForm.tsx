@@ -40,15 +40,22 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     const aiConfigMap = getAIConfigMap(configMaps)
     const { resourceJSON = {} } = control
     const { createResources = [] } = resourceJSON
-    const cdName = createResources.find((r: { kind: string }) => r.kind === 'ClusterDeployment').metadata.name
-    const aciName = createResources.find((r: { kind: string }) => r.kind === 'AgentClusterInstall').metadata.name
+    const { name: cdName, namespace: cdNamespace } = createResources.find(
+        (r: { kind: string }) => r.kind === 'ClusterDeployment'
+    ).metadata
+    const { name: aciName, namespace: aciNamespace } = createResources.find(
+        (r: { kind: string }) => r.kind === 'AgentClusterInstall'
+    ).metadata
 
     const clusterDeployment = useMemo(
-        () => clusterDeployments.find((cd) => cd.metadata.name === cdName && cd.metadata.namespace === cdName),
+        () => clusterDeployments.find((cd) => cd.metadata.name === cdName && cd.metadata.namespace === cdNamespace),
         [cdName, clusterDeployments]
     )
     const agentClusterInstall = useMemo(
-        () => agentClusterInstalls.find((aci) => aci.metadata.name === aciName && aci.metadata.namespace === aciName),
+        () =>
+            agentClusterInstalls.find(
+                (aci) => aci.metadata.name === aciName && aci.metadata.namespace === aciNamespace
+            ),
         [aciName, agentClusterInstalls]
     )
 
