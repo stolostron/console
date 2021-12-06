@@ -8,25 +8,25 @@ import {
 } from '@open-cluster-management/ui-components'
 import {
     Card,
-    CardTitle,
     CardBody,
+    CardTitle,
     PageSection,
     Split,
     Stack,
     StackItem,
-    TextContent,
     Text,
+    TextContent,
     TextVariants,
     ToggleGroup,
     ToggleGroupItem,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
-import { DOC_LINKS } from '../../lib/doc-util'
-import { useCallback, useMemo } from 'react'
+import _ from 'lodash'
 import queryString from 'query-string'
-import { useHistory } from 'react-router-dom'
+import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } from '../../atoms'
 import {
@@ -37,8 +37,7 @@ import {
     PlacementRuleApiVersion,
 } from '../../resources'
 import { getAge, getClusterCountString, getSearchLink, getEditLink } from './helpers/resource-helper'
-
-import _ from 'lodash'
+import { DOC_LINKS } from '../../lib/doc-util'
 
 export default function AdvancedConfiguration() {
     const { t } = useTranslation()
@@ -570,11 +569,13 @@ export default function AdvancedConfiguration() {
             const { name, namespace } = resource.metadata
             if (name) {
                 const searchParams: any = {
-                    name,
-                    namespace,
-                    kind,
-                    cluster: 'local-cluster',
-                    apiversion,
+                    properties: {
+                        name,
+                        namespace,
+                        kind,
+                        cluster: 'local-cluster',
+                        apiversion,
+                    },
                 }
                 const searchLink = getEditLink(searchParams)
                 return <a href={searchLink}>{name}</a>

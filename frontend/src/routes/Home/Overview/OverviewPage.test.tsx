@@ -305,7 +305,7 @@ it('should render overview page in error state', async () => {
     await waitForNocks([deleteMCV])
 
     // Test that the component has rendered correctly with an error
-    await waitFor(() => expect(screen.queryByText('overview.data.error.title')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
 })
 
 it('should render overview page with expected data', async () => {

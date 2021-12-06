@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import '@patternfly/react-core/dist/styles/base.css'
 import React, { Fragment, useReducer, useEffect, useState } from 'react'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import {

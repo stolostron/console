@@ -354,7 +354,8 @@ function AddUsersModal(props: {
                             &nbsp;
                             <AcmSelect
                                 id="role"
-                                maxHeight="6em"
+                                maxHeight="10em"
+                                menuAppendTo="parent"
                                 isRequired
                                 label={t('access.add.role')}
                                 placeholder={t('access.select.role')}

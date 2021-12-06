@@ -22,10 +22,10 @@ exports[`Correctly returns CreateDetailsLink - Default 1`] = `
 <Link
   to={
     Object {
-      "pathname": "/multicloud/resources",
+      "pathname": "/multicloud/home/search/resources",
       "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestPodNamespace%26name%3DtestPodName",
       "state": Object {
-        "from": "/multicloud/search",
+        "from": "/multicloud/home/search",
       },
     }
   }
@@ -46,10 +46,10 @@ exports[`Correctly returns CreateDetailsLink - Managed-Policy 1`] = `
 <Link
   to={
     Object {
-      "pathname": "/multicloud/resources",
+      "pathname": "/multicloud/home/search/resources",
       "search": "?cluster%3DtestCluster%26kind%3Dpolicy%26namespace%3DtestPolicyNamespace%26name%3DtestPolicyName",
       "state": Object {
-        "from": "/multicloud/search",
+        "from": "/multicloud/home/search",
       },
     }
   }
@@ -62,10 +62,10 @@ exports[`Correctly returns CreateDetailsLink - NON-Application 1`] = `
 <Link
   to={
     Object {
-      "pathname": "/multicloud/resources",
+      "pathname": "/multicloud/home/search/resources",
       "search": "?cluster%3DtestCluster%26kind%3Dapplication%26namespace%3DtestApplicationNamespace%26name%3DtestApplicationName",
       "state": Object {
-        "from": "/multicloud/search",
+        "from": "/multicloud/home/search",
       },
     }
   }
@@ -100,10 +100,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -150,10 +150,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -210,10 +210,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -270,10 +270,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -345,10 +345,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -395,10 +395,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -465,10 +465,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -540,10 +540,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -595,10 +595,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -665,10 +665,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -715,10 +715,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -785,10 +785,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -850,10 +850,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -900,10 +900,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -965,10 +965,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1045,10 +1045,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1115,10 +1115,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1170,10 +1170,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1225,10 +1225,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1280,10 +1280,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1350,10 +1350,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1415,10 +1415,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1472,10 +1472,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1524,10 +1524,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1584,10 +1584,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1639,10 +1639,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1704,10 +1704,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }
@@ -1764,10 +1764,10 @@ Array [
     "cell": <Link
       to={
         Object {
-          "pathname": "/multicloud/resources",
+          "pathname": "/multicloud/home/search/resources",
           "search": "?cluster%3DtestCluster%26kind%3Dpod%26namespace%3DtestNamespace%26name%3DtestName",
           "state": Object {
-            "from": "/multicloud/search",
+            "from": "/multicloud/home/search",
           },
         }
       }

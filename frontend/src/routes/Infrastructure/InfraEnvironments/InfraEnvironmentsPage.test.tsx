@@ -46,6 +46,7 @@ export const mockInfraEnv1 = {
             },
         ],
         debugInfo: {},
+        createdTime: '2021-11-10T13:00:00Z',
         isoDownloadURL: 'https://my.funny.download.url',
     },
 }

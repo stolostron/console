@@ -1,11 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import React from 'react'
+import _ from 'lodash'
 import DetailsForm from '../components/assisted-installer/DetailsForm'
-import HostsForm from '../components/assisted-installer/HostsForm'
+import CIMHostsForm from '../components/assisted-installer/CIMHostsForm'
+import AIHostsForm from '../components/assisted-installer/AIHostsForm'
 import NetworkForm from '../components/assisted-installer/NetworkForm'
 import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
 
-const controlDataAI = [
+export const controlDataCIM = [
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
         name: 'creation.ocp.cloud.connection',
@@ -35,6 +37,9 @@ const controlDataAI = [
         providerId: 'ai',
         mustValidate: true,
         encodeValues: ['pullSecret'],
+        additionalProps: {
+            promptSshPublicKey: false,
+        },
     },
     ...automationControlData,
     {
@@ -55,7 +60,7 @@ const controlDataAI = [
     {
         id: 'aiHosts',
         type: 'custom',
-        component: <HostsForm />,
+        component: null, // will be defined later
         providerId: 'aiHosts',
         mustValidate: true,
     },
@@ -79,4 +84,13 @@ const controlDataAI = [
     },
 ]
 
-export default controlDataAI
+export const controlDataAI = _.cloneDeep(controlDataCIM)
+
+const aiHostsStep = controlDataAI.find((data) => data.id === 'aiHosts')
+aiHostsStep.component = <AIHostsForm />
+
+const cimHostsStep = controlDataCIM.find((data) => data.id === 'aiHosts')
+cimHostsStep.component = <CIMHostsForm />
+
+const aiStep = controlDataAI.find((data) => data.id === 'ai')
+aiStep.additionalProps.promptSshPublicKey = true

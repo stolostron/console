@@ -16,12 +16,17 @@ import {
     AcmSearchbar,
 } from '@open-cluster-management/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
-import '@patternfly/react-core/dist/styles/base.css'
 import _ from 'lodash'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../../atoms'
+import HeaderWithNotification from './components/HeaderWithNotification'
+import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
+import { SearchInfoModal } from './components/Modals/SearchInfoModal'
+import SavedSearchQueries from './components/SavedSearchQueries'
+import SearchResults from './components/SearchResults'
+import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString } from './search-helper'
 import { searchClient } from './search-sdk/search-client'
 import {
     useGetMessagesQuery,
@@ -30,12 +35,6 @@ import {
     useSearchCompleteQuery,
     useSearchSchemaQuery,
 } from './search-sdk/search-sdk'
-import HeaderWithNotification from './components/HeaderWithNotification'
-import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
-import { SearchInfoModal } from './components/Modals/SearchInfoModal'
-import SavedSearchQueries from './components/SavedSearchQueries'
-import SearchResults from './components/SearchResults'
-import { convertStringToQuery, formatSearchbarSuggestions, getSearchCompleteString } from './search-helper'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
@@ -225,7 +224,7 @@ function RenderDropDownAndNewTab(props: {
                     savedSearchQueries={props.savedSearchQueries}
                 />
                 <AcmButton
-                    href={'/multicloud/search'}
+                    href={'/multicloud/home/search'}
                     variant={ButtonVariant.link}
                     component="a"
                     target="_blank"
