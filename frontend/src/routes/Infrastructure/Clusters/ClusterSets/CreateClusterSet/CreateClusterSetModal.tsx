@@ -60,7 +60,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                             <>
                                 <div>
                                     <Trans
-                                        i18nKey="cluster:createClusterSet.description"
+                                        i18nKey="createClusterSet.description"
                                         components={{ bold: <strong /> }}
                                     />
                                 </div>
@@ -82,8 +82,8 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                                     <AcmSubmit
                                         id="submit"
                                         variant="primary"
-                                        label={t('common:create')}
-                                        processingLabel={t('common:creating')}
+                                        label={t('create')}
+                                        processingLabel={t('creating')}
                                         onClick={() => {
                                             alertContext.clearAlerts()
                                             return createResource<ManagedClusterSet>(managedClusterSet)
@@ -98,7 +98,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                                         }}
                                     />
                                     <AcmButton variant="link" onClick={reset}>
-                                        {t('common:cancel')}
+                                        {t('cancel')}
                                     </AcmButton>
                                 </ActionGroup>
                             </>
@@ -109,7 +109,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                 <>
                     <div style={{ marginBottom: '24px' }}>
                         <Trans
-                            i18nKey="cluster:createClusterSet.success.description"
+                            i18nKey="createClusterSet.success.description"
                             values={{ clusterSetName: managedClusterSet.metadata.name }}
                             components={{ bold: <strong /> }}
                         />
@@ -126,7 +126,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                             {t('set.manage-resources')}
                         </AcmButton>
                         <AcmButton variant="link" onClick={reset}>
-                            {t('common:close')}
+                            {t('close')}
                         </AcmButton>
                     </ActionGroup>
                 </>

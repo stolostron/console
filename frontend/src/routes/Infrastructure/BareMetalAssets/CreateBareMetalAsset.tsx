@@ -60,7 +60,7 @@ export default function CreateBareMetalAssetPage() {
                                     rel="noreferrer"
                                     style={{ display: 'block', marginTop: '4px' }}
                                 >
-                                    {t('common:learn.more')}
+                                    {t('learn.more')}
                                 </a>
                             </>
                         }
@@ -93,7 +93,7 @@ export default function CreateBareMetalAssetPage() {
                                 rel="noreferrer"
                                 style={{ display: 'block', marginTop: '4px' }}
                             >
-                                {t('common:learn.more')}
+                                {t('learn.more')}
                             </a>
                         </>
                     }
@@ -178,7 +178,7 @@ export function CreateBareMetalAssetPageData() {
         return (
             <ErrorPage
                 error={error}
-                actions={<AcmButton onClick={() => setRetry(retry + 1)}>{t('common:retry')}</AcmButton>}
+                actions={<AcmButton onClick={() => setRetry(retry + 1)}>{t('retry')}</AcmButton>}
             />
         )
     }
@@ -191,8 +191,8 @@ export function CreateBareMetalAssetPageData() {
         // returns empty state when user cannot create secret in any namespace
         return (
             <AcmEmptyState
-                title={t('common:rbac.title.unauthorized')}
-                message={t('common:rbac.namespaces.unauthorized')}
+                title={t('rbac.title.unauthorized')}
+                message={t('rbac.namespaces.unauthorized')}
                 showIcon={false}
             />
         )
@@ -413,7 +413,7 @@ export function CreateBareMetalAssetPageContent(props: {
                                             if (e instanceof Error) {
                                                 alertContext.addAlert({
                                                     type: 'danger',
-                                                    title: t('common:request.failed'),
+                                                    title: t('request.failed'),
                                                     message: e.message,
                                                 })
                                             }
@@ -424,7 +424,7 @@ export function CreateBareMetalAssetPageContent(props: {
                                     if (e instanceof Error) {
                                         alertContext.addAlert({
                                             type: 'danger',
-                                            title: t('common:request.failed'),
+                                            title: t('request.failed'),
                                             message: e.message,
                                         })
                                     }
@@ -444,7 +444,7 @@ export function CreateBareMetalAssetPageContent(props: {
                                             if (e instanceof Error) {
                                                 alertContext.addAlert({
                                                     type: 'danger',
-                                                    title: t('common:request.failed'),
+                                                    title: t('request.failed'),
                                                     message: e.message,
                                                 })
                                             }
@@ -455,7 +455,7 @@ export function CreateBareMetalAssetPageContent(props: {
                                     if (e instanceof Error) {
                                         alertContext.addAlert({
                                             type: 'danger',
-                                            title: t('common:request.failed'),
+                                            title: t('request.failed'),
                                             message: e.message,
                                         })
                                     }

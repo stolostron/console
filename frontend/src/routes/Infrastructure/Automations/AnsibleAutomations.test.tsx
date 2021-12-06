@@ -142,7 +142,7 @@ describe('ansible job page', () => {
         await waitForText(clusterCurator2.metadata!.name!)
         await clickByLabel('Actions', 1) // Click the action button on the first table row
         await clickByText('template.delete')
-        await clickByText('common:delete')
+        await clickByText('delete')
         await waitForNock(deleteNock)
     })
 
@@ -152,7 +152,7 @@ describe('ansible job page', () => {
         await waitForText(clusterCurator2.metadata!.name!)
         await clickByLabel('Actions', 1) // Click the action button on the first table row
         await clickByText('template.delete')
-        await clickByText('common:delete')
+        await clickByText('delete')
         await waitForNock(badRequestStatus)
         await waitForText(`Could not process request because of invalid data.`)
     })
@@ -162,8 +162,8 @@ describe('ansible job page', () => {
         await waitForText(clusterCurator2.metadata!.name!)
         await clickByLabel('Actions', 1) // Click the action button on the first table row
         await clickByText('template.delete')
-        await clickByText('common:cancel')
-        await waitForNotText('common:cancel')
+        await clickByText('cancel')
+        await waitForNotText('cancel')
     })
 
     test('should be able to bulk delete templates', async () => {
@@ -174,7 +174,7 @@ describe('ansible job page', () => {
         await selectTableRow(1)
         await clickBulkAction('bulk.delete.templates')
         await waitForText('bulk.delete.templates.message')
-        await clickByText('common:delete')
+        await clickByText('delete')
         await waitForNock(deleteNock1)
         await waitForNock(deleteNock2)
     })
@@ -184,7 +184,7 @@ describe('ansible job page', () => {
         await waitForText(clusterCurator1.metadata!.name!)
         await selectTableRow(1)
         await clickBulkAction('bulk.delete.templates')
-        await clickByText('common:cancel')
-        await waitForNotText('common:cancel')
+        await clickByText('cancel')
+        await waitForNotText('cancel')
     })
 })

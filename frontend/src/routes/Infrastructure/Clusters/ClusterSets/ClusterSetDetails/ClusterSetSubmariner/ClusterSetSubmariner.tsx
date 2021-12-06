@@ -218,7 +218,7 @@ export function ClusterSetSubmarinerPageContent() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('view.documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
@@ -248,8 +248,8 @@ export function ClusterSetSubmarinerPageContent() {
                                                     setModalProps({
                                                         open: true,
                                                         title: t('bulk.title.uninstallSubmariner'),
-                                                        action: t('common:uninstall'),
-                                                        processing: t('common:uninstalling'),
+                                                        action: t('uninstall'),
+                                                        processing: t('uninstalling'),
                                                         resources: [mca],
                                                         description: t('bulk.message.uninstallSubmariner'),
                                                         columns,
@@ -311,8 +311,8 @@ export function ClusterSetSubmarinerPageContent() {
                                         setModalProps({
                                             open: true,
                                             title: t('bulk.title.uninstallSubmariner'),
-                                            action: t('common:uninstall'),
-                                            processing: t('common:uninstalling'),
+                                            action: t('uninstall'),
+                                            processing: t('uninstalling'),
                                             resources: mcas,
                                             description: t('bulk.message.uninstallSubmariner'),
                                             columns,

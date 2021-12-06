@@ -107,7 +107,7 @@ export default function ManagedClusters() {
                                     title: t('managed.createCluster'),
                                     click: () => history.push(NavigationPath.createCluster),
                                     isDisabled: !canCreateCluster,
-                                    tooltip: t('common:rbac.unauthorized'),
+                                    tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.primary,
                                 },
                                 {
@@ -115,7 +115,7 @@ export default function ManagedClusters() {
                                     title: t('managed.importCluster'),
                                     click: () => history.push(NavigationPath.importCluster),
                                     isDisabled: !canCreateCluster,
-                                    tooltip: t('common:rbac.unauthorized'),
+                                    tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.secondary,
                                 },
                             ]}
@@ -294,9 +294,9 @@ export function ClustersTable(props: {
                         return (
                             <AcmLabels
                                 labels={cluster.labels}
-                                expandedText={t('common:show.less')}
-                                collapsedText={t('common:show.more', { number: collapse.length })}
-                                allCollapsedText={t('common:count.labels', { number: collapse.length })}
+                                expandedText={t('show.less')}
+                                collapsedText={t('show.more', { number: collapse.length })}
+                                allCollapsedText={t('count.labels', { number: collapse.length })}
                                 collapse={collapse}
                             />
                         )

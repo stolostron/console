@@ -49,7 +49,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                         <>
                             <div>
                                 <Trans
-                                    i18nKey="cluster:clusterPool.modal.scale.message"
+                                    i18nKey="clusterPool.modal.scale.message"
                                     values={{ clusterPoolName: props.clusterPool?.metadata.name }}
                                     components={{ bold: <strong /> }}
                                 />
@@ -73,8 +73,8 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                 <AcmSubmit
                                     id="claim"
                                     variant="primary"
-                                    label={t('common:scale')}
-                                    processingLabel={t('common:scaling')}
+                                    label={t('scale')}
+                                    processingLabel={t('scaling')}
                                     onClick={() => {
                                         alertContext.clearAlerts()
                                         return patchResource(props.clusterPool!, [
@@ -89,7 +89,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                                 if (e instanceof Error) {
                                                     alertContext.addAlert({
                                                         type: 'danger',
-                                                        title: t('common:request.failed'),
+                                                        title: t('request.failed'),
                                                         message: e.message,
                                                     })
                                                 }
@@ -97,7 +97,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                     }}
                                 />
                                 <AcmButton key="cancel" variant="link" onClick={reset}>
-                                    {t('common:cancel')}
+                                    {t('cancel')}
                                 </AcmButton>
                             </ActionGroup>
                         </>

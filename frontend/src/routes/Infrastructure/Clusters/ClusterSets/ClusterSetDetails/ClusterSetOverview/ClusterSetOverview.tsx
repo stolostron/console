@@ -49,7 +49,7 @@ export function ClusterSetOverviewPageContent() {
                                 <Popover
                                     bodyContent={
                                         <Trans
-                                            i18nKey="cluster:clusterSetBinding.edit.message"
+                                            i18nKey="clusterSetBinding.edit.message"
                                             components={{ bold: <strong /> }}
                                         />
                                     }

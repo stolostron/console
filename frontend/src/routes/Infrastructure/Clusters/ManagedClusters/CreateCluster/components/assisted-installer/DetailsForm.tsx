@@ -162,7 +162,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
             <AcmLabelsInput
                 id="additionalLabels"
                 label={t('import.form.labels.label')}
-                buttonLabel={t('common:label.add')}
+                buttonLabel={t('label.add')}
                 value={additionalLabels}
                 onChange={(label) => setAdditionaLabels(label)}
                 placeholder={t('labels.edit.placeholder')}

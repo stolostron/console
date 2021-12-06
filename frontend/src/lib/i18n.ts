@@ -26,7 +26,7 @@ i18n
         interpolation: {
             escapeValue: false, // react handles this already
         },
-        defaultNS: 'common', // the default file for strings when using useTranslation, etc
+        defaultNS: 'plugin__acm-plugin', // the default file for strings when using useTranslation, etc
         supportedLngs: ['en'], // only languages from this array will attempt to be loaded
     })
 

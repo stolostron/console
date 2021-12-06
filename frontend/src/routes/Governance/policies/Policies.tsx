@@ -296,8 +296,8 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                     setModalProps({
                         open: true,
                         title: t('policy.bulk.title.delete'),
-                        action: t('common:delete'),
-                        processing: t('common:deleting'),
+                        action: t('delete'),
+                        processing: t('deleting'),
                         resources: [...policies],
                         description: t('bulk.message.delete'),
                         columns: [
@@ -511,8 +511,8 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                     setModalProps({
                         open: true,
                         title: t('policy.modal.title.delete'),
-                        action: t('common:delete'),
-                        processing: t('common:deleting'),
+                        action: t('delete'),
+                        processing: t('deleting'),
                         resources: [policy],
                         description: t('policy.modal.message.confirm'),
                         keyFn: (policy: Policy) => policy.metadata.uid as string,

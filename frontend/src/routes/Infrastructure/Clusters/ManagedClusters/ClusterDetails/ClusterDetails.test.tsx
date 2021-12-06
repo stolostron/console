@@ -734,10 +734,10 @@ describe('ClusterDetails', () => {
     test('overview page opens edit labels', async () => {
         await waitForText(clusterName, true)
 
-        await clickByLabel('common:labels.edit.title')
+        await clickByLabel('labels.edit.title')
         await waitForText('labels.description')
 
-        await clickByText('common:cancel')
+        await clickByText('cancel')
         await waitForNotText('labels.description')
     })
 
@@ -748,7 +748,7 @@ describe('ClusterDetails', () => {
         await clickByLabel('bulk.title.selectChannel')
         await waitForText('bulk.message.selectChannel')
 
-        await clickByText('common:cancel')
+        await clickByText('cancel')
         await waitForNotText('bulk.message.selectChannel')
     })
 

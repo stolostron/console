@@ -53,7 +53,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         <Popover
                             bodyContent={
                                 <Trans
-                                    i18nKey="cluster:table.clusterName.helperText"
+                                    i18nKey="table.clusterName.helperText"
                                     components={{ bold: <strong /> }}
                                 />
                             }
@@ -73,7 +73,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         <Popover
                             bodyContent={
                                 <Trans
-                                    i18nKey="cluster:table.clusterClaim.helperText"
+                                    i18nKey="table.clusterClaim.helperText"
                                     components={{ bold: <strong /> }}
                                 />
                             }
@@ -116,7 +116,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         <Popover
                             bodyContent={
                                 <Trans
-                                    i18nKey="cluster:table.clusterChannel.helperText"
+                                    i18nKey="table.clusterChannel.helperText"
                                     components={{ bold: <strong /> }}
                                 />
                             }
@@ -152,7 +152,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     <RbacButton
                         onClick={() => setShowEditLabels(true)}
                         variant={ButtonVariant.plain}
-                        aria-label={t('common:labels.edit.title')}
+                        aria-label={t('labels.edit.title')}
                         rbac={[rbacPatch(ManagedClusterDefinition, undefined, cluster?.name)]}
                     >
                         <PencilAltIcon />
@@ -189,7 +189,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                             target="_blank"
                             rel="noreferrer"
                         >
-                            {t('common:openshift.cluster.manager')} <ExternalLinkAltIcon />
+                            {t('openshift.cluster.manager')} <ExternalLinkAltIcon />
                         </a>
                     </>
                 ),

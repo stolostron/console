@@ -63,7 +63,7 @@ export function ClustersPage() {
                                 rel="noreferrer"
                                 style={{ display: 'block', marginTop: '4px' }}
                             >
-                                {t('common:learn.more')}
+                                {t('learn.more')}
                             </a>
                         </>
                     }

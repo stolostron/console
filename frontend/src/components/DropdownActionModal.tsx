@@ -81,7 +81,7 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                                 isInline
                                 noClose
                                 variant="danger"
-                                title={t('common:there.were.errors')}
+                                title={t('there.were.errors')}
                                 message={error.error.message}
                             />
                             <div style={{ minHeight: '24px' }} />
@@ -91,7 +91,7 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                         {error
                             ? [
                                   <Button variant="primary" key="close-action" onClick={props.close}>
-                                      {t('common:close')}
+                                      {t('close')}
                                   </Button>,
                               ]
                             : [
@@ -124,7 +124,7 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                                       onClick={props.onCancel ? props.onCancel : props.close}
                                       key="cancel-bulk-action"
                                   >
-                                      {t('common:cancel')}
+                                      {t('cancel')}
                                   </Button>,
                               ]}
                     </ActionGroup>

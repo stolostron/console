@@ -99,8 +99,8 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
         <BulkActionModel<ClusterPool>
             open={props.clusterPools?.length !== undefined}
             title={t('bulk.title.updateReleaseImage')}
-            action={t('common:update')}
-            processing={t('common:updating')}
+            action={t('update')}
+            processing={t('updating')}
             resources={props.clusterPools ?? []}
             close={() => {
                 props.close?.()

@@ -57,7 +57,7 @@ describe('ClusterSets page', () => {
         await waitForText('createClusterSet.title')
         await typeByTestId('clusterSetName', mockManagedClusterSet.metadata.name!)
         const createNock = nockCreate(mockManagedClusterSet)
-        await clickByText('common:create')
+        await clickByText('create')
         await waitForNock(createNock)
         await waitForText('createClusterSet.success.title')
     })

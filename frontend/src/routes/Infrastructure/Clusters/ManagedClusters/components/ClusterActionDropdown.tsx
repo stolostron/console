@@ -229,8 +229,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     setModalProps({
                         open: true,
                         title: t('bulk.title.import'),
-                        action: t('common:import'),
-                        processing: t('common:importing'),
+                        action: t('import'),
+                        processing: t('importing'),
                         resources: [cluster],
                         close: () => {
                             setModalProps({ open: false })

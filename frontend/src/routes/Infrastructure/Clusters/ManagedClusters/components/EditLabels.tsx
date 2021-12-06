@@ -109,11 +109,11 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
                                             })
                                         })
                                 }}
-                                label={t('common:save')}
-                                processingLabel={t('common:saving')}
+                                label={t('save')}
+                                processingLabel={t('saving')}
                             />
                             <Button variant="link" onClick={props.close}>
-                                {t('common:cancel')}
+                                {t('cancel')}
                             </Button>
                         </ActionGroup>
                     </AcmForm>

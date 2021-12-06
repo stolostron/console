@@ -242,9 +242,9 @@ export function AnsibleAutomationsForm(props: {
         ],
         reviewDescription: t('template.create.review.description'),
         reviewTitle: t('template.create.review.title'),
-        cancelLabel: t('common:cancel'),
-        nextLabel: t('common:next'),
-        backLabel: t('common:back'),
+        cancelLabel: t('cancel'),
+        nextLabel: t('next'),
+        backLabel: t('back'),
         sections: [
             {
                 type: 'Section',
@@ -497,8 +497,8 @@ export function AnsibleAutomationsForm(props: {
                 })
             }
         },
-        submitText: isEditing ? t('common:save') : t('common:add'),
-        submittingText: isEditing ? t('common:saving') : t('common:adding'),
+        submitText: isEditing ? t('save') : t('add'),
+        submittingText: isEditing ? t('saving') : t('adding'),
         cancel: () => history.push(NavigationPath.ansibleAutomations),
         stateToData,
     }

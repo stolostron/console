@@ -233,7 +233,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     variant="link"
                     isInline
                 >
-                    {t('common:learn.more')}
+                    {t('learn.more')}
                 </AcmButton>
             </>
         ),
@@ -250,13 +250,13 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 text: t('managed.clusterSets.submariner.addons.install'),
             },
         ],
-        submitText: t('common:install'),
-        submittingText: t('common:installing'),
-        reviewTitle: t('common:wizard.review.title'),
-        reviewDescription: t('common:wizard.review.description'),
-        cancelLabel: t('common:cancel'),
-        nextLabel: t('common:next'),
-        backLabel: t('common:back'),
+        submitText: t('install'),
+        submittingText: t('installing'),
+        reviewTitle: t('wizard.review.title'),
+        reviewDescription: t('wizard.review.description'),
+        cancelLabel: t('cancel'),
+        nextLabel: t('next'),
+        backLabel: t('back'),
         cancel: () => history.push(NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)),
         stateToData,
         sections: [
@@ -271,11 +271,11 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 variant="info"
                                 isInline
                                 noClose
-                                title={t('common:important')}
+                                title={t('important')}
                                 message={
                                     <>
                                         <Trans
-                                            i18nKey="cluster:managed.clusterSets.submariner.addons.config.notSupported"
+                                            i18nKey="managed.clusterSets.submariner.addons.config.notSupported"
                                             components={{
                                                 bold: <strong />,
                                                 button: (

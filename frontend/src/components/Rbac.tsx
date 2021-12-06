@@ -57,7 +57,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
                             return {
                                 ...action,
                                 isDisabled,
-                                tooltip: isDisabled ? t('common:rbac.unauthorized') : '',
+                                tooltip: isDisabled ? t('rbac.unauthorized') : '',
                             }
                         } else {
                             return action
@@ -121,7 +121,7 @@ export function RbacButton(props: RbacButtonProps) {
         <AcmButton
             {...props}
             isDisabled={isDisabled}
-            tooltip={isDisabled ? t('common:rbac.unauthorized') : ''}
+            tooltip={isDisabled ? t('rbac.unauthorized') : ''}
             className={classes.button}
         />
     )

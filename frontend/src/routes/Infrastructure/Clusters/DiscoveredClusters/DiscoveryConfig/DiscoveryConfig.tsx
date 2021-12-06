@@ -252,7 +252,7 @@ export function DiscoveryConfigPageContent(props: {
                 if (err instanceof Error) {
                     alertContext.addAlert({
                         type: 'danger',
-                        title: t('common:request.failed'),
+                        title: t('request.failed'),
                         message: err.message,
                     })
                     reject()
@@ -292,7 +292,7 @@ export function DiscoveryConfigPageContent(props: {
                 if (err instanceof Error) {
                     alertContext.addAlert({
                         type: 'danger',
-                        title: t('common:request.failed'),
+                        title: t('request.failed'),
                         message: err.message,
                     })
                     reject()

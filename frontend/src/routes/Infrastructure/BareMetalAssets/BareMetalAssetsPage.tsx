@@ -108,7 +108,7 @@ export function BareMetalAssetsTable(props: {
             open: true,
             icon: 'default',
             title: t('bulk.title.import'),
-            action: t('common:import'),
+            action: t('import'),
             processing: '',
             description: '',
             keyFn: (bareMetalAsset: ImportedBareMetalAsset) => bareMetalAsset.uid as string,
@@ -131,8 +131,8 @@ export function BareMetalAssetsTable(props: {
                                     open: true,
                                     icon: 'default',
                                     title: t('bulk.title.import'),
-                                    action: t('common:import'),
-                                    processing: t('common:importing'),
+                                    action: t('import'),
+                                    processing: t('importing'),
                                     description: t('modal.import.content.batch'),
                                     resources: result,
                                     columns: [
@@ -331,8 +331,8 @@ export function BareMetalAssetsTable(props: {
                                         setModalProps({
                                             open: true,
                                             title: t('bulk.title.delete'),
-                                            action: t('common:delete'),
-                                            processing: t('common:deleting'),
+                                            action: t('delete'),
+                                            processing: t('deleting'),
                                             resources: [bareMetalAsset],
                                             description: t('bulk.message.delete'),
                                             columns: [
@@ -397,8 +397,8 @@ export function BareMetalAssetsTable(props: {
                             setModalProps({
                                 open: true,
                                 title: t('bulk.title.delete'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                action: t('delete'),
+                                processing: t('deleting'),
                                 resources: [...bareMetalAssets],
                                 description: t('bulk.message.delete'),
                                 columns: [
@@ -434,7 +434,7 @@ export function BareMetalAssetsTable(props: {
                             history.push(`${NavigationPath.createCluster}?${params}`)
                         },
                         isDisabled: !canCreateCluster,
-                        tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
+                        tooltip: !canCreateCluster ? t('rbac.unauthorized') : '',
                         variant: 'bulk-action',
                     },
                 ]}

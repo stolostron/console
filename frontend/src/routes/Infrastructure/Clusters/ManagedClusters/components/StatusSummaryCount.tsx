@@ -71,7 +71,7 @@ export function StatusSummaryCount() {
                         title: t('summary.nodes'),
                         description: (
                             <Trans
-                                i18nKey="cluster:summary.nodes.inactive"
+                                i18nKey="summary.nodes.inactive"
                                 values={{
                                     number:
                                         /* istanbul ignore next */ cluster?.nodes?.unhealthy! +

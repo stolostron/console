@@ -29,7 +29,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                         <AcmButton
                             component={Link}
                             isDisabled={!canCreateCluster}
-                            tooltip={t('common:rbac.unauthorized')}
+                            tooltip={t('rbac.unauthorized')}
                             variant={props.buttonType ?? 'primary'}
                             to={NavigationPath.createCluster}
                         >
@@ -40,7 +40,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                         <AcmButton
                             component={Link}
                             isDisabled={!canCreateCluster}
-                            tooltip={t('common:rbac.unauthorized')}
+                            tooltip={t('rbac.unauthorized')}
                             variant={props.buttonType ?? 'primary'}
                             to={NavigationPath.importCluster}
                         >
@@ -68,13 +68,13 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                         id: 'create-cluster',
                         text: t('managed.createCluster'),
                         isDisabled: !canCreateCluster,
-                        tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
+                        tooltip: !canCreateCluster ? t('rbac.unauthorized') : '',
                     },
                     {
                         id: 'import-cluster',
                         text: t('managed.importCluster'),
                         isDisabled: !canCreateCluster,
-                        tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
+                        tooltip: !canCreateCluster ? t('rbac.unauthorized') : '',
                     },
                 ]}
                 text={t('managed.addCluster')}

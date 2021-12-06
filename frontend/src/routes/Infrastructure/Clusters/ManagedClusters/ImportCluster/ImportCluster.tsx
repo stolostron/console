@@ -59,7 +59,7 @@ export default function ImportClusterPage() {
                                 rel="noreferrer"
                                 style={{ display: 'block', marginTop: '4px' }}
                             >
-                                {t('common:learn.more')}
+                                {t('learn.more')}
                             </a>
                         </>
                     }
@@ -147,7 +147,7 @@ export function ImportClusterPageContent() {
                 <AcmLabelsInput
                     id="additionalLabels"
                     label={t('import.form.labels.label')}
-                    buttonLabel={t('common:label.add')}
+                    buttonLabel={t('label.add')}
                     value={additionalLabels}
                     onChange={(label) => setAdditionaLabels(label)}
                     placeholder={t('labels.edit.placeholder')}
@@ -337,7 +337,7 @@ export function ImportClusterPageContent() {
                         </Label>
                     ) : (
                         <Link to={NavigationPath.clusters} id="cancel">
-                            <Button variant="link">{t('common:cancel')}</Button>
+                            <Button variant="link">{t('cancel')}</Button>
                         </Link>
                     )}
                 </ActionGroup>

@@ -121,8 +121,8 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                 <AcmSubmit
                                     id="submit"
                                     variant="primary"
-                                    label={t('common:scale')}
-                                    processingLabel={t('common:scaling')}
+                                    label={t('scale')}
+                                    processingLabel={t('scaling')}
                                     onClick={() => {
                                         alertContext.clearAlerts()
                                         const patches = []
@@ -155,7 +155,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                                 if (e instanceof Error) {
                                                     alertContext.addAlert({
                                                         type: 'danger',
-                                                        title: t('common:request.failed'),
+                                                        title: t('request.failed'),
                                                         message: e.message,
                                                     })
                                                 }
@@ -163,7 +163,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                     }}
                                 />
                                 <AcmButton key="cancel" variant="link" onClick={reset}>
-                                    {t('common:cancel')}
+                                    {t('cancel')}
                                 </AcmButton>
                             </ActionGroup>
                         </>

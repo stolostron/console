@@ -92,7 +92,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                 })}
                 loadingMessage={
                     <Trans
-                        i18nKey="cluster:deleting.managedClusterSet.inprogress.message"
+                        i18nKey="deleting.managedClusterSet.inprogress.message"
                         components={{ bold: <strong /> }}
                         values={{ managedClusterSetName: prevClusterSet!.metadata.name }}
                     />
@@ -102,7 +102,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                 })}
                 successMessage={
                     <Trans
-                        i18nKey="cluster:deleting.managedClusterSet.success.message"
+                        i18nKey="deleting.managedClusterSet.success.message"
                         components={{ bold: <strong /> }}
                         values={{ managedClusterSetName: prevClusterSet!.metadata.name }}
                     />

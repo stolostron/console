@@ -61,9 +61,9 @@ export default function ClusterPoolsPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
-                <TechPreviewAlert i18nKey="cluster:preview.clusterPools" docHref={DOC_LINKS.CLUSTER_POOLS} />
+                <TechPreviewAlert i18nKey="preview.clusterPools" docHref={DOC_LINKS.CLUSTER_POOLS} />
                 <Stack hasGutter style={{ height: 'unset' }}>
-                    <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-pools-learn">
+                    <AcmExpandableCard title={t('learn.terminology')} id="cluster-pools-learn">
                         <Flex style={{ flexWrap: 'inherit' }}>
                             <Flex style={{ maxWidth: '50%' }}>
                                 <FlexItem>
@@ -80,7 +80,7 @@ export default function ClusterPoolsPage() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('view.documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
@@ -99,7 +99,7 @@ export default function ClusterPoolsPage() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('view.documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
@@ -279,7 +279,7 @@ export function ClusterPoolsTable(props: {
                         cell: (clusterPool: ClusterPool) => {
                             return (
                                 <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
-                                    {t('common:outOf', {
+                                    {t('outOf', {
                                         firstNumber: clusterPool?.status?.ready,
                                         secondNumber: clusterPool.spec!.size,
                                     })}
@@ -371,8 +371,8 @@ export function ClusterPoolsTable(props: {
                                         setModalProps({
                                             open: true,
                                             title: t('bulk.title.destroyClusterPool'),
-                                            action: t('common:destroy'),
-                                            processing: t('common:destroying'),
+                                            action: t('destroy'),
+                                            processing: t('destroying'),
                                             resources: [clusterPool],
                                             description: t('bulk.message.destroyClusterPool'),
                                             columns: modalColumns,
@@ -422,8 +422,8 @@ export function ClusterPoolsTable(props: {
                             setModalProps({
                                 open: true,
                                 title: t('bulk.destroy.clusterPools'),
-                                action: t('common:destroy'),
-                                processing: t('common:destroying'),
+                                action: t('destroy'),
+                                processing: t('destroying'),
                                 resources: clusterPools,
                                 description: t('bulk.message.destroyClusterPool'),
                                 columns: modalColumns,
@@ -509,7 +509,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                                 !cluster.hive.clusterClaimName && availableStatuses.includes(cluster.status)
                             return (
                                 <span style={{ whiteSpace: 'nowrap' }}>
-                                    {t(`${isAvailable ? 'common:yes' : 'common:no'}`)}
+                                    {t(`${isAvailable ? 'Yes' : 'No'}`)}
                                 </span>
                             )
                         },

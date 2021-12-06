@@ -221,8 +221,8 @@ function AnsibleJobTemplateTable() {
                                         setBulkModalProps({
                                             open: true,
                                             title: t('template.modal.delete.title'),
-                                            action: t('common:delete'),
-                                            processing: t('common:deleting'),
+                                            action: t('delete'),
+                                            processing: t('deleting'),
                                             resources: [curator],
                                             description: curator.spec?.install?.towerAuthSecret ? (
                                                 <div>
@@ -294,8 +294,8 @@ function AnsibleJobTemplateTable() {
                             setBulkModalProps({
                                 open: true,
                                 title: t('bulk.delete.templates'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                action: t('delete'),
+                                processing: t('deleting'),
                                 resources: [...curators],
                                 description: t('bulk.delete.templates.message'),
                                 columns: [
@@ -332,7 +332,7 @@ function AnsibleJobTemplateTable() {
                                     history.push(NavigationPath.addAnsibleAutomation)
                                 }}
                                 // disabled={}
-                                // tooltip={t('common:rbac.unauthorized')}
+                                // tooltip={t('rbac.unauthorized')}
                                 hidden
                             >
                                 {t('template.create')}

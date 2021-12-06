@@ -69,7 +69,7 @@ export function ImportCommandContainer() {
     }
 
     if (error) {
-        return <AcmAlert isInline variant="danger" title={t('common:request.failed')} message={error} />
+        return <AcmAlert isInline variant="danger" title={t('request.failed')} message={error} />
     }
 
     if (cluster?.status === ClusterStatus.pendingimport && !autoImportSecret) {
@@ -122,7 +122,7 @@ export function ImportCommand(props: ImportCommandProps) {
                                 <strong style={{ marginBottom: '12px', fontSize: '14px', display: 'block' }}>
                                     {t('import.command.copy.description')}
                                 </strong>
-                                <Tooltip isVisible={copied} content={t('common:copied')} trigger="click">
+                                <Tooltip isVisible={copied} content={t('copied')} trigger="click">
                                     <AcmButton
                                         id="import-command"
                                         variant="secondary"

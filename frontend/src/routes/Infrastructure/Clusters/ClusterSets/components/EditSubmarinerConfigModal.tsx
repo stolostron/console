@@ -77,7 +77,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                 {(alertContext) => (
                     <AcmForm>
                         <div>
-                            <Trans i18nKey="cluster:submariner.update.form.message" components={{ bold: <strong /> }} />
+                            <Trans i18nKey="submariner.update.form.message" components={{ bold: <strong /> }} />
                         </div>
                         <AcmTextInput
                             id="natt-port"
@@ -134,8 +134,8 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                             <AcmSubmit
                                 id="save"
                                 variant="primary"
-                                label={t('common:save')}
-                                processingLabel={t('common:saving')}
+                                label={t('save')}
+                                processingLabel={t('saving')}
                                 onClick={() => {
                                     alertContext.clearAlerts()
 
@@ -193,7 +193,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                                 }}
                             />
                             <AcmButton variant="link" onClick={reset}>
-                                {t('common:cancel')}
+                                {t('cancel')}
                             </AcmButton>
                         </ActionGroup>
                     </AcmForm>

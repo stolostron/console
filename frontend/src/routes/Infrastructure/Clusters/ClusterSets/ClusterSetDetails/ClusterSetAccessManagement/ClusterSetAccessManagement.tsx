@@ -384,8 +384,8 @@ function AddUsersModal(props: {
                                 <AcmSubmit
                                     id="add-access"
                                     variant="primary"
-                                    label={t('common:add')}
-                                    processingLabel={t('common:adding')}
+                                    label={t('add')}
+                                    processingLabel={t('adding')}
                                     onClick={() => {
                                         alertContext.clearAlerts()
                                         const resource: ClusterRoleBinding = {
@@ -420,7 +420,7 @@ function AddUsersModal(props: {
                                     }}
                                 />
                                 <AcmButton key="cancel" variant="link" onClick={reset}>
-                                    {t('common:cancel')}
+                                    {t('cancel')}
                                 </AcmButton>
                             </ActionGroup>
                         </>

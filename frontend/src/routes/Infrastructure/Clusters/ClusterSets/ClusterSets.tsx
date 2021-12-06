@@ -101,9 +101,9 @@ export default function ClusterSetsPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
-                <TechPreviewAlert i18nKey="cluster:preview.clusterSets" docHref={DOC_LINKS.CLUSTER_SETS} />
+                <TechPreviewAlert i18nKey="preview.clusterSets" docHref={DOC_LINKS.CLUSTER_SETS} />
                 <Stack hasGutter style={{ height: 'unset' }}>
-                    <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-sets-learn">
+                    <AcmExpandableCard title={t('learn.terminology')} id="cluster-sets-learn">
                         <Flex style={{ flexWrap: 'inherit' }}>
                             <Flex style={{ maxWidth: '50%' }}>
                                 <FlexItem>
@@ -120,7 +120,7 @@ export default function ClusterSetsPage() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('view.documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
@@ -139,7 +139,7 @@ export default function ClusterSetsPage() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('view.documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
