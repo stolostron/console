@@ -21,6 +21,7 @@ import {
     subscriptionsState,
     channelsState,
     placementRulesState,
+    managedClustersState,
 } from '../../atoms'
 import {
     ApplicationApiVersion,
@@ -38,12 +39,15 @@ import {
     Subscription,
     PlacementRuleKind,
     PlacementRuleApiVersion,
+    ManagedCluster,
 } from '../../resources'
 import ResourceLabels from './components/ResourceLabels'
 import { getAge, getSearchLink } from './helpers/resource-helper'
 import { canUser } from '../../lib/rbac-util'
 import { Link } from 'react-router-dom'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
+import { useQuery } from '../../lib/useQuery'
+import { queryRemoteArgoApps } from '../../lib/search'
 
 const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
@@ -51,6 +55,7 @@ const subAnnotationStr = 'apps.open-cluster-management.io/subscriptions'
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
 const localSubSuffixStr = '-local'
+const localClusterStr = 'local-cluster'
 const appSetPlacementStr =
     'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
 
@@ -73,10 +78,11 @@ function getResourceType(resource: IResource) {
     }
 }
 
-// Check if server URL matches hub URL, doesn't work when testing locally
-function isLocalClusterURL(url: string) {
+// Check if server URL matches hub URL
+function isLocalClusterURL(url: string, localCluster: ManagedCluster | undefined) {
     let argoServerURL
-    let localClusterURL = new URL(window.location.href)
+    const localClusterConfigs = localCluster ? localCluster.spec?.managedClusterClientConfigs! : []
+    let localClusterURL = new URL(localClusterConfigs.length > 0 ? localClusterConfigs[0].url : '')
 
     try {
         argoServerURL = new URL(url)
@@ -98,22 +104,6 @@ function getClusterCountString(remoteCount: number, localPlacement: boolean) {
         return 'Local'
     } else {
         return 'None'
-    }
-}
-
-function calculateClusterCount(resource: ArgoApplication, clusterCount: any, clusterList: string[]) {
-    if (
-        resource.spec.destination?.name === 'in-cluster' ||
-        resource.spec.destination?.name === 'local-cluster' ||
-        isLocalClusterURL(resource.spec.destination?.server || '')
-    ) {
-        clusterCount.localPlacement = true
-        clusterList.push('local-cluster')
-    } else {
-        clusterCount.remoteCount++
-        if (resource.spec.destination?.name) {
-            clusterList.push(resource.spec.destination?.name)
-        }
     }
 }
 
@@ -152,6 +142,20 @@ function getAnnotation(resource: IResource, annotationString: string) {
     return resource.metadata?.annotations !== undefined ? resource.metadata?.annotations[annotationString] : undefined
 }
 
+function getAppNamespace(resource: IResource) {
+    let castType
+    if (resource.kind === ApplicationSetKind) {
+        castType = resource as ApplicationSet
+        return castType.spec.template?.spec?.destination?.namespace
+    }
+    if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
+        castType = resource as ArgoApplication
+        return castType.spec.destination.namespace
+    }
+
+    return resource.metadata?.namespace
+}
+
 export default function ApplicationsOverview() {
     const { t } = useTranslation()
 
@@ -161,10 +165,35 @@ export default function ApplicationsOverview() {
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [placementRules] = useRecoilState(placementRulesState)
+    const [managedClusters] = useRecoilState(managedClustersState)
+    const localCluster = managedClusters.find((cls) => cls.metadata.name === localClusterStr)
     const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
         open: false,
     })
     const tableItems: IResource[] = []
+    const { data, loading, startPolling } = useQuery(useCallback(() => queryRemoteArgoApps(), []))
+    useEffect(startPolling, [startPolling])
+
+    const calculateClusterCount = (resource: ArgoApplication, clusterCount: any, clusterList: string[]) => {
+        const isRemoteArgoApp = resource.status.cluster ? true : false
+
+        if (
+            (resource.spec.destination?.name === 'in-cluster' ||
+                resource.spec.destination?.name === localClusterStr ||
+                isLocalClusterURL(resource.spec.destination?.server || '', localCluster)) &&
+            !isRemoteArgoApp
+        ) {
+            clusterCount.localPlacement = true
+            clusterList.push(localClusterStr)
+        } else {
+            clusterCount.remoteCount++
+            if (isRemoteArgoApp) {
+                clusterList.push(resource.status.cluster)
+            } else if (resource.spec.destination?.name) {
+                clusterList.push(resource.spec.destination?.name)
+            }
+        }
+    }
 
     const createClustersText = (resource: IResource, clusterCount: any, clusterList: string[]) => {
         if (resource.kind === ApplicationSetKind) {
@@ -204,7 +233,7 @@ export default function ApplicationsOverview() {
 
                             if (decisions) {
                                 decisions.forEach((cluster) => {
-                                    if (cluster.clusterName === 'local-cluster') {
+                                    if (cluster.clusterName === localClusterStr) {
                                         clusterCount.localPlacement = true
                                     } else {
                                         clusterCount.remoteCount++
@@ -217,7 +246,11 @@ export default function ApplicationsOverview() {
             }
         }
 
-        return getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+        return isArgoApp(resource)
+            ? clusterList.length > 0
+                ? clusterList[0]
+                : 'None'
+            : getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
     }
 
     // Cache cell text for sorting and searching
@@ -241,13 +274,14 @@ export default function ApplicationsOverview() {
         })
 
         const timeWindow = getTimeWindow(tableItem)
-
+        const transformedNamespace = getAppNamespace(tableItem)
         const transformedObject = {
             transformed: {
                 clusterCount: clusterTransformData,
                 resourceText: resourceText,
                 createdText: getAge(tableItem, '', 'metadata.creationTimestamp'),
                 timeWindow: timeWindow,
+                namespace: transformedNamespace,
             },
         }
 
@@ -373,6 +407,39 @@ export default function ApplicationsOverview() {
         }
     })
 
+    if (!loading && data) {
+        const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
+        remoteArgoApps.forEach((remoteArgoApp: any) => {
+            tableItems.push(
+                generateTransformData({
+                    apiVersion: ArgoApplicationApiVersion,
+                    kind: ArgoApplicationKind,
+                    metadata: {
+                        name: remoteArgoApp.name,
+                        namespace: remoteArgoApp.namespace,
+                        creationTimestamp: remoteArgoApp.created,
+                    },
+                    spec: {
+                        destination: {
+                            namespace: remoteArgoApp.destinationNamespace,
+                            name: remoteArgoApp.destinationName,
+                            server: remoteArgoApp.destinationCluster,
+                        },
+                        source: {
+                            path: remoteArgoApp.path,
+                            repoURL: remoteArgoApp.repoURL,
+                            targetRevision: remoteArgoApp.targetRevision,
+                            chart: remoteArgoApp.chart,
+                        },
+                    },
+                    status: {
+                        cluster: remoteArgoApp.cluster,
+                    },
+                } as ArgoApplication)
+            )
+        })
+    }
+
     const keyFn = useCallback(
         (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
         []
@@ -396,9 +463,9 @@ export default function ApplicationsOverview() {
             },
             {
                 header: t('Namespace'),
-                cell: 'metadata.namespace',
-                sort: 'metadata.namespace',
-                search: 'metadata.namespace',
+                cell: (resource) => getAppNamespace(resource),
+                sort: 'transformed.namespace',
+                search: 'transformed.namespace',
                 tooltip: t(
                     'Displays the namespace of the application resource, which by default is where the application deploys other resources. For Argo applications, this is the destination namespace.'
                 ),
@@ -432,7 +499,7 @@ export default function ApplicationsOverview() {
                               }
                     const searchLink = getSearchLink(searchParams)
 
-                    if (clusterCount.remoteCount) {
+                    if (clusterCount.remoteCount && clusterCountString !== 'None') {
                         return (
                             <a className="cluster-count-link" href={searchLink}>
                                 {clusterCountString}
@@ -606,7 +673,7 @@ export default function ApplicationsOverview() {
                     if (
                         subHostingSubAnnotation &&
                         subHostingSubAnnotation.indexOf(subAnnotationArray[i]) > -1 &&
-                        !(subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith('local-cluster'))
+                        !(subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith(localClusterStr))
                     ) {
                         related.push(item)
                         subChildResources.push(`${item.metadata.name} [${item.kind}]`)
@@ -682,7 +749,7 @@ export default function ApplicationsOverview() {
                 const item = subscriptions[i]
                 const subHostingDeployableAnnotation = getAnnotation(item, hostingDeployableAnnotationStr)
 
-                if (subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith('local-cluster')) {
+                if (subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith(localClusterStr)) {
                     continue
                 }
 
@@ -768,7 +835,6 @@ export default function ApplicationsOverview() {
                 })
                 history.push(searchLink)
             },
-            isDisabled: false, // implement when we use search for remote Argo apps
         })
 
         if (!isArgoApp(item)) {
