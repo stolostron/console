@@ -30,7 +30,7 @@ import {
     IResource,
 } from '../../resources'
 import ResourceLabels from './components/ResourceLabels'
-import { getAge, getSearchLink } from './helpers/resource-helper'
+import { getAge, getClusterCountString, getSearchLink } from './helpers/resource-helper'
 
 // Map resource kind to type column
 function getResourceType(resource: IResource) {
@@ -63,16 +63,6 @@ function isLocalClusterURL(url: string) {
         return true
     }
     return false
-}
-
-function getClusterCountString(remoteCount: number, localPlacement: boolean) {
-    if (remoteCount) {
-        return localPlacement ? `${remoteCount} Remote, 1 Local` : `${remoteCount} Remote`
-    } else if (localPlacement) {
-        return 'Local'
-    } else {
-        return 'None'
-    }
 }
 
 function calculateClusterCount(resource: ArgoApplication, clusterCount: any, clusterList: string[]) {
