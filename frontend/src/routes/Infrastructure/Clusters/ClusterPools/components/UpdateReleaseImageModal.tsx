@@ -15,7 +15,7 @@ export type UpdateReleaseImageModalProps = {
 }
 
 export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [imageSets, setImageSets] = useState<Record<string, string>>({})
     const [clusterImageSets] = useRecoilState(clusterImageSetsState)
 

@@ -21,7 +21,7 @@ export type ScaleMachinePoolModalProps = {
 }
 
 export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [minReplicas, setMinReplicas] = useState<number>(0)
     const [maxReplicas, setMaxReplicas] = useState<number>(0)
     const [replicas, setReplicas] = useState<number>(0)

@@ -9,7 +9,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../../resources'
 
 export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'primary' | 'link' }) {
-    const { t } = useTranslation('cluster')
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)

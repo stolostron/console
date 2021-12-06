@@ -44,7 +44,7 @@ import { NavigationPath } from '../../../../../../NavigationPath'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function InstallSubmarinerFormPage() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const history = useHistory()
     const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
     const [availableClusters] = useState<Cluster[]>(
@@ -94,7 +94,7 @@ export function InstallSubmarinerFormPage() {
                         title={t('submariner.clusters.empty.title')}
                         message={
                             <Trans
-                                i18nKey={'cluster:submariner.clusters.empty.message'}
+                                i18nKey={'submariner.clusters.empty.message'}
                                 components={{ bold: <strong />, p: <p /> }}
                             />
                         }
@@ -159,7 +159,7 @@ const providerAutoDetectSecret: Record<string, (secrets: Secret[]) => Secret | u
 }
 
 export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
-    const { t } = useTranslation(['cluster', 'credentials', 'common'])
+    const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     const history = useHistory()
 
@@ -386,9 +386,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'awsAccessKeyID',
                                     type: 'Text',
-                                    label: t('credentials:credentialsForm.aws_access_key_id.label'),
-                                    placeholder: t('credentials:credentialsForm.aws_access_key_id.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.aws_access_key_id.labelHelp'),
+                                    label: t('credentialsForm.aws_access_key_id.label'),
+                                    placeholder: t('credentialsForm.aws_access_key_id.placeholder'),
+                                    labelHelp: t('credentialsForm.aws_access_key_id.labelHelp'),
                                     value: awsAccessKeyIDs[clusterName] ?? '', // without the ?? '' the UI repeats the values across sub-pages
                                     onChange: (value: string) => {
                                         const copy = { ...awsAccessKeyIDs }
@@ -403,9 +403,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'awsSecretAccessKeyID',
                                     type: 'Text',
-                                    label: t('credentials:credentialsForm.aws_secret_access_key.label'),
-                                    placeholder: t('credentials:credentialsForm.aws_secret_access_key.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.aws_secret_access_key.labelHelp'),
+                                    label: t('credentialsForm.aws_secret_access_key.label'),
+                                    placeholder: t('credentialsForm.aws_secret_access_key.placeholder'),
+                                    labelHelp: t('credentialsForm.aws_secret_access_key.labelHelp'),
                                     value: awsSecretAccessKeyIDs[clusterName] ?? '',
                                     onChange: (value: string) => {
                                         const copy = { ...awsSecretAccessKeyIDs }
@@ -421,9 +421,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                                 {
                                     id: 'gcServiceAccountKey',
                                     type: 'TextArea',
-                                    label: t('credentials:credentialsForm.osServiceAccount.json.label'),
-                                    placeholder: t('credentials:credentialsForm.osServiceAccount.json.placeholder'),
-                                    labelHelp: t('credentials:credentialsForm.osServiceAccount.json.labelHelp'),
+                                    label: t('credentialsForm.osServiceAccount.json.label'),
+                                    placeholder: t('credentialsForm.osServiceAccount.json.placeholder'),
+                                    labelHelp: t('credentialsForm.osServiceAccount.json.labelHelp'),
                                     value: gcServiceAccountKeys[clusterName] ?? '',
                                     onChange: (value) => {
                                         const copy = { ...gcServiceAccountKeys }

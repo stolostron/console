@@ -35,7 +35,7 @@ export function MachinePoolsPageContent() {
 }
 
 export function MachinePoolsTable() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<MachinePool> | { open: false }>({
         open: false,
@@ -229,7 +229,7 @@ export function MachinePoolsTable() {
                         title={t('managed.cluster.machinePools.emptyStateHeader')}
                         message={
                             <Trans
-                                i18nKey={'cluster:managed.cluster.machinePools.emptyStateButton'}
+                                i18nKey={'managed.cluster.machinePools.emptyStateButton'}
                                 components={{ bold: <strong /> }}
                             />
                         }

@@ -78,7 +78,7 @@ export const submarinerHealthCheck = (mca: ManagedClusterAddOn) => {
 }
 
 export function ClusterSetSubmarinerPageContent() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
     const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
@@ -202,7 +202,7 @@ export function ClusterSetSubmarinerPageContent() {
                                         <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
                                         <Text component={TextVariants.p}>
                                             <Trans
-                                                i18nKey={'cluster:learn.submariner.additional'}
+                                                i18nKey={'learn.submariner.additional'}
                                                 components={{ bold: <strong /> }}
                                             />
                                         </Text>
@@ -359,13 +359,13 @@ export function ClusterSetSubmarinerPageContent() {
                                         clusters!.length === 0 ? (
                                             <Trans
                                                 i18nKey={
-                                                    'cluster:managed.clusterSets.submariner.clusters.emptyStateMsg'
+                                                    'managed.clusterSets.submariner.clusters.emptyStateMsg'
                                                 }
                                                 components={{ bold: <strong />, p: <p /> }}
                                             />
                                         ) : (
                                             <Trans
-                                                i18nKey={'cluster:managed.clusterSets.submariner.addons.emptyStateMsg'}
+                                                i18nKey={'managed.clusterSets.submariner.addons.emptyStateMsg'}
                                                 components={{ bold: <strong />, p: <p /> }}
                                             />
                                         )

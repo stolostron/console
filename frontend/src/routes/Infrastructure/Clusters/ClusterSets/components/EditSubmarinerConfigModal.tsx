@@ -30,7 +30,7 @@ export type EditSubmarinerConfigModalProps = {
 }
 
 export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const [nattPort, setNattPort] = useState<string | undefined>()
     const [nattEnable, setNattEnable] = useState(submarinerConfigDefault.nattEnable)

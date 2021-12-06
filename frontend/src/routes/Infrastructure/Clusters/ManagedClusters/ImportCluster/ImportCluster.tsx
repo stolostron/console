@@ -40,7 +40,7 @@ import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 
 export default function ImportClusterPage() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     return (
         <AcmPage
             header={
@@ -82,7 +82,7 @@ enum ImportMode {
 }
 
 export function ImportClusterPageContent() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const { canJoinClusterSets } = useCanJoinClusterSets()

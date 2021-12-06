@@ -40,7 +40,7 @@ export default function AnsibleAutomationsPage() {
 
     const alertContext = useContext(AcmAlertContext)
     useEffect(() => alertContext.clearAlerts, [])
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const useStyles = makeStyles({
         hint: {
@@ -65,12 +65,12 @@ export default function AnsibleAutomationsPage() {
     const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
 
     return (
-        <AcmPage hasDrawer header={<AcmPageHeader title={t('cluster:template.title')} />}>
+        <AcmPage hasDrawer header={<AcmPageHeader title={t('template.title')} />}>
             <AcmPageContent id="clusters">
                 <PageSection>
                     <Hint className={classes.hint}>
                         <div>
-                            {t('cluster:template.hint')}{' '}
+                            {t('template.hint')}{' '}
                             <AcmButton
                                 onClick={() =>
                                     window.open(
@@ -84,7 +84,7 @@ export default function AnsibleAutomationsPage() {
                                 isInline
                                 isSmall
                             >
-                                {t('cluster:template.operator.link')}
+                                {t('template.operator.link')}
                                 <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
                             </AcmButton>
                         </div>
@@ -116,7 +116,7 @@ function AnsibleJobTemplateTable() {
     >({
         open: false,
     })
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const history = useHistory()
 
@@ -157,7 +157,7 @@ function AnsibleJobTemplateTable() {
                                         isSmall
                                         tooltip={
                                             <Trans
-                                                i18nKey="cluster:template.modal.noCredentials"
+                                                i18nKey="template.modal.noCredentials"
                                                 components={{ bold: <strong /> }}
                                             />
                                         }
@@ -227,7 +227,7 @@ function AnsibleJobTemplateTable() {
                                             description: curator.spec?.install?.towerAuthSecret ? (
                                                 <div>
                                                     <Trans
-                                                        i18nKey="cluster:template.modal.delete.message.linked"
+                                                        i18nKey="template.modal.delete.message.linked"
                                                         values={{
                                                             curatorTemplate: curator.metadata.name as string,
                                                             ansibleCredential: curator.spec.install

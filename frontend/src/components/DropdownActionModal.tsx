@@ -38,7 +38,7 @@ interface ItemError<T> {
 }
 
 export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProps<T> | { open: false }) {
-    const { t } = useTranslation(['common'])
+    const { t } = useTranslation()
     const [error, setError] = useState<ItemError<T> | undefined>()
     const [selection, setSelection] = useState<string | undefined>('')
 

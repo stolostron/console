@@ -130,7 +130,7 @@ export function getClusterActions(cluster: Cluster) {
 }
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)

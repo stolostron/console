@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
 
 export function EditLabels(props: { resource?: IResource; displayName?: string; close: () => void }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [labels, setLabels] = useState<Record<string, string>>({})
 
     useLayoutEffect(() => {

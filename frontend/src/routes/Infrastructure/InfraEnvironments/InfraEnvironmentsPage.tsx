@@ -49,16 +49,16 @@ const InfraEnvironmentsPage: React.FC = () => {
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
 
     const [infraEnvs, agents] = useRecoilValue(waitForAll([infraEnvironmentsState, agentsState]))
-    const { t } = useTranslation(['infraenv', 'common'])
+    const { t } = useTranslation()
 
     return (
-        <AcmPage hasDrawer header={<AcmPageHeader title={t('infraenv:infraenvs')} />}>
+        <AcmPage hasDrawer header={<AcmPageHeader title={t('infraenvs')} />}>
             <AcmPageContent id="infra-environments">
                 <OnPremiseBanner
                     id="banner.infraenv"
                     WrappingComponent={PageSection}
-                    titleKey="cim:cim.infra.banner.header"
-                    textKey="cim:cim.infra.banner.body"
+                    titleKey="cim.infra.banner.header"
+                    textKey="cim.infra.banner.body"
                 />
 
                 <PageSection>
@@ -77,7 +77,7 @@ type InfraEnvsTableProps = {
 }
 
 const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) => {
-    const { t } = useTranslation(['infraenv', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const getDetailsLink = (infraEnv: CIM.InfraEnvK8sResource) =>
         NavigationPath.infraEnvironmentDetails

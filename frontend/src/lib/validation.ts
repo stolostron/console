@@ -8,15 +8,15 @@ import validator from 'validator'
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
 export function validateKubernetesDnsName(value: string, t: TFunction) {
     if (value) {
-        if (value.length > 63) return `${t('credentials:validate.kubernetesDnsName.length')}`
+        if (value.length > 63) return `${t('validate.kubernetesDnsName.length')}`
         for (const char of value) {
             if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-')
-                return `${t('credentials:validate.kubernetesDnsName.char')}`
+                return `${t('validate.kubernetesDnsName.char')}`
         }
         if (!lowercaseAlphaNumericCharacters.includes(value[0]))
-            return `${t('credentials:validate.kubernetesDnsName.startchar')}`
+            return `${t('validate.kubernetesDnsName.startchar')}`
         if (!lowercaseAlphaNumericCharacters.includes(value[value.length - 1]))
-            return `${t('credentials:validate.kubernetesDnsName.endchar')}`
+            return `${t('validate.kubernetesDnsName.endchar')}`
     }
     return undefined
 }
@@ -74,10 +74,10 @@ export function validateJSON(value: string, t: TFunction) {
     try {
         const obj = JSON.parse(value)
         if (Object.entries(obj).length <= 0) {
-            return t('credentials:validate.json')
+            return t('validate.json')
         }
     } catch (e) {
-        return t('credentials:validate.json')
+        return t('validate.json')
     }
     return undefined
 }

@@ -24,7 +24,7 @@ export function StatusSummaryCount() {
     const [policyReports] = useRecoilState(policyreportState)
     const { cluster } = useContext(ClusterContext)
     const { setDrawerContext } = useContext(AcmDrawerContext)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { push } = useHistory()
     /* istanbul ignore next */
     const { data, loading, startPolling } = useQuery(

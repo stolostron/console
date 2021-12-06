@@ -44,7 +44,7 @@ export const usePageContext = (showActions: boolean, Component: ElementType) => 
 export function ClustersPage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const location = useLocation()
-    const { t } = useTranslation(['cluster', 'bma', 'common'])
+    const { t } = useTranslation()
 
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
@@ -70,18 +70,18 @@ export function ClustersPage() {
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusters)}>
-                                <Link to={NavigationPath.clusters}>{t('cluster:clusters')}</Link>
+                                <Link to={NavigationPath.clusters}>{t('clusters')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterSets)}>
-                                <Link to={NavigationPath.clusterSets}>{t('cluster:clusterSets')}</Link>
+                                <Link to={NavigationPath.clusterSets}>{t('clusterSets')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterPools)}>
-                                <Link to={NavigationPath.clusterPools}>{t('cluster:clusterPools')}</Link>
+                                <Link to={NavigationPath.clusterPools}>{t('clusterPools')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem
                                 isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
                             >
-                                <Link to={NavigationPath.discoveredClusters}>{t('cluster:clusters.discovered')}</Link>
+                                <Link to={NavigationPath.discoveredClusters}>{t('clusters.discovered')}</Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }

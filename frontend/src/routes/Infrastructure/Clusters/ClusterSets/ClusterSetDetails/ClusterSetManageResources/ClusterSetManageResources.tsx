@@ -31,7 +31,7 @@ import { useCanJoinClusterSets } from '../../components/useCanJoinClusterSets'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetManageResourcesPage() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     return (
         <AcmPage
@@ -60,7 +60,7 @@ export function ClusterSetManageResourcesPage() {
 }
 
 export function ClusterSetManageResourcesContent() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const { clusterSet } = useContext(ClusterSetContext)
     const [managedClusters, clusterPools, managedClusterSets] = useRecoilValue(
@@ -106,7 +106,7 @@ export function ClusterSetManageResourcesContent() {
                 <div>{t('manageClusterSet.form.section.table.description')}</div>
                 <div>
                     <Trans
-                        i18nKey={'cluster:manageClusterSet.form.section.table.description.second'}
+                        i18nKey={'manageClusterSet.form.section.table.description.second'}
                         components={{ bold: <strong />, p: <p /> }}
                     />
                 </div>

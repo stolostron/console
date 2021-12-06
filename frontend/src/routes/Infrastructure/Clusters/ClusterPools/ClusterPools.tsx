@@ -53,7 +53,7 @@ import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './compone
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     useEffect(() => alertContext.clearAlerts, [])
 
     const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
@@ -122,7 +122,7 @@ export default function ClusterPoolsPage() {
                                     title={t('managed.clusterPools.emptyStateHeader')}
                                     message={
                                         <Trans
-                                            i18nKey={'cluster:managed.clusterPools.emptyStateMsg'}
+                                            i18nKey={'managed.clusterPools.emptyStateMsg'}
                                             components={{ bold: <strong />, p: <p /> }}
                                         />
                                     }
@@ -162,7 +162,7 @@ export function ClusterPoolsTable(props: {
 }) {
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const { clusterPools } = props
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterPool> | { open: false }>({
         open: false,
     })
@@ -456,7 +456,7 @@ const useStyles = makeStyles({
 })
 
 function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = )
     const classes = useStyles()
     return (
         <div className={classes.table}>

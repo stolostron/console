@@ -54,7 +54,7 @@ export interface ItemError<T> {
 }
 
 export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | { open: false }) {
-    const { t } = useTranslation(['common'])
+    const { t } = useTranslation()
     const [progress, setProgress] = useState(0)
     const [progressCount, setProgressCount] = useState(0)
     const [confirm, setConfirm] = useState('')

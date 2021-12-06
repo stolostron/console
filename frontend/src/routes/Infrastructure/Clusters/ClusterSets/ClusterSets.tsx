@@ -60,7 +60,7 @@ import { MultiClusterNetworkStatus } from './components/MultiClusterNetworkStatu
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 
 export default function ClusterSetsPage() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
     useEffect(() => alertContext.clearAlerts, [])
 
@@ -172,7 +172,7 @@ const PageActions = () => {
 }
 
 export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSets?: ManagedClusterSet[] }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
         open: false,
     })
@@ -344,7 +344,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         title: t('managed.createClusterSet'),
                         click: () => setCreateClusterSetModalOpen(true),
                         isDisabled: !canCreateClusterSet,
-                        tooltip: t('common:rbac.unauthorized'),
+                        tooltip: t('rbac.unauthorized'),
                         variant: ButtonVariant.primary,
                     },
                 ]}
@@ -355,7 +355,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         title={t('managed.clusterSets.emptyStateHeader')}
                         message={
                             <Trans
-                                i18nKey={'cluster:managed.clusterSets.emptyStateMsg'}
+                                i18nKey={'managed.clusterSets.emptyStateMsg'}
                                 components={{ bold: <strong />, p: <p /> }}
                             />
                         }
@@ -364,7 +364,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                 role="link"
                                 onClick={() => setCreateClusterSetModalOpen(true)}
                                 isDisabled={!canCreateClusterSet}
-                                tooltip={t('common:rbac.unauthorized')}
+                                tooltip={t('rbac.unauthorized')}
                             >
                                 {t('managed.createClusterSet')}
                             </AcmButton>

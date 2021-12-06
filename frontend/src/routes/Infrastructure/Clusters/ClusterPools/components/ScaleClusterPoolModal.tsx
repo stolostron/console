@@ -20,7 +20,7 @@ export type ScaleClusterPoolModalProps = {
 }
 
 export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [size, setSize] = useState<number>(0)
 
     useEffect(() => {

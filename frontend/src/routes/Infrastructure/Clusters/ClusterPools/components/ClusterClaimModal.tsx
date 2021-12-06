@@ -36,7 +36,7 @@ export type ClusterClaimModalProps = {
 }
 
 export function ClusterClaimModal(props: ClusterClaimModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const [clusterClaim, setClusterClaim] = useState<ClusterClaim | undefined>()
     const [claimed, setClaimed] = useState<boolean>(false)

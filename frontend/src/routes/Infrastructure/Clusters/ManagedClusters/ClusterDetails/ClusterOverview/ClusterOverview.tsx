@@ -39,7 +39,7 @@ const { getClusterProperties } = CIM
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster, clusterCurator, clusterDeployment, agentClusterInstall } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
 
@@ -135,7 +135,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                             }
                         }}
                         variant={ButtonVariant.plain}
-                        aria-label={t('cluster:bulk.title.selectChannel')}
+                        aria-label={t('bulk.title.selectChannel')}
                         rbac={[
                             rbacPatch(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),
                             rbacCreate(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),

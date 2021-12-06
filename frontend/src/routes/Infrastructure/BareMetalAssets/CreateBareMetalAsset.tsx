@@ -42,7 +42,7 @@ import { getAuthorizedNamespaces, rbacCreate } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 
 export default function CreateBareMetalAssetPage() {
-    const { t } = useTranslation(['bma', 'common'])
+    const { t } = useTranslation()
     const params: { namespace?: string; name?: string } = useParams()
 
     if (params.namespace && params.name) {
@@ -50,10 +50,10 @@ export default function CreateBareMetalAssetPage() {
             <AcmPage
                 header={
                     <AcmPageHeader
-                        title={t('bma:editBareMetalAsset.title')}
+                        title={t('editBareMetalAsset.title')}
                         titleTooltip={
                             <>
-                                {t('bma:createBareMetalAsset.title.tooltip')}
+                                {t('createBareMetalAsset.title.tooltip')}
                                 <a
                                     href={DOC_LINKS.BARE_METAL_ASSETS}
                                     target="_blank"
@@ -65,8 +65,8 @@ export default function CreateBareMetalAssetPage() {
                             </>
                         }
                         breadcrumb={[
-                            { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
-                            { text: t('bma:editBareMetalAsset.title'), to: '' },
+                            { text: t('bmas'), to: NavigationPath.bareMetalAssets },
+                            { text: t('editBareMetalAsset.title'), to: '' },
                         ]}
                     />
                 }
@@ -83,10 +83,10 @@ export default function CreateBareMetalAssetPage() {
         <AcmPage
             header={
                 <AcmPageHeader
-                    title={t('bma:createBareMetalAsset.title')}
+                    title={t('createBareMetalAsset.title')}
                     titleTooltip={
                         <>
-                            {t('bma:createBareMetalAsset.title.tooltip')}
+                            {t('createBareMetalAsset.title.tooltip')}
                             <a
                                 href={DOC_LINKS.BARE_METAL_ASSETS}
                                 target="_blank"
@@ -98,8 +98,8 @@ export default function CreateBareMetalAssetPage() {
                         </>
                     }
                     breadcrumb={[
-                        { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
-                        { text: t('bma:createBareMetalAsset.title'), to: '' },
+                        { text: t('bmas'), to: NavigationPath.bareMetalAssets },
+                        { text: t('createBareMetalAsset.title'), to: '' },
                     ]}
                 />
             }
@@ -154,7 +154,7 @@ export function EditBareMetalAssetPageData(props: { name: string; namespace: str
 }
 
 export function CreateBareMetalAssetPageData() {
-    const { t } = useTranslation(['bma', 'common'])
+    const { t } = useTranslation()
     const [namespaces] = useRecoilState(namespacesState)
     const [projects, setProjects] = useState<string[]>([])
     const [error, setError] = useState<Error>()
@@ -206,7 +206,7 @@ export function CreateBareMetalAssetPageContent(props: {
     editBareMetalAsset?: BareMetalAsset
     editSecret?: Partial<Secret>
 }) {
-    const { t } = useTranslation(['bma'])
+    const { t } = useTranslation()
     const history = useHistory()
     const alertContext = useContext(AcmAlertContext)
 

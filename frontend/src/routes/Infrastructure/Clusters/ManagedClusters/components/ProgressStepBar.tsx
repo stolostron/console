@@ -11,7 +11,7 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { launchLogs } from './HiveNotification'
 
 export function ProgressStepBar() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
     const [curators] = useRecoilState(clusterCuratorsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)

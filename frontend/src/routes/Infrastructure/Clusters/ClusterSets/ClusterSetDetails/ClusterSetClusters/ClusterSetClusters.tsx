@@ -13,7 +13,7 @@ import { ClustersTable } from '../../../ManagedClusters/ManagedClusters'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetClustersPageContent() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet, clusters } = useContext(ClusterSetContext)
     return (
         <AcmPageContent id="clusters">
@@ -26,7 +26,7 @@ export function ClusterSetClustersPageContent() {
                             title={t('managed.clusterSets.clusters.emptyStateHeader')}
                             message={
                                 <Trans
-                                    i18nKey={'cluster:managed.clusterSets.clusters.emptyStateMsg'}
+                                    i18nKey={'managed.clusterSets.clusters.emptyStateMsg'}
                                     components={{ bold: <strong /> }}
                                 />
                             }

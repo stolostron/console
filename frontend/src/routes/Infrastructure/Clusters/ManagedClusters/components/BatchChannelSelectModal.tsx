@@ -54,7 +54,7 @@ export function BatchChannelSelectModal(props: {
     open: boolean
     clusters: Cluster[] | undefined
 }): JSX.Element {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [selectChannels, setSelectChannels] = useState<Record<string, string>>({})
     const [channelSelectableClusters, setChannelSelectableClusters] = useState<Array<Cluster>>([])
 

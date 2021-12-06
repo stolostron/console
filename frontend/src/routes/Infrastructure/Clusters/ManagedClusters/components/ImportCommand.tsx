@@ -25,7 +25,7 @@ import { secretsState } from '../../../../../atoms'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function ImportCommandContainer() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [secrets] = useRecoilState(secretsState)
     const { cluster } = useContext(ClusterContext)
     const [error, setError] = useState<string | undefined>()
@@ -94,7 +94,7 @@ type ImportCommandProps = {
 }
 
 export function ImportCommand(props: ImportCommandProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const [copied, setCopied] = useState<boolean>(false)
     useEffect(() => {
@@ -200,7 +200,7 @@ export function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1'
         klusterletCRD = importSecret.data?.['crdsv1beta1.yaml']
     }
     const importYaml = importSecret.data?.['import.yaml']
-    const alreadyImported = i18next.t('cluster:import.command.alreadyimported')
+    const alreadyImported = i18next.t('import.command.alreadyimported')
     const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
     return `echo "${klusterletCRD}" | base64 -d | kubectl create -f - || test $? -eq 0 && sleep 2 && echo "${importYaml}" | base64 -d | kubectl apply -f - || echo "${alreadyImported64}" | base64 -d`
 }

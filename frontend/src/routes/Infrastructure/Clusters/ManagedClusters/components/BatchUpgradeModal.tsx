@@ -66,7 +66,7 @@ export function BatchUpgradeModal(props: {
     open: boolean
     clusters: Cluster[] | undefined
 }): JSX.Element {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [selectVersions, setSelectVersions] = useState<Record<string, string>>({})
     const [upgradeableClusters, setUpgradeableClusters] = useState<Array<Cluster>>([])
 

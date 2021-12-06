@@ -61,9 +61,9 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('discovery:emptystate.defaultState.title')
-        await waitForText('discovery:emptystate.defaultState.msg')
-        await waitForText('discovery:emptystate.addCredential')
+        await waitForText('emptystate.defaultState.title')
+        await waitForText('emptystate.defaultState.msg')
+        await waitForText('emptystate.addCredential')
     })
 
     test('CRH credentials exist, but no discoveryconfig (Empty State 2)', async () => {
@@ -86,10 +86,10 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('discovery:emptystate.credentials.title')
-        await waitForText('discovery:emptystate.credentials.msg')
-        await waitForText('discovery:discovery.addDiscovery')
-        await clickByText('discovery:discovery.addDiscovery')
+        await waitForText('emptystate.credentials.title')
+        await waitForText('emptystate.credentials.msg')
+        await waitForText('discovery.addDiscovery')
+        await clickByText('discovery.addDiscovery')
 
         await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
         await clickByText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
@@ -115,9 +115,9 @@ describe('DiscoveredClusters', () => {
             </RecoilRoot>
         )
 
-        await waitForText('discovery:emptystate.discoveryEnabled.title')
-        await waitForText('discovery:emptystate.discoveryEnabled.msg')
-        await waitForText('discovery:discovery.configureDiscovery')
-        await waitForText('discovery:discovery.addDiscovery')
+        await waitForText('emptystate.discoveryEnabled.title')
+        await waitForText('emptystate.discoveryEnabled.msg')
+        await waitForText('discovery.configureDiscovery')
+        await waitForText('discovery.addDiscovery')
     })
 })

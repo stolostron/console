@@ -51,7 +51,7 @@ import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
 
 function InfraEnvLinkButton() {
-    const { t } = useTranslation(['cim'])
+    const { t } = useTranslation()
 
     return (
         <Link to={NavigationPath.infraEnvironments} style={{ marginRight: '16px' }}>
@@ -62,7 +62,7 @@ function InfraEnvLinkButton() {
     )
 }
 export default function ManagedClusters() {
-    const { t } = useTranslation(['cluster', 'discovery'])
+    const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
     let clusters = useAllClusters()
     clusters = clusters.filter((cluster) => {
@@ -95,8 +95,8 @@ export default function ManagedClusters() {
                     <OnPremiseBanner
                         id="banner.managedclusters"
                         extraButton={<InfraEnvLinkButton />}
-                        titleKey="cim:cim.onpremise.banner.header"
-                        textKey="cim:cim.onpremise.banner.body"
+                        titleKey="cim.onpremise.banner.header"
+                        textKey="cim.onpremise.banner.body"
                     />
                     <StackItem>
                         <ClustersTable
@@ -125,7 +125,7 @@ export default function ManagedClusters() {
                                     title={t('managed.emptyStateHeader')}
                                     message={
                                         <Trans
-                                            i18nKey={'cluster:managed.emptyStateMsg'}
+                                            i18nKey={'managed.emptyStateMsg'}
                                             components={{ bold: <strong /> }}
                                         />
                                     }
@@ -170,7 +170,7 @@ export function ClustersTable(props: {
 
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
 
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
     const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({

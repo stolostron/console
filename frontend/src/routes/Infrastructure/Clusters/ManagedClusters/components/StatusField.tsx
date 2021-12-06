@@ -12,7 +12,7 @@ import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
 import { launchLogs, launchToYaml } from './HiveNotification'
 
 export function StatusField(props: { cluster: Cluster }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [configMaps] = useRecoilState(configMapsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
     const latestJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.name!)

@@ -49,7 +49,7 @@ import { useQuery } from '../../../../../../lib/useQuery'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetAccessManagement() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterRoleBinding> | { open: false }>({
         open: false,
@@ -231,7 +231,7 @@ export function ClusterSetAccessManagement() {
                             key="accessEmptyState"
                             title={t('access.emptyTitle')}
                             message={
-                                <Trans i18nKey={'cluster:access.emptyMessage'} components={{ bold: <strong /> }} />
+                                <Trans i18nKey={'access.emptyMessage'} components={{ bold: <strong /> }} />
                             }
                             action={
                                 <AcmButton variant="primary" onClick={() => setAddModalOpen(true)}>
@@ -266,7 +266,7 @@ function AddUsersModal(props: {
     groups?: Group[]
 }) {
     const classes = useStyles()
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     const [type, setType] = useState<'User' | 'Group'>('User')
     const [userGroup, setUserGroup] = useState<string | undefined>()
@@ -432,7 +432,7 @@ function AddUsersModal(props: {
 }
 
 function GroupUsersPopover(props: { group?: Group; useIcon?: boolean }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     if (!props.group) {
         return null

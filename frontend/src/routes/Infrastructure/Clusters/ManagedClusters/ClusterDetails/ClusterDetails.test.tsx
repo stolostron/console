@@ -745,7 +745,7 @@ describe('ClusterDetails', () => {
         await waitForText(clusterName, true)
         await waitForText(clusterName, true)
 
-        await clickByLabel('cluster:bulk.title.selectChannel')
+        await clickByLabel('bulk.title.selectChannel')
         await waitForText('bulk.message.selectChannel')
 
         await clickByText('common:cancel')

@@ -33,7 +33,7 @@ function getEmptySet() {
 }
 
 export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => void }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [created, setCreated] = useState<boolean>()
