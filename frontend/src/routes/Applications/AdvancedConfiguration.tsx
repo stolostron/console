@@ -28,17 +28,27 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { channelsState, placementRulesState, placementsState, subscriptionsState } from '../../atoms'
+import { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } from '../../atoms'
+import {
+    IResource,
+    ChannelApiVersion,
+    SubscriptionApiVersion,
+    PlacementApiVersion,
+    PlacementRuleApiVersion,
+} from '../../resources'
+import { getAge, getClusterCountString, getSearchLink, getEditLink } from './helpers/resource-helper'
 import { DOC_LINKS } from '../../lib/doc-util'
-import { IResource, PlacementApiVersion, SubscriptionApiVersion } from '../../resources'
-import { getAge, getEditLink } from './helpers/resource-helper'
 
 export default function AdvancedConfiguration() {
     const { t } = useTranslation()
-    const [subscriptions] = useRecoilState(subscriptionsState)
+    const [applications] = useRecoilState(applicationsState)
     const [channels] = useRecoilState(channelsState)
     const [placementrules] = useRecoilState(placementRulesState)
     const [placements] = useRecoilState(placementsState)
+    const [subscriptions] = useRecoilState(subscriptionsState)
+    const subscriptionsWithoutLocal = subscriptions.filter((subscription) => {
+        return !_.endsWith(subscription.metadata.name, '-local')
+    })
 
     const table = {
         subscriptions: {
@@ -47,22 +57,11 @@ export default function AdvancedConfiguration() {
                     {
                         header: t('Name'),
                         cell: (resource) => {
-                            if (resource.metadata) {
-                                const { name, namespace } = resource.metadata
-                                if (name) {
-                                    const searchParams: any = {
-                                        properties: {
-                                            name,
-                                            namespace,
-                                            kind: 'subscription',
-                                            cluster: 'local-cluster',
-                                            apiversion: SubscriptionApiVersion,
-                                        },
-                                    }
-                                    const subscriptionLink = getEditLink(searchParams)
-                                    return <a href={subscriptionLink}>{name}</a>
-                                }
-                            }
+                            return editLink({
+                                resource,
+                                kind: 'Subscription',
+                                apiversion: SubscriptionApiVersion,
+                            })
                         },
                         sort: 'metadata.name',
                         search: 'metadata.name',
@@ -85,9 +84,10 @@ export default function AdvancedConfiguration() {
                                         name,
                                         namespace,
                                         kind: 'channel',
+                                        apiversion: ChannelApiVersion,
                                     },
                                 }
-                                const channelLink = getEditLink(searchParams)
+                                const channelLink = getSearchLink(searchParams)
 
                                 return <a href={channelLink}>{name}</a>
                             }
@@ -100,13 +100,64 @@ export default function AdvancedConfiguration() {
                     },
                     {
                         header: t('Applications'),
-                        cell: '',
+                        cell: (resource) => {
+                            let appCount = 0
+                            if (resource.metadata) {
+                                const { name, namespace } = resource.metadata
+                                applications.forEach((application) => {
+                                    const annotations = _.get(application, 'metadata.annotations')
+                                    if (annotations) {
+                                        const subscriptions =
+                                            annotations['apps.open-cluster-management.io/subscriptions']
+                                        const subscriptionList = subscriptions ? subscriptions.split(',') : []
+                                        if (subscriptionList.length) {
+                                            subscriptionList.forEach(
+                                                (element: { split: (arg: string) => [any, any] }) => {
+                                                    const [subscriptionNamespace, subscriptionName] = element.split('/')
+                                                    if (
+                                                        subscriptionNamespace === namespace &&
+                                                        subscriptionName === name
+                                                    ) {
+                                                        appCount++
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+                                })
+                                if (appCount != 0) {
+                                    const searchParams: any = {
+                                        properties: {
+                                            name,
+                                            namespace,
+                                            kind: 'subscription',
+                                            apigroup: SubscriptionApiVersion,
+                                        },
+                                        showRelated: 'application',
+                                    }
+                                    const channelLink = getSearchLink(searchParams)
+                                    return <a href={channelLink}>{appCount}</a>
+                                }
+                            }
+                            return appCount
+                        },
                         tooltip:
                             'Displays the number of applications using the subscription. Click to search for all related applications.',
                     },
                     {
                         header: t('Clusters'),
-                        cell: '',
+                        cell: (resource) => {
+                            let clusterCount = {
+                                localPlacement: false,
+                                remoteCount: 0,
+                            }
+                            const remoteContext = getSubscriptionClusterCount(resource, clusterCount, true)
+                            if (remoteContext) {
+                                return remoteContext
+                            }
+
+                            return getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                        },
                         tooltip:
                             'Displays the number of remote and local clusters where resources for the subscription are deployed. Click to search for all related clusters.',
                     },
@@ -133,14 +184,20 @@ export default function AdvancedConfiguration() {
                 ],
                 []
             ),
-            items: subscriptions,
+            items: subscriptionsWithoutLocal,
         },
         channels: {
             columns: useMemo<IAcmTableColumn<IResource>[]>(
                 () => [
                     {
                         header: t('Name'),
-                        cell: 'metadata.name',
+                        cell: (resource) => {
+                            return editLink({
+                                resource,
+                                kind: 'Channel',
+                                apiversion: ChannelApiVersion,
+                            })
+                        },
                         sort: 'metadata.name',
                         search: 'metadata.name',
                         transforms: [cellWidth(20)],
@@ -160,17 +217,59 @@ export default function AdvancedConfiguration() {
                             }
                             return ''
                         },
+                        sort: 'spec.type',
                         tooltip: 'Provides a link to the resource repository that is represented by the channel.',
                     },
                     {
                         header: t('Subscriptions'),
-                        cell: '',
+                        cell: (resource) => {
+                            let subscriptionCount = 0
+                            if (resource.metadata) {
+                                const { name, namespace } = resource.metadata
+                                subscriptions.forEach((subscription) => {
+                                    const channel = _.get(subscription, 'spec.channel')
+                                    const [channelNamespace, channelName] = channel.split('/')
+                                    if (channelNamespace === namespace && channelName === name) {
+                                        subscriptionCount++
+                                    }
+                                })
+                                if (subscriptionCount != 0) {
+                                    const channelLink = getSearchLink({
+                                        properties: {
+                                            name,
+                                            namespace,
+                                            kind: 'channel',
+                                        },
+                                        showRelated: 'subscription',
+                                    })
+                                    return <a href={channelLink}>{subscriptionCount}</a>
+                                }
+                            }
+                            return subscriptionCount
+                        },
                         tooltip:
                             'Displays the number of local subscriptions using the channel. Click to search for all related subscriptions.',
                     },
                     {
                         header: t('Clusters'),
-                        cell: '',
+                        cell: (resource) => {
+                            let clusterCount = {
+                                localPlacement: false,
+                                remoteCount: 0,
+                            }
+                            if (resource.metadata) {
+                                const { name, namespace } = resource.metadata
+                                const subscriptionsInUse = subscriptions.filter((subscription) => {
+                                    const channel = _.get(subscription, 'spec.channel')
+                                    const [channelNamespace, channelName] = channel.split('/')
+                                    return channelName === name && channelNamespace === namespace
+                                })
+                                subscriptionsInUse.forEach((subscriptionInUse) => {
+                                    getSubscriptionClusterCount(subscriptionInUse, clusterCount)
+                                })
+                            }
+                            return getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                        },
                         tooltip:
                             'Displays the number of remote and local clusters where resources from the channel are deployed.',
                     },
@@ -192,22 +291,11 @@ export default function AdvancedConfiguration() {
                     {
                         header: t('Name'),
                         cell: (resource) => {
-                            if (resource.metadata) {
-                                const { name, namespace } = resource.metadata
-                                if (name) {
-                                    const searchParams: any = {
-                                        properties: {
-                                            name,
-                                            namespace,
-                                            kind: 'placement',
-                                            cluster: 'local-cluster',
-                                            apiversion: PlacementApiVersion,
-                                        },
-                                    }
-                                    const placementLink = getEditLink(searchParams)
-                                    return <a href={placementLink}>{name}</a>
-                                }
-                            }
+                            return editLink({
+                                resource,
+                                kind: 'Placement',
+                                apiversion: PlacementApiVersion,
+                            })
                         },
                         sort: 'metadata.name',
                         search: 'metadata.name',
@@ -234,7 +322,13 @@ export default function AdvancedConfiguration() {
                 () => [
                     {
                         header: t('Name'),
-                        cell: 'metadata.name',
+                        cell: (resource) => {
+                            return editLink({
+                                resource,
+                                kind: 'PlacementRule',
+                                apiversion: PlacementRuleApiVersion,
+                            })
+                        },
                         sort: 'metadata.name',
                         search: 'metadata.name',
                     },
@@ -245,7 +339,14 @@ export default function AdvancedConfiguration() {
                     },
                     {
                         header: t('Clusters'),
-                        cell: '',
+                        cell: (resource) => {
+                            let clusterCount = {
+                                localPlacement: false,
+                                remoteCount: 0,
+                            }
+                            clusterCount = getPlacementruleClusterCount(resource, clusterCount)
+                            return getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                        },
                         tooltip:
                             'Displays the number of remote and local clusters where resources are deployed because of the placement rule.',
                     },
@@ -356,6 +457,63 @@ export default function AdvancedConfiguration() {
         )
     }
 
+    function getPlacementruleClusterCount(
+        resource: IResource,
+        clusterCount: { localPlacement: boolean; remoteCount: number }
+    ) {
+        const clusterDecisions = _.get(resource, 'status.decisions')
+        if (clusterDecisions) {
+            clusterDecisions.forEach((clusterDecision: { clusterName: string; clusterNamespace: string }) => {
+                const { clusterName } = clusterDecision
+                if (clusterName === 'local-cluster') {
+                    clusterCount.localPlacement = true
+                } else {
+                    clusterCount.remoteCount++
+                }
+            })
+        }
+        return clusterCount
+    }
+
+    function getSubscriptionClusterCount(
+        resource: IResource,
+        clusterCount: { localPlacement: boolean; remoteCount: number },
+        showSearchLink?: boolean
+    ) {
+        const namespace = _.get(resource, 'metadata.namespace')
+        const placementrule = _.get(resource, 'spec.placement')
+        const localDeployment = _.get(placementrule, 'local', '')
+        const placementRef = _.get(placementrule, 'placementRef', '')
+        if (localDeployment) {
+            clusterCount.localPlacement = true
+        }
+        if (placementRef) {
+            const name = _.get(placementRef, 'name')
+            const selectedPlacementrule = placementrules.find(
+                (placement) => placement.metadata.name === name && placement.metadata.namespace === namespace
+            )
+            if (selectedPlacementrule) {
+                clusterCount = getPlacementruleClusterCount(selectedPlacementrule, clusterCount)
+                if (clusterCount.remoteCount && showSearchLink) {
+                    const subscriptionName = _.get(resource, 'metadata.name')
+                    const searchLink = getSearchLink({
+                        properties: {
+                            name: subscriptionName,
+                            namespace,
+                            kind: 'subscription',
+                        },
+                        showRelated: 'cluster',
+                    })
+                    return (
+                        <a style={{ color: '#0066cc' }} href={searchLink}>
+                            {getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)}
+                        </a>
+                    )
+                }
+            }
+        }
+    }
+
     function getSelectedId(props: ISelectedIds) {
         let { options, query, queryParam, defaultOption, location } = props
         if (!query) {
@@ -403,6 +561,26 @@ export default function AdvancedConfiguration() {
                 ))}
             </ToggleGroup>
         )
+    }
+
+    function editLink(params: { resource: any; kind: string; apiversion: string }) {
+        const { resource, kind, apiversion } = params
+        if (resource.metadata) {
+            const { name, namespace } = resource.metadata
+            if (name) {
+                const searchParams: any = {
+                    properties: {
+                        name,
+                        namespace,
+                        kind,
+                        cluster: 'local-cluster',
+                        apiversion,
+                    },
+                }
+                const searchLink = getEditLink(searchParams)
+                return <a href={searchLink}>{name}</a>
+            }
+        }
     }
 
     function AdvancedConfigurationTable() {

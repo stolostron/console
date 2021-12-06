@@ -15,6 +15,16 @@ export const normalizeRepoType = (type: string) => {
 
 export const groupByRepoType = (repos: any) => _.groupBy(repos, (repo) => normalizeRepoType(repo.type))
 
+export function getClusterCountString(remoteCount: number, localPlacement: boolean) {
+    if (remoteCount) {
+        return localPlacement ? `${remoteCount} Remote, 1 Local` : `${remoteCount} Remote`
+    } else if (localPlacement) {
+        return 'Local'
+    } else {
+        return 'None'
+    }
+}
+
 function getResourceType(type: String, t: (arg: String) => String) {
     switch (type) {
         case 'git':

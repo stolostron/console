@@ -42,7 +42,7 @@ import {
     ManagedCluster,
 } from '../../resources'
 import ResourceLabels from './components/ResourceLabels'
-import { getAge, getSearchLink } from './helpers/resource-helper'
+import { getAge, getClusterCountString, getSearchLink } from './helpers/resource-helper'
 import { canUser } from '../../lib/rbac-util'
 import { Link } from 'react-router-dom'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
@@ -95,16 +95,6 @@ function isLocalClusterURL(url: string, localCluster: ManagedCluster | undefined
         return true
     }
     return false
-}
-
-function getClusterCountString(remoteCount: number, localPlacement: boolean) {
-    if (remoteCount) {
-        return localPlacement ? `${remoteCount} Remote, 1 Local` : `${remoteCount} Remote`
-    } else if (localPlacement) {
-        return 'Local'
-    } else {
-        return 'None'
-    }
 }
 
 function getEmptyMessage(t: TFunction) {
