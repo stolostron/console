@@ -458,7 +458,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     )
 
     return (
-        <div ref={pageRef} className="pf-c-code-editor__container">
+        <div ref={pageRef} className="sync-editor__container">
             <CodeEditor
                 isLineNumbersVisible={true}
                 isReadOnly={readonly}

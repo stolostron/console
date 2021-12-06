@@ -111,7 +111,7 @@ export default function ImportClusterPage() {
                                         label="YAML"
                                         isChecked={drawerExpanded}
                                         onChange={() => {
-                                            localStorage.setItem('yaml', (!drawerExpanded).toString())
+                                            localStorage.setItem('import-cluster-yaml', (!drawerExpanded).toString())
                                             setDrawerExpanded(!drawerExpanded)
                                             setEditorChanges(undefined)
                                         }}
@@ -136,7 +136,7 @@ export default function ImportClusterPage() {
                                 <SyncEditor
                                     variant="toolbar"
                                     id="code-content"
-                                    editorTitle={'Import Cluster YAML'}
+                                    editorTitle={t('import.cluster.yaml')}
                                     schema={schema}
                                     resources={importResources}
                                     onClose={(): void => {
@@ -264,7 +264,6 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                 searchCollector: { enabled: true },
                 certPolicyController: { enabled: true },
                 iamPolicyController: { enabled: true },
-                version: '2.2.0',
             },
         })
         setImportResources(resources)

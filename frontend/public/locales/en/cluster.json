@@ -5,6 +5,7 @@
     "page.header.import-cluster.tooltip": "Import clusters from different providers to manage them from this console.",
     "page.header.install-submariner.tooltip": "Install the Submariner add-on to managed clusters to create a multi-cluster network.",
     "page.header.cluster-set.manage-assignments": "Manage resource assignments",
+    "import.cluster.yaml": "Import Cluster YAML",
     "cluster": "Cluster",
     "clusters": "Managed clusters",
     "clusterSets": "Cluster sets",
