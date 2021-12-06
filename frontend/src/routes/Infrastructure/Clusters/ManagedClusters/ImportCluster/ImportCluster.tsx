@@ -65,7 +65,7 @@ const defaultPanelSize = 600
 export default function ImportClusterPage() {
     const { t } = useTranslation(['cluster'])
     const pageRef = useRef(null)
-    const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
+    const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('import-cluster-yaml') === 'true')
     const [drawerInline, setDrawerInline] = useState(true)
     const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>('1400px')
 
