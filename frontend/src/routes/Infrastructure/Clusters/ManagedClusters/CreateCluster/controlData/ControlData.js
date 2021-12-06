@@ -21,7 +21,6 @@ import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo } from './Logos'
 import ServerIcon from '@patternfly/react-icons/dist/js/icons/server-icon'
 import { controlDataCIM, controlDataAI } from './ControlDataAI'
-import Deprecated from '../../components/Deprecated'
 
 const { TechnologyPreview, PreviewBadgePosition } = CIM
 
