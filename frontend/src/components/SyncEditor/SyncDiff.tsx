@@ -111,7 +111,7 @@ export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: str
     }
 
     return (
-        <div className="pf-c-code-changes__container">
+        <div className="sync-diff__container">
             {editorChanges?.errors?.length ? (
                 <Alert isInline={true} title={errorMessage} variant={'danger'} />
             ) : (
