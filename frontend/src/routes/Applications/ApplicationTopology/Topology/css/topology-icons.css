@@ -1,0 +1,22 @@
+.node .nodeIcon {
+    stroke-width: 6px;
+    stroke-opacity: 1;
+}
+.node .nodeStatus {
+    stroke: black;
+    stroke-width: 1px;
+    fill: none;
+    font-variant: small-caps;
+}
+.node .nodeStatus.red {
+    stroke: #e0182d;
+}
+.success {
+    fill: #5aa700;
+}
+.warning {
+    fill: #efc100;
+}
+.failure {
+    fill: #e0182d;
+}

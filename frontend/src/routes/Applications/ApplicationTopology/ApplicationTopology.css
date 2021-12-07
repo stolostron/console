@@ -1,0 +1,39 @@
+.resourceDiagramSourceContainer {
+    position: relative;
+}
+.resourceDiagramSourceContainer .resourceDiagramControlsContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+}
+.resourceDiagramSourceContainer .resourceDiagramControlsContainer .diagram-title {
+    background-color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #dfe3e6;
+    padding: 15px;
+}
+.resourceDiagramSourceContainer .resourceDiagramControlsContainer .diagram-title-divider {
+    background-color: #dcdcdc;
+    width: 1px;
+    height: 17px;
+    margin-left: 20px;
+    margin-right: 20px;
+    vertical-align: text-bottom;
+}
+.resourceDiagramSourceContainer .resourceDiagramControlsContainer .how-to-read-text {
+    color: #06c;
+    font-size: 14px;
+    line-height: 20px;
+    text-align: left;
+    cursor: pointer;
+    margin-right: 4px;
+}
+.resourceDiagramSourceContainer .resourceDiagramControlsContainer .how-to-read-icon {
+    width: 14px;
+    height: 11px;
+    margin-left: 9px;
+}

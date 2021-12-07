@@ -1,0 +1,272 @@
+.topologyDiagramContainer {
+    height: 100%;
+    display: flex;
+    background-color: #fff;
+    position: relative;
+}
+.topologyDiagramContainer .refresh-time-container {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    position: fixed;
+    right: 1.5625rem;
+    top: 6.5rem;
+    height: 1.25rem;
+    margin-right: 0.625rem;
+    padding: 1rem 1rem 3.375rem;
+}
+.topologyDiagramContainer .diagramControls {
+    position: absolute;
+    left: 20px;
+    top: 10px;
+    width: 400px;
+}
+.topologyDiagramContainer .channel-controls-container {
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 3px;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2);
+    width: 282px;
+    margin-top: 30px;
+}
+.topologyDiagramContainer .channel-controls-container .channels {
+    left: 10px;
+    top: 10px;
+    bottom: 10px;
+    position: relative;
+    height: 40px;
+    width: calc(100% - 20px);
+}
+.topologyDiagramContainer .channel-controls-container .channelsCombo {
+    width: 100%;
+    height: 40px;
+    top: 35px;
+    position: relative;
+    font-weight: 400;
+    font-size: 14px;
+}
+.topologyDiagramContainer .channel-controls-container .channelsCombo .pf-c-dropdown, .topologyDiagramContainer .channel-controls-container .channelsCombo #comboChannel {
+    width: 100%;
+}
+.topologyDiagramContainer .channel-controls-container .channelsCombo .pf-c-dropdown__toggle-text {
+    white-space: normal;
+    text-align: left;
+    font-size: 14px;
+}
+.topologyDiagramContainer .channel-controls-container .channelsCombo .pf-c-dropdown__menu-item {
+    font-size: 14px;
+}
+.topologyDiagramContainer .channel-controls-container .pf-c-options-menu {
+    display: none;
+}
+.topologyDiagramContainer .channel-controls-container .label {
+    color: #152935;
+    font-family: RedHatText;
+    font-size: 0.8rem;
+    font-weight: bold;
+    line-height: 18px;
+    text-align: left;
+    padding-left: 10px;
+}
+.topologyDiagramContainer .channel-controls-container .subscription {
+    top: 5px;
+    position: absolute;
+}
+.topologyDiagramContainer .channel-controls-container .pagination {
+    left: 10px;
+    top: 105px;
+    position: absolute;
+}
+.topologyDiagramContainer .channel-controls-container .resourcePaging {
+    display: flex;
+    margin-top: 25px;
+    margin-bottom: 5px;
+}
+.topologyDiagramContainer .channel-controls-container .show-subscription-pages-icon {
+    align-items: center;
+}
+.topologyDiagramContainer .channel-controls-container .channel-controls-help-icon {
+    fill: #06c;
+    margin-left: 4px;
+    cursor: pointer;
+}
+.topologyDiagramContainer .channel-controls-container .channel-control {
+    padding: 2px 0 2px 3px;
+    position: relative;
+    color: #152935;
+    line-height: 10px;
+}
+.topologyDiagramContainer .channel-controls-container .channel-control-subscripion {
+    font-size: 1rem;
+    font-weight: bold;
+}
+.topologyDiagramContainer .channel-controls-container .channel-control-channel {
+    font-size: 10px;
+    font-weight: 600;
+}
+.topologyDiagramContainer .channel-controls-container .channel-control-start {
+    font-size: 0.3rem;
+    font-weight: 600;
+}
+.topologyDiagramContainer .channel-controls-container .channel-control-end {
+    font-size: 8px;
+}
+.topologyDiagramContainer .channel-controls-container .channel-control:hover {
+    cursor: pointer;
+    background-color: #f3f7fb;
+}
+.topologyDiagramContainer .channel-controls-container .channel-control.selected {
+    border-left: 4px solid #06c;
+    background-color: #f3f7fb;
+}
+.topologyDiagramContainer .diagramViewerDiagram {
+    position: relative;
+    flex-grow: 1;
+}
+.topologyDiagramContainer .diagramViewerDiagram .diagramViewerContainerContainer {
+    width: 100%;
+    height: calc(100vh - 240px);
+    overflow: hidden;
+    position: relative;
+}
+.topologyDiagramContainer .diagramViewerDiagram .diagramViewerContainerContainer .secondaryLoad {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.topologyDiagramContainer .diagramViewerDiagram .diagramViewerContainerContainer.scrolled {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.topologyDiagramContainer .diagramViewerDiagram .diagramViewerContainerContainer .diagramViewerContainer {
+    width: 100%;
+}
+.topologyDiagramContainer .diagramViewerDiagram .diagramViewerContainerContainer .layoutLoadingContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+/******************************************** *** HYBRID RESOURCE/TOPOLOGY PAGE ****** ********************************************/
+.resourceDiagramContainer {
+    position: relative;
+}
+.resourceDiagramContainer .diagramViewerDiagram .diagramViewerContainerContainer {
+    width: 100%;
+    height: calc(100vh - 220px);
+    background-color: #fff;
+    position: relative;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+.resourceDiagramContainer .diagramViewerDiagram .diagramViewerContainerContainer .secondaryLoad {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.resourceDiagramContainer .diagramViewerDiagram .diagramViewerContainerContainer.scrolled {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.resourceDiagramContainer .diagramViewerDiagram .diagramViewerContainerContainer .diagramViewerContainer {
+    margin-right: 0;
+}
+.diagramViewerDiagram .diagramRefreshContainer {
+    position: absolute;
+    top: 32px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+}
+.diagramViewerDiagram .diagramTitle {
+    position: absolute;
+    z-index: 1000;
+    font-size: 28px;
+    font-weight: 600;
+    color: #808080 80;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 16px;
+}
+.diagramViewerContainer .hub-label {
+    font-weight: bold;
+}
+.diagramViewerContainer.search-mode .matched {
+    fill: #d8124b;
+    stroke-width: 0;
+}
+.diagramViewerContainer.search-mode .hub-label {
+    font-weight: normal;
+}
+/******************************************** ***** SHOW FILTER BAR ***** ********************************************/
+.topologyPage .filter-bar {
+    visibility: hidden;
+}
+.topologyPage.first-load .filter-bar {
+    visibility: visible;
+}
+.topologyTab {
+    margin: 0 0.5rem 0 0.5rem;
+}
+.topologyTab .topology-type-filter-bar {
+    visibility: hidden;
+}
+.topologyTab .topology-diagram-toolbar {
+    position: fixed;
+    top: calc(3.082rem + 10px);
+    right: 30px;
+    z-index: 1001;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.topologyTab .no-information {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+    width: 20rem;
+}
+.topologyTab .no-information .no-information-icon {
+    width: 175px;
+    height: 240px;
+}
+.topologyTab .no-information .no-information-title {
+    font-weight: bold;
+    margin-bottom: 9px;
+    font-size: 18px;
+    text-align: center;
+    color: #3f71ec;
+}
+.topologyTab .no-information .no-information-detail {
+    font-weight: 300;
+    font-size: 14px;
+    font-style: italic;
+    text-align: center;
+    line-height: 1.2;
+    color: #5a6872;
+}
+.topologyTab.first-load.diagram-shown .topology-type-filter-bar {
+    visibility: visible;
+    height: 100%;
+}
+.title text {
+    text-anchor: middle;
+    fill: #394b54;
+    cursor: default;
+}
+.topologyNoCluster {
+    margin-top: 54px;
+}
+svg.topologyDiagram {
+    height: 100%;
+    width: 100%;
+}
+.showPagesTooltip {
+    line-height: 21px;
+    font-size: 14px;
+}

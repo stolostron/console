@@ -16,6 +16,7 @@ import { NavigationPath } from '../../NavigationPath'
 import { PageContext } from '../Infrastructure/Clusters/ClustersPage'
 
 const ApplicationsOverviewPage = lazy(() => import('./Overview'))
+const ApplicationsTopologyPage = lazy(() => import('./ApplicationTopology/ApplicationTopology'))
 const AdvancedConfigurationPage = lazy(() => import('./AdvancedConfiguration'))
 
 export default function ApplicationsPage() {
@@ -51,6 +52,11 @@ export default function ApplicationsPage() {
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.applications} component={ApplicationsOverviewPage} />
+                        <Route
+                            exact
+                            path="/multicloud/applications/namespace/name/topology"
+                            component={ApplicationsTopologyPage}
+                        />
                         <Route
                             exact
                             path={NavigationPath.advancedConfiguration}
