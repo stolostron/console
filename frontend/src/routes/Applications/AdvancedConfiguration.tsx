@@ -25,7 +25,7 @@ import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
 import queryString from 'query-string'
 import { useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } from '../../atoms'
@@ -608,6 +608,12 @@ export default function AdvancedConfiguration() {
                             key="switcher"
                             options={options.map(({ id, title }) => ({
                                 id,
+                                /*
+                                t('Subscriptions')
+                                t('Channels')
+                                t('Placements')
+                                t('Placement rules')
+                                */
                                 contents: t(title),
                             }))}
                             defaultOption={defaultOption}

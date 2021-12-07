@@ -17,12 +17,12 @@ import {
     Tooltip,
 } from '@patternfly/react-core'
 import { CopyIcon } from '@patternfly/react-icons'
-import i18next from 'i18next'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { secretsState } from '../../../../../atoms'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { TFunction } from 'i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 
 export function ImportCommandContainer() {
     const { t } = useTranslation()
@@ -108,8 +108,8 @@ export function ImportCommand(props: ImportCommandProps) {
         return null
     }
 
-    const v1ImportCommand = getImportCommand(props.importSecret, 'v1')
-    const v1beta1ImportCommand = getImportCommand(props.importSecret, 'v1beta1')
+    const v1ImportCommand = getImportCommand(props.importSecret, 'v1', t)
+    const v1beta1ImportCommand = getImportCommand(props.importSecret, 'v1beta1', t)
 
     return (
         <Fragment>
@@ -194,13 +194,13 @@ export async function pollImportYamlSecret(clusterName: string): Promise<Secret>
     return new Promise(poll)
 }
 
-export function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1') {
+function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1', t: TFunction) {
     let klusterletCRD = importSecret.data?.['crdsv1.yaml']
     if (version === 'v1beta1') {
         klusterletCRD = importSecret.data?.['crdsv1beta1.yaml']
     }
     const importYaml = importSecret.data?.['import.yaml']
-    const alreadyImported = i18next.t('import.command.alreadyimported')
+    const alreadyImported = t('import.command.alreadyimported')
     const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
     return `echo "${klusterletCRD}" | base64 -d | kubectl create -f - || test $? -eq 0 && sleep 2 && echo "${importYaml}" | base64 -d | kubectl apply -f - || echo "${alreadyImported64}" | base64 -d`
 }

@@ -6,6 +6,7 @@ import _ from 'lodash'
 import React from 'react'
 import { CHANNEL_TYPES, getResourceLabel, groupByRepoType } from '../helpers/resource-helper'
 import LabelWithPopover from './LabelWithPopover'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { TFunction } from 'react-i18next'
 import '../css/ResourceLabels.css'
 

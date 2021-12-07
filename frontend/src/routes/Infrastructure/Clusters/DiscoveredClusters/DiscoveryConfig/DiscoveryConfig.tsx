@@ -39,7 +39,7 @@ import {
     TextVariants,
 } from '@patternfly/react-core'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../../../atoms'

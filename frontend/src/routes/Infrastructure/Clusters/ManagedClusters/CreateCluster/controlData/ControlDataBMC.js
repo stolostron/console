@@ -22,11 +22,8 @@ import {
     VALIDATE_MAC_ADDRESS,
 } from 'temptifly'
 import { listBareMetalAssets } from '../../../../../../resources'
-import { withTranslation } from 'react-i18next'
 import WrappedImportBareMetalAssetsButton from '../components/WrappedImportBareMetalAssetsButton'
 import _ from 'lodash'
-
-const ImportBareMetalAssetsButton = withTranslation(['create'])(WrappedImportBareMetalAssetsButton)
 
 const VALID_BMC_ADDR_REGEXP = new RegExp(
     '^((ipmi|idrac|idrac\\+http|idrac-virtualmedia|irmc|redfish|redfish\\+http|redfish-virtualmedia|ilo5-virtualmedia|https?|ftp):\\/\\/)?' + // protocol
@@ -242,7 +239,7 @@ const controlDataBMC = [
         id: 'hosts',
         type: 'table',
         prompts: {
-            actions: [<ImportBareMetalAssetsButton key="import-bmas" />],
+            actions: [<WrappedImportBareMetalAssetsButton key="import-bmas" />],
         },
         validation: {
             tester: validateTable.bind(null),

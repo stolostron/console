@@ -11,7 +11,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../../../../NavigationPath'
 import Handlebars from 'handlebars'

@@ -4,7 +4,7 @@ import { Addon, AddonStatus } from '../../../../../../resources'
 import { AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useContext } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { ClusterContext } from '../ClusterDetails'
 
 export function ClustersSettingsPageContent() {

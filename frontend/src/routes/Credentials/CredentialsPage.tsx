@@ -16,7 +16,7 @@ import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, discoveryConfigState, secretsState } from '../../atoms'
@@ -116,10 +116,9 @@ export function CredentialsTable(props: {
                     <AcmEmptyState
                         title={t(`You don't have any credentials.`)}
                         message={
-                            <Trans
-                                i18nKey="Click the <bold>Add credential</bold> button to create your resource."
-                                components={{ bold: <strong /> }}
-                            />
+                            <Trans>
+                                Click the <strong>Add credential</strong> button to create your resource.
+                            </Trans>
                         }
                         action={<AddConnectionBtn />}
                     />
