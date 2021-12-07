@@ -532,11 +532,7 @@ function EditAnsibleJobModal(props: {
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={
-                props.ansibleJob?.name !== ''
-                    ? t('template.modal.title.edit')
-                    : t('template.modal.title.add')
-            }
+            title={props.ansibleJob?.name !== '' ? t('template.modal.title.edit') : t('template.modal.title.add')}
             isOpen={props.ansibleJob !== undefined}
             onClose={() => props.setAnsibleJob()}
         >

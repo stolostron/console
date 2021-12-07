@@ -456,7 +456,7 @@ const useStyles = makeStyles({
 })
 
 function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
-    const { t } = )
+    const { t } = useTranslation()
     const classes = useStyles()
     return (
         <div className={classes.table}>
@@ -507,11 +507,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                             ]
                             const isAvailable =
                                 !cluster.hive.clusterClaimName && availableStatuses.includes(cluster.status)
-                            return (
-                                <span style={{ whiteSpace: 'nowrap' }}>
-                                    {t(`${isAvailable ? 'Yes' : 'No'}`)}
-                                </span>
-                            )
+                            return <span style={{ whiteSpace: 'nowrap' }}>{t(`${isAvailable ? 'Yes' : 'No'}`)}</span>
                         },
                     },
                 ]}

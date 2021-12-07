@@ -358,9 +358,7 @@ export function ClusterSetSubmarinerPageContent() {
                                     message={
                                         clusters!.length === 0 ? (
                                             <Trans
-                                                i18nKey={
-                                                    'managed.clusterSets.submariner.clusters.emptyStateMsg'
-                                                }
+                                                i18nKey={'managed.clusterSets.submariner.clusters.emptyStateMsg'}
                                                 components={{ bold: <strong />, p: <p /> }}
                                             />
                                         ) : (

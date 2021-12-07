@@ -124,10 +124,7 @@ export default function ManagedClusters() {
                                     key="mcEmptyState"
                                     title={t('managed.emptyStateHeader')}
                                     message={
-                                        <Trans
-                                            i18nKey={'managed.emptyStateMsg'}
-                                            components={{ bold: <strong /> }}
-                                        />
+                                        <Trans i18nKey={'managed.emptyStateMsg'} components={{ bold: <strong /> }} />
                                     }
                                     action={<AddCluster type="button" />}
                                 />

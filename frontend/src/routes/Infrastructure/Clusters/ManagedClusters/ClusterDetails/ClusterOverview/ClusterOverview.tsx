@@ -52,10 +52,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         {cluster!.name}
                         <Popover
                             bodyContent={
-                                <Trans
-                                    i18nKey="table.clusterName.helperText"
-                                    components={{ bold: <strong /> }}
-                                />
+                                <Trans i18nKey="table.clusterName.helperText" components={{ bold: <strong /> }} />
                             }
                         >
                             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
@@ -72,10 +69,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         {cluster?.hive?.clusterClaimName}
                         <Popover
                             bodyContent={
-                                <Trans
-                                    i18nKey="table.clusterClaim.helperText"
-                                    components={{ bold: <strong /> }}
-                                />
+                                <Trans i18nKey="table.clusterClaim.helperText" components={{ bold: <strong /> }} />
                             }
                         >
                             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
@@ -115,10 +109,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         )}
                         <Popover
                             bodyContent={
-                                <Trans
-                                    i18nKey="table.clusterChannel.helperText"
-                                    components={{ bold: <strong /> }}
-                                />
+                                <Trans i18nKey="table.clusterChannel.helperText" components={{ bold: <strong /> }} />
                             }
                         >
                             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>

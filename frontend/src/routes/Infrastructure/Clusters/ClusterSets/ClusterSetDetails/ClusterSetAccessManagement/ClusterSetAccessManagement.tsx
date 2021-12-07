@@ -230,9 +230,7 @@ export function ClusterSetAccessManagement() {
                         <AcmEmptyState
                             key="accessEmptyState"
                             title={t('access.emptyTitle')}
-                            message={
-                                <Trans i18nKey={'access.emptyMessage'} components={{ bold: <strong /> }} />
-                            }
+                            message={<Trans i18nKey={'access.emptyMessage'} components={{ bold: <strong /> }} />}
                             action={
                                 <AcmButton variant="primary" onClick={() => setAddModalOpen(true)}>
                                     {t('access.emptyStateButton')}

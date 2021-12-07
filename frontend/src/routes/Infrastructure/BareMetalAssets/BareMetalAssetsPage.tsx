@@ -196,10 +196,7 @@ export function BareMetalAssetsTable(props: {
                     <AcmEmptyState
                         title={t('bareMetalAsset.emptyState.title')}
                         message={
-                            <Trans
-                                i18nKey={'bareMetalAsset.emptyState.subtitle'}
-                                components={{ bold: <strong /> }}
-                            />
+                            <Trans i18nKey={'bareMetalAsset.emptyState.subtitle'} components={{ bold: <strong /> }} />
                         }
                         action={
                             <Bullseye>

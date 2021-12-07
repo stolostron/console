@@ -59,10 +59,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                         {(alertContext) => (
                             <>
                                 <div>
-                                    <Trans
-                                        i18nKey="createClusterSet.description"
-                                        components={{ bold: <strong /> }}
-                                    />
+                                    <Trans i18nKey="createClusterSet.description" components={{ bold: <strong /> }} />
                                 </div>
                                 <AcmTextInput
                                     id="clusterSetName"
