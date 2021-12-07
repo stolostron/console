@@ -9,7 +9,7 @@ import {
     useAgentClusterInstall,
     useAIConfigMap,
     useClusterDeployment,
-    onDiscoverHostsNext,
+    onDiscoveryHostsNext,
     useInfraEnv,
     getClusterDeploymentLink,
     getOnDeleteHost,
@@ -80,7 +80,7 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
             }
 
             try {
-                await onDiscoverHostsNext({ values: control.active || {}, agents: filteredAgents, clusterDeployment })
+                await onDiscoveryHostsNext({ values: control.active || {}, agents: filteredAgents, clusterDeployment })
             } catch (err) {
                 setErrorHandler(err)
                 return {
