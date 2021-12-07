@@ -9,7 +9,7 @@ beforeEach(() => {
     sessionStorage.clear()
 })
 
-describe('', () => {
+describe('LogsPage', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
     })

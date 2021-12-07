@@ -255,7 +255,7 @@ export default function ApplicationsOverview() {
         // Resource column
         const resourceMap: { [key: string]: string } = {}
         const appRepos = getApplicationRepos(tableItem)
-        let resourceText: string = ''
+        let resourceText = ''
         appRepos?.forEach((repo) => {
             if (!resourceMap[repo.type]) {
                 resourceText = resourceText + repo.type
@@ -354,7 +354,7 @@ export default function ApplicationsOverview() {
         }
 
         const subAnnotations = getSubscriptionsFromAnnotation(app)
-        let hasTimeWindow: boolean = false
+        let hasTimeWindow = false
 
         for (let i = 0; i < subAnnotations.length; i++) {
             if (
@@ -464,7 +464,7 @@ export default function ApplicationsOverview() {
             {
                 header: t('Clusters'),
                 cell: (resource) => {
-                    let clusterCount = {
+                    const clusterCount = {
                         localPlacement: false,
                         remoteCount: 0,
                     }
