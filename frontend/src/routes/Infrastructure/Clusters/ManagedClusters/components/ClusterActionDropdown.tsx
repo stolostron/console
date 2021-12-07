@@ -130,7 +130,7 @@ export function getClusterActions(cluster: Cluster) {
 }
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
@@ -229,8 +229,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     setModalProps({
                         open: true,
                         title: t('bulk.title.import'),
-                        action: t('common:import'),
-                        processing: t('common:importing'),
+                        action: t('import'),
+                        processing: t('importing'),
                         resources: [cluster],
                         close: () => {
                             setModalProps({ open: false })

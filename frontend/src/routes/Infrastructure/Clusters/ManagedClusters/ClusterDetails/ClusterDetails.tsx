@@ -74,7 +74,7 @@ export const ClusterContext = createContext<{
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
     const location = useLocation()
     const history = useHistory()
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 

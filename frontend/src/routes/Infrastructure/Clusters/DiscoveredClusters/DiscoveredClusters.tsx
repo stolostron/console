@@ -38,18 +38,18 @@ export default function DiscoveredClustersPage() {
 }
 
 function EmptyStateNoCRHCredentials() {
-    const { t } = useTranslation(['common', 'discovery'])
+    const { t } = useTranslation()
 
     return (
         <AcmEmptyState
-            title={t('discovery:emptystate.defaultState.title')}
-            message={<Trans i18nKey={'discovery:emptystate.defaultState.msg'} components={{ bold: <strong /> }} />}
+            title={t('emptystate.defaultState.title')}
+            message={<Trans i18nKey={'emptystate.defaultState.msg'} components={{ bold: <strong /> }} />}
             key="dcEmptyState"
             showIcon={true}
             image={AcmEmptyStateImage.folder}
             action={
                 <AcmButton component={Link} to={NavigationPath.addCredentials}>
-                    {t('discovery:emptystate.addCredential')}
+                    {t('emptystate.addCredential')}
                 </AcmButton>
             }
         />
@@ -57,7 +57,7 @@ function EmptyStateNoCRHCredentials() {
 }
 
 function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] }) {
-    const { t } = useTranslation(['common', 'discovery'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const onSelect = (credential: string) => {
@@ -68,7 +68,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
     const action =
         props.credentials!.length > 1 ? (
             <AcmDropdown
-                text={t('discovery:discovery.addDiscovery')}
+                text={t('discovery.addDiscovery')}
                 onSelect={onSelect}
                 id="configureDiscoveryDropdown"
                 isKebab={false}
@@ -82,16 +82,16 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
             />
         ) : (
             <AcmButton component={Link} to={NavigationPath.createDiscovery}>
-                {t('discovery:emptystate.enableClusterDiscovery')}
+                {t('emptystate.enableClusterDiscovery')}
             </AcmButton>
         )
     return (
         <AcmEmptyState
             action={action}
-            title={t('discovery:emptystate.credentials.title')}
+            title={t('emptystate.credentials.title')}
             message={
                 <Trans
-                    i18nKey={'discovery:emptystate.credentials.msg'}
+                    i18nKey={'emptystate.credentials.msg'}
                     components={{ bold: <strong /> }}
                     values={{ discoveryConfigTotal: props.credentials?.length }}
                 />
@@ -104,13 +104,13 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
 }
 
 function EmptyStateAwaitingDiscoveredClusters() {
-    const { t } = useTranslation(['common', 'discovery'])
+    const { t } = useTranslation()
     return (
         <AcmEmptyState
-            title={t('discovery:emptystate.discoveryEnabled.title')}
+            title={t('emptystate.discoveryEnabled.title')}
             message={
                 <Trans
-                    i18nKey={'discovery:emptystate.discoveryEnabled.msg'}
+                    i18nKey={'emptystate.discoveryEnabled.msg'}
                     components={{
                         a: (
                             <a href={DOC_LINKS.DISCOVERED_CLUSTERS} target="_blank" rel="noreferrer">
@@ -133,7 +133,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
                                 component={Link}
                                 to={NavigationPath.configureDiscovery}
                             >
-                                {t('discovery:discovery.configureDiscovery')}
+                                {t('discovery.configureDiscovery')}
                             </AcmButton>
                         </ActionListItem>
                         <ActionListItem>
@@ -142,7 +142,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
                                 component={Link}
                                 to={NavigationPath.createDiscovery}
                             >
-                                {t('discovery:discovery.addDiscovery')}
+                                {t('discovery.addDiscovery')}
                             </AcmButton>
                         </ActionListItem>
                     </ActionList>
@@ -194,7 +194,7 @@ export function DiscoveredClustersTable(props: {
     credentials?: ProviderConnection[]
     discoveryConfigs?: DiscoveryConfig[]
 }) {
-    const { t } = useTranslation(['discovery'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [emptyState, setEmptyState] = useState<React.ReactNode>()

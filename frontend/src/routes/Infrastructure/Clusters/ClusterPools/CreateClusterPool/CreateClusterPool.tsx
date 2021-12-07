@@ -46,7 +46,7 @@ const Portals = Object.freeze({
 })
 
 export default function CreateClusterPoolPage() {
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation()
 
     // create portals for buttons in header
     const switches = (
@@ -147,7 +147,7 @@ export function CreateClusterPool() {
     const pauseCreate = () => {}
 
     // setup translation
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation()
     const i18n = (key: any, arg: any) => {
         return t(key, arg)
     }

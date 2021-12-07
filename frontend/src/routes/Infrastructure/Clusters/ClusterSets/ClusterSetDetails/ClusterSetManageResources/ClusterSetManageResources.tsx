@@ -31,7 +31,7 @@ import { useCanJoinClusterSets } from '../../components/useCanJoinClusterSets'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetManageResourcesPage() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     return (
         <AcmPage
@@ -60,7 +60,7 @@ export function ClusterSetManageResourcesPage() {
 }
 
 export function ClusterSetManageResourcesContent() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const { clusterSet } = useContext(ClusterSetContext)
     const [managedClusters, clusterPools, managedClusterSets] = useRecoilValue(
@@ -106,7 +106,7 @@ export function ClusterSetManageResourcesContent() {
                 <div>{t('manageClusterSet.form.section.table.description')}</div>
                 <div>
                     <Trans
-                        i18nKey={'cluster:manageClusterSet.form.section.table.description.second'}
+                        i18nKey={'manageClusterSet.form.section.table.description.second'}
                         components={{ bold: <strong />, p: <p /> }}
                     />
                 </div>
@@ -161,7 +161,7 @@ export function ClusterSetManageResourcesContent() {
                 {availableResources.length > 0 && (
                     <ActionGroup>
                         <AcmButton id="save" variant="primary" onClick={() => setShowConfirmModal(true)}>
-                            {t('common:review')}
+                            {t('review')}
                         </AcmButton>
                         <AcmButton
                             variant="link"
@@ -171,7 +171,7 @@ export function ClusterSetManageResourcesContent() {
                                 )
                             }
                         >
-                            {t('common:cancel')}
+                            {t('cancel')}
                         </AcmButton>
                     </ActionGroup>
                 )}
@@ -179,8 +179,8 @@ export function ClusterSetManageResourcesContent() {
             <BulkActionModel<IResource>
                 open={showConfirmModal}
                 title={t('manageClusterSet.form.modal.title')}
-                action={t('common:save')}
-                processing={t('common:saving')}
+                action={t('save')}
+                processing={t('saving')}
                 onCancel={() => setShowConfirmModal(false)}
                 close={() => history.push(NavigationPath.clusterSetOverview.replace(':id', clusterSet?.metadata.name!))}
                 isValidError={errorIsNot([ResourceErrorCode.NotFound])}

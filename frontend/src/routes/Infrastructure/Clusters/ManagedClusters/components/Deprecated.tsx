@@ -2,7 +2,7 @@
 import { useTranslation } from 'react-i18next'
 
 const Deprecated: React.FC = () => {
-    const { t } = useTranslation(['common'])
+    const { t } = useTranslation()
 
     return <div className="pf-u-font-size-sm pf-u-warning-color-100">{t('deprecated')}</div>
 }

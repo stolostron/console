@@ -33,7 +33,7 @@ const useStyles = makeStyles({
 
 export function HiveNotification() {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const classes = useStyles()
 
     const [clusterProvisions] = useRecoilState(clusterProvisionsState)

@@ -19,7 +19,7 @@ export function ClustersSettingsPageContent() {
 }
 
 export function ClusterSettingsTable(props: { addons: Addon[] | undefined }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     return (
         <AcmTable<Addon>
             plural="add-ons"

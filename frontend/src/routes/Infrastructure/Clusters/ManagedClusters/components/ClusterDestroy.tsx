@@ -12,7 +12,7 @@ import { AddCluster } from './AddCluster'
 import { launchLogs } from './HiveNotification'
 
 export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const history = useHistory()
     const [configMaps] = useRecoilState(configMapsState)
 

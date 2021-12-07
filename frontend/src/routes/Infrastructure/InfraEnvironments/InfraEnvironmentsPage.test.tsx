@@ -73,12 +73,12 @@ describe('Infrastructure Environments page', () => {
     test('can render', async () => {
         render(<Component />)
 
-        await waitForText('infraenv:infraenvs', true)
+        await waitForText('infraenvs', true)
 
         // the top-level hint
-        await waitForText('cim:cim.infra.banner.body')
+        await waitForText('cim.infra.banner.body')
         await clickByText('cim.banner.dismiss')
-        await waitForNotText('cim:cim.infra.banner.body')
+        await waitForNotText('cim.infra.banner.body')
 
         await waitForTestId('createInfraEnv')
 

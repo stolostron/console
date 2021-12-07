@@ -25,7 +25,7 @@ import { secretsState } from '../../../../../atoms'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function ImportCommandContainer() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [secrets] = useRecoilState(secretsState)
     const { cluster } = useContext(ClusterContext)
     const [error, setError] = useState<string | undefined>()
@@ -69,7 +69,7 @@ export function ImportCommandContainer() {
     }
 
     if (error) {
-        return <AcmAlert isInline variant="danger" title={t('common:request.failed')} message={error} />
+        return <AcmAlert isInline variant="danger" title={t('request.failed')} message={error} />
     }
 
     if (cluster?.status === ClusterStatus.pendingimport && !autoImportSecret) {
@@ -94,7 +94,7 @@ type ImportCommandProps = {
 }
 
 export function ImportCommand(props: ImportCommandProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const [copied, setCopied] = useState<boolean>(false)
     useEffect(() => {
@@ -122,7 +122,7 @@ export function ImportCommand(props: ImportCommandProps) {
                                 <strong style={{ marginBottom: '12px', fontSize: '14px', display: 'block' }}>
                                     {t('import.command.copy.description')}
                                 </strong>
-                                <Tooltip isVisible={copied} content={t('common:copied')} trigger="click">
+                                <Tooltip isVisible={copied} content={t('copied')} trigger="click">
                                     <AcmButton
                                         id="import-command"
                                         variant="secondary"
@@ -200,7 +200,7 @@ export function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1'
         klusterletCRD = importSecret.data?.['crdsv1beta1.yaml']
     }
     const importYaml = importSecret.data?.['import.yaml']
-    const alreadyImported = i18next.t('cluster:import.command.alreadyimported')
+    const alreadyImported = i18next.t('import.command.alreadyimported')
     const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
     return `echo "${klusterletCRD}" | base64 -d | kubectl create -f - || test $? -eq 0 && sleep 2 && echo "${importYaml}" | base64 -d | kubectl apply -f - || echo "${alreadyImported64}" | base64 -d`
 }

@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
 
 export function EditLabels(props: { resource?: IResource; displayName?: string; close: () => void }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [labels, setLabels] = useState<Record<string, string>>({})
 
     useLayoutEffect(() => {
@@ -109,11 +109,11 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
                                             })
                                         })
                                 }}
-                                label={t('common:save')}
-                                processingLabel={t('common:saving')}
+                                label={t('save')}
+                                processingLabel={t('saving')}
                             />
                             <Button variant="link" onClick={props.close}>
-                                {t('common:cancel')}
+                                {t('cancel')}
                             </Button>
                         </ActionGroup>
                     </AcmForm>

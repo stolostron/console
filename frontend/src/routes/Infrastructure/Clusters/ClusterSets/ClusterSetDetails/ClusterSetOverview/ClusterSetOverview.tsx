@@ -19,7 +19,7 @@ import { ClusterSetContext } from '../ClusterSetDetails'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
 
 export function ClusterSetOverviewPageContent() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { push } = useHistory()
     const { clusterSet, clusters, clusterPools, submarinerAddons, clusterSetBindings } = useContext(ClusterSetContext)
 
@@ -49,7 +49,7 @@ export function ClusterSetOverviewPageContent() {
                                 <Popover
                                     bodyContent={
                                         <Trans
-                                            i18nKey="cluster:clusterSetBinding.edit.message"
+                                            i18nKey="clusterSetBinding.edit.message"
                                             components={{ bold: <strong /> }}
                                         />
                                     }

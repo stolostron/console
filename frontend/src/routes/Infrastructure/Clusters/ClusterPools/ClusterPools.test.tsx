@@ -127,7 +127,7 @@ describe('ClusterPools page', () => {
         await clickRowAction(1, 'clusterPool.destroy')
         await typeByText('type.to.confirm', mockClusterPool.metadata.name!)
         const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
-        await clickByText('common:destroy')
+        await clickByText('destroy')
         await waitForNocks(deleteNocks)
     })
     test('should be able to destroy cluster pools using bulk actions', async () => {
@@ -135,7 +135,7 @@ describe('ClusterPools page', () => {
         await clickBulkAction('bulk.destroy.clusterPools')
         await typeByText('type.to.confirm', 'confirm')
         const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
-        await clickByText('common:destroy')
+        await clickByText('destroy')
         await waitForNocks(deleteNocks)
     })
 
@@ -146,7 +146,7 @@ describe('ClusterPools page', () => {
         await waitForText('clusterPool.modal.scale.title')
         await clickByLabel('Plus')
         const patchNocks: Scope[] = [nockPatch(mockClusterPool, [{ op: 'replace', path: '/spec/size', value: 3 }])]
-        await clickByText('common:scale')
+        await clickByText('scale')
         await waitForNocks(patchNocks)
     })
 
@@ -166,7 +166,7 @@ describe('ClusterPools page', () => {
                 },
             ]),
         ]
-        await clickByText('common:update')
+        await clickByText('update')
         await waitForNocks(patchNocks)
     })
 
@@ -176,7 +176,7 @@ describe('ClusterPools page', () => {
         await waitForText('clusterClaim.create.title')
         await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
         const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaim)]
-        await clickByText('common:claim')
+        await clickByText('claim')
         await waitForNocks(createNocks)
     })
 })

@@ -51,7 +51,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 const discoveryVersions = ['4.6', '4.7', '4.8', '4.9']
 
 export default function DiscoveryConfigPage() {
-    const { t } = useTranslation(['discovery'])
+    const { t } = useTranslation()
     const location = useLocation()
 
     return (
@@ -147,7 +147,7 @@ export function DiscoveryConfigPageContent(props: {
         },
     })
     const alertContext = useContext(AcmAlertContext)
-    const { t } = useTranslation(['discovery', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const location = useLocation()
     const [editing] = useState<boolean>(location.pathname === NavigationPath.configureDiscovery)
@@ -214,7 +214,7 @@ export function DiscoveryConfigPageContent(props: {
                                 })
                                 resolve(deletecmd)
                                 toastContext.addAlert({
-                                    title: t('discovery:alert.deleted.header'),
+                                    title: t('alert.deleted.header'),
                                     message: t('alert.msg'),
                                     type: 'success',
                                     autoClose: true,
@@ -231,7 +231,7 @@ export function DiscoveryConfigPageContent(props: {
                     confirmText: t('discoveryConfig.delete.btn'),
                     message: (
                         <Trans
-                            i18nKey={'discovery:discoveryConfig.delete.message'}
+                            i18nKey={'discoveryConfig.delete.message'}
                             components={{ bold: <strong /> }}
                             values={{ discoveryConfigNamespace: discoveryConfig!.metadata!.namespace }}
                         />
@@ -252,7 +252,7 @@ export function DiscoveryConfigPageContent(props: {
                 if (err instanceof Error) {
                     alertContext.addAlert({
                         type: 'danger',
-                        title: t('common:request.failed'),
+                        title: t('request.failed'),
                         message: err.message,
                     })
                     reject()
@@ -270,7 +270,7 @@ export function DiscoveryConfigPageContent(props: {
                     const importcmd = await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
                     toastContext.addAlert({
-                        title: t('discovery:alert.created.header'),
+                        title: t('alert.created.header'),
                         message: t('alert.msg'),
                         type: 'success',
                         autoClose: true,
@@ -280,7 +280,7 @@ export function DiscoveryConfigPageContent(props: {
                     const importcmd = await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
                     toastContext.addAlert({
-                        title: t('discovery:alert.updated.header'),
+                        title: t('alert.updated.header'),
                         message: t('alert.msg'),
                         type: 'success',
                         autoClose: true,
@@ -292,7 +292,7 @@ export function DiscoveryConfigPageContent(props: {
                 if (err instanceof Error) {
                     alertContext.addAlert({
                         type: 'danger',
-                        title: t('common:request.failed'),
+                        title: t('request.failed'),
                         message: err.message,
                     })
                     reject()

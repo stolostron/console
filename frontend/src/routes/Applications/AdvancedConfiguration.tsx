@@ -221,7 +221,7 @@ export default function AdvancedConfiguration() {
                     {
                         header: t('Clusters'),
                         cell: (resource) => {
-                            let clusterCount = {
+                            const clusterCount = {
                                 localPlacement: false,
                                 remoteCount: 0,
                             }
@@ -340,7 +340,7 @@ export default function AdvancedConfiguration() {
                     {
                         header: t('Clusters'),
                         cell: (resource) => {
-                            let clusterCount = {
+                            const clusterCount = {
                                 localPlacement: false,
                                 remoteCount: 0,
                             }
@@ -613,7 +613,8 @@ export default function AdvancedConfiguration() {
     }
 
     function getSelectedId(props: ISelectedIds) {
-        let { options, query, queryParam, defaultOption, location } = props
+        const { options, queryParam, defaultOption, location } = props
+        let { query } = props
         if (!query) {
             query = location && queryString.parse(location.search)
         }

@@ -54,7 +54,7 @@ export interface ItemError<T> {
 }
 
 export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | { open: false }) {
-    const { t } = useTranslation(['common'])
+    const { t } = useTranslation()
     const [progress, setProgress] = useState(0)
     const [progressCount, setProgressCount] = useState(0)
     const [confirm, setConfirm] = useState('')
@@ -140,7 +140,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                     </Fragment>
                 ) : (
                     <Fragment>
-                        <AcmAlert isInline noClose variant="danger" title={t('common:there.were.errors')} />
+                        <AcmAlert isInline noClose variant="danger" title={t('there.were.errors')} />
                         {props.columns && props.keyFn && (
                             <AcmTablePaginationContextProvider localStorageKey="model">
                                 <AcmTable<T>
@@ -149,7 +149,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                     columns={[
                                         props.columns[0],
                                         {
-                                            header: t('common:error'),
+                                            header: t('error'),
                                             cell: (item) => {
                                                 return <Fragment>{getItemError(item)?.message}</Fragment>
                                             },
@@ -170,7 +170,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                     {errors
                         ? [
                               <Button variant="primary" key="close-bulk-action" onClick={props.close}>
-                                  {t('common:close')}
+                                  {t('close')}
                               </Button>,
                           ]
                         : [
@@ -230,7 +230,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                   onClick={props.onCancel ? props.onCancel : props.close}
                                   key="cancel-bulk-action"
                               >
-                                  {t('common:cancel')}
+                                  {t('cancel')}
                               </Button>,
                           ]}
                 </ActionGroup>
