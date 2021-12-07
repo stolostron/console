@@ -51,19 +51,23 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
         if (props.resource.kind === ApplicationKind) {
             return deleteApplication(props.resource, removeAppResources ? props.selected : [])
         }
-        return deleteApplication(
-            props.resource,
-            props.appSetsSharingPlacement.length === 0 && removeAppSetResource
-                ? [
-                      {
-                          apiVersion: 'cluster.open-cluster-management.io/v1alpha1', // replace when placement type is available
-                          kind: 'Placement',
-                          name: props.appSetPlacement,
-                          namespace: props.resource.metadata?.namespace,
-                      },
-                  ]
-                : []
-        )
+
+        if (props.resource.kind === ApplicationSetKind) {
+            return deleteApplication(
+                props.resource,
+                props.appSetsSharingPlacement.length === 0 && removeAppSetResource
+                    ? [
+                          {
+                              apiVersion: 'cluster.open-cluster-management.io/v1alpha1', // replace when placement type is available
+                              kind: 'Placement',
+                              name: props.appSetPlacement,
+                              namespace: props.resource.metadata?.namespace,
+                          },
+                      ]
+                    : []
+            )
+        }
+        return deleteApplication(props.resource)
     }
 
     const renderConfirmCheckbox = () => {
@@ -248,11 +252,9 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
             return props.t('Are you sure that you want to continue?')
         }
     }
-
-    const modalTitle =
-        props.appKind === ApplicationKind
-            ? props.t('Permanently delete {0} application?').replace('{0}', props.resource.metadata?.name!)
-            : props.t('Permanently delete {0} applicationset?').replace('{0}', props.resource.metadata?.name!)
+    const modalTitle = props
+        .t(`Permanently delete {0} ${props.appKind.toLowerCase()}?`)
+        .replace('{0}', props.resource.metadata?.name!)
     return (
         <AcmModal
             id="remove-resource-modal"
