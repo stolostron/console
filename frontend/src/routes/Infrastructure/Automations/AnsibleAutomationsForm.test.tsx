@@ -129,7 +129,7 @@ describe('add ansible job template page', () => {
         await typeByPlaceholderText('template.create.placeholder', mockClusterCurator.metadata.name!)
         await clickByPlaceholderText('credentialsForm.ansibleCredentials.placeholder')
         await clickByText(mockSecret.metadata.name!)
-        await clickByText('Next')
+        await clickByText('next')
 
         // install templates
         await clickByText('template.job.placeholder', 0)
@@ -140,7 +140,7 @@ describe('add ansible job template page', () => {
         await clickByPlaceholderText('template.modal.name.placeholder', 0)
         await clickByText(mockTemplateList.results![1].name!, 0)
         await clickByText('Save')
-        await clickByText('Next')
+        await clickByText('next')
 
         // upgrade templates
         await clickByText('template.job.placeholder', 0)
@@ -151,12 +151,12 @@ describe('add ansible job template page', () => {
         await clickByPlaceholderText('template.modal.name.placeholder', 0)
         await clickByText(mockTemplateList.results![3].name!, 0)
         await clickByText('Save')
-        await clickByText('Next')
+        await clickByText('next')
 
         // add template
         const createNock = nockCreate(mockClusterCurator)
         nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
-        await clickByText('Add')
+        await clickByText('add')
         await waitForNock(createNock)
     })
 })
