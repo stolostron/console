@@ -82,7 +82,7 @@ function getResourceType(resource: IResource) {
 function isLocalClusterURL(url: string, localCluster: ManagedCluster | undefined) {
     let argoServerURL
     const localClusterConfigs = localCluster ? localCluster.spec?.managedClusterClientConfigs! : []
-    let localClusterURL = new URL(localClusterConfigs.length > 0 ? localClusterConfigs[0].url : '')
+    const localClusterURL = new URL(localClusterConfigs.length > 0 ? localClusterConfigs[0].url : '')
 
     try {
         argoServerURL = new URL(url)
