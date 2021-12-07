@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { ConsoleRemotePlugin } from '@openshift-console/dynamic-plugin-sdk-webpack'
+import CopyPlugin from 'copy-webpack-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
@@ -65,6 +66,17 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 filename: '[name].[contenthash:8].css',
                 chunkFilename: '[id].[contenthash:8].css',
                 ignoreOrder: false, // Enable to remove warnings about conflicting order
+            }),
+            new CopyPlugin({
+                patterns: [
+                    {
+                        from: './public/locales/*/plugin__acm-plugin.json',
+                        to: ({ absoluteFilename }) => {
+                            const { groups: { locale } } = absoluteFilename.match(/locales\/(?<locale>.+)\/plugin__acm-plugin.json/)
+                            return `locales/${locale}/plugin__acm-plugin.json`
+                        },
+                    },
+                ],
             }),
         ].filter(Boolean) as webpack.WebpackPluginInstance[],
         optimization: {
