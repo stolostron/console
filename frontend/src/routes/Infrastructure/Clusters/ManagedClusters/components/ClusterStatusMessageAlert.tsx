@@ -9,7 +9,7 @@ export function ClusterStatusMessageAlert(props: {
     padTop?: boolean
     padBottom?: boolean
 }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     if (props.cluster.statusMessage) {
         return (
             <AcmAlert

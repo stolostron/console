@@ -33,6 +33,6 @@ export function TechPreviewAlert(props: { i18nKey: string; docHref: string }) {
 }
 
 export function DevPreviewLabel() {
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation()
     return <Label color="orange">{t('cluster.create.developer.preview')}</Label>
 }

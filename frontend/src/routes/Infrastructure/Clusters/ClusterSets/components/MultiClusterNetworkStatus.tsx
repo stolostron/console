@@ -12,7 +12,7 @@ import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetDetails/Cl
 import { useClusters } from './useClusters'
 
 export function MultiClusterNetworkStatus(props: { clusterSet: ManagedClusterSet }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet } = props
     const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
 

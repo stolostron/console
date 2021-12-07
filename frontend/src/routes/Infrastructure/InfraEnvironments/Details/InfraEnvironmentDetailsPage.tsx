@@ -33,7 +33,7 @@ const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL
 type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
 
 const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = ({ match }) => {
-    const { t } = useTranslation(['infraenv'])
+    const { t } = useTranslation()
     const history = useHistory()
     const location = useLocation()
     const [, setRoute] = useRecoilState(acmRouteState)

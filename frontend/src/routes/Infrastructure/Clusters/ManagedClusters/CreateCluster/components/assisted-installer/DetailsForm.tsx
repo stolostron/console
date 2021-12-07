@@ -53,7 +53,7 @@ const fields: any = {
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
     const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
     const formRef = useRef<FormikProps<any>>(null)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
@@ -162,7 +162,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
             <AcmLabelsInput
                 id="additionalLabels"
                 label={t('import.form.labels.label')}
-                buttonLabel={t('common:label.add')}
+                buttonLabel={t('label.add')}
                 value={additionalLabels}
                 onChange={(label) => setAdditionaLabels(label)}
                 placeholder={t('labels.edit.placeholder')}

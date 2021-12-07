@@ -10,7 +10,7 @@ import { machinePoolsState, submarinerConfigsState } from '../../../../../atoms'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function ScaleClusterAlert() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
     const [machinePoolState] = useRecoilState(machinePoolsState)
     const [submarinerConfigs] = useRecoilState(submarinerConfigsState)

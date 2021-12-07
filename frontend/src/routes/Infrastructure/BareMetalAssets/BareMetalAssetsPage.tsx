@@ -40,24 +40,24 @@ export default function BareMetalAssetsPage() {
     useEffect(() => setRoute(AcmRoute.BareMetalAssets), [setRoute])
 
     const [bareMetalAssets] = useRecoilState(bareMetalAssetsState)
-    const { t } = useTranslation(['bma', 'common'])
+    const { t } = useTranslation()
 
     return (
         <AcmPage
             hasDrawer
             header={
                 <AcmPageHeader
-                    title={t('bma:bmas')}
+                    title={t('bmas')}
                     titleTooltip={
                         <>
-                            {t('bma:bmas.tooltip')}
+                            {t('bmas.tooltip')}
                             <a
                                 href={DOC_LINKS.BARE_METAL_ASSETS}
                                 target="_blank"
                                 rel="noreferrer"
                                 style={{ display: 'block', marginTop: '4px' }}
                             >
-                                {t('common:learn.more')}
+                                {t('learn.more')}
                             </a>
                         </>
                     }
@@ -89,7 +89,7 @@ export function BareMetalAssetsTable(props: {
         { open: false }
     )
     const history = useHistory()
-    const { t } = useTranslation(['bma', 'common'])
+    const { t } = useTranslation()
 
     useEffect(() => {
         const canCreateManagedCluster = canUser('create', ManagedClusterDefinition)
@@ -108,7 +108,7 @@ export function BareMetalAssetsTable(props: {
             open: true,
             icon: 'default',
             title: t('bulk.title.import'),
-            action: t('common:import'),
+            action: t('import'),
             processing: '',
             description: '',
             keyFn: (bareMetalAsset: ImportedBareMetalAsset) => bareMetalAsset.uid as string,
@@ -131,8 +131,8 @@ export function BareMetalAssetsTable(props: {
                                     open: true,
                                     icon: 'default',
                                     title: t('bulk.title.import'),
-                                    action: t('common:import'),
-                                    processing: t('common:importing'),
+                                    action: t('import'),
+                                    processing: t('importing'),
                                     description: t('modal.import.content.batch'),
                                     resources: result,
                                     columns: [
@@ -196,10 +196,7 @@ export function BareMetalAssetsTable(props: {
                     <AcmEmptyState
                         title={t('bareMetalAsset.emptyState.title')}
                         message={
-                            <Trans
-                                i18nKey={'bma:bareMetalAsset.emptyState.subtitle'}
-                                components={{ bold: <strong /> }}
-                            />
+                            <Trans i18nKey={'bareMetalAsset.emptyState.subtitle'} components={{ bold: <strong /> }} />
                         }
                         action={
                             <Bullseye>
@@ -331,8 +328,8 @@ export function BareMetalAssetsTable(props: {
                                         setModalProps({
                                             open: true,
                                             title: t('bulk.title.delete'),
-                                            action: t('common:delete'),
-                                            processing: t('common:deleting'),
+                                            action: t('delete'),
+                                            processing: t('deleting'),
                                             resources: [bareMetalAsset],
                                             description: t('bulk.message.delete'),
                                             columns: [
@@ -397,8 +394,8 @@ export function BareMetalAssetsTable(props: {
                             setModalProps({
                                 open: true,
                                 title: t('bulk.title.delete'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                action: t('delete'),
+                                processing: t('deleting'),
                                 resources: [...bareMetalAssets],
                                 description: t('bulk.message.delete'),
                                 columns: [
@@ -434,7 +431,7 @@ export function BareMetalAssetsTable(props: {
                             history.push(`${NavigationPath.createCluster}?${params}`)
                         },
                         isDisabled: !canCreateCluster,
-                        tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
+                        tooltip: !canCreateCluster ? t('rbac.unauthorized') : '',
                         variant: 'bulk-action',
                     },
                 ]}

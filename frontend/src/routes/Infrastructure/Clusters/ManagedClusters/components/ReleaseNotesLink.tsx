@@ -6,7 +6,7 @@ import { OCP_DOC_BASE_PATH } from '../../../../../lib/doc-util'
 
 // must be x.y.z version prop
 export const ReleaseNotesLink = (props: { version?: string }) => {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
 
     if (!props.version) return null
 

@@ -9,7 +9,7 @@ import { placementBindingsState } from '../../../atoms'
 import { PlacementBinding } from '../../../resources/placement-binding'
 
 export default function PolicySetsPage() {
-    const { t } = useTranslation(['govenance'])
+    const { t } = useTranslation()
 
     const [placementBindings] = useRecoilState(placementBindingsState)
 

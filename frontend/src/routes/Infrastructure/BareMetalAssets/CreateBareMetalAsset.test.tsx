@@ -248,6 +248,6 @@ describe('CreateBareMetalAsset', () => {
 
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNockii.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText('common:rbac.namespaces.unauthorized')).toBeInTheDocument())
+        await waitFor(() => expect(getByText('rbac.namespaces.unauthorized')).toBeInTheDocument())
     })
 })

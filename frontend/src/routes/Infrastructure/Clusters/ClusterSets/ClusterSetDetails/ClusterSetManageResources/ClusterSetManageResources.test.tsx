@@ -263,7 +263,7 @@ describe('ClusterSetManageClusters', () => {
         // select the cluster to transfer
         await clickByLabel('Select row 3')
 
-        await clickByText('common:review')
+        await clickByText('review')
 
         // confirm modal
         await waitForText('manageClusterSet.form.modal.title')
@@ -273,7 +273,7 @@ describe('ClusterSetManageClusters', () => {
         await waitForText('managedClusterSet.form.unchanged')
         await waitForText('managedClusterSet.form.transferred')
 
-        await clickByText('common:save')
+        await clickByText('save')
 
         await waitForNocks([
             // remove cluster

@@ -58,7 +58,7 @@ const useStyles = makeStyles({
 
 export function LoginCredentials(props: { canGetSecret?: boolean }) {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [isVisible, setVisible] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [error, setError] = useState<boolean>(false)
@@ -120,7 +120,7 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
                                 return <AcmInlineStatus type={StatusType.progress} status={t('credentials.loading')} />
                             } else if (!props.canGetSecret) {
                                 return (
-                                    <Tooltip content={t('common:rbac.unauthorized')}>
+                                    <Tooltip content={t('rbac.unauthorized')}>
                                         <div className="credentials-toggle">
                                             <AcmIcon
                                                 icon={

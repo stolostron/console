@@ -49,16 +49,16 @@ const InfraEnvironmentsPage: React.FC = () => {
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
 
     const [infraEnvs, agents] = useRecoilValue(waitForAll([infraEnvironmentsState, agentsState]))
-    const { t } = useTranslation(['infraenv', 'common'])
+    const { t } = useTranslation()
 
     return (
-        <AcmPage hasDrawer header={<AcmPageHeader title={t('infraenv:infraenvs')} />}>
+        <AcmPage hasDrawer header={<AcmPageHeader title={t('infraenvs')} />}>
             <AcmPageContent id="infra-environments">
                 <OnPremiseBanner
                     id="banner.infraenv"
                     WrappingComponent={PageSection}
-                    titleKey="cim:cim.infra.banner.header"
-                    textKey="cim:cim.infra.banner.body"
+                    titleKey="cim.infra.banner.header"
+                    textKey="cim.infra.banner.body"
                 />
 
                 <PageSection>
@@ -77,7 +77,7 @@ type InfraEnvsTableProps = {
 }
 
 const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) => {
-    const { t } = useTranslation(['infraenv', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const getDetailsLink = (infraEnv: CIM.InfraEnvK8sResource) =>
         NavigationPath.infraEnvironmentDetails
@@ -131,8 +131,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 return (
                                     <AcmLabels
                                         labels={infraEnv.metadata.labels}
-                                        expandedText={t('common:show.less')}
-                                        collapsedText={t('common:show.more', { number: collapse.length })}
+                                        expandedText={t('show.less')}
+                                        collapsedText={t('show.more', { number: collapse.length })}
                                         collapse={collapse}
                                     />
                                 )
@@ -183,8 +183,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                         setModalProps({
                                             open: true,
                                             title: t('action.title.delete'),
-                                            action: t('common:delete'),
-                                            processing: t('common:deleting'),
+                                            action: t('delete'),
+                                            processing: t('deleting'),
                                             resources: [infraEnv],
                                             description: t('action.message.delete'),
                                             columns: [
@@ -241,8 +241,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                             setModalProps({
                                 open: true,
                                 title: t('bulk.title.delete'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                action: t('delete'),
+                                processing: t('deleting'),
                                 resources: infraEnvs,
                                 description: t('bulk.message.delete'),
                                 columns: [

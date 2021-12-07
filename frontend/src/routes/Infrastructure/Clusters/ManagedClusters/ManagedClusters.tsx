@@ -51,7 +51,7 @@ import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
 
 function InfraEnvLinkButton() {
-    const { t } = useTranslation(['cim'])
+    const { t } = useTranslation()
 
     return (
         <Link to={NavigationPath.infraEnvironments} style={{ marginRight: '16px' }}>
@@ -62,7 +62,7 @@ function InfraEnvLinkButton() {
     )
 }
 export default function ManagedClusters() {
-    const { t } = useTranslation(['cluster', 'discovery'])
+    const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
     let clusters = useAllClusters()
     clusters = clusters.filter((cluster) => {
@@ -95,8 +95,8 @@ export default function ManagedClusters() {
                     <OnPremiseBanner
                         id="banner.managedclusters"
                         extraButton={<InfraEnvLinkButton />}
-                        titleKey="cim:cim.onpremise.banner.header"
-                        textKey="cim:cim.onpremise.banner.body"
+                        titleKey="cim.onpremise.banner.header"
+                        textKey="cim.onpremise.banner.body"
                     />
                     <StackItem>
                         <ClustersTable
@@ -107,7 +107,7 @@ export default function ManagedClusters() {
                                     title: t('managed.createCluster'),
                                     click: () => history.push(NavigationPath.createCluster),
                                     isDisabled: !canCreateCluster,
-                                    tooltip: t('common:rbac.unauthorized'),
+                                    tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.primary,
                                 },
                                 {
@@ -115,7 +115,7 @@ export default function ManagedClusters() {
                                     title: t('managed.importCluster'),
                                     click: () => history.push(NavigationPath.importCluster),
                                     isDisabled: !canCreateCluster,
-                                    tooltip: t('common:rbac.unauthorized'),
+                                    tooltip: t('rbac.unauthorized'),
                                     variant: ButtonVariant.secondary,
                                 },
                             ]}
@@ -124,10 +124,7 @@ export default function ManagedClusters() {
                                     key="mcEmptyState"
                                     title={t('managed.emptyStateHeader')}
                                     message={
-                                        <Trans
-                                            i18nKey={'cluster:managed.emptyStateMsg'}
-                                            components={{ bold: <strong /> }}
-                                        />
+                                        <Trans i18nKey={'managed.emptyStateMsg'} components={{ bold: <strong /> }} />
                                     }
                                     action={<AddCluster type="button" />}
                                 />
@@ -170,7 +167,7 @@ export function ClustersTable(props: {
 
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
 
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
     const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
@@ -294,9 +291,9 @@ export function ClustersTable(props: {
                         return (
                             <AcmLabels
                                 labels={cluster.labels}
-                                expandedText={t('common:show.less')}
-                                collapsedText={t('common:show.more', { number: collapse.length })}
-                                allCollapsedText={t('common:count.labels', { number: collapse.length })}
+                                expandedText={t('show.less')}
+                                collapsedText={t('show.more', { number: collapse.length })}
+                                allCollapsedText={t('count.labels', { number: collapse.length })}
                                 collapse={collapse}
                             />
                         )

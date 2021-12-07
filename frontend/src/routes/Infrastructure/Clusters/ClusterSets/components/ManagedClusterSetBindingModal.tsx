@@ -34,7 +34,7 @@ export function useClusterSetBindings(clusterSet?: ManagedClusterSet) {
 }
 
 export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClusterSet; onClose: () => void }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [namespaces] = useRecoilState(namespacesState)
     const clusterSetBindings = useClusterSetBindings(props.clusterSet)
     const [selectedNamespaces, setSelectedNamespaces] = useState<string[] | undefined>(undefined)
@@ -65,7 +65,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                 {(alertContext) => (
                     <AcmForm style={{ gap: 0 }}>
                         <div style={{ marginBottom: '16px' }}>
-                            <Trans i18nKey="cluster:clusterSetBinding.edit.message" components={{ bold: <strong /> }} />
+                            <Trans i18nKey="clusterSetBinding.edit.message" components={{ bold: <strong /> }} />
                         </div>
 
                         <AcmMultiSelect
@@ -90,8 +90,8 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                             <AcmSubmit
                                 id="save-bindings"
                                 variant="primary"
-                                label={t('common:save')}
-                                processingLabel={t('common:saving')}
+                                label={t('save')}
+                                processingLabel={t('saving')}
                                 onClick={() => {
                                     alertContext.clearAlerts()
                                     return new Promise(async (resolve, reject) => {
@@ -138,7 +138,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                                         if (errors.length > 0) {
                                             alertContext.addAlert({
                                                 type: 'danger',
-                                                title: t('common:request.failed'),
+                                                title: t('request.failed'),
                                                 message: `${errors.map((error) => `${error} \n`)}`,
                                             })
                                             reject()
@@ -150,7 +150,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                                 }}
                             />
                             <Button variant="link" onClick={reset}>
-                                {t('common:cancel')}
+                                {t('cancel')}
                             </Button>
                         </ActionGroup>
                     </AcmForm>

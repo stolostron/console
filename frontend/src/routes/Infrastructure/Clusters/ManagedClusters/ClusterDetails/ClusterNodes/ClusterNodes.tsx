@@ -28,7 +28,7 @@ export function NodePoolsPageContent() {
 }
 
 export function NodesPoolsTable() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
 
     const nodes: NodeInfo[] = cluster?.nodes?.nodeList!

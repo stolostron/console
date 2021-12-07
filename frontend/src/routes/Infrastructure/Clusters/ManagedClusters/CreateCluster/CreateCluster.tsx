@@ -240,7 +240,7 @@ export default function CreateClusterPage() {
     const pauseCreate = () => {}
 
     // setup translation
-    const { t } = useTranslation(['create', 'cim'])
+    const { t } = useTranslation()
     const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
@@ -396,9 +396,9 @@ export default function CreateClusterPage() {
         if (control.controlId === 'infrastructure') {
             if (control.active?.includes('AI') && !isInfraEnvAvailable) {
                 setWarning({
-                    title: t('cim:cim.infra.missing.warning.title'),
-                    text: t('cim:cim.infra.missing.warning.text'),
-                    linkText: t('cim:cim.infra.manage.link'),
+                    title: t('cim.infra.missing.warning.title'),
+                    text: t('cim.infra.missing.warning.text'),
+                    linkText: t('cim.infra.manage.link'),
                     linkTo: NavigationPath.infraEnvironments,
                 })
             } else {
