@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useEffect, useState, useMemo } from 'react'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { patchResource } from '../../../../../../resources'
@@ -17,9 +16,11 @@ import {
     fetchSecret,
     getAIConfigMap,
     getClusterDeploymentLink,
+    getOnCreateBMH,
     getOnDeleteHost,
     getOnSaveISOParams,
     onApproveAgent,
+    onDiscoveryHostsNext,
     onHostsNext,
     onSaveAgent,
     onSaveBMH,
@@ -30,9 +31,15 @@ import {
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { isBMPlatform } from '../../../../InfraEnvironments/utils'
-
-const { ClusterDeploymentWizard, FeatureGateContextProvider, ACM_ENABLED_FEATURES, LoadingState, getAgentsHostsNames } =
-    CIM
+import {
+    ClusterDeploymentWizard,
+    FeatureGateContextProvider,
+    ACM_ENABLED_FEATURES,
+    LoadingState,
+    getAgentsHostsNames,
+    AgentK8sResource,
+    isAgentOfInfraEnv,
+} from 'openshift-assisted-ui-lib/cim'
 
 type EditAIClusterProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -43,7 +50,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
 }) => {
     const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
     const history = useHistory()
-    const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
+    const [editAgent, setEditAgent] = useState<AgentK8sResource | undefined>()
     const [clusterImageSets, clusterDeployments, agentClusterInstalls, agents, configMaps] = useRecoilValue(
         waitForAll([
             clusterImageSetsState,
@@ -78,13 +85,22 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         ]).promise
     }
 
+    const agentsOfCluster = useMemo(
+        () =>
+            agents.filter((a) =>
+                // TODO(mlibra): extend here once we can "disable" hosts
+                isAgentOfInfraEnv(infraEnv, a)
+            ),
+        [agents]
+    )
+
     const hostActions = {
         canEditHost: () => true,
-        onEditHost: (agent: CIM.AgentK8sResource) => {
+        onEditHost: (agent: AgentK8sResource) => {
             setEditAgent(agent)
         },
         canEditRole: () => true,
-        onEditRole: (agent: CIM.AgentK8sResource, role: string | undefined) => {
+        onEditRole: (agent: AgentK8sResource, role: string | undefined) => {
             return patchResource(agent, [
                 {
                     op: 'replace',
@@ -102,7 +118,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                     if (!agentClusterInstall.spec.holdInstallation) {
                         await patchResource(agentClusterInstall, [
                             {
-                                op: 'add',
+                                op: agentClusterInstall.spec.holdInstallation === false ? 'replace' : 'add',
                                 path: '/spec/holdInstallation',
                                 value: true,
                             },
@@ -119,8 +135,13 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const onFinish = () => {
         const doItAsync = async () => {
             await patchResource(agentClusterInstall, [
+                // effectively, the property gets deleted instead of holding "false" value by that change
                 {
-                    op: 'replace',
+                    op:
+                        agentClusterInstall.spec?.holdInstallation ||
+                        agentClusterInstall.spec?.holdInstallation === false
+                            ? 'replace'
+                            : 'add',
                     path: '/spec/holdInstallation',
                     value: false,
                 },
@@ -155,9 +176,12 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 canDeleteAgent={canDeleteAgent}
                 onSaveAgent={onSaveAgent}
                 onSaveBMH={onSaveBMH}
+                onCreateBMH={getOnCreateBMH(infraEnv)}
                 onSaveISOParams={getOnSaveISOParams(infraEnv)}
                 // onFormSaveError={setErrorHandler}
-                // just for Day 2: onSaveHostsDiscovery={(values) => onDiscoverHostsNext({ values, clusterDeployment, agents })}
+                onSaveHostsDiscovery={(values) =>
+                    onDiscoveryHostsNext({ values, clusterDeployment, agents: agentsOfCluster })
+                }
                 fetchSecret={fetchSecret}
                 fetchNMState={fetchNMState}
                 isBMPlatform={isBMPlatform(infraEnv)}
