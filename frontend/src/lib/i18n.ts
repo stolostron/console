@@ -27,6 +27,7 @@ i18n
             escapeValue: false, // react handles this already
         },
         defaultNS: 'plugin__acm-plugin', // the default file for strings when using useTranslation, etc
+        nsSeparator: '~',
         supportedLngs: ['en'], // only languages from this array will attempt to be loaded
     })
 
