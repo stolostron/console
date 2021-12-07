@@ -3,7 +3,7 @@
         "type": "console.perspective",
         "properties": {
             "id": "acm",
-            "name": "All clusters",
+            "name": "%plugin__acm-plugin~All clusters%",
             "icon": { "$codeRef": "perspective.icon" },
             "landingPageURL": { "$codeRef": "perspective.getLandingPageURL" },
             "importRedirectURL": { "$codeRef": "perspective.getImportRedirectURL" }
@@ -14,7 +14,7 @@
         "properties": {
             "perspective": "acm",
             "id": "acm-home",
-            "name": "Home"
+            "name": "%plugin__acm-plugin~Home%"
         }
     },
     {
@@ -23,7 +23,7 @@
             "perspective": "acm",
             "section": "acm-home",
             "id": "acm-welcome",
-            "name": "Welcome",
+            "name": "%plugin__acm-plugin~Welcome%",
             "href": "/multicloud/home/welcome"
         }
     },
@@ -40,7 +40,7 @@
             "perspective": "acm",
             "section": "acm-home",
             "id": "acm-overview",
-            "name": "Overview",
+            "name": "%plugin__acm-plugin~Overview%",
             "href": "/multicloud/home/overview"
         }
     },
@@ -57,7 +57,7 @@
             "perspective": "acm",
             "section": "acm-home",
             "id": "acm-search",
-            "name": "Search",
+            "name": "%plugin__acm-plugin~Search%",
             "href": "/multicloud/home/search"
         }
     },
@@ -73,7 +73,7 @@
         "properties": {
             "id": "acm-infrastructure",
             "perspective": "acm",
-            "name": "Infrastructure"
+            "name": "%plugin__acm-plugin~Infrastructure%"
         }
     },
     {
@@ -82,7 +82,7 @@
             "perspective": "acm",
             "section": "acm-infrastructure",
             "id": "acm-clusters",
-            "name": "Clusters",
+            "name": "%plugin__acm-plugin~Clusters%",
             "href": "/multicloud/infrastructure/clusters"
         }
     },
@@ -99,7 +99,7 @@
             "perspective": "acm",
             "section": "acm-infrastructure",
             "id": "acm-bare-metal-assets",
-            "name": "Bare metal assets",
+            "name": "%plugin__acm-plugin~Bare metal assets%",
             "href": "/multicloud/infrastructure/bare-metal-assets"
         }
     },
@@ -116,7 +116,7 @@
             "perspective": "acm",
             "section": "acm-infrastructure",
             "id": "acm-automations",
-            "name": "Automations",
+            "name": "%plugin__acm-plugin~Automations%",
             "href": "/multicloud/infrastructure/automations"
         }
     },
@@ -133,7 +133,7 @@
             "perspective": "acm",
             "section": "acm-infrastructure",
             "id": "acm-infrastructure-environments",
-            "name": "Infrastructure environments",
+            "name": "%plugin__acm-plugin~Infrastructure environments%",
             "href": "/multicloud/infrastructure/environments"
         }
     },
@@ -149,7 +149,7 @@
         "properties": {
             "perspective": "acm",
             "id": "acm-applications",
-            "name": "Applications",
+            "name": "%plugin__acm-plugin~Applications%",
             "href": "/multicloud/applications"
         }
     },
@@ -165,7 +165,7 @@
         "properties": {
             "perspective": "acm",
             "id": "acm-governance",
-            "name": "Governance",
+            "name": "%plugin__acm-plugin~Governance%",
             "href": "/multicloud/governance"
         }
     },
@@ -181,7 +181,7 @@
         "properties": {
             "perspective": "acm",
             "id": "acm-credentials",
-            "name": "Credentials",
+            "name": "%plugin__acm-plugin~Credentials%",
             "href": "/multicloud/credentials"
         }
     },
