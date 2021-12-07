@@ -8,13 +8,13 @@ import {
     CardBody,
     CardHeader,
     CardTitle,
-    // Dropdown,
-    // DropdownItem,
-    // DropdownSeparator,
+    Dropdown,
+    DropdownItem,
+    DropdownSeparator,
     Gallery,
+    KebabToggle,
     Label,
     LabelGroup,
-    // KebabToggle,
     PageSection,
     PageSectionVariants,
     SearchInput,
@@ -33,12 +33,12 @@ export default function PolicySetsPage() {
     const { t } = useTranslation()
     const [policySets] = useRecoilState(policySetsState)
     const [cardViewSearch, setCardViewSearch] = useState('')
-    // const [cardOpenIdx, setCardOpenIdx] = useState<number>()
-    // function onCardToggle(cardIdx: number) {
-    //     if (cardOpenIdx === cardIdx) {
-    //         setCardOpenIdx(undefined)
-    //     } else setCardOpenIdx(cardIdx)
-    // }
+    const [cardOpenIdx, setCardOpenIdx] = useState<number>()
+    function onCardToggle(cardIdx: number) {
+        if (cardOpenIdx === cardIdx) {
+            setCardOpenIdx(undefined)
+        } else setCardOpenIdx(cardIdx)
+    }
 
     function renderPolicySetCard(policySet: PolicySet, cardIdx: number) {
         const policySetClusters: PolicySetResultClusters[] = policySet.status?.results.reduce(
@@ -76,8 +76,7 @@ export default function PolicySetsPage() {
             >
                 <CardHeader isToggleRightAligned={true}>
                     <CardActions>
-                        {/* TODO Wait to implement until PolicySet resource is included in deployment */}
-                        {/* <Dropdown
+                        <Dropdown
                             // onSelect={} on item select
                             toggle={<KebabToggle onToggle={() => onCardToggle(cardIdx)} />}
                             isOpen={cardOpenIdx === cardIdx}
@@ -89,7 +88,7 @@ export default function PolicySetsPage() {
                                 <DropdownItem key="delete">{t('Delete')}</DropdownItem>,
                             ]}
                             position={'right'}
-                        /> */}
+                        />
                     </CardActions>
                     <CardTitle>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
