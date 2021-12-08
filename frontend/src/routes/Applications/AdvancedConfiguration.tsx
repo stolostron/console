@@ -4,6 +4,7 @@ import {
     AcmExpandableCard,
     AcmTable,
     AcmTablePaginationContextProvider,
+    IAcmRowAction,
     IAcmTableColumn,
 } from '@open-cluster-management/ui-components'
 import {
@@ -24,7 +25,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
 import queryString from 'query-string'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -32,12 +33,23 @@ import { applicationsState, channelsState, placementRulesState, placementsState,
 import {
     IResource,
     ChannelApiVersion,
+    ChannelDefinition,
     SubscriptionApiVersion,
+    SubscriptionDefinition,
     PlacementApiVersion,
+    PlacementDefinition,
     PlacementRuleApiVersion,
+    PlacementRuleDefinition,
+    SubscriptionKind,
+    ChannelKind,
+    PlacementKind,
+    PlacementRuleKind,
 } from '../../resources'
 import { getAge, getClusterCountString, getSearchLink, getEditLink } from './helpers/resource-helper'
 import { DOC_LINKS } from '../../lib/doc-util'
+import ResourceLabels from './components/ResourceLabels'
+import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
+import { canUser } from '../../lib/rbac-util'
 
 export default function AdvancedConfiguration() {
     const { t } = useTranslation()
@@ -49,6 +61,130 @@ export default function AdvancedConfiguration() {
     const subscriptionsWithoutLocal = subscriptions.filter((subscription) => {
         return !_.endsWith(subscription.metadata.name, '-local')
     })
+    const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
+        open: false,
+    })
+    const history = useHistory()
+    const [canDeleteSubscription, setCanDeleteSubscription] = useState<boolean>(false)
+    const [canDeleteChannel, setCanDeleteChannel] = useState<boolean>(false)
+    const [canDeletePlacement, setCanDeletePlacement] = useState<boolean>(false)
+    const [canDeletePlacementRule, setCanDeletePlacementRule] = useState<boolean>(false)
+
+    useEffect(() => {
+        const canDeleteSubscriptionPromise = canUser('delete', SubscriptionDefinition)
+        canDeleteSubscriptionPromise.promise
+            .then((result) => setCanDeleteSubscription(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeleteSubscriptionPromise.abort()
+    }, [])
+
+    useEffect(() => {
+        const canDeleteChannelPromise = canUser('delete', ChannelDefinition)
+        canDeleteChannelPromise.promise
+            .then((result) => setCanDeleteChannel(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeleteChannelPromise.abort()
+    }, [])
+
+    useEffect(() => {
+        const canDeletePlacementPromise = canUser('delete', PlacementDefinition)
+        canDeletePlacementPromise.promise
+            .then((result) => setCanDeletePlacement(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeletePlacementPromise.abort()
+    }, [])
+
+    useEffect(() => {
+        const canDeletePlacementRulePromise = canUser('delete', PlacementRuleDefinition)
+        canDeletePlacementRulePromise.promise
+            .then((result) => setCanDeletePlacementRule(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeletePlacementRulePromise.abort()
+    }, [])
+
+    const getRowActionResolver = (item: IResource) => {
+        const kind = _.get(item, 'kind') == 'PlacementRule' ? 'placement rule' : _.get(item, 'kind').toLowerCase()
+        const actions: IAcmRowAction<any>[] = []
+
+        // edit
+        actions.push({
+            id: `edit${kind}`,
+            title: t(`Edit ${kind}`),
+            click: () => {
+                const searchParams: any = {
+                    properties: {
+                        name: item.metadata?.name,
+                        namespace: item.metadata?.namespace,
+                        kind: item.kind,
+                        cluster: 'local-cluster',
+                        apiversion: item.apiVersion,
+                    },
+                }
+                const editLink = getEditLink(searchParams)
+                history.push(editLink)
+            },
+        })
+
+        // search
+        actions.push({
+            id: `search${kind}`,
+            title: t(`Search ${kind}`),
+            click: () => {
+                const [apigroup, apiversion] = item.apiVersion.split('/')
+                const searchLink = getSearchLink({
+                    properties: {
+                        name: item.metadata?.name,
+                        namespace: item.metadata?.namespace,
+                        kind: item.kind.toLowerCase(),
+                        apigroup,
+                        apiversion,
+                    },
+                })
+                history.push(searchLink)
+            },
+            isDisabled: false, // implement when we use search for remote Argo apps
+        })
+
+        let canDeleteResource = false
+
+        switch (_.get(item, 'kind')) {
+            case SubscriptionKind:
+                canDeleteResource = canDeleteSubscription
+                break
+            case ChannelKind:
+                canDeleteResource = canDeleteChannel
+                break
+            case PlacementKind:
+                canDeleteResource = canDeletePlacement
+                break
+            case PlacementRuleKind:
+                canDeleteResource = canDeletePlacementRule
+                break
+        }
+
+        //delete
+        actions.push({
+            id: `delete${kind}`,
+            title: t(`Delete ${kind}`),
+            click: () => {
+                setModalProps({
+                    open: true,
+                    canRemove: canDeleteResource,
+                    resource: item,
+                    errors: undefined,
+                    loading: false,
+                    appKind: item.kind,
+                    close: () => {
+                        setModalProps({ open: false })
+                    },
+                    t,
+                })
+            },
+            isDisabled: !canDeleteResource,
+        })
+
+        return actions
+    }
 
     const table = {
         subscriptions: {
@@ -185,6 +321,7 @@ export default function AdvancedConfiguration() {
                 []
             ),
             items: subscriptionsWithoutLocal,
+            rowActionResolver: getRowActionResolver,
         },
         channels: {
             columns: useMemo<IAcmTableColumn<IResource>[]>(
@@ -212,10 +349,22 @@ export default function AdvancedConfiguration() {
                         header: t('Type'),
                         cell: (resource) => {
                             const channelType = _.get(resource, 'spec.type')
+                            const pathName = _.get(resource, 'spec.pathname')
                             if (channelType) {
-                                return <span>{channelType}</span>
+                                return (
+                                    <ResourceLabels
+                                        appRepos={[
+                                            {
+                                                type: channelType,
+                                                pathName: pathName,
+                                            },
+                                        ]}
+                                        translation={t}
+                                        isArgoApp={false}
+                                        showSubscriptionAttributes={false}
+                                    />
+                                )
                             }
-                            return ''
                         },
                         sort: 'spec.type',
                         tooltip: 'Provides a link to the resource repository that is represented by the channel.',
@@ -284,6 +433,7 @@ export default function AdvancedConfiguration() {
                 []
             ),
             items: channels,
+            rowActionResolver: getRowActionResolver,
         },
         placements: {
             columns: useMemo<IAcmTableColumn<IResource>[]>(
@@ -306,6 +456,14 @@ export default function AdvancedConfiguration() {
                         sort: 'metadata.namespace',
                     },
                     {
+                        header: t('CLusters'),
+                        tooltip: t(
+                            'Displays the number of remote and local clusters where resources are deployed because of the placement.'
+                        ),
+                        cell: 'status.numberOfSelectedClusters',
+                        sort: 'status.numberOfSelectedClusters',
+                    },
+                    {
                         header: t('Created'),
                         cell: (resource) => {
                             return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
@@ -316,6 +474,7 @@ export default function AdvancedConfiguration() {
                 []
             ),
             items: placements,
+            rowActionResolver: getRowActionResolver,
         },
         placementrules: {
             columns: useMemo<IAcmTableColumn<IResource>[]>(
@@ -368,6 +527,7 @@ export default function AdvancedConfiguration() {
                 []
             ),
             items: placementrules,
+            rowActionResolver: getRowActionResolver,
         },
     }
 
@@ -536,8 +696,6 @@ export default function AdvancedConfiguration() {
             queryParam,
         })
 
-        const history = useHistory()
-
         const isSelected = (id: string) => id === selectedId
         const handleChange = (_: any, event: any) => {
             const id = event.currentTarget.id
@@ -598,6 +756,7 @@ export default function AdvancedConfiguration() {
 
         return (
             <AcmTablePaginationContextProvider localStorageKey="advanced-tables-pagination">
+                <DeleteResourceModal {...modalProps} />
                 <AcmTable<IResource>
                     plural=""
                     columns={selectedResources.columns}
@@ -619,6 +778,7 @@ export default function AdvancedConfiguration() {
                             defaultOption={defaultOption}
                         />
                     }
+                    rowActionResolver={selectedResources.rowActionResolver}
                 />
             </AcmTablePaginationContextProvider>
         )
@@ -630,9 +790,7 @@ export default function AdvancedConfiguration() {
                 <StackItem>
                     <ApplicationDeploymentHighlights />
                 </StackItem>
-                <StackItem>
-                    <AdvancedConfigurationTable />
-                </StackItem>
+                <StackItem>{AdvancedConfigurationTable()}</StackItem>
             </Stack>
         </PageSection>
     )

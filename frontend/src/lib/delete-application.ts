@@ -3,7 +3,7 @@
 import { IResource, ResourceError, ResourceErrorCode } from '../resources'
 import { deleteResources } from './delete-resources'
 
-export function deleteApplication(app: IResource, childResources: any[]) {
+export function deleteApplication(app: IResource, childResources?: any[]) {
     const allResources = [app]
 
     childResources?.forEach((resource) => {
