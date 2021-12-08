@@ -7,7 +7,6 @@ import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
-    networkingControlData,
     proxyControlData,
     automationControlData,
     getSimplifiedImageName,
