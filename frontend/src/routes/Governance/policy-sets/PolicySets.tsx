@@ -24,9 +24,9 @@ import {
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, useCallback, useState } from 'react'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
-import { useTranslation } from '../../../lib/acm-i18next'
 import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../resources/policy-set'
 
 export default function PolicySetsPage() {
