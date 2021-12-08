@@ -25,7 +25,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
 import queryString from 'query-string'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -33,14 +33,23 @@ import { applicationsState, channelsState, placementRulesState, placementsState,
 import {
     IResource,
     ChannelApiVersion,
+    ChannelDefinition,
     SubscriptionApiVersion,
+    SubscriptionDefinition,
     PlacementApiVersion,
+    PlacementDefinition,
     PlacementRuleApiVersion,
+    PlacementRuleDefinition,
+    SubscriptionKind,
+    ChannelKind,
+    PlacementKind,
+    PlacementRuleKind,
 } from '../../resources'
 import { getAge, getClusterCountString, getSearchLink, getEditLink } from './helpers/resource-helper'
 import { DOC_LINKS } from '../../lib/doc-util'
 import ResourceLabels from './components/ResourceLabels'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
+import { canUser } from '../../lib/rbac-util'
 
 export default function AdvancedConfiguration() {
     const { t } = useTranslation()
@@ -55,7 +64,43 @@ export default function AdvancedConfiguration() {
     const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
         open: false,
     })
-    let history = useHistory()
+    const history = useHistory()
+    const [canDeleteSubscription, setCanDeleteSubscription] = useState<boolean>(false)
+    const [canDeleteChannel, setCanDeleteChannel] = useState<boolean>(false)
+    const [canDeletePlacement, setCanDeletePlacement] = useState<boolean>(false)
+    const [canDeletePlacementRule, setCanDeletePlacementRule] = useState<boolean>(false)
+
+    useEffect(() => {
+        const canDeleteSubscriptionPromise = canUser('delete', SubscriptionDefinition)
+        canDeleteSubscriptionPromise.promise
+            .then((result) => setCanDeleteSubscription(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeleteSubscriptionPromise.abort()
+    }, [])
+
+    useEffect(() => {
+        const canDeleteChannelPromise = canUser('delete', ChannelDefinition)
+        canDeleteChannelPromise.promise
+            .then((result) => setCanDeleteChannel(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeleteChannelPromise.abort()
+    }, [])
+
+    useEffect(() => {
+        const canDeletePlacementPromise = canUser('delete', PlacementDefinition)
+        canDeletePlacementPromise.promise
+            .then((result) => setCanDeletePlacement(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeletePlacementPromise.abort()
+    }, [])
+
+    useEffect(() => {
+        const canDeletePlacementRulePromise = canUser('delete', PlacementRuleDefinition)
+        canDeletePlacementRulePromise.promise
+            .then((result) => setCanDeletePlacementRule(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeletePlacementRulePromise.abort()
+    }, [])
 
     const getRowActionResolver = (item: IResource) => {
         const kind = _.get(item, 'kind') == 'PlacementRule' ? 'placement rule' : _.get(item, 'kind').toLowerCase()
@@ -63,7 +108,6 @@ export default function AdvancedConfiguration() {
 
         // edit
         actions.push({
-            //edit
             id: `edit${kind}`,
             title: t(`Edit ${kind}`),
             click: () => {
@@ -101,6 +145,23 @@ export default function AdvancedConfiguration() {
             isDisabled: false, // implement when we use search for remote Argo apps
         })
 
+        let canDeleteResource = false
+
+        switch (_.get(item, 'kind')) {
+            case SubscriptionKind:
+                canDeleteResource = canDeleteSubscription
+                break
+            case ChannelKind:
+                canDeleteResource = canDeleteChannel
+                break
+            case PlacementKind:
+                canDeleteResource = canDeletePlacement
+                break
+            case PlacementRuleKind:
+                canDeleteResource = canDeletePlacementRule
+                break
+        }
+
         //delete
         actions.push({
             id: `delete${kind}`,
@@ -108,7 +169,7 @@ export default function AdvancedConfiguration() {
             click: () => {
                 setModalProps({
                     open: true,
-                    canRemove: item.kind,
+                    canRemove: canDeleteResource,
                     resource: item,
                     errors: undefined,
                     loading: false,
@@ -119,6 +180,7 @@ export default function AdvancedConfiguration() {
                     t,
                 })
             },
+            isDisabled: !canDeleteResource,
         })
 
         return actions
