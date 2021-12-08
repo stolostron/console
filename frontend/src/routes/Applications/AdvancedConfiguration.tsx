@@ -107,7 +107,7 @@ export default function AdvancedConfiguration() {
 
     // Cache cell text for sorting and searching
     const generateTransformData = (tableItem: IResource) => {
-        let transformedObject = {
+        const transformedObject = {
             transformed: {},
         }
         let clusterCount = {
@@ -115,7 +115,7 @@ export default function AdvancedConfiguration() {
             remoteCount: 0,
         }
         switch (tableItem.kind) {
-            case 'Channel':
+            case 'Channel': {
                 let subscriptionCount = 0
                 if (tableItem.metadata) {
                     const { name, namespace } = tableItem.metadata
@@ -140,8 +140,8 @@ export default function AdvancedConfiguration() {
                 _.set(transformedObject.transformed, 'subscriptionCount', subscriptionCount)
                 _.set(transformedObject.transformed, 'clusterCount', clusterCountString)
                 break
-
-            case 'Subscription':
+            }
+            case 'Subscription': {
                 //appCount
                 if (tableItem.metadata) {
                     let appCount = 0
@@ -168,11 +168,13 @@ export default function AdvancedConfiguration() {
                     _.set(transformedObject.transformed, 'appCount', appCount)
                 }
                 break
-            case 'PlacementRule':
+            }
+            case 'PlacementRule': {
                 clusterCount = getPlacementruleClusterCount(tableItem, clusterCount)
                 const clusterString = getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
                 _.set(transformedObject.transformed, 'clusterCount', clusterString)
                 break
+            }
         }
         // Cannot add properties directly to objects in typescript
         return { ...tableItem, ...transformedObject }
@@ -502,12 +504,17 @@ export default function AdvancedConfiguration() {
                         sort: 'metadata.namespace',
                     },
                     {
-                        header: t('CLusters'),
+                        header: t('Clusters'),
                         tooltip: t(
                             'Displays the number of remote and local clusters where resources are deployed because of the placement.'
                         ),
                         cell: 'status.numberOfSelectedClusters',
-                        sort: 'status.numberOfSelectedClusters',
+                        sort: (resource) => {
+                            const numberOfSelectedClusters = _.get(resource, 'status.numberOfSelectedClusters')
+                            if (numberOfSelectedClusters) {
+                                return numberOfSelectedClusters
+                            }
+                        },
                     },
                     {
                         header: t('Created'),
