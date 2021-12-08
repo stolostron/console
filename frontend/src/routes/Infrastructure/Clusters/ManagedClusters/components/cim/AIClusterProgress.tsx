@@ -106,7 +106,7 @@ const AIClusterProgress: React.FC = () => {
                                             agentClusterInstall={agentClusterInstall}
                                             agents={clusterAgents}
                                             fetchSecret={fetchSecret}
-                                            consoleUrl={getConsoleUrl(clusterDeployment)}
+                                            consoleUrl={getConsoleUrl(clusterDeployment) || 'N/A'}
                                         />
                                     </StackItem>
                                 )}
