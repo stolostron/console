@@ -25,7 +25,7 @@ import {
     listAnsibleTowerJobs,
 } from '../../../resources'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { secretsState, settingsState } from '../../../atoms'

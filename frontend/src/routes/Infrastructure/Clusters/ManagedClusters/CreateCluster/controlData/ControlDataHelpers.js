@@ -447,7 +447,7 @@ export const proxyControlData = [
         type: 'values',
         name: 'No Proxy',
         disabled: true,
-        tip: 'Add comma delineated sites to bypass the proxy. By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs.',
+        tip: 'Add comma separated sites to bypass the proxy. By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs.',
     },
     {
         id: 'additionalTrustBundle',

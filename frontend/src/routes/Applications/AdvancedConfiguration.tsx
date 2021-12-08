@@ -767,6 +767,12 @@ export default function AdvancedConfiguration() {
                             key="switcher"
                             options={options.map(({ id, title }) => ({
                                 id,
+                                /*
+                                t('Subscriptions')
+                                t('Channels')
+                                t('Placements')
+                                t('Placement rules')
+                                */
                                 contents: t(title),
                             }))}
                             defaultOption={defaultOption}

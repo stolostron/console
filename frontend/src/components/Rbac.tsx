@@ -5,7 +5,7 @@ import { createSubjectAccessReview, ResourceAttributes } from '../resources'
 import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
 import { ButtonProps } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../lib/acm-i18next'
 
 type RbacDropdownProps<T = unknown> = {
     actions: Actions<T>[]

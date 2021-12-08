@@ -4,7 +4,7 @@ import { ClusterImageSet, ClusterPool, patchResource } from '../../../../../reso
 import { AcmSelect } from '@open-cluster-management/ui-components'
 import { SelectOption } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { clusterImageSetsState } from '../../../../../atoms'
 import { BulkActionModel } from '../../../../../components/BulkActionModel'

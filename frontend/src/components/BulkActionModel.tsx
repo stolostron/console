@@ -21,7 +21,7 @@ import {
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../lib/acm-i18next'
 import { getErrorInfo } from '../components/ErrorPage'
 
 export interface IBulkActionModelProps<T = undefined> {

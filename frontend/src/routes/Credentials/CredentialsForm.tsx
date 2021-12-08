@@ -12,7 +12,7 @@ import {
 import { PageSection } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { useRecoilState } from 'recoil'
 import { namespacesState } from '../../atoms'

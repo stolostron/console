@@ -11,7 +11,7 @@ import {
 import { PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { useContext, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { machinePoolsState } from '../../../../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'

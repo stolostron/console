@@ -195,7 +195,14 @@
             "no-empty": "off",
             "no-constant-condition": "off",
             "jest/no-export": "off",
-            "@typescript-eslint/no-extra-semi": "off"
+            "@typescript-eslint/no-extra-semi": "off",
+            "@typescript-eslint/no-restricted-imports": [
+                "error",
+                {
+                    "name": "react-i18next",
+                    "message": "Please use Trans and useTranslation from ./src/lib/acm-i18next and avoid other exports from react-i18next"
+                }
+            ]
         }
     },
     "browserslist": {
