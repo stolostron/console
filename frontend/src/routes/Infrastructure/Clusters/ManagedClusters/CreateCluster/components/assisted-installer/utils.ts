@@ -281,6 +281,9 @@ export const getClusterDeploymentLink = ({ name }: { name: string }) =>
 
 export const canDeleteAgent = (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => !!agent || !!bmh
 
+// TODO(mlibra): Is that state-dependent in our flow?
+export const canEditHost = () => true;
+
 export const fetchNMState = async (namespace: string, bmhName: string) => {
     const nmStates = await listNamespacedResources(
         { apiVersion: 'agent-install.openshift.io/v1beta1', kind: 'NMStateConfig', metadata: { namespace } },

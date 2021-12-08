@@ -13,6 +13,7 @@ import {
 } from '../../../../../../atoms'
 import {
     canDeleteAgent,
+    canEditHost,
     fetchNMState,
     fetchSecret,
     getAIConfigMap,
@@ -154,6 +155,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onDeleteHost={getOnDeleteHost(filteredBMHs)}
                 canDeleteAgent={canDeleteAgent}
                 onSaveAgent={onSaveAgent}
+                canEditHost={canEditHost}
                 onSaveBMH={onSaveBMH}
                 onSaveISOParams={getOnSaveISOParams(infraEnv)}
                 // onFormSaveError={setErrorHandler}
