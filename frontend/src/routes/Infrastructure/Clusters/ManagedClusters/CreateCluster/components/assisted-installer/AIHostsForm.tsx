@@ -22,6 +22,7 @@ import {
     useAgentsOfAIFlow,
     useBMHsOfAIFlow,
     getOnSaveISOParams,
+    canEditHost,
 } from './utils'
 import { isBMPlatform } from '../../../../../InfraEnvironments/utils'
 
@@ -119,6 +120,7 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
             onDeleteHost={getOnDeleteHost(filteredBMHs)}
             canDeleteAgent={canDeleteAgent}
             onSaveAgent={onSaveAgent}
+            canEditHost={canEditHost}
             onSaveBMH={onSaveBMH}
             onSaveISOParams={getOnSaveISOParams(infraEnv)}
             onFormSaveError={setErrorHandler}

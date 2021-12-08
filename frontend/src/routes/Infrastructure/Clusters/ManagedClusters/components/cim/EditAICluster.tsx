@@ -12,6 +12,7 @@ import {
 } from '../../../../../../atoms'
 import {
     canDeleteAgent,
+    canEditHost,
     fetchNMState,
     fetchSecret,
     getAIConfigMap,
@@ -177,6 +178,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onDeleteHost={getOnDeleteHost(filteredBMHs)}
                 canDeleteAgent={canDeleteAgent}
                 onSaveAgent={onSaveAgent}
+                canEditHost={canEditHost}
                 onSaveBMH={onSaveBMH}
                 onCreateBMH={getOnCreateBMH(infraEnv) /* AI Flow specific. Not called for CIM. */}
                 onSaveISOParams={getOnSaveISOParams(infraEnv) /* AI Flow specific. Not called for CIM. */}
