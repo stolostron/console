@@ -11,7 +11,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import { createContext, Fragment, Suspense, useEffect } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import {

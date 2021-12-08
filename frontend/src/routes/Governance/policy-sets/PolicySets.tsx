@@ -3,7 +3,7 @@
 import { AcmTable, IAcmRowAction, IAcmTableBulkAction, IAcmTableColumn } from '@open-cluster-management/ui-components'
 import { ButtonVariant, Chip, PageSection } from '@patternfly/react-core'
 import { Fragment, useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { placementBindingsState } from '../../../atoms'
 import { PlacementBinding } from '../../../resources/placement-binding'

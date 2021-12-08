@@ -10,7 +10,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, ButtonVariant, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../lib/acm-i18next'
 import { IRequestResult } from '../resources'
 
 export interface IDropdownActionModalProps<T = undefined> {

@@ -12,7 +12,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, ModalVariant } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 
 export type ScaleClusterPoolModalProps = {
     clusterPool?: ClusterPool

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { OCP_DOC_BASE_PATH } from '../../../../../lib/doc-util'
 
 // must be x.y.z version prop

@@ -23,7 +23,7 @@ import {
 import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, bareMetalAssetsState } from '../../../atoms'

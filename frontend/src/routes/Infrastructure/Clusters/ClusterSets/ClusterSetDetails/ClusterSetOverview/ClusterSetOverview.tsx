@@ -10,7 +10,7 @@ import {
 import { PageSection, Popover } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useContext } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { clusterDangerStatuses } from '../../../../../../resources'

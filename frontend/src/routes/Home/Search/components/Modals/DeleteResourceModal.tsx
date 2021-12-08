@@ -4,7 +4,7 @@
 import { AcmAlert, AcmButton, AcmModal } from '@open-cluster-management/ui-components'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../../../resources/managedclusteraction'
 import { searchClient } from '../../search-sdk/search-client'

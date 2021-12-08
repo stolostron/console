@@ -2,7 +2,7 @@
 
 import { AcmCountCardSection, AcmDrawerContext } from '@open-cluster-management/ui-components'
 import { useCallback, useContext, useEffect } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policyreportState } from '../../../../../atoms'

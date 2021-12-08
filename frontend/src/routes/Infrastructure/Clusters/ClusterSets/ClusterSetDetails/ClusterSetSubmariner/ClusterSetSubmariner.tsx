@@ -25,7 +25,7 @@ import {
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { useContext, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { submarinerConfigsState } from '../../../../../../atoms'

@@ -13,7 +13,7 @@ import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { ansibleJobState } from '../../../../../atoms'
 import { RbacButton } from '../../../../../components/Rbac'

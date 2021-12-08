@@ -18,7 +18,7 @@ import {
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import _ from 'lodash'
 import React, { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../../atoms'
 import HeaderWithNotification from './components/HeaderWithNotification'

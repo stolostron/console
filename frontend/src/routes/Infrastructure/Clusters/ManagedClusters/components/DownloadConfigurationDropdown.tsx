@@ -3,7 +3,7 @@
 import { createDownloadFile, getSecret, unpackSecret } from '../../../../../resources'
 import { AcmDropdown } from '@open-cluster-management/ui-components'
 import { useContext } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) {

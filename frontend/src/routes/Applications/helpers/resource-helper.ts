@@ -3,7 +3,7 @@
 import _ from 'lodash'
 import moment from 'moment'
 import queryString from 'query-string'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { IResource } from '../../../resources'
 
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']

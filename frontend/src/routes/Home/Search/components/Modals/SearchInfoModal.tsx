@@ -4,7 +4,7 @@
 import { Fragment } from 'react'
 import { AcmLabels, AcmModal } from '@open-cluster-management/ui-components'
 import { makeStyles } from '@material-ui/styles'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 
 const useStyles = makeStyles({
     root: {

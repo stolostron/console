@@ -32,7 +32,7 @@ import { ActionGroup, Button, Label, PageSection, SelectOption, Text } from '@pa
 import { CheckCircleIcon } from '@patternfly/react-icons'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { Fragment, useContext, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'

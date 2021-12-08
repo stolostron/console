@@ -13,7 +13,7 @@ import {
 import { PageSection } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Fragment, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { searchClient } from '../search-sdk/search-client'
 import {
     useSearchResultItemsQuery,

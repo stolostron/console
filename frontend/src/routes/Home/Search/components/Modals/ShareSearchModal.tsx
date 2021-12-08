@@ -4,7 +4,7 @@
 import { Fragment } from 'react'
 import { ModalVariant } from '@patternfly/react-core'
 import { AcmCodeSnippet, AcmModal } from '@open-cluster-management/ui-components'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 
 export const ShareSearchModal = (props: any) => {
     const { t } = useTranslation()
