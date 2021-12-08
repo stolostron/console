@@ -240,11 +240,11 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                         click: (infraEnvs: CIM.InfraEnvK8sResource[]) => {
                             setModalProps({
                                 open: true,
-                                title: t('bulk.title.delete'),
+                                title: t('bulk.title.delete.infraenv'),
                                 action: t('delete'),
                                 processing: t('deleting'),
                                 resources: infraEnvs,
-                                description: t('bulk.message.delete'),
+                                description: t('bulk.message.delete.infraenv'),
                                 columns: [
                                     {
                                         header: t('infraEnv.tableHeader.name'),

@@ -47,7 +47,7 @@ export default function ImportClusterPage() {
                 <AcmPageHeader
                     title={t('page.header.import-cluster')}
                     breadcrumb={[
-                        { text: t('clusters'), to: NavigationPath.clusters },
+                        { text: t('Clusters'), to: NavigationPath.clusters },
                         { text: t('page.header.import-cluster'), to: '' },
                     ]}
                     titleTooltip={

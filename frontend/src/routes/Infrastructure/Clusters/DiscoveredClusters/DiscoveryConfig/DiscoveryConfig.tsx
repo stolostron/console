@@ -59,20 +59,20 @@ export default function DiscoveryConfigPage() {
             header={
                 location.pathname === NavigationPath.configureDiscovery ? (
                     <AcmPageHeader
-                        title={t('editDiscoveryConfig.title')}
+                        title={t('Configure discovery settings')}
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
-                            { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
-                            { text: t('editDiscoveryConfig.title'), to: '' },
+                            { text: t('Clusters'), to: NavigationPath.clusters },
+                            { text: t('Discovered clusters'), to: NavigationPath.discoveredClusters },
+                            { text: t('Create a discovery setting'), to: '' },
                         ]}
                     />
                 ) : (
                     <AcmPageHeader
                         title={t('addDiscoveryConfig.title')}
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
-                            { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
-                            { text: t('addDiscoveryConfig.title'), to: '' },
+                            { text: t('Clusters'), to: NavigationPath.clusters },
+                            { text: t('Discovered clusters'), to: NavigationPath.discoveredClusters },
+                            { text: t('Create a discovery setting'), to: '' },
                         ]}
                     />
                 )
