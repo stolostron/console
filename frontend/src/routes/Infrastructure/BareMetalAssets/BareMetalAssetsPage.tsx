@@ -327,7 +327,7 @@ export function BareMetalAssetsTable(props: {
                                     click: (bareMetalAsset: BareMetalAsset) => {
                                         setModalProps({
                                             open: true,
-                                            title: t('bulk.title.delete'),
+                                            title: t('.bma'),
                                             action: t('delete'),
                                             processing: t('deleting'),
                                             resources: [bareMetalAsset],
@@ -393,7 +393,7 @@ export function BareMetalAssetsTable(props: {
                         click: (bareMetalAssets: BareMetalAsset[]) => {
                             setModalProps({
                                 open: true,
-                                title: t('bulk.title.delete'),
+                                title: t('bulk.title.delete.bma'),
                                 action: t('delete'),
                                 processing: t('deleting'),
                                 resources: [...bareMetalAssets],

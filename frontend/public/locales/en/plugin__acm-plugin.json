@@ -1,4 +1,5 @@
 {
+    ".bma": ".bma",
     "A comma-separated list of destination domain names, domains, IP addresses or other network CIDRs to exclude proxying. Preface a domain with . to include all subdomains of that domain. Use * to bypass proxy for all destinations. Note that if you scale up workers not included in networking.machineCIDR from the installation configuration, you must add them to this list to prevent connection issues.": "A comma-separated list of destination domain names, domains, IP addresses or other network CIDRs to exclude proxying. Preface a domain with . to include all subdomains of that domain. Use * to bypass proxy for all destinations. Note that if you scale up workers not included in networking.machineCIDR from the installation configuration, you must add them to this list to prevent connection issues.",
     "A credential stores the access credentials and configuration information for creating clusters.": "A credential stores the access credentials and configuration information for creating clusters.",
     "A list of resources that contain the keyword \"OpenShift\" in any field.": "A list of resources that contain the keyword \"OpenShift\" in any field.",
@@ -136,7 +137,8 @@
     "bulk.plural.selectChannel": "channels",
     "bulk.plural.upgrade": "clusters",
     "bulk.title.addSet": "Add cluster to set",
-    "bulk.title.delete": "Delete infrastructure environments?",
+    "bulk.title.delete.bma": "Permanently delete bare metal assets?",
+    "bulk.title.delete.infraenv": "Delete infrastructure environments?",
     "bulk.title.deleteMachinePool": "Permanently delete machine pools?",
     "bulk.title.deleteSet": "Delete cluster sets?",
     "bulk.title.destroy": "Permanently destroy clusters?",
