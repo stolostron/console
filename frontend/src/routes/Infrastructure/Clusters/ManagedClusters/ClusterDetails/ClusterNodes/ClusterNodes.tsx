@@ -97,7 +97,7 @@ export function NodesPoolsTable() {
                 const hasOcpConsole = cluster?.distribution?.ocp?.version && cluster.consoleURL
                 const launchUrl = hasOcpConsole
                     ? `${cluster!.consoleURL}/k8s/cluster/nodes/${node.name}`
-                    : `/resources?cluster=${cluster!.name!}&kind=node&apiVersion=v1&name=${node.name}`
+                    : `/resources?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`
                 return (
                     <a href={launchUrl} target={hasOcpConsole ? '_self' : '_blank'} rel="noreferrer">
                         {hasOcpConsole && (
