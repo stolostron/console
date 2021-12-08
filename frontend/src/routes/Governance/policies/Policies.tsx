@@ -299,7 +299,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                         action: t('delete'),
                         processing: t('deleting'),
                         resources: [...policies],
-                        description: t('bulk.message.delete'),
+                        description: t('bulk.message.delete.grc'),
                         columns: [
                             {
                                 header: t('policy.tableHeader.name'),

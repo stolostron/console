@@ -356,7 +356,7 @@ export function DiscoveredClustersTable(props: {
         <Fragment>
             <TechPreviewAlert i18nKey="techpreview.msg" docHref={DOC_LINKS.DISCOVERED_CLUSTERS} />
             <AcmTable<DiscoveredCluster>
-                plural={t('discoveredClusters')}
+                plural={t('Discovered clusters')}
                 items={props.discoveredClusters}
                 columns={discoveredClusterCols}
                 keyFn={dckeyFn}

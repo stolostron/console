@@ -244,7 +244,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 action: t('delete'),
                                 processing: t('deleting'),
                                 resources: infraEnvs,
-                                description: t('bulk.message.delete'),
+                                description: t('bulk.message.delete.infraenv'),
                                 columns: [
                                     {
                                         header: t('infraEnv.tableHeader.name'),

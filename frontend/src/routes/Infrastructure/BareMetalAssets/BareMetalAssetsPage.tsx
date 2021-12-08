@@ -331,7 +331,7 @@ export function BareMetalAssetsTable(props: {
                                             action: t('delete'),
                                             processing: t('deleting'),
                                             resources: [bareMetalAsset],
-                                            description: t('bulk.message.delete'),
+                                            description: t('bulk.message.delete.bma'),
                                             columns: [
                                                 {
                                                     header: t('bareMetalAsset.tableHeader.name'),
@@ -397,7 +397,7 @@ export function BareMetalAssetsTable(props: {
                                 action: t('delete'),
                                 processing: t('deleting'),
                                 resources: [...bareMetalAssets],
-                                description: t('bulk.message.delete'),
+                                description: t('bulk.message.delete.bma'),
                                 columns: [
                                     {
                                         header: t('bareMetalAsset.tableHeader.name'),
