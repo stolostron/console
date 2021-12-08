@@ -24,9 +24,9 @@ import {
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, useCallback, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../resources/policy-set'
 
 export default function PolicySetsPage() {
@@ -154,7 +154,7 @@ export default function PolicySetsPage() {
     if (!policySets || policySets.length === 0) {
         return (
             <AcmEmptyState
-                title={t('No PolicySets found')}
+                title={t('No resources found')}
                 message={t('You do not have any PolicySets')}
                 showIcon={true}
                 action={
@@ -211,7 +211,7 @@ export default function PolicySetsPage() {
                 </Toolbar>
             </PageSection>
             {filteredPolicySets.length === 0 ? (
-                <AcmEmptyState title={t('No PolicySets match the current search filter')} showIcon={true} />
+                <AcmEmptyState title={t('No resources match the current search filter')} showIcon={true} />
             ) : (
                 <PageSection isFilled>
                     <Gallery hasGutter>
