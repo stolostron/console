@@ -107,7 +107,7 @@ export function BareMetalAssetsTable(props: {
         setImportedProps({
             open: true,
             icon: 'default',
-            title: t('bulk.title.import'),
+            title: t('bulk.title.import.bma'),
             action: t('import'),
             processing: '',
             description: '',
@@ -130,7 +130,7 @@ export function BareMetalAssetsTable(props: {
                                 setImportedProps({
                                     open: true,
                                     icon: 'default',
-                                    title: t('bulk.title.import'),
+                                    title: t('bulk.title.import.bma'),
                                     action: t('import'),
                                     processing: t('importing'),
                                     description: t('modal.import.content.batch'),

@@ -144,6 +144,7 @@
     "bulk.title.detach": "Detach clusters?",
     "bulk.title.hibernate": "Hibernate clusters",
     "bulk.title.import": "Import clusters",
+    "bulk.title.import.bma": "Import bare metal assets",
     "bulk.title.removeAuthorization": "Remove users or groups?",
     "bulk.title.removeSet": "Remove cluster from set?",
     "bulk.title.resume": "Resume clusters",
