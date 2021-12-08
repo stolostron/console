@@ -70,18 +70,18 @@ export function ClustersPage() {
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusters)}>
-                                <Link to={NavigationPath.clusters}>{t('clusters')}</Link>
+                                <Link to={NavigationPath.clusters}>{t('Managed clusters')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterSets)}>
-                                <Link to={NavigationPath.clusterSets}>{t('clusterSets')}</Link>
+                                <Link to={NavigationPath.clusterSets}>{t('Cluster sets')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterPools)}>
-                                <Link to={NavigationPath.clusterPools}>{t('clusterPools')}</Link>
+                                <Link to={NavigationPath.clusterPools}>{t('Cluster pools')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem
                                 isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}
                             >
-                                <Link to={NavigationPath.discoveredClusters}>{t('clusters.discovered')}</Link>
+                                <Link to={NavigationPath.discoveredClusters}>{t('Discovered clusters')}</Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }

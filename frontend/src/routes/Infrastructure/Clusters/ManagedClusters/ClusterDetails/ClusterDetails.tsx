@@ -211,7 +211,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 header={
                     <AcmPageHeader
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
+                            { text: t('Clusters'), to: NavigationPath.clusters },
                             { text: cluster.displayName!, to: '' },
                         ]}
                         title={cluster.displayName!}

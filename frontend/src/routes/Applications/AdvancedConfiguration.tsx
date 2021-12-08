@@ -456,7 +456,7 @@ export default function AdvancedConfiguration() {
                         sort: 'metadata.namespace',
                     },
                     {
-                        header: t('CLusters'),
+                        header: t('Clusters'),
                         tooltip: t(
                             'Displays the number of remote and local clusters where resources are deployed because of the placement.'
                         ),

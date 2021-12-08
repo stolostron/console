@@ -433,7 +433,7 @@ export default function CreateClusterPage() {
                         </>
                     }
                     breadcrumb={[
-                        { text: t('clusters'), to: NavigationPath.clusters },
+                        { text: t('Clusters'), to: NavigationPath.clusters },
                         { text: t('page.header.create-cluster'), to: '' },
                     ]}
                     switches={switches}

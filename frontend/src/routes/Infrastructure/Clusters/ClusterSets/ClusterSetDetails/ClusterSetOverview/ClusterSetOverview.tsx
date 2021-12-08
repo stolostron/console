@@ -90,7 +90,7 @@ export function ClusterSetOverviewPageContent() {
                             {
                                 id: 'clusters',
                                 count: clusters!.length,
-                                title: t('clusters'),
+                                title: t('Clusters'),
                                 linkText: t('summary.clusters.launch'),
                                 onLinkClick: () =>
                                     push(NavigationPath.clusterSetClusters.replace(':id', clusterSet!.metadata.name!)),
