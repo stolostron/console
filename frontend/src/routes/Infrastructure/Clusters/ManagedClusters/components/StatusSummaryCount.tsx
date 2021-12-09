@@ -35,7 +35,7 @@ export function StatusSummaryCount() {
     const policyReport = policyReports.filter(
         (pr) => pr.metadata.name?.replace('-policyreport', '') === cluster?.name
     )[0]
-    const policyReportViolations = policyReport?.results?.filter((violation) => violation.source === 'insights')
+    const policyReportViolations = policyReport?.results?.filter((violation) => violation.source === 'insights') || []
     const policyReportViolationsCount = policyReportViolations.length ?? 0
     const criticalCount = policyReportViolations.filter((item) => item.properties?.total_risk === '4').length
     const importantCount = policyReportViolations.filter((item) => item.properties?.total_risk === '3').length
