@@ -16,7 +16,7 @@ import isMatch from 'lodash/isMatch'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { InfraEnvK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { acmRouteState, agentsState, infraEnvironmentsState } from '../../../atoms'
@@ -240,11 +240,11 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                         click: (infraEnvs: CIM.InfraEnvK8sResource[]) => {
                             setModalProps({
                                 open: true,
-                                title: t('bulk.title.delete'),
+                                title: t('bulk.title.delete.infraenv'),
                                 action: t('delete'),
                                 processing: t('deleting'),
                                 resources: infraEnvs,
-                                description: t('bulk.message.delete'),
+                                description: t('bulk.message.delete.infraenv'),
                                 columns: [
                                     {
                                         header: t('infraEnv.tableHeader.name'),

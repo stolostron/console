@@ -12,7 +12,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, ModalVariant } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
 
 export type ScaleMachinePoolModalProps = {
     machinePool?: MachinePool
@@ -56,7 +56,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                         <>
                             <p>
                                 <Trans
-                                    i18nKey={`cluster:machinePool.modal.scale.${props.mode}.message`}
+                                    i18nKey={`machinePool.modal.scale.${props.mode}.message`}
                                     values={{
                                         name: props.machinePool!.metadata.name,
                                         number: props.machinePool?.status?.replicas,

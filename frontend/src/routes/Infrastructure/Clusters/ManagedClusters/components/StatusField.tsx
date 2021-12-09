@@ -3,7 +3,7 @@
 import { Cluster, ClusterStatus, getLatestAnsibleJob } from '../../../../../resources'
 import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { ansibleJobState, configMapsState } from '../../../../../atoms'
@@ -157,7 +157,7 @@ export function StatusField(props: { cluster: Cluster }) {
                 maxWidth: '448px',
                 bodyContent: (
                     <>
-                        <Trans i18nKey={`cluster:status.${props.cluster?.status}`} components={{ bold: <strong /> }} />
+                        <Trans i18nKey={`status.${props.cluster?.status}`} components={{ bold: <strong /> }} />
                         <ClusterStatusMessageAlert cluster={props.cluster!} padTop />
                     </>
                 ),

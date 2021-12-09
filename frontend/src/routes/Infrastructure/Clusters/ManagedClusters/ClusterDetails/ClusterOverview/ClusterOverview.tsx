@@ -15,7 +15,7 @@ import {
 import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import React, { useContext, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { RbacButton } from '../../../../../../components/Rbac'
@@ -32,8 +32,7 @@ import { ProgressStepBar } from '../../components/ProgressStepBar'
 import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails'
-import AIClusterProgress from '../../components/cim/AIClusterProgress'
-import AIClusterErrors from '../../components/cim/AIClusterErrors'
+import AIClusterDetails from '../../components/cim/AIClusterDetails'
 
 const { getClusterProperties } = CIM
 
@@ -272,8 +271,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     displayName={cluster!.displayName}
                     close={() => setShowEditLabels(false)}
                 />
-                {isHybrid && <AIClusterErrors />}
-                {isHybrid ? <AIClusterProgress /> : <ProgressStepBar />}
+                {isHybrid ? <AIClusterDetails /> : <ProgressStepBar />}
                 <AcmDescriptionList title={t('table.details')} leftItems={leftItems} rightItems={rightItems} />
                 {cluster!.isManaged &&
                     [

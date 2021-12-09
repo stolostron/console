@@ -2,7 +2,7 @@
 
 import { AcmCountCardSection, AcmDrawerContext } from '@open-cluster-management/ui-components'
 import { useCallback, useContext, useEffect } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
@@ -35,7 +35,7 @@ export function StatusSummaryCount() {
     const policyReport = policyReports.filter(
         (pr) => pr.metadata.name?.replace('-policyreport', '') === cluster?.name
     )[0]
-    const policyReportViolations = policyReport?.results?.filter((violation) => violation.source === 'insights')
+    const policyReportViolations = policyReport?.results?.filter((violation) => violation.source === 'insights') || []
     const policyReportViolationsCount = policyReportViolations.length ?? 0
     const criticalCount = policyReportViolations.filter((item) => item.properties?.total_risk === '4').length
     const importantCount = policyReportViolations.filter((item) => item.properties?.total_risk === '3').length

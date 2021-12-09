@@ -22,7 +22,6 @@ import {
 } from '../../../../../../../atoms'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
-import { InfraEnvK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'
 
 const {
     getAnnotationsFromAgentSelector,
@@ -113,10 +112,9 @@ export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHosts
 }
 
 /** AI-specific version for the CIM-flow's onHostsNext() callback */
-export const onDiscoverHostsNext = async ({ clusterDeployment, agents }: OnDiscoverHostsNext) => {
+export const onDiscoveryHostsNext = async ({ clusterDeployment, agents }: OnDiscoverHostsNext) => {
     // TODO(mlibra): So far we do not need "values" of the Formik - options the user will choose from will come later (like CNV or OCS)
-
-    // So far no need to "release" agents since the user either deletes the agent or keep the list untouched
+    // So far no need to "release" agents since the user either deletes the agent or keep the list untouched. Reconsider when "disable" gets in place.
 
     const name = clusterDeployment.metadata.name
     const namespace = clusterDeployment.metadata.namespace
@@ -281,6 +279,9 @@ export const getClusterDeploymentLink = ({ name }: { name: string }) =>
 
 export const canDeleteAgent = (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => !!agent || !!bmh
 
+// TODO(mlibra): Is that state-dependent in our flow?
+export const canEditHost = () => true
+
 export const fetchNMState = async (namespace: string, bmhName: string) => {
     const nmStates = await listNamespacedResources(
         { apiVersion: 'agent-install.openshift.io/v1beta1', kind: 'NMStateConfig', metadata: { namespace } },
@@ -429,8 +430,8 @@ export const useBMHsOfAIFlow = ({ name, namespace }: { name: string; namespace: 
     )
 }
 
-const refetchInfraEnv = async (infraEnv: InfraEnvK8sResource) =>
-    await getResource<InfraEnvK8sResource>({
+const refetchInfraEnv = async (infraEnv: CIM.InfraEnvK8sResource) =>
+    await getResource<CIM.InfraEnvK8sResource>({
         apiVersion: infraEnv.apiVersion,
         kind: infraEnv.kind,
         metadata: { namespace: infraEnv.metadata.namespace, name: infraEnv.metadata.name },
@@ -438,34 +439,35 @@ const refetchInfraEnv = async (infraEnv: InfraEnvK8sResource) =>
 
 const sleep = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export const getOnSaveISOParams = (infraEnv: InfraEnvK8sResource) => async (values: CIM.DiscoveryImageFormValues) => {
-    const patches: any[] = []
-    appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey || '', infraEnv.spec?.sshAuthorizedKey)
+export const getOnSaveISOParams =
+    (infraEnv: CIM.InfraEnvK8sResource) => async (values: CIM.DiscoveryImageFormValues) => {
+        const patches: any[] = []
+        appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey || '', infraEnv.spec?.sshAuthorizedKey)
 
-    const proxy = values.enableProxy
-        ? {
-              httpProxy: values.httpProxy,
-              httpsProxy: values.httpsProxy,
-              noProxy: values.noProxy,
-          }
-        : {}
-    appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
+        const proxy = values.enableProxy
+            ? {
+                  httpProxy: values.httpProxy,
+                  httpsProxy: values.httpsProxy,
+                  noProxy: values.noProxy,
+              }
+            : {}
+        appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
 
-    // TODO(mlibra): Once implemented on the backend, persist values.imageType
+        // TODO(mlibra): Once implemented on the backend, persist values.imageType
 
-    // TODO(mlibra): Why is oldIsoCreatedTimestamp not from a condition? I would expect infraEnv.status?.conditions?.find((condition) => condition.type === 'ImageCreated')
-    const oldIsoCreatedTimestamp = infraEnv.status?.createdTime
+        // TODO(mlibra): Why is oldIsoCreatedTimestamp not from a condition? I would expect infraEnv.status?.conditions?.find((condition) => condition.type === 'ImageCreated')
+        const oldIsoCreatedTimestamp = infraEnv.status?.createdTime
 
-    await patchResource(infraEnv, patches).promise
+        await patchResource(infraEnv, patches).promise
 
-    // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
-    // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
-    // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.
-    let polledInfraEnv: InfraEnvK8sResource = await refetchInfraEnv(infraEnv)
-    let maxPollingCounter = 10
-    while (polledInfraEnv.status?.createdTime === oldIsoCreatedTimestamp && --maxPollingCounter) {
-        await sleep(5 * 1000)
-        polledInfraEnv = await refetchInfraEnv(infraEnv)
+        // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
+        // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
+        // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.
+        let polledInfraEnv: CIM.InfraEnvK8sResource = await refetchInfraEnv(infraEnv)
+        let maxPollingCounter = 10
+        while (polledInfraEnv.status?.createdTime === oldIsoCreatedTimestamp && --maxPollingCounter) {
+            await sleep(5 * 1000)
+            polledInfraEnv = await refetchInfraEnv(infraEnv)
+        }
+        // quit anyway ...
     }
-    // quit anyway ...
-}

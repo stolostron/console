@@ -2,7 +2,7 @@
 import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
 import { ActionList, ActionListItem, Bullseye } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'

@@ -20,7 +20,7 @@ import {
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import moment from 'moment'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { NoWrap } from '../../../components/NoWrap'
 import { deletePolicy } from '../../../lib/delete-policy'
@@ -299,7 +299,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                         action: t('delete'),
                         processing: t('deleting'),
                         resources: [...policies],
-                        description: t('bulk.message.delete'),
+                        description: t('bulk.message.delete.grc'),
                         columns: [
                             {
                                 header: t('policy.tableHeader.name'),

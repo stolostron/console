@@ -3,7 +3,7 @@ import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@open-
 import { PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory } from 'react-router'
 import TemplateEditor from 'temptifly'

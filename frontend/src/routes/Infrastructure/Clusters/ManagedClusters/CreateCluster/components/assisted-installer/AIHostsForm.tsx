@@ -9,7 +9,7 @@ import {
     useAgentClusterInstall,
     useAIConfigMap,
     useClusterDeployment,
-    onDiscoverHostsNext,
+    onDiscoveryHostsNext,
     useInfraEnv,
     getClusterDeploymentLink,
     getOnDeleteHost,
@@ -22,6 +22,7 @@ import {
     useAgentsOfAIFlow,
     useBMHsOfAIFlow,
     getOnSaveISOParams,
+    canEditHost,
 } from './utils'
 import { isBMPlatform } from '../../../../../InfraEnvironments/utils'
 
@@ -80,7 +81,7 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
             }
 
             try {
-                await onDiscoverHostsNext({ values: control.active || {}, agents: filteredAgents, clusterDeployment })
+                await onDiscoveryHostsNext({ values: control.active || {}, agents: filteredAgents, clusterDeployment })
             } catch (err) {
                 setErrorHandler(err)
                 return {
@@ -119,6 +120,7 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
             onDeleteHost={getOnDeleteHost(filteredBMHs)}
             canDeleteAgent={canDeleteAgent}
             onSaveAgent={onSaveAgent}
+            canEditHost={canEditHost}
             onSaveBMH={onSaveBMH}
             onSaveISOParams={getOnSaveISOParams(infraEnv)}
             onFormSaveError={setErrorHandler}

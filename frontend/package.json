@@ -32,7 +32,10 @@
         "@patternfly/react-table": "^4.37.8",
         "@redhat-cloud-services/rule-components": "^3.2.3",
         "@reduxjs/toolkit": "1.6.x",
+        "ajv": "^8.6.3",
         "axios": "^0.24.0",
+        "deep-diff": "^1.0.2",
+        "diff": "^5.0.0",
         "graphql": "^16.0.1",
         "handlebars": "^4.7.7",
         "i18next": "^21.5.2",
@@ -42,8 +45,9 @@
         "lodash": "^4.17.21",
         "moment": "^2.29.1",
         "monaco-editor": "^0.27.0",
-        "openshift-assisted-ui-lib": "1.5.45",
+        "openshift-assisted-ui-lib": "2.0.2",
         "react-masonry-css": "^1.0.16",
+        "string-similarity": "^4.0.4",
         "uuid": "8.3.2",
         "validator": "^13.7.0",
         "whatwg-fetch": "^3.6.2",
@@ -51,11 +55,11 @@
         "yup": "^0.32.11"
     },
     "devDependencies": {
-        "@openshift-console/dynamic-plugin-sdk": "0.0.3",
         "@babel/core": "^7.16.0",
         "@babel/preset-env": "^7.16.4",
         "@babel/preset-react": "^7.16.0",
         "@babel/preset-typescript": "^7.16.0",
+        "@openshift-console/dynamic-plugin-sdk": "0.0.3",
         "@openshift-console/dynamic-plugin-sdk-webpack": "0.0.4",
         "@pmmmwh/react-refresh-webpack-plugin": "^0.5.1",
         "@sentry/browser": "6.15.0",
@@ -66,6 +70,8 @@
         "@types/compression-webpack-plugin": "^9.0.0",
         "@types/copy-webpack-plugin": "^8.0.1",
         "@types/css-minimizer-webpack-plugin": "^3.0.2",
+        "@types/deep-diff": "^1.0.1",
+        "@types/diff": "^5.0.1",
         "@types/get-value": "^3.0.2",
         "@types/jest": "^27.0.2",
         "@types/js-yaml": "^4.0.4",
@@ -74,6 +80,7 @@
         "@types/node": "^16.11.7",
         "@types/react": "^17.0.35",
         "@types/react-dom": "^17.0.11",
+        "@types/string-similarity": "^4.0.0",
         "@types/react-router-dom": "^5.3.2",
         "@types/testing-library__jest-dom": "^5.14.1",
         "@types/validator": "^13.7.0",
@@ -85,6 +92,7 @@
         "browserify-fs": "^1.0.0",
         "buffer": "^6.0.3",
         "bundle-loader": "^0.5.6",
+        "comment-json": "^4.1.1",
         "compression-webpack-plugin": "^9.0.1",
         "concurrently": "^6.4.0",
         "copy-webpack-plugin": "^10.0.0",
@@ -194,7 +202,14 @@
             "no-empty": "off",
             "no-constant-condition": "off",
             "jest/no-export": "off",
-            "@typescript-eslint/no-extra-semi": "off"
+            "@typescript-eslint/no-extra-semi": "off",
+            "@typescript-eslint/no-restricted-imports": [
+                "error",
+                {
+                    "name": "react-i18next",
+                    "message": "Please use Trans and useTranslation from ./src/lib/acm-i18next and avoid other exports from react-i18next"
+                }
+            ]
         }
     },
     "browserslist": {

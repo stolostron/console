@@ -27,7 +27,6 @@ export interface KlusterletAddonConfig extends IResource {
         searchCollector: { enabled: boolean }
         certPolicyController: { enabled: boolean }
         iamPolicyController: { enabled: boolean }
-        version: string
     }
 }
 
@@ -49,7 +48,6 @@ export const createKlusterletAddonConfig = (data: {
             searchCollector: { enabled: true },
             certPolicyController: { enabled: true },
             iamPolicyController: { enabled: true },
-            version: '2.2.0',
         },
     })
 }

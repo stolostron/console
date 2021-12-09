@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { AcmInlineStatus, AcmPageHeader, StatusType } from '@open-cluster-management/ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { Message } from '../search-sdk/search-sdk'
 
 export default function HeaderWithNotification(props: { messages: Message[] }) {

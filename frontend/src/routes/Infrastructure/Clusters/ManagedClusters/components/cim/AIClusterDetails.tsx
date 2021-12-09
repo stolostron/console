@@ -1,15 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo, useContext, useEffect, useState } from 'react'
+import { useHistory } from 'react-router-dom'
 import { AcmExpandableCard } from '@open-cluster-management/ui-components'
 import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
 import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
+import { NavigationPath } from '../../../../../../NavigationPath'
 
 const {
     ClusterDeploymentProgress,
     ClusterInstallationError,
     AgentTable,
+    Alerts,
+    AlertsContextProvider,
     shouldShowClusterInstallationProgress,
     shouldShowClusterCredentials,
     shouldShowClusterInstallationError,
@@ -20,6 +24,9 @@ const {
     getAICluster,
     LogsDownloadButton,
     getOnFetchEventsHandler,
+    ClusterDeploymentValidationsOverview,
+    getClusterStatus,
+    shouldShowClusterDeploymentValidationOverview,
 } = CIM
 
 const fetchSecret: CIM.FetchSecret = (name, namespace) =>
@@ -38,10 +45,11 @@ const fetchEvents = async (url: string) => {
     return result.data as string
 }
 
-const AIClusterProgress: React.FC = () => {
+const AIClusterDetails: React.FC = () => {
     const { clusterDeployment, agentClusterInstall, agents } = useContext(ClusterContext)
     const [aiNamespace, setAiNamespace] = useState<string>('')
     const [namespaceError, setNamespaceError] = useState<boolean>()
+    const history = useHistory()
     useEffect(() => {
         const checkNs = async () => {
             try {
@@ -85,6 +93,22 @@ const AIClusterProgress: React.FC = () => {
 
     return (
         <>
+            <Alerts />
+            {clusterDeployment && shouldShowClusterDeploymentValidationOverview(agentClusterInstall) && (
+                <div style={{ marginBottom: '24px' }}>
+                    <ClusterDeploymentValidationsOverview
+                        validationsInfo={agentClusterInstall?.status?.validationsInfo!}
+                        clusterStatus={getClusterStatus(agentClusterInstall)}
+                        onContinueClusterConfiguration={() =>
+                            history.push(
+                                NavigationPath.editCluster
+                                    .replace(':namespace', clusterDeployment.metadata.namespace!)
+                                    .replace(':name', clusterDeployment.metadata.name!)
+                            )
+                        }
+                    />
+                </div>
+            )}
             {shouldShowClusterInstallationProgress(agentClusterInstall) && (
                 <div style={{ marginBottom: '24px' }}>
                     <AcmExpandableCard title="Cluster installation progress" id="aiprogress">
@@ -106,7 +130,7 @@ const AIClusterProgress: React.FC = () => {
                                             agentClusterInstall={agentClusterInstall}
                                             agents={clusterAgents}
                                             fetchSecret={fetchSecret}
-                                            consoleUrl={getConsoleUrl(clusterDeployment)}
+                                            consoleUrl={getConsoleUrl(clusterDeployment) || 'N/A'}
                                         />
                                     </StackItem>
                                 )}
@@ -157,4 +181,8 @@ const AIClusterProgress: React.FC = () => {
     )
 }
 
-export default AIClusterProgress
+export default (props: {}) => (
+    <AlertsContextProvider>
+        <AIClusterDetails {...props} />
+    </AlertsContextProvider>
+)
