@@ -3,7 +3,7 @@ import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@open-
 import { PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory } from 'react-router'
 import TemplateEditor from 'temptifly'
@@ -41,8 +41,8 @@ const Portals = Object.freeze({
 const CreateInfraEnv: React.FC = () => {
     const template = Handlebars.compile(infraEnvTemplate)
     const history = useHistory()
-    const { t } = useTranslation(['infraenv', 'common'])
-    const { t: tEditor } = useTranslation(['create'])
+    const { t } = useTranslation()
+    const { t: tEditor } = useTranslation()
     const i18n = (key: any, arg: any) => {
         return tEditor(key, arg)
     }
@@ -118,10 +118,10 @@ const CreateInfraEnv: React.FC = () => {
         <AcmPage
             header={
                 <AcmPageHeader
-                    title={t('infraenv:createInfraEnv.title')}
+                    title={t('createInfraEnv.title')}
                     breadcrumb={[
-                        { text: t('infraenv:infraenvs'), to: NavigationPath.infraEnvironments },
-                        { text: t('infraenv:createInfraEnv.title'), to: '' },
+                        { text: t('infraenvs'), to: NavigationPath.infraEnvironments },
+                        { text: t('createInfraEnv.title'), to: '' },
                     ]}
                     switches={switches}
                     actions={portals}

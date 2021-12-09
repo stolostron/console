@@ -3,7 +3,7 @@
 import { ManagedClusterSet } from '../../../../../resources'
 import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
 import { Popover } from '@patternfly/react-core'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { managedClusterAddonsState } from '../../../../../atoms'
@@ -12,7 +12,7 @@ import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetDetails/Cl
 import { useClusters } from './useClusters'
 
 export function MultiClusterNetworkStatus(props: { clusterSet: ManagedClusterSet }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet } = props
     const [managedClusterAddons] = useRecoilState(managedClusterAddonsState)
 

@@ -13,7 +13,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { Link, Route, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../../../atoms'

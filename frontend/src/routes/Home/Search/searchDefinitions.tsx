@@ -9,7 +9,6 @@ import moment from 'moment'
 import queryString from 'query-string'
 import { Link } from 'react-router-dom'
 
-// eslint-disable-next-line import/no-anonymous-default-export
 const searchDefinitions: any = {
     application: {
         columns: [
@@ -1383,7 +1382,7 @@ export function CreateDetailsLink(item: any) {
         case 'cluster':
             return <a href={`/multicloud/infrastructure/clusters/details/${item.name}/overview`}>{item.name}</a>
 
-        case 'application':
+        case 'application': {
             const { apigroup, apiversion, applicationSet, cluster, name, namespace } = item
             if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
                 // only redirect to apps page if it is an ACM application
@@ -1407,6 +1406,7 @@ export function CreateDetailsLink(item: any) {
                     {item.name}
                 </Link>
             )
+        }
         case 'policy':
             // Redirects to the policy page if the policy is a hub cluster resource.
             // If the policy is not, it will redirect and just show the yaml.

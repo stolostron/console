@@ -23,7 +23,7 @@ import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { PlusIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {

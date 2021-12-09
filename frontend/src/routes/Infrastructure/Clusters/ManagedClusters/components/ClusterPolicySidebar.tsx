@@ -22,7 +22,7 @@ import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
 import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
 import { PolicyReport, PolicyReportResults } from '../../../../../resources'
@@ -137,7 +137,7 @@ function DetailsView(props: {
     const contentMap = configmaps.find((cm) => cm.metadata.name === 'insight-content-data')
     let policyContentData = contentMap?.data && contentMap?.data[selectedReport?.policy ?? '']
     policyContentData = policyContentData && JSON.parse(policyContentData)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [tabState, setTabState] = useState<React.ReactText>(0)
     const classes = useStyles()
 
@@ -299,7 +299,7 @@ function DetailsView(props: {
 
 export function ClusterPolicySidebar(props: { data: PolicyReport }) {
     const classes = useStyles()
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [detailsView, setDetailsView] = useState<boolean>(false)
     const [selectedReport, setSelectedReport] = useState<PolicyReportResults>()
     const policyReportViolations = props.data?.results?.filter((violation) => violation.source === 'insights')

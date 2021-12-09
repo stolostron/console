@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert, Label } from '@patternfly/react-core'
 import { BellIcon } from '@patternfly/react-icons'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../lib/acm-i18next'
 
 export function TechPreviewAlert(props: { i18nKey: string; docHref: string }) {
     return (
@@ -33,6 +33,6 @@ export function TechPreviewAlert(props: { i18nKey: string; docHref: string }) {
 }
 
 export function DevPreviewLabel() {
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation()
     return <Label color="orange">{t('cluster.create.developer.preview')}</Label>
 }

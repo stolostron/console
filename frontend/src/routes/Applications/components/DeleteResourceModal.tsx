@@ -14,14 +14,14 @@ export interface IDeleteResourceModalProps {
     canRemove: boolean
     resource: IResource
     errors: ReactNode
-    warnings: ReactNode
+    warnings?: ReactNode
     loading: boolean
-    selected: any[]
-    shared: any[]
-    appSetPlacement: string
-    appSetsSharingPlacement: string[]
+    selected?: any[]
+    shared?: any[]
+    appSetPlacement?: string
+    appSetsSharingPlacement?: string[]
     appKind: string
-    appSetApps: string[]
+    appSetApps?: string[]
     close: () => void
     t: TFunction
 }
@@ -51,19 +51,23 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
         if (props.resource.kind === ApplicationKind) {
             return deleteApplication(props.resource, removeAppResources ? props.selected : [])
         }
-        return deleteApplication(
-            props.resource,
-            props.appSetsSharingPlacement.length === 0 && removeAppSetResource
-                ? [
-                      {
-                          apiVersion: 'cluster.open-cluster-management.io/v1alpha1', // replace when placement type is available
-                          kind: 'Placement',
-                          name: props.appSetPlacement,
-                          namespace: props.resource.metadata?.namespace,
-                      },
-                  ]
-                : []
-        )
+
+        if (props.resource.kind === ApplicationSetKind) {
+            return deleteApplication(
+                props.resource,
+                props.appSetsSharingPlacement?.length === 0 && removeAppSetResource
+                    ? [
+                          {
+                              apiVersion: 'cluster.open-cluster-management.io/v1alpha1', // replace when placement type is available
+                              kind: 'Placement',
+                              name: props.appSetPlacement,
+                              namespace: props.resource.metadata?.namespace,
+                          },
+                      ]
+                    : []
+            )
+        }
+        return deleteApplication(props.resource)
     }
 
     const renderConfirmCheckbox = () => {
@@ -100,6 +104,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
 
     const renderSharedResources = () => {
         return (
+            props.shared &&
             props.shared.length > 0 && (
                 <div className="shared-resource-content">
                     <div>
@@ -138,7 +143,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
     }
 
     const renderAppSetSharedResources = () => {
-        return props.appSetsSharingPlacement.length > 0 ? (
+        return props.appSetsSharingPlacement && props.appSetPlacement && props.appSetsSharingPlacement.length > 0 ? (
             <div className="shared-resource-content">
                 <div>
                     <ExclamationTriangleIcon />
@@ -176,7 +181,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
 
     const modalBody = () => {
         if (props.appKind === ApplicationKind) {
-            return props.selected.length > 0 ? (
+            return props.selected && props.selected.length > 0 ? (
                 <div className="remove-app-modal-content">
                     {renderConfirmCheckbox()}
                     <div>
@@ -217,6 +222,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
             )
         } else if (props.appKind === ApplicationSetKind) {
             return (
+                props.appSetApps &&
                 props.appSetApps.length > 0 && (
                     <div className="remove-app-modal-content">
                         <div className="remove-app-modal-content-text">
@@ -248,11 +254,9 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
             return props.t('Are you sure that you want to continue?')
         }
     }
-
-    const modalTitle =
-        props.appKind === ApplicationKind
-            ? props.t('Permanently delete {0} application?').replace('{0}', props.resource.metadata?.name!)
-            : props.t('Permanently delete {0} applicationset?').replace('{0}', props.resource.metadata?.name!)
+    const modalTitle = props
+        .t(`Permanently delete {0} ${props.appKind.toLowerCase()}?`)
+        .replace('{0}', props.resource.metadata?.name!)
     return (
         <AcmModal
             id="remove-resource-modal"

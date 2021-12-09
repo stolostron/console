@@ -12,7 +12,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, ModalVariant } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 
 export type ScaleClusterPoolModalProps = {
     clusterPool?: ClusterPool
@@ -20,7 +20,7 @@ export type ScaleClusterPoolModalProps = {
 }
 
 export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [size, setSize] = useState<number>(0)
 
     useEffect(() => {
@@ -49,7 +49,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                         <>
                             <div>
                                 <Trans
-                                    i18nKey="cluster:clusterPool.modal.scale.message"
+                                    i18nKey="clusterPool.modal.scale.message"
                                     values={{ clusterPoolName: props.clusterPool?.metadata.name }}
                                     components={{ bold: <strong /> }}
                                 />
@@ -73,8 +73,8 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                 <AcmSubmit
                                     id="claim"
                                     variant="primary"
-                                    label={t('common:scale')}
-                                    processingLabel={t('common:scaling')}
+                                    label={t('scale')}
+                                    processingLabel={t('scaling')}
                                     onClick={() => {
                                         alertContext.clearAlerts()
                                         return patchResource(props.clusterPool!, [
@@ -89,7 +89,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                                 if (e instanceof Error) {
                                                     alertContext.addAlert({
                                                         type: 'danger',
-                                                        title: t('common:request.failed'),
+                                                        title: t('request.failed'),
                                                         message: e.message,
                                                     })
                                                 }
@@ -97,7 +97,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                     }}
                                 />
                                 <AcmButton key="cancel" variant="link" onClick={reset}>
-                                    {t('common:cancel')}
+                                    {t('cancel')}
                                 </AcmButton>
                             </ActionGroup>
                         </>

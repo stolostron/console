@@ -3,7 +3,7 @@
 import { AcmInlineProvider, Provider } from '@open-cluster-management/ui-components'
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'
@@ -130,7 +130,7 @@ export function getClusterActions(cluster: Cluster) {
 }
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
@@ -229,8 +229,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     setModalProps({
                         open: true,
                         title: t('bulk.title.import'),
-                        action: t('common:import'),
-                        processing: t('common:importing'),
+                        action: t('import'),
+                        processing: t('importing'),
                         resources: [cluster],
                         close: () => {
                             setModalProps({ open: false })

@@ -15,7 +15,7 @@ import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { clusterProvisionsState, configMapsState } from '../../../../../atoms'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -33,7 +33,7 @@ const useStyles = makeStyles({
 
 export function HiveNotification() {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const classes = useStyles()
 
     const [clusterProvisions] = useRecoilState(clusterProvisionsState)

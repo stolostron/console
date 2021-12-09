@@ -7,7 +7,7 @@ import {
     ResourceErrorCode,
 } from '../../../../../resources'
 import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'
@@ -17,7 +17,7 @@ import { ClusterStatuses } from './ClusterStatuses'
 import { ManagedClusterSetBindingModal } from './ManagedClusterSetBindingModal'
 
 export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClusterSet; isKebab?: boolean }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
         open: false,

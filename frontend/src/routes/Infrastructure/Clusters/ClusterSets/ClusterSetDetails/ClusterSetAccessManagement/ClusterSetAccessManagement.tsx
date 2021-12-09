@@ -42,14 +42,14 @@ import {
 } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useCallback, useContext, useMemo, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
 import { useQuery } from '../../../../../../lib/useQuery'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetAccessManagement() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterRoleBinding> | { open: false }>({
         open: false,
@@ -230,9 +230,7 @@ export function ClusterSetAccessManagement() {
                         <AcmEmptyState
                             key="accessEmptyState"
                             title={t('access.emptyTitle')}
-                            message={
-                                <Trans i18nKey={'cluster:access.emptyMessage'} components={{ bold: <strong /> }} />
-                            }
+                            message={<Trans i18nKey={'access.emptyMessage'} components={{ bold: <strong /> }} />}
                             action={
                                 <AcmButton variant="primary" onClick={() => setAddModalOpen(true)}>
                                     {t('access.emptyStateButton')}
@@ -266,7 +264,7 @@ function AddUsersModal(props: {
     groups?: Group[]
 }) {
     const classes = useStyles()
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const { clusterSet } = useContext(ClusterSetContext)
     const [type, setType] = useState<'User' | 'Group'>('User')
     const [userGroup, setUserGroup] = useState<string | undefined>()
@@ -384,8 +382,8 @@ function AddUsersModal(props: {
                                 <AcmSubmit
                                     id="add-access"
                                     variant="primary"
-                                    label={t('common:add')}
-                                    processingLabel={t('common:adding')}
+                                    label={t('add')}
+                                    processingLabel={t('adding')}
                                     onClick={() => {
                                         alertContext.clearAlerts()
                                         const resource: ClusterRoleBinding = {
@@ -420,7 +418,7 @@ function AddUsersModal(props: {
                                     }}
                                 />
                                 <AcmButton key="cancel" variant="link" onClick={reset}>
-                                    {t('common:cancel')}
+                                    {t('cancel')}
                                 </AcmButton>
                             </ActionGroup>
                         </>
@@ -432,7 +430,7 @@ function AddUsersModal(props: {
 }
 
 function GroupUsersPopover(props: { group?: Group; useIcon?: boolean }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     if (!props.group) {
         return null

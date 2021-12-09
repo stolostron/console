@@ -270,7 +270,7 @@ describe('BatchChannelSelectModal', () => {
                 }}
             />
         )
-        userEvent.click(getByText('common:cancel'))
+        userEvent.click(getByText('cancel'))
         expect(isClosed).toBe(true)
     })
     it('should show alert when failed; keep failed rows in table with error messages', async () => {
@@ -286,9 +286,9 @@ describe('BatchChannelSelectModal', () => {
         await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeTruthy())
         await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
         await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeFalsy())
-        await waitFor(() => expect(queryByText('common:there.were.errors')).toBeTruthy())
+        await waitFor(() => expect(queryByText('there.were.errors')).toBeTruthy())
         expect(queryByText('cluster-2-ready2')).toBeTruthy()
-        expect(queryByText('common:error')).toBeTruthy()
+        expect(queryByText('error')).toBeTruthy()
         expect(queryByText('cluster-1-ready1')).toBeFalsy()
     })
 })

@@ -12,7 +12,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, ModalVariant } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
 
 export type ScaleMachinePoolModalProps = {
     machinePool?: MachinePool
@@ -21,7 +21,7 @@ export type ScaleMachinePoolModalProps = {
 }
 
 export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [minReplicas, setMinReplicas] = useState<number>(0)
     const [maxReplicas, setMaxReplicas] = useState<number>(0)
     const [replicas, setReplicas] = useState<number>(0)
@@ -121,8 +121,8 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                 <AcmSubmit
                                     id="submit"
                                     variant="primary"
-                                    label={t('common:scale')}
-                                    processingLabel={t('common:scaling')}
+                                    label={t('scale')}
+                                    processingLabel={t('scaling')}
                                     onClick={() => {
                                         alertContext.clearAlerts()
                                         const patches = []
@@ -155,7 +155,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                                 if (e instanceof Error) {
                                                     alertContext.addAlert({
                                                         type: 'danger',
-                                                        title: t('common:request.failed'),
+                                                        title: t('request.failed'),
                                                         message: e.message,
                                                     })
                                                 }
@@ -163,7 +163,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                                     }}
                                 />
                                 <AcmButton key="cancel" variant="link" onClick={reset}>
-                                    {t('common:cancel')}
+                                    {t('cancel')}
                                 </AcmButton>
                             </ActionGroup>
                         </>

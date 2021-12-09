@@ -2,7 +2,7 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { Trans } from 'react-i18next'
+import { Trans } from '../../../../../../lib/acm-i18next'
 
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -21,7 +21,6 @@ import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo } from './Logos'
 import ServerIcon from '@patternfly/react-icons/dist/js/icons/server-icon'
 import { controlDataCIM, controlDataAI } from './ControlDataAI'
-import Deprecated from '../../components/Deprecated'
 
 const { TechnologyPreview, PreviewBadgePosition } = CIM
 

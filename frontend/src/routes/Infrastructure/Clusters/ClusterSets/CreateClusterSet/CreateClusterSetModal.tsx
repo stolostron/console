@@ -17,7 +17,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, ModalVariant } from '@patternfly/react-core'
 import { useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../NavigationPath'
 
@@ -33,7 +33,7 @@ function getEmptySet() {
 }
 
 export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => void }) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [created, setCreated] = useState<boolean>()
@@ -59,10 +59,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                         {(alertContext) => (
                             <>
                                 <div>
-                                    <Trans
-                                        i18nKey="cluster:createClusterSet.description"
-                                        components={{ bold: <strong /> }}
-                                    />
+                                    <Trans i18nKey="createClusterSet.description" components={{ bold: <strong /> }} />
                                 </div>
                                 <AcmTextInput
                                     id="clusterSetName"
@@ -82,8 +79,8 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                                     <AcmSubmit
                                         id="submit"
                                         variant="primary"
-                                        label={t('common:create')}
-                                        processingLabel={t('common:creating')}
+                                        label={t('create')}
+                                        processingLabel={t('creating')}
                                         onClick={() => {
                                             alertContext.clearAlerts()
                                             return createResource<ManagedClusterSet>(managedClusterSet)
@@ -98,7 +95,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                                         }}
                                     />
                                     <AcmButton variant="link" onClick={reset}>
-                                        {t('common:cancel')}
+                                        {t('cancel')}
                                     </AcmButton>
                                 </ActionGroup>
                             </>
@@ -109,7 +106,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                 <>
                     <div style={{ marginBottom: '24px' }}>
                         <Trans
-                            i18nKey="cluster:createClusterSet.success.description"
+                            i18nKey="createClusterSet.success.description"
                             values={{ clusterSetName: managedClusterSet.metadata.name }}
                             components={{ bold: <strong /> }}
                         />
@@ -126,7 +123,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
                             {t('set.manage-resources')}
                         </AcmButton>
                         <AcmButton variant="link" onClick={reset}>
-                            {t('common:close')}
+                            {t('close')}
                         </AcmButton>
                     </ActionGroup>
                 </>

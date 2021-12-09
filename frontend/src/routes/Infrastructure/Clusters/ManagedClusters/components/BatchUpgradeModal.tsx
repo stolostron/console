@@ -14,7 +14,7 @@ import {
 import { AcmSelect } from '@open-cluster-management/ui-components'
 import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { BulkActionModel } from '../../../../../components/BulkActionModel'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
 import './style.css'
@@ -66,7 +66,7 @@ export function BatchUpgradeModal(props: {
     open: boolean
     clusters: Cluster[] | undefined
 }): JSX.Element {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [selectVersions, setSelectVersions] = useState<Record<string, string>>({})
     const [upgradeableClusters, setUpgradeableClusters] = useState<Array<Cluster>>([])
 

@@ -5,7 +5,7 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { set, get, isEqual, startCase, camelCase, debounce } from 'lodash'
 import { getValue } from 'temptifly'
 import { AcmLabelsInput, AcmSelect } from '@open-cluster-management/ui-components'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import { SelectOption, Text } from '@patternfly/react-core'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -53,7 +53,7 @@ const fields: any = {
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
     const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
     const formRef = useRef<FormikProps<any>>(null)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
@@ -162,7 +162,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
             <AcmLabelsInput
                 id="additionalLabels"
                 label={t('import.form.labels.label')}
-                buttonLabel={t('common:label.add')}
+                buttonLabel={t('label.add')}
                 value={additionalLabels}
                 onChange={(label) => setAdditionaLabels(label)}
                 placeholder={t('labels.edit.placeholder')}

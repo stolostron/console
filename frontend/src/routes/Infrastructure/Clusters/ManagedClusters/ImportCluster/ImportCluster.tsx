@@ -32,7 +32,7 @@ import { ActionGroup, Button, Label, PageSection, SelectOption, Text } from '@pa
 import { CheckCircleIcon } from '@patternfly/react-icons'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { Fragment, useContext, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -40,14 +40,14 @@ import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 
 export default function ImportClusterPage() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     return (
         <AcmPage
             header={
                 <AcmPageHeader
                     title={t('page.header.import-cluster')}
                     breadcrumb={[
-                        { text: t('clusters'), to: NavigationPath.clusters },
+                        { text: t('Clusters'), to: NavigationPath.clusters },
                         { text: t('page.header.import-cluster'), to: '' },
                     ]}
                     titleTooltip={
@@ -59,7 +59,7 @@ export default function ImportClusterPage() {
                                 rel="noreferrer"
                                 style={{ display: 'block', marginTop: '4px' }}
                             >
-                                {t('common:learn.more')}
+                                {t('learn.more')}
                             </a>
                         </>
                     }
@@ -82,7 +82,7 @@ enum ImportMode {
 }
 
 export function ImportClusterPageContent() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const { canJoinClusterSets } = useCanJoinClusterSets()
@@ -147,7 +147,7 @@ export function ImportClusterPageContent() {
                 <AcmLabelsInput
                     id="additionalLabels"
                     label={t('import.form.labels.label')}
-                    buttonLabel={t('common:label.add')}
+                    buttonLabel={t('label.add')}
                     value={additionalLabels}
                     onChange={(label) => setAdditionaLabels(label)}
                     placeholder={t('labels.edit.placeholder')}
@@ -337,7 +337,7 @@ export function ImportClusterPageContent() {
                         </Label>
                     ) : (
                         <Link to={NavigationPath.clusters} id="cancel">
-                            <Button variant="link">{t('common:cancel')}</Button>
+                            <Button variant="link">{t('cancel')}</Button>
                         </Link>
                     )}
                 </ActionGroup>
