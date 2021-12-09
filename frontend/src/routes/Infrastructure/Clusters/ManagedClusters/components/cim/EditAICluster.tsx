@@ -31,15 +31,16 @@ import {
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { isBMPlatform } from '../../../../InfraEnvironments/utils'
-import {
+import { CIM } from 'openshift-assisted-ui-lib'
+import { AgentK8sResource } from 'openshift-assisted-ui-lib/cim'
+const {
     ClusterDeploymentWizard,
     FeatureGateContextProvider,
     ACM_ENABLED_FEATURES,
     LoadingState,
     getAgentsHostsNames,
-    AgentK8sResource,
     isAgentOfInfraEnv,
-} from 'openshift-assisted-ui-lib/cim'
+} = CIM
 
 type EditAIClusterProps = RouteComponentProps<{ namespace: string; name: string }>
 

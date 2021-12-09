@@ -3,11 +3,6 @@ import { useMemo, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { AcmExpandableCard } from '@open-cluster-management/ui-components'
 import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
-import {
-    ClusterDeploymentValidationsOverview,
-    getClusterStatus,
-    shouldShowClusterDeploymentValidationOverview,
-} from 'openshift-assisted-ui-lib/cim'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
 import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
@@ -27,6 +22,9 @@ const {
     getAICluster,
     LogsDownloadButton,
     getOnFetchEventsHandler,
+    ClusterDeploymentValidationsOverview,
+    getClusterStatus,
+    shouldShowClusterDeploymentValidationOverview,
 } = CIM
 
 const fetchSecret: CIM.FetchSecret = (name, namespace) =>
