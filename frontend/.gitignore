@@ -21,6 +21,8 @@ test-report.xml
 .env.development.local
 .env.test.local
 .env.production.local
+/.yalc
+yalc.lock
 
 npm-debug.log*
 

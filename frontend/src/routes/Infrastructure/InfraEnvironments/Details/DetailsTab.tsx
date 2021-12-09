@@ -4,6 +4,7 @@ import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue } from 'recoil'
 import { configMapsState } from '../../../../atoms'
+import { DOC_VERSION } from '../../../../lib/doc-util'
 import { getAIConfigMap } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 
 const { EnvironmentDetails, EnvironmentErrors } = CIM
@@ -16,7 +17,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv }) => {
     return (
         <AcmPageContent id="overview">
             <PageSection>
-                <EnvironmentErrors infraEnv={infraEnv} />
+                <EnvironmentErrors infraEnv={infraEnv} docVersion={DOC_VERSION} />
                 <Card>
                     <CardBody>
                         <EnvironmentDetails infraEnv={infraEnv} aiConfigMap={aiConfigMap} />

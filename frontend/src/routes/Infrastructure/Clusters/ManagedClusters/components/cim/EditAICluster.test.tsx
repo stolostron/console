@@ -14,11 +14,52 @@ import {
     clusterDeploymentsState,
     clusterImageSetsState,
     configMapsState,
+    infraEnvironmentsState,
 } from '../../../../../../atoms'
 import { clickByText, waitForTestId, waitForText } from '../../../../../../lib/test-util'
 
 const clusterName = 'my-cluster-name'
 const baseDomain = 'base.domain.com'
+
+export const mockInfraEnv1: CIM.InfraEnvK8sResource = {
+    apiVersion: 'agent-install.openshift.io/v1beta1',
+    kind: 'InfraEnv',
+    metadata: {
+        labels: {
+            'agentclusterinstalls.extensions.hive.openshift.io/location': 'brno',
+            networkType: 'dhcp',
+        },
+        name: clusterName,
+        namespace: clusterName,
+    },
+    spec: {
+        agentLabels: {
+            'agentclusterinstalls.extensions.hive.openshift.io/location': 'brno',
+        },
+        pullSecretRef: {
+            name: `pullsecret-${clusterName}`,
+        },
+    },
+    status: {
+        agentLabelSelector: {
+            matchLabels: {
+                'infraenvs.agent-install.openshift.io': clusterName,
+            },
+        },
+        conditions: [
+            {
+                lastTransitionTime: '2021-10-04T11:26:37Z',
+                message: 'Image has been created',
+                reason: 'ImageCreated',
+                status: 'True',
+                type: 'ImageCreated',
+            },
+        ],
+        debugInfo: {},
+        createdTime: '2021-11-10T13:00:00Z',
+        isoDownloadURL: 'https://my.funny.download.url',
+    },
+}
 
 const mockClusterImageSet: ClusterImageSet = {
     apiVersion: ClusterImageSetApiVersion,
@@ -140,6 +181,7 @@ const Component = () => {
                 snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAI])
                 snapshot.set(agentClusterInstallsState, [mockAgentClusterInstall])
                 snapshot.set(agentsState, mockAgents)
+                snapshot.set(infraEnvironmentsState, [mockInfraEnv1])
                 snapshot.set(configMapsState, [mockConfigMapAI])
             }}
         >
