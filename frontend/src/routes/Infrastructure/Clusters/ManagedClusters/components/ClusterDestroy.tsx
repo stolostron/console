@@ -22,7 +22,7 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster })
             loadingTitle={t(`${props.cluster?.status}.inprogress`, { clusterName: props.cluster?.displayName })}
             loadingMessage={
                 <Trans
-                    i18nKey={`cluster:${props.cluster?.status}.inprogress.message`}
+                    i18nKey={`${props.cluster?.status}.inprogress.message`}
                     values={{ clusterName: props.cluster?.displayName }}
                     components={{ bold: <strong /> }}
                 />
@@ -30,7 +30,7 @@ export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster })
             successTitle={t(`${props.cluster?.status}.success`, { clusterName: props.cluster?.displayName })}
             successMessage={
                 <Trans
-                    i18nKey={`cluster:${props.cluster?.status}.success.message`}
+                    i18nKey={`${props.cluster?.status}.success.message`}
                     values={{ clusterName: props.cluster?.displayName }}
                     components={{ bold: <strong /> }}
                 />
