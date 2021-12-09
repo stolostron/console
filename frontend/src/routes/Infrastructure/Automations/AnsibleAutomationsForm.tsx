@@ -25,7 +25,7 @@ import {
     listAnsibleTowerJobs,
 } from '../../../resources'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { secretsState, settingsState } from '../../../atoms'
@@ -104,7 +104,7 @@ export function AnsibleAutomationsForm(props: {
     isEditing: boolean
     isViewing: boolean
 }) {
-    const { t } = useTranslation(['cluster', 'common', 'credentials', 'create'])
+    const { t } = useTranslation()
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
     const [settings] = useRecoilState(settingsState)
@@ -158,7 +158,7 @@ export function AnsibleAutomationsForm(props: {
                     }
                 })
                 .catch(() => {
-                    setAnsibleTowerAuthError('credentials:validate.ansible.host')
+                    setAnsibleTowerAuthError('validate.ansible.host')
                     setAnsibleTowerJobTemplateList([])
                 })
         }
@@ -234,17 +234,17 @@ export function AnsibleAutomationsForm(props: {
     }
 
     const formData: FormData = {
-        title: isEditing ? t('create:template.edit.title') : t('create:template.create.title'),
-        titleTooltip: isEditing ? t('create:template.edit.tooltip') : t('create:template.create.tooltip'),
+        title: isEditing ? t('template.edit.title') : t('template.create.title'),
+        titleTooltip: isEditing ? t('template.edit.tooltip') : t('template.create.tooltip'),
         breadcrumb: [
             { text: t('template.title'), to: NavigationPath.ansibleAutomations },
-            { text: isEditing ? t('create:template.edit.title') : t('create:template.create.title') },
+            { text: isEditing ? t('template.edit.title') : t('template.create.title') },
         ],
         reviewDescription: t('template.create.review.description'),
         reviewTitle: t('template.create.review.title'),
-        cancelLabel: t('common:cancel'),
-        nextLabel: t('common:next'),
-        backLabel: t('common:back'),
+        cancelLabel: t('cancel'),
+        nextLabel: t('next'),
+        backLabel: t('back'),
         sections: [
             {
                 type: 'Section',
@@ -266,8 +266,8 @@ export function AnsibleAutomationsForm(props: {
                     {
                         id: 'ansibleSecrets',
                         type: 'Select',
-                        label: t('credentials:credentialsForm.ansibleCredentials.label'),
-                        placeholder: t('credentials:credentialsForm.ansibleCredentials.placeholder'),
+                        label: t('credentialsForm.ansibleCredentials.label'),
+                        placeholder: t('credentialsForm.ansibleCredentials.placeholder'),
                         value: ansibleSelection,
                         onChange: setAnsibleSelection,
                         isRequired: true,
@@ -277,7 +277,7 @@ export function AnsibleAutomationsForm(props: {
                         })),
                         isDisabled: isEditing,
                         prompt: {
-                            text: t('create:creation.ocp.cloud.add.connection'),
+                            text: t('creation.ocp.cloud.add.connection'),
                             linkType: LinkType.internalNewTab,
                             callback: () => history.push(NavigationPath.addCredentials),
                         },
@@ -497,8 +497,8 @@ export function AnsibleAutomationsForm(props: {
                 })
             }
         },
-        submitText: isEditing ? t('common:save') : t('common:add'),
-        submittingText: isEditing ? t('common:saving') : t('common:adding'),
+        submitText: isEditing ? t('save') : t('add'),
+        submittingText: isEditing ? t('saving') : t('adding'),
         cancel: () => history.push(NavigationPath.ansibleAutomations),
         stateToData,
     }
@@ -526,17 +526,13 @@ function EditAnsibleJobModal(props: {
     ansibleJobList?: ClusterCuratorAnsibleJob[]
     setAnsibleJob: (ansibleJob?: ClusterCuratorAnsibleJob, old?: ClusterCuratorAnsibleJob) => void
 }) {
-    const { t } = useTranslation(['common', 'cluster'])
+    const { t } = useTranslation()
     const [ansibleJob, setAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
     useEffect(() => setAnsibleJob(props.ansibleJob), [props.ansibleJob])
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={
-                props.ansibleJob?.name !== ''
-                    ? t('cluster:template.modal.title.edit')
-                    : t('cluster:template.modal.title.add')
-            }
+            title={props.ansibleJob?.name !== '' ? t('template.modal.title.edit') : t('template.modal.title.add')}
             isOpen={props.ansibleJob !== undefined}
             onClose={() => props.setAnsibleJob()}
         >
@@ -544,10 +540,10 @@ function EditAnsibleJobModal(props: {
                 <AcmSelect
                     maxHeight="18em"
                     menuAppendTo="parent"
-                    label={t('cluster:template.modal.name.label')}
+                    label={t('template.modal.name.label')}
                     id="job-name"
                     value={ansibleJob?.name}
-                    helperText={t('cluster:template.modal.name.helper.text')}
+                    helperText={t('template.modal.name.helper.text')}
                     onChange={(name) => {
                         if (ansibleJob) {
                             const copy = { ...ansibleJob }
@@ -556,12 +552,12 @@ function EditAnsibleJobModal(props: {
                         }
                     }}
                     variant={SelectVariant.typeahead}
-                    placeholder={t('cluster:template.modal.name.placeholder')}
+                    placeholder={t('template.modal.name.placeholder')}
                     validation={(name) => {
                         const selectedJobs = _.map(props.ansibleJobList, 'name')
                         if (name && selectedJobs.includes(name)) {
                             // no duplicate job names can be added
-                            return t('cluster:template.job.duplicate.error')
+                            return t('template.job.duplicate.error')
                         }
                     }}
                     isRequired
@@ -577,7 +573,7 @@ function EditAnsibleJobModal(props: {
 
                 <AcmLabelsInput
                     id="job-settings"
-                    label={t('cluster:template.modal.settings.label')}
+                    label={t('template.modal.settings.label')}
                     value={ansibleJob?.extra_vars}
                     onChange={(labels) => {
                         if (ansibleJob) {
@@ -587,7 +583,7 @@ function EditAnsibleJobModal(props: {
                         }
                     }}
                     buttonLabel=""
-                    placeholder={t('cluster:template.modal.settings.placeholder')}
+                    placeholder={t('template.modal.settings.placeholder')}
                 />
                 <ActionGroup>
                     <AcmSubmit
@@ -597,11 +593,11 @@ function EditAnsibleJobModal(props: {
                             props.setAnsibleJob()
                         }}
                     >
-                        {t('common:save')}
+                        {t('Save')}
                     </AcmSubmit>
 
                     <Button variant="link" onClick={() => props.setAnsibleJob()} key="cancel">
-                        {t('common:cancel')}
+                        {t('Cancel')}
                     </Button>
                 </ActionGroup>
             </AcmForm>

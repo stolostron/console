@@ -3,7 +3,7 @@
 import { Cluster, ClusterStatus } from '../../../../../resources'
 import { AcmButton, AcmPageProcess } from '@open-cluster-management/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { configMapsState } from '../../../../../atoms'
@@ -12,7 +12,7 @@ import { AddCluster } from './AddCluster'
 import { launchLogs } from './HiveNotification'
 
 export function ClusterDestroy(props: { isLoading: boolean; cluster?: Cluster }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const history = useHistory()
     const [configMaps] = useRecoilState(configMapsState)
 

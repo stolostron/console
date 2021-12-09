@@ -23,7 +23,7 @@ import { ButtonVariant, Hint, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, clusterCuratorsState, configMapsState, secretsState } from '../../../atoms'
@@ -40,7 +40,7 @@ export default function AnsibleAutomationsPage() {
 
     const alertContext = useContext(AcmAlertContext)
     useEffect(() => alertContext.clearAlerts, [])
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const useStyles = makeStyles({
         hint: {
@@ -65,12 +65,12 @@ export default function AnsibleAutomationsPage() {
     const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
 
     return (
-        <AcmPage hasDrawer header={<AcmPageHeader title={t('cluster:template.title')} />}>
+        <AcmPage hasDrawer header={<AcmPageHeader title={t('template.title')} />}>
             <AcmPageContent id="clusters">
                 <PageSection>
                     <Hint className={classes.hint}>
                         <div>
-                            {t('cluster:template.hint')}{' '}
+                            {t('template.hint')}{' '}
                             <AcmButton
                                 onClick={() =>
                                     window.open(
@@ -84,7 +84,7 @@ export default function AnsibleAutomationsPage() {
                                 isInline
                                 isSmall
                             >
-                                {t('cluster:template.operator.link')}
+                                {t('template.operator.link')}
                                 <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
                             </AcmButton>
                         </div>
@@ -116,7 +116,7 @@ function AnsibleJobTemplateTable() {
     >({
         open: false,
     })
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const history = useHistory()
 
@@ -157,7 +157,7 @@ function AnsibleJobTemplateTable() {
                                         isSmall
                                         tooltip={
                                             <Trans
-                                                i18nKey="cluster:template.modal.noCredentials"
+                                                i18nKey="template.modal.noCredentials"
                                                 components={{ bold: <strong /> }}
                                             />
                                         }
@@ -221,13 +221,13 @@ function AnsibleJobTemplateTable() {
                                         setBulkModalProps({
                                             open: true,
                                             title: t('template.modal.delete.title'),
-                                            action: t('common:delete'),
-                                            processing: t('common:deleting'),
+                                            action: t('delete'),
+                                            processing: t('deleting'),
                                             resources: [curator],
                                             description: curator.spec?.install?.towerAuthSecret ? (
                                                 <div>
                                                     <Trans
-                                                        i18nKey="cluster:template.modal.delete.message.linked"
+                                                        i18nKey="template.modal.delete.message.linked"
                                                         values={{
                                                             curatorTemplate: curator.metadata.name as string,
                                                             ansibleCredential: curator.spec.install
@@ -294,8 +294,8 @@ function AnsibleJobTemplateTable() {
                             setBulkModalProps({
                                 open: true,
                                 title: t('bulk.delete.templates'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                action: t('delete'),
+                                processing: t('deleting'),
                                 resources: [...curators],
                                 description: t('bulk.delete.templates.message'),
                                 columns: [
@@ -332,7 +332,7 @@ function AnsibleJobTemplateTable() {
                                     history.push(NavigationPath.addAnsibleAutomation)
                                 }}
                                 // disabled={}
-                                // tooltip={t('common:rbac.unauthorized')}
+                                // tooltip={t('rbac.unauthorized')}
                                 hidden
                             >
                                 {t('template.create')}

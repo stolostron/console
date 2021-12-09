@@ -8,7 +8,7 @@ import {
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
 import { Fragment, ReactNode, Suspense, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../lib/acm-i18next'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, placementBindingsState, policiesState } from '../../atoms'
@@ -22,7 +22,7 @@ import { useGovernanceData } from './useGovernanceData'
 export default function GovernancePage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const location = useLocation()
-    const { t } = useTranslation(['governance'])
+    const { t } = useTranslation()
 
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Governance), [setRoute])

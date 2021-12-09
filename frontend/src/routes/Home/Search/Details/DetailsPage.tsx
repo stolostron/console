@@ -13,7 +13,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { Link, Route, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../../../atoms'
@@ -102,12 +102,12 @@ export default function DetailsPage() {
                             variant={'link'}
                             onClick={() => {
                                 const prevLocState = window.history?.state?.state
-                                if (prevLocState && prevLocState.from === '/multicloud/search') {
+                                if (prevLocState && prevLocState.from === '/multicloud/home/search') {
                                     // If we came to resources page from search - return to search with previous search filters
                                     history.goBack()
                                 } else {
                                     // If we were redirected to search from elsewhere (ex: application page) - go to blank search page
-                                    window.location.href = '/multicloud/search'
+                                    window.location.href = '/multicloud/home/search'
                                 }
                             }}
                         >
@@ -118,16 +118,27 @@ export default function DetailsPage() {
                         title={name}
                         navigation={
                             <AcmSecondaryNav>
-                                <AcmSecondaryNavItem isActive={location.pathname === '/multicloud/resources'}>
-                                    <Link replace to={`/multicloud/resources?${encodeURIComponent(resourceUrlParams)}`}>
+                                <AcmSecondaryNavItem
+                                    isActive={location.pathname === '/multicloud/home/search/resources'}
+                                >
+                                    <Link
+                                        replace
+                                        to={`/multicloud/home/search/resources?${encodeURIComponent(
+                                            resourceUrlParams
+                                        )}`}
+                                    >
                                         YAML
                                     </Link>
                                 </AcmSecondaryNavItem>
                                 {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
-                                    <AcmSecondaryNavItem isActive={location.pathname === '/multicloud/resources/logs'}>
+                                    <AcmSecondaryNavItem
+                                        isActive={location.pathname === '/multicloud/home/search/resources/logs'}
+                                    >
                                         <Link
                                             replace
-                                            to={`/multicloud/resources/logs?${encodeURIComponent(resourceUrlParams)}`}
+                                            to={`/multicloud/home/search/resources/logs?${encodeURIComponent(
+                                                resourceUrlParams
+                                            )}`}
                                         >
                                             Logs
                                         </Link>
@@ -140,7 +151,7 @@ export default function DetailsPage() {
             }
         >
             <Switch>
-                <Route exact path={'/multicloud/resources'}>
+                <Route exact path={'/multicloud/home/search/resources'}>
                     <YAMLPage
                         resource={resource}
                         loading={!resource && resourceError !== ''}
@@ -153,7 +164,7 @@ export default function DetailsPage() {
                     />
                 </Route>
                 {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
-                    <Route path={'/multicloud/resources/logs'}>
+                    <Route path={'/multicloud/home/search/resources/logs'}>
                         <LogsPage
                             resourceError={resourceError}
                             containers={_.get(resource, 'spec.containers', []).map((container: any) => container.name)}

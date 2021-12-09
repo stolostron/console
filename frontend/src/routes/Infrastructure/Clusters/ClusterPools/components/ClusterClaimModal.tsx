@@ -26,7 +26,7 @@ import {
     ModalVariant,
 } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../NavigationPath'
 
@@ -36,7 +36,7 @@ export type ClusterClaimModalProps = {
 }
 
 export function ClusterClaimModal(props: ClusterClaimModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const [clusterClaim, setClusterClaim] = useState<ClusterClaim | undefined>()
     const [claimed, setClaimed] = useState<boolean>(false)
@@ -104,7 +104,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                             <>
                                 <div>
                                     <Trans
-                                        i18nKey="cluster:clusterClaim.create.message"
+                                        i18nKey="clusterClaim.create.message"
                                         values={{ clusterPoolName: props.clusterPool?.metadata.name }}
                                         components={{ bold: <strong /> }}
                                     />
@@ -127,8 +127,8 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                     <AcmSubmit
                                         id="claim"
                                         variant="primary"
-                                        label={t('common:claim')}
-                                        processingLabel={t('common:claiming')}
+                                        label={t('claim')}
+                                        processingLabel={t('claiming')}
                                         onClick={async () => {
                                             alertContext.clearAlerts()
                                             return new Promise(async (resolve, reject) => {
@@ -142,7 +142,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                         } else {
                                                             alertContext.addAlert({
                                                                 type: 'danger',
-                                                                title: t('common:error'),
+                                                                title: t('error'),
                                                                 message: t('clusterClaim.create.timeOut'),
                                                             })
                                                         }
@@ -152,7 +152,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                         if (e instanceof Error) {
                                                             alertContext.addAlert({
                                                                 type: 'danger',
-                                                                title: t('common:request.failed'),
+                                                                title: t('request.failed'),
                                                                 message: e.message,
                                                             })
                                                             reject(e)
@@ -162,7 +162,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                         }}
                                     />
                                     <AcmButton key="cancel" variant="link" onClick={props.onClose}>
-                                        {t('common:cancel')}
+                                        {t('cancel')}
                                     </AcmButton>
                                 </ActionGroup>
                             </>
@@ -173,7 +173,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                 <>
                     <p>
                         <Trans
-                            i18nKey="cluster:clusterClaim.create.message.success"
+                            i18nKey="clusterClaim.create.message.success"
                             values={{ clusterPoolName: clusterClaim?.spec?.clusterPoolName! }}
                             components={{ bold: <strong /> }}
                         />
@@ -203,7 +203,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         {t('clusterClaim.modal.viewCluster')}
                     </AcmButton>
                     <AcmButton key="cancel" variant="link" onClick={reset}>
-                        {t('common:close')}
+                        {t('close')}
                     </AcmButton>
                 </>
             )}

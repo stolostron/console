@@ -10,10 +10,11 @@
         "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc:noEmit -c green,blue,cyan,magenta",
         "jest": "jest --runInBand",
         "jest:parallel": "jest",
-        "eslint": "eslint src --ext .ts --max-warnings=0",
-        "eslint:fix": "eslint src test --ext .ts --fix",
+        "eslint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
+        "eslint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
         "prettier": "prettier --check src public",
         "prettier:fix": "prettier --write src public",
+        "i18n": "i18next",
         "update": "npx npm-check-updates -x @testing-library/user-event,monaco-editor,eslint,react-router-dom --doctor --upgrade && npm audit fix && npm dedup",
         "plugin:build": "CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode production",
         "plugin:build:dev": "CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode development",
@@ -44,7 +45,7 @@
         "lodash": "^4.17.21",
         "moment": "^2.29.1",
         "monaco-editor": "^0.27.0",
-        "openshift-assisted-ui-lib": "1.5.44",
+        "openshift-assisted-ui-lib": "2.0.2",
         "react-masonry-css": "^1.0.16",
         "string-similarity": "^4.0.4",
         "uuid": "8.3.2",
@@ -54,11 +55,11 @@
         "yup": "^0.32.11"
     },
     "devDependencies": {
-        "@openshift-console/dynamic-plugin-sdk": "0.0.3",
         "@babel/core": "^7.16.0",
         "@babel/preset-env": "^7.16.4",
         "@babel/preset-react": "^7.16.0",
         "@babel/preset-typescript": "^7.16.0",
+        "@openshift-console/dynamic-plugin-sdk": "0.0.3",
         "@openshift-console/dynamic-plugin-sdk-webpack": "0.0.4",
         "@pmmmwh/react-refresh-webpack-plugin": "^0.5.1",
         "@sentry/browser": "6.15.0",
@@ -91,6 +92,7 @@
         "browserify-fs": "^1.0.0",
         "buffer": "^6.0.3",
         "bundle-loader": "^0.5.6",
+        "comment-json": "^4.1.1",
         "compression-webpack-plugin": "^9.0.1",
         "concurrently": "^6.4.0",
         "copy-webpack-plugin": "^10.0.0",
@@ -169,6 +171,10 @@
             "jest",
             "react-hooks"
         ],
+        "env": {
+            "browser": true,
+            "node": true
+        },
         "rules": {
             "@typescript-eslint/no-non-null-assertion": "off",
             "react/react-in-jsx-scope": "off",
@@ -196,7 +202,14 @@
             "no-empty": "off",
             "no-constant-condition": "off",
             "jest/no-export": "off",
-            "@typescript-eslint/no-extra-semi": "off"
+            "@typescript-eslint/no-extra-semi": "off",
+            "@typescript-eslint/no-restricted-imports": [
+                "error",
+                {
+                    "name": "react-i18next",
+                    "message": "Please use Trans and useTranslation from ./src/lib/acm-i18next and avoid other exports from react-i18next"
+                }
+            ]
         }
     },
     "browserslist": {

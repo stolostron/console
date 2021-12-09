@@ -22,6 +22,7 @@ export interface ManagedCluster extends IResource {
     spec?: {
         hubAcceptsClient: boolean
         leaseDurationSeconds?: number
+        managedClusterClientConfigs?: any[]
     }
     status?: {
         allocatable: {

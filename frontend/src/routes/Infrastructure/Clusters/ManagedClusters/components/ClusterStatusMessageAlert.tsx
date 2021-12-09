@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AcmAlert } from '@open-cluster-management/ui-components'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Cluster, clusterDangerStatuses } from '../../../../../resources'
 
 export function ClusterStatusMessageAlert(props: {
@@ -9,7 +9,7 @@ export function ClusterStatusMessageAlert(props: {
     padTop?: boolean
     padBottom?: boolean
 }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     if (props.cluster.statusMessage) {
         return (
             <AcmAlert

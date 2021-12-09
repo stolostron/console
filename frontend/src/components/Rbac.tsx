@@ -5,7 +5,7 @@ import { createSubjectAccessReview, ResourceAttributes } from '../resources'
 import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
 import { ButtonProps } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../lib/acm-i18next'
 
 type RbacDropdownProps<T = unknown> = {
     actions: Actions<T>[]
@@ -57,7 +57,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
                             return {
                                 ...action,
                                 isDisabled,
-                                tooltip: isDisabled ? t('common:rbac.unauthorized') : '',
+                                tooltip: isDisabled ? t('rbac.unauthorized') : '',
                             }
                         } else {
                             return action
@@ -121,7 +121,7 @@ export function RbacButton(props: RbacButtonProps) {
         <AcmButton
             {...props}
             isDisabled={isDisabled}
-            tooltip={isDisabled ? t('common:rbac.unauthorized') : ''}
+            tooltip={isDisabled ? t('rbac.unauthorized') : ''}
             className={classes.button}
         />
     )

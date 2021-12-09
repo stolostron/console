@@ -2,13 +2,13 @@
 
 import { AcmTable, IAcmTableColumn, ITableFilter } from '@open-cluster-management/ui-components'
 import { Fragment, useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { NoWrap } from '../../../components/NoWrap'
 import { PolicyRiskLabels } from '../components/PolicyRiskLabels'
 import { IPolicyGroup, IPolicyGrouping } from '../useGovernanceData'
 
 export function PolicyGrouping(props: { policyGrouping: IPolicyGrouping; title: string }) {
-    const { t } = useTranslation(['govenance'])
+    const { t } = useTranslation()
     const categoryKeyFn = useCallback((group: IPolicyGroup) => group.name, [])
     const categoryColumns = useMemo<IAcmTableColumn<IPolicyGroup>[]>(
         () => [

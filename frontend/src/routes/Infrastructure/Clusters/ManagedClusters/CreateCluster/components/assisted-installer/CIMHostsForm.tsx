@@ -1,56 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useRef, useEffect, useState, useMemo } from 'react'
+import { useCallback, useRef, useEffect, useState } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
 import { debounce, isEmpty, isEqual } from 'lodash'
-import {
-    agentClusterInstallsState,
-    agentsState,
-    clusterDeploymentsState,
-    configMapsState,
-} from '../../../../../../../atoms'
-import { getAIConfigMap, onHostsNext } from './utils'
+import { agentsState } from '../../../../../../../atoms'
+import { useAgentClusterInstall, onHostsNext, useAIConfigMap, useClusterDeployment } from './utils'
+import { CIMHostsFormProps } from './types'
 
-import './hosts-form.css'
+import './cim-hosts-form.css'
 
-const { ACMClusterDeploymentHostsStep, getTotalCompute, LoadingState } = CIM
+const { ACMClusterDeploymentHostsStep, LoadingState, getTotalCompute } = CIM
 
-type FormControl = {
-    active?: CIM.ClusterDeploymentHostsSelectionValues
-    agentClusterInstall: CIM.AgentClusterInstallK8sResource
-    validate?: VoidFunction
-    summary?: VoidFunction
-    resourceJSON?: any
-    step?: any
-}
-
-type HostsFormProps = {
-    control: FormControl
-    resourceJSON: any
-    handleChange: (control: FormControl) => void
-}
-
-const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
-    const [error, setError] = useState<string>()
-    const formRef = useRef<FormikProps<CIM.ClusterDeploymentHostsSelectionValues>>(null)
-    const [agents, clusterDeployments, agentClusterInstalls, configMaps] = useRecoilValue(
-        waitForAll([agentsState, clusterDeploymentsState, agentClusterInstallsState, configMapsState])
-    )
-    const aiConfigMap = getAIConfigMap(configMaps)
+const CIMHostsForm: React.FC<CIMHostsFormProps> = ({ control, handleChange }) => {
     const { resourceJSON = {} } = control
     const { createResources = [] } = resourceJSON
-    const cdName = createResources.find((r: { kind: string }) => r.kind === 'ClusterDeployment').metadata.name
-    const aciName = createResources.find((r: { kind: string }) => r.kind === 'AgentClusterInstall').metadata.name
+    const { name: cdName, namespace: cdNamespace } = createResources.find(
+        (r: { kind: string }) => r.kind === 'ClusterDeployment'
+    ).metadata
+    const { name: aciName, namespace: aciNamespace } = createResources.find(
+        (r: { kind: string }) => r.kind === 'AgentClusterInstall'
+    ).metadata
 
-    const clusterDeployment = useMemo(
-        () => clusterDeployments.find((cd) => cd.metadata.name === cdName && cd.metadata.namespace === cdName),
-        [cdName, clusterDeployments]
-    )
-    const agentClusterInstall = useMemo(
-        () => agentClusterInstalls.find((aci) => aci.metadata.name === aciName && aci.metadata.namespace === aciName),
-        [aciName, agentClusterInstalls]
-    )
+    const [error, setError] = useState<string>()
+    const formRef = useRef<FormikProps<CIM.ClusterDeploymentHostsSelectionValues>>(null)
+    const [agents] = useRecoilValue(waitForAll([agentsState]))
+
+    const aiConfigMap = useAIConfigMap()
+    const clusterDeployment = useClusterDeployment({ name: cdName, namespace: cdNamespace })
+    const agentClusterInstall = useAgentClusterInstall({ name: aciName, namespace: aciNamespace })
 
     useEffect(() => {
         if (control.active && formRef?.current?.values && !isEqual(control.active, formRef.current.values)) {
@@ -110,7 +88,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
         []
     )
 
-    return agents?.length && clusterDeployment && agentClusterInstall ? (
+    return clusterDeployment && agentClusterInstall ? (
         <div className="hosts-form">
             <ACMClusterDeploymentHostsStep
                 formRef={formRef}
@@ -127,4 +105,4 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     )
 }
 
-export default HostsForm
+export default CIMHostsForm

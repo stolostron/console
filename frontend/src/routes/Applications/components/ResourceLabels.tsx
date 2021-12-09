@@ -6,15 +6,21 @@ import _ from 'lodash'
 import React from 'react'
 import { CHANNEL_TYPES, getResourceLabel, groupByRepoType } from '../helpers/resource-helper'
 import LabelWithPopover from './LabelWithPopover'
-import { useTranslation } from 'react-i18next'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { TFunction } from 'react-i18next'
 import '../css/ResourceLabels.css'
 
 function repoSort(appRepos: any) {
     return _.sortBy(appRepos, ['pathName', 'gitBranch', 'gitPath'])
 }
 
-export function ResourceLabels(props: { appRepos: any[]; showSubscriptionAttributes: boolean; isArgoApp: boolean }) {
-    const { t } = useTranslation()
+export function ResourceLabels(props: {
+    appRepos: any[]
+    showSubscriptionAttributes: boolean
+    isArgoApp: boolean
+    translation: TFunction
+}) {
+    const t = props.translation
     const repoMap = groupByRepoType(props.appRepos || [])
 
     function getRepoTypeLabel(attrib: String, t: (arg: String) => String) {

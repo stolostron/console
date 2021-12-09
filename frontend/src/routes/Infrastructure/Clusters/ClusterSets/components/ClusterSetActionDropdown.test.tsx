@@ -103,7 +103,7 @@ describe('ClusterSetActionDropdown', () => {
         const deleteNock = nockDelete(firstNamespaceBinding)
         const createNock = nockCreate(createSecondNamespaceBinding)
 
-        await clickByText('common:save')
+        await clickByText('save')
         await waitForNocks([deleteNock, createNock])
     })
     test('delete action should delete the managed cluster set', async () => {

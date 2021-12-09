@@ -15,7 +15,7 @@ import {
 import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import React, { useContext, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { RbacButton } from '../../../../../../components/Rbac'
@@ -32,14 +32,13 @@ import { ProgressStepBar } from '../../components/ProgressStepBar'
 import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails'
-import AIClusterProgress from '../../components/cim/AIClusterProgress'
-import AIClusterErrors from '../../components/cim/AIClusterErrors'
+import AIClusterDetails from '../../components/cim/AIClusterDetails'
 
 const { getClusterProperties } = CIM
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
     const { cluster, clusterCurator, clusterDeployment, agentClusterInstall } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
 
@@ -52,10 +51,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         {cluster!.name}
                         <Popover
                             bodyContent={
-                                <Trans
-                                    i18nKey="cluster:table.clusterName.helperText"
-                                    components={{ bold: <strong /> }}
-                                />
+                                <Trans i18nKey="table.clusterName.helperText" components={{ bold: <strong /> }} />
                             }
                         >
                             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
@@ -72,10 +68,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         {cluster?.hive?.clusterClaimName}
                         <Popover
                             bodyContent={
-                                <Trans
-                                    i18nKey="cluster:table.clusterClaim.helperText"
-                                    components={{ bold: <strong /> }}
-                                />
+                                <Trans i18nKey="table.clusterClaim.helperText" components={{ bold: <strong /> }} />
                             }
                         >
                             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
@@ -115,10 +108,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                         )}
                         <Popover
                             bodyContent={
-                                <Trans
-                                    i18nKey="cluster:table.clusterChannel.helperText"
-                                    components={{ bold: <strong /> }}
-                                />
+                                <Trans i18nKey="table.clusterChannel.helperText" components={{ bold: <strong /> }} />
                             }
                         >
                             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
@@ -135,7 +125,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                             }
                         }}
                         variant={ButtonVariant.plain}
-                        aria-label={t('cluster:bulk.title.selectChannel')}
+                        aria-label={t('bulk.title.selectChannel')}
                         rbac={[
                             rbacPatch(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),
                             rbacCreate(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),
@@ -152,7 +142,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     <RbacButton
                         onClick={() => setShowEditLabels(true)}
                         variant={ButtonVariant.plain}
-                        aria-label={t('common:labels.edit.title')}
+                        aria-label={t('labels.edit.title')}
                         rbac={[rbacPatch(ManagedClusterDefinition, undefined, cluster?.name)]}
                     >
                         <PencilAltIcon />
@@ -189,7 +179,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                             target="_blank"
                             rel="noreferrer"
                         >
-                            {t('common:openshift.cluster.manager')} <ExternalLinkAltIcon />
+                            {t('openshift.cluster.manager')} <ExternalLinkAltIcon />
                         </a>
                     </>
                 ),
@@ -281,8 +271,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     displayName={cluster!.displayName}
                     close={() => setShowEditLabels(false)}
                 />
-                {isHybrid && <AIClusterErrors />}
-                {isHybrid ? <AIClusterProgress /> : <ProgressStepBar />}
+                {isHybrid ? <AIClusterDetails /> : <ProgressStepBar />}
                 <AcmDescriptionList title={t('table.details')} leftItems={leftItems} rightItems={rightItems} />
                 {cluster!.isManaged &&
                     [

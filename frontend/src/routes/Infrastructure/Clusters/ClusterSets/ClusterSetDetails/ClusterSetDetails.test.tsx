@@ -390,20 +390,20 @@ describe('ClusterSetDetails page', () => {
         await clickByPlaceholderText('submariner.install.form.clusters.placeholder')
         await clickByText(mockManagedClusterExtra!.metadata.name!)
         await clickByText(mockManagedClusterNoCredentials!.metadata.name!)
-        await clickByText('common:next')
+        await clickByText('next')
 
         // mockManagedClusterExtra
         await waitForTestId('credential-secret')
         await waitForNotTestId('awsAccessKeyID')
         await waitForNotTestId('awsSecretAccessKeyID')
-        await clickByText('common:next')
+        await clickByText('next')
 
         // mockManagedClusterNoCredentials
         await waitForNotTestId('credential-secret')
         await typeByTestId('awsAccessKeyID', mockManagedClusterNoCredentialsSecret.data!.aws_access_key_id)
         await typeByTestId('awsSecretAccessKeyID', mockManagedClusterNoCredentialsSecret.data!.aws_secret_access_key)
 
-        await clickByText('common:next')
+        await clickByText('next')
 
         // mockManagedClusterExtra
         const nockMCAExtra = nockCreate(mockSubmarinerAddonExtra)
@@ -417,7 +417,7 @@ describe('ClusterSetDetails page', () => {
         )
         const nockSCNoCreds = nockCreate(mockManagedClusterNoCredentialsSubmarinerConfig)
 
-        await clickByText('common:install')
+        await clickByText('install')
         await waitForNocks([nockMCAExtra, nockSCExtra, nockMCANoCreds, nockSecretNoCreds, nockSCNoCreds])
     })
     test('can uninstall submariner add-ons', async () => {
@@ -433,7 +433,7 @@ describe('ClusterSetDetails page', () => {
 
         const deleteAddon = nockDelete(mockSubmarinerAddon)
         const deleteConfig = nockDelete(mockSubmarinerConfig)
-        await clickByText('common:uninstall')
+        await clickByText('uninstall')
         await waitForNocks([deleteAddon, deleteConfig])
     })
     test('can update a submariner config', async () => {
@@ -471,7 +471,7 @@ describe('ClusterSetDetails page', () => {
                 value: submarinerConfigDefault.gateways,
             },
         ])
-        await clickByText('common:save')
+        await clickByText('save')
         await waitForNocks([patch])
     })
     test('can remove users from cluster set', async () => {
@@ -521,7 +521,7 @@ describe('ClusterSetDetails page', () => {
                 name: `open-cluster-management:managedclusterset:admin:${mockManagedClusterSet!.metadata.name!}`,
             },
         })
-        await clickByText('common:add')
+        await clickByText('add')
         await waitForNocks([createNock])
     })
     test('can add groups to the cluster set', async () => {
@@ -557,7 +557,7 @@ describe('ClusterSetDetails page', () => {
                 name: `open-cluster-management:managedclusterset:view:${mockManagedClusterSet!.metadata.name!}`,
             },
         })
-        await clickByText('common:add')
+        await clickByText('add')
         await waitForNocks([createNock])
     })
 })

@@ -85,7 +85,7 @@ describe('discovery config page', () => {
         await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('discovery:alert.created.header')
+        await waitForText('alert.created.header')
         await waitForText('alert.msg')
     })
 
@@ -123,7 +123,7 @@ describe('discovery config page', () => {
         await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('discovery:alert.created.header')
+        await waitForText('alert.created.header')
         await waitForText('alert.msg')
     })
 
@@ -161,7 +161,7 @@ describe('discovery config page', () => {
         await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('discovery:alert.updated.header')
+        await waitForText('alert.updated.header')
         await waitForText('alert.msg')
     })
 
@@ -188,7 +188,7 @@ describe('discovery config page', () => {
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('discovery:alert.deleted.header')
+        await waitForText('alert.deleted.header')
         await waitForText('alert.msg')
     })
 })

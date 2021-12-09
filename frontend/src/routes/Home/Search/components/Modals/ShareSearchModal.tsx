@@ -4,13 +4,13 @@
 import { Fragment } from 'react'
 import { ModalVariant } from '@patternfly/react-core'
 import { AcmCodeSnippet, AcmModal } from '@open-cluster-management/ui-components'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 
 export const ShareSearchModal = (props: any) => {
     const { t } = useTranslation()
     function GetUrl() {
         let url = decodeURIComponent(window.location.origin + window.location.pathname)
-        let search = props.shareSearch ? props.shareSearch.searchText : ''
+        const search = props.shareSearch ? props.shareSearch.searchText : ''
         return (url += `?filters={"textsearch":"${encodeURIComponent(search)}"}`)
     }
 

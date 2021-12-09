@@ -151,7 +151,7 @@ describe('ClusterActionDropdown', () => {
         await clickByLabel('Actions')
         await clickByText('managed.import')
         await waitForText('bulk.title.import')
-        await clickByText('common:import')
+        await clickByText('import')
         await waitForNocks([createMcNock, createKacNock])
     })
 

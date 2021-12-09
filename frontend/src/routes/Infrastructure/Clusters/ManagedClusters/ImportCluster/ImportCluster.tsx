@@ -48,7 +48,7 @@ import { CheckCircleIcon } from '@patternfly/react-icons'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import { Fragment, useContext, useRef, useState, useEffect } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -63,7 +63,7 @@ const minWizardSize = 1000
 const defaultPanelSize = 600
 
 export default function ImportClusterPage() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const pageRef = useRef(null)
     const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('import-cluster-yaml') === 'true')
     const [drawerInline, setDrawerInline] = useState(true)
@@ -89,7 +89,7 @@ export default function ImportClusterPage() {
                         <AcmPageHeader
                             title={t('page.header.import-cluster')}
                             breadcrumb={[
-                                { text: t('clusters'), to: NavigationPath.clusters },
+                                { text: t('Clusters'), to: NavigationPath.clusters },
                                 { text: t('page.header.import-cluster'), to: '' },
                             ]}
                             titleTooltip={
@@ -173,7 +173,7 @@ enum ImportMode {
 }
 
 const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }) => {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const { canJoinClusterSets } = useCanJoinClusterSets()
@@ -319,7 +319,7 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                 <AcmLabelsInput
                     id="additionalLabels"
                     label={t('import.form.labels.label')}
-                    buttonLabel={t('common:label.add')}
+                    buttonLabel={t('label.add')}
                     value={additionalLabels}
                     onChange={(label) => setAdditionaLabels(label)}
                     placeholder={t('labels.edit.placeholder')}
@@ -480,7 +480,7 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                         </Label>
                     ) : (
                         <Link to={NavigationPath.clusters} id="cancel">
-                            <Button variant="link">{t('common:cancel')}</Button>
+                            <Button variant="link">{t('cancel')}</Button>
                         </Link>
                     )}
                 </ActionGroup>

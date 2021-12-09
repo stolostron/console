@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useEffect, useState } from 'react'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { useEffect, useState, useMemo } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { patchResource } from '../../../../../../resources'
@@ -11,11 +10,38 @@ import {
     clusterImageSetsState,
     configMapsState,
 } from '../../../../../../atoms'
-import { getAIConfigMap, onHostsNext, onSaveNetworking } from '../../CreateCluster/components/assisted-installer/utils'
+import {
+    canDeleteAgent,
+    canEditHost,
+    fetchNMState,
+    fetchSecret,
+    getAIConfigMap,
+    getClusterDeploymentLink,
+    getOnCreateBMH,
+    getOnDeleteHost,
+    getOnSaveISOParams,
+    onApproveAgent,
+    onDiscoveryHostsNext,
+    onHostsNext,
+    onSaveAgent,
+    onSaveBMH,
+    onSaveNetworking,
+    useBMHsOfAIFlow,
+    useInfraEnv,
+} from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
-
-const { ClusterDeploymentWizard, FeatureGateContextProvider, ACM_ENABLED_FEATURES, LoadingState } = CIM
+import { isBMPlatform } from '../../../../InfraEnvironments/utils'
+import { CIM } from 'openshift-assisted-ui-lib'
+import { AgentK8sResource } from 'openshift-assisted-ui-lib/cim'
+const {
+    ClusterDeploymentWizard,
+    FeatureGateContextProvider,
+    ACM_ENABLED_FEATURES,
+    LoadingState,
+    getAgentsHostsNames,
+    isAgentOfInfraEnv,
+} = CIM
 
 type EditAIClusterProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -26,7 +52,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
 }) => {
     const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
     const history = useHistory()
-    const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
+    const [editAgent, setEditAgent] = useState<AgentK8sResource | undefined>()
     const [clusterImageSets, clusterDeployments, agentClusterInstalls, agents, configMaps] = useRecoilValue(
         waitForAll([
             clusterImageSetsState,
@@ -43,6 +69,11 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const agentClusterInstall = agentClusterInstalls.find(
         (aci) => aci.metadata.name === name && aci.metadata.namespace === namespace
     )
+    const infraEnv = useInfraEnv({ name, namespace })
+    // TODO(mlibra): Arn't we missing Bare Metal Hosts in the tables???
+    const filteredBMHs = useBMHsOfAIFlow({ name, namespace })
+
+    const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
 
     const aiConfigMap = getAIConfigMap(configMaps)
 
@@ -56,13 +87,23 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         ]).promise
     }
 
+    // Specific for the AI flow which has single&dedicated InfraEnv per Cluster
+    const agentsOfSingleInfraEnvCluster = useMemo(
+        () =>
+            agents.filter((a) =>
+                // TODO(mlibra): extend here once we can "disable" hosts
+                isAgentOfInfraEnv(infraEnv, a)
+            ),
+        [agents, infraEnv]
+    )
+
     const hostActions = {
         canEditHost: () => true,
-        onEditHost: (agent: CIM.AgentK8sResource) => {
+        onEditHost: (agent: AgentK8sResource) => {
             setEditAgent(agent)
         },
         canEditRole: () => true,
-        onEditRole: (agent: CIM.AgentK8sResource, role: string | undefined) => {
+        onEditRole: (agent: AgentK8sResource, role: string | undefined) => {
             return patchResource(agent, [
                 {
                     op: 'replace',
@@ -80,7 +121,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                     if (!agentClusterInstall.spec.holdInstallation) {
                         await patchResource(agentClusterInstall, [
                             {
-                                op: 'add',
+                                op: agentClusterInstall.spec.holdInstallation === false ? 'replace' : 'add',
                                 path: '/spec/holdInstallation',
                                 value: true,
                             },
@@ -97,8 +138,13 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const onFinish = () => {
         const doItAsync = async () => {
             await patchResource(agentClusterInstall, [
+                // effectively, the property gets deleted instead of holding "false" value by that change
                 {
-                    op: 'replace',
+                    op:
+                        agentClusterInstall.spec?.holdInstallation ||
+                        agentClusterInstall.spec?.holdInstallation === false
+                            ? 'replace'
+                            : 'add',
                     path: '/spec/holdInstallation',
                     value: false,
                 },
@@ -123,20 +169,36 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 clusterDeployment={clusterDeployment}
                 agentClusterInstall={agentClusterInstall}
                 agents={agents}
-                usedClusterNames={
-                    [
-                        /* Not needed for the Edit flow */
-                    ]
-                }
+                usedClusterNames={[] /* We are in Edit flow - cluster name can not be changed. */}
                 onClose={history.goBack}
                 onSaveDetails={onSaveDetails}
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
                 onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents })}
+                onApproveAgent={onApproveAgent}
+                onDeleteHost={getOnDeleteHost(filteredBMHs)}
+                canDeleteAgent={canDeleteAgent}
+                onSaveAgent={onSaveAgent}
+                canEditHost={canEditHost}
+                onSaveBMH={onSaveBMH}
+                onCreateBMH={getOnCreateBMH(infraEnv) /* AI Flow specific. Not called for CIM. */}
+                onSaveISOParams={getOnSaveISOParams(infraEnv) /* AI Flow specific. Not called for CIM. */}
+                isBMPlatform={
+                    /* So far AI Flow specific - used in Add host modal only. Fix in case CIM ever needs it. Not called for CIM. */
+                    isBMPlatform(infraEnv)
+                }
+                // onFormSaveError={setErrorHandler}
+                onSaveHostsDiscovery={(values) =>
+                    onDiscoveryHostsNext({ values, clusterDeployment, agents: agentsOfSingleInfraEnvCluster })
+                }
+                fetchSecret={fetchSecret}
+                fetchNMState={fetchNMState}
+                getClusterDeploymentLink={getClusterDeploymentLink}
                 hostActions={hostActions}
                 onFinish={onFinish}
                 aiConfigMap={aiConfigMap}
+                infraEnv={infraEnv}
             />
-            <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
+            <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
         </FeatureGateContextProvider>
     )
 }

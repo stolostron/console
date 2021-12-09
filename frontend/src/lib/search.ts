@@ -53,3 +53,21 @@ export function queryStatusCount(cluster: string): IRequestResult<ISearchResult>
         query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    count\n    related {\n      kind\n      count\n      __typename\n    }\n    __typename\n  }\n}\n',
     })
 }
+
+export function queryRemoteArgoApps(): IRequestResult<ISearchResult> {
+    return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
+        operationName: 'searchResult',
+        variables: {
+            input: [
+                {
+                    filters: [
+                        { property: 'kind', values: ['application'] },
+                        { property: 'apigroup', values: ['argoproj.io'] },
+                        { property: 'cluster', values: ['!local-cluster'] },
+                    ],
+                },
+            ],
+        },
+        query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+    })
+}

@@ -173,7 +173,7 @@ describe('bare metal asset page', () => {
         await clickByLabel('Actions', 0) // Click the action button on the first table row
         await waitForNocks(rbacNocks)
         await clickByText('bareMetalAsset.rowAction.deleteAsset.title')
-        await clickByText('common:delete')
+        await clickByText('delete')
         await waitForNock(deleteNock)
     })
 
@@ -191,7 +191,7 @@ describe('bare metal asset page', () => {
         await waitForText(mockBareMetalAssets[0].metadata!.name!)
         await selectTableRow(1)
         await clickBulkAction('bareMetalAsset.bulkAction.deleteAsset')
-        await clickByText('common:delete')
+        await clickByText('delete')
         await waitForNock(deleteNock)
     })
 
@@ -229,7 +229,7 @@ describe('bare metal asset page', () => {
         fireEvent.change(fileInput)
 
         // click the Import button on the dialog
-        await clickByText('common:import')
+        await clickByText('import')
 
         // wait for bma to be created
         await waitForNock(projectCreateNock)

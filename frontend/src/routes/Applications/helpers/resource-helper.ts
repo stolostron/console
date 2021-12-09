@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { useTranslation } from 'react-i18next'
-import queryString from 'query-string'
 import moment from 'moment'
+import queryString from 'query-string'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { IResource } from '../../../resources'
 
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
@@ -14,6 +14,16 @@ export const normalizeRepoType = (type: string) => {
 }
 
 export const groupByRepoType = (repos: any) => _.groupBy(repos, (repo) => normalizeRepoType(repo.type))
+
+export function getClusterCountString(remoteCount: number, localPlacement: boolean) {
+    if (remoteCount) {
+        return localPlacement ? `${remoteCount} Remote, 1 Local` : `${remoteCount} Remote`
+    } else if (localPlacement) {
+        return 'Local'
+    } else {
+        return 'None'
+    }
+}
 
 function getResourceType(type: String, t: (arg: String) => String) {
     switch (type) {
@@ -68,18 +78,22 @@ export const getSearchLink = (params: any) => {
     if (showRelated) {
         queryParams.push(`showrelated=${showRelated}`)
     }
-    return `/search${queryParams.length ? '?' : ''}${queryParams.join('&')}`
+    return `/multicloud/home/search${queryParams.length ? '?' : ''}${queryParams.join('&')}`
 }
 
 export const getEditLink = (params: {
-    name: string
-    namespace: string
-    kind: string
-    apiversion: string
-    cluster: string
+    properties: {
+        name: string
+        namespace: string
+        kind: string
+        apiversion: string
+        cluster: string
+    }
 }) => {
-    const { name, namespace, kind, apiversion, cluster } = params
-    return `/resources?${queryString.stringify({
+    const {
+        properties: { name, namespace, kind, apiversion, cluster },
+    } = params
+    return `/multicloud/home/search/resources?${queryString.stringify({
         cluster,
         name,
         namespace,

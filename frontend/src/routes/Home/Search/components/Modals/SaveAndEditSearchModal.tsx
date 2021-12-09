@@ -11,7 +11,7 @@ import {
     AcmTextArea,
     AcmAlert,
 } from '@open-cluster-management/ui-components'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { SavedSearchesDocument, useSaveSearchMutation, UserSearch } from '../../search-sdk/search-sdk'
 import { searchClient } from '../../search-sdk/search-client'
 import SuggestQueryTemplates from '../SuggestedQueryTemplates'
@@ -87,8 +87,8 @@ export const SaveAndEditSearchModal = (props: any) => {
     }
 
     function SaveSearch() {
-        let id = props.editSearch ? props.editSearch.id : Date.now().toString()
-        let searchText = props.editSearch ? props.editSearch.searchText : props.saveSearch
+        const id = props.editSearch ? props.editSearch.id : Date.now().toString()
+        const searchText = props.editSearch ? props.editSearch.searchText : props.saveSearch
         props.editSearch ?? props.setSelectedSearch(searchName)
         saveSearchMutation({
             variables: {
