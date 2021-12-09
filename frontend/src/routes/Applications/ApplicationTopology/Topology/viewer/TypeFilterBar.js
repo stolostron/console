@@ -12,8 +12,6 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import './graphics/diagramShapes.svg'
-import './graphics/diagramIcons.svg'
 import '../css/diagram-filter-bar.css'
 import _ from 'lodash'
 

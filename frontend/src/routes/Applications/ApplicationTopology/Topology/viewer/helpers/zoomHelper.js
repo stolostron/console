@@ -87,7 +87,7 @@ export default class ZoomHelper {
                     const cx = width / 2
                     d3.zoom()
                         .on('zoom', () => {
-                            this.currentZoom = currentEvent.transform
+                            this.currentZoom = 1// czcz currentEvent.transform
                             if (zoomElements) {
                                 this.zoomElements(200)
                             }
@@ -117,7 +117,7 @@ export default class ZoomHelper {
             .zoom()
             .scaleExtent([0.1, 2]) // can manually scale from 0.1 up to 2
             .on('zoom', () => {
-                this.currentZoom = currentEvent.transform
+                this.currentZoom = 1//czcz currentEvent.transform
                 this.isAutoZoom = false
                 this.zoomElements(duration)
                 if (cb) {

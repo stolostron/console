@@ -11,12 +11,11 @@
 'use strict'
 
 import * as d3 from 'd3'
-//import { select } from 'd3-selection'
 import { counterZoom } from '../../utils/diagram-helpers'
 import { FilterResults, NODE_RADIUS } from '../constants.js'
 import _ from 'lodash'
 
-import { attrs } from './multipleHelper'
+import { attrs, styles } from './multipleHelper'
 
 const layoutUID = 'layout.uid'
 
@@ -75,12 +74,12 @@ export default class LinkHelper {
         links
             .enter()
             .append('g')
-            .attrs({
+            .call(attrs, {
                 class: 'link',
                 transform: currentZoom,
             })
             .append('path')
-            .attrs((d) => {
+            .call(attrs, (d) => {
                 const { uid, layout } = d
                 return {
                     id: `link-${uid}`,
@@ -98,7 +97,7 @@ export default class LinkHelper {
                 })
                 .enter()
                 .append('g')
-                .attrs({
+                .call(attrs, {
                     class: 'label',
                     transform: currentZoom,
                 })
@@ -107,12 +106,12 @@ export default class LinkHelper {
                 .append('text')
                 .attr('class', 'linkText')
                 .append('textPath')
-                .attrs(({ uid }) => {
+                .call(attrs, ({ uid }) => {
                     return {
                         'xlink:href': `#link-${uid}`,
                     }
                 })
-                .styles({
+                .call(styles, {
                     'text-anchor': 'middle',
                 })
                 .text((d) => {
@@ -158,7 +157,7 @@ export default class LinkHelper {
             .filter(({ layout: { lineData } }) => {
                 return !!lineData
             })
-            .attrs(({ layout }, i, ns) => {
+            .call(attrs, ({ layout }, i, ns) => {
                 const { x, y } = layout.transform ? layout.transform : { x: 0, y: 0 }
                 return {
                     d: getBackedOffPath(ns[i], layout, this.typeToShapeMap),
@@ -166,7 +165,8 @@ export default class LinkHelper {
                 }
             })
 
-        links.styles(({ layout }) => {
+        links
+        .call(styles, ({ layout }) => {
             // set opacity to 0 if new path
             // we will transition it back when in new position
             const { linePath, lastPath } = layout
@@ -200,7 +200,7 @@ export default class LinkHelper {
                     const isParallel = layout.isParallel ? '< both >' : isLoop
                     return !label ? '' : isParallel
                 })
-                .attrs(() => {
+                .call(attrs, () => {
                     return {
                         startOffset: '50%',
                     }
@@ -487,10 +487,10 @@ export const counterZoomLinks = (svg, currentZoom, showLineLabels) => {
                 } = layout
                 const link = d3.select(ns[i])
                 link.selectAll('path')
-                    .attrs(() => {
+                    .call(attrs, () => {
                         return getLinkMarkers(layout, search)
                     })
-                    .styles({
+                    .call(styles, {
                         'stroke-opacity': opacity,
                     })
             })

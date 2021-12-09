@@ -4,12 +4,17 @@ import { AcmAlert } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import './ApplicationTopology.css'
+import './Topology/css/topology-controls.css'
+import './Topology/css/resource-toolbar.css'
 // import { useHistory } from 'react-router-dom'
 // import { useRecoilState } from 'recoil'
 // import { applicationsState } from '../../../atoms'
 
+
 import Topology from './Topology/Topology'
 import { processResourceActionLink } from './Topology/utils/diagram-helpers'
+
 
 import nodes from './demo-etherpad-nodes.json'
 import links from './demo-etherpad-links.json'
@@ -32,7 +37,7 @@ export type ArgoAppDetailsContainerData = {
 }
 
 export default function ApplicationTopology() {
-    const { t } = useTranslation()
+    const { t } = useTranslation('topology')
     //const [placementrules] = useRecoilState(placementRulesState)
     const [isLoaded, setIsLoaded] = useState<boolean>()
     const [isLoadError, setIsLoadError] = useState<boolean>()
@@ -107,6 +112,7 @@ export default function ApplicationTopology() {
 
     return (
         <PageSection>
+            <div className='resourceDiagramSourceContainer'>
             <>
                 <>
                     <div className="topology-controls">
@@ -126,10 +132,6 @@ export default function ApplicationTopology() {
                 <div className="resourceDiagramControlsContainer">
                     {!isLoadError && (
                         <div className="diagram-title">
-                            {t('application.diagram')}
-                            <svg className="diagram-title-divider">
-                                <rect />
-                            </svg>
                             <span
                                 className="how-to-read-text"
                                 tabIndex={0}
@@ -157,7 +159,7 @@ export default function ApplicationTopology() {
                     />
                 )}
             </>
-            )
+            </div>
         </PageSection>
     )
 }

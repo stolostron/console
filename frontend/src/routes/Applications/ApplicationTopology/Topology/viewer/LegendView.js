@@ -8,8 +8,6 @@ import { Scrollbars } from 'react-custom-scrollbars'
 import { TimesIcon } from '@patternfly/react-icons'
 import { defaultShapes } from './defaults/shapes'
 import { getLegendTitle } from './defaults/titles'
-import './graphics/diagramShapes.svg'
-import './graphics/diagramIcons.svg'
 
 class LegendView extends React.Component {
     render() {

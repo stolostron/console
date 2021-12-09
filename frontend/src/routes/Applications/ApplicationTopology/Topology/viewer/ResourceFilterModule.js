@@ -18,7 +18,6 @@ import { TimesIcon } from '@patternfly/react-icons'
 import { Checkbox, Chip, ChipGroup } from '@patternfly/react-core'
 import { Scrollbars } from 'react-custom-scrollbars'
 import '../css/resource-filter-view.css'
-import './graphics/diagramIcons.svg'
 import _ from 'lodash'
 
 //if section has more then this number of filters, add "show more"

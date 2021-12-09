@@ -12,7 +12,7 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import './graphics/diagramIcons.svg'
+import { PlusIcon, MinusIcon, ExpandIcon } from '@patternfly/react-icons'
 import '../css/diagram-controls.css'
 
 const MAX_ZOOM = 2
@@ -45,9 +45,9 @@ export default class Zoom extends React.PureComponent {
                     onClick={this.handleZoomIn}
                     onKeyPress={this.handleZoomIn}
                 >
-                    <svg className="icon">
-                        <use href={'#diagramIcons_zoomIn'} />
-                    </svg>
+                    <div className="icon">
+                        <PlusIcon />
+                    </div>
                 </div>
                 {/* zoom out */}
                 <div
@@ -60,9 +60,9 @@ export default class Zoom extends React.PureComponent {
                     onClick={this.handleZoomOut}
                     onKeyPress={this.handleZoomOut}
                 >
-                    <svg className="icon">
-                        <use href={'#diagramIcons_zoomOut'} />
-                    </svg>
+                    <div className="icon">
+                        <MinusIcon />
+                    </div>
                 </div>
                 {/* zoom target */}
                 <div
@@ -74,9 +74,9 @@ export default class Zoom extends React.PureComponent {
                     onClick={this.handleZoomToTarget}
                     onKeyPress={this.handleZoomToTarget}
                 >
-                    <svg className="icon_target">
-                        <use href={'#diagramIcons_zoomTarget'} />
-                    </svg>
+                    <div className="icon">
+                        <ExpandIcon />
+                    </div>
                 </div>
             </div>
         )

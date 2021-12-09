@@ -12,6 +12,7 @@
 
 import React from 'react'
 import ReactDOM from 'react-dom'
+import ReactDOMServer from 'react-dom/server'
 import PropTypes from 'prop-types'
 import { AcmAlert } from '@open-cluster-management/ui-components'
 import SearchName from './viewer/SearchName'
@@ -19,6 +20,8 @@ import TypeFilterBar, { setActiveTypeFilters } from './viewer/TypeFilterBar'
 import { ResourceFilterModule } from './viewer/ResourceFilterModule'
 import DiagramViewer from './viewer/DiagramViewer'
 import { getResourceDefinitions } from './viewer/defaults'
+import {DiagramShapes} from './shapes/DiagramShapes'
+import {DiagramIcons} from './shapes/DiagramIcons'
 import './css/topology-details.css'
 import './css/topology-diagram.css'
 import _ from 'lodash'
@@ -178,6 +181,8 @@ class Topology extends React.Component {
                 {this.renderResourceFilterModule()}
                 {this.renderSearchName()}
                 {this.renderTypeFilterBar()}
+                <DiagramShapes />
+                <DiagramIcons />
                 <DiagramViewer
                     title={title}
                     nodes={nodes}
