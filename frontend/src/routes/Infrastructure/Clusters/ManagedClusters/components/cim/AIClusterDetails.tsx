@@ -12,6 +12,8 @@ const {
     ClusterDeploymentProgress,
     ClusterInstallationError,
     AgentTable,
+    Alerts,
+    AlertsContextProvider,
     shouldShowClusterInstallationProgress,
     shouldShowClusterCredentials,
     shouldShowClusterInstallationError,
@@ -91,6 +93,7 @@ const AIClusterDetails: React.FC = () => {
 
     return (
         <>
+            <Alerts />
             {clusterDeployment && shouldShowClusterDeploymentValidationOverview(agentClusterInstall) && (
                 <div style={{ marginBottom: '24px' }}>
                     <ClusterDeploymentValidationsOverview
@@ -178,4 +181,8 @@ const AIClusterDetails: React.FC = () => {
     )
 }
 
-export default AIClusterDetails
+export default (props: {}) => (
+    <AlertsContextProvider>
+        <AIClusterDetails {...props} />
+    </AlertsContextProvider>
+)
