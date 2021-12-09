@@ -69,6 +69,9 @@ export default function AdvancedConfiguration() {
     const [canDeleteChannel, setCanDeleteChannel] = useState<boolean>(false)
     const [canDeletePlacement, setCanDeletePlacement] = useState<boolean>(false)
     const [canDeletePlacementRule, setCanDeletePlacementRule] = useState<boolean>(false)
+    const ChanneltableItems: IResource[] = []
+    const SubscriptiontableItems: IResource[] = []
+    const PlacementRuleTableItems: IResource[] = []
 
     useEffect(() => {
         const canDeleteSubscriptionPromise = canUser('delete', SubscriptionDefinition)
@@ -101,6 +104,92 @@ export default function AdvancedConfiguration() {
             .catch((err) => console.error(err))
         return () => canDeletePlacementRulePromise.abort()
     }, [])
+
+    // Cache cell text for sorting and searching
+    const generateTransformData = (tableItem: IResource) => {
+        const transformedObject = {
+            transformed: {},
+        }
+        let clusterCount = {
+            localPlacement: false,
+            remoteCount: 0,
+        }
+        switch (tableItem.kind) {
+            case 'Channel': {
+                let subscriptionCount = 0
+                if (tableItem.metadata) {
+                    const { name, namespace } = tableItem.metadata
+                    subscriptionsWithoutLocal.forEach((subscription) => {
+                        const channel = _.get(subscription, 'spec.channel')
+                        const [channelNamespace, channelName] = channel.split('/')
+                        if (channelNamespace === namespace && channelName === name) {
+                            subscriptionCount++
+                        }
+                    })
+                    const subscriptionsInUse = subscriptionsWithoutLocal.filter((subscription) => {
+                        const channel = _.get(subscription, 'spec.channel')
+                        const [channelNamespace, channelName] = channel.split('/')
+                        return channelName === name && channelNamespace === namespace
+                    })
+                    subscriptionsInUse.forEach((subscriptionInUse) => {
+                        getSubscriptionClusterCount(subscriptionInUse, clusterCount)
+                    })
+                }
+
+                const clusterCountString = getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                _.set(transformedObject.transformed, 'subscriptionCount', subscriptionCount)
+                _.set(transformedObject.transformed, 'clusterCount', clusterCountString)
+                break
+            }
+            case 'Subscription': {
+                //appCount
+                if (tableItem.metadata) {
+                    let appCount = 0
+                    const { name, namespace } = tableItem.metadata
+                    applications.forEach((application) => {
+                        const annotations = _.get(application, 'metadata.annotations')
+                        if (annotations) {
+                            const subscriptions = annotations['apps.open-cluster-management.io/subscriptions']
+                            const subscriptionList = subscriptions ? subscriptions.split(',') : []
+                            if (subscriptionList.length) {
+                                subscriptionList.forEach((element: { split: (arg: string) => [any, any] }) => {
+                                    const [subscriptionNamespace, subscriptionName] = element.split('/')
+                                    if (subscriptionNamespace === namespace && subscriptionName === name) {
+                                        appCount++
+                                    }
+                                })
+                            }
+                        }
+                    })
+
+                    getSubscriptionClusterCount(tableItem, clusterCount, true)
+                    const clusterString = getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                    _.set(transformedObject.transformed, 'clusterCount', clusterString)
+                    _.set(transformedObject.transformed, 'appCount', appCount)
+                }
+                break
+            }
+            case 'PlacementRule': {
+                clusterCount = getPlacementruleClusterCount(tableItem, clusterCount)
+                const clusterString = getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                _.set(transformedObject.transformed, 'clusterCount', clusterString)
+                break
+            }
+        }
+        // Cannot add properties directly to objects in typescript
+        return { ...tableItem, ...transformedObject }
+    }
+
+    channels.forEach((channel) => {
+        ChanneltableItems.push(generateTransformData(channel))
+    })
+
+    subscriptionsWithoutLocal.forEach((subscription) => {
+        SubscriptiontableItems.push(generateTransformData(subscription))
+    })
+    placementrules.forEach((placementrule) => {
+        PlacementRuleTableItems.push(generateTransformData(placementrule))
+    })
 
     const getRowActionResolver = (item: IResource) => {
         const kind = _.get(item, 'kind') == 'PlacementRule' ? 'placement rule' : _.get(item, 'kind').toLowerCase()
@@ -237,30 +326,9 @@ export default function AdvancedConfiguration() {
                     {
                         header: t('Applications'),
                         cell: (resource) => {
-                            let appCount = 0
+                            const appCount = _.get(resource, 'transformed.appCount')
                             if (resource.metadata) {
                                 const { name, namespace } = resource.metadata
-                                applications.forEach((application) => {
-                                    const annotations = _.get(application, 'metadata.annotations')
-                                    if (annotations) {
-                                        const subscriptions =
-                                            annotations['apps.open-cluster-management.io/subscriptions']
-                                        const subscriptionList = subscriptions ? subscriptions.split(',') : []
-                                        if (subscriptionList.length) {
-                                            subscriptionList.forEach(
-                                                (element: { split: (arg: string) => [any, any] }) => {
-                                                    const [subscriptionNamespace, subscriptionName] = element.split('/')
-                                                    if (
-                                                        subscriptionNamespace === namespace &&
-                                                        subscriptionName === name
-                                                    ) {
-                                                        appCount++
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    }
-                                })
                                 if (appCount != 0) {
                                     const searchParams: any = {
                                         properties: {
@@ -277,6 +345,7 @@ export default function AdvancedConfiguration() {
                             }
                             return appCount
                         },
+                        sort: 'transformed.appCount',
                         tooltip:
                             'Displays the number of applications using the subscription. Click to search for all related applications.',
                     },
@@ -294,6 +363,7 @@ export default function AdvancedConfiguration() {
 
                             return getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
                         },
+                        sort: 'transformed.clusterCount',
                         tooltip:
                             'Displays the number of remote and local clusters where resources for the subscription are deployed. Click to search for all related clusters.',
                     },
@@ -320,7 +390,7 @@ export default function AdvancedConfiguration() {
                 ],
                 []
             ),
-            items: subscriptionsWithoutLocal,
+            items: SubscriptiontableItems,
             rowActionResolver: getRowActionResolver,
         },
         channels: {
@@ -372,16 +442,9 @@ export default function AdvancedConfiguration() {
                     {
                         header: t('Subscriptions'),
                         cell: (resource) => {
-                            let subscriptionCount = 0
+                            const subscriptionCount = _.get(resource, 'transformed.subscriptionCount')
                             if (resource.metadata) {
                                 const { name, namespace } = resource.metadata
-                                subscriptions.forEach((subscription) => {
-                                    const channel = _.get(subscription, 'spec.channel')
-                                    const [channelNamespace, channelName] = channel.split('/')
-                                    if (channelNamespace === namespace && channelName === name) {
-                                        subscriptionCount++
-                                    }
-                                })
                                 if (subscriptionCount != 0) {
                                     const channelLink = getSearchLink({
                                         properties: {
@@ -396,29 +459,14 @@ export default function AdvancedConfiguration() {
                             }
                             return subscriptionCount
                         },
+                        sort: 'transformed.subscriptionCount',
                         tooltip:
                             'Displays the number of local subscriptions using the channel. Click to search for all related subscriptions.',
                     },
                     {
                         header: t('Clusters'),
-                        cell: (resource) => {
-                            const clusterCount = {
-                                localPlacement: false,
-                                remoteCount: 0,
-                            }
-                            if (resource.metadata) {
-                                const { name, namespace } = resource.metadata
-                                const subscriptionsInUse = subscriptions.filter((subscription) => {
-                                    const channel = _.get(subscription, 'spec.channel')
-                                    const [channelNamespace, channelName] = channel.split('/')
-                                    return channelName === name && channelNamespace === namespace
-                                })
-                                subscriptionsInUse.forEach((subscriptionInUse) => {
-                                    getSubscriptionClusterCount(subscriptionInUse, clusterCount)
-                                })
-                            }
-                            return getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
-                        },
+                        cell: 'transformed.clusterCount',
+                        sort: 'transformed.clusterCount',
                         tooltip:
                             'Displays the number of remote and local clusters where resources from the channel are deployed.',
                     },
@@ -432,7 +480,7 @@ export default function AdvancedConfiguration() {
                 ],
                 []
             ),
-            items: channels,
+            items: ChanneltableItems,
             rowActionResolver: getRowActionResolver,
         },
         placements: {
@@ -461,7 +509,12 @@ export default function AdvancedConfiguration() {
                             'Displays the number of remote and local clusters where resources are deployed because of the placement.'
                         ),
                         cell: 'status.numberOfSelectedClusters',
-                        sort: 'status.numberOfSelectedClusters',
+                        sort: (resource) => {
+                            const numberOfSelectedClusters = _.get(resource, 'status.numberOfSelectedClusters')
+                            if (numberOfSelectedClusters) {
+                                return numberOfSelectedClusters
+                            }
+                        },
                     },
                     {
                         header: t('Created'),
@@ -498,14 +551,8 @@ export default function AdvancedConfiguration() {
                     },
                     {
                         header: t('Clusters'),
-                        cell: (resource) => {
-                            let clusterCount = {
-                                localPlacement: false,
-                                remoteCount: 0,
-                            }
-                            clusterCount = getPlacementruleClusterCount(resource, clusterCount)
-                            return getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
-                        },
+                        cell: 'transformed.clusterCount',
+                        sort: 'transformed.clusterCount',
                         tooltip:
                             'Displays the number of remote and local clusters where resources are deployed because of the placement rule.',
                     },
@@ -526,7 +573,7 @@ export default function AdvancedConfiguration() {
                 ],
                 []
             ),
-            items: placementrules,
+            items: PlacementRuleTableItems,
             rowActionResolver: getRowActionResolver,
         },
     }
