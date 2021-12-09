@@ -221,7 +221,7 @@ const controlDataOST = [
         name: 'creation.ocp.cluster.ost.api.floating.ip',
         placeholder: 'placeholder.creation.ocp.cluster.ost.api.floating.ip',
         tooltip: 'tooltip.creation.ocp.cluster.ost.api.floating.ip',
-        hidden: isHidden_lt_OCP48,
+        hidden: (control, controlData) => !isHidden_gt_OCP46(control, controlData),
         active: '',
         validation: VALIDATE_IP,
     },

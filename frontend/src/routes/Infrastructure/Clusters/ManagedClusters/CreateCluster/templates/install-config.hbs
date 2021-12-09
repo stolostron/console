@@ -309,7 +309,9 @@ publish: Internal
     {{#if ../../lbFloatingIP}}
     lbFloatingIP: {{{../../lbFloatingIP}}}
     {{/if}}
+    {{#if ../../apiFloatingIP}}
     apiFloatingIP: {{{../../apiFloatingIP}}}
+    {{/if}}
     ingressFloatingIP: {{{../../ingressFloatingIP}}}
     {{#if ../../clusterOSImage}}
     clusterOSImage: >-
