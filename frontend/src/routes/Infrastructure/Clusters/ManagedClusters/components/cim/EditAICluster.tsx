@@ -86,13 +86,14 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         ]).promise
     }
 
-    const agentsOfCluster = useMemo(
+    // Specific for the AI flow which has single&dedicated InfraEnv per Cluster
+    const agentsOfSingleInfraEnvCluster = useMemo(
         () =>
             agents.filter((a) =>
                 // TODO(mlibra): extend here once we can "disable" hosts
                 isAgentOfInfraEnv(infraEnv, a)
             ),
-        [agents]
+        [agents, infraEnv]
     )
 
     const hostActions = {
@@ -167,7 +168,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 clusterDeployment={clusterDeployment}
                 agentClusterInstall={agentClusterInstall}
                 agents={agents}
-                usedClusterNames={[]}
+                usedClusterNames={[] /* We are in Edit flow - cluster name can not be changed. */}
                 onClose={history.goBack}
                 onSaveDetails={onSaveDetails}
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
@@ -177,15 +178,18 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 canDeleteAgent={canDeleteAgent}
                 onSaveAgent={onSaveAgent}
                 onSaveBMH={onSaveBMH}
-                onCreateBMH={getOnCreateBMH(infraEnv)}
-                onSaveISOParams={getOnSaveISOParams(infraEnv)}
+                onCreateBMH={getOnCreateBMH(infraEnv) /* AI Flow specific. Not called for CIM. */}
+                onSaveISOParams={getOnSaveISOParams(infraEnv) /* AI Flow specific. Not called for CIM. */}
+                isBMPlatform={
+                    /* So far AI Flow specific - used in Add host modal only. Fix in case CIM ever needs it. Not called for CIM. */
+                    isBMPlatform(infraEnv)
+                }
                 // onFormSaveError={setErrorHandler}
                 onSaveHostsDiscovery={(values) =>
-                    onDiscoveryHostsNext({ values, clusterDeployment, agents: agentsOfCluster })
+                    onDiscoveryHostsNext({ values, clusterDeployment, agents: agentsOfSingleInfraEnvCluster })
                 }
                 fetchSecret={fetchSecret}
                 fetchNMState={fetchNMState}
-                isBMPlatform={isBMPlatform(infraEnv)}
                 getClusterDeploymentLink={getClusterDeploymentLink}
                 hostActions={hostActions}
                 onFinish={onFinish}
