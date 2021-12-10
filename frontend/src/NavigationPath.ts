@@ -13,6 +13,7 @@ export enum NavigationPath {
     // Home - Search
     search = '/multicloud/home/search',
     resources = '/multicloud/home/search/resources',
+    resourceLogs = '/multicloud/home/search/resources/logs',
 
     // Infrastructure
     infrastructure = '/multicloud/infrastructure',
