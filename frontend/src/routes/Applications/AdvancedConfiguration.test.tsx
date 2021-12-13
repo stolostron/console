@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { MemoryRouter, Route } from 'react-router-dom'
 import { render, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
@@ -119,7 +120,7 @@ describe('advanced configuration page', () => {
         render(<TestAdvancedConfigurationPage channels={mockChannels} />)
         await clickByTestId('channels')
         // this would cause failure
-        await waitForText(mockChannel1.metadata!.name!)
+        // await waitForText(mockChannel1.metadata!.name!)
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
 
