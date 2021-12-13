@@ -337,10 +337,10 @@ export const getDeleteHostAction =
         return deleteResources(resources)
     }
 
-const getAgentName = (resource: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource): string =>
+export const getAgentName = (resource: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource): string =>
     resource.spec?.hostname || resource.spec?.bmc?.address || resource.metadata?.name || '-'
 
-const agentNameSortFunc = (
+export const agentNameSortFunc = (
     a: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource,
     b: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource
 ) => getAgentName(a).localeCompare(getAgentName(b))
@@ -387,15 +387,21 @@ export const useOnDeleteHost = (
     )
 }
 
-export const useNMStatesOfNamespace = (namespace: string) => {
+export const useNMStatesOfNamespace = (namespace?: string) => {
     const [nmStates, setNMStates] = useState<CIM.NMStateK8sResource[] | undefined>()
     useEffect(() => {
         const doItAsync = async () => {
-            const result = await listNamespacedResources(
-                { apiVersion: 'agent-install.openshift.io/v1beta1', kind: 'NMStateConfig', metadata: { namespace } },
-                [AGENT_BMH_HOSTNAME_LABEL_KEY]
-            ).promise
-            setNMStates(result)
+            if (namespace) {
+                const result = await listNamespacedResources(
+                    {
+                        apiVersion: 'agent-install.openshift.io/v1beta1',
+                        kind: 'NMStateConfig',
+                        metadata: { namespace },
+                    },
+                    [AGENT_BMH_HOSTNAME_LABEL_KEY]
+                ).promise
+                setNMStates(result)
+            }
         }
         doItAsync()
     }, [namespace])
@@ -494,7 +500,7 @@ export const useAgentsOfAIFlow = ({ name, namespace }: { name: string; namespace
     return useMemo(() => agents.filter((a) => isAgentOfCluster(a, name, namespace)), [agents])
 }
 
-export const useBMHsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }) => {
+export const useBMHsOfAIFlow = ({ name, namespace }: { name?: string; namespace?: string }) => {
     const [bmhs] = useRecoilValue(waitForAll([bareMetalAssetsState]))
     return useMemo(
         () =>
@@ -502,7 +508,7 @@ export const useBMHsOfAIFlow = ({ name, namespace }: { name: string; namespace: 
             /* That label is added to the InfraEnv along creating ClusterDeployment, specific for the AI flow */
             bmhs.filter(
                 (bmh: CIM.BareMetalHostK8sResource) =>
-                    bmh.metadata?.labels?.[INFRAENV_GENERATED_AI_FLOW] === `${namespace}-${name}`
+                    namespace && name && bmh.metadata?.labels?.[INFRAENV_GENERATED_AI_FLOW] === `${namespace}-${name}`
             ),
         [bmhs]
     )

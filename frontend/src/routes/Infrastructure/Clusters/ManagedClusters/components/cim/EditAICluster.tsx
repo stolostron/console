@@ -141,7 +141,10 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
             }
         }
         patch()
-    }, [agentClusterInstall])
+    }, [
+        // just once but when the ACI is loaded
+        !!agentClusterInstall,
+    ])
 
     const onFinish = () => {
         const doItAsync = async () => {
