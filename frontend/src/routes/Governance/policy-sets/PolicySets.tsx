@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmEmptyState } from '@open-cluster-management/ui-components'
+import { AcmDrawerContext, AcmEmptyState } from '@open-cluster-management/ui-components'
 import {
     Button,
     Card,
@@ -23,17 +23,198 @@ import {
     ToolbarItem,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-import { Fragment, useCallback, useState } from 'react'
-import { useRecoilState } from 'recoil'
-import { policySetsState } from '../../../atoms'
+import { Fragment, useCallback, useContext, useState } from 'react'
+// import { useRecoilState } from 'recoil'
+// import { policySetsState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
+// import { deleteResource } from '../../../resources'
 import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../resources/policy-set'
+import { PolicySetSidebar } from './PolicySetDetailSidebar'
 
 export default function PolicySetsPage() {
     const { t } = useTranslation()
-    const [policySets] = useRecoilState(policySetsState)
+    // const [policySets] = useRecoilState(policySetsState)
+    const { setDrawerContext } = useContext(AcmDrawerContext)
     const [cardViewSearch, setCardViewSearch] = useState('')
     const [cardOpenIdx, setCardOpenIdx] = useState<number>()
+    const policySets: PolicySet[] = [
+        {
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'PolicySet',
+            metadata: {
+                name: 'no-data-policyset',
+                namespace: 'kube-system',
+            },
+            spec: {
+                description: 'Policy set with no data',
+                policies: [],
+            },
+            status: {
+                placement: [
+                    {
+                        placement: 'placement1',
+                        placementBinding: 'binding1',
+                        placementDecisions: ['placementdecision1'],
+                    },
+                ],
+                results: [],
+            },
+        },
+        {
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'PolicySet',
+            metadata: {
+                name: 'pci-1',
+                namespace: 'default',
+            },
+            spec: {
+                description: 'Policies for PCI-1 compliance',
+                policies: ['policy-pod', 'policy-namespace'],
+            },
+            status: {
+                placement: [
+                    {
+                        placement: 'placement1',
+                        placementBinding: 'binding1',
+                        placementDecisions: ['placementdecision1'],
+                    },
+                ],
+                results: [
+                    {
+                        policy: 'policy-pod',
+                        compliant: 'NonCompliant',
+                        clusters: [
+                            {
+                                clusterName: 'managed1',
+                                clusterNamespace: 'managed1',
+                                compliant: 'NonCompliant',
+                            },
+                            {
+                                clusterName: 'managed2',
+                                clusterNamespace: 'managed2',
+                                compliant: 'NonCompliant',
+                            },
+                        ],
+                    },
+                    {
+                        policy: 'policy-namespace',
+                        message: 'policy-namespace not found',
+                    },
+                ],
+            },
+        },
+        {
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'PolicySet',
+            metadata: {
+                name: 'pci-2',
+                namespace: 'kube-system',
+            },
+            spec: {
+                description: 'Policies for PCI-2 compliance',
+                policies: ['policy-role', 'policy-rolebinding', 'policy-securitycontextconstraints'],
+            },
+            status: {
+                placement: [
+                    {
+                        placement: 'placement1',
+                        placementBinding: 'binding1',
+                        placementDecisions: ['placementdecision1'],
+                    },
+                ],
+                results: [
+                    {
+                        policy: 'policy-testing',
+                        compliant: 'NonCompliant',
+                        clusters: [
+                            {
+                                clusterName: 'local-cluster',
+                                clusterNamespace: 'local-cluster',
+                                compliant: 'Compliant',
+                            },
+                            {
+                                clusterName: 'managed1',
+                                clusterNamespace: 'managed1',
+                                compliant: 'NonCompliant',
+                            },
+                            {
+                                clusterName: 'managed2',
+                                clusterNamespace: 'managed2',
+                                compliant: 'NonCompliant',
+                            },
+                        ],
+                    },
+                    {
+                        policy: 'policy-role',
+                        compliant: 'NonCompliant',
+                        clusters: [
+                            {
+                                clusterName: 'local-cluster',
+                                clusterNamespace: 'local-cluster',
+                                compliant: 'Compliant',
+                            },
+                            {
+                                clusterName: 'managed2',
+                                clusterNamespace: 'managed2',
+                                compliant: 'NonCompliant',
+                            },
+                        ],
+                    },
+                    {
+                        policy: 'policy-securitycontextconstraints',
+                        compliant: 'Compliant',
+                        clusters: [
+                            {
+                                clusterName: 'local-cluster',
+                                clusterNamespace: 'local-cluster',
+                                compliant: 'Compliant',
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+        {
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'PolicySet',
+            metadata: {
+                name: 'pci-3',
+                namespace: 'kube-system',
+            },
+            spec: {
+                description: 'Policies for PCI-2 compliance',
+                policies: ['policy-role', 'policy-rolebinding', 'policy-securitycontextconstraints'],
+            },
+            status: {
+                placement: [
+                    {
+                        placement: 'placement1',
+                        placementBinding: 'binding1',
+                        placementDecisions: ['placementdecision1'],
+                    },
+                ],
+                results: [
+                    {
+                        policy: 'policy-role',
+                        compliant: 'NonCompliant',
+                        clusters: [
+                            {
+                                clusterName: 'local-cluster',
+                                clusterNamespace: 'local-cluster',
+                                compliant: 'Compliant',
+                            },
+                            {
+                                clusterName: 'managed2',
+                                clusterNamespace: 'managed2',
+                                compliant: 'Compliant',
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ]
+
     function onCardToggle(cardIdx: number) {
         if (cardOpenIdx === cardIdx) {
             setCardOpenIdx(undefined)
@@ -41,16 +222,44 @@ export default function PolicySetsPage() {
     }
 
     function renderPolicySetCard(policySet: PolicySet, cardIdx: number) {
-        const policySetClusters: PolicySetResultClusters[] = policySet.status?.results.reduce(
-            (acc: any, curr: PolicySetResultsStatus) => {
-                return acc.concat(curr?.clusters ?? [])
+        /** allClusters - Get all clusters from policySet - nonunique */
+        const allClusters: PolicySetResultClusters[] = policySet.status?.results.reduce(
+            (acc: PolicySetResultClusters[], curr: PolicySetResultsStatus) => {
+                if (curr.clusters) {
+                    return acc.concat(curr.clusters)
+                }
+                return acc
             },
             []
         )
-        const clusterCompliantCount = policySetClusters.filter((cluster) => cluster.compliant === 'Compliant').length
-        const clusterNonCompliantCount = policySetClusters.filter(
-            (cluster) => cluster.compliant === 'NonCompliant'
-        ).length
+        /**
+         * policySetClusters: Unique clusters array from PolicySet resource
+         */
+        const policySetClusters: PolicySetResultClusters[] = policySet.status?.results.reduce(
+            (acc: PolicySetResultClusters[], curr: PolicySetResultsStatus) => {
+                const currClusters = curr.clusters ?? []
+                const newClusters: PolicySetResultClusters[] = currClusters.filter(
+                    (cluster: PolicySetResultClusters) => {
+                        if (acc.filter((c) => c.clusterName === cluster.clusterName).length === 0) {
+                            return cluster
+                        }
+                    }
+                )
+                return acc.concat(newClusters)
+            },
+            []
+        )
+        let clusterCompliantCount = 0
+        let clusterNonCompliantCount = 0
+        policySetClusters.forEach((cluster: PolicySetResultClusters) => {
+            const compliant: boolean =
+                allClusters.filter((c: PolicySetResultClusters) => {
+                    if (c.clusterName === cluster.clusterName) {
+                        return c.compliant === 'Compliant' ? true : false
+                    }
+                }).length > 0
+            compliant ? clusterCompliantCount++ : clusterNonCompliantCount++
+        })
         const policySetPolicyCount: number = policySet.spec.policies.length ?? 0
         const policyCompliantCount: number = policySet.status?.results.reduce(
             (acc: any, curr: PolicySetResultsStatus) => {
@@ -82,10 +291,44 @@ export default function PolicySetsPage() {
                             isOpen={cardOpenIdx === cardIdx}
                             isPlain
                             dropdownItems={[
-                                <DropdownItem>{t('View details')}</DropdownItem>,
-                                <DropdownItem key="edit">{t('Edit')}</DropdownItem>,
+                                <DropdownItem
+                                    key="view details"
+                                    onClick={() => {
+                                        setDrawerContext({
+                                            isExpanded: true,
+                                            onCloseClick: () => setDrawerContext(undefined),
+                                            panelContent: (
+                                                <PolicySetSidebar
+                                                    policySet={policySet}
+                                                    policySetClusters={policySetClusters}
+                                                />
+                                            ),
+                                            panelContentProps: { minSize: '50%' },
+                                        })
+                                    }}
+                                >
+                                    {t('View details')}
+                                </DropdownItem>,
+                                <DropdownItem key="edit" isDisabled>
+                                    {t('Edit')}
+                                </DropdownItem>,
                                 <DropdownSeparator key="separator" />,
-                                <DropdownItem key="delete">{t('Delete')}</DropdownItem>,
+                                <DropdownItem
+                                    key="delete"
+                                    isDisabled
+                                    // onClick={() => {
+                                    //     deleteResource({
+                                    //         apiVersion: 'policy.open-cluster-management.io/v1',
+                                    //         kind: 'PolicySet',
+                                    //         metadata: {
+                                    //             name: policySet.metadata.name,
+                                    //             namespace: policySet.metadata.namespace,
+                                    //         },
+                                    //     })
+                                    // }}
+                                >
+                                    {t('Delete')}
+                                </DropdownItem>,
                             ]}
                             position={'right'}
                         />
@@ -104,7 +347,7 @@ export default function PolicySetsPage() {
                     <div style={{ marginTop: '.5rem' }}>
                         <strong>{policySetClusters.length}</strong> clusters
                     </div>
-                    {(clusterCompliantCount > 0 || clusterCompliantCount > 0) && (
+                    {(clusterCompliantCount > 0 || clusterNonCompliantCount > 0) && (
                         <LabelGroup>
                             {clusterCompliantCount > 0 && (
                                 <Label icon={<CheckCircleIcon />} color="green">

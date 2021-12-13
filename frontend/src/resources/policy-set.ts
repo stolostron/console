@@ -39,7 +39,8 @@ export interface PolicySetStatus {
 
 export interface PolicySetPlacementStatus {
     placement: string
-    placementDecision: string
+    placementBinding: string
+    placementDecisions: string[]
 }
 
 export interface PolicySetResultsStatus {
@@ -50,7 +51,7 @@ export interface PolicySetResultsStatus {
 }
 
 export interface PolicySetResultClusters {
-    clustername: string
-    clusternamespace: string
+    clusterName: string
+    clusterNamespace: string
     compliant: 'NonCompliant' | 'Compliant'
 }
