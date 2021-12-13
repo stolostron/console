@@ -2,16 +2,9 @@
 import { MemoryRouter, Route } from 'react-router-dom'
 import { render, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
-import { channelsState, subscriptionsState } from '../../atoms'
+import { subscriptionsState } from '../../atoms'
 import { NavigationPath } from '../../NavigationPath'
-import {
-    Channel,
-    ChannelApiVersion,
-    ChannelKind,
-    Subscription,
-    SubscriptionApiVersion,
-    SubscriptionKind,
-} from '../../resources'
+import { Subscription, SubscriptionApiVersion, SubscriptionKind } from '../../resources'
 import { nockIgnoreRBAC } from '../../lib/nock-util'
 import { clickByTestId, waitForText } from '../../lib/test-util'
 import AdvancedConfiguration from './AdvancedConfiguration'
@@ -55,43 +48,13 @@ const mockSubscription2: Subscription = {
     },
 }
 
-const mockChannel1: Channel = {
-    kind: ChannelKind,
-    apiVersion: ChannelApiVersion,
-    metadata: {
-        name: 'ggithubcom-app-samples',
-        namespace: 'ggithubcom-app-samples-ns',
-        uid: '5ffea57f-a6a0-4a05-9606-3f1bb75ccdab',
-    },
-    spec: {
-        pathname: 'https://github.com/fxiang1/app-samples.git',
-        type: 'Git',
-    },
-}
-
-const mockChannel2: Channel = {
-    kind: ChannelKind,
-    apiVersion: ChannelApiVersion,
-    metadata: {
-        name: 'ggithubcom-app-samples2',
-        namespace: 'ggithubcom-app-samples2-ns',
-        uid: '5ffea57f-a6a0-4a05-9606-3f1bb75ccdab',
-    },
-    spec: {
-        pathname: 'https://github.com/fxiang1/app-samples.git',
-        type: 'Git',
-    },
-}
-
-const mockChannels = [mockChannel1, mockChannel2]
 const mockSubscriptions = [mockSubscription1, mockSubscription2]
 
-function TestAdvancedConfigurationPage(props: { subscriptions?: Subscription[]; channels?: Channel[] }) {
+function TestAdvancedConfigurationPage() {
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
-                snapshot.set(subscriptionsState, props.subscriptions || [])
-                snapshot.set(channelsState, props.channels || [])
+                snapshot.set(subscriptionsState, mockSubscriptions)
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>
@@ -111,26 +74,24 @@ describe('advanced configuration page', () => {
     beforeEach(nockIgnoreRBAC)
 
     test('should render the table with subscriptions', async () => {
-        render(<TestAdvancedConfigurationPage subscriptions={mockSubscriptions} />)
+        render(<TestAdvancedConfigurationPage />)
         await waitForText(mockSubscription1.metadata!.name!)
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
 
-    test('should render the table with channels', async () => {
-        render(<TestAdvancedConfigurationPage channels={mockChannels} />)
+    test('should click channel option', async () => {
+        render(<TestAdvancedConfigurationPage />)
         await clickByTestId('channels')
-        // this would cause failure
-        // await waitForText(mockChannel1.metadata!.name!)
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
 
-    test('should render the table with placements', async () => {
+    test('should click placement option', async () => {
         render(<TestAdvancedConfigurationPage />)
         await clickByTestId('placements')
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
 
-    test('should render the table with placement rules', async () => {
+    test('should click placement rule option', async () => {
         render(<TestAdvancedConfigurationPage />)
         await clickByTestId('placementrules')
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
