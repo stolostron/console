@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { cloneDeep } from 'lodash'
 import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -7,7 +6,7 @@ import { CIM } from 'openshift-assisted-ui-lib'
 
 import { NavigationPath } from '../../../../../../NavigationPath'
 import EditAICluster from './EditAICluster'
-import { ClusterImageSet, ClusterImageSetApiVersion, ClusterImageSetKind, ConfigMap } from '../../../../../../resources'
+import { ClusterImageSet, ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../../../resources'
 import {
     agentClusterInstallsState,
     agentsState,
@@ -17,6 +16,7 @@ import {
     infraEnvironmentsState,
 } from '../../../../../../atoms'
 import { clickByText, waitForTestId, waitForText } from '../../../../../../lib/test-util'
+import { mockAgents, mockConfigMapAI } from '../../CreateCluster/CreateCluster.sharedmocks'
 
 const clusterName = 'my-cluster-name'
 const baseDomain = 'base.domain.com'
@@ -124,55 +124,6 @@ const mockAgentClusterInstall: CIM.AgentClusterInstallK8sResource = {
     },
 }
 
-const mockConfigMapAI: ConfigMap = {
-    apiVersion: 'v1',
-    kind: 'ConfigMap',
-    metadata: {
-        name: 'assisted-service-config',
-        namespace: 'assisted-installer',
-    },
-    data: {},
-}
-
-const mockAgent = {
-    apiVersion: 'agent-install.openshift.io/v1beta1',
-    kind: 'Agent',
-    metadata: {
-        labels: {
-            'agentclusterinstalls.extensions.hive.openshift.io/location': 'brno',
-            'infraenvs.agent-install.openshift.io': clusterName,
-        },
-        name: '0f093a00-5df8-40d7-840f-bca56216471',
-        namespace: clusterName,
-    },
-    spec: {
-        approved: true,
-        clusterDeploymentName: {
-            name: clusterName,
-            namespace: clusterName,
-        },
-        hostname: 'host',
-        role: '',
-    },
-    status: {
-        conditions: [],
-        debugInfo: {
-            state: 'known',
-            stateInfo: '',
-        },
-        inventory: {},
-        ntpSources: [],
-        progress: {},
-        role: 'auto-assign',
-    },
-}
-const mockAgents = Array.from({ length: 5 }, (_val, index) => {
-    const mockedAgent = cloneDeep(mockAgent)
-    mockedAgent.metadata.name = `${mockedAgent.metadata.name}${index}`
-    mockedAgent.spec.hostname = `${mockedAgent.spec.hostname}-${index}`
-    return mockedAgent
-})
-
 const Component = () => {
     return (
         <RecoilRoot
@@ -213,7 +164,9 @@ describe('Edit AI Cluster', () => {
         await waitForText('OpenShift ocp-release48')
 
         await clickByText('Next')
-        await waitForTestId('form-input-autoSelectHosts-field')
+
+        // Based on the setup, this is the AI flow
+        await waitForText('Add hosts to an')
 
         /* TODO(mlibra): Subsequent steps should be covered by AI UI Lib tests. So far we can be sure that the AI UI component has been integrated into the ACM.
 
