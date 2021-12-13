@@ -306,7 +306,12 @@ publish: Internal
   openstack:
     cloud: {{{../../cloud}}}
     externalNetwork: {{{../../externalNetworkName}}}
-    lbFloatingIP: {{{../../apiFloatingIP}}}
+    {{#if ../../lbFloatingIP}}
+    lbFloatingIP: {{{../../lbFloatingIP}}}
+    {{/if}}
+    {{#if ../../apiFloatingIP}}
+    apiFloatingIP: {{{../../apiFloatingIP}}}
+    {{/if}}
     ingressFloatingIP: {{{../../ingressFloatingIP}}}
     {{#if ../../clusterOSImage}}
     clusterOSImage: >-
