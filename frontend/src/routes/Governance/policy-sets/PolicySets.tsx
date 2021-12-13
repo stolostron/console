@@ -24,8 +24,8 @@ import {
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, useCallback, useContext, useState } from 'react'
-// import { useRecoilState } from 'recoil'
-// import { policySetsState } from '../../../atoms'
+import { useRecoilState } from 'recoil'
+import { policySetsState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 // import { deleteResource } from '../../../resources'
 import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../resources/policy-set'
@@ -33,187 +33,10 @@ import { PolicySetSidebar } from './PolicySetDetailSidebar'
 
 export default function PolicySetsPage() {
     const { t } = useTranslation()
-    // const [policySets] = useRecoilState(policySetsState)
+    const [policySets] = useRecoilState(policySetsState)
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const [cardViewSearch, setCardViewSearch] = useState('')
     const [cardOpenIdx, setCardOpenIdx] = useState<number>()
-    const policySets: PolicySet[] = [
-        {
-            apiVersion: 'policy.open-cluster-management.io/v1',
-            kind: 'PolicySet',
-            metadata: {
-                name: 'no-data-policyset',
-                namespace: 'kube-system',
-            },
-            spec: {
-                description: 'Policy set with no data',
-                policies: [],
-            },
-            status: {
-                placement: [
-                    {
-                        placement: 'placement1',
-                        placementBinding: 'binding1',
-                        placementDecisions: ['placementdecision1'],
-                    },
-                ],
-                results: [],
-            },
-        },
-        {
-            apiVersion: 'policy.open-cluster-management.io/v1',
-            kind: 'PolicySet',
-            metadata: {
-                name: 'pci-1',
-                namespace: 'default',
-            },
-            spec: {
-                description: 'Policies for PCI-1 compliance',
-                policies: ['policy-pod', 'policy-namespace'],
-            },
-            status: {
-                placement: [
-                    {
-                        placement: 'placement1',
-                        placementBinding: 'binding1',
-                        placementDecisions: ['placementdecision1'],
-                    },
-                ],
-                results: [
-                    {
-                        policy: 'policy-pod',
-                        compliant: 'NonCompliant',
-                        clusters: [
-                            {
-                                clusterName: 'managed1',
-                                clusterNamespace: 'managed1',
-                                compliant: 'NonCompliant',
-                            },
-                            {
-                                clusterName: 'managed2',
-                                clusterNamespace: 'managed2',
-                                compliant: 'NonCompliant',
-                            },
-                        ],
-                    },
-                    {
-                        policy: 'policy-namespace',
-                        message: 'policy-namespace not found',
-                    },
-                ],
-            },
-        },
-        {
-            apiVersion: 'policy.open-cluster-management.io/v1',
-            kind: 'PolicySet',
-            metadata: {
-                name: 'pci-2',
-                namespace: 'kube-system',
-            },
-            spec: {
-                description: 'Policies for PCI-2 compliance',
-                policies: ['policy-role', 'policy-rolebinding', 'policy-securitycontextconstraints'],
-            },
-            status: {
-                placement: [
-                    {
-                        placement: 'placement1',
-                        placementBinding: 'binding1',
-                        placementDecisions: ['placementdecision1'],
-                    },
-                ],
-                results: [
-                    {
-                        policy: 'policy-testing',
-                        compliant: 'NonCompliant',
-                        clusters: [
-                            {
-                                clusterName: 'local-cluster',
-                                clusterNamespace: 'local-cluster',
-                                compliant: 'Compliant',
-                            },
-                            {
-                                clusterName: 'managed1',
-                                clusterNamespace: 'managed1',
-                                compliant: 'NonCompliant',
-                            },
-                            {
-                                clusterName: 'managed2',
-                                clusterNamespace: 'managed2',
-                                compliant: 'NonCompliant',
-                            },
-                        ],
-                    },
-                    {
-                        policy: 'policy-role',
-                        compliant: 'NonCompliant',
-                        clusters: [
-                            {
-                                clusterName: 'local-cluster',
-                                clusterNamespace: 'local-cluster',
-                                compliant: 'Compliant',
-                            },
-                            {
-                                clusterName: 'managed2',
-                                clusterNamespace: 'managed2',
-                                compliant: 'NonCompliant',
-                            },
-                        ],
-                    },
-                    {
-                        policy: 'policy-securitycontextconstraints',
-                        compliant: 'Compliant',
-                        clusters: [
-                            {
-                                clusterName: 'local-cluster',
-                                clusterNamespace: 'local-cluster',
-                                compliant: 'Compliant',
-                            },
-                        ],
-                    },
-                ],
-            },
-        },
-        {
-            apiVersion: 'policy.open-cluster-management.io/v1',
-            kind: 'PolicySet',
-            metadata: {
-                name: 'pci-3',
-                namespace: 'kube-system',
-            },
-            spec: {
-                description: 'Policies for PCI-2 compliance',
-                policies: ['policy-role', 'policy-rolebinding', 'policy-securitycontextconstraints'],
-            },
-            status: {
-                placement: [
-                    {
-                        placement: 'placement1',
-                        placementBinding: 'binding1',
-                        placementDecisions: ['placementdecision1'],
-                    },
-                ],
-                results: [
-                    {
-                        policy: 'policy-role',
-                        compliant: 'NonCompliant',
-                        clusters: [
-                            {
-                                clusterName: 'local-cluster',
-                                clusterNamespace: 'local-cluster',
-                                compliant: 'Compliant',
-                            },
-                            {
-                                clusterName: 'managed2',
-                                clusterNamespace: 'managed2',
-                                compliant: 'Compliant',
-                            },
-                        ],
-                    },
-                ],
-            },
-        },
-    ]
 
     function onCardToggle(cardIdx: number) {
         if (cardOpenIdx === cardIdx) {
