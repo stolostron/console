@@ -209,7 +209,12 @@ const controlDataOST = [
         name: 'creation.ocp.cluster.ost.lb.floating.ip',
         placeholder: 'placeholder.creation.ocp.cluster.ost.lb.floating.ip',
         tooltip: 'tooltip.creation.ocp.cluster.ost.lb.floating.ip',
-        hidden: isHidden_gt_OCP46,
+        hidden: (control, controlData) => {
+            if (isHidden_gt_OCP46(control, controlData)) {
+                control.active = undefined
+                return true
+            }
+        },
         active: '',
         validation: VALIDATE_IP,
     },
@@ -219,7 +224,12 @@ const controlDataOST = [
         name: 'creation.ocp.cluster.ost.api.floating.ip',
         placeholder: 'placeholder.creation.ocp.cluster.ost.api.floating.ip',
         tooltip: 'tooltip.creation.ocp.cluster.ost.api.floating.ip',
-        hidden: isHidden_lt_OCP48,
+        hidden: (control, controlData) => {
+            if (!isHidden_gt_OCP46(control, controlData)) {
+                control.active = undefined
+                return true
+            }
+        },
         active: '',
         validation: VALIDATE_IP,
     },
