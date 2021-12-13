@@ -510,7 +510,6 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
 export const isHidden_gt_OCP46 = (control, controlData) => {
     const singleNodeFeatureFlag = controlData.find(({ id }) => id === 'singleNodeFeatureFlag')
     const imageSet = controlData.find(({ id }) => id === 'imageSet')
-    //NOTE: We will need to adjust this in the future for new OCP versions!
     if (
         singleNodeFeatureFlag &&
         singleNodeFeatureFlag.active &&
