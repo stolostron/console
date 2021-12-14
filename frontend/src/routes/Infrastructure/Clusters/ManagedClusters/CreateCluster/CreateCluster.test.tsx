@@ -31,7 +31,7 @@ import {
 } from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, pick } from 'lodash'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
@@ -996,7 +996,7 @@ describe('CreateCluster', () => {
 
         const initialNocks = [
             nockList(clusterImageSet, mockClusterImageSet),
-            nockList(bareMetalAsset, mockBareMetalAssets),
+            nockList(pick(bareMetalAsset, ['apiVersion', 'kind']), mockBareMetalAssets),
         ]
 
         // create the form
@@ -1043,7 +1043,7 @@ describe('CreateCluster', () => {
         const createNocks = [
             // list only 4 bmas so that one is created
             // creates 1 less bmas so that backend creates that 1
-            nockList(bareMetalAsset, mockBareMetalAssets2),
+            nockList(pick(bareMetalAsset, ['apiVersion', 'kind']), mockBareMetalAssets2),
 
             // create bma namespace
             nockCreate(mockBmaProject, mockBmaProjectResponse),
@@ -1089,7 +1089,7 @@ describe('CreateCluster', () => {
 
         const initialNocks = [
             nockList(clusterImageSet, mockClusterImageSet),
-            nockList(bareMetalAsset, mockBareMetalAssets),
+            nockList(pick(bareMetalAsset, ['apiVersion', 'kind']), mockBareMetalAssets),
         ]
 
         // create the form
@@ -1136,7 +1136,7 @@ describe('CreateCluster', () => {
         const createNocks = [
             // list only 4 bmas so that one is created
             // creates 1 less bmas so that backend creates that 1
-            nockList(bareMetalAsset, mockBareMetalAssets2),
+            nockList(pick(bareMetalAsset, ['apiVersion', 'kind']), mockBareMetalAssets2),
 
             // create bma namespace
             nockCreate(mockBmaProject, mockBmaProjectResponse),

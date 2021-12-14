@@ -946,6 +946,8 @@
     "hibernating": "Stopping",
     "hibernating.tooltip": "This action is currently unavailable because the cluster is powered down.",
     "Home": "Home",
+    "host.action.title.delete": "Delete host?",
+    "host.action.message.delete": "You are about to delete host. The host will need to be rediscovered before using it again.",
     "How do I configure a proxy?": "How do I configure a proxy?",
     "How do I configure for disconnected installation?": "How do I configure for disconnected installation?",
     "How do I get Amazon Web Service credentials?": "How do I get Amazon Web Service credentials?",

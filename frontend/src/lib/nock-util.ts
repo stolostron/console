@@ -76,13 +76,13 @@ export function nockOptions<Resource extends IResource>(resource: Resource, resp
 }
 
 export function nockList<Resource extends IResource>(
-    resource: { apiVersion: string; kind: string },
+    resource: { apiVersion: string; kind: string; metadata?: { namespace?: string } },
     resources: Resource[] | IResource,
     labels?: string[],
     query?: object
 ) {
     let nockScope = nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(
-        getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind })
+        getResourceApiPath({ apiVersion: resource.apiVersion, kind: resource.kind, metadata: resource.metadata })
     )
 
     if (labels) {

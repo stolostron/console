@@ -2,6 +2,8 @@
 import { useEffect, useState, useMemo } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'
+import { CIM } from 'openshift-assisted-ui-lib'
+
 import { patchResource } from '../../../../../../resources'
 import {
     agentClusterInstallsState,
@@ -11,14 +13,13 @@ import {
     configMapsState,
 } from '../../../../../../atoms'
 import {
-    canDeleteAgent,
     canEditHost,
     fetchNMState,
     fetchSecret,
     getAIConfigMap,
     getClusterDeploymentLink,
     getOnCreateBMH,
-    getOnDeleteHost,
+    useOnDeleteHost,
     getOnSaveISOParams,
     onApproveAgent,
     onDiscoveryHostsNext,
@@ -28,12 +29,13 @@ import {
     onSaveNetworking,
     useBMHsOfAIFlow,
     useInfraEnv,
+    useNMStatesOfNamespace,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { isBMPlatform } from '../../../../InfraEnvironments/utils'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { AgentK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
+
 const {
     ClusterDeploymentWizard,
     FeatureGateContextProvider,
@@ -52,7 +54,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
 }) => {
     const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
     const history = useHistory()
-    const [editAgent, setEditAgent] = useState<AgentK8sResource | undefined>()
+    const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
     const [clusterImageSets, clusterDeployments, agentClusterInstalls, agents, configMaps] = useRecoilValue(
         waitForAll([
             clusterImageSetsState,
@@ -72,6 +74,12 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const infraEnv = useInfraEnv({ name, namespace })
     // TODO(mlibra): Arn't we missing Bare Metal Hosts in the tables???
     const filteredBMHs = useBMHsOfAIFlow({ name, namespace })
+
+    const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
+        { open: false }
+    )
+    const nmStates = useNMStatesOfNamespace(infraEnv.metadata.namespace)
+    const onDeleteHost = useOnDeleteHost(setBulkModalProps, filteredBMHs, nmStates)
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
 
@@ -99,11 +107,11 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
 
     const hostActions = {
         canEditHost: () => true,
-        onEditHost: (agent: AgentK8sResource) => {
+        onEditHost: (agent: CIM.AgentK8sResource) => {
             setEditAgent(agent)
         },
         canEditRole: () => true,
-        onEditRole: (agent: AgentK8sResource, role: string | undefined) => {
+        onEditRole: (agent: CIM.AgentK8sResource, role: string | undefined) => {
             return patchResource(agent, [
                 {
                     op: 'replace',
@@ -163,6 +171,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         <LoadingState />
     ) : (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
+            <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
             <ClusterDeploymentWizard
                 className="cluster-deployment-wizard"
                 clusterImages={clusterImageSets}
@@ -175,8 +184,10 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
                 onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents })}
                 onApproveAgent={onApproveAgent}
-                onDeleteHost={getOnDeleteHost(filteredBMHs)}
-                canDeleteAgent={canDeleteAgent}
+                onDeleteHost={onDeleteHost}
+                canDeleteAgent={(agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) =>
+                    !!nmStates && (!!agent || !!bmh)
+                }
                 onSaveAgent={onSaveAgent}
                 canEditHost={canEditHost}
                 onSaveBMH={onSaveBMH}
