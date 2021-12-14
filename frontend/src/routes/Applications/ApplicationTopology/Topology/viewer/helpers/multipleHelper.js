@@ -1,7 +1,7 @@
-  function attrsFunction(selection, map) {
-    return selection.each(function() {
+function attrsFunction(selection, map) {
+    return selection.each(function(d, i, ns) {
       var x = map.apply(selection, arguments);
-      for (var name in x) selection.attr(name, x[name]);
+      for (var name in x) ns[i].setAttribute(name, x[name]);
     });
 }
   
@@ -10,14 +10,14 @@
     return selection;
   }
   
-  export function attrs(selection, map) {
-    return (typeof map === "function" ? attrsFunction : attrsObject)(selection, map);    
+  export function attrs(selection, map, s) {
+    return (typeof map === "function" ? attrsFunction : attrsObject)(selection, map, s);    
   }
 
   function stylesFunction(selection, map, priority) {
-    return selection.each(function() {
+    return selection.each(function(d, i, ns) {
       var x = map.apply(selection, arguments);
-      for (var name in x) selection.style(name, x[name], priority);
+      for (var name in x) ns[i].style[name] = x[name];
     });
   }
   

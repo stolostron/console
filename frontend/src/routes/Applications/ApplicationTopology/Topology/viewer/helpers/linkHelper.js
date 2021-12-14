@@ -108,7 +108,7 @@ export default class LinkHelper {
                 .append('textPath')
                 .call(attrs, ({ uid }) => {
                     return {
-                        'xlink:href': `#link-${uid}`,
+                        href: `#link-${uid}`,
                     }
                 })
                 .call(styles, {
@@ -251,7 +251,8 @@ export const dragLinks = (svg, d, typeToShapeMap) => {
                 // flip line so that line label isn't upside down :(
                 // which way does the arrow/label go
                 layout1.isSwapped = !isLoop && source.x > target.x
-                path.attrs(() => {
+                path
+                .call(attrs,() => {
                     return {
                         ...getLinkMarkers(layout1),
                     }

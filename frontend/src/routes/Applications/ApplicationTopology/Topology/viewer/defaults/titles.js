@@ -16,7 +16,7 @@ export const getNodeTitle = (node) => {
     return _.get(node, 'specs.title', '')
 }
 
-export const getSectionTitles = (clusters, types, environs, locale) => {
+export const getSectionTitles = (clusters, types, environs, t) => {
     const set = new Set()
     types.forEach((type) => {
         switch (type) {
@@ -25,30 +25,30 @@ export const getSectionTitles = (clusters, types, environs, locale) => {
                 break
 
             case 'pod':
-                set.add(t('topology.title.pods'))
+                set.add(t('pods'))
                 break
 
             case 'service':
-                set.add(t('topology.title.services'))
+                set.add(t('services'))
                 break
 
             case 'container':
-                set.add(t('topology.title.containers'))
+                set.add(t('containers'))
                 break
 
             case 'host':
-                set.add(t('topology.title.hosts'))
+                set.add(t('hosts'))
                 break
 
             case 'internet':
-                set.add(t('topology.title.internet'))
+                set.add(t('internet'))
                 break
 
             case 'deployment':
             case 'daemonset':
             case 'statefulset':
             case 'cronjob':
-                set.add(t('topology.title.controllers'))
+                set.add(t('controllers'))
                 break
 
             default:
@@ -58,65 +58,74 @@ export const getSectionTitles = (clusters, types, environs, locale) => {
     return Array.from(set).sort().join(', ')
 }
 
-export const getLegendTitle = (type, locale) => {
+export const getLegendTitle = (type, t) => {
     if (type === undefined) {
         return ''
     }
-    switch (type) {
-        case 'deploymentconfig':
-        case 'replicationcontroller':
-        case 'daemonset':
-        case 'replicaset':
-        case 'configmap':
-        case 'ansiblejob':
-        case 'customresource':
-        case 'statefulset':
-        case 'storageclass':
-        case 'serviceaccount':
-        case 'securitycontextconstraints':
-        case 'inmemorychannel':
-        case 'integrationplatform':
-        case 'persistentvolumeclaim':
-            return t(`topology.legend.title.${type}`)
+    // switch (type) {
+    //     case 'deploymentconfig':
+    //     case 'replicationcontroller':
+    //     case 'daemonset':
+    //     case 'replicaset':
+    //     case 'configmap':
+    //     case 'ansiblejob':
+    //     case 'customresource':
+    //     case 'statefulset':
+    //     case 'storageclass':
+    //     case 'serviceaccount':
+    //     case 'securitycontextconstraints':
+    //     case 'inmemorychannel':
+    //     case 'integrationplatform':
+    //     case 'persistentvolumeclaim':
+    //         return t(`topology.legend.title.${type}`)
 
-        default:
-            return type.charAt(0).toUpperCase() + type.slice(1)
-    }
+    //     default:
+            return (type.charAt(0).toUpperCase() + type.slice(1))
+            .replace('stream', ' Stream')
+            .replace('channel', ' Channel')
+            .replace('controller', 'Controller')
+    //}
 }
 
 // Convert types to OpenShift/Kube entities
-export function kubeNaming(type) {
+export function kubeNaming(type, t) {
     if (type === undefined) {
         return ''
     }
-    switch (type) {
-        case 'deploymentconfig':
-        case 'replicationcontroller':
-        case 'daemonset':
-        case 'replicaset':
-        case 'configmap':
-        case 'ansiblejob':
-        case 'customresource':
-        case 'statefulset':
-        case 'storageclass':
-        case 'serviceaccount':
-        case 'securitycontextconstraints':
-        case 'inmemorychannel':
-        case 'integrationplatform':
-        case 'persistentvolumeclaim':
-        case 'imagestream':
-            return t(`topology.legend.title.${type}`)
+    // switch (type) {
+    //     case 'deploymentconfig':
+    //     case 'replicationcontroller':
+    //     case 'daemonset':
+    //     case 'replicaset':
+    //     case 'configmap':
+    //     case 'ansiblejob':
+    //     case 'customresource':
+    //     case 'statefulset':
+    //     case 'storageclass':
+    //     case 'serviceaccount':
+    //     case 'securitycontextconstraints':
+    //     case 'inmemorychannel':
+    //     case 'integrationplatform':
+    //     case 'persistentvolumeclaim':
+    //     case 'imagestream':
+    //         return t(`topology.legend.title.${type}`)
 
-        default:
+    //     default:
             return type.charAt(0).toUpperCase() + type.slice(1)
-    }
+            .replace('stream', 'Stream')
+            .replace('channel', 'Channel')
+            .replace('source', 'Source')
+            .replace('config', 'Config')
+            .replace('account', 'Account')
+            .replace('controller', 'Controller')
+    //}
 }
 
 // Make nice carriage return for long titles
 export function titleBeautify(maxStringLength, resourceName) {
     const rx_regex = /[A-Z][a-z']+(?: [A-Z][a-z]+)*/g
     var wordsList = resourceName.match(rx_regex)
-    if (Math.max(0, maxStringLength) / resourceName.length > 0) {
+    if (wordsList && Math.max(0, maxStringLength) / resourceName.length > 0) {
         for (let idx = wordsList.length - 1; idx > 0; idx--) {
             if (wordsList.slice(0, idx).join('').length <= maxStringLength) {
                 wordsList.splice(idx, 0, '\n')

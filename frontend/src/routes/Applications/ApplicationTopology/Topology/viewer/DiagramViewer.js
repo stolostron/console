@@ -22,14 +22,12 @@ import LayoutHelper from './helpers/layoutHelper'
 import ZoomHelper from './helpers/zoomHelper'
 import TitleHelper from './helpers/titleHelper'
 import LinkHelper, { defineLinkMarkers } from './helpers/linkHelper'
-import NodeHelper, { fixedD3, showMatches, setSelections } from './helpers/nodeHelper'
+import NodeHelper, { showMatches, setSelections } from './helpers/nodeHelper'
 import * as c from './constants.js'
 import '../css/topology-link.css'
 import '../css/topology-node.css'
 import '../css/topology-icons.css'
 import _ from 'lodash'
-// to fix event issue with d3
-import { event as currentEvent } from 'd3-selection'
 
 class DiagramViewer extends React.Component {
     static propTypes = {
@@ -45,7 +43,7 @@ class DiagramViewer extends React.Component {
         handleNodeSelected: PropTypes.func,
         isReloading: PropTypes.bool,
         links: PropTypes.array,
-        locale: PropTypes.string,
+        t: PropTypes.func,
         nodes: PropTypes.array,
         processActionLink: PropTypes.func,
         searchName: PropTypes.string,
@@ -286,7 +284,7 @@ class DiagramViewer extends React.Component {
                     </div>
                 </div>
                 <span className="diagramControls">
-                    {showChannelsControl && <ChannelControl channelControl={channelControl} locale={locale} />}
+                    {showChannelsControl && <ChannelControl channelControl={channelControl} t={this.props.t} />}
                     <Zoom getZoomHelper={this.getZoomHelper} getViewContainer={this.getViewContainer} t={this.props.t}/>
                 </span>
                 {validNodeSelected && (
@@ -304,13 +302,14 @@ class DiagramViewer extends React.Component {
                         t={this.props.t}
                     />
                 )}
-                {showLegendView && <LegendView locale={locale} onClose={handleLegendClose} />}
+                {showLegendView && <LegendView t={this.props.t} onClose={handleLegendClose} />}
             </div>
         )
     }
 
-    handleNodeClick = (node) => {
-        currentEvent.stopPropagation()
+    handleNodeClick = (evt) => {
+        evt.stopPropagation()
+        const node = d3.select(evt.target).datum()
 
         // clear any currently selected nodes
         const svg = d3.select(`#${c.DIAGRAM_SVG_ID}`)
@@ -384,7 +383,7 @@ class DiagramViewer extends React.Component {
 
         // add layers to svg
         if (!this.svg) {
-            this.svg = fixedD3.select(`#${c.DIAGRAM_SVG_ID}`)
+            this.svg = d3.select(`#${c.DIAGRAM_SVG_ID}`)
             this.svg.append('g').attr('class', 'titles')
             this.svg.append('g').attr('class', 'links') // Links must be added before nodes, so nodes are painted on top.
             this.svg.append('g').attr('class', 'nodes')
@@ -450,7 +449,7 @@ class DiagramViewer extends React.Component {
             linkHelper.moveLinks(transition, currentZoom, searchChanged)
 
             // Create or refresh the nodes in the diagram.
-            const nodeHelper = new NodeHelper(this.svg, laidoutNodes, typeToShapeMap, this.showsShapeTitles, () => {
+            const nodeHelper = new NodeHelper(this.svg, laidoutNodes, typeToShapeMap, this.showsShapeTitles, this.props.t, () => {
                 return this.clientRef
             })
             nodeHelper.updateDiagramNodes(currentZoom, this.handleNodeClick, this.handleNodeDrag)
@@ -458,7 +457,7 @@ class DiagramViewer extends React.Component {
 
             // Create or refresh the titles in the diagram.
             if (
-                this.diagramOptions.showGroupTitles !== false &&
+                this.diagramOptions.showGroupTitles !== false && titles.length>1 &&
                 (titles.length || searchChanged || (this.lastTitlesLength && titles.length !== this.lastTitlesLength))
             ) {
                 const titleHelper = new TitleHelper(this.svg, titles)

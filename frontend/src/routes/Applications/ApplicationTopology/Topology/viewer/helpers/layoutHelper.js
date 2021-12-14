@@ -1252,7 +1252,7 @@ export default class LayoutHelper {
     // else just section types
     getSectionTitle = (clusters, types, environment) => {
         if (this.getSectionTitles) {
-            return this.getSectionTitles(clusters, types, environment, this.locale)
+            return this.getSectionTitles(clusters, types, environment, this.t)
         }
         return ''
     }

@@ -13,6 +13,7 @@
 import * as d3 from 'd3'
 import SVG from 'svg.js'
 import { counterZoom } from '../../utils/diagram-helpers'
+import { attrs, styles } from './multipleHelper'
 
 export default class TitleHelper {
     /**
@@ -77,13 +78,13 @@ export default class TitleHelper {
             .select('g.titles')
             .selectAll('g.title')
             .attr('transform', currentZoom)
-            .styles(() => {
+            .call(styles, () => {
                 return {
                     opacity: searchChanged ? 0.0 : 1.0,
                 }
             })
 
-        titles.transition(transition).styles(() => {
+        titles.transition(transition).call(styles, () => {
             return {
                 opacity: 1.0,
             }
@@ -92,7 +93,7 @@ export default class TitleHelper {
         titles.selectAll('g.titleLabel').each((d, i, ns) => {
             const { x, y } = d
             const titleLabel = d3.select(ns[i])
-            titleLabel.selectAll('text').attrs(() => {
+            titleLabel.selectAll('text').call( attrs, () => {
                 return {
                     x: x,
                     y: y,

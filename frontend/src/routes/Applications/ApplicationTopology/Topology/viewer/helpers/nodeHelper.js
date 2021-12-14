@@ -10,7 +10,6 @@
 'use strict'
 
 import * as d3 from 'd3'
-//import { selection } from 'd3-selection'
 import SVG from 'svg.js'
 import { dragLinks } from './linkHelper'
 import { counterZoom, getTooltip } from '../../utils/diagram-helpers'
@@ -31,28 +30,9 @@ const gArgoAppCountText = 'g.argoAppCountText'
 const useArgoAppCountIcon = 'use.argoAppCountIcon'
 const dotArgoAppCountIcon = '.argoAppCountIcon'
 
-// // fix d3-selection-multi not added to d3
-// import 'd3-selection-multi'
-// //eslint-disable-next-line
-// import { selection } from 'd3-selection'
-// d3.selection.prototype.styles = selection.prototype.styles
-// d3.selection.prototype.attrs = selection.prototype.attrs
-// d3.selection.prototype.interrupt = selection.prototype.interrupt
-// d3.selection.prototype.transition = selection.prototype.transition
-
-// fix events for d3
-import { drag } from 'd3-drag'
-//eslint-disable-next-line
-import { zoom, zoomIdentity } from 'd3-zoom'
-//eslint-disable-next-line
-import * as select from 'd3-selection'
-export const fixedD3 = Object.assign(select, { drag, zoom, zoomIdentity })
-//eslint-disable-next-line
-import { event as currentEvent } from 'd3-selection'
-
 import { attrs, styles } from './multipleHelper'
 
-const opacity0 = () => {
+const hideTooltip = () => {
     return {
         display: 'none',
         opacity: 0,
@@ -64,34 +44,29 @@ export const tooltip = d3
     .append('div')
     .attr('class', 'tooltip')
     .call(styles, () => {
-        return opacity0()
+        return hideTooltip()
     })
     .on('mouseover', () => {
         tooltip.interrupt().style('opacity', 1)
     })
     .on('mouseleave', () => {
         tooltip.call(styles, () => {
-            return opacity0()
+            return hideTooltip()
         })
     })
-
-// const svg = document.createElement('svg')
-// const body = document.getElementsByTagName("BODY")[0]
-// body.prepend(svg)
-
-    
 export default class NodeHelper {
     /**
      * Helper class to be used by TopologyDiagram.
      *
      * Contains functions to draw and manage nodes in the diagram.
      */
-    constructor(svg, nodes, typeToShapeMap, showsShapeTitles, getClientRef) {
+    constructor(svg, nodes, typeToShapeMap, showsShapeTitles, t, getClientRef) {
         this.svg = svg
         this.nodes = nodes
         this.typeToShapeMap = typeToShapeMap
         this.getClientRef = getClientRef
         this.showsShapeTitles = showsShapeTitles
+        this.t = t
     }
 
     // add or remove nodes based on data in this.nodes
@@ -130,7 +105,7 @@ export default class NodeHelper {
                 nodeClickHandler(d)
             })
             // accessability--user presses enter key when node has focus
-            .on('keypress', (d) => {
+            .on('keypress', (d, c, f) => {
                 if (currentEvent.keyCode === 32 || currentEvent.keyCode === 13) {
                     tooltip.style('display', 'none')
                     nodeClickHandler(d)
@@ -139,8 +114,8 @@ export default class NodeHelper {
             // tooltip
             .on('mouseover', ({currentTarget}, { layout }) => {
                 const bb = currentTarget.getBoundingClientRect()
-                tooltip.style('display', undefined)
                 if (layout.tooltips && layout.tooltips.length > 0) {
+                    tooltip.style('display', undefined)
                     tooltip.interrupt().transition().delay(200).duration(100).style('opacity', 1)
                     tooltip
                         .html(() => {
@@ -205,7 +180,7 @@ export default class NodeHelper {
     createNodePulse = (nodes) => {
         nodes.append('use').call(attrs, () => {
             return {
-                'xlink:href': '#diagramShapes_pulse',
+                href: '#diagramShapes_pulse',
                 width: NODE_SIZE * 2,
                 height: NODE_SIZE * 2,
                 visibility: 'hidden',
@@ -218,7 +193,7 @@ export default class NodeHelper {
     createNodeHilites = (nodes) => {
         nodes.append('use').call(attrs,() => {
             return {
-                'xlink:href': '#diagramShapes_circle',
+                href: '#diagramShapes_circle',
                 width: NODE_SIZE - 4,
                 height: NODE_SIZE - 4,
                 tabindex: -1,
@@ -236,7 +211,7 @@ export default class NodeHelper {
                 const shape = this.typeToShapeMap[shapeType] ? this.typeToShapeMap[shapeType].shape : 'other'
                 const classType = this.typeToShapeMap[shapeType] ? this.typeToShapeMap[shapeType].className : 'default'
                 return {
-                    'xlink:href': `#diagramShapes_${shape}`,
+                    href: `#diagramShapes_${shape}`,
                     width: NODE_SIZE,
                     height: NODE_SIZE,
                     tabindex: 1,
@@ -244,7 +219,7 @@ export default class NodeHelper {
                 }
             })
             .call(
-                fixedD3
+                d3
                     .drag()
                     .on('drag', this.dragNode)
                     .on('start', () => {
@@ -272,12 +247,8 @@ export default class NodeHelper {
                 return layout.type === 'subscription' || layout.type === 'subscriptionblocked'
             })
         subscriptionNode.select('use.shape').remove()
-        const subscriptionNodeShape = subscriptionNode.selectAll('use.shape').data(({ specs, layout }) => {
-            const data = {
-                specs: specs,
-                layout: layout,
-            }
-            return [data]
+        const subscriptionNodeShape = subscriptionNode.selectAll('use.shape').data(d => {
+            return [d]
         })
         const subscriptionNodeShapeEnter = subscriptionNodeShape.enter()
 
@@ -302,7 +273,7 @@ export default class NodeHelper {
 
                 return nodeTitleGroup.svg()
             })
-            .call(fixedD3.drag().on('drag', this.dragNode))
+            .call(d3.drag().on('drag', this.dragNode))
     }
 
     createLabels = (draw, nodes) => {
@@ -320,7 +291,7 @@ export default class NodeHelper {
                 nodeLabelGroup
                     .text((add) => {
                         if (layout.type) {
-                            titleBeautify(layout.label.indexOf('\n'), kubeNaming(layout.type))
+                            titleBeautify(layout.label.indexOf('\n'), kubeNaming(layout.type, this.t))
                                 .split('\n')
                                 .forEach((line) => {
                                     add.tspan(line)
@@ -357,7 +328,7 @@ export default class NodeHelper {
 
                 return nodeLabelGroup.svg()
             })
-            .call(fixedD3.drag().on('drag', this.dragNode))
+            .call(d3.drag().on('drag', this.dragNode))
 
             // determine sizes of white opaque background
             .call(this.layoutBackgroundRect)
@@ -388,7 +359,7 @@ export default class NodeHelper {
 
                 return clusterCountTextGroup.svg()
             })
-            .call(fixedD3.drag().on('drag', this.dragNode))
+            .call(d3.drag().on('drag', this.dragNode))
     }
 
     // Only for argo app nodes, put the app count text
@@ -418,7 +389,7 @@ export default class NodeHelper {
 
                 return argoAppTextGroup.svg()
             })
-            .call(fixedD3.drag().on('drag', this.dragNode))
+            .call(d3.drag().on('drag', this.dragNode))
     }
 
     layoutBackgroundRect = (selectionB) => {
@@ -456,7 +427,7 @@ export default class NodeHelper {
             .append('use')
             .call(attrs,({ icon, classType, width, height }) => {
                 return {
-                    'xlink:href': `#diagramIcons_${icon}`,
+                    href: `#diagramIcons_${icon}`,
                     width: `${width}px`,
                     height: `${height}px`,
                     'pointer-events': 'none',
@@ -481,7 +452,7 @@ export default class NodeHelper {
             .append('use')
             .call(attrs,({ icon, classType, width, height }) => {
                 return {
-                    'xlink:href': `#diagramIcons_${icon}`,
+                    href: `#diagramIcons_${icon}`,
                     width: `${width}px`,
                     height: `${height}px`,
                     'pointer-events': 'none',
@@ -506,7 +477,7 @@ export default class NodeHelper {
             .append('use')
             .call(attrs,({ icon, classType, width, height }) => {
                 return {
-                    'xlink:href': `#diagramIcons_${icon}`,
+                    href: `#diagramIcons_${icon}`,
                     width: `${width}px`,
                     height: `${height}px`,
                     'pointer-events': 'none',
@@ -529,7 +500,7 @@ export default class NodeHelper {
             .append('image')
             .call(attrs,({ href, width, height }) => {
                 return {
-                    'xlink:href': href,
+                    href: href,
                     width: `${width}px`,
                     height: `${height}px`,
                     'pointer-events': 'none',
@@ -695,10 +666,12 @@ export default class NodeHelper {
         })
     }
 
-    dragNode = (dp, index, nodeNS) => {
+    dragNode = (evt, dp) => {
         const { layout } = dp
-        const node = d3.select(nodeNS[index].parentNode)
+        const { sourceEvent: {target} } = evt
+        const node = d3.select(target.parentNode)
         tooltip.style('display', 'none')
+
 
         // don't consider it dragged until more then 5 pixels away from original
         if (!layout.undragged) {
@@ -708,8 +681,8 @@ export default class NodeHelper {
             }
         }
 
-        layout.x += currentEvent.dx
-        layout.y += currentEvent.dy
+        layout.x += evt.dx
+        layout.y += evt.dy
         if (Math.hypot(layout.x - layout.undragged.x, layout.y - layout.undragged.y) > 5) {
             // keep dragged distance relative to it section in case the whole section moves
             layout.dragged = {

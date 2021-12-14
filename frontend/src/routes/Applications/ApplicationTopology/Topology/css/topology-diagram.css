@@ -120,12 +120,14 @@
     background-color: #f3f7fb;
 }
 .topologyDiagramContainer .diagramViewerDiagram {
+    width: 100%;
+    height: 100%;
     position: relative;
-    flex-grow: 1;
+    display: flex;
 }
 .topologyDiagramContainer .diagramViewerDiagram .diagramViewerContainerContainer {
     width: 100%;
-    height: calc(100vh - 240px);
+    height: 100%;
     overflow: hidden;
     position: relative;
 }

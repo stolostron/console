@@ -84,11 +84,11 @@ class DetailsView extends React.Component {
         const { shape = 'other', className = 'default' } = typeToShapeMap[resourceType] || {}
         const details = getNodeDetails(currentNode, currentUpdatedNode, activeFilters, t)
         const name = currentNode.type === 'cluster' ? '' : currentNode.name
-        const legend = getLegendTitle(resourceType, locale)
+        const legend = getLegendTitle(resourceType, t)
 
-        const searchLink = createResourceSearchLink(currentNode)
+        const searchLink = createResourceSearchLink(currentNode, t)
         return (
-            <section className="topologyDetails">
+            <div className="topologyDetails">
                 <div className="detailsHeader">
                     <DetailsViewDecorator shape={shape} className={className} />
                     <div>
@@ -112,30 +112,30 @@ class DetailsView extends React.Component {
                     renderThumbVertical={this.renderThumbVertical}
                     className="details-view-container"
                 >
-                    {details.map((detail) => this.renderDetail(detail, locale))}
+                    {details.map((detail) => this.renderDetail(detail, t))}
                 </Scrollbars>
-            </section>
+            </div>
         )
     }
 
-    renderDetail(detail, locale) {
+    renderDetail(detail, t) {
         switch (detail.type) {
             case 'spacer':
                 return this.renderSpacer()
             case 'link':
-                return this.renderLink(detail, true, locale)
+                return this.renderLink(detail, true, t)
             case 'snippet':
-                return this.renderSnippet(detail, locale)
+                return this.renderSnippet(detail, t)
             case 'clusterdetailcombobox':
-                return this.renderClusterDetailComboBox(detail, locale)
+                return this.renderClusterDetailComboBox(detail, t)
             case 'relatedargoappdetails':
-                return this.renderRelatedArgoAppDetails(detail, locale)
+                return this.renderRelatedArgoAppDetails(detail, t)
             default:
-                return this.renderLabel(detail, locale)
+                return this.renderLabel(detail, t)
         }
     }
 
-    renderLabel({ labelKey, labelValue, value, indent, status }, locale) {
+    renderLabel({ labelKey, labelValue, value, indent, status }, t) {
         let label = labelValue
         const fillMap = new Map([
             ['checkmark', '#3E8635'],
@@ -144,7 +144,7 @@ class DetailsView extends React.Component {
             ['pending', '#878D96'],
         ])
         if (labelKey) {
-            label = labelValue ? t(labelKey, [labelValue], locale) : t(labelKey)
+            label = labelValue ? t(labelKey, [labelValue], t) : t(labelKey)
         }
         label = value !== undefined ? `${label}:` : label //add : for 0 values
         const mainSectionClasses = classNames({
@@ -193,7 +193,7 @@ class DetailsView extends React.Component {
         return null
     }
 
-    renderLink({ value, indent, locale }) {
+    renderLink({ value, indent, t }) {
         if (!value) {
             return <div />
         }
@@ -280,7 +280,7 @@ class DetailsView extends React.Component {
         return <div className={'details-view-scrollbar'} style={finalStyle} {...props} />
     }
 
-    renderClusterDetailComboBox({ comboboxdata }, locale) {
+    renderClusterDetailComboBox({ comboboxdata }, t) {
         const { clusterDetailsContainerControl } = this.props
         return (
             <div className="sectionContent" key={Math.random()}>
@@ -289,20 +289,20 @@ class DetailsView extends React.Component {
                     sortedClusterNames={comboboxdata.sortedClusterNames}
                     searchClusters={comboboxdata.searchClusters}
                     clusterID={comboboxdata.clusterID}
-                    locale={locale}
+                    t={t}
                     clusterDetailsContainerControl={clusterDetailsContainerControl}
                 />
             </div>
         )
     }
 
-    renderRelatedArgoAppDetails({ relatedargoappsdata }, locale) {
+    renderRelatedArgoAppDetails({ relatedargoappsdata }, t) {
         const { argoAppDetailsContainerControl } = this.props
         return (
             <div className="sectionContent" key={Math.random()}>
                 <ArgoAppDetailsContainer
                     argoAppList={relatedargoappsdata.argoAppList}
-                    locale={locale}
+                    t={t}
                     argoAppDetailsContainerControl={argoAppDetailsContainerControl}
                 />
             </div>
@@ -323,7 +323,7 @@ DetailsView.propTypes = {
     }),
     getLayoutNodes: PropTypes.func,
     getViewContainer: PropTypes.func,
-    locale: PropTypes.string,
+    t: PropTypes.func,
     nodes: PropTypes.array,
     onClose: PropTypes.func,
     processActionLink: PropTypes.func,

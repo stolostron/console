@@ -15,7 +15,6 @@ import ReactDOM from 'react-dom'
 import ReactDOMServer from 'react-dom/server'
 import PropTypes from 'prop-types'
 import { AcmAlert } from '@open-cluster-management/ui-components'
-import SearchName from './viewer/SearchName'
 import TypeFilterBar, { setActiveTypeFilters } from './viewer/TypeFilterBar'
 import { ResourceFilterModule } from './viewer/ResourceFilterModule'
 import DiagramViewer from './viewer/DiagramViewer'
@@ -46,11 +45,11 @@ class Topology extends React.Component {
         }),
         handleLegendClose: PropTypes.func,
         links: PropTypes.array.isRequired,
-        locale: PropTypes.string,
+        t: PropTypes.func,
         nodes: PropTypes.array.isRequired,
         options: PropTypes.object,
-        portals: PropTypes.object,
         processActionLink: PropTypes.func,
+        searchName: PropTypes.string,
         searchUrl: PropTypes.string,
         selectionControl: PropTypes.shape({
             selectedNode: PropTypes.object,
@@ -67,7 +66,6 @@ class Topology extends React.Component {
         super(props)
         this.state = {
             isLoaded: true,
-            searchName: '',
             availableFilters: {},
             activeFilters: {},
             otherTypeFilters: [],
@@ -96,7 +94,7 @@ class Topology extends React.Component {
             if (!_.isEqual(nodes, this.props.nodes) && !isReloading) {
                 timestamp = new Date().toString()
             }
-            this.staticResourceData.updateNodeStatus(nodes, this.props.locale)
+            this.staticResourceData.updateNodeStatus(nodes, this.props.t)
             const { availableFilters, activeFilters, otherTypeFilters } = this.staticResourceData.getAllFilters(
                 isLoaded,
                 nodes,
@@ -104,7 +102,7 @@ class Topology extends React.Component {
                 prevState.activeFilters,
                 this.knownTypes,
                 userIsFiltering,
-                this.props.locale
+                this.props.t
             )
             return {
                 isLoaded,
@@ -130,14 +128,14 @@ class Topology extends React.Component {
             !_.isEqual(this.props.channelControl, nextProps.channelControl) ||
             !_.isEqual(this.state.availableFilters, nextState.availableFilters) ||
             !_.isEqual(this.state.activeFilters, nextState.activeFilters) ||
-            this.state.searchName !== nextState.searchName ||
+            this.props.searchName !== nextProps.searchName ||
             this.state.fetchChannel !== nextState.fetchChannel ||
             this.state.isLoaded !== nextState.isLoaded
         )
     }
 
     render() {
-        const { fetchControl = {}, locale } = this.props
+        const { fetchControl = {}, t } = this.props
         const { isFailed = false } = fetchControl
 
         if (isFailed) {
@@ -168,19 +166,20 @@ class Topology extends React.Component {
             selectionControl = {},
             channelControl = {},
             processActionLink,
-            locale,
             argoAppDetailsContainerControl,
+            searchName,
+            t,
         } = this.props
         const { isLoaded = true, isReloading = false } = fetchControl
         const { isChangingChannel = false } = channelControl
         const { selectedNode, handleNodeSelected } = selectionControl
-        const { searchName = '', activeFilters, availableFilters, showChannelsControl } = this.state
+        const { activeFilters, availableFilters, showChannelsControl } = this.state
 
         return (
             <div className="topologyDiagramContainer">
-                {this.renderResourceFilterModule()}
-                {this.renderSearchName()}
-                {this.renderTypeFilterBar()}
+                {/* {this.renderResourceFilterModule()} */}
+                {/* {this.renderSearchName()} */}
+                {/* {this.renderTypeFilterBar()} */}
                 <DiagramShapes />
                 <DiagramIcons />
                 <DiagramViewer
@@ -195,7 +194,6 @@ class Topology extends React.Component {
                     handleNodeSelected={handleNodeSelected}
                     searchName={searchName}
                     processActionLink={processActionLink}
-                    t={this.props.t}
                     activeFilters={activeFilters}
                     availableFilters={availableFilters}
                     staticResourceData={this.staticResourceData}
@@ -204,96 +202,93 @@ class Topology extends React.Component {
                     showLegendView={showLegendView}
                     handleLegendClose={handleLegendClose}
                     argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+                    t={this.props.t}
                 />
             </div>
         )
     }
 
-    renderResourceFilterModule() {
-        const { portals = {} } = this.props
-        const { assortedFilterOpenBtn } = portals
-        if (assortedFilterOpenBtn) {
-            const portal = document.getElementById(assortedFilterOpenBtn)
-            if (portal) {
-                const { availableFilters, activeFilters } = this.state
-                return ReactDOM.createPortal(
-                    <ResourceFilterModule
-                        portals={portals}
-                        activeFilters={activeFilters}
-                        availableFilters={availableFilters}
-                        updateActiveFilters={this.onFilterChange.bind(this)}
-                        locale={this.props.locale}
-                    />,
-                    portal
-                )
-            }
-        }
-        return null
-    }
+    // renderResourceFilterModule() {
+    //     const { portals = {} } = this.props
+    //     const { assortedFilterOpenBtn } = portals
+    //     if (assortedFilterOpenBtn) {
+    //         const portal = document.getElementById(assortedFilterOpenBtn)
+    //         if (portal) {
+    //             const { availableFilters, activeFilters } = this.state
+    //             return ReactDOM.createPortal(
+    //                 <ResourceFilterModule
+    //                     portals={portals}
+    //                     activeFilters={activeFilters}
+    //                     availableFilters={availableFilters}
+    //                     updateActiveFilters={this.onFilterChange.bind(this)}
+    //                     t={this.props.t}
+    //                 />,
+    //                 portal
+    //             )
+    //         }
+    //     }
+    //     return null
+    // }
 
-    renderTypeFilterBar() {
-        const { portals = {}, locale } = this.props
-        const { typeFilterBar } = portals
-        if (typeFilterBar) {
-            const portal = document.getElementById(typeFilterBar)
-            if (portal) {
-                const { availableFilters, activeFilters, otherTypeFilters } = this.state
-                const filterBarTooltipMap = {
-                    other: otherTypeFilters.join('\n'),
-                }
-                return ReactDOM.createPortal(
-                    <TypeFilterBar
-                        availableFilters={availableFilters['type']}
-                        activeFilters={activeFilters['type']}
-                        typeToShapeMap={this.staticResourceData.typeToShapeMap}
-                        tooltipMap={filterBarTooltipMap}
-                        typeFilterCookie={this.typeFilterCookie}
-                        updateActiveFilters={this.onFilterChange.bind(this)}
-                        locale={locale}
-                    />,
-                    portal
-                )
-            }
-        }
-        return null
-    }
+    // renderTypeFilterBar() {
+    //     const { portals = {}, t } = this.props
+    //     const { typeFilterBar } = portals
+    //     if (typeFilterBar) {
+    //         const portal = document.getElementById(typeFilterBar)
+    //         if (portal) {
+    //             const { availableFilters, activeFilters, otherTypeFilters } = this.state
+    //             const filterBarTooltipMap = {
+    //                 other: otherTypeFilters.join('\n'),
+    //             }
+    //             return ReactDOM.createPortal(
+    //                 <TypeFilterBar
+    //                     availableFilters={availableFilters['type']}
+    //                     activeFilters={activeFilters['type']}
+    //                     typeToShapeMap={this.staticResourceData.typeToShapeMap}
+    //                     tooltipMap={filterBarTooltipMap}
+    //                     typeFilterCookie={this.typeFilterCookie}
+    //                     updateActiveFilters={this.onFilterChange.bind(this)}
+    //                     t={t}
+    //                 />,
+    //                 portal
+    //             )
+    //         }
+    //     }
+    //     return null
+    // }
 
-    onFilterChange(activeFilters) {
-        this.setState((prevState) => {
-            // update active filters
-            activeFilters = Object.assign({}, prevState.activeFilters, activeFilters)
+    // onFilterChange(activeFilters) {
+    //     this.setState((prevState) => {
+    //         // update active filters
+    //         activeFilters = Object.assign({}, prevState.activeFilters, activeFilters)
 
-            // update available filter view filters
-            const { nodes, options, locale } = this.props
-            const availableFilters = Object.assign(
-                {},
-                prevState.availableFilters,
-                this.staticResourceData.getAvailableFilters(nodes, options, activeFilters, locale)
-            )
+    //         // update available filter view filters
+    //         const { nodes, options, t } = this.props
+    //         const availableFilters = Object.assign(
+    //             {},
+    //             prevState.availableFilters,
+    //             this.staticResourceData.getAvailableFilters(nodes, options, activeFilters, t)
+    //         )
 
-            return { activeFilters, availableFilters, userIsFiltering: true }
-        })
-    }
+    //         return { activeFilters, availableFilters, userIsFiltering: true }
+    //     })
+    // }
 
-    renderSearchName() {
-        const { portals = {}, locale } = this.props
-        const { searchTextbox } = portals
-        if (searchTextbox) {
-            const portal = document.getElementById(searchTextbox)
-            if (portal) {
-                const { searchName } = this.state
-                return ReactDOM.createPortal(
-                    <SearchName searchName={searchName} onNameSearch={this.onNameSearch.bind(this)} locale={locale} />,
-                    portal
-                )
-            }
-        }
-        return null
-    }
-
-    onNameSearch(searchName) {
-        this.setState({ searchName })
-    }
+    // renderSearchName() {
+    //     const { portals = {}, t } = this.props
+    //     const { searchTextbox } = portals
+    //     if (searchTextbox) {
+    //         const portal = document.getElementById(searchTextbox)
+    //         if (portal) {
+    //             const { searchName } = this.state
+    //             return ReactDOM.createPortal(
+    //                 <SearchName searchName={searchName} onNameSearch={this.onNameSearch.bind(this)} t={t} />,
+    //                 portal
+    //             )
+    //         }
+    //     }
+    //     return null
+    // }
 }
 
 export default Topology

@@ -8,7 +8,7 @@ import { LOCAL_HUB_NAME } from './constants'
 import { createEditLink } from './diagram-helpers'
 import { isYAMLEditAvailable } from './search-helper'
 
-export const showArgoApplicationSetLink = (node, details) => {
+export const showArgoApplicationSetLink = (node, details, t) => {
     //get application set info
     const appSet = _.get(node, 'type', '' === 'application') && _.get(node, 'specs.raw.metadata.ownerReferences', [])
     if (appSet.length > 0) {

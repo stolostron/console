@@ -50,7 +50,7 @@ export const getNodeTooltips = (searchUrl, node, t) => {
         //don't show this for Namespace resources
         const href = `${searchUrl}?filters={"textsearch":"kind:namespace name:${namespace}"}`
         tooltips.push({
-            name: t('resource.namespace'),
+            name: t('Namespace'),
             value: namespace,
             href,
         })

@@ -315,7 +315,7 @@ export const namespaceMatchTargetServer = (relatedKind, resourceMapForObject) =>
     return findTargetClustersByNS.length > 0
 }
 
-export const setArgoApplicationDeployStatus = (node, details) => {
+export const setArgoApplicationDeployStatus = (node, details, t) => {
     const relatedArgoApps = _.get(node, 'specs.relatedApps', [])
     if (relatedArgoApps.length === 0) {
         return // search is not available
@@ -485,7 +485,7 @@ export const getValidHttpUrl = (value) => {
 }
 
 //show warning when no deployed resources are not found by search on this cluster name
-export const showMissingClusterDetails = (clusterName, node, details) => {
+export const showMissingClusterDetails = (clusterName, node, details, t) => {
     const targetNS = _.get(node, 'clusters.specs.targetNamespaces', {
         unknown: [],
     })
@@ -519,7 +519,7 @@ export const showMissingClusterDetails = (clusterName, node, details) => {
                     labelValue: nsName,
                     value: _.startsWith(clusterName, 'https://api.')
                         ? t('spec.deploy.not.deployed')
-                        : t('resource.cluster.notmapped'),
+                        : t('Not mapped'),
                     status: pendingStatus,
                 })
             })
@@ -532,7 +532,7 @@ export const showMissingClusterDetails = (clusterName, node, details) => {
             nsForCluster.forEach((nsName) => {
                 details.push({
                     labelValue: nsName,
-                    value: isOffline ? t('resource.cluster.offline') : t('spec.deploy.not.deployed'),
+                    value: isOffline ? t('Offline') : t('Not deployed'),
                     status: isOffline ? warningStatus : pendingStatus,
                 })
             })

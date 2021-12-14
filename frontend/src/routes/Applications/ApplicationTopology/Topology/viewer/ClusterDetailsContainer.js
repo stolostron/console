@@ -24,7 +24,7 @@ class ClusterDetailsContainer extends React.Component {
         }),
         clusterID: PropTypes.string,
         clusterList: PropTypes.array,
-        locale: PropTypes.string,
+        t: PropTypes.func,
     }
     constructor(props) {
         super()
@@ -32,7 +32,7 @@ class ClusterDetailsContainer extends React.Component {
         if (currentClusterID === props.clusterID) {
             this.state = {
                 clusterList: props.clusterList,
-                locale: props.locale,
+                t: props.t,
                 selected: props.clusterDetailsContainerControl.clusterDetailsContainerData.selected,
                 page: props.clusterDetailsContainerControl.clusterDetailsContainerData.page,
                 perPage: 5,
@@ -53,7 +53,7 @@ class ClusterDetailsContainer extends React.Component {
             handleClusterDetailsContainerUpdate(1, 0, false, new Set(), props.clusterID)
             this.state = {
                 clusterList: props.clusterList,
-                locale: props.locale,
+                t: props.t,
                 selected: undefined,
                 page: 1,
                 perPage: 5,
@@ -268,7 +268,7 @@ class ClusterDetailsContainer extends React.Component {
         })
     }
 
-    renderConsoleURLLink = (consoleURL, resource, locale) => {
+    renderConsoleURLLink = (consoleURL, resource, t) => {
         return (
             consoleURL && (
                 <div className="sectionContent borderLeft">
@@ -290,7 +290,7 @@ class ClusterDetailsContainer extends React.Component {
         )
     }
 
-    renderCPUData = (cc, ac, divClass, labelClass, locale, valueClass) => {
+    renderCPUData = (cc, ac, divClass, labelClass, t, valueClass) => {
         let showData = false
         if (ac && ac !== '') {
             showData = true
@@ -299,14 +299,14 @@ class ClusterDetailsContainer extends React.Component {
         return (
             showData && (
                 <div className={divClass}>
-                    <span className={labelClass}>{t('resource.cpu')}: </span>
+                    <span className={labelClass}>{t('CPU')}: </span>
                     <span className={valueClass}>{getPercentage(inflateKubeValue(ac), inflateKubeValue(cc))}%</span>
                 </div>
             )
         )
     }
 
-    renderMemoryData = (cm, am, divClass, labelClass, locale, valueClass) => {
+    renderMemoryData = (cm, am, divClass, labelClass, t, valueClass) => {
         let showData = false
         if (am && am !== '') {
             showData = true
@@ -377,7 +377,7 @@ class ClusterDetailsContainer extends React.Component {
             page,
             perPage,
             startIdx,
-            locale,
+            t,
             clusterSearchToggle,
             expandSectionToggleMap,
             selectedClusterList,
@@ -459,13 +459,13 @@ class ClusterDetailsContainer extends React.Component {
                                 <span className={labelClass}>{t('resource.namespace')}: </span>
                                 <span className={valueClass}>{clusterNamespace}</span>
                             </div>
-                            {this.renderConsoleURLLink(consoleURL, resource, locale)}
+                            {this.renderConsoleURLLink(consoleURL, resource, t)}
                             <div className={divClass}>
                                 <span className={labelClass}>{t('resource.status')}: </span>
                                 <span className={valueClass}>{status.toLowerCase()}</span>
                             </div>
-                            {this.renderCPUData(cc, ac, divClass, labelClass, locale, valueClass)}
-                            {this.renderMemoryData(cm, am, divClass, labelClass, locale, valueClass)}
+                            {this.renderCPUData(cc, ac, divClass, labelClass, t, valueClass)}
+                            {this.renderMemoryData(cm, am, divClass, labelClass, t, valueClass)}
                             <div className={divClass}>
                                 <span className={labelClass}>{t('resource.created')}: </span>
                                 <span className={valueClass}>{getAge(creationTimestamp)}</span>

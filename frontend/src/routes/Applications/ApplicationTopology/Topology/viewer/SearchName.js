@@ -17,9 +17,9 @@ import { getSearchNames } from './helpers/filterHelper'
 
 class Search extends React.Component {
     static propTypes = {
-        locale: PropTypes.string,
         onNameSearch: PropTypes.func,
         searchName: PropTypes.string,
+        t: PropTypes.func,
     }
 
     constructor(props) {
@@ -69,7 +69,7 @@ class Search extends React.Component {
     }
 
     render() {
-        const { locale } = this.props
+        const { t } = this.props
         const { searchName } = this.state
         const searchTitle = t('name.label')
         const searchMsgKey = 'search.label.links'

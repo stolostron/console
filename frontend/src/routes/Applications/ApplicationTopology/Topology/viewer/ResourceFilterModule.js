@@ -23,10 +23,10 @@ import _ from 'lodash'
 //if section has more then this number of filters, add "show more"
 const SHOW_MORE = 10
 
-const ShowOrMoreItem = ({ count, isExpanded, onExpand, locale }) => {
+const ShowOrMoreItem = ({ count, isExpanded, onExpand, t }) => {
     return (
         <div className="filter-section-expand" tabIndex="0" role={'button'} onClick={onExpand} onKeyPress={onExpand}>
-            {isExpanded ? t('filter.view.collapse', locale) : t('filter.view.expand', [count])}
+            {isExpanded ? t('filter.view.collapse') : t('filter.view.expand', [count])}
         </div>
     )
 }
@@ -34,11 +34,11 @@ const ShowOrMoreItem = ({ count, isExpanded, onExpand, locale }) => {
 ShowOrMoreItem.propTypes = {
     count: PropTypes.number,
     isExpanded: PropTypes.bool,
-    locale: PropTypes.string,
     onExpand: PropTypes.func,
+    t: PropTypes.func,
 }
 
-const FilterSection = ({ section: { name, filters, isExpanded, onExpand }, showThreshold, locale }) => {
+const FilterSection = ({ section: { name, filters, isExpanded, onExpand }, showThreshold, t }) => {
     filters.sort(({ label: a = '', isAll: ia, isOther: oa }, { label: b = '', isAll: ib, isOther: ob }) => {
         if (ia && !ib) {
             return -1
@@ -76,16 +76,16 @@ const FilterSection = ({ section: { name, filters, isExpanded, onExpand }, showT
                 )
             })}
             {showMoreOrLess && (
-                <ShowOrMoreItem count={count} isExpanded={isExpanded} onExpand={onExpand} locale={locale} />
+                <ShowOrMoreItem count={count} isExpanded={isExpanded} onExpand={onExpand} t={t} />
             )}
         </div>
     )
 }
 
 FilterSection.propTypes = {
-    locale: PropTypes.string,
     section: PropTypes.object,
     showThreshold: PropTypes.number,
+    t: PropTypes.func,
 }
 
 export class ResourceFilterView extends React.Component {
@@ -151,14 +151,14 @@ export class ResourceFilterView extends React.Component {
     }
 
     render() {
-        const { availableFilters = {}, activeFilters, locale } = this.props
+        const { availableFilters = {}, activeFilters, t } = this.props
 
         // add filter sections
         const sections = []
 
         Object.keys(availableFilters).forEach((key) => {
             if (key !== 'type') {
-                sections.push(this.getSectionData(key, availableFilters[key], locale, activeFilters[key]))
+                sections.push(this.getSectionData(key, availableFilters[key], t, activeFilters[key]))
             }
         })
 
@@ -193,7 +193,7 @@ export class ResourceFilterView extends React.Component {
                             <FilterSection
                                 key={section.key}
                                 section={section}
-                                locale={locale}
+                                t={t}
                                 showThreshold={idx === sections.length - 1 ? Number.MAX_SAFE_INTEGER : SHOW_MORE}
                             />
                         )
@@ -220,7 +220,7 @@ export class ResourceFilterView extends React.Component {
         return <div className={'filter-sections-scrollbar'} style={finalStyle} {...props} />
     }
 
-    getSectionData(key, availableFilters, locale, activeSet = new Set()) {
+    getSectionData(key, availableFilters, t, activeSet = new Set()) {
         const { name, availableSet } = availableFilters
         const multipleChoices = availableSet.size > 1
         const other = t('overview.policy.overview.other')
@@ -281,8 +281,8 @@ export class ResourceFilterView extends React.Component {
 ResourceFilterView.propTypes = {
     activeFilters: PropTypes.object,
     availableFilters: PropTypes.object,
-    locale: PropTypes.string,
     onClose: PropTypes.func,
+    t: PropTypes.func,
     updateFilters: PropTypes.func,
 }
 
@@ -295,7 +295,7 @@ const clearFilterList = (activeFilters, updateActiveFilters) => {
     })
 }
 
-const ResourceUnfilterBar = ({ activeFilters, boundFilters = [], updateActiveFilters, locale }) => {
+const ResourceUnfilterBar = ({ activeFilters, boundFilters = [], updateActiveFilters, t }) => {
     return (
         <div className="resource-filter-bar">
             <ChipGroup
@@ -316,7 +316,7 @@ const ResourceUnfilterBar = ({ activeFilters, boundFilters = [], updateActiveFil
 ResourceUnfilterBar.propTypes = {
     activeFilters: PropTypes.object,
     boundFilters: PropTypes.array,
-    locale: PropTypes.string,
+    t: PropTypes.func,
     updateActiveFilters: PropTypes.func,
 }
 
@@ -343,7 +343,7 @@ export class ResourceFilterModule extends React.Component {
     }
 
     renderResourceFilterButton() {
-        const { locale } = this.props
+        const { t } = this.props
         return (
             <div
                 tabIndex="0"
@@ -361,7 +361,7 @@ export class ResourceFilterModule extends React.Component {
     }
 
     renderResourceFilterView() {
-        const { availableFilters = {}, activeFilters = {}, locale } = this.props
+        const { availableFilters = {}, activeFilters = {}, t } = this.props
         const { filterViewOpen } = this.state
         return (
             <CSSTransition
@@ -376,25 +376,25 @@ export class ResourceFilterModule extends React.Component {
                     onClose={this.handleFilterClose}
                     activeFilters={activeFilters}
                     availableFilters={availableFilters}
-                    locale={locale}
+                    t={t}
                 />
             </CSSTransition>
         )
     }
 
     renderResourceUnfilterBar() {
-        const { activeFilters, portals = {}, updateActiveFilters, locale } = this.props
+        const { activeFilters, portals = {}, updateActiveFilters, t } = this.props
         const { assortedFilterCloseBtns } = portals
         if (assortedFilterCloseBtns) {
             const portal = document.getElementById(assortedFilterCloseBtns)
             if (portal) {
-                const boundFilters = this.getBoundFilters(locale)
+                const boundFilters = this.getBoundFilters(t)
                 return ReactDOM.createPortal(
                     <ResourceUnfilterBar
                         activeFilters={activeFilters}
                         boundFilters={boundFilters}
                         updateActiveFilters={updateActiveFilters}
-                        locale={locale}
+                        t={t}
                     />,
                     portal
                 )
@@ -423,7 +423,7 @@ export class ResourceFilterModule extends React.Component {
         this.updateActiveFilter(key, value, checked)
     }
 
-    getBoundFilters(locale) {
+    getBoundFilters(t) {
         const resourceStatusMap = new Map([
             ['green', t('topology.filter.category.status.success')],
             ['orange', t('topology.filter.category.status.pending')],
@@ -480,7 +480,7 @@ export class ResourceFilterModule extends React.Component {
 ResourceFilterModule.propTypes = {
     activeFilters: PropTypes.object,
     availableFilters: PropTypes.object,
-    locale: PropTypes.string.isRequired,
+    t: PropTypes.func,
     portals: PropTypes.object,
     updateActiveFilters: PropTypes.func,
 }

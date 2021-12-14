@@ -42,10 +42,10 @@ export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
         const { type, labels = [] } = node
 
         // for argo apps with application sets
-        showArgoApplicationSetLink(node, details)
+        showArgoApplicationSetLink(node, details, t)
 
         //if resource has a row number add deployable yaml
-        createDeployableYamlLink(node, details)
+        createDeployableYamlLink(node, details, t)
 
         details.push({
             type: 'spacer',
@@ -88,7 +88,7 @@ export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
 
         switch (type) {
             case 'cluster':
-                setClusterStatus(node, details)
+                setClusterStatus(node, details, t)
                 break
 
             case 'package':
@@ -171,7 +171,7 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
     const mainDetails = [
         {
             labelKey: 'resource.type',
-            value: kubeNaming(ltype) || kubeNaming(type),
+            value: kubeNaming(ltype, t) || kubeNaming(type, t),
         },
         {
             labelKey: 'resource.api.version',
@@ -372,15 +372,15 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
 
     setApplicationDeployStatus(node, details, t)
     //subscriptions status
-    setSubscriptionDeployStatus(node, details, activeFilters)
+    setSubscriptionDeployStatus(node, details, activeFilters, t)
     //placement rule details
-    setPlacementRuleDeployStatus(node, details)
+    setPlacementRuleDeployStatus(node, details, t)
 
     //show error if the resource doesn't produce pods and was not deployed on remote clusters
-    setResourceDeployStatus(node, details, activeFilters)
+    setResourceDeployStatus(node, details, activeFilters, t)
 
     // kube model details
-    setPodDeployStatus(node, updatedNode, details, activeFilters)
+    setPodDeployStatus(node, updatedNode, details, activeFilters, t)
 
     return details
 }

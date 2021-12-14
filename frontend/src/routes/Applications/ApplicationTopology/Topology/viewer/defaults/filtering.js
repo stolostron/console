@@ -146,7 +146,7 @@ export const getAllFilters = (
     availableFilters['type'] = availableTypes
 
     ///////////////// ACTIVE TYPE FILTERS //////////////////////////////////////////
-    const { initialActiveTypes } = options
+    const { initialActiveTypes } = options || {}
     if (initialActiveTypes) {
         // if options specify initial active types use those in case no active types specified yet
         activeFilters = Object.assign({}, { type: initialActiveTypes }, activeFilters)

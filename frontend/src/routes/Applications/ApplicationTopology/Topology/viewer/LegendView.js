@@ -11,7 +11,7 @@ import { getLegendTitle } from './defaults/titles'
 
 class LegendView extends React.Component {
     render() {
-        const { locale, onClose } = this.props
+        const { t, onClose } = this.props
 
         return (
             <section className="topologyDetails">
@@ -50,7 +50,7 @@ class LegendView extends React.Component {
     }
 
     renderStatusDescriptions = () => {
-        const { locale } = this.props
+        const { t } = this.props
         const statusList = ['success', 'pending', 'warning', 'failure']
         const iconColorMap = new Map([
             ['success', '#3E8635'],
@@ -79,7 +79,7 @@ class LegendView extends React.Component {
     }
 
     renderResourceIcons = () => {
-        const { locale } = this.props
+        const { t } = this.props
         const nodeTypes = new Set()
         const nodes = this.props.getLayoutNodes()
         if (nodes && nodes.length > 0) {
@@ -94,7 +94,7 @@ class LegendView extends React.Component {
             const { shape = 'other' } = defaultShapes[type] || {}
             return (
                 <div key={type} className="bodyIconsTextDiv">
-                    <div>{getLegendTitle(type, locale)}</div>
+                    <div>{getLegendTitle(type, t)}</div>
                     <div>
                         <svg className="iconSvg">
                             <use href={`#diagramShapes_${shape}`} className="label-icon" />
@@ -113,7 +113,7 @@ class LegendView extends React.Component {
 
 LegendView.propTypes = {
     getLayoutNodes: PropTypes.func,
-    locale: PropTypes.string,
+    t: PropTypes.func,
     onClose: PropTypes.func,
 }
 

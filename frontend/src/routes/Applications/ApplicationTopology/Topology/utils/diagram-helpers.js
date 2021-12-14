@@ -625,7 +625,7 @@ export const createEditLink = (node) => {
     })
 }
 
-export const createDeployableYamlLink = (node, details) => {
+export const createDeployableYamlLink = (node, details, t) => {
     //returns yaml for the deployable
     if (
         details &&
@@ -689,7 +689,7 @@ export const getPercentage = (value, total) => {
     return Math.floor((100 * (total - value)) / total) || 0
 }
 
-export const setClusterStatus = (node, details) => {
+export const setClusterStatus = (node, details, t) => {
     const { id } = node
     const specs = _.get(node, 'specs', {})
     const { cluster, targetNamespaces = {}, clusters = [], appClusters = [], clustersNames = [] } = specs
@@ -725,7 +725,7 @@ export const setClusterStatus = (node, details) => {
 
     details.push({
         type: 'label',
-        labelValue: `${t('resource.clusters')} (${clusterArr.length})`,
+        labelValue: `${t('Clusters')} (${clusterArr.length})`,
     })
 
     details.push({
@@ -754,7 +754,7 @@ export const setClusterStatus = (node, details) => {
     return details
 }
 
-export const createResourceSearchLink = (node) => {
+export const createResourceSearchLink = (node, t) => {
     let result = {
         type: 'link',
         value: null,
@@ -1143,7 +1143,7 @@ export const setupResourceModel = (list, resourceMap, isClusterGrouped, hasHelmR
 
 //show resource deployed status on the remote clusters
 //for resources not producing pods
-export const setResourceDeployStatus = (node, details, activeFilters) => {
+export const setResourceDeployStatus = (node, details, activeFilters, t) => {
     const isDeployable = isDeployableResource(node)
     const { resourceStatuses = new Set() } = activeFilters
     const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
@@ -1212,7 +1212,7 @@ export const setResourceDeployStatus = (node, details, activeFilters) => {
         clusterName = R.trim(clusterName)
         if (!_.includes(onlineClusters, clusterName)) {
             // offline cluster or argo destination server we could  not map to a cluster name, so skip
-            return showMissingClusterDetails(clusterName, node, details)
+            return showMissingClusterDetails(clusterName, node, details, t)
         }
         details.push({
             labelValue: t('topology.filter.category.clustername'),
@@ -1306,7 +1306,7 @@ export const setResourceDeployStatus = (node, details, activeFilters) => {
 }
 
 //show resource deployed status for resources producing pods
-export const setPodDeployStatus = (node, updatedNode, details, activeFilters) => {
+export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t) => {
     const { resourceStatuses = new Set() } = activeFilters
     const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
 
@@ -1338,7 +1338,7 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters) =>
         clusterName = R.trim(clusterName)
         if (!_.includes(onlineClusters, clusterName)) {
             // offline cluster or argo destination server we could  not map to a cluster name, so skip
-            return showMissingClusterDetails(clusterName, node, details)
+            return showMissingClusterDetails(clusterName, node, details, t)
         }
         details.push({
             labelValue: t('topology.filter.category.clustername'),
@@ -1512,7 +1512,7 @@ const setClusterWindowStatus = (windowStatusArray, subscription, details) => {
     })
 }
 
-export const setSubscriptionDeployStatus = (node, details, activeFilters) => {
+export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => {
     const { resourceStatuses = new Set() } = activeFilters
     const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
     //check if this is a subscription created from the app deployable
@@ -1712,7 +1712,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters) => {
     return details
 }
 
-export const setPlacementRuleDeployStatus = (node, details) => {
+export const setPlacementRuleDeployStatus = (node, details, t) => {
     if (R.pathOr('', ['type'])(node) !== 'placements') {
         return details
     }
@@ -1736,7 +1736,7 @@ export const setApplicationDeployStatus = (node, details, t) => {
 
     const apiVersion = _.get(node, apiVersionPath)
     if (apiVersion && apiVersion.indexOf('argoproj.io') > -1) {
-        setArgoApplicationDeployStatus(node, details)
+        setArgoApplicationDeployStatus(node, details, t)
     } else {
         addPropertyToList(
             details,

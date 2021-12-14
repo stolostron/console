@@ -1,5 +1,5 @@
 export const DiagramShapes = () => (
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="0" height="0">
+<svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="0" height="0">
     <symbol viewBox="0 0 41.5 41.3" id="diagramShapes_circle">
        <circle cx="20.8" cy="20.7" r="19.1"/>
     </symbol>
@@ -14,9 +14,9 @@ export const DiagramShapes = () => (
                     <circle id="Oval" fill="#FAFAFA" cx="15.795" cy="15.795" r="10.53"></circle>
                     <g id="02_Software/App/App_outline" transform="translate(10.881000, 10.881000)">
                         <mask id="mask-2" fill="white">
-                            <use xlink:href="#path-application"></use>
+                            <use href="#path-application"></use>
                         </mask>
-                        <use id="Combined-Shape" fill="#000000" fill-rule="evenodd" xlink:href="#path-application"></use>
+                        <use id="Combined-Shape" fill="#000000" fill-rule="evenodd" href="#path-application"></use>
                     </g>
                 </g>
             </g>
@@ -84,9 +84,9 @@ export const DiagramShapes = () => (
                     <circle id="Oval" fill="#FAFAFA" cx="15.795" cy="15.795" r="10.53"></circle>
                     <g id="02_Software/Containerized-app/Containerized-app_outline" transform="translate(10.881000, 9.828000)">
                         <mask id="mask-container" fill="white">
-                            <use xlink:href="#path-container"></use>
+                            <use href="#path-container"></use>
                         </mask>
-                        <use id="Combined-Shape" fill="#000000" fill-rule="evenodd" xlink:href="#path-container"></use>
+                        <use id="Combined-Shape" fill="#000000" fill-rule="evenodd" href="#path-container"></use>
                     </g>
                 </g>
             </g>
@@ -157,7 +157,7 @@ export const DiagramShapes = () => (
         <defs>
             <circle id="path-dc" cx="15.9705" cy="15.9705" r="5.4405"></circle>
             <mask id="mask-dc" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="10.881" height="10.881" fill="white">
-                <use xlink:href="#path-dc"></use>
+                <use href="#path-dc"></use>
             </mask>
         </defs>
         <g id="Topology" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -165,7 +165,7 @@ export const DiagramShapes = () => (
                 <g id="DeploymentConfig" transform="translate(1308.000000, 1018.000000)">
                     <circle id="Oval-Copy-34" stroke="#EE5396" stroke-width="1.404" fill="#FFFFFF" cx="15.795" cy="15.795" r="15.093"></circle>
                     <circle id="Oval-Copy-33" fill="#FAFAFA" cx="15.795" cy="15.795" r="10.53"></circle>
-                    <use id="Oval-Copy-6" stroke="#000000" mask="url(#mask-dc)" stroke-width="1.404" stroke-dasharray="2.106000037193299,2.807999925613403" xlink:href="#path-dc"></use>
+                    <use id="Oval-Copy-6" stroke="#000000" mask="url(#mask-dc)" stroke-width="1.404" stroke-dasharray="2.106000037193299,2.807999925613403" href="#path-dc"></use>
                     <polygon id="Shape-path" fill="#000000" fill-rule="nonzero" points="16.014375 12.987 14.742 14.2843235 15.0410081 14.5891946 15.8023125 13.8151249 15.8023125 16.4465294 16.2264375 16.4465294 16.2264375 13.8151249 16.9877419 14.5891946 17.28675 14.2843235"></polygon>
                     <polygon id="Shape-path" fill="#000000" fill-rule="nonzero" points="14.04 17.199 17.901 17.199 17.901 17.6910882 14.04 17.6910882"></polygon>
                     <polygon id="Shape-path" fill="#000000" fill-rule="nonzero" points="14.04 18.1831765 17.901 18.1831765 17.901 18.6752647 14.04 18.6752647"></polygon>
@@ -184,9 +184,9 @@ export const DiagramShapes = () => (
                     <circle id="Oval" fill="#FAFAFA" cx="15.795" cy="15.795" r="10.53"></circle>
                     <g id="01_Hardware/Server-stack/Server-stack_outline" transform="translate(11.232000, 10.881000)">
                         <mask id="mask-2" fill="white">
-                            <use xlink:href="#path-host"></use>
+                            <use href="#path-host"></use>
                         </mask>
-                        <use id="Combined-Shape" fill="#000000" fill-rule="evenodd" xlink:href="#path-host"></use>
+                        <use id="Combined-Shape" fill="#000000" fill-rule="evenodd" href="#path-host"></use>
                     </g>
                 </g>
             </g>
@@ -286,9 +286,9 @@ export const DiagramShapes = () => (
                     <circle id="Oval-Copy-11" fill="#FAFAFA" cx="15.795" cy="15.795" r="10.53"></circle>
                     <g id="10_Objects/Shield/Shield_outline" transform="translate(11.583000, 10.881000)">
                         <mask id="mask-2" fill="white">
-                            <use xlink:href="#path-policy"></use>
+                            <use href="#path-policy"></use>
                         </mask>
-                        <use fill="#000000" fill-rule="evenodd" xlink:href="#path-policy"></use>
+                        <use fill="#000000" fill-rule="evenodd" href="#path-policy"></use>
                     </g>
                 </g>
             </g>
@@ -311,7 +311,7 @@ export const DiagramShapes = () => (
         <defs>
             <circle id="path-rc" cx="15.9705" cy="15.9705" r="5.4405"></circle>
             <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="10.881" height="10.881" fill="white">
-                <use xlink:href="#path-rc"></use>
+                <use href="#path-rc"></use>
             </mask>
         </defs>
         <g id="Topology" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -319,7 +319,7 @@ export const DiagramShapes = () => (
                 <g id="ReplicationController" transform="translate(1371.000000, 1236.000000)">
                     <circle id="Oval-Copy-32" stroke="#008BAD" stroke-width="1.404" fill="#FFFFFF" cx="15.795" cy="15.795" r="15.093"></circle>
                     <circle id="Oval-Copy-31" fill="#FAFAFA" cx="15.795" cy="15.795" r="10.53"></circle>
-                    <use id="Oval" stroke="#000000" mask="url(#mask-2)" stroke-width="1.404" stroke-dasharray="2.106000037193299,2.807999925613403" xlink:href="#path-rc"></use>
+                    <use id="Oval" stroke="#000000" mask="url(#mask-2)" stroke-width="1.404" stroke-dasharray="2.106000037193299,2.807999925613403" href="#path-rc"></use>
                     <path d="M18.4688193,14.338525 L16.0995584,13.022269 C16.0181082,12.9752437 15.9177574,12.9752437 15.8363072,13.022269 L13.4670464,14.338525 C13.3853723,14.387425 13.3361494,14.4763276 13.3380533,14.5715023 L13.3380533,17.2026981 C13.338749,17.2982235 13.3911389,17.3858758 13.4749439,17.4317267 L15.8442048,18.7479827 C15.8826664,18.7702661 15.9261268,18.7824894 15.9705653,18.7835216 C16.0158152,18.7823538 16.0600953,18.7701541 16.0995584,18.7479827 L18.4688193,17.4317267 C18.5515211,17.3857512 18.6028837,17.2986363 18.6030871,17.2040144 L18.6030871,14.5715023 C18.6038977,14.4752392 18.5525188,14.3860818 18.4688193,14.338525 Z M15.7073141,18.0714271 L13.8645557,17.0473799 L13.8645557,15.0150806 L15.7073141,16.0391278 L15.7073141,18.0714271 Z M15.9705653,15.5837032 L14.143602,14.5715023 L15.9705653,13.5540364 L17.7975287,14.5701861 L15.9705653,15.5837032 Z M18.076575,17.0473799 L16.2338165,18.0714271 L16.2338165,16.0391278 L18.076575,15.0150806 L18.076575,17.0473799 Z" id="Fill" fill="#000000"></path>
                 </g>
             </g>
@@ -446,9 +446,9 @@ export const DiagramShapes = () => (
                     <circle id="Oval-Copy-9" fill="#FAFAFA" cx="15.795" cy="15.795" r="10.53"></circle>
                     <g id="01_Hardware/Storage-stack/Storage-stack_outline" transform="translate(11.232000, 10.881000)">
                         <mask id="mask-2" fill="white">
-                            <use xlink:href="#path-sc"></use>
+                            <use href="#path-sc"></use>
                         </mask>
-                        <use id="01_Hardware/Storage-stack/Storage-stack_black_lines" fill="#000000" fill-rule="evenodd" xlink:href="#path-sc"></use>
+                        <use id="01_Hardware/Storage-stack/Storage-stack_black_lines" fill="#000000" fill-rule="evenodd" href="#path-sc"></use>
                     </g>
                 </g>
             </g>
@@ -515,8 +515,8 @@ export const DiagramShapes = () => (
                 <g id="Group-5" transform="translate(924.000000, 1616.000000)">
                     <g id="Group-13-Copy-2" transform="translate(149.000000, 0.000000)">
                         <g id="Oval-Copy-8">
-                            <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
-                            <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
+                            <use fill="black" fill-opacity="1" filter="url(#filter-2)" href="#path-1"></use>
+                            <use fill="#FFFFFF" fill-rule="evenodd" href="#path-1"></use>
                         </g>
                         <circle id="Oval-Copy-9" stroke="#009D9A" stroke-width="4.1732212" fill="#FFFFFF" cx="47.6343391" cy="46.9487385" r="40.6889067"></circle>
                         <circle id="Oval" fill="#FAFAFA" cx="47.6343391" cy="46.9487385" r="31.299159"></circle>
@@ -524,8 +524,8 @@ export const DiagramShapes = () => (
                             <path d="M23.7351956,20.083627 C23.0851254,20.0870047 22.4480264,20.265834 21.8911534,20.6012369 L18.4102957,17.1194662 C19.4243925,15.597454 19.4243925,13.6150944 18.4102957,12.0930821 L20.735432,9.76794587 C21.9499059,10.3529292 23.4092284,9.97658951 24.1893331,8.87723099 C24.9694378,7.77787248 24.842799,6.27613474 23.8896063,5.32294208 C22.9364137,4.36974942 21.4346759,4.24311057 20.3353174,5.02321528 C19.2359589,5.80331998 18.8596191,7.26264245 19.4446025,8.47711639 L17.1194662,10.8022527 C15.597454,9.78815586 13.6150944,9.78815586 12.0930821,10.8022527 L8.61131153,7.32048205 C8.94655622,6.76387497 9.12537951,6.1271127 9.12892137,5.47735282 C9.12892137,3.4606472 7.49405845,1.82578427 5.47735282,1.82578427 C3.4606472,1.82578427 1.82578427,3.4606472 1.82578427,5.47735282 C1.82578427,7.49405845 3.4606472,9.12892137 5.47735282,9.12892137 C6.12742296,9.12554365 6.76452195,8.94671438 7.32139494,8.61131153 L10.8022527,12.0930821 C9.78815586,13.6150944 9.78815586,15.597454 10.8022527,17.1194662 L7.32048205,20.6012369 C6.76385689,20.266034 6.12710636,20.087214 5.47735282,20.083627 C3.4606472,20.083627 1.82578427,21.7184899 1.82578427,23.7351956 C1.82578427,25.7519012 3.4606472,27.3867641 5.47735282,27.3867641 C7.49405845,27.3867641 9.12892137,25.7519012 9.12892137,23.7351956 C9.12554365,23.0851254 8.94671438,22.4480264 8.61131153,21.8911534 L12.0930821,18.4102957 C12.5785764,18.7338856 13.1219377,18.960777 13.6933821,19.0785328 L13.6933821,22.0773834 C12.4358305,22.5219951 11.6814846,23.8079222 11.9070387,25.1225479 C12.1325928,26.4371736 13.2724394,27.3981087 14.6062742,27.3981087 C15.940109,27.3981087 17.0799556,26.4371736 17.3055097,25.1225479 C17.5310638,23.8079222 16.7767179,22.5219951 15.5191663,22.0773834 L15.5191663,19.0785328 C16.0906107,18.960777 16.633972,18.7338856 17.1194662,18.4102957 L20.6012369,21.8920663 C20.2659922,22.4486734 20.0871689,23.0854357 20.083627,23.7351956 C20.083627,25.7519012 21.7184899,27.3867641 23.7351956,27.3867641 C25.7519012,27.3867641 27.3867641,25.7519012 27.3867641,23.7351956 C27.3867641,21.7184899 25.7519012,20.083627 23.7351956,20.083627 L23.7351956,20.083627 Z M14.6062742,11.8675978 C16.1188034,11.8675978 17.3449506,13.093745 17.3449506,14.6062742 C17.3449506,16.1188034 16.1188034,17.3449506 14.6062742,17.3449506 C13.093745,17.3449506 11.8675978,16.1188034 11.8675978,14.6062742 C11.8691074,13.0943707 13.0943707,11.8691074 14.6062742,11.8675978 L14.6062742,11.8675978 Z M3.65156855,5.47735282 C3.65156855,4.46900001 4.46900001,3.65156855 5.47735282,3.65156855 C6.48570563,3.65156855 7.3031371,4.46900001 7.3031371,5.47735282 C7.3031371,6.48570563 6.48570563,7.3031371 5.47735282,7.3031371 C4.46941718,7.30213067 3.65257498,6.48528846 3.65156855,5.47735282 L3.65156855,5.47735282 Z M5.47735282,25.5609798 C4.46900001,25.5609798 3.65156855,24.7435484 3.65156855,23.7351956 C3.65156855,22.7268428 4.46900001,21.9094113 5.47735282,21.9094113 C6.48570563,21.9094113 7.3031371,22.7268428 7.3031371,23.7351956 C7.30213067,24.7431312 6.48528846,25.5599734 5.47735282,25.5609798 L5.47735282,25.5609798 Z M23.7351956,25.5609798 C22.7268428,25.5609798 21.9094113,24.7435484 21.9094113,23.7351956 C21.9094113,22.7268428 22.7268428,21.9094113 23.7351956,21.9094113 C24.7435484,21.9094113 25.5609798,22.7268428 25.5609798,23.7351956 C25.5594716,24.742923 24.742923,25.5594716 23.7351956,25.5609798 L23.7351956,25.5609798 Z" id="Fill"></path>
                         </g>
                         <g id="Rectangle-Copy-2" fill-rule="nonzero">
-                            <use fill="black" fill-opacity="1" filter="url(#filter-4)" xlink:href="#path-3"></use>
-                            <use fill-opacity="0.9" fill="#FFFFFF" xlink:href="#path-3"></use>
+                            <use fill="black" fill-opacity="1" filter="url(#filter-4)" href="#path-3"></use>
+                            <use fill-opacity="0.9" fill="#FFFFFF" href="#path-3"></use>
                         </g>
                         <text id="Cluster-Possiblerept" font-family="RedHatText-Medium, Red Hat Text" font-size="11.3720278" font-weight="400" fill="#152935">
                             <tspan x="9.97101779" y="117.142818">Cluster</tspan>
@@ -534,8 +534,8 @@ export const DiagramShapes = () => (
                         </text>
                         <g id="Group-8-Copy" transform="translate(0.685601, 66.771539)">
                             <g id="Oval">
-                                <use fill="black" fill-opacity="1" filter="url(#filter-6)" xlink:href="#path-5"></use>
-                                <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-5"></use>
+                                <use fill="black" fill-opacity="1" filter="url(#filter-6)" href="#path-5"></use>
+                                <use fill="#FFFFFF" fill-rule="evenodd" href="#path-5"></use>
                             </g>
                             <g id="Icons-/-14px-/-check-circle" transform="translate(5.216526, 5.216526)">
                                 <path d="M14.6062742,7.3031371 C14.6062742,8.61848721 14.2774366,9.83567657 13.6197617,10.9547056 C12.9620869,12.0737347 12.0737347,12.9620869 10.9547056,13.6197617 C9.83567657,14.2774366 8.61848721,14.6062742 7.3031371,14.6062742 C5.98778699,14.6062742 4.77059762,14.2774366 3.65156855,13.6197617 C2.53253948,12.9620869 1.6441873,12.0737347 0.986512471,10.9547056 C0.32883764,9.83567657 0,8.61848721 0,7.3031371 C0,5.98778699 0.32883764,4.77059762 0.986512471,3.65156855 C1.6441873,2.53253948 2.53253948,1.6441873 3.65156855,0.986512471 C4.77059762,0.32883764 5.98778699,0 7.3031371,0 C8.61848721,0 9.83567657,0.32883764 10.9547056,0.986512471 C12.0737347,1.6441873 12.9620869,2.53253948 13.6197617,3.65156855 C14.2774366,4.77059762 14.6062742,5.98778699 14.6062742,7.3031371 Z" id="check-circle" stroke="#108926" stroke-width="1.0433053"></path>

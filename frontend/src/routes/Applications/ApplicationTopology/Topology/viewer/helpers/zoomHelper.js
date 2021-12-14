@@ -59,7 +59,7 @@ export default class ZoomHelper {
                 if (this.viewer.viewerContainerContainerRef) {
                     const { width: availableWidth, height: availableHeight } =
                         this.viewer.viewerContainerContainerRef.getBoundingClientRect()
-                    let scale = Math.min(1, 0.95 / Math.max(width / availableWidth, height / availableHeight))
+                    let scale = Math.min(1.2, 0.95 / Math.max(width / availableWidth, height / availableHeight))
 
                     // don't allow scale to drop too far for accessability reasons
                     // below threshHold, show scrollbar instead
@@ -81,13 +81,13 @@ export default class ZoomHelper {
 
                     // center diagram vertically and horizontally
                     const viewerHeight = this.viewer.viewerContainerRef.getBoundingClientRect().height
-                    const yPadding = this.noTitle ? 30 : 60
+                    const yPadding = 0//this.noTitle ? 30 : 60
                     const dy = ((viewerHeight / 2 - yPadding) * 1) / scale
                     const cy = y1 + dy
                     const cx = width / 2
                     d3.zoom()
-                        .on('zoom', () => {
-                            this.currentZoom = 1// czcz currentEvent.transform
+                        .on('zoom', (evt) => {
+                            this.currentZoom = evt.transform
                             if (zoomElements) {
                                 this.zoomElements(200)
                             }
@@ -116,8 +116,8 @@ export default class ZoomHelper {
         return d3
             .zoom()
             .scaleExtent([0.1, 2]) // can manually scale from 0.1 up to 2
-            .on('zoom', () => {
-                this.currentZoom = 1//czcz currentEvent.transform
+            .on('zoom', (evt) => {
+                this.currentZoom = evt.transform
                 this.isAutoZoom = false
                 this.zoomElements(duration)
                 if (cb) {

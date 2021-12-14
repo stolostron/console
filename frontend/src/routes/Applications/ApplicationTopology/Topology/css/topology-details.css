@@ -1,7 +1,4 @@
 .topologyDetails {
-    position: absolute;
-    top: 0;
-    right: 0;
     background-color: #fff;
     box-shadow: -1px 0 7px 0 rgba(0, 0, 0, 0.1);
     width: 463px;
@@ -319,7 +316,7 @@
     height: 1rem;
 }
 .topologyDetails .details-view-container {
-    height: calc(100vh - 370px) !important;
+    height: calc(100vh - 470px) !important;
 }
 .topologyDetails .details-view-container .details-view-scrollbar {
     width: 100%;

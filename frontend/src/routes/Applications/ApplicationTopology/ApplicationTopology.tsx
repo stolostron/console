@@ -13,18 +13,23 @@ import './Topology/css/resource-toolbar.css'
 
 
 import Topology from './Topology/Topology'
+import SearchName from './Topology/viewer/SearchName'
 import { processResourceActionLink } from './Topology/utils/diagram-helpers'
 
 
-import nodes from './demo-etherpad-nodes.json'
-import links from './demo-etherpad-links.json'
+//import nodes from './demo-etherpad-nodes.json'
+//import links from './demo-etherpad-links.json'
+import nodes from './demo-saude-digital-nodes.json'
+import links from './demo-saude-digital-links.json'
 
-const portals = {
-    assortedFilterOpenBtn: 'assorted-filter-open-portal-id',
-    assortedFilterCloseBtns: 'assorted-filter-close-portal-id',
-    typeFilterBar: 'type-filter-bar-portal-id',
-    searchTextbox: 'search-textbox-portal-id',
-}
+
+
+// const portals = {
+//     assortedFilterOpenBtn: 'assorted-filter-open-portal-id',
+//     assortedFilterCloseBtns: 'assorted-filter-close-portal-id',
+//     typeFilterBar: 'type-filter-bar-portal-id',
+//     searchTextbox: 'search-textbox-portal-id',
+// }
 
 export type ArgoAppDetailsContainerData = {
     page: number
@@ -45,6 +50,7 @@ export default function ApplicationTopology() {
     const [isReloading, setIsReloading] = useState<boolean>()
     const [allChannels, setAllChannels] = useState<[]>()
     const [activeChannel, setActiveChannel] = useState<string>()
+    const [searchName, setSearchName] = useState<string>()
     const [isChangingChannel, setIsChangingChannel] = useState<boolean>()
     const [showLegendView, setShowLegendView] = useState<boolean>()
     const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
@@ -95,7 +101,6 @@ export default function ApplicationTopology() {
             <Topology
                 links={links}
                 nodes={nodes}
-                portals={portals}
                 processActionLink={processActionLink}
                 fetchControl={fetchControl}
                 channelControl={channelControl}
@@ -105,6 +110,7 @@ export default function ApplicationTopology() {
                 showLegendView={showLegendView}
                 handleLegendClose={() => setShowLegendView(false)}
                 argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+                searchName={searchName}
                 t={t}
             />
         )
@@ -117,17 +123,17 @@ export default function ApplicationTopology() {
                 <>
                     <div className="topology-controls">
                         <div className="topology-control-container">
-                            <div id={portals.searchTextbox} />
+                            <SearchName searchName={searchName} onNameSearch={(searchName: string)=>setSearchName(searchName)} t={t} />
                         </div>
                     </div>
-                    <div id="resource-toolbar" className="resource-toolbar">
+                    {/* <div id="resource-toolbar" className="resource-toolbar">
                         <div className="resource-toolbar-container">
                             <div className="resource-toolbar-buttons">
                                 <div id={portals.assortedFilterOpenBtn} />
                             </div>
                             <div id={portals.assortedFilterCloseBtns} />
                         </div>
-                    </div>
+                    </div> */}
                 </>
                 <div className="resourceDiagramControlsContainer">
                     {!isLoadError && (
