@@ -9,7 +9,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import { Fragment, Suspense, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
@@ -21,6 +21,7 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError } from '../../../../resources'
 import { agentsState, bareMetalHostsState } from '../../../../atoms'
 import { isBMPlatform } from '../utils'
+import { DOC_VERSION } from '../../../../lib/doc-util'
 import {
     getOnCreateBMH,
     getOnSaveISOParams,
@@ -137,7 +138,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.infraEnvironmentOverview}>
-                            <DetailsTab infraEnv={infraEnv} />
+                            <DetailsTab infraEnv={infraEnv} docVersion={DOC_VERSION} />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentHosts}>
                             <HostsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />

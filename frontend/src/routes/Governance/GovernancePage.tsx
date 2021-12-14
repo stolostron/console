@@ -8,10 +8,10 @@ import {
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
 import { Fragment, ReactNode, Suspense, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, placementBindingsState, policiesState } from '../../atoms'
+import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { PageContext } from '../Infrastructure/Clusters/ClustersPage'
 import GovernanceOverview from './overview/Overview'
@@ -40,6 +40,7 @@ export default function GovernancePage() {
     const isOverview = location.pathname == NavigationPath.governance
     return (
         <AcmPage
+            hasDrawer
             header={
                 <AcmPageHeader
                     title={t('Governance')}

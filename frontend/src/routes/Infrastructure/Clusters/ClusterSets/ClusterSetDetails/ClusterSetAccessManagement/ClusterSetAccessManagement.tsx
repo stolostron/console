@@ -42,7 +42,7 @@ import {
 } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useCallback, useContext, useMemo, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
 import { useQuery } from '../../../../../../lib/useQuery'

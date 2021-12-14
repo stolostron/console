@@ -22,7 +22,6 @@ type FormControl = {
 
 type NetworkFormProps = {
     control: FormControl
-    resourceJSON: any
     handleChange: (control: FormControl) => void
 }
 

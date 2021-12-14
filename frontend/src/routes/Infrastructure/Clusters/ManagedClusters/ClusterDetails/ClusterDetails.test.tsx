@@ -293,6 +293,7 @@ const mockAgentClusterInstall: CIM.AgentClusterInstallK8sResource = {
             state: 'adding-hosts',
             stateInfo: '',
         },
+        validationsInfo: { network: [] },
     },
 }
 

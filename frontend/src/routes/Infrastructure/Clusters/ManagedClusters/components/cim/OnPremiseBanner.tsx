@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import {
     ButtonVariant,
     Card,
@@ -38,7 +38,7 @@ export function OnPremiseBanner({
 }: OnPremisebannerProps) {
     const { t } = useTranslation()
     const localStorageKey = `OnPremiseBannerDismissed.${id}`
-    const [dismissed, setDismissed] = useState<Boolean>(localStorage.getItem(localStorageKey) === 'true')
+    const [dismissed, setDismissed] = useState<Boolean>(() => localStorage.getItem(localStorageKey) === 'true')
 
     if (dismissed) {
         return null

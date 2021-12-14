@@ -19,7 +19,7 @@ export interface Placement extends IResource {
     kind: PlacementKindType
     metadata: Metadata
     spec: {
-        predicates: Array<{
+        predicates?: Array<{
             requiredClusterSelector: {
                 labelSelector?: Selector
             }

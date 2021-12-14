@@ -18,7 +18,7 @@ import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import * as moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
@@ -354,9 +354,9 @@ export function DiscoveredClustersTable(props: {
 
     return (
         <Fragment>
-            <TechPreviewAlert i18nKey="discovery:techpreview.msg" docHref={DOC_LINKS.DISCOVERED_CLUSTERS} />
+            <TechPreviewAlert i18nKey="techpreview.msg" docHref={DOC_LINKS.DISCOVERED_CLUSTERS} />
             <AcmTable<DiscoveredCluster>
-                plural={t('discoveredClusters')}
+                plural={t('Discovered clusters')}
                 items={props.discoveredClusters}
                 columns={discoveredClusterCols}
                 keyFn={dckeyFn}

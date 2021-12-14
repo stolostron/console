@@ -39,7 +39,7 @@ import {
     TextVariants,
 } from '@patternfly/react-core'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../../../atoms'
@@ -59,20 +59,20 @@ export default function DiscoveryConfigPage() {
             header={
                 location.pathname === NavigationPath.configureDiscovery ? (
                     <AcmPageHeader
-                        title={t('editDiscoveryConfig.title')}
+                        title={t('Configure discovery settings')}
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
-                            { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
-                            { text: t('editDiscoveryConfig.title'), to: '' },
+                            { text: t('Clusters'), to: NavigationPath.clusters },
+                            { text: t('Discovered clusters'), to: NavigationPath.discoveredClusters },
+                            { text: t('Create a discovery setting'), to: '' },
                         ]}
                     />
                 ) : (
                     <AcmPageHeader
                         title={t('addDiscoveryConfig.title')}
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
-                            { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
-                            { text: t('addDiscoveryConfig.title'), to: '' },
+                            { text: t('Clusters'), to: NavigationPath.clusters },
+                            { text: t('Discovered clusters'), to: NavigationPath.discoveredClusters },
+                            { text: t('Create a discovery setting'), to: '' },
                         ]}
                     />
                 )

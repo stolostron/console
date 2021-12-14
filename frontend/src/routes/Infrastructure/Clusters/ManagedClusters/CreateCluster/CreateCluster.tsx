@@ -4,7 +4,7 @@ import { PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
 import { useState, useRef, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
@@ -433,7 +433,7 @@ export default function CreateClusterPage() {
                         </>
                     }
                     breadcrumb={[
-                        { text: t('clusters'), to: NavigationPath.clusters },
+                        { text: t('Clusters'), to: NavigationPath.clusters },
                         { text: t('page.header.create-cluster'), to: '' },
                     ]}
                     switches={switches}

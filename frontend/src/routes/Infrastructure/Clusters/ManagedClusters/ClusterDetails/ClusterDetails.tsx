@@ -24,10 +24,10 @@ import {
 } from '@open-cluster-management/ui-components'
 import { Page } from '@patternfly/react-core'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { AgentClusterInstallK8sResource, AgentK8sResource, InfraEnvK8sResource } from 'openshift-assisted-ui-lib/cim'
 import {
     acmRouteState,
     certificateSigningRequestsState,
@@ -59,9 +59,9 @@ export const ClusterContext = createContext<{
     readonly clusterCurator?: ClusterCurator
     readonly addons: Addon[] | undefined
     readonly clusterDeployment?: ClusterDeployment
-    readonly agents?: CIM.AgentK8sResource[]
-    readonly agentClusterInstall?: CIM.AgentClusterInstallK8sResource
-    readonly infraEnv?: CIM.InfraEnvK8sResource
+    readonly agents?: AgentK8sResource[]
+    readonly agentClusterInstall?: AgentClusterInstallK8sResource
+    readonly infraEnv?: InfraEnvK8sResource
 }>({
     cluster: undefined,
     addons: undefined,
@@ -211,7 +211,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 header={
                     <AcmPageHeader
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
+                            { text: t('Clusters'), to: NavigationPath.clusters },
                             { text: cluster.displayName!, to: '' },
                         ]}
                         title={cluster.displayName!}

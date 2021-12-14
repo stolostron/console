@@ -11,7 +11,7 @@ import {
 } from '@open-cluster-management/ui-components'
 import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
 import { useLayoutEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
 
 export function EditLabels(props: { resource?: IResource; displayName?: string; close: () => void }) {

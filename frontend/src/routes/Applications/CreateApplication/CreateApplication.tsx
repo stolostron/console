@@ -4,7 +4,7 @@ import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@open-
 import { PageSection } from '@patternfly/react-core'
 import { Fragment } from 'react'
 import { NavigationPath } from '../../../NavigationPath'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { isType } from '../../../lib/is-type'
 import { gitOpsClustersState, placementsState } from '../../../atoms'

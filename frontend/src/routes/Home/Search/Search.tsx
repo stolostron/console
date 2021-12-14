@@ -8,6 +8,7 @@ export default function Search() {
     return (
         <Switch>
             <Route exact path={NavigationPath.resources} component={DetailsPage} />
+            <Route path={NavigationPath.resourceLogs} component={DetailsPage} />
             <Route exact path={NavigationPath.search} component={SearchPage} />
             <Route path="*">
                 <Redirect to={NavigationPath.search} />

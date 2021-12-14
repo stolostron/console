@@ -2,7 +2,7 @@
 
 import { AcmTable, IAcmTableColumn, ITableFilter } from '@open-cluster-management/ui-components'
 import { Fragment, useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { NoWrap } from '../../../components/NoWrap'
 import { PolicyRiskLabels } from '../components/PolicyRiskLabels'
 import { IPolicyGroup, IPolicyGrouping } from '../useGovernanceData'

@@ -284,6 +284,13 @@ export const onChangeDisconnect = (control, controlData) => {
         }
     })
 }
+export function getOSTNetworkingControlData() {
+    // Kuryr should only be available for Openstack
+    const networkData = _.cloneDeep(networkingControlData)
+    const modifiedData = networkData.find((object) => object.id == 'networkType')
+    modifiedData.available.push('Kuryr')
+    return networkData
+}
 
 export const clusterDetailsControlData = [
     {
@@ -447,7 +454,7 @@ export const proxyControlData = [
         type: 'values',
         name: 'No Proxy',
         disabled: true,
-        tip: 'Add comma delineated sites to bypass the proxy. By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs.',
+        tip: 'Add comma separated sites to bypass the proxy. By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs.',
     },
     {
         id: 'additionalTrustBundle',
@@ -494,6 +501,21 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
         (imageSet.active.includes('release:4.8') ||
             imageSet.active.includes('release:4.9') ||
             imageSet.active.includes('release:4.10'))
+    ) {
+        return false
+    }
+    return true
+}
+
+export const isHidden_gt_OCP46 = (control, controlData) => {
+    const singleNodeFeatureFlag = controlData.find(({ id }) => id === 'singleNodeFeatureFlag')
+    const imageSet = controlData.find(({ id }) => id === 'imageSet')
+    if (
+        singleNodeFeatureFlag &&
+        singleNodeFeatureFlag.active &&
+        imageSet &&
+        imageSet.active &&
+        imageSet.active.includes('release:4.6')
     ) {
         return false
     }

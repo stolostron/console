@@ -13,10 +13,11 @@ import {
 } from '@open-cluster-management/ui-components'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Link, Route, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../../../atoms'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources/managedclusterview'
 import LogsPage from './LogsPage'
 import YAMLPage from './YAMLPage'
@@ -131,12 +132,10 @@ export default function DetailsPage() {
                                     </Link>
                                 </AcmSecondaryNavItem>
                                 {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
-                                    <AcmSecondaryNavItem
-                                        isActive={location.pathname === '/multicloud/home/search/resources/logs'}
-                                    >
+                                    <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceLogs}>
                                         <Link
                                             replace
-                                            to={`/multicloud/home/search/resources/logs?${encodeURIComponent(
+                                            to={`${NavigationPath.resourceLogs}?${encodeURIComponent(
                                                 resourceUrlParams
                                             )}`}
                                         >
@@ -164,7 +163,7 @@ export default function DetailsPage() {
                     />
                 </Route>
                 {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
-                    <Route path={'/multicloud/home/search/resources/logs'}>
+                    <Route path={NavigationPath.resourceLogs}>
                         <LogsPage
                             resourceError={resourceError}
                             containers={_.get(resource, 'spec.containers', []).map((container: any) => container.name)}

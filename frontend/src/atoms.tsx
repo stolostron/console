@@ -117,6 +117,7 @@ import {
 } from './resources'
 import { PlacementBinding, PlacementBindingApiVersion, PlacementBindingKind } from './resources/placement-binding'
 import { Policy, PolicyApiVersion, PolicyKind } from './resources/policy'
+import { PolicySet, PolicySetApiVersion, PolicySetKind } from './resources/policy-set'
 
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -158,7 +159,9 @@ export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
 export const managedClustersState = AtomArray<ManagedCluster>()
 export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
+export const nmStateConfigState = AtomArray<CIM.NMStateK8sResource>()
 export const policiesState = AtomArray<Policy>()
+export const policySetsState = AtomArray<PolicySet>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
 export const placementsState = AtomArray<Placement>()
 export const placementRulesState = AtomArray<PlacementRule>()
@@ -232,6 +235,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setPoliciesState] = useRecoilState(policiesState)
+    const [, setPolicySetsState] = useRecoilState(policySetsState)
     const [, setPlacementBindingsState] = useRecoilState(placementBindingsState)
     const [, setPlacementsState] = useRecoilState(placementsState)
     const [, setPlacementRulesState] = useRecoilState(placementRulesState)
@@ -285,6 +289,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
         addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
         addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
+        addSetter(PolicySetApiVersion, PolicySetKind, setPolicySetsState)
         addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
         addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
         addSetter(SecretApiVersion, SecretKind, setSecrets)

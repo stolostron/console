@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // i18next-parser.config.js
 
+const { CustomJSONLexer } = require('./i18n-scripts/lexers/json.js');
+
 module.exports = {
     contextSeparator: '_',
     // Key separator used in your translation keys
@@ -15,10 +17,10 @@ module.exports = {
     // Default value to give to empty keys
     // You may also specify a function accepting the locale, namespace, and key as arguments
 
-    indentation: 2,
+    indentation: 4,
     // Indentation of the catalog files
 
-    keepRemoved: false,
+    keepRemoved: true,
     // Keep keys from the catalog that are no longer in code
 
     keySeparator: false,
@@ -38,6 +40,7 @@ module.exports = {
         ts: ['JavascriptLexer'],
         jsx: ['JsxLexer'],
         tsx: ['JsxLexer'],
+        json: [CustomJSONLexer],
 
         default: ['JavascriptLexer'],
     },
@@ -48,7 +51,7 @@ module.exports = {
     locales: ['en'],
     // An array of the locales in your applications
 
-    namespaceSeparator: false,
+    namespaceSeparator: '~',
     // Namespace separator used in your translation keys
     // If you want to use plain english keys, separators such as `.` and `:` will conflict. You might want to set `keySeparator: false` and `namespaceSeparator: false`. That way, `t('Status: Loading...')` will not think that there are a namespace and three separator dots for instance.
 
@@ -61,7 +64,7 @@ module.exports = {
     // Plural separator used in your translation keys
     // If you want to use plain english keys, separators such as `_` might conflict. You might want to set `pluralSeparator` to a different string that does not occur in your keys.
 
-    input: ['./src/**/*.tsx', './src/**/*.ts'],
+    input: ['./src/**/*.tsx', './src/**/*.ts', './console-extensions.json'],
     // An array of globs that describe where to look for source files
     // relative to the location of the configuration file
 

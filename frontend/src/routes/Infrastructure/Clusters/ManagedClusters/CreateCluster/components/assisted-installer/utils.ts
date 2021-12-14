@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import { isEqual } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue, waitForAll } from 'recoil'
 
+import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import {
     ConfigMap,
     patchResource,
-    deleteResource,
     createResource,
     getResource,
     listNamespacedResources,
@@ -22,7 +22,9 @@ import {
 } from '../../../../../../../atoms'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
-import { InfraEnvK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'
+import { deleteResources } from '../../../../../../../lib/delete-resources'
+import { BareMetalHostK8sResource, NMStateK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'
+import { IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
 
 const {
     getAnnotationsFromAgentSelector,
@@ -113,10 +115,9 @@ export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHosts
 }
 
 /** AI-specific version for the CIM-flow's onHostsNext() callback */
-export const onDiscoverHostsNext = async ({ clusterDeployment, agents }: OnDiscoverHostsNext) => {
+export const onDiscoveryHostsNext = async ({ clusterDeployment, agents }: OnDiscoverHostsNext) => {
     // TODO(mlibra): So far we do not need "values" of the Formik - options the user will choose from will come later (like CNV or OCS)
-
-    // So far no need to "release" agents since the user either deletes the agent or keep the list untouched
+    // So far no need to "release" agents since the user either deletes the agent or keep the list untouched. Reconsider when "disable" gets in place.
 
     const name = clusterDeployment.metadata.name
     const namespace = clusterDeployment.metadata.namespace
@@ -279,7 +280,10 @@ export const onApproveAgent = (agent: CIM.AgentK8sResource) => {
 export const getClusterDeploymentLink = ({ name }: { name: string }) =>
     NavigationPath.clusterDetails.replace(':id', name)
 
-export const canDeleteAgent = (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => !!agent || !!bmh
+// export const canDeleteAgent = (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => !!agent || !!bmh
+
+// TODO(mlibra): Is that state-dependent in our flow?
+export const canEditHost = () => true
 
 export const fetchNMState = async (namespace: string, bmhName: string) => {
     const nmStates = await listNamespacedResources(
@@ -292,12 +296,18 @@ export const fetchNMState = async (namespace: string, bmhName: string) => {
 export const fetchSecret = (namespace: string, name: string) =>
     getResource({ apiVersion: 'v1', kind: 'Secret', metadata: { namespace, name } }).promise
 
-export const getOnDeleteHost =
-    (bareMetalHosts: CIM.BareMetalHostK8sResource[]) =>
-    async (agent?: CIM.AgentK8sResource, bareMetalHost?: CIM.BareMetalHostK8sResource) => {
+export const getDeleteHostAction =
+    (
+        bareMetalHosts: CIM.BareMetalHostK8sResource[],
+        nmStates?: CIM.NMStateK8sResource[],
+        agent?: CIM.AgentK8sResource,
+        bareMetalHost?: CIM.BareMetalHostK8sResource
+    ) =>
+    () => {
+        const resources = []
         let bmh = bareMetalHost
         if (agent) {
-            await deleteResource(agent).promise
+            resources.push(agent)
             const bmhName = agent.metadata.labels?.[AGENT_BMH_HOSTNAME_LABEL_KEY]
             if (bmhName) {
                 bmh = bareMetalHosts.find(
@@ -306,8 +316,8 @@ export const getOnDeleteHost =
             }
         }
         if (bmh) {
-            await deleteResource(bmh).promise
-            deleteResource({
+            resources.push(bmh)
+            resources.push({
                 apiVersion: 'v1',
                 kind: 'Secret',
                 metadata: {
@@ -316,12 +326,81 @@ export const getOnDeleteHost =
                 },
             })
 
-            const nmState = await fetchNMState(bmh.metadata.namespace, bmh.metadata.name)
+            const nmState = (nmStates || []).find(
+                (nm) => nm.metadata?.labels?.[AGENT_BMH_HOSTNAME_LABEL_KEY] === bmh.metadata.name
+            )
             if (nmState) {
-                await deleteResource(nmState).promise
+                resources.push(nmState)
             }
         }
+
+        return deleteResources(resources)
     }
+
+const getAgentName = (resource: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource): string =>
+    resource.spec?.hostname || resource.spec?.bmc?.address || resource.metadata?.name || '-'
+
+const agentNameSortFunc = (
+    a: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource,
+    b: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource
+) => getAgentName(a).localeCompare(getAgentName(b))
+
+export const useOnDeleteHost = (
+    toggleDialog: (props: IBulkActionModelProps | { open: false }) => void,
+    bareMetalHosts: BareMetalHostK8sResource[],
+    nmStates?: NMStateK8sResource[]
+) => {
+    const { t } = useTranslation()
+
+    return useCallback(
+        (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => {
+            toggleDialog({
+                open: true,
+                title: t('host.action.title.delete'),
+                action: t('delete'),
+                processing: t('deleting'),
+                resources: [agent, bmh].filter(Boolean),
+                description: t('host.action.message.delete'),
+                columns: [
+                    {
+                        header: t('infraEnv.tableHeader.name'),
+                        cell: getAgentName,
+                        sort: agentNameSortFunc,
+                    },
+                    {
+                        header: t('infraEnv.tableHeader.namespace'),
+                        cell: 'metadata.namespace',
+                        sort: 'metadata.namespace',
+                    },
+                ],
+                keyFn: (resource: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource) =>
+                    resource.metadata?.uid as string,
+                actionFn: getDeleteHostAction(bareMetalHosts, nmStates, agent, bmh),
+                close: () => {
+                    toggleDialog({ open: false })
+                },
+                isDanger: true,
+                icon: 'warning',
+            })
+        },
+        [toggleDialog, bareMetalHosts, nmStates]
+    )
+}
+
+export const useNMStatesOfNamespace = (namespace: string) => {
+    const [nmStates, setNMStates] = useState<CIM.NMStateK8sResource[] | undefined>()
+    useEffect(() => {
+        const doItAsync = async () => {
+            const result = await listNamespacedResources(
+                { apiVersion: 'agent-install.openshift.io/v1beta1', kind: 'NMStateConfig', metadata: { namespace } },
+                [AGENT_BMH_HOSTNAME_LABEL_KEY]
+            ).promise
+            setNMStates(result)
+        }
+        doItAsync()
+    }, [namespace])
+    return nmStates
+}
 
 export const onSaveBMH =
     (editModal: ModalProps | undefined) => async (values: CIM.AddBmcValues, nmState: CIM.NMStateK8sResource) => {
@@ -429,8 +508,8 @@ export const useBMHsOfAIFlow = ({ name, namespace }: { name: string; namespace: 
     )
 }
 
-const refetchInfraEnv = async (infraEnv: InfraEnvK8sResource) =>
-    await getResource<InfraEnvK8sResource>({
+const refetchInfraEnv = async (infraEnv: CIM.InfraEnvK8sResource) =>
+    await getResource<CIM.InfraEnvK8sResource>({
         apiVersion: infraEnv.apiVersion,
         kind: infraEnv.kind,
         metadata: { namespace: infraEnv.metadata.namespace, name: infraEnv.metadata.name },
@@ -438,34 +517,35 @@ const refetchInfraEnv = async (infraEnv: InfraEnvK8sResource) =>
 
 const sleep = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export const getOnSaveISOParams = (infraEnv: InfraEnvK8sResource) => async (values: CIM.DiscoveryImageFormValues) => {
-    const patches: any[] = []
-    appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey || '', infraEnv.spec?.sshAuthorizedKey)
+export const getOnSaveISOParams =
+    (infraEnv: CIM.InfraEnvK8sResource) => async (values: CIM.DiscoveryImageFormValues) => {
+        const patches: any[] = []
+        appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey || '', infraEnv.spec?.sshAuthorizedKey)
 
-    const proxy = values.enableProxy
-        ? {
-              httpProxy: values.httpProxy,
-              httpsProxy: values.httpsProxy,
-              noProxy: values.noProxy,
-          }
-        : {}
-    appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
+        const proxy = values.enableProxy
+            ? {
+                  httpProxy: values.httpProxy,
+                  httpsProxy: values.httpsProxy,
+                  noProxy: values.noProxy,
+              }
+            : {}
+        appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
 
-    // TODO(mlibra): Once implemented on the backend, persist values.imageType
+        // TODO(mlibra): Once implemented on the backend, persist values.imageType
 
-    // TODO(mlibra): Why is oldIsoCreatedTimestamp not from a condition? I would expect infraEnv.status?.conditions?.find((condition) => condition.type === 'ImageCreated')
-    const oldIsoCreatedTimestamp = infraEnv.status?.createdTime
+        // TODO(mlibra): Why is oldIsoCreatedTimestamp not from a condition? I would expect infraEnv.status?.conditions?.find((condition) => condition.type === 'ImageCreated')
+        const oldIsoCreatedTimestamp = infraEnv.status?.createdTime
 
-    await patchResource(infraEnv, patches).promise
+        await patchResource(infraEnv, patches).promise
 
-    // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
-    // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
-    // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.
-    let polledInfraEnv: InfraEnvK8sResource = await refetchInfraEnv(infraEnv)
-    let maxPollingCounter = 10
-    while (polledInfraEnv.status?.createdTime === oldIsoCreatedTimestamp && --maxPollingCounter) {
-        await sleep(5 * 1000)
-        polledInfraEnv = await refetchInfraEnv(infraEnv)
+        // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
+        // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
+        // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.
+        let polledInfraEnv: CIM.InfraEnvK8sResource = await refetchInfraEnv(infraEnv)
+        let maxPollingCounter = 10
+        while (polledInfraEnv.status?.createdTime === oldIsoCreatedTimestamp && --maxPollingCounter) {
+            await sleep(5 * 1000)
+            polledInfraEnv = await refetchInfraEnv(infraEnv)
+        }
+        // quit anyway ...
     }
-    // quit anyway ...
-}

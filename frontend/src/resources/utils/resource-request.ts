@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { getCookie } from '.'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
-import { getCookie } from '.'
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -397,14 +397,19 @@ export async function fetchRetry<T>(options: {
 
         if (response) {
             let responseData: T | string | undefined = undefined
-            if (response.headers.get('content-type') !== 'text/plain') {
+            // Use includes() to identify text/plain because the header can have more text (ex: charset=..)
+            if (!response.headers.get('content-type')?.includes('text/plain')) {
                 try {
                     responseData = (await response.json()) as T
-                } catch {}
+                } catch {
+                    console.error('Error getting resource json response.')
+                }
             } else {
                 try {
                     responseData = await response.text()
-                } catch {}
+                } catch {
+                    console.error('Error getting resource text response.')
+                }
             }
 
             if ((responseData as any)?.kind === StatusKind) {

@@ -23,7 +23,7 @@ import {
 import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, bareMetalAssetsState } from '../../../atoms'
@@ -107,7 +107,7 @@ export function BareMetalAssetsTable(props: {
         setImportedProps({
             open: true,
             icon: 'default',
-            title: t('bulk.title.import'),
+            title: t('bulk.title.import.bma'),
             action: t('import'),
             processing: '',
             description: '',
@@ -130,7 +130,7 @@ export function BareMetalAssetsTable(props: {
                                 setImportedProps({
                                     open: true,
                                     icon: 'default',
-                                    title: t('bulk.title.import'),
+                                    title: t('bulk.title.import.bma'),
                                     action: t('import'),
                                     processing: t('importing'),
                                     description: t('modal.import.content.batch'),
@@ -327,11 +327,11 @@ export function BareMetalAssetsTable(props: {
                                     click: (bareMetalAsset: BareMetalAsset) => {
                                         setModalProps({
                                             open: true,
-                                            title: t('bulk.title.delete'),
+                                            title: t('.bma'),
                                             action: t('delete'),
                                             processing: t('deleting'),
                                             resources: [bareMetalAsset],
-                                            description: t('bulk.message.delete'),
+                                            description: t('bulk.message.delete.bma'),
                                             columns: [
                                                 {
                                                     header: t('bareMetalAsset.tableHeader.name'),
@@ -393,11 +393,11 @@ export function BareMetalAssetsTable(props: {
                         click: (bareMetalAssets: BareMetalAsset[]) => {
                             setModalProps({
                                 open: true,
-                                title: t('bulk.title.delete'),
+                                title: t('bulk.title.delete.bma'),
                                 action: t('delete'),
                                 processing: t('deleting'),
                                 resources: [...bareMetalAssets],
-                                description: t('bulk.message.delete'),
+                                description: t('bulk.message.delete.bma'),
                                 columns: [
                                     {
                                         header: t('bareMetalAsset.tableHeader.name'),

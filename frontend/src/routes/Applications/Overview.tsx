@@ -11,7 +11,9 @@ import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { TFunction, useTranslation } from 'react-i18next'
+import { useTranslation } from '../../lib/acm-i18next'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { TFunction } from 'react-i18next'
 import { useHistory } from 'react-router'
 import { useRecoilState } from 'recoil'
 import {

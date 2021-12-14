@@ -2,7 +2,7 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { Trans } from 'react-i18next'
+import { Trans } from '../../../../../../lib/acm-i18next'
 
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
