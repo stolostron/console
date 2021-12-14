@@ -224,8 +224,8 @@ export function getCluster(
         distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment, clusterCurator),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
         nodes: getNodes(managedClusterInfo),
-        kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo),
-        consoleURL: getConsoleUrl(clusterDeployment, managedClusterInfo, managedCluster),
+        kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),
+        consoleURL: getConsoleUrl(clusterDeployment, managedClusterInfo, managedCluster, agentClusterInstall),
         isHive: !!clusterDeployment,
         isManaged: !!managedCluster || !!managedClusterInfo,
         isCurator: !!clusterCurator,
@@ -603,19 +603,24 @@ export function getDistributionInfo(
     return undefined
 }
 
-export function getKubeApiServer(clusterDeployment?: ClusterDeployment, managedClusterInfo?: ManagedClusterInfo) {
+export function getKubeApiServer(
+    clusterDeployment?: ClusterDeployment,
+    managedClusterInfo?: ManagedClusterInfo,
+    agentClusterInstall?: CIM.AgentClusterInstallK8sResource
+) {
     return (
         clusterDeployment?.status?.apiURL ??
         managedClusterInfo?.spec?.masterEndpoint ??
         // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
-        (clusterDeployment && getClusterApiUrlAI(clusterDeployment))
+        getClusterApiUrlAI(clusterDeployment, agentClusterInstall)
     )
 }
 
 export function getConsoleUrl(
     clusterDeployment?: ClusterDeployment,
     managedClusterInfo?: ManagedClusterInfo,
-    managedCluster?: ManagedCluster
+    managedCluster?: ManagedCluster,
+    agentClusterInstall?: CIM.AgentClusterInstallK8sResource
 ) {
     const consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
         (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
@@ -625,7 +630,7 @@ export function getConsoleUrl(
         clusterDeployment?.status?.webConsoleURL ??
         managedClusterInfo?.status?.consoleURL ??
         // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
-        (clusterDeployment && getConsoleUrlAI(clusterDeployment))
+        getConsoleUrlAI(clusterDeployment, agentClusterInstall)
     )
 }
 

@@ -38,7 +38,7 @@ export function OnPremiseBanner({
 }: OnPremisebannerProps) {
     const { t } = useTranslation()
     const localStorageKey = `OnPremiseBannerDismissed.${id}`
-    const [dismissed, setDismissed] = useState<Boolean>(localStorage.getItem(localStorageKey) === 'true')
+    const [dismissed, setDismissed] = useState<Boolean>(() => localStorage.getItem(localStorageKey) === 'true')
 
     if (dismissed) {
         return null

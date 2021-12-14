@@ -1,0 +1,38 @@
+.sync-diff__container .diff-row {
+    background-color: #fffafa;
+    cursor: pointer;
+}
+
+.sync-diff__container .diff-row.last {
+    border-bottom: 6pt solid white;
+}
+
+.sync-diff__container .diff-table {
+    max-width: 800px;
+}
+
+.sync-diff__container .diff-line {
+    width: 1%;
+    min-width: 50px;
+    text-align: center;
+    padding: 0;
+}
+
+.sync-diff__container .diff-line.right {
+    border-left: 6pt solid white;
+}
+
+.sync-diff__container .diff-line.green {
+    background-color: #ccffd8;
+}
+
+.sync-diff__container .diff-value {
+    width: 50%;
+    text-align: left;
+    padding: 4px;
+}
+
+.sync-diff__container .diff-value.last {
+    background-color: #e6ffec;
+    white-space: pre-wrap;
+}

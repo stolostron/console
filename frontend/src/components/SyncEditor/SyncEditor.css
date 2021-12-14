@@ -1,0 +1,88 @@
+:root {
+    --sy-c-code-editor__code--PaddingTop: 0;
+    --sy-c-code-editor__code--PaddingRight: 0;
+    --sy-c-code-editor__code--PaddingBottom: 0;
+    --sy-c-code-editor__code--PaddingLeft: 0;
+}
+
+.sy-c-code-editor__title {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+}
+
+.sync-editor__container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.sync-editor__container .pf-c-code-editor__header {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ededed;
+    background-color: #25282c;
+    border-bottom: 1px solid #55585c;
+}
+
+.sync-editor__container .pf-c-code-editor__controls {
+    width: 100%;
+    justify-content: space-between;
+}
+
+.sync-editor__container .pf-c-code-editor__header::before {
+    border: none;
+}
+
+.sync-editor__container .pf-c-code-editor__controls .pf-c-button.pf-m-control {
+    background-color: #25282c;
+}
+
+.sync-editor__container .pf-c-button.pf-m-plain,
+.pf-c-code-editor__controls .pf-c-button.pf-m-control:not([disabled]) {
+    color: #ededed;
+}
+
+.sync-editor__container .pf-c-button::after {
+    border: none;
+    border-left: 1px solid #55585c;
+}
+
+.sync-editor__container .pf-c-button:hover {
+    color: #ededed;
+    background-color: #25282c;
+}
+
+.sync-editor__container .pf-c-code-editor__main {
+    border: none;
+}
+
+.sync-editor__container .pf-c-code-editor__code {
+    padding: var(--sy-c-code-editor__code--PaddingTop) var(--sy-c-code-editor__code--PaddingRight)
+        var(--sy-c-code-editor__code--PaddingBottom) var(--sy-c-code-editor__code--PaddingLeft);
+}
+
+.protectedDecoration {
+    color: #b0b0b0 !important;
+    user-select: auto;
+}
+
+.errorDecoration {
+    margin-left: 6px;
+    height: 14px !important;
+    width: 14px !important;
+    cursor: pointer;
+    z-index: 1000;
+    background: url("data:image/svg+xml;utf8, <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' width='14' height='14'><g fill='red'><circle cx='8' cy='8' r='8' fill='white' fill-opacity='1'/><path d='M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zM5.1 13.3L3.5 12 11 2.6l1.5 1.2-7.4 9.5z'/> </g></svg>");
+}
+.insertedLineDecoration {
+    background: #87d4ecab;
+    width: 6px !important;
+    margin-left: 12px;
+}
+
+.customLineDecoration {
+    background: blue;
+    width: 6px !important;
+    margin-left: 12px;
+}

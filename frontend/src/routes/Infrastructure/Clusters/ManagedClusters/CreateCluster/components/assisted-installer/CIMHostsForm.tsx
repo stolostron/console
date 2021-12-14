@@ -88,8 +88,8 @@ const CIMHostsForm: React.FC<CIMHostsFormProps> = ({ control, handleChange }) =>
         []
     )
 
-    return clusterDeployment && agentClusterInstall ? (
-        <div className="hosts-form">
+    return agents && clusterDeployment && agentClusterInstall ? (
+        <div className="hosts-form" id="hosts-form">
             <ACMClusterDeploymentHostsStep
                 formRef={formRef}
                 onValuesChanged={onValuesChanged}

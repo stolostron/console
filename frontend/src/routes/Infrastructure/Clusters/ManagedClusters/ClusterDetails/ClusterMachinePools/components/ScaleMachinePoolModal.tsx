@@ -56,7 +56,7 @@ export function ScaleMachinePoolModal(props: ScaleMachinePoolModalProps) {
                         <>
                             <p>
                                 <Trans
-                                    i18nKey={`cluster:machinePool.modal.scale.${props.mode}.message`}
+                                    i18nKey={`machinePool.modal.scale.${props.mode}.message`}
                                     values={{
                                         name: props.machinePool!.metadata.name,
                                         number: props.machinePool?.status?.replicas,
