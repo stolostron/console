@@ -75,6 +75,14 @@ export const getWorkerName = (control) => {
     return `Worker pool ${grpNum + 1}`
 }
 
+export function getOSTNetworkingControlData() {
+    // Kuryr should only be available for Openstack
+    const networkData = _.cloneDeep(networkingControlData)
+    const modifiedData = networkData.find((object) => object.id == 'networkType')
+    modifiedData.available.push('Kuryr')
+    return networkData
+}
+
 export const setAvailableOCPImages = (provider, control, result) => {
     const { loading } = result
     const { data } = result
@@ -401,6 +409,21 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
         (imageSet.active.includes('release:4.8') ||
             imageSet.active.includes('release:4.9') ||
             imageSet.active.includes('release:4.10'))
+    ) {
+        return false
+    }
+    return true
+}
+
+export const isHidden_gt_OCP46 = (control, controlData) => {
+    const singleNodeFeatureFlag = controlData.find(({ id }) => id === 'singleNodeFeatureFlag')
+    const imageSet = controlData.find(({ id }) => id === 'imageSet')
+    if (
+        singleNodeFeatureFlag &&
+        singleNodeFeatureFlag.active &&
+        imageSet &&
+        imageSet.active &&
+        imageSet.active.includes('release:4.6')
     ) {
         return false
     }
