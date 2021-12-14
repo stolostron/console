@@ -356,6 +356,7 @@ const mockPullSecret = {
         name: 'test-pull-secret',
         namespace: 'test',
         labels: {
+            'cluster.open-cluster-management.io/backup': 'cluster',
             'cluster.open-cluster-management.io/copiedFromNamespace': providerConnection.metadata.namespace!,
             'cluster.open-cluster-management.io/copiedFromSecretName': providerConnection.metadata.name!,
         },
@@ -370,7 +371,11 @@ const pullSecretAI = '{"auths":{"cloud.openshift.com":{"auth":"b3BlbSKIPPED","em
 const mockPullSecretAI = {
     apiVersion: 'v1',
     kind: 'Secret',
-    metadata: { name: 'pullsecret-cluster-test', namespace: 'test', labels: {} },
+    metadata: {
+        name: 'pullsecret-cluster-test',
+        namespace: 'test',
+        labels: { 'cluster.open-cluster-management.io/backup': 'cluster' },
+    },
     data: {
         '.dockerconfigjson':
             'eyJhdXRocyI6eyJjbG91ZC5vcGVuc2hpZnQuY29tIjp7ImF1dGgiOiJiM0JsYlNLSVBQRUQiLCJlbWFpbCI6Im15QGVtYWlsLnNvbWV3aGVyZS5jb20ifX19',
@@ -385,8 +390,7 @@ const mockInstallConfigSecret = {
         name: 'test-install-config',
         namespace: 'test',
         labels: {
-            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnection.metadata.namespace!,
-            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnection.metadata.name!,
+            'cluster.open-cluster-management.io/backup': 'cluster',
         },
     },
     type: 'Opaque',
@@ -403,8 +407,7 @@ const mockInstallConfigSecretPrivate = {
         name: 'test-install-config',
         namespace: 'test',
         labels: {
-            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnection.metadata.namespace!,
-            'cluster.open-cluster-management.io/copiedFromSecretName': 'connectionAws',
+            'cluster.open-cluster-management.io/backup': 'cluster',
         },
     },
     type: 'Opaque',
@@ -421,6 +424,7 @@ const mockPullSecretAws = {
         name: 'test-pull-secret',
         namespace: 'test',
         labels: {
+            'cluster.open-cluster-management.io/backup': 'cluster',
             'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
             'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
@@ -438,8 +442,7 @@ const mockInstallConfigSecretAws = {
         name: 'test-install-config',
         namespace: 'test',
         labels: {
-            'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
-            'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
+            'cluster.open-cluster-management.io/backup': 'cluster',
         },
     },
     type: 'Opaque',
@@ -456,6 +459,7 @@ const mockProviderConnectionSecretCopiedAws = {
         name: 'test-aws-creds',
         namespace: 'test',
         labels: {
+            'cluster.open-cluster-management.io/backup': 'cluster',
             'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
             'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
@@ -474,6 +478,7 @@ const mockPrivateSecret = {
         name: 'test-ssh-private-key',
         namespace: 'test',
         labels: {
+            'cluster.open-cluster-management.io/backup': 'cluster',
             'cluster.open-cluster-management.io/copiedFromNamespace': providerConnection.metadata.namespace!,
             'cluster.open-cluster-management.io/copiedFromSecretName': providerConnection.metadata.name!,
         },
@@ -936,6 +941,7 @@ const mockPrivateSecretAws = {
         name: 'test-ssh-private-key',
         namespace: 'test',
         labels: {
+            'cluster.open-cluster-management.io/backup': 'cluster',
             'cluster.open-cluster-management.io/copiedFromNamespace': providerConnectionAws.metadata.namespace!,
             'cluster.open-cluster-management.io/copiedFromSecretName': providerConnectionAws.metadata.name!,
         },
