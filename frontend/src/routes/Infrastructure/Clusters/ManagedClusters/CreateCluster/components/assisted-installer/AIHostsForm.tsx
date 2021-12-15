@@ -12,8 +12,6 @@ import {
     onDiscoveryHostsNext,
     useInfraEnv,
     getClusterDeploymentLink,
-    getOnDeleteHost,
-    canDeleteAgent,
     fetchNMState,
     fetchSecret,
     onSaveBMH,
@@ -23,8 +21,11 @@ import {
     useBMHsOfAIFlow,
     getOnSaveISOParams,
     canEditHost,
+    useNMStatesOfNamespace,
+    useOnDeleteHost,
 } from './utils'
 import { isBMPlatform } from '../../../../../InfraEnvironments/utils'
+import { BulkActionModel, IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
 
 const { ACMClusterDeploymentHostsDiscoveryStep, LoadingState, getTotalCompute, getAgentsHostsNames } = CIM
 
@@ -43,6 +44,12 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
     const filteredAgents = useAgentsOfAIFlow({ name: cdName, namespace: cdName })
     const filteredBMHs = useBMHsOfAIFlow({ name: cdName, namespace: cdName })
     const infraEnv = useInfraEnv({ name: cdName, namespace: cdName })
+
+    const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
+        { open: false }
+    )
+    const nmStates = useNMStatesOfNamespace(infraEnv.metadata.namespace)
+    const onDeleteHost = useOnDeleteHost(setBulkModalProps, filteredBMHs, nmStates)
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(filteredAgents), [filteredAgents])
 
@@ -104,31 +111,36 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
     )
 
     return clusterDeployment && agentClusterInstall ? (
-        // onApproveAgent is missing - done automatically in the AI flow
-        <ACMClusterDeploymentHostsDiscoveryStep
-            formRef={formRef}
-            error={error}
-            // clusterDeployment={clusterDeployment}
-            agentClusterInstall={agentClusterInstall}
-            agents={filteredAgents}
-            bareMetalHosts={filteredBMHs}
-            aiConfigMap={aiConfigMap}
-            infraEnv={infraEnv}
-            usedHostnames={usedHostnames}
-            onValuesChanged={onValuesChanged}
-            onCreateBMH={getOnCreateBMH(infraEnv)}
-            onDeleteHost={getOnDeleteHost(filteredBMHs)}
-            canDeleteAgent={canDeleteAgent}
-            onSaveAgent={onSaveAgent}
-            canEditHost={canEditHost}
-            onSaveBMH={onSaveBMH}
-            onSaveISOParams={getOnSaveISOParams(infraEnv)}
-            onFormSaveError={setErrorHandler}
-            fetchSecret={fetchSecret}
-            fetchNMState={fetchNMState}
-            isBMPlatform={isBMPlatform(infraEnv)}
-            getClusterDeploymentLink={getClusterDeploymentLink}
-        />
+        // onApproveAgent is missing here - done automatically in the AI flow
+        <>
+            <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
+            <ACMClusterDeploymentHostsDiscoveryStep
+                formRef={formRef}
+                error={error}
+                // clusterDeployment={clusterDeployment}
+                agentClusterInstall={agentClusterInstall}
+                agents={filteredAgents}
+                bareMetalHosts={filteredBMHs}
+                aiConfigMap={aiConfigMap}
+                infraEnv={infraEnv}
+                usedHostnames={usedHostnames}
+                onValuesChanged={onValuesChanged}
+                onCreateBMH={getOnCreateBMH(infraEnv)}
+                onDeleteHost={onDeleteHost}
+                canDeleteAgent={(agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) =>
+                    !!nmStates && (!!agent || !!bmh)
+                }
+                onSaveAgent={onSaveAgent}
+                canEditHost={canEditHost}
+                onSaveBMH={onSaveBMH}
+                onSaveISOParams={getOnSaveISOParams(infraEnv)}
+                onFormSaveError={setErrorHandler}
+                fetchSecret={fetchSecret}
+                fetchNMState={fetchNMState}
+                isBMPlatform={isBMPlatform(infraEnv)}
+                getClusterDeploymentLink={getClusterDeploymentLink}
+            />
+        </>
     ) : (
         <LoadingState />
     )

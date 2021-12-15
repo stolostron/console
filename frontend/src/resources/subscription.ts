@@ -26,14 +26,14 @@ export interface Subscription extends IResource {
                 name: string
             }
         }
-        packageOverrides: any[]
+        packageOverrides?: any[]
         packageFilter?: {
             version: string
         }
         secondaryChannel?: string
-        timewindow: any[]
+        timewindow?: any[]
     }
-    status: {
+    status?: {
         message?: string
         phase?: string
         statuses?: any

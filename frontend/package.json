@@ -8,6 +8,7 @@
         "tsc:noEmit": "tsc --noEmit",
         "clean": "rm -rf coverage build",
         "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc:noEmit -c green,blue,cyan,magenta",
+        "jest:coverage": "JEST_JUNIT_OUTPUT_DIR=coverage jest test --all --watchAll=true --ci --coverage --reporters=default --coverageReporters=lcov --coverageReporters=html --coverageReporters=text --coverageReporters=text-summary --verbose",
         "jest": "jest --runInBand",
         "jest:parallel": "jest",
         "eslint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",

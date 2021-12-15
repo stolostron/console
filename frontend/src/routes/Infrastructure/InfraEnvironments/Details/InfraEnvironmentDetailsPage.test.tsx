@@ -4,12 +4,15 @@ import { render, waitFor } from '@testing-library/react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+
 import { infraEnvironmentsState } from '../../../../atoms'
-import { nockGet, nockPatch } from '../../../../lib/nock-util'
+import { nockGet, nockList, nockPatch } from '../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForTestId, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { infraEnvName, mockInfraEnv1 } from '../InfraEnvironmentsPage.test'
+
 import InfraEnvironmentDetailsPage from './InfraEnvironmentDetailsPage'
+import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim/EditAICluster.sharedmocks'
 
 const mockInfraEnvironments: CIM.InfraEnvK8sResource[] = [mockInfraEnv1]
 
@@ -22,11 +25,16 @@ const patchInfraEnv = [
 const mockInfraEnvRegeneratedISO = cloneDeep(mockInfraEnv1)
 mockInfraEnvRegeneratedISO.status.createdTime = '2021-11-10T14:03:16Z'
 
+const mockNMStateConfigInfraEnv = cloneDeep(mockNMStateConfig)
+mockNMStateConfigInfraEnv.metadata.name = infraEnvName
+mockNMStateConfigInfraEnv.metadata.namespace = infraEnvName
+
 const Component = () => {
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(infraEnvironmentsState, mockInfraEnvironments)
+                // snapshot.set(nmStateConfigState, [mockNMStateConfigInfraEnv])
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.infraEnvironmentDetails]}>
@@ -80,8 +88,14 @@ describe('Infrastructure Environment Details page', () => {
         await waitForNotText('Download Discovery ISO')
 
         // The Hosts tab
+        const nocks = [
+            // nockList(mockNMStateConfig, mockNMStateConfig),
+            nockList(mockNMStateConfigInfraEnv, mockNMStateConfigInfraEnv, ['agent-install.openshift.io/bmh']),
+        ]
         await clickByText('tab.hosts')
         await waitForText('Hosts may take a few minutes to appear here after booting.')
+
+        await waitForNocks(nocks)
 
         // screen.debug(undefined, -1)
     })

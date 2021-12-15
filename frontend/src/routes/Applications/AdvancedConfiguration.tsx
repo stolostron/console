@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    AcmExpandableCard,
-    AcmTable,
-    AcmTablePaginationContextProvider,
-    IAcmRowAction,
-    IAcmTableColumn,
-} from '@open-cluster-management/ui-components'
+import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '@open-cluster-management/ui-components'
 import {
     Card,
     CardBody,
@@ -18,13 +12,10 @@ import {
     Text,
     TextContent,
     TextVariants,
-    ToggleGroup,
-    ToggleGroupItem,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
-import queryString from 'query-string'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
@@ -48,7 +39,8 @@ import {
 import { getAge, getClusterCountString, getSearchLink, getEditLink } from './helpers/resource-helper'
 import { DOC_LINKS } from '../../lib/doc-util'
 import ResourceLabels from './components/ResourceLabels'
-import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
+import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
+import { ToggleSelector } from './components/ToggleSelector'
 import { canUser } from '../../lib/rbac-util'
 
 export default function AdvancedConfiguration() {
@@ -721,54 +713,6 @@ export default function AdvancedConfiguration() {
         }
     }
 
-    function getSelectedId(props: ISelectedIds) {
-        const { options, queryParam, defaultOption, location } = props
-        let { query } = props
-        if (!query) {
-            query = location && queryString.parse(location.search)
-        }
-        const validOptionIds = options.map((o) => o.id)
-        const isQueryParam = query && queryParam ? (query[queryParam] as string) : undefined
-        const isValidOptionIds = isQueryParam ? validOptionIds.includes(isQueryParam) : false
-        return queryParam && query && isValidOptionIds ? query[queryParam] : defaultOption
-    }
-
-    function QuerySwitcher(props: IQuerySwitcherInterface) {
-        const { options, defaultOption, queryParam = 'resources' } = props
-        const query = queryString.parse(location.search)
-        const selectedId = getSelectedId({
-            query,
-            options,
-            defaultOption,
-            queryParam,
-        })
-
-        const isSelected = (id: string) => id === selectedId
-        const handleChange = (_: any, event: any) => {
-            const id = event.currentTarget.id
-            if (queryParam) {
-                query[queryParam] = id
-            }
-            const newQueryString = queryString.stringify(query)
-            const optionalNewQueryString = newQueryString && `?${newQueryString}`
-            history.replace(`${location.pathname}${optionalNewQueryString}${location.hash}`, { noScrollToTop: true })
-        }
-
-        return (
-            <ToggleGroup>
-                {options.map(({ id, contents }) => (
-                    <ToggleGroupItem
-                        key={id}
-                        buttonId={id}
-                        isSelected={isSelected(id)}
-                        onChange={handleChange}
-                        text={contents}
-                    />
-                ))}
-            </ToggleGroup>
-        )
-    }
-
     function editLink(params: { resource: any; kind: string; apiversion: string }) {
         const { resource, kind, apiversion } = params
         if (resource.metadata) {
@@ -789,70 +733,14 @@ export default function AdvancedConfiguration() {
         }
     }
 
-    function AdvancedConfigurationTable() {
-        const defaultOption = 'subscriptions'
-        const options = [
-            { id: 'subscriptions', title: 'Subscriptions' },
-            { id: 'channels', title: 'Channels' },
-            { id: 'placements', title: 'Placements' },
-            { id: 'placementrules', title: 'Placement rules' },
-        ]
-
-        const selectedId = getSelectedId({ location, options, defaultOption, queryParam: 'resources' })
-        const selectedResources = _.get(table, `${selectedId}`)
-
-        return (
-            <AcmTablePaginationContextProvider localStorageKey="advanced-tables-pagination">
-                <DeleteResourceModal {...modalProps} />
-                <AcmTable<IResource>
-                    plural=""
-                    columns={selectedResources.columns}
-                    keyFn={keyFn}
-                    items={selectedResources.items}
-                    extraToolbarControls={
-                        <QuerySwitcher
-                            key="switcher"
-                            options={options.map(({ id, title }) => ({
-                                id,
-                                /*
-                                t('Subscriptions')
-                                t('Channels')
-                                t('Placements')
-                                t('Placement rules')
-                                */
-                                contents: t(title),
-                            }))}
-                            defaultOption={defaultOption}
-                        />
-                    }
-                    rowActionResolver={selectedResources.rowActionResolver}
-                />
-            </AcmTablePaginationContextProvider>
-        )
-    }
-
     return (
         <PageSection>
             <Stack hasGutter>
                 <StackItem>
                     <ApplicationDeploymentHighlights />
                 </StackItem>
-                <StackItem>{AdvancedConfigurationTable()}</StackItem>
+                <StackItem>{<ToggleSelector modalProps={modalProps} table={table} keyFn={keyFn} t={t} />}</StackItem>
             </Stack>
         </PageSection>
     )
-}
-
-export interface IQuerySwitcherInterface {
-    options: { id: string; contents: string }[]
-    defaultOption: String
-    queryParam?: string
-}
-
-export interface ISelectedIds {
-    location?: Location
-    options: { id: string; contents?: string }[]
-    defaultOption: String
-    queryParam?: string
-    query?: queryString.ParsedQuery<string>
 }

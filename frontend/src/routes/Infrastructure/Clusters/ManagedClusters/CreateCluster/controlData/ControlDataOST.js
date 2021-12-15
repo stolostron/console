@@ -7,12 +7,13 @@ import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
-    networkingControlData,
     proxyControlData,
     automationControlData,
     getSimplifiedImageName,
+    getOSTNetworkingControlData,
     getWorkerName,
     isHidden_lt_OCP48,
+    isHidden_gt_OCP46,
     isHidden_SNO,
     onChangeSNO,
     onChangeConnection,
@@ -205,11 +206,32 @@ const controlDataOST = [
         },
     },
     {
+        id: 'lbFloatingIP',
+        type: 'text',
+        name: 'creation.ocp.cluster.ost.lb.floating.ip',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.lb.floating.ip',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.lb.floating.ip',
+        hidden: (control, controlData) => {
+            if (isHidden_gt_OCP46(control, controlData)) {
+                control.active = undefined
+                return true
+            }
+        },
+        active: '',
+        validation: VALIDATE_IP,
+    },
+    {
         id: 'apiFloatingIP',
         type: 'text',
         name: 'creation.ocp.cluster.ost.api.floating.ip',
         placeholder: 'placeholder.creation.ocp.cluster.ost.api.floating.ip',
         tooltip: 'tooltip.creation.ocp.cluster.ost.api.floating.ip',
+        hidden: (control, controlData) => {
+            if (!isHidden_gt_OCP46(control, controlData)) {
+                control.active = undefined
+                return true
+            }
+        },
         active: '',
         validation: VALIDATE_IP,
     },
@@ -231,7 +253,7 @@ const controlDataOST = [
         active: [],
         validation: VALIDATE_IP_OPTIONAL,
     },
-    ...networkingControlData,
+    ...getOSTNetworkingControlData(),
     ...proxyControlData,
     ///////////////////////  openstack  /////////////////////////////////////
     {
