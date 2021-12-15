@@ -64,6 +64,9 @@ class DiagramViewer extends React.Component {
             hiddenLinks: new Set(),
             selectedNodeId: props.selectedNode ? props.selectedNode.uid : '',
             showDetailsView: null,
+            observer: new ResizeObserver(()=>{
+                this.getZoomHelper().zoomFit(true, false)
+            }),
             clusterDetailsContainerData: {
                 page: 1,
                 startIdx: 0,
@@ -200,6 +203,9 @@ class DiagramViewer extends React.Component {
 
     setViewerContainerContainerRef = (ref) => {
         this.viewerContainerContainerRef = ref
+        if (ref) {
+            this.state.observer.observe(ref)
+        }
     }
     setViewerContainerRef = (ref) => {
         this.viewerContainerRef = ref

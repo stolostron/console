@@ -1,35 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmAlert } from '@open-cluster-management/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import {
+    applicationsState,
+    applicationSetsState,
+    argoApplicationsState,
+    subscriptionsState,
+    channelsState,
+    placementRulesState,
+    managedClustersState,
+} from '../../../atoms'
+
 import './ApplicationTopology.css'
-import './Topology/css/topology-controls.css'
-import './Topology/css/resource-toolbar.css'
-// import { useHistory } from 'react-router-dom'
-// import { useRecoilState } from 'recoil'
-// import { applicationsState } from '../../../atoms'
+import '../../../components/Topology/css/topology-controls.css'
+import '../../../components/Topology/css/resource-toolbar.css'
+import Topology from '../../../components/Topology/Topology'
+import SearchName from '../../../components/Topology/viewer/SearchName'
+import { processResourceActionLink } from '../../../components/Topology/utils/diagram-helpers'
+
+import { getApplication } from './model/applicationModel'
 
 
-import Topology from './Topology/Topology'
-import SearchName from './Topology/viewer/SearchName'
-import { processResourceActionLink } from './Topology/utils/diagram-helpers'
-
-
-//import nodes from './demo-etherpad-nodes.json'
-//import links from './demo-etherpad-links.json'
-import nodes from './demo-saude-digital-nodes.json'
-import links from './demo-saude-digital-links.json'
-
-
-
-// const portals = {
-//     assortedFilterOpenBtn: 'assorted-filter-open-portal-id',
-//     assortedFilterCloseBtns: 'assorted-filter-close-portal-id',
-//     typeFilterBar: 'type-filter-bar-portal-id',
-//     searchTextbox: 'search-textbox-portal-id',
-// }
+//import nodes from './models/demo-etherpad-nodes.json'
+//import links from './models/demo-etherpad-links.json'
+import nodes from './model/demo-saude-digital-nodes.json'
+import links from './model/demo-saude-digital-links.json'
 
 export type ArgoAppDetailsContainerData = {
     page: number
@@ -43,12 +42,18 @@ export type ArgoAppDetailsContainerData = {
 
 export default function ApplicationTopology() {
     const { t } = useTranslation('topology')
-    //const [placementrules] = useRecoilState(placementRulesState)
-    const [isLoaded, setIsLoaded] = useState<boolean>()
-    const [isLoadError, setIsLoadError] = useState<boolean>()
-    const [isFailed, setIsFailed] = useState<boolean>()
-    const [isReloading, setIsReloading] = useState<boolean>()
-    const [allChannels, setAllChannels] = useState<[]>()
+    const [applications] = useRecoilState(applicationsState)
+    const [applicationSets] = useRecoilState(applicationSetsState)
+    const [argoApplications] = useRecoilState(argoApplicationsState)
+    const [subscriptions] = useRecoilState(subscriptionsState)
+    const [channels] = useRecoilState(channelsState)
+    const [placementRules] = useRecoilState(placementRulesState)
+    const [managedClusters] = useRecoilState(managedClustersState)
+    // const [isLoaded, setIsLoaded] = useState<boolean>()
+    // const [isLoadError, setIsLoadError] = useState<boolean>()
+    // const [isFailed, setIsFailed] = useState<boolean>()
+    // const [isReloading, setIsReloading] = useState<boolean>()
+    const [allChannels] = useState<[]>()
     const [activeChannel, setActiveChannel] = useState<string>()
     const [searchName, setSearchName] = useState<string>()
     const [isChangingChannel, setIsChangingChannel] = useState<boolean>()
@@ -73,49 +78,41 @@ export default function ApplicationTopology() {
         //this.props.fetchAppTopology(fetchChannel)
     }
 
-    const renderTopology = () => {
-        const fetchControl = {
-            isLoaded,
-            isFailed,
-            isReloading,
-        }
-        const channelControl = {
-            allChannels,
-            activeChannel: activeChannel,
-            isChangingChannel,
-            changeTheChannel,
-        }
-        const argoAppDetailsContainerControl = {
-            argoAppDetailsContainerData,
-            handleArgoAppDetailsContainerUpdate: setArgoAppDetailsContainerData,
-            handleErrorMsg,
-        }
-
-        const processActionLink = (resource: any, toggleLoading: boolean) => {
-            processResourceActionLink(resource, toggleLoading, handleErrorMsg)
-        }
-
-        //const history = useHistory()
-
-        return (
-            <Topology
-                links={links}
-                nodes={nodes}
-                processActionLink={processActionLink}
-                fetchControl={fetchControl}
-                channelControl={channelControl}
-                // searchUrl={
-                //     config.contextPath ? config.contextPath.replace(new RegExp('/applications$'), '/search') : ''
-                // }
-                showLegendView={showLegendView}
-                handleLegendClose={() => setShowLegendView(false)}
-                argoAppDetailsContainerControl={argoAppDetailsContainerControl}
-                searchName={searchName}
-                t={t}
-            />
-        )
+    const channelControl = {
+        allChannels,
+        activeChannel: activeChannel,
+        isChangingChannel,
+        changeTheChannel,
+    }
+    const argoAppDetailsContainerControl = {
+        argoAppDetailsContainerData,
+        handleArgoAppDetailsContainerUpdate: setArgoAppDetailsContainerData,
+        handleErrorMsg,
     }
 
+    const processActionLink = (resource: any, toggleLoading: boolean) => {
+        processResourceActionLink(resource, toggleLoading, handleErrorMsg)
+    }
+
+    const history = useHistory()
+    const location = history?.location?.pathname?.split('/')
+    const searchUrl = location ? '/'+location.slice(0,3).join('/') : ''
+
+    // get application resources
+    useEffect(() => {
+        const application = getApplication(location, {
+            applications, 
+            applicationSets, 
+            argoApplications, 
+            subscriptions, 
+            channels, 
+            placementRules, 
+            managedClusters
+        })
+    }, [location, applications, applicationSets, argoApplications, subscriptions, channels, placementRules, managedClusters])
+
+    // convert into diagram elements
+        
     return (
         <PageSection>
             <div className='resourceDiagramSourceContainer'>
@@ -136,34 +133,19 @@ export default function ApplicationTopology() {
                     </div> */}
                 </>
                 <div className="resourceDiagramControlsContainer">
-                    {!isLoadError && (
-                        <div className="diagram-title">
-                            <span
-                                className="how-to-read-text"
-                                tabIndex={0}
-                                onClick={() => setShowLegendView(true)}
-                                onKeyPress={() => {
-                                    // noop function
-                                }}
-                                role="button"
-                            >
-                                {t('application.diagram.how.to.read')}
-                                <svg className="how-to-read-icon">
-                                    <use href={'#diagramIcons_sidecar'} />
-                                </svg>
-                            </span>
-                        </div>
-                    )}
-                    <>{!isLoadError && renderTopology()}</>
-                </div>
-                {isLoadError && (
-                    <AcmAlert
-                        title={t('error.load.resource')}
-                        subtitle={t('error.load.topology')}
-                        variant="danger"
-                        isInline
+                    <Topology
+                        links={links}
+                        nodes={nodes}
+                        processActionLink={processActionLink}
+                        channelControl={channelControl}
+                        searchUrl={searchUrl}
+                        showLegendView={showLegendView}
+                        handleLegendClose={() => setShowLegendView(false)}
+                        argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+                        searchName={searchName}
+                        t={t}
                     />
-                )}
+                </div>
             </>
             </div>
         </PageSection>
