@@ -75,9 +75,7 @@ const FilterSection = ({ section: { name, filters, isExpanded, onExpand }, showT
                     />
                 )
             })}
-            {showMoreOrLess && (
-                <ShowOrMoreItem count={count} isExpanded={isExpanded} onExpand={onExpand} t={t} />
-            )}
+            {showMoreOrLess && <ShowOrMoreItem count={count} isExpanded={isExpanded} onExpand={onExpand} t={t} />}
         </div>
     )
 }

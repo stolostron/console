@@ -517,9 +517,7 @@ export const showMissingClusterDetails = (clusterName, node, details, t) => {
             nsForCluster.forEach((nsName) => {
                 details.push({
                     labelValue: nsName,
-                    value: _.startsWith(clusterName, 'https://api.')
-                        ? t('spec.deploy.not.deployed')
-                        : t('Not mapped'),
+                    value: _.startsWith(clusterName, 'https://api.') ? t('spec.deploy.not.deployed') : t('Not mapped'),
                     status: pendingStatus,
                 })
             })

@@ -9,6 +9,7 @@ import {
     applicationsState,
     applicationSetsState,
     argoApplicationsState,
+    ansibleJobState,
     subscriptionsState,
     channelsState,
     placementRulesState,
@@ -22,13 +23,12 @@ import Topology from '../../../components/Topology/Topology'
 import SearchName from '../../../components/Topology/viewer/SearchName'
 import { processResourceActionLink } from '../../../components/Topology/utils/diagram-helpers'
 
-import { getApplication } from './model/applicationModel'
+import { getApplication } from './model/application'
 
-
-//import nodes from './models/demo-etherpad-nodes.json'
-//import links from './models/demo-etherpad-links.json'
-import nodes from './model/demo-saude-digital-nodes.json'
-import links from './model/demo-saude-digital-links.json'
+//import nodes from './demo-etherpad-nodes.json'
+//import links from './demo-etherpad-links.json'
+import nodes from './demo-saude-digital-nodes.json'
+import links from './demo-saude-digital-links.json'
 
 export type ArgoAppDetailsContainerData = {
     page: number
@@ -45,6 +45,7 @@ export default function ApplicationTopology() {
     const [applications] = useRecoilState(applicationsState)
     const [applicationSets] = useRecoilState(applicationSetsState)
     const [argoApplications] = useRecoilState(argoApplicationsState)
+    const [ansibleJob] = useRecoilState(ansibleJobState)
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [placementRules] = useRecoilState(placementRulesState)
@@ -67,6 +68,7 @@ export default function ApplicationTopology() {
         selectedArgoAppList: [],
         isLoading: false,
     })
+    const [application, setApplication] = useState<any>()
 
     const handleErrorMsg = () => {
         //show toast message in parent container
@@ -96,34 +98,52 @@ export default function ApplicationTopology() {
 
     const history = useHistory()
     const location = history?.location?.pathname?.split('/')
-    const searchUrl = location ? '/'+location.slice(0,3).join('/') : ''
+    const searchUrl = location ? '/' + location.slice(0, 3).join('/') : ''
 
     // get application resources
     useEffect(() => {
-        const application = getApplication(location, {
-            applications, 
-            applicationSets, 
-            argoApplications, 
-            subscriptions, 
-            channels, 
-            placementRules, 
-            managedClusters
-        })
-    }, [location, applications, applicationSets, argoApplications, subscriptions, channels, placementRules, managedClusters])
+        setApplication(getApplication(location, {
+            applications,
+            applicationSets,
+            argoApplications,
+            ansibleJob,
+            subscriptions,
+            channels,
+            placementRules,
+            managedClusters,
+        }))
+    }, [
+        location,
+        applications,
+        applicationSets,
+        argoApplications,
+        ansibleJob,
+        subscriptions,
+        channels,
+        placementRules,
+        managedClusters,
+    ])
 
     // convert into diagram elements
-        
+    useEffect(() => {
+        //const {nodes, link} = getTopology(application)
+    }, [application])
+
     return (
         <PageSection>
-            <div className='resourceDiagramSourceContainer'>
-            <>
+            <div className="resourceDiagramSourceContainer">
                 <>
-                    <div className="topology-controls">
-                        <div className="topology-control-container">
-                            <SearchName searchName={searchName} onNameSearch={(searchName: string)=>setSearchName(searchName)} t={t} />
+                    <>
+                        <div className="topology-controls">
+                            <div className="topology-control-container">
+                                <SearchName
+                                    searchName={searchName}
+                                    onNameSearch={(searchName: string) => setSearchName(searchName)}
+                                    t={t}
+                                />
+                            </div>
                         </div>
-                    </div>
-                    {/* <div id="resource-toolbar" className="resource-toolbar">
+                        {/* <div id="resource-toolbar" className="resource-toolbar">
                         <div className="resource-toolbar-container">
                             <div className="resource-toolbar-buttons">
                                 <div id={portals.assortedFilterOpenBtn} />
@@ -131,22 +151,22 @@ export default function ApplicationTopology() {
                             <div id={portals.assortedFilterCloseBtns} />
                         </div>
                     </div> */}
+                    </>
+                    <div className="resourceDiagramControlsContainer">
+                        <Topology
+                            links={links}
+                            nodes={nodes}
+                            processActionLink={processActionLink}
+                            channelControl={channelControl}
+                            searchUrl={searchUrl}
+                            showLegendView={showLegendView}
+                            handleLegendClose={() => setShowLegendView(false)}
+                            argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+                            searchName={searchName}
+                            t={t}
+                        />
+                    </div>
                 </>
-                <div className="resourceDiagramControlsContainer">
-                    <Topology
-                        links={links}
-                        nodes={nodes}
-                        processActionLink={processActionLink}
-                        channelControl={channelControl}
-                        searchUrl={searchUrl}
-                        showLegendView={showLegendView}
-                        handleLegendClose={() => setShowLegendView(false)}
-                        argoAppDetailsContainerControl={argoAppDetailsContainerControl}
-                        searchName={searchName}
-                        t={t}
-                    />
-                </div>
-            </>
             </div>
         </PageSection>
     )

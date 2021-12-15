@@ -340,14 +340,11 @@ class ChannelControl extends React.Component {
                     {showMainChannel && (
                         <div className="channels">
                             <div className="subscription label">
-                                {t('combo.subscription')}{' '}
-                                {this.getSubscriptionCount(displayChannels, currentChannel)}
+                                {t('combo.subscription')} {this.getSubscriptionCount(displayChannels, currentChannel)}
                                 <Tooltip
                                     isContentLeftAligned
                                     content={
-                                        <span className="showPagesTooltip">
-                                            {t('subscription.page.count.info')}
-                                        </span>
+                                        <span className="showPagesTooltip">{t('subscription.page.count.info')}</span>
                                     }
                                 >
                                     <OutlinedQuestionCircleIcon className="channel-controls-help-icon" />

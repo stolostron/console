@@ -64,7 +64,7 @@ class DiagramViewer extends React.Component {
             hiddenLinks: new Set(),
             selectedNodeId: props.selectedNode ? props.selectedNode.uid : '',
             showDetailsView: null,
-            observer: new ResizeObserver(()=>{
+            observer: new ResizeObserver(() => {
                 this.getZoomHelper().zoomFit(true, false)
             }),
             clusterDetailsContainerData: {
@@ -291,7 +291,11 @@ class DiagramViewer extends React.Component {
                 </div>
                 <span className="diagramControls">
                     {showChannelsControl && <ChannelControl channelControl={channelControl} t={this.props.t} />}
-                    <Zoom getZoomHelper={this.getZoomHelper} getViewContainer={this.getViewContainer} t={this.props.t}/>
+                    <Zoom
+                        getZoomHelper={this.getZoomHelper}
+                        getViewContainer={this.getViewContainer}
+                        t={this.props.t}
+                    />
                 </span>
                 {validNodeSelected && (
                     <DetailsView
@@ -455,15 +459,23 @@ class DiagramViewer extends React.Component {
             linkHelper.moveLinks(transition, currentZoom, searchChanged)
 
             // Create or refresh the nodes in the diagram.
-            const nodeHelper = new NodeHelper(this.svg, laidoutNodes, typeToShapeMap, this.showsShapeTitles, this.props.t, () => {
-                return this.clientRef
-            })
+            const nodeHelper = new NodeHelper(
+                this.svg,
+                laidoutNodes,
+                typeToShapeMap,
+                this.showsShapeTitles,
+                this.props.t,
+                () => {
+                    return this.clientRef
+                }
+            )
             nodeHelper.updateDiagramNodes(currentZoom, this.handleNodeClick, this.handleNodeDrag)
             nodeHelper.moveNodes(transition, currentZoom, searchChanged)
 
             // Create or refresh the titles in the diagram.
             if (
-                this.diagramOptions.showGroupTitles !== false && titles.length>1 &&
+                this.diagramOptions.showGroupTitles !== false &&
+                titles.length > 1 &&
                 (titles.length || searchChanged || (this.lastTitlesLength && titles.length !== this.lastTitlesLength))
             ) {
                 const titleHelper = new TitleHelper(this.svg, titles)

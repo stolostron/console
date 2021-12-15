@@ -17,7 +17,6 @@ import { interruptLinks, counterZoomLinks } from './linkHelper'
 import { interruptNodes, counterZoomLabels } from './nodeHelper'
 import _ from 'lodash'
 
-
 // fix event issue with d3
 import { event as currentEvent } from 'd3-selection'
 
@@ -81,7 +80,7 @@ export default class ZoomHelper {
 
                     // center diagram vertically and horizontally
                     const viewerHeight = this.viewer.viewerContainerRef.getBoundingClientRect().height
-                    const yPadding = 0//this.noTitle ? 30 : 60
+                    const yPadding = 0 //this.noTitle ? 30 : 60
                     const dy = ((viewerHeight / 2 - yPadding) * 1) / scale
                     const cy = y1 + dy
                     const cx = width / 2

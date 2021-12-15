@@ -176,10 +176,7 @@ export const showAnsibleJobDetails = (node, details) => {
 
     details.push({
         labelValue: t('description.ansible.job.status'),
-        value:
-            _.get(jobStatus, 'message', '') === ''
-                ? t('description.ansible.job.status.empty')
-                : jobStatus.message,
+        value: _.get(jobStatus, 'message', '') === '' ? t('description.ansible.job.status.empty') : jobStatus.message,
         status: getStatusFromPulse(jobStatus.pulse),
     })
     _.get(node, 'specs.raw.spec.k8sJob.message') &&

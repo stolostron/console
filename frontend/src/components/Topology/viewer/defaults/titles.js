@@ -80,10 +80,10 @@ export const getLegendTitle = (type, t) => {
     //         return t(`topology.legend.title.${type}`)
 
     //     default:
-            return (type.charAt(0).toUpperCase() + type.slice(1))
-            .replace('stream', ' Stream')
-            .replace('channel', ' Channel')
-            .replace('controller', 'Controller')
+    return (type.charAt(0).toUpperCase() + type.slice(1))
+        .replace('stream', ' Stream')
+        .replace('channel', ' Channel')
+        .replace('controller', 'Controller')
     //}
 }
 
@@ -111,13 +111,17 @@ export function kubeNaming(type, t) {
     //         return t(`topology.legend.title.${type}`)
 
     //     default:
-            return type.charAt(0).toUpperCase() + type.slice(1)
+    return (
+        type.charAt(0).toUpperCase() +
+        type
+            .slice(1)
             .replace('stream', 'Stream')
             .replace('channel', 'Channel')
             .replace('source', 'Source')
             .replace('config', 'Config')
             .replace('account', 'Account')
             .replace('controller', 'Controller')
+    )
     //}
 }
 

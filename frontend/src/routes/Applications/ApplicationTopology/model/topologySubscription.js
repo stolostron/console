@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
-import {get, startsWith, includes, concat, uniqBy} from 'lodash';
+import { get, startsWith, includes, concat, uniqBy } from 'lodash'
 
 // import {
 //   isPrePostHookDeployable,
@@ -19,165 +18,185 @@ import {get, startsWith, includes, concat, uniqBy} from 'lodash';
 // const metadataName = 'metadata.name';
 // const preHookType = 'pre-hook';
 
-
-
 export function getSubscriptionApplicationElements(application, appName, appNamespace, cluster) {
+    let name = appName
+    const links = []
+    const nodes = []
 
-  let name = appName
-  const links = []
-  const nodes = []
-
-  // create application node
-  const allAppClusters = application.allClusters ? application.allClusters : [];
-  const appId = `application--${name}`;
-  nodes.push({
-    name,
-    namespace,
-    type: 'application',
-    id: appId,
-    uid: appId,
-    specs: {
-      isDesign: true,
-      raw: application.app,
-      activeChannel: application.activeChannel,
-      allSubscriptions: application.allSubscriptions ? application.allSubscriptions : [],
-      allChannels: application.allChannels ? application.allChannels : [],
-      allClusters: {
-        isLocal: allAppClusters.indexOf(localClusterName) !== -1,
-        remoteCount: allAppClusters.indexOf('local-cluster') !== -1 ? allAppClusters.length - 1 : allAppClusters.length,
-      },
-      channels: application.channels,
-    },
-  });
-
-  // get clusters labels
-  let clusters = await clusterModel.getAllClusters();
-  // if application has subscriptions
-  let memberId;
-  let parentId;
-  let clusterId;
-  if (application.subscriptions) {
-    const createdClusterElements = new Set();
-    application.subscriptions.forEach((subscription) => {
-      const subscriptionChannel = get(subscription, 'spec.channel');
-      const subscriptionName = get(subscription, metadataName, '');
-      const topoAnnotation = get(subscription, 'metadata.annotations', {})['apps.open-cluster-management.io/topo'];
-      const isObjectApp = topoAnnotation ? startsWith(topoAnnotation, 'object//') : false;
-      // get cluster placement if any
-      const ruleDecisionMap = {};
-      if (subscription.rules) {
-        subscription.rules.forEach((rule) => {
-          const ruleDecisions = get(rule, 'status.decisions');
-          if (ruleDecisions) {
-            ruleDecisions.forEach(({ clusterName, clusterNamespace }) => {
-              ruleDecisionMap[clusterName] = clusterNamespace;
-            });
-          }
-        });
-      }
-      if (get(subscription, 'spec.placement.local', '') === true && subscription.rules && includes(clusters, localClusterName) === false) {
-        const localCluster = {
-          metadata: {
-            name: localClusterName,
-            namespace: localClusterName,
-          },
-        };
-        clusters = concat(clusters, localCluster);
-        ruleDecisionMap[localClusterName] = localClusterName;
-      }
-
-      const ruleClusterNames = Object.keys(ruleDecisionMap);
-      const isRulePlaced = ruleClusterNames.length > 0;
-
-      // get subscription statuses
-      const subscriptionStatusMap = {};
-      const subscribeDecisions = get(subscription, 'status.statuses');
-      if (subscribeDecisions) {
-        Object.entries(subscribeDecisions).forEach(([clusterName, value]) => {
-          subscriptionStatusMap[clusterName] = get(value, 'packages');
-        });
-      }
-
-      // add subscription
-      parentId = addSubscription(appId, subscription, isRulePlaced, links, nodes);
-
-      // add rules if any
-      let hasPlacementRules = false;
-      if (subscription.rules) {
-        addSubscriptionRules(parentId, subscription, links, nodes);
-        delete subscription.rules;
-        hasPlacementRules = true;
-      }
-
-      // add cluster(s)
-      // if no cluster found by the placement, use a default empty cluster name so that the deployables are parsed and shown
-      let clusterShapes = [['']];
-      if (ruleClusterNames.length > 1) {
-        clusterShapes = [ruleClusterNames];
-      } else if (ruleClusterNames.length === 1) {
-        clusterShapes = ruleClusterNames.map((cn) => [cn]);
-      }
-
-      clusterShapes.forEach((names) => {
-        // add cluster element
-        clusterId = addClusters(
-          parentId, createdClusterElements, subscription,
-          names, clusters, links, nodes,
-        );
-
-        if (subscription.deployables && !isObjectApp) {
-          // add deployables if any
-
-          processDeployables(
-            subscription.deployables,
-            clusterId, links, nodes, subscriptionStatusMap, names, namespace, subscription,
-          );
-        }
-
-        if (topoAnnotation) {
-          addSubscriptionCharts(
-            clusterId, subscriptionStatusMap, nodes,
-            links, names, namespace, subscriptionChannel, subscriptionName, topoAnnotation, subscription,
-          );
-        }
-      });
-
-      // no deployables was placed on a cluster but there were subscription decisions
-      if (!subscription.deployables && !hasPlacementRules && subscribeDecisions) {
-        addSubscriptionCharts(
-          parentId, subscriptionStatusMap, nodes,
-          links, null, namespace, subscriptionChannel, subscriptionName, topoAnnotation, subscription,
-        );
-      }
-      delete subscription.deployables;
-    });
-
-    // if application has deployables
-    // (unsubscribed--possibly a template)
-  } else if (application.deployables) {
-    application.deployables.forEach((deployable) => {
-      ({ name, namespace } = get(deployable, 'metadata'));
-      memberId = `member--deployable--${name}`;
-      nodes.push({
+    // create application node
+    const allAppClusters = application.allClusters ? application.allClusters : []
+    const appId = `application--${name}`
+    nodes.push({
         name,
         namespace,
-        type: 'deployable',
-        id: memberId,
-        uid: memberId,
-        specs: { isDesign: true, raw: deployable },
-      });
-      links.push({
-        from: { uid: parentId },
-        to: { uid: memberId },
-        type: '',
-        specs: { isDesign: true },
-      });
-    });
-  }
+        type: 'application',
+        id: appId,
+        uid: appId,
+        specs: {
+            isDesign: true,
+            raw: application.app,
+            activeChannel: application.activeChannel,
+            allSubscriptions: application.allSubscriptions ? application.allSubscriptions : [],
+            allChannels: application.allChannels ? application.allChannels : [],
+            allClusters: {
+                isLocal: allAppClusters.indexOf(localClusterName) !== -1,
+                remoteCount:
+                    allAppClusters.indexOf('local-cluster') !== -1 ? allAppClusters.length - 1 : allAppClusters.length,
+            },
+            channels: application.channels,
+        },
+    })
 
-  return { nodes: uniqBy(nodes, 'uid'), links }
+    // get clusters labels
+    let clusters = await clusterModel.getAllClusters()
+    // if application has subscriptions
+    let memberId
+    let parentId
+    let clusterId
+    if (application.subscriptions) {
+        const createdClusterElements = new Set()
+        application.subscriptions.forEach((subscription) => {
+            const subscriptionChannel = get(subscription, 'spec.channel')
+            const subscriptionName = get(subscription, metadataName, '')
+            const topoAnnotation = get(subscription, 'metadata.annotations', {})['apps.open-cluster-management.io/topo']
+            const isObjectApp = topoAnnotation ? startsWith(topoAnnotation, 'object//') : false
+            // get cluster placement if any
+            const ruleDecisionMap = {}
+            if (subscription.rules) {
+                subscription.rules.forEach((rule) => {
+                    const ruleDecisions = get(rule, 'status.decisions')
+                    if (ruleDecisions) {
+                        ruleDecisions.forEach(({ clusterName, clusterNamespace }) => {
+                            ruleDecisionMap[clusterName] = clusterNamespace
+                        })
+                    }
+                })
+            }
+            if (
+                get(subscription, 'spec.placement.local', '') === true &&
+                subscription.rules &&
+                includes(clusters, localClusterName) === false
+            ) {
+                const localCluster = {
+                    metadata: {
+                        name: localClusterName,
+                        namespace: localClusterName,
+                    },
+                }
+                clusters = concat(clusters, localCluster)
+                ruleDecisionMap[localClusterName] = localClusterName
+            }
+
+            const ruleClusterNames = Object.keys(ruleDecisionMap)
+            const isRulePlaced = ruleClusterNames.length > 0
+
+            // get subscription statuses
+            const subscriptionStatusMap = {}
+            const subscribeDecisions = get(subscription, 'status.statuses')
+            if (subscribeDecisions) {
+                Object.entries(subscribeDecisions).forEach(([clusterName, value]) => {
+                    subscriptionStatusMap[clusterName] = get(value, 'packages')
+                })
+            }
+
+            // add subscription
+            parentId = addSubscription(appId, subscription, isRulePlaced, links, nodes)
+
+            // add rules if any
+            let hasPlacementRules = false
+            if (subscription.rules) {
+                addSubscriptionRules(parentId, subscription, links, nodes)
+                delete subscription.rules
+                hasPlacementRules = true
+            }
+
+            // add cluster(s)
+            // if no cluster found by the placement, use a default empty cluster name so that the deployables are parsed and shown
+            let clusterShapes = [['']]
+            if (ruleClusterNames.length > 1) {
+                clusterShapes = [ruleClusterNames]
+            } else if (ruleClusterNames.length === 1) {
+                clusterShapes = ruleClusterNames.map((cn) => [cn])
+            }
+
+            clusterShapes.forEach((names) => {
+                // add cluster element
+                clusterId = addClusters(parentId, createdClusterElements, subscription, names, clusters, links, nodes)
+
+                if (subscription.deployables && !isObjectApp) {
+                    // add deployables if any
+
+                    processDeployables(
+                        subscription.deployables,
+                        clusterId,
+                        links,
+                        nodes,
+                        subscriptionStatusMap,
+                        names,
+                        namespace,
+                        subscription
+                    )
+                }
+
+                if (topoAnnotation) {
+                    addSubscriptionCharts(
+                        clusterId,
+                        subscriptionStatusMap,
+                        nodes,
+                        links,
+                        names,
+                        namespace,
+                        subscriptionChannel,
+                        subscriptionName,
+                        topoAnnotation,
+                        subscription
+                    )
+                }
+            })
+
+            // no deployables was placed on a cluster but there were subscription decisions
+            if (!subscription.deployables && !hasPlacementRules && subscribeDecisions) {
+                addSubscriptionCharts(
+                    parentId,
+                    subscriptionStatusMap,
+                    nodes,
+                    links,
+                    null,
+                    namespace,
+                    subscriptionChannel,
+                    subscriptionName,
+                    topoAnnotation,
+                    subscription
+                )
+            }
+            delete subscription.deployables
+        })
+
+        // if application has deployables
+        // (unsubscribed--possibly a template)
+    } else if (application.deployables) {
+        application.deployables.forEach((deployable) => {
+            ;({ name, namespace } = get(deployable, 'metadata'))
+            memberId = `member--deployable--${name}`
+            nodes.push({
+                name,
+                namespace,
+                type: 'deployable',
+                id: memberId,
+                uid: memberId,
+                specs: { isDesign: true, raw: deployable },
+            })
+            links.push({
+                from: { uid: parentId },
+                to: { uid: memberId },
+                type: '',
+                specs: { isDesign: true },
+            })
+        })
+    }
+
+    return { nodes: uniqBy(nodes, 'uid'), links }
 }
-
 
 // function addSubscription(appId, subscription, isPlaced, links, nodes) {
 //   const { metadata: { namespace, name } } = subscription;

@@ -50,7 +50,8 @@
     opacity: 1;
     pointer-events: none;
 }
-.node:focus *, .node:focus-within * {
+.node:focus *,
+.node:focus-within * {
     outline: none;
 }
 .design {

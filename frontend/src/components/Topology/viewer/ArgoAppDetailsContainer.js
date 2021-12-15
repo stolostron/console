@@ -273,9 +273,7 @@ class ArgoAppDetailsContainer extends React.Component {
                 onClick={this.processActionLink.bind(this, resource)}
                 onKeyDown={this.handleKeyPress.bind(this, resource)}
             >
-                {resource.action === 'open_argo_editor'
-                    ? t('props.show.argocd.editor')
-                    : t('props.show.yaml')}
+                {resource.action === 'open_argo_editor' ? t('props.show.argocd.editor') : t('props.show.yaml')}
                 {isExternal ? (
                     <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
                         <use href="#diagramIcons_carbonLaunch" className="label-icon" />
@@ -332,9 +330,7 @@ class ArgoAppDetailsContainer extends React.Component {
                         </svg>
                         <span>{t('resource.argo.application.health')}: </span>
                     </span>
-                    <span className="value">
-                        {t('resource.argo.application.error.msg.appitem', [name, status])}:{' '}
-                    </span>
+                    <span className="value">{t('resource.argo.application.error.msg.appitem', [name, status])}: </span>
                 </div>
             )
         )
@@ -433,15 +429,11 @@ class ArgoAppDetailsContainer extends React.Component {
                                 <span className={valueClass}>{cluster}</span>
                             </div>
                             <div className={divClass}>
-                                <span className={labelClass}>
-                                    {t('resource.argo.app.target.cluster')}:{' '}
-                                </span>
+                                <span className={labelClass}>{t('resource.argo.app.target.cluster')}: </span>
                                 <span className={valueClass}>{destinationCluster}</span>
                             </div>
                             <div className={divClass}>
-                                <span className={labelClass}>
-                                    {t('resource.argo.app.target.cluster.ns')}:{' '}
-                                </span>
+                                <span className={labelClass}>{t('resource.argo.app.target.cluster.ns')}: </span>
                                 <span className={valueClass}>{destinationNamespace}</span>
                             </div>
                             <div className={divClass}>

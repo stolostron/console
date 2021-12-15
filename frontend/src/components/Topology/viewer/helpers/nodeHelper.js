@@ -112,7 +112,7 @@ export default class NodeHelper {
                 }
             })
             // tooltip
-            .on('mouseover', ({currentTarget}, { layout }) => {
+            .on('mouseover', ({ currentTarget }, { layout }) => {
                 const bb = currentTarget.getBoundingClientRect()
                 if (layout.tooltips && layout.tooltips.length > 0) {
                     tooltip.style('display', undefined)
@@ -121,7 +121,7 @@ export default class NodeHelper {
                         .html(() => {
                             return getTooltip(layout.tooltips)
                         })
-                        .call(styles,(d, j, ts) => {
+                        .call(styles, (d, j, ts) => {
                             const { width, height } = ts[j].getBoundingClientRect()
                             if (navigator.userAgent.indexOf('Firefox') !== -1) {
                                 return {
@@ -191,7 +191,7 @@ export default class NodeHelper {
     }
 
     createNodeHilites = (nodes) => {
-        nodes.append('use').call(attrs,() => {
+        nodes.append('use').call(attrs, () => {
             return {
                 href: '#diagramShapes_circle',
                 width: NODE_SIZE - 4,
@@ -204,8 +204,8 @@ export default class NodeHelper {
 
     addElementsForNodes = (nodes, nodeDragHandler) => {
         nodes
-        .append('use')
-            .call(attrs,(d) => {
+            .append('use')
+            .call(attrs, (d) => {
                 const { layout, specs } = d
                 const shapeType = specs.shapeType || layout.type
                 const shape = this.typeToShapeMap[shapeType] ? this.typeToShapeMap[shapeType].shape : 'other'
@@ -247,7 +247,7 @@ export default class NodeHelper {
                 return layout.type === 'subscription' || layout.type === 'subscriptionblocked'
             })
         subscriptionNode.select('use.shape').remove()
-        const subscriptionNodeShape = subscriptionNode.selectAll('use.shape').data(d => {
+        const subscriptionNodeShape = subscriptionNode.selectAll('use.shape').data((d) => {
             return [d]
         })
         const subscriptionNodeShapeEnter = subscriptionNodeShape.enter()
@@ -397,7 +397,7 @@ export default class NodeHelper {
             layout.textBBox = ns[i].getBBox()
             d3.select(ns[i])
                 .select('rect')
-                .call(attrs,({ layout: { textBBox } }) => {
+                .call(attrs, ({ layout: { textBBox } }) => {
                     return {
                         x: textBBox.x,
                         y: textBBox.y,
@@ -425,7 +425,7 @@ export default class NodeHelper {
         svgIcons
             .enter()
             .append('use')
-            .call(attrs,({ icon, classType, width, height }) => {
+            .call(attrs, ({ icon, classType, width, height }) => {
                 return {
                     href: `#diagramIcons_${icon}`,
                     width: `${width}px`,
@@ -450,7 +450,7 @@ export default class NodeHelper {
         clusterSVGIcon
             .enter()
             .append('use')
-            .call(attrs,({ icon, classType, width, height }) => {
+            .call(attrs, ({ icon, classType, width, height }) => {
                 return {
                     href: `#diagramIcons_${icon}`,
                     width: `${width}px`,
@@ -475,7 +475,7 @@ export default class NodeHelper {
         appSVGIcon
             .enter()
             .append('use')
-            .call(attrs,({ icon, classType, width, height }) => {
+            .call(attrs, ({ icon, classType, width, height }) => {
                 return {
                     href: `#diagramIcons_${icon}`,
                     width: `${width}px`,
@@ -498,7 +498,7 @@ export default class NodeHelper {
         pngIcons
             .enter()
             .append('image')
-            .call(attrs,({ href, width, height }) => {
+            .call(attrs, ({ href, width, height }) => {
                 return {
                     href: href,
                     width: `${width}px`,
@@ -522,7 +522,7 @@ export default class NodeHelper {
             .text(({ nodeStatus }) => {
                 return Array.isArray(nodeStatus) ? nodeStatus[0] : nodeStatus
             })
-            .call(attrs,({ nodeStatus }) => {
+            .call(attrs, ({ nodeStatus }) => {
                 return {
                     'pointer-events': 'none',
                     tabindex: -1,
@@ -533,7 +533,7 @@ export default class NodeHelper {
             .text(({ nodeStatus }) => {
                 return Array.isArray(nodeStatus) ? `  ${nodeStatus[1]}` : ''
             })
-            .call(attrs,() => {
+            .call(attrs, () => {
                 return {
                     'pointer-events': 'none',
                     tabindex: -1,
@@ -553,7 +553,7 @@ export default class NodeHelper {
         // move node shapes
         const nodes = nodeLayer
             .selectAll('g.node')
-            .call(styles,({ layout }) => {
+            .call(styles, ({ layout }) => {
                 // set opacity to 0 if search changed or node moved
                 // we will transition it back when in new position
                 let opacity = 1.0
@@ -572,7 +572,7 @@ export default class NodeHelper {
             })
             .attr('transform', currentZoom)
 
-        nodes.transition(transition).call(styles,({ layout: { search = FilterResults.nosearch } }) => {
+        nodes.transition(transition).call(styles, ({ layout: { search = FilterResults.nosearch } }) => {
             return {
                 opacity: search === FilterResults.related ? RELATED_OPACITY : 1.0,
             }
@@ -600,7 +600,7 @@ export default class NodeHelper {
             })
 
         // move pulse shape
-        nodes.selectAll('use.pulse').call(attrs,({ layout, specs }) => {
+        nodes.selectAll('use.pulse').call(attrs, ({ layout, specs }) => {
             const { x = 0, y = 0, scale = 1, search = FilterResults.nosearch } = layout
             const pulse = specs !== null && specs.pulse
             const sz = NODE_SIZE * scale * 2 + 20
@@ -614,7 +614,7 @@ export default class NodeHelper {
         })
 
         // move node shape
-        visible.selectAll('use.shape').call(attrs,({ layout }) => {
+        visible.selectAll('use.shape').call(attrs, ({ layout }) => {
             const { x, y, scale = 1 } = layout
             const sz = NODE_SIZE * scale
             return {
@@ -625,7 +625,7 @@ export default class NodeHelper {
         })
 
         // move highlight/select shape
-        visible.selectAll('use.shadow').call(attrs,({ layout }) => {
+        visible.selectAll('use.shadow').call(attrs, ({ layout }) => {
             const { x, y, scale = 1 } = layout
             const sz = NODE_SIZE * scale + 20
             return {
@@ -656,7 +656,7 @@ export default class NodeHelper {
     }
 
     moveIcons = (nodeLayer, iconClass) => {
-        nodeLayer.selectAll(iconClass).call(attrs,({ dx, dy, width, height }, i, ns) => {
+        nodeLayer.selectAll(iconClass).call(attrs, ({ dx, dy, width, height }, i, ns) => {
             const {
                 layout: { x = 0, y = 0, scale = 1 },
             } = d3.select(ns[i].parentNode).datum()
@@ -668,10 +668,11 @@ export default class NodeHelper {
 
     dragNode = (evt, dp) => {
         const { layout } = dp
-        const { sourceEvent: {target} } = evt
+        const {
+            sourceEvent: { target },
+        } = evt
         const node = d3.select(target.parentNode)
         tooltip.style('display', 'none')
-
 
         // don't consider it dragged until more then 5 pixels away from original
         if (!layout.undragged) {
@@ -721,7 +722,7 @@ export default class NodeHelper {
             this.dragIcons(node, dotArgoAppCountIcon)
 
             // drag status message
-            node.selectAll(textNodeStatus).call(attrs,({ textBBox: { dy } }, i, ns) => {
+            node.selectAll(textNodeStatus).call(attrs, ({ textBBox: { dy } }, i, ns) => {
                 const {
                     layout: { x, y },
                 } = d3.select(ns[i].parentNode).datum()
@@ -841,7 +842,7 @@ export default class NodeHelper {
     }
 
     dragIcons = (node, iconClass) => {
-        node.selectAll(iconClass).call(attrs,({ dx, dy, width, height }, i, ns) => {
+        node.selectAll(iconClass).call(attrs, ({ dx, dy, width, height }, i, ns) => {
             const {
                 layout: { x, y },
             } = d3.select(ns[i].parentNode).datum()
@@ -939,7 +940,7 @@ export const counterZoomLabels = (svg, currentZoom) => {
 
             // fix opaque background behind label
             nodeLabel.selectAll('rect').each((d, k, rc) => {
-                d3.select(rc[k]).call(attrs,() => {
+                d3.select(rc[k]).call(attrs, () => {
                     return { height }
                 })
             })
@@ -972,7 +973,7 @@ export const counterZoomLabels = (svg, currentZoom) => {
             const labelBB = labelBBox[uid]
             const nodeStatus = d3.select(ns[i])
             textBBox.dy = labelBB.y + labelBB.height + ns[i].getBBox().height - y
-            nodeStatus.attr('y', y + textBBox.dy).call(styles,() => {
+            nodeStatus.attr('y', y + textBBox.dy).call(styles, () => {
                 return {
                     visibility: search === FilterResults.hidden ? 'hidden' : 'visible',
                     'font-size': `${fontSize}px`,
@@ -1091,13 +1092,13 @@ export const moveLabels = (svg) => {
                 .classed('hub-label', scale > 1)
                 .classed('sub-label', scale < 1)
 
-            nodeLabel.selectAll('text').call(attrs,() => {
+            nodeLabel.selectAll('text').call(attrs, () => {
                 return {
                     x: x,
                     y: y + dy,
                 }
             })
-            nodeLabel.selectAll('rect').call(attrs,() => {
+            nodeLabel.selectAll('rect').call(attrs, () => {
                 return {
                     x: x - textBBox.width / 2,
                     y: y + dy,
@@ -1108,7 +1109,7 @@ export const moveLabels = (svg) => {
             })
         })
 
-    nodeLayer.selectAll(textNodeStatus).call(attrs,(l, i, ns) => {
+    nodeLayer.selectAll(textNodeStatus).call(attrs, (l, i, ns) => {
         const {
             layout: { x, y, textBBox, scale = 1 },
         } = d3.select(ns[i].parentNode).datum()
@@ -1138,7 +1139,7 @@ export const moveTitles = (svg) => {
             const { x, y } = layout
             const nodeTitle = d3.select(ns[i])
 
-            nodeTitle.selectAll('text').call(attrs,() => {
+            nodeTitle.selectAll('text').call(attrs, () => {
                 return {
                     x: x,
                     y: y - TITLE_RADIUS,
@@ -1160,13 +1161,13 @@ export const moveClusterCountText = (svg) => {
             const { x, y } = layout
             const clusterCountText = d3.select(ns[i])
 
-            clusterCountText.selectAll('text').call(attrs,() => {
+            clusterCountText.selectAll('text').call(attrs, () => {
                 return {
                     x: x + NODE_RADIUS - 2,
                     y: y + 4,
                 }
             })
-            clusterCountText.selectAll('tspan.count').call(attrs,() => {
+            clusterCountText.selectAll('tspan.count').call(attrs, () => {
                 return {
                     x: x + NODE_RADIUS - 2,
                     y: y + 4,
@@ -1186,13 +1187,13 @@ export const moveArgoAppCountText = (svg) => {
             const { x, y } = layout
             const argoAppCountText = d3.select(ns[i])
 
-            argoAppCountText.selectAll('text').call(attrs,() => {
+            argoAppCountText.selectAll('text').call(attrs, () => {
                 return {
                     x: x + NODE_RADIUS - 2,
                     y: y + 4,
                 }
             })
-            argoAppCountText.selectAll('tspan.count').call(attrs,() => {
+            argoAppCountText.selectAll('tspan.count').call(attrs, () => {
                 return {
                     x: x + NODE_RADIUS - 2,
                     y: y + 4,

@@ -155,13 +155,25 @@
 .topologyDetails .sectionContent .clusterDetails .pf-c-pagination .pf-c-pagination__total-items {
     display: none;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-pagination .pf-c-pagination__nav .pf-c-pagination__nav-control .pf-c-button {
+.topologyDetails
+    .sectionContent
+    .clusterDetails
+    .pf-c-pagination
+    .pf-c-pagination__nav
+    .pf-c-pagination__nav-control
+    .pf-c-button {
     outline-width: 0px;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-c-pagination .pf-c-options-menu {
     display: none;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-select .pf-c-select__toggle .pf-c-select__toggle-wrapper .pf-c-form-control:focus {
+.topologyDetails
+    .sectionContent
+    .clusterDetails
+    .pf-c-select
+    .pf-c-select__toggle
+    .pf-c-select__toggle-wrapper
+    .pf-c-form-control:focus {
     outline-width: 0px;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-c-select .pf-c-select__toggle .pf-c-button:focus {
@@ -178,7 +190,13 @@
 .topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle {
     padding-left: 0px;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle.pf-m-expanded .pf-c-accordion__toggle-text {
+.topologyDetails
+    .sectionContent
+    .clusterDetails
+    .pf-c-accordion
+    .clusterDetailItem
+    .pf-c-accordion__toggle.pf-m-expanded
+    .pf-c-accordion__toggle-text {
     color: #000;
     font-weight: normal;
 }
@@ -195,26 +213,55 @@
 .topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__toggle::after {
     width: 0px;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__expanded-content.pf-m-expanded {
+.topologyDetails
+    .sectionContent
+    .clusterDetails
+    .pf-c-accordion
+    .clusterDetailItem
+    .pf-c-accordion__expanded-content.pf-m-expanded {
     --pf-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__expanded-content.pf-m-expanded .pf-c-accordion__expanded-content-body {
+.topologyDetails
+    .sectionContent
+    .clusterDetails
+    .pf-c-accordion
+    .clusterDetailItem
+    .pf-c-accordion__expanded-content.pf-m-expanded
+    .pf-c-accordion__expanded-content-body {
     padding-left: 0px;
     padding-top: 0px;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-c-accordion .clusterDetailItem .pf-c-accordion__expanded-content.pf-m-expanded .pf-c-accordion__expanded-content-body::after {
+.topologyDetails
+    .sectionContent
+    .clusterDetails
+    .pf-c-accordion
+    .clusterDetailItem
+    .pf-c-accordion__expanded-content.pf-m-expanded
+    .pf-c-accordion__expanded-content-body::after {
     width: 0px;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-pagination .pf-c-pagination__total-items {
     display: none;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-pagination .pf-c-pagination__nav .pf-c-pagination__nav-control .pf-c-button {
+.topologyDetails
+    .sectionContent
+    .appDetails
+    .pf-c-pagination
+    .pf-c-pagination__nav
+    .pf-c-pagination__nav-control
+    .pf-c-button {
     outline-width: 0px;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-pagination .pf-c-options-menu {
     display: none;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-select .pf-c-select__toggle .pf-c-select__toggle-wrapper .pf-c-form-control:focus {
+.topologyDetails
+    .sectionContent
+    .appDetails
+    .pf-c-select
+    .pf-c-select__toggle
+    .pf-c-select__toggle-wrapper
+    .pf-c-form-control:focus {
     outline-width: 0px;
 }
 .topologyDetails .sectionContent .appDetails .pf-c-select .pf-c-select__toggle .pf-c-button:focus {
@@ -231,7 +278,13 @@
 .topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle {
     padding-left: 0px;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle.pf-m-expanded .pf-c-accordion__toggle-text {
+.topologyDetails
+    .sectionContent
+    .appDetails
+    .pf-c-accordion
+    .appDetailItem
+    .pf-c-accordion__toggle.pf-m-expanded
+    .pf-c-accordion__toggle-text {
     color: #000;
     font-weight: normal;
 }
@@ -248,14 +301,31 @@
 .topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__toggle::after {
     width: 0px;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__expanded-content.pf-m-expanded {
+.topologyDetails
+    .sectionContent
+    .appDetails
+    .pf-c-accordion
+    .appDetailItem
+    .pf-c-accordion__expanded-content.pf-m-expanded {
     --pf-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__expanded-content.pf-m-expanded .pf-c-accordion__expanded-content-body {
+.topologyDetails
+    .sectionContent
+    .appDetails
+    .pf-c-accordion
+    .appDetailItem
+    .pf-c-accordion__expanded-content.pf-m-expanded
+    .pf-c-accordion__expanded-content-body {
     padding-left: 0px;
     padding-top: 0px;
 }
-.topologyDetails .sectionContent .appDetails .pf-c-accordion .appDetailItem .pf-c-accordion__expanded-content.pf-m-expanded .pf-c-accordion__expanded-content-body::after {
+.topologyDetails
+    .sectionContent
+    .appDetails
+    .pf-c-accordion
+    .appDetailItem
+    .pf-c-accordion__expanded-content.pf-m-expanded
+    .pf-c-accordion__expanded-content-body::after {
     width: 0px;
 }
 .topologyDetails .label {

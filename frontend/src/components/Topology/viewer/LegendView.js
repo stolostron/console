@@ -16,11 +16,7 @@ class LegendView extends React.Component {
         return (
             <section className="topologyDetails">
                 <div>
-                    <TimesIcon
-                        className="closeIcon"
-                        description={t('topology.legend.close')}
-                        onClick={onClose}
-                    />
+                    <TimesIcon className="closeIcon" description={t('topology.legend.close')} onClick={onClose} />
                     <hr style={{ visibility: 'hidden', marginBottom: '20px' }} />
                 </div>
                 <Scrollbars renderView={this.renderView} className="legend-view-container">

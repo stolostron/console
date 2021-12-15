@@ -45,7 +45,8 @@
     font-weight: 400;
     font-size: 14px;
 }
-.topologyDiagramContainer .channel-controls-container .channelsCombo .pf-c-dropdown, .topologyDiagramContainer .channel-controls-container .channelsCombo #comboChannel {
+.topologyDiagramContainer .channel-controls-container .channelsCombo .pf-c-dropdown,
+.topologyDiagramContainer .channel-controls-container .channelsCombo #comboChannel {
     width: 100%;
 }
 .topologyDiagramContainer .channel-controls-container .channelsCombo .pf-c-dropdown__toggle-text {

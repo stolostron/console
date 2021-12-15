@@ -11,26 +11,25 @@ export default function Topology(props: {
     fetchControl?: {
         isLoaded: boolean | undefined
         isFailed: boolean | undefined
-        isReloading: boolean | undefined       
+        isReloading: boolean | undefined
     }
 
     channelControl: {
         allChannels: [] | undefined
         activeChannel: string | undefined
         isChangingChannel: boolean | undefined
-        changeTheChannel: (fetchChannel: string) => void 
+        changeTheChannel: (fetchChannel: string) => void
     }
 
     argoAppDetailsContainerControl: {
         argoAppDetailsContainerData: ArgoAppDetailsContainerData
         handleArgoAppDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ArgoAppDetailsContainerData>>
-        handleErrorMsg: () => void      
+        handleErrorMsg: () => void
     }
-    
+
     processActionLink?: (resource: any, toggleLoading: boolean) => void
 
     searchUrl?: string
 
     t: (key: any) => string
-
 }): JSX.Element

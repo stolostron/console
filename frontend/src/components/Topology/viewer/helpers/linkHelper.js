@@ -165,8 +165,7 @@ export default class LinkHelper {
                 }
             })
 
-        links
-        .call(styles, ({ layout }) => {
+        links.call(styles, ({ layout }) => {
             // set opacity to 0 if new path
             // we will transition it back when in new position
             const { linePath, lastPath } = layout
@@ -251,8 +250,7 @@ export const dragLinks = (svg, d, typeToShapeMap) => {
                 // flip line so that line label isn't upside down :(
                 // which way does the arrow/label go
                 layout1.isSwapped = !isLoop && source.x > target.x
-                path
-                .call(attrs,() => {
+                path.call(attrs, () => {
                     return {
                         ...getLinkMarkers(layout1),
                     }

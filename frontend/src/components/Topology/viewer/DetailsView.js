@@ -100,11 +100,7 @@ class DetailsView extends React.Component {
                         </div>
                         <div className="openSearchLink">{this.renderLink(searchLink)}</div>
                     </div>
-                    <TimesIcon
-                        className="closeIcon"
-                        description={t('topology.details.close')}
-                        onClick={onClose}
-                    />
+                    <TimesIcon className="closeIcon" description={t('topology.details.close')} onClick={onClose} />
                 </div>
                 <hr />
                 <Scrollbars

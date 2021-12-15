@@ -19,8 +19,8 @@ import TypeFilterBar, { setActiveTypeFilters } from './viewer/TypeFilterBar'
 import { ResourceFilterModule } from './viewer/ResourceFilterModule'
 import DiagramViewer from './viewer/DiagramViewer'
 import { getResourceDefinitions } from './viewer/defaults'
-import {DiagramShapes} from './shapes/DiagramShapes'
-import {DiagramIcons} from './shapes/DiagramIcons'
+import { DiagramShapes } from './shapes/DiagramShapes'
+import { DiagramIcons } from './shapes/DiagramIcons'
 import './css/topology-details.css'
 import './css/topology-diagram.css'
 import _ from 'lodash'
@@ -139,14 +139,7 @@ class Topology extends React.Component {
         const { isFailed = false } = fetchControl
 
         if (isFailed) {
-            return (
-                <AcmAlert
-                    className="persistent"
-                    title={t('error.default.description')}
-                    variant="danger"
-                    isInline
-                />
-            )
+            return <AcmAlert className="persistent" title={t('error.default.description')} variant="danger" isInline />
         }
 
         // if everything succeeds, show topology

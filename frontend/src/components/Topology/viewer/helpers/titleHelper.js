@@ -93,7 +93,7 @@ export default class TitleHelper {
         titles.selectAll('g.titleLabel').each((d, i, ns) => {
             const { x, y } = d
             const titleLabel = d3.select(ns[i])
-            titleLabel.selectAll('text').call( attrs, () => {
+            titleLabel.selectAll('text').call(attrs, () => {
                 return {
                     x: x,
                     y: y,
