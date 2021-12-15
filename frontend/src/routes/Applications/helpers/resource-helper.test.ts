@@ -10,7 +10,7 @@ import {
     getSearchLink,
     getEditLink,
 } from './resource-helper'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import moment from 'moment'
 
 const { t } = useTranslation()

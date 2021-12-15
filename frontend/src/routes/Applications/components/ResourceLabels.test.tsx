@@ -2,7 +2,7 @@
 
 import { Matcher, render, screen, SelectorMatcherOptions, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { ResourceLabels } from './ResourceLabels'
 
 const { t } = useTranslation()
