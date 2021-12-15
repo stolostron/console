@@ -1,13 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useMemo } from 'react'
 import { Card, CardBody, CardTitle, Grid, GridItem, Split, SplitItem, Stack, StackItem } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { useCallback, useMemo } from 'react'
 import { useRecoilState } from 'recoil'
-import mainIcon from '../../../logos/OnPremiseBannerIcon.svg'
 import { infraEnvironmentsState, infrastructuresState } from '../../../atoms'
-import { isBMPlatform } from './utils'
-
+import MainIcon from '../../../logos/OnPremiseBannerIcon.svg'
 import './InfraEnvForm.css'
+import { isBMPlatform } from './utils'
 
 const { InfraEnvFormPage, getLabels } = CIM
 
@@ -53,7 +52,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                     <Split hasGutter>
                         <SplitItem>
                             <CardBody style={{ width: '200px' }}>
-                                <img src={mainIcon} alt="On Premise Banner Icon" id="onPremiseBannerIconPng" />
+                                <MainIcon />
                             </CardBody>
                         </SplitItem>
                         <SplitItem isFilled>
