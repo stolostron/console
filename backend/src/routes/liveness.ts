@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { readFileSync } from 'fs'
-import { Http2ServerRequest, Http2ServerResponse, constants } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent } from 'https'
-import { FetchError, HeadersInit } from 'node-fetch'
+import { FetchError } from 'node-fetch'
 import { fetchRetry } from '../lib/fetch-retry'
 import { logger } from '../lib/logger'
 import { respondInternalServerError, respondOK } from '../lib/respond'

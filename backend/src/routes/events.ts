@@ -2,7 +2,7 @@
 /* eslint-disable no-constant-condition */
 import { map, split } from 'event-stream'
 import get from 'get-value'
-import got from 'got'
+import got, { CancelError, HTTPError, TimeoutError } from 'got'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import pluralize from 'pluralize'
 import { Stream } from 'stream'
@@ -140,24 +140,29 @@ async function watch(options: IWatchOptions) {
             const resourceVersion = await listKubernetesObjects(options)
             await watchKubernetesObjects(options, resourceVersion)
         } catch (err: unknown) {
-            if (err instanceof Error) {
-                switch (err.message) {
-                    case 'Response code 404 (Not Found)':
-                        logger.warn({ msg: 'watch', error: err.message, ...options })
+            if (err instanceof HTTPError) {
+                switch (err.response.statusCode) {
+                    case 404:
+                        logger.warn({ msg: 'watch', ...options, error: err.message, name: err.name })
                         await new Promise((resolve) =>
-                            setTimeout(resolve, 5 * 60 * 1000 + Math.random() * 10 * 1000).unref()
-                        )
-                        break
-                    default:
-                        logger.warn({ msg: 'watch', error: err.message, ...options })
-                        await new Promise((resolve) =>
-                            setTimeout(resolve, 60 * 1000 + Math.random() * 10 * 1000).unref()
+                            setTimeout(resolve, 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
                         )
                         break
                 }
+            } else if (err instanceof Error) {
+                if (err.message === 'Premature close') {
+                    // Do nothing
+                } else {
+                    logger.warn({ msg: 'watch', error: err.message, name: err.name, ...options })
+                    await new Promise((resolve) =>
+                        setTimeout(resolve, 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
+                    )
+                }
             } else {
                 logger.warn({ msg: 'watch', err, ...options })
-                await new Promise((resolve) => setTimeout(resolve, 60 * 1000 + Math.random() * 10 * 1000).unref())
+                await new Promise((resolve) =>
+                    setTimeout(resolve, 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
+                )
             }
         }
     }
@@ -195,6 +200,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
     items = items.map((resource) => {
         resource.kind = options.kind
         resource.apiVersion = options.apiVersion
+        pruneResource(resource)
         return resource
     })
 
@@ -223,14 +229,14 @@ async function listKubernetesObjects(options: IWatchOptions) {
 }
 
 async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: string) {
-    logger.debug({ msg: 'watch', ...options })
-
     while (!stopping) {
+        logger.debug({ msg: 'watch', ...options })
         try {
             const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
             const request = got.stream(url, {
                 headers: { authorization: `Bearer ${serviceAcccountToken}` },
                 https: { rejectUnauthorized: false },
+                timeout: { socket: 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000) },
             })
             // TODO use abort signal when on node 16
             const cancelObj = { cancel: () => request.destroy() }
@@ -241,6 +247,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                     split('\n'),
                     map(function (data: string) {
                         const watchEvent = JSON.parse(data) as WatchEvent
+                        pruneResource(watchEvent.object)
                         switch (watchEvent.type) {
                             case 'ADDED':
                             case 'MODIFIED':
@@ -269,16 +276,16 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                 requests = requests.filter((r) => r !== cancelObj)
             }
         } catch (err: unknown) {
-            if (err instanceof Error) {
-                const error: Error & Partial<NodeJS.ErrnoException> = err
-                switch (error.code) {
-                    case 'ERR_STREAM_PREMATURE_CLOSE':
-                        break
-                    case '410':
-                        logger.warn({ msg: 'watch retry', error: err.message, ...options })
+            if (err instanceof TimeoutError) {
+                // Do Nothing
+            } else if (err instanceof CancelError) {
+                // Do Nothing
+            } else if (err instanceof HTTPError) {
+                switch (err.response.statusCode) {
+                    case 410:
+                        logger.warn({ msg: 'watch retry', error: err.message, name: err.name, ...options })
                         break
                     default:
-                        console.log(error)
                         throw err
                 }
             } else {
@@ -496,4 +503,8 @@ export function stopWatching(): void {
     for (const request of requests) {
         request.cancel()
     }
+}
+
+function pruneResource(resource: IResource) {
+    delete resource.metadata.managedFields
 }
