@@ -3,6 +3,7 @@
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
+import _ from 'lodash'
 
 export const backendUrl = `${process.env.REACT_APP_BACKEND_HOST}` + `${process.env.REACT_APP_BACKEND_PATH}`
 
@@ -197,13 +198,36 @@ export function listAnsibleTowerJobs(
     const backendURLPath = backendUrl + '/ansibletower'
     const ansibleJobsUrl = ansibleHostUrl + '/api/v2/job_templates/'
     const abortController = new AbortController()
+    const pageSize = 25
     return {
         promise: fetchGetAnsibleJobs(backendURLPath, ansibleJobsUrl, token, abortController.signal).then((item) => {
-            return {
-                results: item.data.results?.map((job) => {
-                    return { name: job.name }
-                }),
-            } as AnsibleTowerJobTemplateList
+            const { count } = item.data
+            if (count! <= pageSize) {
+                return {
+                    results: item.data.results?.map((job) => {
+                        return { name: job.name }
+                    }),
+                } as AnsibleTowerJobTemplateList
+            } else {
+                let result: Array<{
+                    name: string
+                }> = []
+                const totalPage = Math.ceil(count! / pageSize)
+                for (let page = 1; page < totalPage; page++) {
+                    const jobUrl = ansibleHostUrl + '/api/v2/job_templates/?page=' + page
+                    fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal).then((item) => {
+                        const content = item.data.results?.map((job) => {
+                            return { name: job.name }
+                        })
+                        if (content) {
+                            result.push(test)
+                        }
+                    })
+                }
+                // result is empty
+                const test3 = { results: result } as AnsibleTowerJobTemplateList
+                return { results: result } as AnsibleTowerJobTemplateList
+            }
         }),
         abort: () => abortController.abort(),
     }
