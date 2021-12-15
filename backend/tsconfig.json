@@ -17,7 +17,8 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "lib": ["ES2019"],
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "esModuleInterop": true
     },
     "include": ["src"]
 }

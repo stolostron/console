@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { request, RequestOptions } from 'https'
-import * as ProxyAgent from 'proxy-agent'
+import ProxyAgent from 'proxy-agent'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
