@@ -23,8 +23,8 @@ export interface Application extends IResource {
             group: string
             kind: string
         }[]
+        selector?: Selector | null
     }
-    selector?: Selector | null
     transformed?: {
         clusterCount?: string
     }

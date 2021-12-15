@@ -26,19 +26,19 @@ export function ResourceLabels(props: {
     function getRepoTypeLabel(attrib: String, t: (arg: String) => String) {
         switch (attrib) {
             case 'gitPath':
-                return t('Path')
+                return `${t('Path')}:`
             case 'gitBranch':
-                return t('Branch')
+                return `${t('Branch')}:`
             case 'targetRevision':
-                return t('Revision')
+                return `${t('Revision')}:`
             case 'chart':
-                return t('Chart name')
+                return `${t('Chart name')}:`
             case 'package':
-                return t('Chart name')
+                return `${t('Chart name')}:`
             case 'packageFilterVersion':
-                return t('Package version')
+                return `${t('Package version')}:`
             case 'bucketPath':
-                return t('Subfolder')
+                return `${t('Subfolder')}:`
             default:
                 break
         }
