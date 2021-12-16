@@ -17,7 +17,6 @@ import {
     deployablesState,
     managedClustersState,
 } from '../../../atoms'
-
 import './ApplicationTopology.css'
 import '../../../components/Topology/css/topology-controls.css'
 import '../../../components/Topology/css/resource-toolbar.css'
@@ -27,11 +26,6 @@ import { processResourceActionLink } from '../../../components/Topology/utils/di
 
 import { getApplication } from './model/application'
 import { getTopology } from './model/topology'
-
-//import nodes from './demo-etherpad-nodes.json'
-//import links from './demo-etherpad-links.json'
-// import nodes from './demo-saude-digital-nodes.json'
-// import links from './demo-saude-digital-links.json'
 
 export type ArgoAppDetailsContainerData = {
     page: number
@@ -44,7 +38,7 @@ export type ArgoAppDetailsContainerData = {
 }
 
 export default function ApplicationTopology() {
-    const { t } = useTranslation('topology')
+    const { t } = useTranslation()
     const [applications] = useRecoilState(applicationsState)
     const [applicationSets] = useRecoilState(applicationSetsState)
     const [argoApplications] = useRecoilState(argoApplicationsState)
@@ -55,14 +49,9 @@ export default function ApplicationTopology() {
     const [placementRules] = useRecoilState(placementRulesState)
     const [deployables] = useRecoilState(deployablesState)
     const [managedClusters] = useRecoilState(managedClustersState)
-    // const [isLoaded, setIsLoaded] = useState<boolean>()
-    // const [isLoadError, setIsLoadError] = useState<boolean>()
-    // const [isFailed, setIsFailed] = useState<boolean>()
-    // const [isReloading, setIsReloading] = useState<boolean>()
-    const [allChannels] = useState<[]>()
+    const [allChannels, setAllChannels] = useState<[]>()
     const [activeChannel, setActiveChannel] = useState<string>()
     const [searchName, setSearchName] = useState<string>()
-    const [isChangingChannel, setIsChangingChannel] = useState<boolean>()
     const [showLegendView, setShowLegendView] = useState<boolean>()
     const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
         page: 1,
@@ -76,22 +65,19 @@ export default function ApplicationTopology() {
     const [elements, setElements] = useState<{
         nodes: any[]
         links: any[]
-    }>({ nodes:[], links:[] })
+    }>({ nodes: [], links: [] })
 
     const handleErrorMsg = () => {
         //show toast message in parent container
     }
 
     const changeTheChannel = (fetchChannel: string) => {
-        setIsChangingChannel(true)
         setActiveChannel(fetchChannel)
-        //this.props.fetchAppTopology(fetchChannel)
     }
 
     const channelControl = {
         allChannels,
-        activeChannel: activeChannel,
-        isChangingChannel,
+        activeChannel,
         changeTheChannel,
     }
     const argoAppDetailsContainerControl = {
@@ -108,42 +94,48 @@ export default function ApplicationTopology() {
     const location = history?.location?.pathname?.split('/')
     const searchUrl = location ? '/' + location.slice(0, 3).join('/') : ''
 
-    const generateElements = () => {
+    const generateElements = (activeChannel: string | undefined) => {
+        let name = 'demo-saude-digital'
+        let namespace = 'demo-saude-digital'
 
-        const name = 'demo-saude-digital'
-        const channel = 'demo-saude-digital/demo-saude-digital//demo-saude-digital-repos/github-redhat-sa-brazil-demo-summitgov-cy20///components-dashboard-target-kubernetes-saude-digital-dashboard-buildconfig///resources-application-demo-etherpad-demo-etherpad-deployment'
+        name = 'kevin-test2'
+        namespace = 'kevin-test2'
 
+        //name = "dsf-local-cluster"
+        //namespace="openshift-gitops"
 
-        const loc = [null, null, null, name, name]
-        const application = getApplication(
-            loc,
-            channel,
-            {
-                //czcz
-                applications,
-                applicationSets,
-                argoApplications,
-                ansibleJob,
-                subscriptions,
-                channels,
-                deployables,
-                placements,
-                placementRules,
-            },
-        )
+        name="magchen-16179"
+        namespace="openshift-gitops"
+
+        const loc = [null, null, null, name, namespace]
+
+        const application = getApplication(loc, activeChannel, {
+            applications,
+            applicationSets,
+            argoApplications,
+            ansibleJob,
+            subscriptions,
+            channels,
+            deployables,
+            placements,
+            placementRules,
+        })
 
         if (application) {
+            setActiveChannel(application.activeChannel)
+            setAllChannels(application.channels)
             setElements(getTopology(application, managedClusters))
         }
     }
 
+    // generate diagram every n seconds
     useEffect(() => {
-        generateElements()
+        generateElements(activeChannel)
         const interval = setInterval(() => {
-            generateElements()
+            generateElements(activeChannel)
         }, 5000)
         return () => clearInterval(interval)
-    }, [])
+    }, [activeChannel])
 
     return (
         <PageSection>
@@ -169,6 +161,22 @@ export default function ApplicationTopology() {
                     </div> */}
                     </>
                     <div className="resourceDiagramControlsContainer">
+                        <div className="diagram-title">
+                            <span
+                                className="how-to-read-text"
+                                tabIndex={0}
+                                onClick={() => setShowLegendView(true)}
+                                onKeyPress={() => {
+                                    // noop function
+                                }}
+                                role="button"
+                            >
+                                {t('How to read topology')}
+                                <svg className="how-to-read-icon">
+                                    <use href={'#diagramIcons_sidecar'} />
+                                </svg>
+                            </span>
+                        </div>
                         <Topology
                             elements={elements}
                             processActionLink={processActionLink}

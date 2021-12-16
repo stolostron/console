@@ -4,11 +4,9 @@ import { get, startsWith, includes, concat, uniqBy, filter, remove, split, toLow
 
 import {
     isPrePostHookDeployable,
-    //   getClusterName,
-    //   createReplicaChild,
-    //   createIngressRouteChild,
-    //   createGenericPackageObject,
-    //   removeHelmReleaseName,
+    createReplicaChild,
+    createGenericPackageObject,
+    removeHelmReleaseName,
     addSubscriptionDeployable,
     addClusters,
 } from './utils'

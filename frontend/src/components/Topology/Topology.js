@@ -35,7 +35,6 @@ class Topology extends React.Component {
         channelControl: PropTypes.shape({
             allChannels: PropTypes.array,
             activeChannel: PropTypes.string,
-            isChangingChannel: PropTypes.bool,
             changeTheChannel: PropTypes.func,
         }),
         elements: PropTypes.shape({
@@ -169,7 +168,6 @@ class Topology extends React.Component {
         } = this.props
         const { nodes, links } = elements
         const { isLoaded = true, isReloading = false } = fetchControl
-        const { isChangingChannel = false } = channelControl
         const { selectedNode, handleNodeSelected } = selectionControl
         const { activeFilters, availableFilters, showChannelsControl } = this.state
 
@@ -187,7 +185,7 @@ class Topology extends React.Component {
                     options={options}
                     styles={styles}
                     isReloading={isReloading}
-                    secondaryLoad={isChangingChannel || !isLoaded}
+                    secondaryLoad={!isLoaded}
                     selectedNode={selectedNode}
                     handleNodeSelected={handleNodeSelected}
                     searchName={searchName}

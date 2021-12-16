@@ -1,15 +1,14 @@
-// import { getStoredObject, saveStoredObject } from '../../../../lib/client/resource-helper'
-// import { setupResourceModel, computeNodeStatus } from '../utils/diagram-helpers'
-// import { getClusterName, nodeMustHavePods, isDeployableResource } from '../utils/diagram-helpers-utils'
+import { setupResourceModel, computeNodeStatus } from '../../../../components/Topology/utils/diagram-helpers'
+import { getClusterName, nodeMustHavePods, isDeployableResource } from './utils'
 import _ from 'lodash'
 import R from 'ramda'
-//import { getArgoTopology } from './topologyArgo'
+import { getArgoTopology } from './topologyArgo'
 import { getSubscriptionTopology } from './topologySubscription'
 
 export const getTopology = (application, managedClusters) => {
     let topology
     if (application.isArgoApp) {
-        //topology = getArgoTopology(application, managedClusters)
+        topology = getArgoTopology(application, managedClusters)
     } else {
         topology = getSubscriptionTopology(application, managedClusters)
     }
@@ -39,9 +38,7 @@ export const getDiagramElements = (topology) => {
         if (evaluateSingleAnd(type === 'application', id.startsWith('application'))) {
             channelsList = _.get(node, 'specs.channels', [])
             // set default active channel
-            const channelListNoAllChannels = channelsList.filter(
-                (chn) => chn !== '__ALL__/__ALL__//__ALL__/__ALL__'
-            )
+            const channelListNoAllChannels = channelsList.filter((chn) => chn !== '__ALL__/__ALL__//__ALL__/__ALL__')
             const defaultActiveChannel = channelListNoAllChannels.length > 0 ? channelListNoAllChannels[0] : null
             activeChannelInfo = _.get(node, 'specs.activeChannel')
             if (!activeChannelInfo) {
@@ -157,7 +154,6 @@ export const evaluateSingleAnd = (operand1, operand2) => {
     return operand1 && operand2
 }
 
-
 export const addDiagramDetails = (
     topology,
     allResourcesMap,
@@ -189,33 +185,31 @@ export const addDiagramDetails = (
     setupResourceModel(related, allResourcesMap, isClusterGrouped, hasHelmReleases, topology, lastUpdated)
 }
 
-export const getTopologyElements = resourceItem => {
+export const getTopologyElements = (resourceItem) => {
     const { nodes = [], links = [] } = resourceItem
-  
+
     // We need to change "to/from" to "source/target" to satisfy D3's API.
-    let modifiedLinks = links.map(l => ({
-      source: l.from.uid,
-      target: l.to.uid,
-      label: l.type,
-      type: l.type,
-      uid: l.from.uid + l.to.uid
+    let modifiedLinks = links.map((l) => ({
+        source: l.from.uid,
+        target: l.to.uid,
+        label: l.type,
+        type: l.type,
+        uid: l.from.uid + l.to.uid,
     }))
-  
+
     // filter out links to self, then add as a new svg circular arrow on node
     const nodeMap = _.keyBy(nodes, 'uid')
-    modifiedLinks = modifiedLinks.filter(l => {
-      if (l.source !== l.target) {
-        return true
-      } else {
-        nodeMap[l.source].selfLink = l
-        return false
-      }
+    modifiedLinks = modifiedLinks.filter((l) => {
+        if (l.source !== l.target) {
+            return true
+        } else {
+            nodeMap[l.source].selfLink = l
+            return false
+        }
     })
-  
-  
+
     return {
-      links: modifiedLinks,
-      nodes: nodes
+        links: modifiedLinks,
+        nodes: nodes,
     }
-  }
-  
+}

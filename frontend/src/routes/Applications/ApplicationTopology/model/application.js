@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, endsWith, indexOf, trimEnd, chunk, isEmpty } from 'lodash'
+import { get, endsWith, indexOf, includes, chunk, isEmpty } from 'lodash'
 
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
 const EVERYTHING_CHANNEL = '__ALL__/__ALL__//__ALL__/__ALL__'
@@ -11,44 +11,59 @@ export const getApplication = (location, selectedChannel, recoilStates, cluster,
 
     let app
     let model
+    let placement
+    let placementName
 
     // get application
     const { applications, applicationSets, argoApplications } = recoilStates
     app = applications.find((app) => {
         return app?.metadata?.name === name && app?.metadata?.namespace === namespace
     })
+
+    // get argo app set
     if (!app) {
         app = applicationSets.find((app) => {
             return app?.metadata?.name === name && app?.metadata?.namespace === namespace
         })
+        if (app) {
+                placementName = get(
+                app,
+                'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
+                ''
+            )
+            placement = recoilStates.placements.find((placement) => {
+                return (
+                    get(placement, 'metadata.namespace') === namespace &&
+                    get(placement, 'metadata.name') === placementName
+                )
+            })
+        }
     }
+
+    // get argo embedded app set
     if (!app) {
         app = argoApplications.find((app) => {
-            const isChildOfAppset =
-                app.metadata.ownerReferences && app.metadata.ownerReferences[0].kind === 'ApplicationSet'
-            if (!app.metadata.ownerReferences || !isChildOfAppset) {
-                return app?.metadata?.name === name && app?.metadata?.namespace === namespace
-            }
+            return app?.metadata?.name === name && app?.metadata?.namespace === namespace
         })
+        if (app) {
+            const appsetName = get(app, 'metadata.ownerReferences[0].name', '')
+            if (appsetName) {
+                const set = applicationSets.find((app) => {
+                    return app?.metadata?.name === appsetName && app?.metadata?.namespace === namespace
+                })
+                placementName = get(set, 'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]', '');
+                placement = recoilStates.placements.find((placement) => {
+                    return (
+                        get(placement, 'metadata.namespace') === namespace &&
+                        get(placement, 'metadata.name') === placementName
+                    )
+                })
+            }
+        }
     }
 
     // collect app resources
     if (app) {
-        const placementName = get(
-            app,
-            'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
-            ''
-        )
-        const placement = placementName
-            ? recoilStates.placements.find((placement) => {
-                  debugger
-                  return (
-                      get(placement, 'metadata.namespace') === namespace &&
-                      get(placement, 'metadata.name') === placementName
-                  )
-              })
-            : undefined
-
         model = {
             name,
             namespace,
@@ -58,6 +73,7 @@ export const getApplication = (location, selectedChannel, recoilStates, cluster,
             isArgoApp: get(app, 'apiVersion', '').indexOf('argoproj.io') > -1,
         }
 
+        // a short sweet ride for argo
         if (model.isArgoApp) {
             return model
         }
@@ -66,25 +82,14 @@ export const getApplication = (location, selectedChannel, recoilStates, cluster,
         let subscriptionNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/subscriptions"]')
         let deployableNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/deployables"]')
         if (subscriptionNames && subscriptionNames.length > 0) {
-            subscriptionNames = subscriptionNames.split(',')
             // filter local hub subscription
-            const filteredSubscriptions = []
-            subscriptionNames.forEach((subscriptionName) => {
-                if (
-                    !evaluateSingleAnd(
-                        endsWith(subscriptionName, '-local'),
-                        indexOf(subscriptionNames, trimEnd(subscriptionName, '-local')) !== -1
-                    )
-                ) {
-                    filteredSubscriptions.push(subscriptionName)
-                }
+            const filteredSubscriptions = subscriptionNames.split(',').filter((subscriptionName) => {
+                return !includes(subscriptionName, '-local')
             })
             const allSubscriptions = getResources(filteredSubscriptions, recoilStates.subscriptions)
 
             // get deployables from the subscription annotation
             const { subscriptions, allowAllChannel } = getSubscriptionsDeployables(allSubscriptions)
-            // pick subscription based on channel requested by ui
-            model.activeChannel = selectedChannel
 
             // what subscriptions does user want to see
             model.channels = []
@@ -95,6 +100,8 @@ export const getApplication = (location, selectedChannel, recoilStates, cluster,
 
             // get all the channels and find selected subscription from selected channel
             const subscr = getAllChannels(subscriptions, model.channels, selectedChannel, allowAllChannel)
+            // pick subscription based on channel requested by ui or 1st by default
+            model.activeChannel = selectedChannel ? selectedChannel : getChannelName(subscr[0])
 
             // get all requested subscriptions
             const selectedSubscription = evaluateTernaryExpression(
@@ -126,9 +133,9 @@ export const getApplication = (location, selectedChannel, recoilStates, cluster,
 }
 
 const getResources = (names, resources) => {
-    const namespaces = new Set(names.map((name) => name.split('/')[0]))
-    return resources.filter((res) => {
-        return namespaces.has(res?.metadata?.namespace)
+    const set = new Set(names)
+    return resources.filter((resource) => {
+        return set.has(`${get(resource, 'metadata.namespace')}/${get(resource, 'metadata.name')}`)
     })
 }
 
@@ -167,7 +174,9 @@ const getSubscriptionsDeployables = (allSubscriptions) => {
     if (allDeployablePaths > 100 || allSubscriptions.length <= 1) {
         allowAllChannel = false
     }
-
+    subscriptions.sort((a, b) => {
+        return get(a, 'metadata.name', '').localeCompare(get(b, 'metadata.name'))
+    })
     return { subscriptions, allowAllChannel }
 }
 
@@ -782,8 +791,6 @@ const longestCommonSubstring = (str1, str2) => {
 //   const transport = _.get(route, 'spec.tls') ? 'https' : 'http';
 //   return `${transport}://${hostName}`;
 // }
-
-const evaluateSingleAnd = (operand1, operand2) => operand1 && operand2
 
 const evaluateDoubleAnd = (operand1, operand2, operand3) => operand1 && operand2 && operand3
 

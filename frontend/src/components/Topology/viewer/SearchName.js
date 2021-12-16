@@ -71,21 +71,19 @@ class Search extends React.Component {
     render() {
         const { t } = this.props
         const { searchName } = this.state
-        const searchTitle = t('name.label')
-        const searchMsgKey = 'search.label.links'
         return (
             <div
                 role="region"
                 className="search-filter"
                 ref={this.setNameSearchRef}
-                aria-label={searchTitle}
-                id={searchTitle}
+                aria-label={t('Find')}
+                id={t('Find')}
             >
                 <SearchInput
                     id="search-name"
                     aria-label="Search-input"
                     value={searchName}
-                    placeholder={t(searchMsgKey)}
+                    placeholder={t('Find')}
                     onChange={this.handleSearch}
                     onClear={this.handleClear}
                 />

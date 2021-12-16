@@ -353,7 +353,7 @@ export class ResourceFilterModule extends React.Component {
                 <svg className="button-icon">
                     <use href={'#diagramIcons_filter'} />
                 </svg>
-                <div className="button-label">{t('overview.menu.filter')}</div>
+                <div className="button-label">{t('Filter')}</div>
             </div>
         )
     }

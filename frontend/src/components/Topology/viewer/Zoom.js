@@ -28,9 +28,9 @@ export default class Zoom extends React.PureComponent {
 
     render() {
         const { t } = this.props
-        const zoomIn = t('topology.zoom.in')
-        const zoomOut = t('topology.zoom.out')
-        const zoomFit = t('topology.zoom.fit')
+        const zoomIn = t("Zoom in")
+        const zoomOut = t("Zoom out")
+        const zoomFit = t('Zoom to fit')
 
         return (
             <div className="diagram-controls">

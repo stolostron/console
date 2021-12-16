@@ -23,10 +23,9 @@ class ChannelControl extends React.Component {
         channelControl: PropTypes.shape({
             allChannels: PropTypes.array,
             activeChannel: PropTypes.string,
-            isChangingChannel: PropTypes.bool,
             changeTheChannel: PropTypes.func,
         }),
-        locale: PropTypes.string,
+        t: PropTypes.func,
     }
 
     constructor(props) {
@@ -111,7 +110,7 @@ class ChannelControl extends React.Component {
                     data = channelMap[chn] = { chnl, splitChn, subchannels: [] }
                 }
                 if (beg && end) {
-                    data.subchannels.push({ chnl, beg, end })
+                    data.subchannels.push({ chnl, beg, end, text: splitChn[1] })
                 }
             }
         })
@@ -132,7 +131,7 @@ class ChannelControl extends React.Component {
         Object.values(channelMap).forEach(({ chnl, splitChn, subchannels }) => {
             let channelLabel = splitChn && splitChn[2] ? splitChn[2] : 'unknown'
             if (channelLabel === '__ALL__') {
-                channelLabel = t('combo.subscription.all')
+                channelLabel = this.props.t('All Subscriptions')
             }
             const channelID = channelLabel.replace(/\s+/g, '-').toLowerCase()
 
@@ -201,7 +200,7 @@ class ChannelControl extends React.Component {
             subscriptionShowInfo =
                 currentChannel.chn === '__ALL__/__ALL__//__ALL__/__ALL__'
                     ? ''
-                    : t('subscription.page.count.nb', [
+                    : this.props.t('(1 of {{0}})', [
                           channelsLength > 1 ? (channelAllIndex !== -1 ? channelsLength - 1 : channelsLength) : 1,
                       ])
         }
@@ -292,7 +291,7 @@ class ChannelControl extends React.Component {
     }
 
     render() {
-        const { channelControl = {}, locale } = this.props
+        const { channelControl = {}, t } = this.props
         const { currentChannel } = this.state
         const { allChannels } = channelControl
 
@@ -335,12 +334,12 @@ class ChannelControl extends React.Component {
                 // show subscription names only when more than one
                 <div
                     className="channel-controls-container"
-                    style={selectedSubscriptionIsPaged ? { height: '174px' } : { height: '150px' }}
+                    style={selectedSubscriptionIsPaged ? { height: '174px' } : { height: '125px' }}
                 >
                     {showMainChannel && (
                         <div className="channels">
                             <div className="subscription label">
-                                {t('combo.subscription')} {this.getSubscriptionCount(displayChannels, currentChannel)}
+                                {t('Subscriptions')} {this.getSubscriptionCount(displayChannels, currentChannel)}
                                 <Tooltip
                                     isContentLeftAligned
                                     content={
@@ -368,13 +367,15 @@ class ChannelControl extends React.Component {
                     {selectedSubscriptionIsPaged && (
                         <div className="pagination">
                             <div className="resourcePaging label">
-                                {t('subscription.page.label')}
+                                {t('Resource nodes')}
                                 <div className="show-subscription-pages-icon">
                                     <Tooltip
                                         isContentLeftAligned
                                         content={
                                             <span className="showPagesTooltip">
-                                                {t('subscription.page.label.info')}
+                                                {t(
+                                                    'Use the navigation to view the resources that are deployed by the selected subscription.'
+                                                )}
                                             </span>
                                         }
                                     >
