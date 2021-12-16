@@ -12,6 +12,8 @@ import {
     onApproveAgent,
     onSaveBMH,
     useNMStatesOfNamespace,
+    onSaveAgent,
+    onChangeBMHHostname,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
@@ -40,7 +42,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
     const onUnbindHost = useOnUnbindHost(setBulkModalProps, undefined, undefined)
     const canUnbindAgent = useCanUnbindAgent(infraEnv)
 
-    const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents), [infraAgents])
+    const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, bareMetalHosts), [infraAgents])
 
     return (
         <>
@@ -64,6 +66,8 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                                 onEditBMH={setEditBMH}
                                 canUnbindHost={canUnbindAgent}
                                 onUnbindHost={onUnbindHost}
+                                onChangeHostname={onSaveAgent}
+                                onChangeBMHHostname={onChangeBMHHostname}
                             />
                             <EditBMHModal
                                 infraEnv={infraEnv}
@@ -73,6 +77,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                                 onEdit={onSaveBMH}
                                 fetchSecret={fetchSecret}
                                 fetchNMState={fetchNMState}
+                                usedHostnames={usedHostnames}
                             />
                             <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
                         </CardBody>
