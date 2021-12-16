@@ -130,7 +130,7 @@ const AIClusterDetails: React.FC = () => {
                                             agentClusterInstall={agentClusterInstall}
                                             agents={clusterAgents}
                                             fetchSecret={fetchSecret}
-                                            consoleUrl={getConsoleUrl(clusterDeployment) || 'N/A'}
+                                            consoleUrl={getConsoleUrl(clusterDeployment, agentClusterInstall) || 'N/A'}
                                         />
                                     </StackItem>
                                 )}
