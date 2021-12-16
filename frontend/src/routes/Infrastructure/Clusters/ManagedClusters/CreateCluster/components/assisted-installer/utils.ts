@@ -32,6 +32,7 @@ const {
     getBareMetalHostCredentialsSecret,
     getBareMetalHost,
     isAgentOfCluster,
+    BMH_HOSTNAME_ANNOTATION,
 } = CIM
 
 type OnHostsNext = {
@@ -318,15 +319,14 @@ export const useInfraEnv = ({ name, namespace }: { name: string; namespace: stri
     )
 }
 
-export const onApproveAgent = (agent: CIM.AgentK8sResource) => {
+export const onApproveAgent = (agent: CIM.AgentK8sResource) =>
     patchResource(agent, [
         {
             op: 'replace',
             path: '/spec/approved',
             value: true,
         },
-    ])
-}
+    ]).promise
 
 export const getClusterDeploymentLink = ({ name }: { name: string }) =>
     NavigationPath.clusterDetails.replace(':id', name)
@@ -496,6 +496,7 @@ export const onSaveBMH =
 
         if (editModal?.bmh) {
             const patches: any[] = []
+            appendPatch(patches, `/metadata/annotations/'${BMH_HOSTNAME_ANNOTATION.replace('/', '~1')}'`, values.hostname, editModal.bmh.metadata.annotations?.[BMH_HOSTNAME_ANNOTATION])
             appendPatch(patches, '/spec/bmc/address', values.bmcAddress, editModal.bmh.spec.bmc.address)
             appendPatch(
                 patches,
@@ -551,6 +552,16 @@ export const onSaveAgent = async (agent: CIM.AgentK8sResource, hostname: string)
         {
             op: 'replace',
             path: '/spec/hostname',
+            value: hostname,
+        },
+    ]).promise
+
+
+export const onChangeBMHHostname = async (bmh: CIM.BareMetalHostK8sResource, hostname: string) =>
+    patchResource(bmh, [
+        {
+            op: 'replace',
+            path: `/metadata/annotations/${BMH_HOSTNAME_ANNOTATION.replace('/', '~1')}`,
             value: hostname,
         },
     ]).promise
