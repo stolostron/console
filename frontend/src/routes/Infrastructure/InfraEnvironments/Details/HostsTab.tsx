@@ -49,6 +49,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                                 infraEnv={infraEnv}
                                 getClusterDeploymentLink={getClusterDeploymentLink}
                                 onEditHost={setEditAgent}
+                                canEditHost={(agent) => !!agent}
                                 onApprove={onApproveAgent}
                                 canDelete={(agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) =>
                                     !!nmStates && (!!agent || !!bmh)
