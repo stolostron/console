@@ -10,7 +10,7 @@ import {
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { TFunction } from 'react-i18next'
@@ -42,6 +42,8 @@ import {
     PlacementRuleKind,
     PlacementRuleApiVersion,
     ManagedCluster,
+    IRequestResult,
+    SelfSubjectAccessReview,
 } from '../../resources'
 import ResourceLabels from './components/ResourceLabels'
 import { getAge, getClusterCountString, getSearchLink } from './helpers/resource-helper'
@@ -577,27 +579,7 @@ export default function ApplicationsOverview() {
     const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
     const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
     const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
-    useEffect(() => {
-        const canCreateApplicationPromise = canUser('create', ApplicationDefinition)
-        canCreateApplicationPromise.promise
-            .then((result) => setCanCreateApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateApplicationPromise.abort()
-    }, [])
-    useEffect(() => {
-        const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
-        canDeleteApplicationPromise.promise
-            .then((result) => setCanDeleteApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationPromise.abort()
-    }, [])
-    useEffect(() => {
-        const canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
-        canDeleteApplicationSetPromise.promise
-            .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationSetPromise.abort()
-    }, [])
+    const [tableContent, setTableContent] = useState<ReactNode>()
 
     let modalWarnings: string
     const getAppChildResources = (app: IResource) => {
@@ -862,9 +844,8 @@ export default function ApplicationsOverview() {
         return actions
     }
 
-    return (
-        <PageSection>
-            <DeleteResourceModal {...modalProps} />
+    const generateTable = () => {
+        return (
             <AcmTable<IResource>
                 key="data-table"
                 plural={t('Applications')}
@@ -898,6 +879,42 @@ export default function ApplicationsOverview() {
                 }
                 rowActionResolver={rowActionResolver}
             />
+        )
+    }
+
+    useEffect(() => {
+        setTableContent(generateTable())
+        let canCreateApplicationPromise: IRequestResult<SelfSubjectAccessReview>
+        let canDeleteApplicationPromise: IRequestResult<SelfSubjectAccessReview>
+        let canDeleteApplicationSetPromise: IRequestResult<SelfSubjectAccessReview>
+
+        const interval = setInterval(() => {
+            setTableContent(generateTable())
+            canCreateApplicationPromise = canUser('create', ApplicationDefinition)
+            canCreateApplicationPromise.promise
+                .then((result) => setCanCreateApplication(result.status?.allowed!))
+                .catch((err) => console.error(err))
+            canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
+            canDeleteApplicationPromise.promise
+                .then((result) => setCanDeleteApplication(result.status?.allowed!))
+                .catch((err) => console.error(err))
+            canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
+            canDeleteApplicationSetPromise.promise
+                .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
+                .catch((err) => console.error(err))
+        }, 5000)
+        return () => {
+            clearInterval(interval)
+            canCreateApplicationPromise.abort()
+            canDeleteApplicationPromise.abort()
+            canDeleteApplicationSetPromise.abort()
+        }
+    }, [])
+
+    return (
+        <PageSection>
+            <DeleteResourceModal {...modalProps} />
+            {tableContent}
         </PageSection>
     )
 }
