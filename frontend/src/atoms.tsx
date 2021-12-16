@@ -57,6 +57,9 @@ import {
     ConfigMap,
     ConfigMapApiVersion,
     ConfigMapKind,
+    Deployable,
+    DeployableApiVersion,
+    DeployableKind,
     DiscoveredCluster,
     DiscoveredClusterApiVersion,
     DiscoveredClusterKind,
@@ -146,6 +149,7 @@ export const clusterManagementAddonsState = AtomArray<ClusterManagementAddOn>()
 export const clusterPoolsState = AtomArray<ClusterPool>()
 export const clusterProvisionsState = AtomArray<ClusterProvision>()
 export const configMapsState = AtomArray<ConfigMap>()
+export const deployablesState = AtomArray<Deployable>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
 export const gitOpsClustersState = AtomArray<GitOpsCluster>()
@@ -221,6 +225,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setClusterPools] = useRecoilState(clusterPoolsState)
     const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setConfigMaps] = useRecoilState(configMapsState)
+    const [, setDeployables] = useRecoilState(deployablesState)
     const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setGitOpsClustersState] = useRecoilState(gitOpsClustersState)
@@ -276,6 +281,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ClusterPoolApiVersion, ClusterPoolKind, setClusterPools)
         addSetter(ClusterProvisionApiVersion, ClusterProvisionKind, setClusterProvisions)
         addSetter(ConfigMapApiVersion, ConfigMapKind, setConfigMaps)
+        addSetter(DeployableApiVersion, DeployableKind, setDeployables)
         addSetter(DiscoveredClusterApiVersion, DiscoveredClusterKind, setDiscoveredClusters)
         addSetter(DiscoveryConfigApiVersion, DiscoveryConfigKind, setDiscoveryConfigs)
         addSetter(InfraEnvApiVersion, InfraEnvKind, setInfraEnvironments)

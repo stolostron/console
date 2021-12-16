@@ -1,34 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, endsWith, indexOf, trimEnd, chunk } from 'lodash'
+import { get, endsWith, indexOf, trimEnd, chunk, isEmpty } from 'lodash'
 
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
 const EVERYTHING_CHANNEL = '__ALL__/__ALL__//__ALL__/__ALL__'
 const NAMESPACE = 'metadata.namespace'
 
-export const evaluateSingleAnd = (operand1, operand2) => operand1 && operand2
-
-export const evaluateDoubleAnd = (operand1, operand2, operand3) => operand1 && operand2 && operand3
-
-export const evaluateSingleOr = (operand1, operand2) => operand1 || operand2
-
-export const evaluateTernaryExpression = (condition, returnVal1, returnVal2) => {
-    if (condition) {
-        return returnVal1
-    }
-    return returnVal2
-}
-
-export const getApplication = (location, recoilStates, selectedChannel, cluster, apiversion) => {
-    //applications, applicationSets, argoApplications, subscriptions, channels, placementRules, managedClusters
-    //const [,,,name, namespace] = location
-
-    const name = 'demo-saude-digital'
-    const namespace = 'demo-saude-digital'
+export const getApplication = (location, selectedChannel, recoilStates, cluster, apiversion) => {
+    const [, , , name, namespace] = location
 
     let app
     let model
-    let placement = []
 
     // get application
     const { applications, applicationSets, argoApplications } = recoilStates
@@ -52,15 +34,31 @@ export const getApplication = (location, recoilStates, selectedChannel, cluster,
 
     // collect app resources
     if (app) {
+        const placementName = get(
+            app,
+            'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
+            ''
+        )
+        const placement = placementName
+            ? recoilStates.placements.find((placement) => {
+                  debugger
+                  return (
+                      get(placement, 'metadata.namespace') === namespace &&
+                      get(placement, 'metadata.name') === placementName
+                  )
+              })
+            : undefined
+
         model = {
             name,
             namespace,
             app,
             metadata: app.metadata,
-            placement: placement[0],
+            placement,
+            isArgoApp: get(app, 'apiVersion', '').indexOf('argoproj.io') > -1,
         }
 
-        if (get(app, 'apiVersion', '').indexOf('argoproj.io') > -1) {
+        if (model.isArgoApp) {
             return model
         }
 
@@ -109,15 +107,15 @@ export const getApplication = (location, recoilStates, selectedChannel, cluster,
                 model.subscriptions
             )
             // now fetch them
-            this.getAppDeployables(deployableMap, namespace, selectedSubscription, subscriptions)
-            this.getAppHooks(preHooksMap, true)
-            this.getAppHooks(postHooksMap, false)
-            this.getAppRules(rulesMap, model.allClusters)
+            getAppDeployables(deployableMap, recoilStates.deployables)
+            getAppHooks(preHooksMap, true)
+            getAppHooks(postHooksMap, false)
+            getAppRules(rulesMap, model.allClusters, recoilStates.placementRules)
             // get all channels
-            this.getAllAppChannels(model.allChannels, allSubscriptions)
-            if (includeChannels) {
-                this.getAppChannels(channelsMap)
-            }
+            getAllAppChannels(model.allChannels, allSubscriptions, recoilStates.channels)
+            // if (includeChannels) {
+            //     this.getAppChannels(channelsMap)
+            // }
         } else if (deployableNames && deployableNames.length > 0) {
             deployableNames = deployableNames.split(',')
             model.deployables = getResources(deployableNames, 'deployables', 'Deployable')
@@ -238,101 +236,7 @@ export const getSubChannelName = (paths, isChucked) => {
     return ''
 }
 
-// export const filterByName = (names, items) => items.filter((item) => names.find((name) => name === item.metadata.name));
-
-// export const filterByNameNamespace = (names, items) => items.filter(({ metadata }) => names.find((name) => {
-//   const path = name.split('/');
-//   return metadata && path.length === 2 && path[1] === metadata.name && path[0] === metadata.namespace;
-// }));
-
-const longestCommonSubstring = (str1, str2) => {
-    let sequence = ''
-    const str1Length = str1.length
-    const str2Length = str2.length
-    const num = new Array(str1Length)
-    let maxlen = 0
-    let lastSubsBegin = 0
-    let i = 0
-    let j = 0
-
-    // create matrix
-    while (i < str1Length) {
-        const subArray = new Array(str2Length)
-        j = 0
-        while (j < str2Length) {
-            subArray[j] = 0
-            j += 1
-        }
-        num[i] = subArray
-        i += 1
-    }
-
-    // search matrix
-    let thisSubsBegin = null
-    i = 0
-    while (i < str1Length) {
-        j = 0
-        while (j < str2Length) {
-            if (str1[i] !== str2[j]) {
-                num[i][j] = 0
-            } else {
-                if (i === 0 || j === 0) {
-                    num[i][j] = 1
-                } else {
-                    num[i][j] = 1 + num[i - 1][j - 1]
-                }
-                if (num[i][j] > maxlen) {
-                    maxlen = num[i][j]
-                    thisSubsBegin = i - num[i][j] + 1
-                    if (lastSubsBegin === thisSubsBegin) {
-                        sequence += str1[i]
-                    } else {
-                        lastSubsBegin = thisSubsBegin
-                        sequence = str1.substr(lastSubsBegin, i + 1 - lastSubsBegin)
-                    }
-                }
-            }
-            j += 1
-        }
-        i += 1
-    }
-    return sequence
-}
-
-// // get deployables from the subscription annotation
-// export const getSubscriptionsDeployables = (allSubscriptions) => {
-//   // if a subscription has lots and lots of deployables, break into smaller subscriptions
-//   let allowAllChannel = true;
-//   const subscriptions = [];
-//   let allDeployablePaths = 0;
-//   allSubscriptions.forEach((subscription) => {
-//     const deployablePaths = get(subscription, DEPLOYABLES, '').split(',').sort();
-//     allDeployablePaths += deployablePaths.length;
-
-//     if (deployablePaths.length > 20) {
-//       const chunks = chunk(deployablePaths, 16);
-//       // if last chunk is just one, append to 2nd to last chunk
-//       const len = chunks.length - 1;
-//       if (chunks[len].length === 1) {
-//         chunks[len - 1].push(chunks[len][0]);
-//         chunks.pop();
-//       }
-//       chunks.forEach((chuck) => {
-//         subscriptions.push({ ...subscription, deployablePaths: chuck, isChucked: true });
-//       });
-//     } else {
-//       subscriptions.push({ ...subscription, deployablePaths });
-//     }
-//   });
-//   // hide all subscription option
-//   if (allDeployablePaths > 100 || allSubscriptions.length <= 1) {
-//     allowAllChannel = false;
-//   }
-
-//   return { subscriptions, allowAllChannel };
-// };
-
-export const buildDeployablesMap = (subscriptions, modelSubscriptions) => {
+const buildDeployablesMap = (subscriptions, modelSubscriptions) => {
     const rulesMap = {}
     const deployableMap = {}
     const channelsMap = {}
@@ -424,15 +328,175 @@ export const buildDeployablesMap = (subscriptions, modelSubscriptions) => {
     }
 }
 
+const getAppRules = (rulesMap, allClusters, placementRules) => {
+    Object.entries(rulesMap).map(([namespace, values]) => {
+        // stuff rules into subscriptions that use them
+        placementRules
+            .filter((rule) => {
+                return get(rule, 'metadata.namespace') === namespace
+            })
+            .forEach((rule) => {
+                const name = get(rule, 'metadata.name')
+                values.forEach(({ ruleName, subscription }) => {
+                    if (name === ruleName) {
+                        subscription.rules.push(rule)
+                        const clusters = get(rule, 'status.decisions', [])
+                        clusters.forEach((cluster) => {
+                            // get cluster name
+                            const clusterName = get(cluster, 'clusterName')
+                            if (clusterName && allClusters.indexOf(clusterName) === -1) {
+                                allClusters.push(clusterName)
+                            }
+                        })
+                    }
+                })
+            })
+    })
+}
+
+// get all channels for all subscriptions
+// this is used to build the subscription cards information
+const getAllAppChannels = (appAllChannels, allSubscriptions, channels) => {
+    // get all channels information
+    const channelsMap = {}
+    allSubscriptions.forEach((subscription) => {
+        const chnlData = get(subscription, 'spec.channel', '').split('/')
+        if (chnlData.length === 2) {
+            // eslint-disable-next-line prefer-destructuring
+            channelsMap[chnlData[0]] = chnlData[1]
+        }
+    })
+    Object.entries(channelsMap).map(([channelNS, channelName]) => {
+        channels
+            .filter((channel) => {
+                return get(channel, 'metadata.namespace') === channelNS && get(channel, 'metadata.name') === channelName
+            })
+            .forEach((channel) => {
+                appAllChannels.push(channel)
+            })
+    })
+}
+
+const getAppDeployables = (deployableMap, deployables) => {
+    Object.entries(deployableMap).map(([namespace, values]) => {
+        deployables
+            .filter((deployable) => {
+                return get(deployable, 'metadata.namespace') === namespace
+            })
+            .forEach((deployable) => {
+                const name = get(deployable, 'metadata.name')
+                values.forEach(({ deployableName, subscription }) => {
+                    if (name === deployableName) {
+                        subscription.deployables.push(deployable)
+                    }
+                })
+            })
+    })
+}
+
+const getAppHooks = (hooks, isPreHooks) => {
+    if (!isEmpty(hooks)) {
+        debugger
+    }
+    return
+    // const requests = Object.entries(hooks).map(async ([namespace, values]) => {
+    //   // get all ansible hooks in this namespace
+    //   let response;
+    //   // try {
+    //   //   response = await this.kubeConnector.getResources(
+    //   //     (ns) => `/apis/tower.ansible.com/v1alpha1/namespaces/${ns}/ansiblejobs`,
+    //   //     { kind: 'AnsibleJob', namespaces: [namespace] },
+    //   //   ) || [];
+    //   // } catch (err) {
+    //   //   logger.error(err);
+    //   //   throw err;
+    //   // }
+    //   // stuff responses into subscriptions that requested them
+    //   response.forEach((deployable) => {
+    //     const name = get(deployable, 'metadata.name');
+    //     values.forEach(({ deployableName, subscription }) => {
+    //       if (name === deployableName) {
+    //         if (isPreHooks) {
+    //           if (!subscription.prehooks) {
+    //             subscription.prehooks = [];
+    //           }
+    //           subscription.prehooks.push(deployable);
+    //         } else {
+    //           if (!subscription.posthooks) {
+    //             subscription.posthooks = [];
+    //           }
+    //           subscription.posthooks.push(deployable);
+    //         }
+    //       }
+    //     });
+    //   });
+    // });
+    // return Promise.all(requests);
+}
+
+const longestCommonSubstring = (str1, str2) => {
+    let sequence = ''
+    const str1Length = str1.length
+    const str2Length = str2.length
+    const num = new Array(str1Length)
+    let maxlen = 0
+    let lastSubsBegin = 0
+    let i = 0
+    let j = 0
+
+    // create matrix
+    while (i < str1Length) {
+        const subArray = new Array(str2Length)
+        j = 0
+        while (j < str2Length) {
+            subArray[j] = 0
+            j += 1
+        }
+        num[i] = subArray
+        i += 1
+    }
+
+    // search matrix
+    let thisSubsBegin = null
+    i = 0
+    while (i < str1Length) {
+        j = 0
+        while (j < str2Length) {
+            if (str1[i] !== str2[j]) {
+                num[i][j] = 0
+            } else {
+                if (i === 0 || j === 0) {
+                    num[i][j] = 1
+                } else {
+                    num[i][j] = 1 + num[i - 1][j - 1]
+                }
+                if (num[i][j] > maxlen) {
+                    maxlen = num[i][j]
+                    thisSubsBegin = i - num[i][j] + 1
+                    if (lastSubsBegin === thisSubsBegin) {
+                        sequence += str1[i]
+                    } else {
+                        lastSubsBegin = thisSubsBegin
+                        sequence = str1.substr(lastSubsBegin, i + 1 - lastSubsBegin)
+                    }
+                }
+            }
+            j += 1
+        }
+        i += 1
+    }
+    return sequence
+}
+
 // async getPlacement(resource, apiVersion, namespace) {
 //   let placement = '';
-//   const argoName = _.get(resource, 'metadata.ownerReferences[0].name', '');
+//   const argoName = get(resource, 'metadata.ownerReferences[0].name', '');
 //   if (argoName) {
 //     const applicationset = await this.kubeConnector.getResources(
 //       (ns) => `/apis/${apiVersion}/namespaces/${ns}/applicationsets/${argoName}`,
 //       { namespaces: [namespace] },
 //     );
-//     const placementName = _.get(applicationset[0], 'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]', '');
+//     const placementName = get(applicationset[0], 'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]', '');
 //     placement = placementName ? await this.kubeConnector.getResources(
 //       (ns) => `/apis/cluster.open-cluster-management.io/v1alpha1/namespaces/${ns}/placements/${placementName}`,
 //       { namespaces: [namespace] },
@@ -504,69 +568,6 @@ export const buildDeployablesMap = (subscriptions, modelSubscriptions) => {
 //   };
 // }
 
-// async getAppDeployables(deployableMap) {
-//   const requests = Object.entries(deployableMap).map(async ([namespace, values]) => {
-//     // get all deployables in this namespace
-//     let response;
-//     try {
-//       response = await this.kubeConnector.getResources(
-//         (ns) => `/apis/apps.open-cluster-management.io/v1/namespaces/${ns}/deployables`,
-//         { kind: 'Deployable', namespaces: [namespace] },
-//       ) || [];
-//     } catch (err) {
-//       logger.error(err);
-//       throw err;
-//     }
-
-//     // stuff responses into subscriptions that requested them
-//     response.forEach((deployable) => {
-//       const name = _.get(deployable, 'metadata.name');
-//       values.forEach(({ deployableName, subscription }) => {
-//         if (name === deployableName) {
-//           subscription.deployables.push(deployable);
-//         }
-//       });
-//     });
-//   });
-//   return Promise.all(requests);
-// }
-
-// async getAppHooks(hooks, isPreHooks) {
-//   const requests = Object.entries(hooks).map(async ([namespace, values]) => {
-//     // get all ansible hooks in this namespace
-//     let response;
-//     try {
-//       response = await this.kubeConnector.getResources(
-//         (ns) => `/apis/tower.ansible.com/v1alpha1/namespaces/${ns}/ansiblejobs`,
-//         { kind: 'AnsibleJob', namespaces: [namespace] },
-//       ) || [];
-//     } catch (err) {
-//       logger.error(err);
-//       throw err;
-//     }
-//     // stuff responses into subscriptions that requested them
-//     response.forEach((deployable) => {
-//       const name = _.get(deployable, 'metadata.name');
-//       values.forEach(({ deployableName, subscription }) => {
-//         if (name === deployableName) {
-//           if (isPreHooks) {
-//             if (!subscription.prehooks) {
-//               subscription.prehooks = [];
-//             }
-//             subscription.prehooks.push(deployable);
-//           } else {
-//             if (!subscription.posthooks) {
-//               subscription.posthooks = [];
-//             }
-//             subscription.posthooks.push(deployable);
-//           }
-//         }
-//       });
-//     });
-//   });
-//   return Promise.all(requests);
-// }
-
 // async getAppChannels(channelsMap) {
 //   const requests = Object.entries(channelsMap).map(async ([namespace, values]) => {
 //     // get all rules in this namespace
@@ -585,72 +586,6 @@ export const buildDeployablesMap = (subscriptions, modelSubscriptions) => {
 //       });
 //     });
 //   });
-//   return Promise.all(requests);
-// }
-
-// // get all channels for all subscriptions
-// // this is used to build the subscription cards information
-// async getAllAppChannels(appAllChannels, allSubscriptions) {
-//   let requests;
-//   try {
-//     // get all channels information
-//     const channelsMap = {};
-//     allSubscriptions.forEach((subscription) => {
-//       const chnlData = _.get(subscription, 'spec.channel', '').split('/');
-//       if (chnlData.length === 2) {
-//         // eslint-disable-next-line prefer-destructuring
-//         channelsMap[chnlData[0]] = chnlData[1];
-//       }
-//     });
-//     requests = Object.entries(channelsMap).map(async ([channelNS, channelName]) => {
-//       const response = await this.kubeConnector.getResources(
-//         (ns) => `/apis/apps.open-cluster-management.io/v1/namespaces/${ns}/channels/${channelName}`,
-//         { kind: 'Channel', namespaces: [channelNS] },
-//       ) || [];
-//       // stuff response into appAllChannels
-//       response.forEach((channel) => {
-//         appAllChannels.push(channel);
-//       });
-//     });
-//   } catch (err) {
-//     logger.error(err);
-//     throw err;
-//   }
-//   return Promise.all(requests);
-// }
-
-// async getAppRules(rulesMap, allClusters) {
-//   let requests;
-//   try {
-//     requests = Object.entries(rulesMap).map(async ([namespace, values]) => {
-//       // get all rules in this namespace
-//       const response = await this.kubeConnector.getResources(
-//         (ns) => `/apis/apps.open-cluster-management.io/v1/namespaces/${ns}/placementrules`,
-//         { kind: 'PlacementRule', namespaces: [namespace] },
-//       ) || [];
-
-//       // stuff responses into subscriptions that requested them
-//       response.forEach((rule) => {
-//         const name = _.get(rule, 'metadata.name');
-//         values.forEach(({ ruleName, subscription }) => {
-//           if (name === ruleName) {
-//             subscription.rules.push(rule);
-//             const clusters = _.get(rule, 'status.decisions', []);
-//             clusters.forEach((cluster) => {
-//               // get cluster name
-//               const clusterName = _.get(cluster, 'clusterName');
-//               if (clusterName && allClusters.indexOf(clusterName) === -1) {
-//                 allClusters.push(clusterName);
-//               }
-//             });
-//           }
-//         });
-//       });
-//     });
-//   } catch (err) {
-//     logger.error(err);
-//     throw err;
-//   }
 //   return Promise.all(requests);
 // }
 
@@ -847,3 +782,23 @@ export const buildDeployablesMap = (subscriptions, modelSubscriptions) => {
 //   const transport = _.get(route, 'spec.tls') ? 'https' : 'http';
 //   return `${transport}://${hostName}`;
 // }
+
+const evaluateSingleAnd = (operand1, operand2) => operand1 && operand2
+
+const evaluateDoubleAnd = (operand1, operand2, operand3) => operand1 && operand2 && operand3
+
+const evaluateSingleOr = (operand1, operand2) => operand1 || operand2
+
+const evaluateTernaryExpression = (condition, returnVal1, returnVal2) => {
+    if (condition) {
+        return returnVal1
+    }
+    return returnVal2
+}
+
+// export const filterByName = (names, items) => items.filter((item) => names.find((name) => name === item.metadata.name));
+
+// export const filterByNameNamespace = (names, items) => items.filter(({ metadata }) => names.find((name) => {
+//   const path = name.split('/');
+//   return metadata && path.length === 2 && path[1] === metadata.name && path[0] === metadata.namespace;
+// }));

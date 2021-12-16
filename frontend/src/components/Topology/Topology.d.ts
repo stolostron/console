@@ -1,8 +1,11 @@
 import { ReactNode } from 'react'
 export default function Topology(props: {
     title?: string
-    links: any[]
-    nodes: any[]
+
+    elements: {
+        nodes: any[]
+        links: any[]
+    }
 
     searchName?: string
     handleLegendClose?: () => void

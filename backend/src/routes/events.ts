@@ -56,7 +56,7 @@ export function startWatching(): void {
     watchResource(token, 'agent-install.openshift.io/v1beta1', 'infraenvs')
     watchResource(token, 'app.k8s.io/v1beta1', 'applications')
     watchResource(token, 'apps.open-cluster-management.io/v1', 'channels')
-    // watchResource(token, 'apps.open-cluster-management.io/v1', 'deployables')
+    watchResource(token, 'apps.open-cluster-management.io/v1', 'deployables')
     watchResource(token, 'apps.open-cluster-management.io/v1beta1', 'gitopsclusters')
     // watchResource(token, 'apps.open-cluster-management.io/v1', 'helmReleases')
     watchResource(token, 'apps.open-cluster-management.io/v1', 'placementRules')

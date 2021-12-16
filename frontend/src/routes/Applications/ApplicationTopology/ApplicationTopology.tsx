@@ -12,7 +12,9 @@ import {
     ansibleJobState,
     subscriptionsState,
     channelsState,
+    placementsState,
     placementRulesState,
+    deployablesState,
     managedClustersState,
 } from '../../../atoms'
 
@@ -24,11 +26,12 @@ import SearchName from '../../../components/Topology/viewer/SearchName'
 import { processResourceActionLink } from '../../../components/Topology/utils/diagram-helpers'
 
 import { getApplication } from './model/application'
+import { getTopology } from './model/topology'
 
 //import nodes from './demo-etherpad-nodes.json'
 //import links from './demo-etherpad-links.json'
-import nodes from './demo-saude-digital-nodes.json'
-import links from './demo-saude-digital-links.json'
+// import nodes from './demo-saude-digital-nodes.json'
+// import links from './demo-saude-digital-links.json'
 
 export type ArgoAppDetailsContainerData = {
     page: number
@@ -48,7 +51,9 @@ export default function ApplicationTopology() {
     const [ansibleJob] = useRecoilState(ansibleJobState)
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
+    const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)
+    const [deployables] = useRecoilState(deployablesState)
     const [managedClusters] = useRecoilState(managedClustersState)
     // const [isLoaded, setIsLoaded] = useState<boolean>()
     // const [isLoadError, setIsLoadError] = useState<boolean>()
@@ -68,7 +73,10 @@ export default function ApplicationTopology() {
         selectedArgoAppList: [],
         isLoading: false,
     })
-    const [application, setApplication] = useState<any>()
+    const [elements, setElements] = useState<{
+        nodes: any[]
+        links: any[]
+    }>({ nodes:[], links:[] })
 
     const handleErrorMsg = () => {
         //show toast message in parent container
@@ -100,34 +108,42 @@ export default function ApplicationTopology() {
     const location = history?.location?.pathname?.split('/')
     const searchUrl = location ? '/' + location.slice(0, 3).join('/') : ''
 
-    // get application resources
-    useEffect(() => {
-        setApplication(getApplication(location, {
-            applications,
-            applicationSets,
-            argoApplications,
-            ansibleJob,
-            subscriptions,
-            channels,
-            placementRules,
-            managedClusters,
-        }))
-    }, [
-        location,
-        applications,
-        applicationSets,
-        argoApplications,
-        ansibleJob,
-        subscriptions,
-        channels,
-        placementRules,
-        managedClusters,
-    ])
+    const generateElements = () => {
 
-    // convert into diagram elements
+        const name = 'demo-saude-digital'
+        const channel = 'demo-saude-digital/demo-saude-digital//demo-saude-digital-repos/github-redhat-sa-brazil-demo-summitgov-cy20///components-dashboard-target-kubernetes-saude-digital-dashboard-buildconfig///resources-application-demo-etherpad-demo-etherpad-deployment'
+
+
+        const loc = [null, null, null, name, name]
+        const application = getApplication(
+            loc,
+            channel,
+            {
+                //czcz
+                applications,
+                applicationSets,
+                argoApplications,
+                ansibleJob,
+                subscriptions,
+                channels,
+                deployables,
+                placements,
+                placementRules,
+            },
+        )
+
+        if (application) {
+            setElements(getTopology(application, managedClusters))
+        }
+    }
+
     useEffect(() => {
-        //const {nodes, link} = getTopology(application)
-    }, [application])
+        generateElements()
+        const interval = setInterval(() => {
+            generateElements()
+        }, 5000)
+        return () => clearInterval(interval)
+    }, [])
 
     return (
         <PageSection>
@@ -154,8 +170,7 @@ export default function ApplicationTopology() {
                     </>
                     <div className="resourceDiagramControlsContainer">
                         <Topology
-                            links={links}
-                            nodes={nodes}
+                            elements={elements}
                             processActionLink={processActionLink}
                             channelControl={channelControl}
                             searchUrl={searchUrl}

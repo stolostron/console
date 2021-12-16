@@ -38,15 +38,17 @@ class Topology extends React.Component {
             isChangingChannel: PropTypes.bool,
             changeTheChannel: PropTypes.func,
         }),
+        elements: PropTypes.shape({
+            nodes: PropTypes.array,
+            links: PropTypes.array,
+        }).isRequired,
         fetchControl: PropTypes.shape({
             isLoaded: PropTypes.bool,
             isReloading: PropTypes.bool,
             isFailed: PropTypes.bool,
         }),
         handleLegendClose: PropTypes.func,
-        links: PropTypes.array.isRequired,
         t: PropTypes.func,
-        nodes: PropTypes.array.isRequired,
         options: PropTypes.object,
         processActionLink: PropTypes.func,
         searchName: PropTypes.string,
@@ -88,10 +90,13 @@ class Topology extends React.Component {
         this.setState((prevState) => {
             let { timestamp } = prevState
             const { userIsFiltering } = prevState
-            const { nodes, fetchControl = {} } = nextProps
+            const {
+                elements: { nodes },
+                fetchControl = {},
+            } = nextProps
             const { isLoaded = true, isReloading = false } = fetchControl
 
-            if (!_.isEqual(nodes, this.props.nodes) && !isReloading) {
+            if (!_.isEqual(nodes, this.props.elements.nodes) && !isReloading) {
                 timestamp = new Date().toString()
             }
             this.staticResourceData.updateNodeStatus(nodes, this.props.t)
@@ -117,12 +122,12 @@ class Topology extends React.Component {
     shouldComponentUpdate(nextProps, nextState) {
         return (
             !_.isEqual(
-                this.props.nodes.map((n) => n.uid),
-                nextProps.nodes.map((n) => n.uid)
+                this.props.elements.nodes.map((n) => n.uid),
+                nextProps.elements.nodes.map((n) => n.uid)
             ) ||
             !_.isEqual(
-                this.props.links.map((n) => n.uid),
-                nextProps.links.map((n) => n.uid)
+                this.props.elements.links.map((n) => n.uid),
+                nextProps.elements.links.map((n) => n.uid)
             ) ||
             !_.isEqual(this.props.fetchControl, nextProps.fetchControl) ||
             !_.isEqual(this.props.channelControl, nextProps.channelControl) ||
@@ -149,8 +154,7 @@ class Topology extends React.Component {
     renderTopology() {
         const {
             title,
-            nodes,
-            links,
+            elements,
             options,
             styles,
             showLegendView,
@@ -163,6 +167,7 @@ class Topology extends React.Component {
             searchName,
             t,
         } = this.props
+        const { nodes, links } = elements
         const { isLoaded = true, isReloading = false } = fetchControl
         const { isChangingChannel = false } = channelControl
         const { selectedNode, handleNodeSelected } = selectionControl

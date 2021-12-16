@@ -253,7 +253,7 @@ export const addPropertyToList = (list, data) => {
 // This calculation is not accurate as search is not returning all the needed
 // data from the managedcluster resource YAML
 export const calculateArgoClusterStatus = (clusterData) => {
-    let status
+    let status = ''
     const clusterAccepted = clusterData.HubAcceptedManagedCluster
     const clusterJoined = clusterData.ManagedClusterJoined
     const clusterAvailable = clusterData.ManagedClusterConditionAvailable
