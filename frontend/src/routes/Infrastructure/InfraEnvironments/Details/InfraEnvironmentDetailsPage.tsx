@@ -15,7 +15,7 @@ import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { isMatch } from 'lodash'
 
-import { acmRouteState, infraEnvironmentsState, infrastructuresState } from '../../../../atoms'
+import { acmRouteState, configMapsState, infraEnvironmentsState, infrastructuresState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError } from '../../../../resources'
@@ -27,6 +27,7 @@ import {
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
+import { getAIConfigMap } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 
 const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY, getAgentsHostsNames } = CIM
 
@@ -40,14 +41,13 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
     const [isoModalOpen, setISOModalOpen] = useState(false)
 
-    const [infraEnvironments] = useRecoilValue(waitForAll([infraEnvironmentsState]))
+    const [infraEnvironments, infrastructures, agents, bareMetalHosts, configMaps] = useRecoilValue(
+        waitForAll([infraEnvironmentsState, infrastructuresState, agentsState, bareMetalHostsState, configMapsState])
+    )
 
     const infraEnv = infraEnvironments.find(
         (i) => i.metadata.name === match.params.name && i.metadata.namespace === match.params.namespace
     )
-
-    const [infrastructures] = useRecoilState(infrastructuresState)
-    const [agents, bareMetalHosts] = useRecoilValue(waitForAll([agentsState, bareMetalHostsState]))
     const infraAgents = agents.filter(
         (a) =>
             a.metadata.namespace === infraEnv?.metadata?.namespace &&
@@ -61,6 +61,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     )
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, infraBMHs), [infraAgents])
+    const aiConfigMap = getAIConfigMap(configMaps)
 
     if (!infraEnv) {
         return (
@@ -142,7 +143,12 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                             <DetailsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentHosts}>
-                            <HostsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />
+                            <HostsTab
+                                infraEnv={infraEnv}
+                                infraAgents={infraAgents}
+                                bareMetalHosts={infraBMHs}
+                                aiConfigMap={aiConfigMap}
+                            />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentDetails}>
                             <Redirect
