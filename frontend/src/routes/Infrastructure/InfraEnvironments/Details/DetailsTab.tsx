@@ -3,7 +3,6 @@ import { AcmPageContent } from '@stolostron/ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue } from 'recoil'
-import { configMapsState } from '../../../../atoms'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 import {
     fetchSecret,
@@ -12,6 +11,7 @@ import {
     saveSSHKey,
     onEditNtpSources,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
+import { configMapsState } from '../../../../atoms'
 
 const { EnvironmentDetails, EnvironmentErrors } = CIM
 
