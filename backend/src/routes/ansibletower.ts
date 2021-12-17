@@ -32,7 +32,7 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
         const options: RequestOptions = {
             protocol: towerUrl.protocol,
             hostname: towerUrl.hostname,
-            path: towerUrl.pathname,
+            path: `${towerUrl.pathname}${towerUrl.search ? towerUrl.search : ''}`,
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${ansibleCredential.token}`,
