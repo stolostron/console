@@ -188,6 +188,32 @@ export function listNamespacedResources<Resource extends IResource>(
         abort: result.abort,
     }
 }
+
+async function getAnsibleJobs(
+    backendURLPath: string,
+    ansibleHostUrl: string,
+    token: string,
+    abortController: AbortController
+) {
+    let jobUrl: any = ansibleHostUrl + '/api/v2/job_templates/'
+
+    let ansibleJobs: any[] = []
+    while (jobUrl) {
+        const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
+        ansibleJobs = ansibleJobs.concat(result!.data.results)
+        const { next } = result.data
+        if (next) {
+            jobUrl = ansibleHostUrl + next
+        } else {
+            jobUrl = undefined
+        }
+    }
+    return {
+        results: ansibleJobs?.map((ansibleJob: { name: any }) => {
+            return { name: ansibleJob.name }
+        }),
+    }
+}
 // TODO: validation for URL input
 // Code assumes protocol is present & ansiblehosturl ends without a /
 export function listAnsibleTowerJobs(
@@ -195,15 +221,10 @@ export function listAnsibleTowerJobs(
     token: string
 ): IRequestResult<AnsibleTowerJobTemplateList> {
     const backendURLPath = backendUrl + '/ansibletower'
-    const ansibleJobsUrl = ansibleHostUrl + '/api/v2/job_templates/'
     const abortController = new AbortController()
     return {
-        promise: fetchGetAnsibleJobs(backendURLPath, ansibleJobsUrl, token, abortController.signal).then((item) => {
-            return {
-                results: item.data.results?.map((job) => {
-                    return { name: job.name }
-                }),
-            } as AnsibleTowerJobTemplateList
+        promise: getAnsibleJobs(backendURLPath, ansibleHostUrl, token, abortController).then((item) => {
+            return item as AnsibleTowerJobTemplateList
         }),
         abort: () => abortController.abort(),
     }
