@@ -201,7 +201,7 @@ async function getAnsibleJobs(
     while (jobUrl) {
         const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
         ansibleJobs = ansibleJobs.concat(result!.data.results)
-        let { next } = result.data
+        const { next } = result.data
         if (next) {
             jobUrl = ansibleHostUrl + next
         } else {
