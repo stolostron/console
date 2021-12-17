@@ -52,6 +52,8 @@ export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string
 }
 
 export interface AnsibleTowerJobTemplateList {
+    count: number
+    next: string
     results?: Array<AnsibleTowerJobTemplate>
 }
 export interface AnsibleTowerJobTemplate {
