@@ -42,8 +42,6 @@ import {
     PlacementRuleKind,
     PlacementRuleApiVersion,
     ManagedCluster,
-    IRequestResult,
-    SelfSubjectAccessReview,
 } from '../../resources'
 import ResourceLabels from './components/ResourceLabels'
 import { getAge, getClusterCountString, getSearchLink } from './helpers/resource-helper'
@@ -884,32 +882,26 @@ export default function ApplicationsOverview() {
 
     useEffect(() => {
         setTableContent(generateTable())
-        let canCreateApplicationPromise: IRequestResult<SelfSubjectAccessReview>
-        let canDeleteApplicationPromise: IRequestResult<SelfSubjectAccessReview>
-        let canDeleteApplicationSetPromise: IRequestResult<SelfSubjectAccessReview>
+        const canCreateApplicationPromise = canUser('create', ApplicationDefinition)
+        canCreateApplicationPromise.promise
+            .then((result) => setCanCreateApplication(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
+        canDeleteApplicationPromise.promise
+            .then((result) => setCanDeleteApplication(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        const canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
+        canDeleteApplicationSetPromise.promise
+            .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
+            .catch((err) => console.error(err))
 
         const interval = setInterval(() => {
             setTableContent(generateTable())
-            canCreateApplicationPromise = canUser('create', ApplicationDefinition)
-            canCreateApplicationPromise.promise
-                .then((result) => setCanCreateApplication(result.status?.allowed!))
-                .catch((err) => console.error(err))
-            canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
-            canDeleteApplicationPromise.promise
-                .then((result) => setCanDeleteApplication(result.status?.allowed!))
-                .catch((err) => console.error(err))
-            canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
-            canDeleteApplicationSetPromise.promise
-                .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
-                .catch((err) => console.error(err))
         }, 5000)
         return () => {
             clearInterval(interval)
-            canCreateApplicationPromise.abort()
-            canDeleteApplicationPromise.abort()
-            canDeleteApplicationSetPromise.abort()
         }
-    }, [])
+    }, [canCreateApplication, canDeleteApplication, canDeleteApplicationSet, data])
 
     return (
         <PageSection>
