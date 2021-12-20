@@ -8,7 +8,7 @@ import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
 import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
-import { canUnbindAgent, useOnUnbindHost } from '../../CreateCluster/components/assisted-installer/unbindHost'
+import { useCanUnbindAgent, useOnUnbindHost } from '../../CreateCluster/components/assisted-installer/unbindHost'
 import {
     useBMHsOfAIFlow,
     useNMStatesOfNamespace,
@@ -35,6 +35,7 @@ const {
     getClusterStatus,
     shouldShowClusterDeploymentValidationOverview,
     isAIFlowInfraEnv,
+    isInstallationInProgress,
 } = CIM
 
 const fetchSecret: CIM.FetchSecret = (name, namespace) =>
@@ -69,6 +70,7 @@ const AIClusterDetails: React.FC = () => {
 
     const filteredBMHs = useBMHsOfAIFlow({ name: cdName, namespace: cdNamespace })
     const nmStates = useNMStatesOfNamespace(infraEnvAIFlow?.metadata?.namespace)
+    const canUnbindAgent = useCanUnbindAgent(infraEnvAIFlow)
     const onUnbindHost = useOnUnbindHost(setBulkModalProps, clusterDeployment?.metadata?.name)
     const onDeleteHost = useOnDeleteHost(setBulkModalProps, filteredBMHs, nmStates)
 
@@ -114,8 +116,7 @@ const AIClusterDetails: React.FC = () => {
     )
 
     const fallbackEventsURL = namespaceError === true ? agentClusterInstall?.status?.debugInfo?.eventsURL : undefined
-
-    const isClusterInstallationInProgress = shouldShowClusterInstallationProgress(agentClusterInstall)
+    const isClusterInstallationRunning = isInstallationInProgress(agentClusterInstall)
 
     return (
         <>
@@ -135,7 +136,7 @@ const AIClusterDetails: React.FC = () => {
                     />
                 </div>
             )}
-            {isClusterInstallationInProgress && (
+            {shouldShowClusterInstallationProgress(agentClusterInstall) && (
                 <div style={{ marginBottom: '24px' }}>
                     <AcmExpandableCard title="Cluster installation progress" id="aiprogress">
                         {!!clusterDeployment && !!agentClusterInstall && (
@@ -207,11 +208,10 @@ const AIClusterDetails: React.FC = () => {
                         <AgentTable
                             agents={clusterAgents}
                             className="agents-table"
-                            canUnbindHost={(...props) =>
-                                /* !isClusterInstallationInProgress && */ !isAIFlow && canUnbindAgent(...props)
-                            }
+                            canUnbindHost={canUnbindAgent}
                             canDelete={(agent?: CIM.AgentK8sResource) =>
-                                !isClusterInstallationInProgress && isAIFlow && !!agent
+                                // TODO(mlibra): Instead of hiding, use the new UX pattern by just disabling the action and showing reason
+                                !isClusterInstallationRunning && isAIFlow && !!agent
                             }
                             onUnbindHost={onUnbindHost}
                             onDeleteHost={onDeleteHost}

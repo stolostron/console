@@ -17,8 +17,8 @@ import {
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import {
-    canUnbindAgent,
     useOnUnbindHost,
+    useCanUnbindAgent,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/unbindHost'
 
 const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames } = CIM
@@ -38,6 +38,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
     const nmStates = useNMStatesOfNamespace(infraEnv.metadata.namespace)
     const onDeleteHost = useOnDeleteHost(setBulkModalProps, bareMetalHosts, nmStates)
     const onUnbindHost = useOnUnbindHost(setBulkModalProps, undefined)
+    const canUnbindAgent = useCanUnbindAgent(infraEnv)
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents), [infraAgents])
 
