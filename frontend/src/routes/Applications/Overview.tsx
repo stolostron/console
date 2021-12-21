@@ -881,19 +881,29 @@ export default function ApplicationsOverview() {
     }
 
     useEffect(() => {
-        setTableContent(generateTable())
         const canCreateApplicationPromise = canUser('create', ApplicationDefinition)
         canCreateApplicationPromise.promise
             .then((result) => setCanCreateApplication(result.status?.allowed!))
             .catch((err) => console.error(err))
+        return () => canCreateApplicationPromise.abort()
+    }, [])
+    useEffect(() => {
         const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
         canDeleteApplicationPromise.promise
             .then((result) => setCanDeleteApplication(result.status?.allowed!))
             .catch((err) => console.error(err))
+        return () => canDeleteApplicationPromise.abort()
+    }, [])
+    useEffect(() => {
         const canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
         canDeleteApplicationSetPromise.promise
             .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
             .catch((err) => console.error(err))
+        return () => canDeleteApplicationSetPromise.abort()
+    }, [])
+
+    useEffect(() => {
+        setTableContent(generateTable())
 
         const interval = setInterval(() => {
             setTableContent(generateTable())
