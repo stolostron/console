@@ -989,15 +989,16 @@ export const checkAndObjects = (obj1, obj2) => {
 }
 
 //creates a map with all related kinds for this app, not only pod types
-export const setupResourceModel = (list, resourceMap, isClusterGrouped, hasHelmReleases, topology, lastUpdated) => {
-    if (!mustRefreshTopologyMap(topology, lastUpdated)) {
+export const addDiagramDetails = (searchRelated, resourceMap, isClusterGrouped, hasHelmReleases, topology) => {
+    if (checkNotOrObjects(searchRelated, resourceMap)) {
         return resourceMap
     }
-    if (checkNotOrObjects(list, resourceMap)) {
-        return resourceMap
-    }
+    const { related } = mapSingleApplication(_.cloneDeep(searchRelated.searchResult[0]))
     // store cluster objects and cluster names as returned by search; these are clusters related to the app
-    const clustersObjects = getResourcesClustersForApp(R.find(R.propEq('kind', 'cluster'))(list) || {}, topology.nodes)
+    const clustersObjects = getResourcesClustersForApp(
+        R.find(R.propEq('kind', 'cluster'))(related) || {},
+        topology.nodes
+    )
     const clusterNamesList = R.sortBy(R.identity)(R.pluck('name')(clustersObjects))
     if (topology.nodes) {
         const appNode =
@@ -1044,11 +1045,13 @@ export const setupResourceModel = (list, resourceMap, isClusterGrouped, hasHelmR
             remoteCount: isLocal ? appNodeSearchClusters.length - 1 : appNodeSearchClusters.length,
         })
     }
-    const podIndex = _.findIndex(list, ['kind', 'pod'])
-    //move pods last in the list to be processed after all resources producing pods have been processed
+    const podIndex = _.findIndex(related, ['kind', 'pod'])
+    //move pods last in the related to be processed after all resources producing pods have been processed
     //we want to add the pods to the map by using the pod hash
     let orderedList =
-        podIndex === -1 ? list : _.concat(_.slice(list, 0, podIndex), _.slice(list, podIndex + 1), list[podIndex])
+        podIndex === -1
+            ? related
+            : _.concat(_.slice(related, 0, podIndex), _.slice(related, podIndex + 1), related[podIndex])
     orderedList = _.pullAllBy(orderedList, [{ kind: 'deployable' }, { kind: 'cluster' }], 'kind')
     orderedList.forEach((kindArray) => {
         const relatedKindList = R.pathOr([], ['items'])(kindArray)
@@ -1139,6 +1142,61 @@ export const setupResourceModel = (list, resourceMap, isClusterGrouped, hasHelmR
     // need to preprocess and sync up podStatusMap for controllerrevision to parent
     syncControllerRevisionPodStatusMap(resourceMap)
     return resourceMap
+}
+
+export const mapSingleApplication = (application) => {
+    const items = application ? _.get(application, 'items', []) : []
+
+    const result =
+        items.length > 0
+            ? items[0]
+            : {
+                  name: '',
+                  namespace: '',
+                  dashboard: '',
+                  selfLink: '',
+                  _uid: '',
+                  created: '',
+                  apigroup: '',
+                  cluster: '',
+                  kind: '',
+                  label: '',
+                  _hubClusterResource: '',
+                  _rbac: '',
+                  related: [],
+              }
+
+    result.related = application ? application.related || [] : []
+
+    items.forEach((item) => {
+        //if this is an argo app, the related kinds query should be built from the items section
+        //for argo we ask for namespace:targetNamespace label:appLabel kind:<comma separated string of resource kind>
+        //this code moves all these items under the related section
+        const kind = _.get(item, 'kind')
+        const cluster = _.get(item, 'cluster')
+
+        if (kind === 'application') {
+            //this is a legit app object , just leave it
+            return
+        }
+
+        if (kind === 'subscription' && cluster !== 'local-cluster') {
+            // this is a legit subscription object that needs no alternation
+            return
+        }
+
+        //find under the related array an object matching this kind
+        const queryKind = _.filter(result.related, (filtertype) => _.get(filtertype, 'kind', '') === kind)
+        //if that kind section was found add this object to it, otherwise create a new kind object for it
+        const kindSection = queryKind && queryKind.length > 0 ? queryKind : { kind, items: [item] }
+        if (!queryKind || queryKind.length === 0) {
+            //link this kind section directly to the results array
+            result.related.push(kindSection)
+        } else {
+            kindSection[0].items.push(item)
+        }
+    })
+    return result
 }
 
 //show resource deployed status on the remote clusters

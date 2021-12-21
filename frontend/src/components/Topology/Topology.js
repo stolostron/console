@@ -66,6 +66,8 @@ class Topology extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
+            links: [],
+            nodes: [],
             isLoaded: true,
             availableFilters: {},
             activeFilters: {},
@@ -86,7 +88,7 @@ class Topology extends React.Component {
             showChannelsControl: _.get(nextProps.channelControl, 'allChannels', []).length > 1,
         })
 
-        this.setState((prevState) => {
+        this.setState((prevState, props) => {
             let { timestamp } = prevState
             const { userIsFiltering } = prevState
             const {
@@ -109,6 +111,8 @@ class Topology extends React.Component {
                 this.props.t
             )
             return {
+                links: _.cloneDeep(nextProps.elements.links),
+                nodes: _.cloneDeep(nextProps.elements.nodes),
                 isLoaded,
                 timestamp,
                 availableFilters,
@@ -120,16 +124,11 @@ class Topology extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         return (
-            !_.isEqual(
-                this.props.elements.nodes.map((n) => n.uid),
-                nextProps.elements.nodes.map((n) => n.uid)
-            ) ||
-            !_.isEqual(
-                this.props.elements.links.map((n) => n.uid),
-                nextProps.elements.links.map((n) => n.uid)
-            ) ||
+            !_.isEqual(this.state.nodes, nextState.nodes) ||
+            !_.isEqual(this.state.links, nextState.links) ||
             !_.isEqual(this.props.fetchControl, nextProps.fetchControl) ||
-            !_.isEqual(this.props.channelControl, nextProps.channelControl) ||
+            !_.isEqual(_.omit(this.props.channelControl, _.functions(this.props.channelControl)), 
+                _.omit(nextProps.channelControl, _.functions(nextProps.channelControl))) ||
             !_.isEqual(this.state.availableFilters, nextState.availableFilters) ||
             !_.isEqual(this.state.activeFilters, nextState.activeFilters) ||
             this.props.searchName !== nextProps.searchName ||
@@ -153,7 +152,6 @@ class Topology extends React.Component {
     renderTopology() {
         const {
             title,
-            elements,
             options,
             styles,
             showLegendView,
@@ -166,10 +164,9 @@ class Topology extends React.Component {
             searchName,
             t,
         } = this.props
-        const { nodes, links } = elements
         const { isLoaded = true, isReloading = false } = fetchControl
         const { selectedNode, handleNodeSelected } = selectionControl
-        const { activeFilters, availableFilters, showChannelsControl } = this.state
+        const { nodes, links, activeFilters, availableFilters, showChannelsControl } = this.state
 
         return (
             <div className="topologyDiagramContainer">

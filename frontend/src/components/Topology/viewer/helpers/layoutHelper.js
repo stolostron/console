@@ -67,11 +67,6 @@ export default class LayoutHelper {
         // make sure shape type order can work from this
         this.shapeTypeOrder = _.union(this.shapeTypeOrder, Object.keys(groups.nodeGroups))
 
-        // add node icons (ex: success)
-        if (this.updateNodeIcons) {
-            this.updateNodeIcons(nodes)
-        }
-
         // group by connections which may pull nodes into other groups
         this.groupNodesByConnections(groups, links)
 
@@ -101,6 +96,11 @@ export default class LayoutHelper {
             }
             computeNodeStatus(node)
         })
+
+        // add node icons (ex: success)
+        if (this.updateNodeIcons) {
+            this.updateNodeIcons(nodes)
+        }
 
         // create cytoscape element collections
         const cy = cytoscape({ headless: true }) // start headless cytoscape

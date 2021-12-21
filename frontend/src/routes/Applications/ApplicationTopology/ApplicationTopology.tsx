@@ -17,6 +17,11 @@ import {
     deployablesState,
     managedClustersState,
 } from '../../../atoms'
+import _ from 'lodash'
+import { searchClient } from '../../Home/Search/search-sdk/search-client'
+import {
+    useSearchResultRelatedItemsLazyQuery,
+} from '../../Home/Search/search-sdk/search-sdk'
 import './ApplicationTopology.css'
 import '../../../components/Topology/css/topology-controls.css'
 import '../../../components/Topology/css/resource-toolbar.css'
@@ -25,7 +30,8 @@ import SearchName from '../../../components/Topology/viewer/SearchName'
 import { processResourceActionLink } from '../../../components/Topology/utils/diagram-helpers'
 
 import { getApplication } from './model/application'
-import { getTopology } from './model/topology'
+import { getTopology, getDiagramElements } from './model/topology'
+import { getRelatedQuery } from './model/related'
 
 export type ArgoAppDetailsContainerData = {
     page: number
@@ -52,6 +58,8 @@ export default function ApplicationTopology() {
     const [allChannels, setAllChannels] = useState<[]>()
     const [activeChannel, setActiveChannel] = useState<string>()
     const [searchName, setSearchName] = useState<string>()
+    const [relatedQuery, setRelatedQuery] = useState<any>()
+    const [shouldRefresh, setShouldRefresh] = useState<boolean>(true)
     const [showLegendView, setShowLegendView] = useState<boolean>()
     const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
         page: 1,
@@ -94,18 +102,42 @@ export default function ApplicationTopology() {
     const location = history?.location?.pathname?.split('/')
     const searchUrl = location ? '/' + location.slice(0, 3).join('/') : ''
 
-    const generateElements = (activeChannel: string | undefined) => {
-        let name = 'demo-saude-digital'
-        let namespace = 'demo-saude-digital'
+    // generate diagram every n seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setShouldRefresh(true)
+        }, 10000)
+        return () => clearInterval(interval)
+    }, [])
 
-        name = 'kevin-test2'
-        namespace = 'kevin-test2'
+    // search for related resources after diagram generation
+    const [
+        fireSearchQuery,
+        { called: searchCalled, data: searchRelated, loading: searchLoading, refetch: searchRefetch },
+    ] = useSearchResultRelatedItemsLazyQuery({
+        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    })
+    useEffect(() => {
+        if (relatedQuery && !searchLoading) {
+            if (!searchCalled) {
+                fireSearchQuery({
+                    variables: { input: [relatedQuery] },
+                })
+            } else {
+                searchRefetch && searchRefetch({ input: relatedQuery })
+            }
+        }
+    }, [fireSearchQuery, relatedQuery, searchCalled, searchRefetch])
 
-        //name = "dsf-local-cluster"
+    useEffect(() => {
+        const name = 'demo-saude-digital'
+        const namespace = 'demo-saude-digital'
+
+        //name = 'kevin-test1'
+        //namespace = 'kevin-test1'
+
+        //name = "myappset-local-cluster"
         //namespace="openshift-gitops"
-
-        name="magchen-16179"
-        namespace="openshift-gitops"
 
         const loc = [null, null, null, name, namespace]
 
@@ -120,22 +152,15 @@ export default function ApplicationTopology() {
             placements,
             placementRules,
         })
-
         if (application) {
             setActiveChannel(application.activeChannel)
             setAllChannels(application.channels)
-            setElements(getTopology(application, managedClusters))
+            const topology = getTopology(application, managedClusters)
+            setRelatedQuery(getRelatedQuery(application, topology))
+            setElements(getDiagramElements(topology, searchRelated))
         }
-    }
-
-    // generate diagram every n seconds
-    useEffect(() => {
-        generateElements(activeChannel)
-        const interval = setInterval(() => {
-            generateElements(activeChannel)
-        }, 5000)
-        return () => clearInterval(interval)
-    }, [activeChannel])
+        setShouldRefresh(false)
+    }, [searchRelated, shouldRefresh, activeChannel])
 
     return (
         <PageSection>

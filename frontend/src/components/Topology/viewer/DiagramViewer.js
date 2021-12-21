@@ -59,8 +59,8 @@ class DiagramViewer extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            links: _.uniqBy(props.links, 'uid'),
-            nodes: _.uniqBy(props.nodes, 'uid'),
+            // links: _.uniqBy(props.links, 'uid'),
+            // nodes: _.uniqBy(props.nodes, 'uid'),
             hiddenLinks: new Set(),
             selectedNodeId: props.selectedNode ? props.selectedNode.uid : '',
             showDetailsView: null,
@@ -139,7 +139,7 @@ class DiagramViewer extends React.Component {
             const prevStateNodeMap = _.keyBy(prevState.nodes, 'uid')
             const nodes = props.nodes.map((node) => {
                 const pnode = prevStateNodeMap[node.uid] || Object.assign(node, { layout: {} })
-                pnode.specs = node.specs
+                //pnode.specs = node.specs
                 return pnode
             })
 
@@ -154,27 +154,29 @@ class DiagramViewer extends React.Component {
                 }
                 return true
             })
-            const currentLinkMap = _.keyBy(currentLinks, 'uid')
-            const previousLinks = prevState.links.filter((link) => {
-                const { source, target } = link
-                if (!nodeMap[source] || !nodeMap[target]) {
-                    return false
-                } else if (!currentLinkMap[link.uid]) {
-                    // only links between kube objects can be hidden
-                    if (!nodeMap[source].isDesign) {
-                        hiddenLinks.add(link.uid)
-                    } else {
-                        return false
-                    }
-                }
-                return true
-            })
 
-            // combine current and remaining previous links
-            const compare = (a, b) => {
-                return a.uid === b.uid
-            }
-            const links = _.unionWith(previousLinks, currentLinks, compare)
+            // const currentLinkMap = _.keyBy(currentLinks, 'uid')
+            // const previousLinks = prevState.links.filter((link) => {
+            //     const { source, target } = link
+            //     if (!nodeMap[source] || !nodeMap[target]) {
+            //         return false
+            //     } else if (!currentLinkMap[link.uid]) {
+            //         // only links between kube objects can be hidden
+            //         if (!nodeMap[source].isDesign) {
+            //             hiddenLinks.add(link.uid)
+            //         } else {
+            //             return false
+            //         }
+            //     }
+            //     return true
+            // })
+
+            // // combine current and remaining previous links
+            // const compare = (a, b) => {
+            //     return a.uid === b.uid
+            // }
+            // const links = _.unionWith(previousLinks, currentLinks, compare)
+            const links = currentLinks
 
             // switching between search and not
             const { searchName = '' } = props
@@ -190,8 +192,8 @@ class DiagramViewer extends React.Component {
                 showDetailsView = false
             }
             return {
-                links,
-                nodes,
+                links: _.cloneDeep(props.links),
+                nodes: _.cloneDeep(props.nodes),
                 hiddenLinks,
                 searchName,
                 searchChanged,

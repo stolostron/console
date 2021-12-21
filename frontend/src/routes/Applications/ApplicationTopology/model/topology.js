@@ -1,9 +1,13 @@
-import { setupResourceModel, computeNodeStatus } from '../../../../components/Topology/utils/diagram-helpers'
-import { getClusterName, nodeMustHavePods, isDeployableResource } from './utils'
+import { addDiagramDetails, computeNodeStatus } from '../../../../components/Topology/utils/diagram-helpers'
+import {
+    getClusterName,
+    nodeMustHavePods,
+    isDeployableResource,
+} from '../../../../components/Topology/utils/diagram-helpers-utils'
 import _ from 'lodash'
 import R from 'ramda'
-import { getArgoTopology } from './topologyArgo'
-import { getSubscriptionTopology } from './topologySubscription'
+import { getArgoTopology } from './argo/topology'
+import { getSubscriptionTopology } from './subscription/topology'
 
 export const getTopology = (application, managedClusters) => {
     let topology
@@ -12,10 +16,10 @@ export const getTopology = (application, managedClusters) => {
     } else {
         topology = getSubscriptionTopology(application, managedClusters)
     }
-    return getDiagramElements(topology)
+    return topology
 }
 
-export const getDiagramElements = (topology) => {
+export const getDiagramElements = (topology, searchRelated) => {
     // topology from api will have raw k8 objects, pods status
     const { links, nodes } = getTopologyElements(topology)
     // create yaml and what row links to what node
@@ -52,38 +56,16 @@ export const getDiagramElements = (topology) => {
             }
         }
 
-        //processNodeData(node, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
+        processNodeData(node, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
     })
 
-    // // save results
-    // saveStoredObject(localStoreKey, {
-    //     activeChannelInfo,
-    //     channelsList,
-    // })
-    // saveStoredObject(`${localStoreKey}-${activeChannelInfo}`, {
-    //     clusters: clustersList,
-    //     links: links,
-    //     nodes: nodes,
-    //     yaml: yamlStr,
-    // })
+    if (searchRelated) {
+        addDiagramDetails(searchRelated, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
+        nodes.forEach((node) => {
+            computeNodeStatus(node)
+        })
+    }
 
-    // if (appLoaded) {
-    //     // details are requested separately for faster load
-    //     // if loaded, we add those details now
-    //     addDiagramDetails(
-    //         topology,
-    //         allResourcesMap,
-    //         activeChannelInfo,
-    //         localStoreKey,
-    //         isClusterGrouped,
-    //         hasHelmReleases,
-    //         applicationDetails
-    //     )
-
-    //     nodes.forEach((node) => {
-    //         computeNodeStatus(node)
-    //     })
-    // }
     return {
         // clusters: clustersList,
         activeChannel: activeChannelInfo,
@@ -152,37 +134,6 @@ export const processNodeData = (node, topoResourceMap, isClusterGrouped, hasHelm
 
 export const evaluateSingleAnd = (operand1, operand2) => {
     return operand1 && operand2
-}
-
-export const addDiagramDetails = (
-    topology,
-    allResourcesMap,
-    activeChannel,
-    localStoreKey,
-    isClusterGrouped,
-    hasHelmReleases,
-    applicationDetails
-) => {
-    const { detailsReloading } = topology
-    const lastUpdated = applicationDetails ? _.get(applicationDetails, 'responseTime', null) : null
-    // get extra details from topology or from localstore
-    let related = []
-    if (applicationDetails) {
-        if (!R.isEmpty(R.pathOr([], ['items'])(applicationDetails))) {
-            //get the app related objects
-            related = R.pathOr([], ['related'])(applicationDetails.items[0])
-        }
-        // save in local store
-        saveStoredObject(`${localStoreKey}-${activeChannel}-details`, {
-            related,
-        })
-    } else if (!detailsReloading) {
-        // if not loaded yet, see if there's a stored version
-        // with the same diagram filters
-        related = getStoredObject(`${localStoreKey}-${activeChannel}-details`)
-    }
-    //link search objects with topology deployable objects displayed in the tree
-    setupResourceModel(related, allResourcesMap, isClusterGrouped, hasHelmReleases, topology, lastUpdated)
 }
 
 export const getTopologyElements = (resourceItem) => {

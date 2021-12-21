@@ -636,7 +636,7 @@ export default class NodeHelper {
         })
 
         // move icons
-        this.moveIcons(nodeLayer, '.nodeIcon')
+        this.moveIcons(visible, '.nodeIcon')
 
         // move cluster count icon
         this.moveIcons(nodeLayer, dotClusterCountIcon)
@@ -655,15 +655,29 @@ export default class NodeHelper {
         moveArgoAppCountText(this.svg)
     }
 
-    moveIcons = (nodeLayer, iconClass) => {
-        nodeLayer.selectAll(iconClass).call(attrs, ({ dx, dy, width, height }, i, ns) => {
-            const {
-                layout: { x = 0, y = 0, scale = 1 },
-            } = d3.select(ns[i].parentNode).datum()
+    moveIcons = (visible, iconClass) => {
+        visible.selectAll(`use${iconClass}`).call(attrs, ({ layout }) => {
+            const { x, y, scale = 1 } = layout
+            const sz = NODE_SIZE * scale + 20
             return {
-                transform: `translate(${x + dx * scale - width / 2}, ${y + dy * scale - height / 2})`,
+                width: sz,
+                height: sz,
+                transform: `translate(${x - sz / 2}, ${y - sz / 2})`,
             }
         })
+
+        // nodeLayer.selectAll(iconClass).call(attrs, ({ dx, dy, width, height }, i, ns, d, r) => {
+        //     const {
+        //         layout: { x = 0, y = 0, scale = 1 },
+        //     } = d3.select(ns[i].parentNode).datum()
+        //     console.log(x+' '+dx)
+        //     if (x===0) {
+        //         const f=9
+        //     }
+        //     return {
+        //         transform: `translate(${x + dx * scale - width / 2}, ${y + dy * scale - height / 2})`,
+        //     }
+        // })
     }
 
     dragNode = (evt, dp) => {

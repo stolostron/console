@@ -28,8 +28,8 @@ export default class Zoom extends React.PureComponent {
 
     render() {
         const { t } = this.props
-        const zoomIn = t("Zoom in")
-        const zoomOut = t("Zoom out")
+        const zoomIn = t('Zoom in')
+        const zoomOut = t('Zoom out')
         const zoomFit = t('Zoom to fit')
 
         return (
