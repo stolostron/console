@@ -11,37 +11,38 @@ export function getArgoTopology(application, managedClusters, cluster) {
     ;({ name, namespace } = application)
     const clusters = []
     let clusterNames = []
-    const serverDestinations = get(application, 'app.spec.destinations', [])
+    const destination = get(application, 'app.spec.destination', [])
     if (cluster) {
         // set to empty string for now, depends on backend to provide argoapi from secrets
         const remoteClusterDestination = ''
         clusterNames.push(cluster)
         clusters.push({ metadata: { name: cluster, namespace: cluster }, remoteClusterDestination, status: 'ok' })
     } else {
-        serverDestinations.forEach((destination) => {
-            try {
-                let clusterName
-                const serverApi = get(destination, 'server')
-                if (serverApi) {
-                    const serverURI = new URL(serverApi)
-                    clusterName =
-                        serverURI && serverURI.hostname && serverURI.hostname.split('.').length > 1
-                            ? serverURI.hostname.split('.')[1]
-                            : 'unkonwn'
-                    if (clusterName === 'default') {
-                        // mark this as default cluster
-                        clusterName = 'local-cluster'
-                    }
-                } else {
-                    // target destination was set using the name property
-                    clusterName = get(destination, 'name', 'unknonwn')
+        //serverDestinations.forEach((destination) => {
+        try {
+            let clusterName
+            const serverApi = get(destination, 'server')
+            if (serverApi) {
+                const serverURI = new URL(serverApi)
+                clusterName =
+                    serverURI && serverURI.hostname && serverURI.hostname.split('.').length > 1
+                        ? serverURI.hostname.split('.')[1]
+                        : 'unknown'
+                if (clusterName === 'default') {
+                    // mark this as default cluster
+                    clusterName = 'local-cluster'
                 }
-                clusterNames.push(clusterName)
-                clusters.push({ metadata: { name: clusterName, namespace: clusterName }, destination, status: 'ok' })
-            } catch (err) {
-                logger.error(err)
+            } else {
+                // target destination was set using the name property
+                clusterName = get(destination, 'name', 'unknown')
             }
-        })
+            clusterNames.push(clusterName)
+            clusters.push({ metadata: { name: clusterName, namespace: clusterName }, destination, status: 'ok' })
+        } catch (err) {
+            debugger
+            //logger.error(err)
+        }
+        //})
     }
     clusterNames = uniq(clusterNames)
 

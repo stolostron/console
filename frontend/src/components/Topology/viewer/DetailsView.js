@@ -98,7 +98,7 @@ class DetailsView extends React.Component {
                         <div className="sectionContent">
                             <span className="titleNameText">{name}</span>
                         </div>
-                        <div className="openSearchLink">{this.renderLink(searchLink)}</div>
+                        <div className="openSearchLink">{this.renderLink(searchLink, t)}</div>
                     </div>
                     <TimesIcon className="closeIcon" description={t('topology.details.close')} onClick={onClose} />
                 </div>
@@ -119,7 +119,7 @@ class DetailsView extends React.Component {
             case 'spacer':
                 return this.renderSpacer()
             case 'link':
-                return this.renderLink(detail, true, t)
+                return this.renderLink(detail, t)
             case 'snippet':
                 return this.renderSnippet(detail, t)
             case 'clusterdetailcombobox':
@@ -189,7 +189,7 @@ class DetailsView extends React.Component {
         return null
     }
 
-    renderLink({ value, indent, t }) {
+    renderLink({ value, indent }, t) {
         if (!value) {
             return <div />
         }

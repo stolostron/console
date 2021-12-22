@@ -24,14 +24,14 @@ class ArgoAppDetailsContainer extends React.Component {
             handleErrorMsg: PropTypes.func,
         }),
         argoAppList: PropTypes.array,
-        locale: PropTypes.string,
+        t: PropTypes.func,
     }
     constructor(props) {
         super()
 
         this.state = {
             argoAppList: props.argoAppList,
-            locale: props.locale,
+            t: props.t,
             selected: props.argoAppDetailsContainerControl.argoAppDetailsContainerData.selected,
             page: props.argoAppDetailsContainerControl.argoAppDetailsContainerData.page,
             perPage: 5,
@@ -263,7 +263,7 @@ class ArgoAppDetailsContainer extends React.Component {
         }
     }
 
-    renderURLLink = (resource, isExternal, locale) => {
+    renderURLLink = (resource, isExternal, t) => {
         return (
             <span
                 className="link sectionLabel"
@@ -315,7 +315,7 @@ class ArgoAppDetailsContainer extends React.Component {
         )
     }
 
-    renderErrorMessage = (name, status, locale) => {
+    renderErrorMessage = (name, status, t) => {
         let showWarning = false
         if (status === 'Unknown' || status === 'Degraded' || status === 'Missing') {
             showWarning = true
@@ -343,7 +343,7 @@ class ArgoAppDetailsContainer extends React.Component {
             page,
             perPage,
             startIdx,
-            locale,
+            t,
             argoAppSearchToggle,
             expandSectionToggleMap,
             selectedArgoAppList,
@@ -409,9 +409,7 @@ class ArgoAppDetailsContainer extends React.Component {
                             {name}
                         </AccordionToggle>
                         <AccordionContent isHidden={!expandSectionToggleMap.has(toggleItemNum)}>
-                            <span style={argoEditorLinkStyle}>
-                                {this.renderURLLink(argoEditorResource, true, locale)}
-                            </span>
+                            <span style={argoEditorLinkStyle}>{this.renderURLLink(argoEditorResource, true, t)}</span>
                             <div className="spacer" />
                             <span
                                 className={labelClass}
@@ -423,7 +421,7 @@ class ArgoAppDetailsContainer extends React.Component {
                                 {t('prop.details.section')}
                             </span>
                             <div className="spacer" />
-                            <div className={divClass}>{this.renderURLLink(appResourceYaml, false, locale)}</div>
+                            <div className={divClass}>{this.renderURLLink(appResourceYaml, false, t)}</div>
                             <div className={divClass}>
                                 <span className={labelClass}>{t('resource.argo.app.cluster')}: </span>
                                 <span className={valueClass}>{cluster}</span>
@@ -441,10 +439,10 @@ class ArgoAppDetailsContainer extends React.Component {
                                 <span className={valueClass}>{status}</span>
                             </div>
                             <div className="spacer" />
-                            {this.renderErrorMessage(name, status, locale)}
+                            {this.renderErrorMessage(name, status, t)}
                         </AccordionContent>
                     </AccordionItem>
-                    <span style={outerArgoEditorLinkStyle}>{this.renderURLLink(argoEditorResource, true, locale)}</span>
+                    <span style={outerArgoEditorLinkStyle}>{this.renderURLLink(argoEditorResource, true, t)}</span>
                 </div>
             )
         }

@@ -7,6 +7,7 @@ import {
 import _ from 'lodash'
 import R from 'ramda'
 import { getArgoTopology } from './argo/topology'
+import { addArgoDiagramDetails } from './argo/details'
 import { getSubscriptionTopology } from './subscription/topology'
 
 export const getTopology = (application, managedClusters) => {
@@ -19,7 +20,7 @@ export const getTopology = (application, managedClusters) => {
     return topology
 }
 
-export const getDiagramElements = (topology, searchRelated) => {
+export const getDiagramElements = (appData, topology, searchRelated, applicationRelated, additionalRelated) => {
     // topology from api will have raw k8 objects, pods status
     const { links, nodes } = getTopologyElements(topology)
     // create yaml and what row links to what node
@@ -60,6 +61,10 @@ export const getDiagramElements = (topology, searchRelated) => {
     })
 
     if (searchRelated) {
+        if (appData.isArgoApp && additionalRelated) {
+            const secretItems = _.get(additionalRelated, 'searchResult', [{ items: [] }])[0]
+            _.set(appData, 'argoSecrets', _.get(secretItems, 'items', []))
+        }
         addDiagramDetails(searchRelated, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
         nodes.forEach((node) => {
             computeNodeStatus(node)
@@ -68,21 +73,10 @@ export const getDiagramElements = (topology, searchRelated) => {
     }
 
     return {
-        // clusters: clustersList,
         activeChannel: activeChannelInfo,
         channels: channelsList,
         links: links,
         nodes: nodes,
-        // pods: topology.pods,
-        // yaml: yamlStr,
-        // originalMap,
-        // topologyLoaded: true,
-        // storedVersion: false,
-        // topologyLoadError,
-        // topologyReloading,
-        // willLoadDetails,
-        // detailsLoaded: appLoaded,
-        // detailsReloading,
     }
 }
 

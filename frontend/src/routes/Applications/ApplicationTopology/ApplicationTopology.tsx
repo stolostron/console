@@ -29,7 +29,7 @@ import { processResourceActionLink } from '../../../components/Topology/utils/di
 
 import { getApplication } from './model/application'
 import { getTopology, getDiagramElements } from './model/topology'
-import { getRelatedQuery } from './model/related'
+import { getApplicationData, getApplicationQuery, getRelatedQuery, getAdditionalQuery } from './model/search'
 
 export type ArgoAppDetailsContainerData = {
     page: number
@@ -56,7 +56,9 @@ export default function ApplicationTopology() {
     const [allChannels, setAllChannels] = useState<[]>()
     const [activeChannel, setActiveChannel] = useState<string>()
     const [searchName, setSearchName] = useState<string>()
+    const [applicationQuery, setApplicationQuery] = useState<any>()
     const [relatedQuery, setRelatedQuery] = useState<any>()
+    const [additionalQuery, setAdditionalQuery] = useState<any>()
     const [shouldRefresh, setShouldRefresh] = useState<boolean>(true)
     const [showLegendView, setShowLegendView] = useState<boolean>()
     const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
@@ -127,15 +129,61 @@ export default function ApplicationTopology() {
         }
     }, [fireSearchQuery, relatedQuery, searchCalled, searchRefetch])
 
+    // search for resources related to the first search query
+    const [
+        fireAdditionalQuery,
+        { called: additionalCalled, data: additionalRelated, loading: additionalLoading, refetch: additionalRefetch },
+    ] = useSearchResultRelatedItemsLazyQuery({
+        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    })
     useEffect(() => {
-        const name = 'demo-saude-digital'
-        const namespace = 'demo-saude-digital'
+        if (additionalQuery && !additionalLoading) {
+            if (!additionalCalled) {
+                fireAdditionalQuery({
+                    variables: { input: [additionalQuery] },
+                })
+            } else {
+                additionalRefetch && additionalRefetch({ input: additionalQuery })
+            }
+        }
+    }, [fireAdditionalQuery, additionalQuery, additionalCalled, additionalRefetch])
+
+    // search for application details
+    const [
+        fireApplicationQuery,
+        {
+            called: applicationCalled,
+            data: applicationRelated,
+            loading: applicationLoading,
+            refetch: applicationRefetch,
+        },
+    ] = useSearchResultRelatedItemsLazyQuery({
+        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    })
+    useEffect(() => {
+        if (applicationQuery && !applicationLoading) {
+            if (!applicationCalled) {
+                fireApplicationQuery({
+                    variables: { input: [applicationQuery] },
+                })
+            } else {
+                applicationRefetch && applicationRefetch({ input: applicationQuery })
+            }
+        }
+    }, [fireApplicationQuery, applicationQuery, applicationCalled, applicationRefetch])
+
+    // generate diagram elements
+    useEffect(() => {
+        let name = 'demo-saude-digital'
+        let namespace = 'demo-saude-digital'
 
         //name = 'kevin-test1'
         //namespace = 'kevin-test1'
 
-        //name = "myappset-local-cluster"
-        //namespace="openshift-gitops"
+        //name = 'magchen-test-helm-local-cluster'//'magchen-test-argo-local-cluster'
+        //namespace = 'openshift-gitops'
+        name = 'magchen-deployall'
+        namespace = 'magchen-deployall-ns'
 
         const loc = [null, null, null, name, namespace]
 
@@ -154,11 +202,22 @@ export default function ApplicationTopology() {
             setActiveChannel(application.activeChannel)
             setAllChannels(application.channels)
             const topology = getTopology(application, managedClusters)
-            setRelatedQuery(getRelatedQuery(application, topology))
-            setElements(getDiagramElements(topology, searchRelated))
+            const appData = getApplicationData(topology.nodes)
+
+            // optionally search for details on app
+            setApplicationQuery(getApplicationQuery(application, appData))
+
+            // search for details on other topology resources
+            setRelatedQuery(getRelatedQuery(application, appData, topology, applicationRelated))
+
+            // optionally search for additional resource details
+            setAdditionalQuery(getAdditionalQuery(appData, searchRelated))
+
+            // create topology elements with statuses provided by searches
+            setElements(getDiagramElements(appData, topology, searchRelated, applicationRelated, additionalRelated))
         }
         setShouldRefresh(false)
-    }, [searchRelated, shouldRefresh, activeChannel])
+    }, [searchRelated, additionalRelated, applicationRelated, shouldRefresh, activeChannel])
 
     return (
         <PageSection>
