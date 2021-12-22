@@ -127,8 +127,10 @@ class Topology extends React.Component {
             !_.isEqual(this.state.nodes, nextState.nodes) ||
             !_.isEqual(this.state.links, nextState.links) ||
             !_.isEqual(this.props.fetchControl, nextProps.fetchControl) ||
-            !_.isEqual(_.omit(this.props.channelControl, _.functions(this.props.channelControl)), 
-                _.omit(nextProps.channelControl, _.functions(nextProps.channelControl))) ||
+            !_.isEqual(
+                _.omit(this.props.channelControl, _.functions(this.props.channelControl)),
+                _.omit(nextProps.channelControl, _.functions(nextProps.channelControl))
+            ) ||
             !_.isEqual(this.state.availableFilters, nextState.availableFilters) ||
             !_.isEqual(this.state.activeFilters, nextState.activeFilters) ||
             this.props.searchName !== nextProps.searchName ||

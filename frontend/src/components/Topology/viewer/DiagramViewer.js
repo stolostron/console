@@ -59,9 +59,8 @@ class DiagramViewer extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            // links: _.uniqBy(props.links, 'uid'),
-            // nodes: _.uniqBy(props.nodes, 'uid'),
-            hiddenLinks: new Set(),
+            svgLinks: _.uniqBy(props.links, 'uid'),
+            svgNodes: _.uniqBy(props.nodes, 'uid'),
             selectedNodeId: props.selectedNode ? props.selectedNode.uid : '',
             showDetailsView: null,
             observer: new ResizeObserver(() => {
@@ -89,6 +88,7 @@ class DiagramViewer extends React.Component {
         this.getZoomHelper = this.getZoomHelper.bind(this)
         this.getViewContainer = this.getViewContainer.bind(this)
         this.handleNodeClick = this.handleNodeClick.bind(this)
+        this.handleNodeDrag = this.handleNodeDrag.bind(this)
         this.showsShapeTitles = typeof this.props.staticResourceData.getNodeTitle === 'function'
         this.lastLayoutBBox = null
         this.isDragging = false
@@ -121,11 +121,7 @@ class DiagramViewer extends React.Component {
             this.state.selectedNodeId !== nextState.selectedNodeId ||
             this.props.showLegendView !== nextProps.showLegendView ||
             !_.isEqual(this.state.nodes, nextState.nodes) ||
-            !_.isEqual(
-                this.state.links.map((l) => l.uid),
-                nextState.links.map((l) => l.uid)
-            ) ||
-            !_.isEqual(this.state.hiddenLinks, nextState.hiddenLinks) ||
+            !_.isEqual(this.state.links, nextState.links) ||
             !_.isEqual(this.props.activeFilters, nextProps.activeFilters) ||
             this.props.searchName !== nextProps.searchName ||
             this.props.secondaryLoad !== nextProps.secondaryLoad ||
@@ -135,48 +131,37 @@ class DiagramViewer extends React.Component {
 
     UNSAFE_componentWillReceiveProps() {
         this.setState((prevState, props) => {
-            // reuse existing states for the same node
-            const prevStateNodeMap = _.keyBy(prevState.nodes, 'uid')
-            const nodes = props.nodes.map((node) => {
-                const pnode = prevStateNodeMap[node.uid] || Object.assign(node, { layout: {} })
-                //pnode.specs = node.specs
-                return pnode
+            // for the React world, so that shouldUpdate works, copy arrays
+            const links = _.cloneDeep(props.links)
+            const nodes = _.cloneDeep(props.nodes)
+
+            // for svg d3 world maintain existing svgNodes/Links so that
+            // we're not constantly removing/ creating svg elements
+            // we can update the inner objects of the node/link to update the diagram
+            // but not the outer node/link
+            const svgNodeMap = {}
+            const prevSvgNodeMap = _.keyBy(prevState.svgNodes, 'uid')
+            const svgNodes = props.nodes.map((node) => {
+                const svgNode = prevSvgNodeMap[node.uid] || Object.assign(node, { layout: {} })
+                svgNode.specs = node.specs
+                svgNodeMap[node.uid] = svgNode
+                return svgNode
             })
 
-            // if the source/target are still there but link is gone, remember it as a hidden link
-            // however if source or target are gone, don't remember it at all
-            const nodeMap = _.keyBy(nodes, 'uid')
-            const hiddenLinks = new Set()
-            const currentLinks = _.uniqBy(props.links, 'uid').filter((link) => {
-                const { source, target } = link
-                if (!nodeMap[source] || !nodeMap[target]) {
-                    return false
-                }
-                return true
-            })
-
-            // const currentLinkMap = _.keyBy(currentLinks, 'uid')
-            // const previousLinks = prevState.links.filter((link) => {
-            //     const { source, target } = link
-            //     if (!nodeMap[source] || !nodeMap[target]) {
-            //         return false
-            //     } else if (!currentLinkMap[link.uid]) {
-            //         // only links between kube objects can be hidden
-            //         if (!nodeMap[source].isDesign) {
-            //             hiddenLinks.add(link.uid)
-            //         } else {
-            //             return false
-            //         }
-            //     }
-            //     return true
-            // })
-
-            // // combine current and remaining previous links
-            // const compare = (a, b) => {
-            //     return a.uid === b.uid
-            // }
-            // const links = _.unionWith(previousLinks, currentLinks, compare)
-            const links = currentLinks
+            // if source or target are gone, filter it
+            const prevSvgLinkMap = _.keyBy(prevState.svgLinks, 'uid')
+            const svgLinks = _.uniqBy(props.links, 'uid')
+                .filter((link) => {
+                    const { source, target } = link
+                    if (!svgNodeMap[source] || !svgNodeMap[target]) {
+                        return false
+                    }
+                    return true
+                })
+                .map((link) => {
+                    const svgLink = prevSvgLinkMap[link.uid] || link
+                    return svgLink
+                })
 
             // switching between search and not
             const { searchName = '' } = props
@@ -192,9 +177,10 @@ class DiagramViewer extends React.Component {
                 showDetailsView = false
             }
             return {
-                links: _.cloneDeep(props.links),
-                nodes: _.cloneDeep(props.nodes),
-                hiddenLinks,
+                links,
+                nodes,
+                svgNodes,
+                svgLinks,
                 searchName,
                 searchChanged,
                 showDetailsView,
@@ -406,7 +392,7 @@ class DiagramViewer extends React.Component {
         }
 
         // consolidate nodes/filter links/add layout data to each element
-        const { nodes = [], links = [], hiddenLinks = new Set(), searchChanged } = this.state
+        const { svgNodes = [], svgLinks = [], searchChanged } = this.state
         const { activeFilters, availableFilters, staticResourceData, searchName } = this.props
         const options = {
             firstLayout: this.lastLayoutBBox === undefined,
@@ -426,7 +412,7 @@ class DiagramViewer extends React.Component {
 
         const isFilterOn = this.isUserFiltering(activeFilters)
         // whether it was used or not, turn it off
-        this.layoutHelper.layout(nodes, links, hiddenLinks, options, isFilterOn, (layoutResults) => {
+        this.layoutHelper.layout(svgNodes, svgLinks, new Set(), options, isFilterOn, (layoutResults) => {
             const { laidoutNodes, titles, searchNames, selfLinks, layoutBBox } = layoutResults
             this.layoutBBox = layoutBBox
             this.titles = titles
@@ -450,7 +436,7 @@ class DiagramViewer extends React.Component {
             const { typeToShapeMap } = this.props.staticResourceData
             const linkHelper = new LinkHelper(
                 this.svg,
-                links,
+                svgLinks,
                 selfLinks,
                 laidoutNodes,
                 typeToShapeMap,

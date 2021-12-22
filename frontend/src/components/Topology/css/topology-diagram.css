@@ -19,7 +19,6 @@
     position: absolute;
     left: 20px;
     top: 10px;
-    width: 400px;
 }
 .topologyDiagramContainer .channel-controls-container {
     display: flex;

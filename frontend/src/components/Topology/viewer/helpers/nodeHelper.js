@@ -99,6 +99,9 @@ export default class NodeHelper {
             .attr('type', (d) => {
                 return d.name
             })
+            .attr('id', (d) => {
+                return d.id
+            })
             .style('opacity', 0.0)
             .on('click', (d) => {
                 tooltip.style('display', 'none')
@@ -655,37 +658,20 @@ export default class NodeHelper {
         moveArgoAppCountText(this.svg)
     }
 
-    moveIcons = (visible, iconClass) => {
-        visible.selectAll(`use${iconClass}`).call(attrs, ({ layout }) => {
-            const { x, y, scale = 1 } = layout
-            const sz = NODE_SIZE * scale + 20
+    moveIcons = (nodeLayer, iconClass) => {
+        nodeLayer.selectAll(iconClass).call(attrs, ({ dx, dy, width, height }, i, ns) => {
+            const {
+                layout: { x = 0, y = 0, scale = 1 },
+            } = d3.select(ns[i].parentNode).datum()
             return {
-                width: sz,
-                height: sz,
-                transform: `translate(${x - sz / 2}, ${y - sz / 2})`,
+                transform: `translate(${x + dx * scale - width / 2}, ${y + dy * scale - height / 2})`,
             }
         })
-
-        // nodeLayer.selectAll(iconClass).call(attrs, ({ dx, dy, width, height }, i, ns, d, r) => {
-        //     const {
-        //         layout: { x = 0, y = 0, scale = 1 },
-        //     } = d3.select(ns[i].parentNode).datum()
-        //     console.log(x+' '+dx)
-        //     if (x===0) {
-        //         const f=9
-        //     }
-        //     return {
-        //         transform: `translate(${x + dx * scale - width / 2}, ${y + dy * scale - height / 2})`,
-        //     }
-        // })
     }
 
     dragNode = (evt, dp) => {
         const { layout } = dp
-        const {
-            sourceEvent: { target },
-        } = evt
-        const node = d3.select(target.parentNode)
+        const node = d3.select(`#${dp.id}`)
         tooltip.style('display', 'none')
 
         // don't consider it dragged until more then 5 pixels away from original

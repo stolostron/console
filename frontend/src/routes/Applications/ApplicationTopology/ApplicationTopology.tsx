@@ -19,9 +19,7 @@ import {
 } from '../../../atoms'
 import _ from 'lodash'
 import { searchClient } from '../../Home/Search/search-sdk/search-client'
-import {
-    useSearchResultRelatedItemsLazyQuery,
-} from '../../Home/Search/search-sdk/search-sdk'
+import { useSearchResultRelatedItemsLazyQuery } from '../../Home/Search/search-sdk/search-sdk'
 import './ApplicationTopology.css'
 import '../../../components/Topology/css/topology-controls.css'
 import '../../../components/Topology/css/resource-toolbar.css'
@@ -106,7 +104,7 @@ export default function ApplicationTopology() {
     useEffect(() => {
         const interval = setInterval(() => {
             setShouldRefresh(true)
-        }, 10000)
+        }, 5000)
         return () => clearInterval(interval)
     }, [])
 

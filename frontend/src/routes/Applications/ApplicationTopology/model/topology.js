@@ -63,6 +63,7 @@ export const getDiagramElements = (topology, searchRelated) => {
         addDiagramDetails(searchRelated, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
         nodes.forEach((node) => {
             computeNodeStatus(node)
+            //_.set(node, 'specs.rnd', Math.random())
         })
     }
 
