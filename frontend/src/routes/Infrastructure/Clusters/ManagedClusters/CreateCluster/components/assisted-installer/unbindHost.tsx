@@ -8,7 +8,7 @@ import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import { patchResource } from '../../../../../../../resources'
 import { IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
 import { agentClusterInstallsState } from '../../../../../../../atoms'
-import { agentNameSortFunc, getAgentName } from './utils'
+import { agentNameSortFunc, getAgentName, setProvisionRequirements } from './utils'
 
 import './unbindHost.css'
 
@@ -89,27 +89,35 @@ export const useCanUnbindAgent = (singleInfraEnv?: CIM.InfraEnvK8sResource) => {
     return callback
 }
 
-export const getUnbindHostAction = (agent?: CIM.AgentK8sResource) => () => {
-    if (agent?.spec?.clusterDeploymentName?.name) {
-        return patchResource(agent, [
-            {
-                op: 'replace',
-                path: '/spec/clusterDeploymentName',
-                value: null,
-            },
-            {
-                op: 'replace',
-                path: '/spec/role',
-                value: '',
-            },
-        ])
-    }
+export const getUnbindHostAction =
+    (agent?: CIM.AgentK8sResource, agentClusterInstall?: CIM.AgentClusterInstallK8sResource) => () => {
+        if (agent?.spec?.clusterDeploymentName?.name) {
+            if (agentClusterInstall) {
+                const masterCount = undefined /* Only workers can be removed */
+                const workerCount = (agentClusterInstall.spec.provisionRequirements.workerAgents || 1) - 1
+                // TODO(mlibra): include following promise in the returned one to handle errors
+                setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
+            }
 
-    return {
-        promise: Promise.resolve(null),
-        abort: () => {},
+            return patchResource(agent, [
+                {
+                    op: 'replace',
+                    path: '/spec/clusterDeploymentName',
+                    value: null,
+                },
+                {
+                    op: 'replace',
+                    path: '/spec/role',
+                    value: '',
+                },
+            ])
+        }
+
+        return {
+            promise: Promise.resolve(null),
+            abort: () => {},
+        }
     }
-}
 
 const Description = ({ bmh }: { agent?: CIM.AgentK8sResource; bmh?: CIM.BareMetalHostK8sResource }) => {
     const { t } = useTranslation()
@@ -137,7 +145,8 @@ const agentClusterSortFunc = (
 
 export const useOnUnbindHost = (
     toggleDialog: (props: IBulkActionModelProps | { open: false }) => void,
-    clusterName?: string
+    clusterName?: string,
+    agentClusterInstall?: CIM.AgentClusterInstallK8sResource
 ) => {
     const { t } = useTranslation()
 
@@ -176,7 +185,7 @@ export const useOnUnbindHost = (
                 columns,
                 keyFn: (resource: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource) =>
                     resource.metadata?.uid as string,
-                actionFn: getUnbindHostAction(agent),
+                actionFn: getUnbindHostAction(agent, agentClusterInstall),
                 close: () => {
                     toggleDialog({ open: false })
                 },

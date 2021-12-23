@@ -5,13 +5,7 @@ import { useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
 
 import { patchResource } from '../../../../../../resources'
-import {
-    agentClusterInstallsState,
-    agentsState,
-    clusterDeploymentsState,
-    clusterImageSetsState,
-    configMapsState,
-} from '../../../../../../atoms'
+import { agentsState, clusterImageSetsState, configMapsState } from '../../../../../../atoms'
 import {
     canEditHost,
     fetchNMState,
@@ -28,9 +22,12 @@ import {
     onSaveBMH,
     onSaveNetworking,
     useBMHsOfAIFlow,
+    useClusterDeployment,
+    useAgentClusterInstall,
     useInfraEnv,
     useNMStatesOfNamespace,
 } from '../../CreateCluster/components/assisted-installer/utils'
+
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { isBMPlatform } from '../../../../InfraEnvironments/utils'
@@ -55,31 +52,22 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
     const history = useHistory()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
-    const [clusterImageSets, clusterDeployments, agentClusterInstalls, agents, configMaps] = useRecoilValue(
-        waitForAll([
-            clusterImageSetsState,
-            clusterDeploymentsState,
-            agentClusterInstallsState,
-            agentsState,
-            configMapsState,
-        ])
+    const [clusterImageSets, agents, configMaps] = useRecoilValue(
+        waitForAll([clusterImageSetsState, agentsState, configMapsState])
     )
 
-    const clusterDeployment = clusterDeployments.find(
-        (cd) => cd.metadata.name === name && cd.metadata.namespace === namespace
-    )
-    const agentClusterInstall = agentClusterInstalls.find(
-        (aci) => aci.metadata.name === name && aci.metadata.namespace === namespace
-    )
+    const clusterDeployment = useClusterDeployment({ name, namespace })
+    const agentClusterInstall = useAgentClusterInstall({ name, namespace })
     const infraEnv = useInfraEnv({ name, namespace })
+
     // TODO(mlibra): Arn't we missing Bare Metal Hosts in the tables???
     const filteredBMHs = useBMHsOfAIFlow({ name, namespace })
 
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
         { open: false }
     )
-    const nmStates = useNMStatesOfNamespace(infraEnv.metadata.namespace)
-    const onDeleteHost = useOnDeleteHost(setBulkModalProps, filteredBMHs, nmStates)
+    const nmStates = useNMStatesOfNamespace(infraEnv?.metadata?.namespace)
+    const onDeleteHost = useOnDeleteHost(setBulkModalProps, filteredBMHs, agentClusterInstall, nmStates)
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
 
@@ -185,7 +173,9 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onClose={history.goBack}
                 onSaveDetails={onSaveDetails}
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
-                onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents })}
+                onSaveHostsSelection={(values) =>
+                    onHostsNext({ values, clusterDeployment, agents, agentClusterInstall })
+                }
                 onApproveAgent={onApproveAgent}
                 onDeleteHost={onDeleteHost}
                 canDeleteAgent={(agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) =>
@@ -202,7 +192,12 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 }
                 // onFormSaveError={setErrorHandler}
                 onSaveHostsDiscovery={(values) =>
-                    onDiscoveryHostsNext({ values, clusterDeployment, agents: agentsOfSingleInfraEnvCluster })
+                    onDiscoveryHostsNext({
+                        values,
+                        clusterDeployment,
+                        agents: agentsOfSingleInfraEnvCluster,
+                        agentClusterInstall,
+                    })
                 }
                 fetchSecret={fetchSecret}
                 fetchNMState={fetchNMState}

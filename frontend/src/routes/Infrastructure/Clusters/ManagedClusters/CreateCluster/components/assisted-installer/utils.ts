@@ -23,7 +23,6 @@ import {
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
 import { deleteResources } from '../../../../../../../lib/delete-resources'
-import { BareMetalHostK8sResource, NMStateK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'
 import { IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
 
 const {
@@ -38,12 +37,14 @@ const {
 type OnHostsNext = {
     values: any
     clusterDeployment: CIM.ClusterDeploymentK8sResource
+    agentClusterInstall: CIM.AgentClusterInstallK8sResource
     agents: CIM.AgentK8sResource[]
 }
 
 type OnDiscoverHostsNext = {
     values: CIM.ClusterDeploymentHostsDiscoveryValues
     clusterDeployment: CIM.ClusterDeploymentK8sResource
+    agentClusterInstall: CIM.AgentClusterInstallK8sResource
     agents: CIM.AgentK8sResource[]
 }
 
@@ -79,7 +80,29 @@ const addAgentsToCluster = async ({
     )
 }
 
-export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHostsNext) => {
+export const setProvisionRequirements = (
+    agentClusterInstall: CIM.AgentClusterInstallK8sResource,
+    workerCount: number | undefined,
+    masterCount: number | undefined
+) => {
+    const provisionRequirements = { ...(agentClusterInstall.spec?.provisionRequirements || {}) }
+    if (workerCount !== undefined) {
+        provisionRequirements.workerAgents = workerCount
+    }
+    if (masterCount !== undefined) {
+        provisionRequirements.controlPlaneAgents = masterCount
+    }
+
+    return patchResource(agentClusterInstall, [
+        {
+            op: agentClusterInstall.spec?.provisionRequirements ? 'add' : 'replace',
+            path: '/spec/provisionRequirements',
+            value: provisionRequirements,
+        },
+    ]).promise
+}
+
+export const onHostsNext = async ({ values, clusterDeployment, agents, agentClusterInstall }: OnHostsNext) => {
     const hostIds = values.autoSelectHosts ? values.autoSelectedHostIds : values.selectedHostIds
     const name = clusterDeployment.metadata.name
     const namespace = clusterDeployment.metadata.namespace
@@ -103,19 +126,27 @@ export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHosts
 
     await addAgentsToCluster({ agents, name, namespace, hostIds })
 
-    if (clusterDeployment) {
-        await patchResource(clusterDeployment, [
-            {
-                op: clusterDeployment.metadata.annotations ? 'replace' : 'add',
-                path: '/metadata/annotations',
-                value: getAnnotationsFromAgentSelector(clusterDeployment, values),
-            },
-        ]).promise
+    const masterCount = agentClusterInstall.spec?.provisionRequirements?.controlPlaneAgents
+    if (masterCount) {
+        let workerCount = hostIds.length - masterCount
+        workerCount = workerCount > 0 ? workerCount : 0
+
+        await setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
     }
+
+    //if (clusterDeployment) {
+    await patchResource(clusterDeployment, [
+        {
+            op: clusterDeployment.metadata.annotations ? 'replace' : 'add',
+            path: '/metadata/annotations',
+            value: getAnnotationsFromAgentSelector(clusterDeployment, values),
+        },
+    ]).promise
+    //}
 }
 
 /** AI-specific version for the CIM-flow's onHostsNext() callback */
-export const onDiscoveryHostsNext = async ({ clusterDeployment, agents }: OnDiscoverHostsNext) => {
+export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClusterInstall }: OnDiscoverHostsNext) => {
     // TODO(mlibra): So far we do not need "values" of the Formik - options the user will choose from will come later (like CNV or OCS)
     // So far no need to "release" agents since the user either deletes the agent or keep the list untouched. Reconsider when "disable" gets in place.
 
@@ -128,6 +159,14 @@ export const onDiscoveryHostsNext = async ({ clusterDeployment, agents }: OnDisc
         namespace,
         hostIds: agents.map((a: CIM.AgentK8sResource) => a.metadata.uid),
     })
+
+    const masterCount = agentClusterInstall.spec?.provisionRequirements?.controlPlaneAgents
+    if (masterCount) {
+        let workerCount = agents.length - masterCount
+        workerCount = workerCount > 0 ? workerCount : 0
+
+        await setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
+    }
 
     // In the AI flow, the agents are automatically approved
     await Promise.all(agents.map((agent) => onApproveAgent(agent)))
@@ -243,7 +282,13 @@ export const useAIConfigMap = () => {
     return useMemo(() => getAIConfigMap(configMaps), [configMaps])
 }
 
-export const useClusterDeployment = ({ name, namespace }: { name: string; namespace: string }) => {
+export const useClusterDeployment = ({
+    name,
+    namespace,
+}: {
+    name?: string
+    namespace?: string
+}): CIM.ClusterDeploymentK8sResource | undefined => {
     const [clusterDeployments] = useRecoilValue(waitForAll([clusterDeploymentsState]))
     return useMemo(
         () => clusterDeployments.find((cd) => cd.metadata.name === name && cd.metadata.namespace === namespace),
@@ -251,7 +296,13 @@ export const useClusterDeployment = ({ name, namespace }: { name: string; namesp
     )
 }
 
-export const useAgentClusterInstall = ({ name, namespace }: { name: string; namespace: string }) => {
+export const useAgentClusterInstall = ({
+    name,
+    namespace,
+}: {
+    name?: string
+    namespace?: string
+}): CIM.AgentClusterInstallK8sResource | undefined => {
     const [agentClusterInstalls] = useRecoilValue(waitForAll([agentClusterInstallsState]))
     return useMemo(
         () => agentClusterInstalls.find((aci) => aci.metadata.name === name && aci.metadata.namespace === namespace),
@@ -299,6 +350,7 @@ export const fetchSecret = (namespace: string, name: string) =>
 export const getDeleteHostAction =
     (
         bareMetalHosts: CIM.BareMetalHostK8sResource[],
+        agentClusterInstall?: CIM.AgentClusterInstallK8sResource,
         nmStates?: CIM.NMStateK8sResource[],
         agent?: CIM.AgentK8sResource,
         bareMetalHost?: CIM.BareMetalHostK8sResource
@@ -334,6 +386,13 @@ export const getDeleteHostAction =
             }
         }
 
+        if (agentClusterInstall) {
+            const masterCount = undefined /* Only workers can be removed */
+            const workerCount = (agentClusterInstall.spec.provisionRequirements.workerAgents || 1) - 1
+            // TODO(mlibra): include following promise in the returned one to handle errors
+            setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
+        }
+
         return deleteResources(resources)
     }
 
@@ -347,8 +406,9 @@ export const agentNameSortFunc = (
 
 export const useOnDeleteHost = (
     toggleDialog: (props: IBulkActionModelProps | { open: false }) => void,
-    bareMetalHosts: BareMetalHostK8sResource[],
-    nmStates?: NMStateK8sResource[]
+    bareMetalHosts: CIM.BareMetalHostK8sResource[],
+    agentClusterInstall?: CIM.AgentClusterInstallK8sResource,
+    nmStates?: CIM.NMStateK8sResource[]
 ) => {
     const { t } = useTranslation()
 
@@ -375,7 +435,7 @@ export const useOnDeleteHost = (
                 ],
                 keyFn: (resource: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource) =>
                     resource.metadata?.uid as string,
-                actionFn: getDeleteHostAction(bareMetalHosts, nmStates, agent, bmh),
+                actionFn: getDeleteHostAction(bareMetalHosts, agentClusterInstall, nmStates, agent, bmh),
                 close: () => {
                     toggleDialog({ open: false })
                 },

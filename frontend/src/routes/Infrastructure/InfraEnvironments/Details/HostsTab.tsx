@@ -36,8 +36,8 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
         { open: false }
     )
     const nmStates = useNMStatesOfNamespace(infraEnv.metadata.namespace)
-    const onDeleteHost = useOnDeleteHost(setBulkModalProps, bareMetalHosts, nmStates)
-    const onUnbindHost = useOnUnbindHost(setBulkModalProps, undefined)
+    const onDeleteHost = useOnDeleteHost(setBulkModalProps, bareMetalHosts, undefined, nmStates)
+    const onUnbindHost = useOnUnbindHost(setBulkModalProps, undefined, undefined)
     const canUnbindAgent = useCanUnbindAgent(infraEnv)
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents), [infraAgents])

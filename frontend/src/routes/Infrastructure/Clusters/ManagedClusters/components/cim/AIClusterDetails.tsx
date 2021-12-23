@@ -71,8 +71,8 @@ const AIClusterDetails: React.FC = () => {
     const filteredBMHs = useBMHsOfAIFlow({ name: cdName, namespace: cdNamespace })
     const nmStates = useNMStatesOfNamespace(infraEnvAIFlow?.metadata?.namespace)
     const canUnbindAgent = useCanUnbindAgent(infraEnvAIFlow)
-    const onUnbindHost = useOnUnbindHost(setBulkModalProps, clusterDeployment?.metadata?.name)
-    const onDeleteHost = useOnDeleteHost(setBulkModalProps, filteredBMHs, nmStates)
+    const onUnbindHost = useOnUnbindHost(setBulkModalProps, clusterDeployment?.metadata?.name, agentClusterInstall)
+    const onDeleteHost = useOnDeleteHost(setBulkModalProps, filteredBMHs, agentClusterInstall, nmStates)
 
     useEffect(() => {
         const checkNs = async () => {

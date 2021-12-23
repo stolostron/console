@@ -36,6 +36,7 @@ spec:
     name: {{{ai.name}}}
   holdInstallation: true
   provisionRequirements:
+    workerAgents: 0
 {{#switch ai.highAvailabilityMode}}
   {{#case 'Full'}}
     controlPlaneAgents: 3
