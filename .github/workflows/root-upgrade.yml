@@ -1,8 +1,8 @@
 name: Root Upgrade
 on:
     workflow_dispatch:
-    # schedule:
-    #     - cron: '0 9 * * 1'
+    schedule:
+        - cron: '0 12 * * 1'
 jobs:
     npm-check-updates:
         runs-on: ubuntu-latest

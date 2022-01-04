@@ -34,7 +34,7 @@ export interface ServerSideEventClient {
     namespaces?: Record<string, boolean>
     writableStream: NodeJS.WritableStream
     compressionStream: Transform & Zlib
-    eventQueue: Promise<ServerSideEvent>[]
+    eventQueue: Promise<ServerSideEvent | undefined>[]
     processing?: boolean
 }
 
@@ -99,7 +99,7 @@ export class ServerSideEvents {
             client.eventQueue.push(
                 this.eventFilter(client.token, event)
                     .then((shouldSendEvent) => (shouldSendEvent ? event : undefined))
-                    .catch((err) => undefined)
+                    .catch((err) => undefined) as Promise<ServerSideEvent<unknown>>
             )
         } else {
             client.eventQueue.push(Promise.resolve(event))
