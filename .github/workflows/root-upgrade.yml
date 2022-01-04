@@ -1,4 +1,4 @@
-name: Frontend Upgrade
+name: Root Upgrade
 on:
     workflow_dispatch:
     # schedule:
@@ -6,9 +6,6 @@ on:
 jobs:
     npm-check-updates:
         runs-on: ubuntu-latest
-        defaults:
-            run:
-                working-directory: frontend
         steps:
             - uses: actions/checkout@v2
             - uses: actions/setup-node@v2
@@ -18,12 +15,12 @@ jobs:
             - name: npm-check-updates --target latest
               run: ncu -e 2 -x $SKIP > /dev/null 2>&1 || ncu --doctor -u -x $SKIP
               env:
-                  SKIP: react-router-dom,@types/react-router-dom,@types/node
+                  SKIP: '@types/node'
             - name: npm-check-updates --target minor
               run: ncu -e 2 -t minor > /dev/null 2>&1 || ncu --doctor -u -t minor
             - name: npm-check-updates --target patch
               run: ncu -e 2 -t patch > /dev/null 2>&1 || ncu --doctor -u -t patch
-#             - uses: EndBug/add-and-commit@v7
-#               with:
-#                   default_author: github_actions
-#                   message: Upgraded package dependencies
+            - uses: EndBug/add-and-commit@v7
+              with:
+                  default_author: github_actions
+                  message: Upgraded package dependencies
