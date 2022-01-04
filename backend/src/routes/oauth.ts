@@ -12,16 +12,23 @@ import { getToken } from '../lib/token'
 import { setDead } from './liveness'
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
-export const oauthInfoPromise = jsonRequest<OAuthInfo>(
-    `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
-).catch((err: Error) => {
-    logger.error({ msg: 'oauth-authorization-server error', error: err.message })
-    setDead()
-    return {
-        authorization_endpoint: '',
-        token_endpoint: '',
+let oauthInfoPromise: Promise<OAuthInfo>
+
+export function getOauthInfoPromise() {
+    if (oauthInfoPromise === undefined) {
+        oauthInfoPromise = jsonRequest<OAuthInfo>(
+            `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
+        ).catch((err: Error) => {
+            logger.error({ msg: 'oauth-authorization-server error', error: err.message })
+            setDead()
+            return {
+                authorization_endpoint: '',
+                token_endpoint: '',
+            }
+        })
     }
-})
+    return oauthInfoPromise
+}
 
 export async function login(_req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const oauthInfo = await oauthInfoPromise

@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { config } from 'dotenv'
-/* istanbul ignore file */
 import { cpus, totalmem } from 'os'
 import { start, stop } from '../app'
 import { logger } from './logger'
+
 try {
     config({ path: '.env' })
 } catch (err) {

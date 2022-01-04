@@ -10,7 +10,7 @@ import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-import { serviceAcccountToken, setDead } from './liveness'
+import { getServiceAcccountToken, setDead } from './liveness'
 
 const { HTTP_STATUS_OK, HTTP_STATUS_FORBIDDEN, HTTP_STATUS_NOT_FOUND } = constants
 
@@ -46,7 +46,7 @@ const resourceCache: {
 } = {}
 
 export function startWatching(): void {
-    const token = serviceAcccountToken
+    const token = getServiceAcccountToken()
 
     ServerSideEvents.eventFilter = eventFilter
 
