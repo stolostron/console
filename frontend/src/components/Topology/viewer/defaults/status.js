@@ -13,7 +13,7 @@
 import { StatusIcon, ClusterCountIcon, ArgoAppCountIcon } from '../constants.js'
 import _ from 'lodash'
 
-import { LOCAL_HUB_NAME } from '../../utils/constants'
+import { LOCAL_HUB_NAME } from '../../../../routes/Applications/ApplicationTopology/helpers/constants'
 
 const HOURS = 1000 * 60 * 60
 

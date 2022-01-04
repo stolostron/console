@@ -11,7 +11,7 @@
 
 import _ from 'lodash'
 
-import { addDetails } from './diagram-helpers'
+import { addDetails } from '../../../../components/Topology/viewer/helpers/diagram-helpers'
 
 const ansibleTaskErrorStates = ['Failed']
 const ansibleTaskSuccessStates = ['Successful', 'Running']

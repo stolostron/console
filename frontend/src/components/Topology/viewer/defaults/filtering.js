@@ -13,7 +13,7 @@
 
 import _ from 'lodash'
 import R from 'ramda'
-import { getClusterName } from '../../utils/diagram-helpers-utils'
+import { getClusterName } from '../../../../routes/Applications/ApplicationTopology/helpers/diagram-helpers-utils'
 
 const clusterLabels = 'cluster.metadata.labels'
 

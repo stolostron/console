@@ -12,7 +12,7 @@
 
 import cytoscape from 'cytoscape'
 import cycola from 'cytoscape-cola'
-import { getWrappedNodeLabel, getHashCode, computeNodeStatus } from '../../utils/diagram-helpers'
+import { getWrappedNodeLabel, getHashCode, computeNodeStatus } from './diagram-helpers'
 import { layoutEdges, setDraggedLineData } from './linkHelper'
 import { getNodeGroups } from '../defaults/grouping'
 import FilterHelper from './filterHelper'

@@ -12,7 +12,7 @@
 import * as d3 from 'd3'
 import SVG from 'svg.js'
 import { dragLinks } from './linkHelper'
-import { counterZoom, getTooltip } from '../../utils/diagram-helpers'
+import { counterZoom, getTooltip } from './diagram-helpers'
 import _ from 'lodash'
 import { kubeNaming, titleBeautify } from '../defaults/titles'
 

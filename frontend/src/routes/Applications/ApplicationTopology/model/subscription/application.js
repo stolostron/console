@@ -12,9 +12,10 @@ export const getSubscriptionApplication = (model, app, selectedChannel, recoilSt
     let deployableNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/deployables"]')
     if (subscriptionNames && subscriptionNames.length > 0) {
         // filter local hub subscription
-        const filteredSubscriptions = subscriptionNames.split(',').filter((subscriptionName) => {
-            return !includes(subscriptionName, '-local')
-        })
+        const filteredSubscriptions = subscriptionNames.split(',')
+        // .filter((subscriptionName) => {
+        //     return !includes(subscriptionName, '-local')
+        // })
         const allSubscriptions = getResources(filteredSubscriptions, recoilStates.subscriptions)
 
         // get deployables from the subscription annotation

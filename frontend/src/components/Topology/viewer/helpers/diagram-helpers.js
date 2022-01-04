@@ -14,7 +14,7 @@ import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
 import moment from 'moment'
-import { LOCAL_HUB_NAME } from './constants'
+import { LOCAL_HUB_NAME } from '../../../../routes/Applications/ApplicationTopology/helpers/constants'
 import {
     isDeployableResource,
     nodeMustHavePods,
@@ -38,10 +38,10 @@ import {
     allClustersAreOnline,
     findParentForOwnerID,
     mustRefreshTopologyMap,
-} from './diagram-helpers-utils'
-import { getEditLink } from './resource-helper'
-import { isSearchAvailable } from './search-helper'
-import { getURLSearchData } from './diagram-helpers-argo'
+} from '../../../../routes/Applications/ApplicationTopology/helpers/diagram-helpers-utils'
+import { getEditLink } from '../../../../routes/Applications/ApplicationTopology/helpers/resource-helper'
+import { isSearchAvailable } from '../../../../routes/Applications/ApplicationTopology/helpers/search-helper'
+import { getURLSearchData } from '../../../../routes/Applications/ApplicationTopology/helpers/diagram-helpers-argo'
 
 const metadataName = 'specs.raw.metadata.name'
 const metadataNamespace = 'specs.raw.metadata.namespace'
@@ -70,7 +70,10 @@ const resWarningStates = [pendingStatus, 'creating', 'terminating']
 const resSuccessStates = ['run', 'bound', deployedStr.toLowerCase(), deployedNSStr.toLowerCase(), 'propagated']
 const apiVersionPath = 'specs.raw.apiVersion'
 
-import { showAnsibleJobDetails, getPulseStatusForAnsibleNode } from './ansible-task'
+import {
+    showAnsibleJobDetails,
+    getPulseStatusForAnsibleNode,
+} from '../../../../routes/Applications/ApplicationTopology/helpers/ansible-task'
 
 /*
  * UI helpers to help with data transformations

@@ -5,7 +5,7 @@ import _ from 'lodash'
 
 import { LOCAL_HUB_NAME } from './constants'
 
-import { createEditLink } from './diagram-helpers'
+import { createEditLink } from '../../../../components/Topology/viewer/helpers/diagram-helpers'
 import { isYAMLEditAvailable } from './search-helper'
 
 export const showArgoApplicationSetLink = (node, details, t) => {

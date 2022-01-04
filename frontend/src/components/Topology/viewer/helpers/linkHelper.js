@@ -11,7 +11,7 @@
 'use strict'
 
 import * as d3 from 'd3'
-import { counterZoom } from '../../utils/diagram-helpers'
+import { counterZoom } from './diagram-helpers'
 import { FilterResults, NODE_RADIUS } from '../constants.js'
 import _ from 'lodash'
 

@@ -24,8 +24,9 @@ import './ApplicationTopology.css'
 import '../../../components/Topology/css/topology-controls.css'
 import '../../../components/Topology/css/resource-toolbar.css'
 import Topology from '../../../components/Topology/Topology'
+import DiagramViewer from './components/DiagramViewer'
 import SearchName from '../../../components/Topology/viewer/SearchName'
-import { processResourceActionLink } from '../../../components/Topology/utils/diagram-helpers'
+import { processResourceActionLink } from '../../../components/Topology/viewer/helpers/diagram-helpers'
 
 import { getApplication } from './model/application'
 import { getTopology, getDiagramElements } from './model/topology'
@@ -182,8 +183,8 @@ export default function ApplicationTopology() {
 
         //name = 'magchen-test-helm-local-cluster'//'magchen-test-argo-local-cluster'
         //namespace = 'openshift-gitops'
-        name = 'magchen-deployall'
-        namespace = 'magchen-deployall-ns'
+        //name = 'magchen-deployall'
+        //namespace = 'magchen-deployall-ns'
 
         const loc = [null, null, null, name, namespace]
 
@@ -260,6 +261,7 @@ export default function ApplicationTopology() {
                             </span>
                         </div>
                         <Topology
+                            diagramViewer={DiagramViewer}
                             elements={elements}
                             processActionLink={processActionLink}
                             channelControl={channelControl}

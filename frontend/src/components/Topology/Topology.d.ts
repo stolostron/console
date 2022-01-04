@@ -5,6 +5,7 @@ export default function Topology(props: {
         nodes: any[]
         links: any[]
     }
+    diagramViewer: any
     searchName?: string
     handleLegendClose?: () => void
     showLegendView?: boolean

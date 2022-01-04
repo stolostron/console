@@ -17,12 +17,14 @@ import PropTypes from 'prop-types'
 import { AcmAlert } from '@open-cluster-management/ui-components'
 import TypeFilterBar, { setActiveTypeFilters } from './viewer/TypeFilterBar'
 import { ResourceFilterModule } from './viewer/ResourceFilterModule'
-import DiagramViewer from './viewer/DiagramViewer'
 import { getResourceDefinitions } from './viewer/defaults'
 import { DiagramShapes } from './shapes/DiagramShapes'
 import { DiagramIcons } from './shapes/DiagramIcons'
 import './css/topology-details.css'
 import './css/topology-diagram.css'
+import './css/topology-link.css'
+import './css/topology-node.css'
+import './css/topology-icons.css'
 import _ from 'lodash'
 
 class Topology extends React.Component {
@@ -169,6 +171,7 @@ class Topology extends React.Component {
         const { isLoaded = true, isReloading = false } = fetchControl
         const { selectedNode, handleNodeSelected } = selectionControl
         const { nodes, links, activeFilters, availableFilters, showChannelsControl } = this.state
+        const DiagramViewer = this.props.diagramViewer
 
         return (
             <div className="topologyDiagramContainer">

@@ -13,7 +13,7 @@
 
 import R from 'ramda'
 import _ from 'lodash'
-import { getType } from '../../utils/diagram-helpers'
+import { getType } from '../helpers/diagram-helpers'
 
 export const getNodeTooltips = (searchUrl, node, t) => {
     const tooltips = []

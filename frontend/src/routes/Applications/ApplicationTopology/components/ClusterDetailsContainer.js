@@ -14,7 +14,12 @@ import {
     AccordionContent,
     AccordionToggle,
 } from '@patternfly/react-core'
-import { processResourceActionLink, getPercentage, inflateKubeValue, getAge } from '../utils/diagram-helpers'
+import {
+    processResourceActionLink,
+    getPercentage,
+    inflateKubeValue,
+    getAge,
+} from '../../../../components/Topology/viewer/helpers/diagram-helpers'
 
 class ClusterDetailsContainer extends React.Component {
     static propTypes = {

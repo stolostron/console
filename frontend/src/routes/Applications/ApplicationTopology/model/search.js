@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { nodeMustHavePods } from '../../../../components/Topology/utils/diagram-helpers-utils'
-import { convertStringToQuery } from '../../../../components/Topology/utils/search-helper'
+import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
+import { convertStringToQuery } from '../helpers/search-helper'
 
 export const getApplicationQuery = (application, appData) => {
     const { name, namespace } = application
