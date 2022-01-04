@@ -7,6 +7,13 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
 import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
+import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
+import { useCanUnbindAgent, useOnUnbindHost } from '../../CreateCluster/components/assisted-installer/unbindHost'
+import {
+    useBMHsOfAIFlow,
+    useNMStatesOfNamespace,
+    useOnDeleteHost,
+} from '../../CreateCluster/components/assisted-installer/utils'
 
 const {
     ClusterDeploymentProgress,
@@ -27,6 +34,8 @@ const {
     ClusterDeploymentValidationsOverview,
     getClusterStatus,
     shouldShowClusterDeploymentValidationOverview,
+    isAIFlowInfraEnv,
+    isInstallationInProgress,
 } = CIM
 
 const fetchSecret: CIM.FetchSecret = (name, namespace) =>
@@ -46,10 +55,25 @@ const fetchEvents = async (url: string) => {
 }
 
 const AIClusterDetails: React.FC = () => {
-    const { clusterDeployment, agentClusterInstall, agents } = useContext(ClusterContext)
+    const { clusterDeployment, agentClusterInstall, agents, infraEnvAIFlow } = useContext(ClusterContext)
     const [aiNamespace, setAiNamespace] = useState<string>('')
     const [namespaceError, setNamespaceError] = useState<boolean>()
     const history = useHistory()
+
+    const cdName = clusterDeployment?.metadata?.name
+    const cdNamespace = clusterDeployment?.metadata?.namespace
+
+    const isAIFlow = isAIFlowInfraEnv(infraEnvAIFlow)
+    const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
+        { open: false }
+    )
+
+    const filteredBMHs = useBMHsOfAIFlow({ name: cdName, namespace: cdNamespace })
+    const nmStates = useNMStatesOfNamespace(infraEnvAIFlow?.metadata?.namespace)
+    const canUnbindAgent = useCanUnbindAgent(infraEnvAIFlow)
+    const onUnbindHost = useOnUnbindHost(setBulkModalProps, clusterDeployment?.metadata?.name, agentClusterInstall)
+    const onDeleteHost = useOnDeleteHost(setBulkModalProps, filteredBMHs, agentClusterInstall, nmStates)
+
     useEffect(() => {
         const checkNs = async () => {
             try {
@@ -74,12 +98,14 @@ const AIClusterDetails: React.FC = () => {
         const clusterAgents = agents
             ? agents.filter(
                   (a) =>
-                      a.spec.clusterDeploymentName?.name === clusterDeployment?.metadata.name &&
-                      a.spec.clusterDeploymentName?.namespace === clusterDeployment?.metadata.namespace
+                      a.spec?.clusterDeploymentName?.name === cdName &&
+                      a.spec?.clusterDeploymentName?.namespace === cdNamespace
               )
             : []
 
-        const cluster = getAICluster({ clusterDeployment, agentClusterInstall, agents: clusterAgents })
+        const cluster = cdName
+            ? getAICluster({ clusterDeployment, agentClusterInstall, agents: clusterAgents })
+            : undefined
 
         return [clusterAgents, cluster]
     }, [clusterDeployment, agentClusterInstall, agents])
@@ -90,6 +116,7 @@ const AIClusterDetails: React.FC = () => {
     )
 
     const fallbackEventsURL = namespaceError === true ? agentClusterInstall?.status?.debugInfo?.eventsURL : undefined
+    const isClusterInstallationRunning = isInstallationInProgress(agentClusterInstall)
 
     return (
         <>
@@ -140,19 +167,21 @@ const AIClusterDetails: React.FC = () => {
                                         agentClusterInstall={agentClusterInstall}
                                         fetchSecret={fetchSecret}
                                     />
-                                    <EventsModalButton
-                                        id="cluster-events-button"
-                                        entityKind="cluster"
-                                        cluster={cluster}
-                                        title="Cluster Events"
-                                        variant={ButtonVariant.link}
-                                        style={{ textAlign: 'right' }}
-                                        onFetchEvents={onFetchEvents}
-                                        ButtonComponent={Button}
-                                        fallbackEventsURL={fallbackEventsURL}
-                                    >
-                                        View Cluster Events
-                                    </EventsModalButton>
+                                    {cluster && (
+                                        <EventsModalButton
+                                            id="cluster-events-button"
+                                            entityKind="cluster"
+                                            cluster={cluster}
+                                            title="Cluster Events"
+                                            variant={ButtonVariant.link}
+                                            style={{ textAlign: 'right' }}
+                                            onFetchEvents={onFetchEvents}
+                                            ButtonComponent={Button}
+                                            fallbackEventsURL={fallbackEventsURL}
+                                        >
+                                            View Cluster Events
+                                        </EventsModalButton>
+                                    )}
                                     <LogsDownloadButton
                                         id="cluster-logs-button"
                                         agentClusterInstall={agentClusterInstall}
@@ -174,7 +203,20 @@ const AIClusterDetails: React.FC = () => {
             )}
             <div style={{ marginBottom: '24px' }}>
                 <AcmExpandableCard title="Cluster hosts" id="aihosts">
-                    <AgentTable agents={clusterAgents} className="agents-table" />
+                    <>
+                        <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
+                        <AgentTable
+                            agents={clusterAgents}
+                            className="agents-table"
+                            canUnbindHost={canUnbindAgent}
+                            canDelete={(agent?: CIM.AgentK8sResource) =>
+                                // TODO(mlibra): Instead of hiding, use the new UX pattern by just disabling the action and showing reason
+                                !isClusterInstallationRunning && isAIFlow && !!agent
+                            }
+                            onUnbindHost={onUnbindHost}
+                            onDeleteHost={onDeleteHost}
+                        />
+                    </>
                 </AcmExpandableCard>
             </div>
         </>

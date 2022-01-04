@@ -56,7 +56,7 @@ export const mockAgentClusterInstall: CIM.AgentClusterInstallK8sResource = {
     spec: {
         clusterDeploymentRef: { name: 'test' },
         holdInstallation: true,
-        provisionRequirements: { controlPlaneAgents: 3 },
+        provisionRequirements: { workerAgents: 0, controlPlaneAgents: 3 },
         imageSetRef: { name: 'ocp-release48' },
         networking: {
             clusterNetwork: [{ cidr: '10.128.0.0/14', hostPrefix: 23 }],
