@@ -25,7 +25,7 @@ jobs:
               run: ncu -e 2 -t minor > /dev/null 2>&1 || ncu --doctor -u -t minor
             - name: npm-check-updates --target patch
               run: ncu -e 2 -t patch > /dev/null 2>&1 || ncu --doctor -u -t patch
-#             - uses: EndBug/add-and-commit@v7
-#               with:
-#                   default_author: github_actions
-#                   message: Upgraded package dependencies
+            - uses: EndBug/add-and-commit@v7
+              with:
+                  default_author: github_actions
+                  message: Upgraded package dependencies
