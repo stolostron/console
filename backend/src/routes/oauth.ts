@@ -31,7 +31,7 @@ export function getOauthInfoPromise() {
 }
 
 export async function login(_req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-    const oauthInfo = await oauthInfoPromise
+    const oauthInfo = await getOauthInfoPromise()
     const queryString = stringifyQuery({
         response_type: `code`,
         client_id: process.env.OAUTH2_CLIENT_ID,
@@ -45,7 +45,7 @@ export async function login(_req: Http2ServerRequest, res: Http2ServerResponse):
 export async function loginCallback(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const url = req.url
     if (url.includes('?')) {
-        const oauthInfo = await oauthInfoPromise
+        const oauthInfo = await getOauthInfoPromise()
         const queryString = url.substr(url.indexOf('?') + 1)
         const query = parseQueryString(queryString)
         const code = query.code as string
