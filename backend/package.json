@@ -1,5 +1,5 @@
 {
-    "name": "@open-cluster-management/console-backend",
+    "name": "@stolostron/console-backend",
     "version": "0.0.1",
     "private": true,
     "scripts": {
