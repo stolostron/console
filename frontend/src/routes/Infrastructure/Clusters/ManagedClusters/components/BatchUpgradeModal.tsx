@@ -1,5 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { AcmSelect } from '@open-cluster-management/ui-components'
+import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { useEffect, useState } from 'react'
+import { BulkActionModel } from '../../../../../components/BulkActionModel'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
     Cluster,
     ClusterCurator,
@@ -11,11 +16,6 @@ import {
     ResourceError,
     ResourceErrorCode,
 } from '../../../../../resources'
-import { AcmSelect } from '@open-cluster-management/ui-components'
-import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { useEffect, useState } from 'react'
-import { useTranslation } from '../../../../../lib/acm-i18next'
-import { BulkActionModel } from '../../../../../components/BulkActionModel'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
 import './style.css'
 
@@ -48,9 +48,7 @@ const setLatestVersions = (
     clusters?.forEach((cluster: Cluster) => {
         if (cluster.name) {
             const clusterName = cluster.name
-            const availableUpdates =
-                cluster.distribution?.upgradeInfo?.availableUpdates &&
-                [...cluster.distribution?.upgradeInfo?.availableUpdates].sort(compareVersion)
+            const availableUpdates = (cluster.distribution?.upgradeInfo?.availableUpdates ?? []).sort(compareVersion)
             const latestVersion = availableUpdates && availableUpdates.length > 0 ? availableUpdates[0] : ''
             const currentValue = availableUpdates?.find(
                 (curr) => currentMappings[clusterName] && curr === currentMappings[clusterName]
@@ -115,9 +113,9 @@ export function BatchUpgradeModal(props: {
                 {
                     header: t('upgrade.table.newversion'),
                     cell: (cluster: Cluster) => {
-                        const availableUpdates =
-                            cluster.distribution?.upgradeInfo?.availableUpdates &&
-                            [...cluster.distribution?.upgradeInfo?.availableUpdates].sort(compareVersion)
+                        const availableUpdates = (cluster.distribution?.upgradeInfo?.availableUpdates ?? []).sort(
+                            compareVersion
+                        )
                         const hasAvailableUpgrades = availableUpdates && availableUpdates.length > 0
                         return (
                             <div>
