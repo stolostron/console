@@ -49,7 +49,7 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
         { open: false }
     )
     const nmStates = useNMStatesOfNamespace(infraEnv.metadata.namespace)
-    const onDeleteHost = useOnDeleteHost(setBulkModalProps, filteredBMHs, nmStates)
+    const onDeleteHost = useOnDeleteHost(setBulkModalProps, agentClusterInstall, filteredBMHs, nmStates)
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(filteredAgents), [filteredAgents])
 
@@ -88,7 +88,12 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
             }
 
             try {
-                await onDiscoveryHostsNext({ values: control.active || {}, agents: filteredAgents, clusterDeployment })
+                await onDiscoveryHostsNext({
+                    values: control.active || {},
+                    agents: filteredAgents,
+                    clusterDeployment,
+                    agentClusterInstall,
+                })
             } catch (err) {
                 setErrorHandler(err)
                 return {

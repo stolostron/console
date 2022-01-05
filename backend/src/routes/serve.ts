@@ -38,7 +38,8 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
         const contentType = contentTypes[ext]
         if (contentType === undefined) {
             logger.debug('unknown content type', `ext=${ext}`)
-            return res.writeHead(404).end()
+            res.writeHead(404).end()
+            return
         }
 
         const filePath = './public' + url
@@ -46,7 +47,8 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
         try {
             stats = await stat(filePath)
         } catch {
-            return res.writeHead(404).end()
+            res.writeHead(404).end()
+            return
         }
 
         if (/\bbr\b/.test(acceptEncoding)) {
@@ -116,7 +118,8 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
         })
     } catch (err) {
         logger.error(err)
-        return res.writeHead(404).end()
+        res.writeHead(404).end()
+        return
     }
 }
 

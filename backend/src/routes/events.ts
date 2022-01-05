@@ -13,7 +13,7 @@ import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-import { serviceAcccountToken } from './liveness'
+import { getServiceAcccountToken, setDead } from './liveness'
 
 const pipeline = promisify(Stream.pipeline)
 

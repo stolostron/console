@@ -25,7 +25,7 @@ export function getClusterCountString(remoteCount: number, localPlacement: boole
     }
 }
 
-function getResourceType(type: String, t: (arg: String) => String) {
+export function getResourceType(type: String, t: (arg: String) => String) {
     switch (type) {
         case 'git':
             return t('Git')

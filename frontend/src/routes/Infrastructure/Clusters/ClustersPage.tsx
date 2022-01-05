@@ -8,10 +8,10 @@ import {
     AcmSecondaryNavItem,
 } from '@open-cluster-management/ui-components'
 import { createContext, ElementType, Fragment, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
-import { useTranslation } from '../../../lib/acm-i18next'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../../atoms'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
 import ClusterPoolsPage from './ClusterPools/ClusterPools'
@@ -69,7 +69,9 @@ export function ClustersPage() {
                     }
                     navigation={
                         <AcmSecondaryNav>
-                            <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusters)}>
+                            <AcmSecondaryNavItem
+                                isActive={location.pathname.startsWith(NavigationPath.managedClusters)}
+                            >
                                 <Link to={NavigationPath.clusters}>{t('Managed clusters')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterSets)}>

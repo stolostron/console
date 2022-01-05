@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { config } from 'dotenv'
-/* istanbul ignore file */
 import { cpus, totalmem } from 'os'
 import { start, stop } from '../app'
 import { logger } from './logger'
+
 try {
     config({ path: '.env' })
 } catch (err) {
@@ -44,7 +44,7 @@ process.on('uncaughtException', (err) => {
     // console.log(err.stack)
 })
 
-process.on('multipleResolves', (type, _promise, reason: unknown) => {
+process.on('multipleResolves', (type: unknown, _promise, reason: unknown) => {
     // node-fetch throws multipleResolves on aborted resolved request
     if ((reason as { type?: string }).type === 'aborted') return
     logger.error({ msg: 'process multipleResolves', type, reason })
