@@ -7,8 +7,8 @@ import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { TFunction } from 'i18next'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../resources/policy-set'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../../resources/policy-set'
 
 const useStyles = makeStyles({
     body: {
@@ -97,7 +97,7 @@ function renderDonutChart(clusters: PolicySetResultClusters[], t: TFunction) {
                 right: 145,
                 top: 20,
             }}
-            title={`${((clusterCompliantCount / clusters.length) * 100).toFixed(1)}%`}
+            title={`${((clusterCompliantCount / clusters.length) * 100).toFixed(0)}%`}
             width={400}
             height={200}
             colorScale={['#0066CC', '#C9190B']}
@@ -131,7 +131,7 @@ export function PolicySetSidebar(props: { policySet: PolicySet; policySetCluster
                 plural="Clusters"
                 items={policySetClusters}
                 initialSort={{
-                    index: 0, // default to sorting by highest risk
+                    index: 0, // default to sorting by cluster name
                     direction: 'desc',
                 }}
                 columns={[
