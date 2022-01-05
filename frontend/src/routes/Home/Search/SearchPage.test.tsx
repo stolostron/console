@@ -2,21 +2,21 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { RecoilRoot } from 'recoil'
-import { Router } from 'react-router-dom'
-import { createBrowserHistory } from 'history'
+import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MockedProvider } from '@apollo/client/testing'
 import { GraphQLError } from 'graphql'
+import { createBrowserHistory } from 'history'
+import { Router } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
 import { wait } from '../../../lib/test-util'
-import SearchPage from './SearchPage'
 import {
-    SavedSearchesDocument,
-    SearchSchemaDocument,
-    SearchCompleteDocument,
     GetMessagesDocument,
+    SavedSearchesDocument,
+    SearchCompleteDocument,
+    SearchSchemaDocument,
 } from './search-sdk/search-sdk'
+import SearchPage from './SearchPage'
 
 describe('SearchPage', () => {
     it('should render default search page correctly', async () => {
@@ -103,13 +103,19 @@ describe('SearchPage', () => {
                     },
                 },
             },
-
             {
                 request: {
                     query: SearchSchemaDocument,
                 },
                 result: {
-                    data: {},
+                    errors: [new GraphQLError('Error getting search schema data')],
+                },
+            },
+            {
+                request: {
+                    query: SearchSchemaDocument,
+                },
+                result: {
                     errors: [new GraphQLError('Error getting search schema data')],
                 },
             },
