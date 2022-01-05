@@ -16,21 +16,29 @@ import {
     placementRulesState,
     deployablesState,
     managedClustersState,
-} from '../../../atoms'
+} from '../../../../atoms'
+import { useApplicationPageContext } from '../ApplicationDetails'
 import _ from 'lodash'
-import { searchClient } from '../../Home/Search/search-sdk/search-client'
-import { useSearchResultRelatedItemsLazyQuery } from '../../Home/Search/search-sdk/search-sdk'
+import { searchClient } from '../../../Home/Search/search-sdk/search-client'
+import { useSearchResultRelatedItemsLazyQuery } from '../../../Home/Search/search-sdk/search-sdk'
 import './ApplicationTopology.css'
-import '../../../components/Topology/css/topology-controls.css'
-import '../../../components/Topology/css/resource-toolbar.css'
-import Topology from '../../../components/Topology/Topology'
+import Topology from '../../../../components/Topology/Topology'
 import DiagramViewer from './components/DiagramViewer'
-import SearchName from '../../../components/Topology/viewer/SearchName'
-import { processResourceActionLink } from '../../../components/Topology/viewer/helpers/diagram-helpers'
+import SearchName from '../../../../components/Topology/viewer/SearchName'
+import { processResourceActionLink } from '../../../../components/Topology/viewer/helpers/diagram-helpers'
 
 import { getApplication } from './model/application'
 import { getTopology, getDiagramElements } from './model/topology'
 import { getApplicationData, getApplicationQuery, getRelatedQuery, getAdditionalQuery } from './model/search'
+
+const TopologyActions = () => {
+    return (
+        <div>
+            <div> hello1 </div>
+            <div> hello2 </div>
+        </div>
+    )
+}
 
 export type ArgoAppDetailsContainerData = {
     page: number
@@ -42,7 +50,7 @@ export type ArgoAppDetailsContainerData = {
     isLoading: boolean
 }
 
-export default function ApplicationTopology() {
+export function ApplicationTopologyPageContent(props: { name: string; namespace: string }) {
     const { t } = useTranslation()
     const [applications] = useRecoilState(applicationsState)
     const [applicationSets] = useRecoilState(applicationSetsState)
@@ -102,6 +110,8 @@ export default function ApplicationTopology() {
     const history = useHistory()
     const location = history?.location?.pathname?.split('/')
     const searchUrl = location ? '/' + location.slice(0, 3).join('/') : ''
+
+    useApplicationPageContext(true, TopologyActions)
 
     // generate diagram every n seconds
     useEffect(() => {
@@ -175,20 +185,7 @@ export default function ApplicationTopology() {
 
     // generate diagram elements
     useEffect(() => {
-        let name = 'demo-saude-digital'
-        let namespace = 'demo-saude-digital'
-
-        //name = 'kevin-test1'
-        //namespace = 'kevin-test1'
-
-        //name = 'magchen-test-helm-local-cluster'//'magchen-test-argo-local-cluster'
-        //namespace = 'openshift-gitops'
-        //name = 'magchen-deployall'
-        //namespace = 'magchen-deployall-ns'
-
-        const loc = [null, null, null, name, namespace]
-
-        const application = getApplication(loc, activeChannel, {
+        const application = getApplication(props.namespace, props.name, activeChannel, {
             applications,
             applicationSets,
             argoApplications,

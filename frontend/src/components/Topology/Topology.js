@@ -25,6 +25,8 @@ import './css/topology-diagram.css'
 import './css/topology-link.css'
 import './css/topology-node.css'
 import './css/topology-icons.css'
+import './css/topology-controls.css'
+import './css/resource-toolbar.css'
 import _ from 'lodash'
 
 class Topology extends React.Component {

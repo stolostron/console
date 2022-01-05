@@ -17,7 +17,7 @@ import {
 import {
     processResourceActionLink,
     createEditLink,
-} from '../../../../components/Topology/viewer/helpers/diagram-helpers'
+} from '../../../../../components/Topology/viewer/helpers/diagram-helpers'
 
 class ArgoAppDetailsContainer extends React.Component {
     static propTypes = {

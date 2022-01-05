@@ -3,9 +3,7 @@
 import { get } from 'lodash'
 import { getSubscriptionApplication } from './subscription/application'
 
-export const getApplication = (location, selectedChannel, recoilStates, cluster, apiversion) => {
-    const [, , , name, namespace] = location
-
+export const getApplication = (namespace, name, selectedChannel, recoilStates, cluster, apiversion) => {
     let app
     let model
     let placement

@@ -11,7 +11,7 @@
 'use strict'
 
 import { NODE_SIZE } from '../constants.js'
-import { getClusterName } from '../../../../routes/Applications/ApplicationTopology/helpers/diagram-helpers-utils'
+import { getClusterName } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/diagram-helpers-utils'
 import _ from 'lodash'
 
 export const getConnectedApplicationLayoutOptions = (typeToShapeMap, { elements }) => {

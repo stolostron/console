@@ -27,10 +27,10 @@ import {
     setClusterStatus,
     createEditLink,
 } from '../helpers/diagram-helpers'
-import { LOCAL_HUB_NAME } from '../../../../routes/Applications/ApplicationTopology/helpers/constants'
-import { showArgoApplicationSetLink } from '../../../../routes/Applications/ApplicationTopology/helpers/diagram-helpers-argo'
+import { LOCAL_HUB_NAME } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/constants'
+import { showArgoApplicationSetLink } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/diagram-helpers-argo'
 
-import { isSearchAvailable } from '../../../../routes/Applications/ApplicationTopology/helpers/search-helper'
+import { isSearchAvailable } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/search-helper'
 import { kubeNaming } from './titles'
 
 const resName = 'resource.name'
