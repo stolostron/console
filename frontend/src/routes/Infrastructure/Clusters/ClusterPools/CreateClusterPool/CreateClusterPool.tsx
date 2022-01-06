@@ -45,6 +45,7 @@ const Portals = Object.freeze({
     cancelBtn: 'cancel-button-portal-id',
 })
 
+// clusterpools does not support AWS private, but must declare the helper function from its handlebar template
 Handlebars.registerHelper('serviceEndpoint', () => {})
 
 export default function CreateClusterPoolPage() {
