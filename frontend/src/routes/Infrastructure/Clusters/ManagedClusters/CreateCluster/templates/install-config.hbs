@@ -257,20 +257,22 @@ platform:
         - {{{.}}}
       {{/each}}
     {{/if}}
-    {{#if ../../subnetID}}
-    serviceEndpoints:
-      {{#each ../../serviceEndpoints}}
-      - name: '{{{endpointName}}}'
-        url: '{{{endpointURL}}}'
-      {{/each}}
-    {{/if}}
+    {{#serviceEndpoint ../../serviceEndpoints}}
+    {{/serviceEndpoint}}
+
+    {{#each ../../serviceEndpoints}}
+      {{#if endpointName}}
+      - name: {{{endpointName}}}
+        url: {{{endpointURL}}}
+      {{/if}}
+    {{/each}}
     {{#if ../../hostedZone}}
     hostedZone: {{{../../hostedZone}}}
     {{/if}}
     {{#if ../../amiID}}
     amiID: {{{../../amiID}}}
     {{/if}}
-{{#if ../../hostedZone}}
+{{#if ../../amiID}}
 publish: Internal
 {{/if}}
 {{/case}}
