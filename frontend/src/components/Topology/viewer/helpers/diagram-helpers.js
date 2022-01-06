@@ -553,10 +553,15 @@ export const getShapeTypeForSubscription = (node) => {
     }
 }
 
-export const computeNodeStatus = (node) => {
+export const computeNodeStatus = (node, isSearchingStatusComplete) => {
     let pulse = 'green'
     let shapeType = node.type
     let apiVersion
+
+    if (!isSearchingStatusComplete) {
+        _.set(node, specPulse, 'spinner')
+        return 'spinner'
+    }
 
     if (nodeMustHavePods(node)) {
         pulse = getPulseForNodeWithPodStatus(node)
@@ -2058,7 +2063,6 @@ export const processResourceActionLink = (resource, toggleLoading, handleErrorMs
     return targetLink
 }
 
-export const getType = (type, t) => {
-    const nlsType = t(`resource.${type}`)
-    return !nlsType.startsWith('!resource.') ? nlsType : _.capitalize(_.startCase(type))
+export const getType = (type) => {
+    return _.capitalize(_.startCase(type))
 }

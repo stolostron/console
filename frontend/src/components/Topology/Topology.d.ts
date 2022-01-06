@@ -24,6 +24,7 @@ export default function Topology(props: {
         handleArgoAppDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ArgoAppDetailsContainerData>>
         handleErrorMsg: () => void
     }
+    canUpdateStatuses?: boolean
     processActionLink?: (resource: any, toggleLoading: boolean) => void
     searchUrl?: string
     t: (key: any) => string

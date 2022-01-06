@@ -80,7 +80,7 @@ export default class ZoomHelper {
 
                     // center diagram vertically and horizontally
                     const viewerHeight = this.viewer.viewerContainerRef.getBoundingClientRect().height
-                    const yPadding = 0 //this.noTitle ? 30 : 60
+                    const yPadding = this.noTitle ? 30 : 60
                     const dy = ((viewerHeight / 2 - yPadding) * 1) / scale
                     const cy = y1 + dy
                     const cx = width / 2

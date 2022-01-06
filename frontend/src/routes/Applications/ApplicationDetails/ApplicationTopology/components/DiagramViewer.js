@@ -39,6 +39,7 @@ class DiagramViewer extends React.Component {
         handleLegendClose: PropTypes.func,
         handleNodeSelected: PropTypes.func,
         isReloading: PropTypes.bool,
+        canUpdateStatuses: PropTypes.bool,
         links: PropTypes.array,
         t: PropTypes.func,
         nodes: PropTypes.array,
@@ -117,6 +118,7 @@ class DiagramViewer extends React.Component {
         return (
             this.state.selectedNodeId !== nextState.selectedNodeId ||
             this.props.showLegendView !== nextProps.showLegendView ||
+            this.props.canUpdateStatuses !== nextProps.canUpdateStatuses ||
             !_.isEqual(this.state.nodes, nextState.nodes) ||
             !_.isEqual(this.state.links, nextState.links) ||
             !_.isEqual(this.props.activeFilters, nextProps.activeFilters) ||
@@ -390,13 +392,14 @@ class DiagramViewer extends React.Component {
 
         // consolidate nodes/filter links/add layout data to each element
         const { svgNodes = [], svgLinks = [], searchChanged } = this.state
-        const { activeFilters, availableFilters, staticResourceData, searchName } = this.props
+        const { activeFilters, availableFilters, staticResourceData, searchName, canUpdateStatuses } = this.props
         const options = {
             firstLayout: this.lastLayoutBBox === undefined,
             searchName,
             activeFilters,
             availableFilters,
             staticResourceData,
+            canUpdateStatuses,
             showLayoutLoading: () => {
                 //this.layoutLoadingRef.style.visibility = 'visible'
                 this.layoutLoadingRef.style.display = 'block'

@@ -68,6 +68,9 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
     const [applicationQuery, setApplicationQuery] = useState<any>()
     const [relatedQuery, setRelatedQuery] = useState<any>()
     const [additionalQuery, setAdditionalQuery] = useState<any>()
+    const [relatedLoadedOnce, setRelatedLoadedOnce] = useState<boolean>(false)
+    const [applicationLoadedOnce, setApplicationLoadedOnce] = useState<boolean>(false)
+    const [canUpdateStatuses, setCanUpdateStatuses] = useState<boolean>(false)
     const [shouldRefresh, setShouldRefresh] = useState<boolean>(true)
     const [showLegendView, setShowLegendView] = useState<boolean>()
     const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
@@ -183,6 +186,19 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
         }
     }, [fireApplicationQuery, applicationQuery, applicationCalled, applicationRefetch])
 
+    // determine when statuses on diagram have the searches needed to display
+    useEffect(() => {
+        if (searchCalled && !searchLoading) {
+            setRelatedLoadedOnce(true)
+        }
+        if (applicationCalled && !applicationLoading) {
+            setApplicationLoadedOnce(true)
+        }
+        const canUpdate = (relatedLoadedOnce || (searchCalled && !searchLoading)) && 
+           (!applicationQuery || applicationLoadedOnce || (applicationCalled && !applicationLoading))
+        setCanUpdateStatuses(canUpdate)
+    }, [searchLoading, searchCalled, applicationLoading, applicationCalled, applicationQuery])
+
     // generate diagram elements
     useEffect(() => {
         const application = getApplication(props.namespace, props.name, activeChannel, {
@@ -212,17 +228,17 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
             setAdditionalQuery(getAdditionalQuery(appData, searchRelated))
 
             // create topology elements with statuses provided by searches
-            setElements(getDiagramElements(appData, topology, searchRelated, applicationRelated, additionalRelated))
+            setElements(getDiagramElements(appData, topology, searchRelated, additionalRelated, canUpdateStatuses))
         }
         setShouldRefresh(false)
-    }, [searchRelated, additionalRelated, applicationRelated, shouldRefresh, activeChannel])
+    }, [searchRelated, additionalRelated, applicationRelated, canUpdateStatuses, shouldRefresh, activeChannel])
 
     return (
         <PageSection>
             <div className="resourceDiagramSourceContainer">
                 <>
                     <>
-                        <div className="topology-controls">
+                        {/* <div className="topology-controls">
                             <div className="topology-control-container">
                                 <SearchName
                                     searchName={searchName}
@@ -230,7 +246,7 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
                                     t={t}
                                 />
                             </div>
-                        </div>
+                        </div> */}
                         {/* <div id="resource-toolbar" className="resource-toolbar">
                         <div className="resource-toolbar-container">
                             <div className="resource-toolbar-buttons">
@@ -241,7 +257,7 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
                     </div> */}
                     </>
                     <div className="resourceDiagramControlsContainer">
-                        <div className="diagram-title">
+                        {/* <div className="diagram-title">
                             <span
                                 className="how-to-read-text"
                                 tabIndex={0}
@@ -256,10 +272,11 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
                                     <use href={'#diagramIcons_sidecar'} />
                                 </svg>
                             </span>
-                        </div>
+                        </div> */}
                         <Topology
                             diagramViewer={DiagramViewer}
                             elements={elements}
+                            canUpdateStatuses={canUpdateStatuses}
                             processActionLink={processActionLink}
                             channelControl={channelControl}
                             searchUrl={searchUrl}

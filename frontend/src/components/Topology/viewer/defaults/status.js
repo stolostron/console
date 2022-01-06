@@ -193,6 +193,9 @@ export const updateNodeIcons = (nodes) => {
             case 'green':
                 nodeIcons['status'] = Object.assign({}, StatusIcon.success)
                 break
+            case 'spinner':
+                nodeIcons['status'] = Object.assign({}, StatusIcon.spinner)
+                break
             default:
                 break
         }

@@ -60,6 +60,7 @@ class Topology extends React.Component {
             selectedNode: PropTypes.object,
             handleNodeSelected: PropTypes.func,
         }),
+        canUpdateStatuses: PropTypes.bool,
         showLegendView: PropTypes.bool,
         styles: PropTypes.shape({
             shapes: PropTypes.object,
@@ -137,6 +138,7 @@ class Topology extends React.Component {
             ) ||
             !_.isEqual(this.state.availableFilters, nextState.availableFilters) ||
             !_.isEqual(this.state.activeFilters, nextState.activeFilters) ||
+            this.props.canUpdateStatuses !== nextProps.canUpdateStatuses ||
             this.props.searchName !== nextProps.searchName ||
             this.state.fetchChannel !== nextState.fetchChannel ||
             this.state.isLoaded !== nextState.isLoaded
@@ -202,6 +204,7 @@ class Topology extends React.Component {
                     showLegendView={showLegendView}
                     handleLegendClose={handleLegendClose}
                     argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+                    canUpdateStatuses={this.props.canUpdateStatuses}
                     t={this.props.t}
                 />
             </div>

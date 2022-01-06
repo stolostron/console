@@ -59,6 +59,14 @@ export const StatusIcon = Object.freeze({
         dx: -18,
         dy: 12,
     },
+    spinner: {
+        icon: 'spinner',
+        classType: 'warning',
+        width: 16,
+        height: 16,
+        dx: -18,
+        dy: 12,
+    },
     warning: {
         icon: 'warning',
         classType: 'warning',

@@ -16,7 +16,7 @@ export const getTopology = (application, managedClusters) => {
     return topology
 }
 
-export const getDiagramElements = (appData, topology, searchRelated, applicationRelated, additionalRelated) => {
+export const getDiagramElements = (appData, topology, searchRelated, additionalRelated, canUpdateStatuses) => {
     // topology from api will have raw k8 objects, pods status
     const { links, nodes } = getTopologyElements(topology)
     // create yaml and what row links to what node
@@ -63,7 +63,7 @@ export const getDiagramElements = (appData, topology, searchRelated, application
         }
         addDiagramDetails(searchRelated, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
         nodes.forEach((node) => {
-            computeNodeStatus(node)
+            computeNodeStatus(node, canUpdateStatuses)
             //_.set(node, 'specs.rnd', Math.random())
         })
     }
