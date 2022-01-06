@@ -58,7 +58,10 @@ export const useCanUnbindAgent = (singleInfraEnv?: CIM.InfraEnvK8sResource) => {
                     return [false, AGENT_INSTALLING]
                 }
 
-                if (agent.status?.role === 'master' || agent.status?.role === 'bootstrap') {
+                if (
+                    ['installed', 'error', 'cancelled'].includes(status) &&
+                    (agent.status?.role === 'master' || agent.status?.role === 'bootstrap')
+                ) {
                     return [false, UNSUPPORTED_MASTER_COUNT]
                 }
 
@@ -71,7 +74,11 @@ export const useCanUnbindAgent = (singleInfraEnv?: CIM.InfraEnvK8sResource) => {
                         return [false, CLUSTER_INSTALLING]
                     }
 
-                    if (agent.status?.role === 'worker' && aci.spec?.provisionRequirements?.workerAgents === 5) {
+                    if (
+                        ['installed', 'error', 'cancelled'].includes(status) &&
+                        agent.status?.role === 'worker' &&
+                        aci.spec?.provisionRequirements?.workerAgents === 5
+                    ) {
                         return [false, UNSUPPORTED_WORKER_COUNT]
                     }
                 }
