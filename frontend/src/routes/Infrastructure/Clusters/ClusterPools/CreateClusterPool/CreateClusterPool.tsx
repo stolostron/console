@@ -45,6 +45,8 @@ const Portals = Object.freeze({
     cancelBtn: 'cancel-button-portal-id',
 })
 
+Handlebars.registerHelper('serviceEndpoint', () => {})
+
 export default function CreateClusterPoolPage() {
     const { t } = useTranslation(['create'])
 
