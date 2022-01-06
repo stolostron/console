@@ -46,7 +46,7 @@ const Portals = Object.freeze({
 })
 
 Handlebars.registerHelper('serviceEndpoint', (options) => {
-    if (options[0]?.endpointName) return '    serviceEndpoints:'
+    if (options && options[0]?.endpointName) return '    serviceEndpoints:'
 })
 
 export default function CreateClusterPoolPage() {

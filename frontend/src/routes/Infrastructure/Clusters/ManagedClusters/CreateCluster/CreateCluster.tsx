@@ -249,7 +249,7 @@ export default function CreateClusterPage() {
     const template = Handlebars.compile(hiveTemplate)
     Handlebars.registerPartial('endpoints', Handlebars.compile(endpointTemplate))
     Handlebars.registerHelper('serviceEndpoint', (options) => {
-        if (options[0]?.endpointName) return '    serviceEndpoints:'
+        if (options && options[0]?.endpointName) return '    serviceEndpoints:'
     })
     // if opened from bma page, pass selected bma's to editor
     const urlParams = new URLSearchParams(location.search.substring(1))
