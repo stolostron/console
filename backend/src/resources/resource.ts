@@ -9,5 +9,6 @@ export interface IResource {
         resourceVersion?: string
         managedFields?: unknown
         selfLink?: string
+        uid?: string
     }
 }

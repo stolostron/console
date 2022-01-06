@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { IncomingMessage } from 'http'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import * as rawBody from 'raw-body'
+import rawBody from 'raw-body'
 import { getDecodeStream } from './compression'
 
 export const APPLICATION_JSON = 'application/json'
