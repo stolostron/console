@@ -19,7 +19,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import { getControlData } from './controlData/ControlData'
-import { setAvailableConnections, setAvailableTemplates } from './controlData/ControlDataHelpers'
+import { setAvailableConnections, setAvailableTemplates, arrayItemHasKey } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
 import endpointTemplate from './templates/endpoints.hbs'
@@ -248,9 +248,7 @@ export default function CreateClusterPage() {
     //compile templates
     const template = Handlebars.compile(hiveTemplate)
     Handlebars.registerPartial('endpoints', Handlebars.compile(endpointTemplate))
-    Handlebars.registerHelper('serviceEndpoint', (options) => {
-        if (options && options[0]?.endpointName) return '    serviceEndpoints:'
-    })
+    Handlebars.registerHelper('someArrayItemHasKey', arrayItemHasKey)
     // if opened from bma page, pass selected bma's to editor
     const urlParams = new URLSearchParams(location.search.substring(1))
     const bmasParam = urlParams.get('bmas')

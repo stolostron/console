@@ -257,15 +257,16 @@ platform:
       - {{{.}}}
     {{/each}}
     {{/if}}
-    {{#serviceEndpoint ../../serviceEndpoints}}
-    {{/serviceEndpoint}}
 
+    {{#if (someArrayItemHasKey ../../serviceEndpoints "endpointName")}}
+    serviceEndpoints:
     {{#each ../../serviceEndpoints}}
       {{#if endpointName}}
       - name: {{{endpointName}}}
         url: {{{endpointURL}}}
       {{/if}}
     {{/each}}
+    {{/if}}
     {{#if ../../hostedZone}}
     hostedZone: {{{../../hostedZone}}}
     {{/if}}
