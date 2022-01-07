@@ -7,8 +7,6 @@ export default function Topology(props: {
     }
     diagramViewer: any
     searchName?: string
-    handleLegendClose?: () => void
-    showLegendView?: boolean
     fetchControl?: {
         isLoaded: boolean | undefined
         isFailed: boolean | undefined
@@ -27,5 +25,6 @@ export default function Topology(props: {
     canUpdateStatuses?: boolean
     processActionLink?: (resource: any, toggleLoading: boolean) => void
     searchUrl?: string
+    setDrawerContent?: (title: string, panelContent: React.ReactNode | React.ReactNode[]) => void
     t: (key: any) => string
 }): JSX.Element

@@ -4,43 +4,45 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Scrollbars } from 'react-custom-scrollbars'
 import { TimesIcon } from '@patternfly/react-icons'
 import { defaultShapes } from '../../../../../components/Topology/viewer/defaults/shapes'
 import { getLegendTitle } from '../../../../../components/Topology/viewer/defaults/titles'
 
 class LegendView extends React.Component {
     render() {
-        const { t, onClose } = this.props
+        const { t } = this.props
 
         return (
             <section className="topologyDetails">
-                <div>
-                    <TimesIcon className="closeIcon" description={t('topology.legend.close')} onClick={onClose} />
-                    <hr style={{ visibility: 'hidden', marginBottom: '20px' }} />
+                <div className="legendHeader">
+                    <div>
+                        <div className="bodyText">
+                            {t(
+                                'The topology provides a visual representation of all the applications and resources within a project, their build status, and the components and services associated with them.'
+                            )}
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <svg>
+                                <use href={'#diagramShapes_legend'} className="label-icon" />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
-                <Scrollbars renderView={this.renderView} className="legend-view-container">
-                    <div className="legendHeader">
-                        <div>
-                            <div className="titleText">{t('topology.legend.header.title')}</div>
-                            <div className="bodyText">{t('topology.legend.header.text')}</div>
-                            <div style={{ textAlign: 'center' }}>
-                                <svg>
-                                    <use href={'#diagramShapes_legend'} className="label-icon" />
-                                </svg>
-                            </div>
+                <hr />
+                <div className="legendBody">
+                    <div>
+                        <div className="titleText">{t('Status icon legend')}</div>
+                        <div className="titleNoteText">
+                            {t(
+                                'Note: Resources that you do not have permission to view display a status of "Not deployed".'
+                            )}
+                        </div>
+                        {this.renderStatusDescriptions()}
+                        <div className="bodyText">
+                            {t('For more details and logs, click on the nodes to open the properties view.')}
                         </div>
                     </div>
-                    <hr />
-                    <div className="legendBody">
-                        <div>
-                            <div className="titleText">{t('topology.legend.body.status.title')}</div>
-                            <div className="titleNoteText">{t('topology.legend.body.status.note')}</div>
-                            {this.renderStatusDescriptions()}
-                            <div className="bodyText">{t('topology.legend.body.status.logs')}</div>
-                        </div>
-                    </div>
-                </Scrollbars>
+                </div>
             </section>
         )
     }
@@ -55,10 +57,15 @@ class LegendView extends React.Component {
             ['failure', '#C9190B'],
         ])
         const descriptionMap = new Map([
-            ['success', 'topology.legend.body.text.success'],
-            ['pending', 'topology.legend.body.text.pending'],
-            ['warning', 'topology.legend.body.text.warning'],
-            ['failure', 'topology.legend.body.text.failure'],
+            [
+                'success',
+                t(
+                    'All resources in this group have deployed on the target clusters, although their status might not be successful.'
+                ),
+            ],
+            ['pending', t('The statues in this resource group have not been found and are unknown.')],
+            ['warning', t('Some resources in this group did not deploy. Other resources deployed successfully.')],
+            ['failure', t('Some resources in this group are in error state.')],
         ])
         return statusList.map((status) => {
             return (
@@ -73,44 +80,10 @@ class LegendView extends React.Component {
             )
         })
     }
-
-    renderResourceIcons = () => {
-        const { t } = this.props
-        const nodeTypes = new Set()
-        const nodes = this.props.getLayoutNodes()
-        if (nodes && nodes.length > 0) {
-            nodes.forEach((node) => {
-                const { type } = node
-                if (type) {
-                    nodeTypes.add(type)
-                }
-            })
-        }
-        return Array.from(nodeTypes).map((type) => {
-            const { shape = 'other' } = defaultShapes[type] || {}
-            return (
-                <div key={type} className="bodyIconsTextDiv">
-                    <div>{getLegendTitle(type, t)}</div>
-                    <div>
-                        <svg className="iconSvg">
-                            <use href={`#diagramShapes_${shape}`} className="label-icon" />
-                        </svg>
-                    </div>
-                </div>
-            )
-        })
-    }
-
-    renderView({ style, ...props }) {
-        style.height = 'calc(100vh - 300px)'
-        return <div {...props} style={{ ...style }} />
-    }
 }
 
 LegendView.propTypes = {
-    getLayoutNodes: PropTypes.func,
     t: PropTypes.func,
-    onClose: PropTypes.func,
 }
 
 export default LegendView

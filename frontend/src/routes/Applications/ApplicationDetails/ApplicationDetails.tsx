@@ -1,13 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    AcmPage,
-    AcmPageHeader,
-    AcmRoute,
-    AcmSecondaryNav,
-    AcmSecondaryNavItem,
-} from '@open-cluster-management/ui-components'
-//import { Page } from '@patternfly/react-core'
+import { AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@open-cluster-management/ui-components'
+
+import { AcmPage } from './AcmPage'
+
 import { createContext, Fragment, Suspense, useEffect, useContext, ElementType, ReactNode, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Link, Route, RouteComponentProps, Switch, Redirect, useLocation } from 'react-router-dom'
@@ -26,19 +22,15 @@ export const ApplicationContext = createContext<{
     setActions: () => {},
 })
 
-export const useApplicationPageContext = (showActions: boolean, Component: ElementType) => {
+export const useApplicationPageContext = (ActionList: ElementType) => {
     const { setActions } = useContext(ApplicationContext)
 
     useEffect(() => {
-        if (showActions) {
-            setActions(<Component />)
-        } else {
-            setActions(null)
-        }
+        setActions(<ActionList />)
         return () => setActions(null)
-    }, [showActions, setActions, Component])
+    }, [setActions])
 
-    return Component
+    return ActionList
 }
 
 export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ name: string; namespace: string }>) {
@@ -49,55 +41,56 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     useEffect(() => setRoute(AcmRoute.Applications), [setRoute])
 
     return (
-        <ApplicationContext.Provider value={{ actions, setActions }}>
-            <AcmPage
-                hasDrawer
-                header={
-                    <AcmPageHeader
-                        breadcrumb={[
-                            { text: t('Applications'), to: NavigationPath.applications },
-                            { text: match.params.name, to: '' },
-                        ]}
-                        title={match.params.name}
-                        navigation={
-                            <AcmSecondaryNav>
-                                <AcmSecondaryNavItem
-                                    isActive={
-                                        location.pathname ===
-                                        NavigationPath.applicationOverview
-                                            .replace(':namespace', match.params.namespace as string)
-                                            .replace(':name', match.params.name as string)
-                                    }
+        <AcmPage
+            hasDrawer
+            header={
+                <AcmPageHeader
+                    breadcrumb={[
+                        { text: t('Applications'), to: NavigationPath.applications },
+                        { text: match.params.name, to: '' },
+                    ]}
+                    title={match.params.name}
+                    navigation={
+                        <AcmSecondaryNav>
+                            <AcmSecondaryNavItem
+                                isActive={
+                                    location.pathname ===
+                                    NavigationPath.applicationOverview
+                                        .replace(':namespace', match.params.namespace as string)
+                                        .replace(':name', match.params.name as string)
+                                }
+                            >
+                                <Link
+                                    to={NavigationPath.applicationOverview
+                                        .replace(':namespace', match.params.namespace as string)
+                                        .replace(':name', match.params.name as string)}
                                 >
-                                    <Link
-                                        to={NavigationPath.applicationOverview
-                                            .replace(':namespace', match.params.namespace as string)
-                                            .replace(':name', match.params.name as string)}
-                                    >
-                                        {t('Overview')}
-                                    </Link>
-                                </AcmSecondaryNavItem>
-                                <AcmSecondaryNavItem
-                                    isActive={
-                                        location.pathname ===
-                                        NavigationPath.applicationTopology
-                                            .replace(':namespace', match.params.namespace as string)
-                                            .replace(':name', match.params.name as string)
-                                    }
+                                    {t('Overview')}
+                                </Link>
+                            </AcmSecondaryNavItem>
+                            <AcmSecondaryNavItem
+                                isActive={
+                                    location.pathname ===
+                                    NavigationPath.applicationTopology
+                                        .replace(':namespace', match.params.namespace as string)
+                                        .replace(':name', match.params.name as string)
+                                }
+                            >
+                                <Link
+                                    to={NavigationPath.applicationTopology
+                                        .replace(':namespace', match.params.namespace as string)
+                                        .replace(':name', match.params.name as string)}
                                 >
-                                    <Link
-                                        to={NavigationPath.applicationTopology
-                                            .replace(':namespace', match.params.namespace as string)
-                                            .replace(':name', match.params.name as string)}
-                                    >
-                                        {t('Topology')}
-                                    </Link>
-                                </AcmSecondaryNavItem>
-                            </AcmSecondaryNav>
-                        }
-                    />
-                }
-            >
+                                    {t('Topology')}
+                                </Link>
+                            </AcmSecondaryNavItem>
+                        </AcmSecondaryNav>
+                    }
+                    actions={actions}
+                />
+            }
+        >
+            <ApplicationContext.Provider value={{ actions, setActions }}>
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.applicationOverview}>
@@ -118,7 +111,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         </Route>
                     </Switch>
                 </Suspense>
-            </AcmPage>
-        </ApplicationContext.Provider>
+            </ApplicationContext.Provider>
+        </AcmPage>
     )
 }

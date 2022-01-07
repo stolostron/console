@@ -50,18 +50,17 @@ class Topology extends React.Component {
             isReloading: PropTypes.bool,
             isFailed: PropTypes.bool,
         }),
-        handleLegendClose: PropTypes.func,
         t: PropTypes.func,
         options: PropTypes.object,
         processActionLink: PropTypes.func,
         searchName: PropTypes.string,
         searchUrl: PropTypes.string,
+        setDrawerContent: PropTypes.func,
         selectionControl: PropTypes.shape({
             selectedNode: PropTypes.object,
             handleNodeSelected: PropTypes.func,
         }),
         canUpdateStatuses: PropTypes.bool,
-        showLegendView: PropTypes.bool,
         styles: PropTypes.shape({
             shapes: PropTypes.object,
         }),
@@ -162,8 +161,6 @@ class Topology extends React.Component {
             title,
             options,
             styles,
-            showLegendView,
-            handleLegendClose,
             fetchControl = {},
             selectionControl = {},
             channelControl = {},
@@ -201,8 +198,6 @@ class Topology extends React.Component {
                     staticResourceData={this.staticResourceData}
                     channelControl={channelControl}
                     showChannelsControl={showChannelsControl}
-                    showLegendView={showLegendView}
-                    handleLegendClose={handleLegendClose}
                     argoAppDetailsContainerControl={argoAppDetailsContainerControl}
                     canUpdateStatuses={this.props.canUpdateStatuses}
                     t={this.props.t}

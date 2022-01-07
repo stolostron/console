@@ -15,7 +15,6 @@ import PropTypes from 'prop-types'
 import * as d3 from 'd3'
 import { Spinner } from '@patternfly/react-core'
 import DetailsView from './DetailsView'
-import LegendView from './LegendView'
 import Zoom from '../../../../../components/Topology/viewer/Zoom'
 import ChannelControl from './ChannelControl'
 import LayoutHelper from '../../../../../components/Topology/viewer/helpers/layoutHelper'
@@ -36,7 +35,6 @@ class DiagramViewer extends React.Component {
         }),
         availableFilters: PropTypes.object,
         channelControl: PropTypes.object,
-        handleLegendClose: PropTypes.func,
         handleNodeSelected: PropTypes.func,
         isReloading: PropTypes.bool,
         canUpdateStatuses: PropTypes.bool,
@@ -49,7 +47,6 @@ class DiagramViewer extends React.Component {
         selectedNode: PropTypes.object,
         setViewer: PropTypes.func,
         showChannelsControl: PropTypes.bool,
-        showLegendView: PropTypes.bool,
         staticResourceData: PropTypes.object,
         title: PropTypes.string,
     }
@@ -103,7 +100,7 @@ class DiagramViewer extends React.Component {
     componentDidUpdate() {
         const { secondaryLoad } = this.props
 
-        if (!this.detailsViewUpdate && !this.props.showLegendView) {
+        if (!this.detailsViewUpdate) {
             this.generateDiagram(secondaryLoad)
         }
         this.detailsViewUpdate = false
@@ -117,7 +114,6 @@ class DiagramViewer extends React.Component {
     shouldComponentUpdate(nextProps, nextState) {
         return (
             this.state.selectedNodeId !== nextState.selectedNodeId ||
-            this.props.showLegendView !== nextProps.showLegendView ||
             this.props.canUpdateStatuses !== nextProps.canUpdateStatuses ||
             !_.isEqual(this.state.nodes, nextState.nodes) ||
             !_.isEqual(this.state.links, nextState.links) ||
@@ -168,10 +164,6 @@ class DiagramViewer extends React.Component {
 
             let { showDetailsView, selectedNodeId } = prevState
             if (props.secondaryLoad) {
-                selectedNodeId = ''
-                showDetailsView = false
-            }
-            if (props.showLegendView) {
                 selectedNodeId = ''
                 showDetailsView = false
             }
@@ -232,8 +224,6 @@ class DiagramViewer extends React.Component {
             title,
             channelControl,
             showChannelsControl,
-            showLegendView,
-            handleLegendClose,
             nodes,
             activeFilters,
             argoAppDetailsContainerControl,
@@ -299,7 +289,6 @@ class DiagramViewer extends React.Component {
                         t={this.props.t}
                     />
                 )}
-                {showLegendView && <LegendView t={this.props.t} onClose={handleLegendClose} />}
             </div>
         )
     }
@@ -329,7 +318,6 @@ class DiagramViewer extends React.Component {
             selectedNodeId: node ? node.uid : '',
             showDetailsView,
         })
-        this.props.handleLegendClose()
     }
 
     handleNodeDrag = (isDragging) => {
