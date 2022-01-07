@@ -8,7 +8,7 @@ import {
     SelectGroup,
     SelectOption,
     SelectOptionObject,
-    SelectVariant
+    SelectVariant,
 } from '@patternfly/react-core'
 import { FilterIcon } from '@patternfly/react-icons'
 import { useState } from 'react'
@@ -28,7 +28,7 @@ const useStyles = makeStyles({
 })
 
 export default function CardViewToolbarFilter(props: {
-    policySets: PolicySet[];
+    policySets: PolicySet[]
     setViolationFilters: React.Dispatch<React.SetStateAction<string[]>>
 }) {
     const { policySets, setViolationFilters } = props
@@ -59,9 +59,15 @@ export default function CardViewToolbarFilter(props: {
                 <div className={classes.filterOption}>
                     {'Violation'}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-                        {policySets.filter((policySet: PolicySet) => {
-                            return policySet.status.results.filter(result => result.clusters?.some(cluster => cluster.compliant === 'NonCompliant')).length > 0
-                        }).length}
+                        {
+                            policySets.filter((policySet: PolicySet) => {
+                                return (
+                                    policySet.status.results.filter((result) =>
+                                        result.clusters?.some((cluster) => cluster.compliant === 'NonCompliant')
+                                    ).length > 0
+                                )
+                            }).length
+                        }
                     </Badge>
                 </div>
             </SelectOption>
@@ -74,11 +80,17 @@ export default function CardViewToolbarFilter(props: {
                 <div className={classes.filterOption}>
                     {'No violation'}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-                        {policySets.filter((policySet: PolicySet) => {
-                            return policySet.status.results.every((result) => {
-                                return (result.clusters && result.clusters.every((cluster) => cluster.compliant !== 'NonCompliant')) ?? true
-                            })
-                        }).length}
+                        {
+                            policySets.filter((policySet: PolicySet) => {
+                                return policySet.status.results.every((result) => {
+                                    return (
+                                        (result.clusters &&
+                                            result.clusters.every((cluster) => cluster.compliant !== 'NonCompliant')) ??
+                                        true
+                                    )
+                                })
+                            }).length
+                        }
                     </Badge>
                 </div>
             </SelectOption>
@@ -94,9 +106,14 @@ export default function CardViewToolbarFilter(props: {
                 <div className={classes.filterOption}>
                     {'Violation'}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-                        {policySets.filter((policySet: PolicySet) => {
-                            return policySet.status.results.filter(result => result.compliant === 'NonCompliant').length > 0
-                        }).length}
+                        {
+                            policySets.filter((policySet: PolicySet) => {
+                                return (
+                                    policySet.status.results.filter((result) => result.compliant === 'NonCompliant')
+                                        .length > 0
+                                )
+                            }).length
+                        }
                     </Badge>
                 </div>
             </SelectOption>
@@ -109,11 +126,13 @@ export default function CardViewToolbarFilter(props: {
                 <div className={classes.filterOption}>
                     {'No violation'}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-                        {policySets.filter((policySet: PolicySet) => {
-                            return policySet.status.results.every((result) => {
-                                return (result && result.compliant !== 'NonCompliant') ?? true
-                            })
-                        }).length}
+                        {
+                            policySets.filter((policySet: PolicySet) => {
+                                return policySet.status.results.every((result) => {
+                                    return (result && result.compliant !== 'NonCompliant') ?? true
+                                })
+                            }).length
+                        }
                     </Badge>
                 </div>
             </SelectOption>
@@ -126,9 +145,11 @@ export default function CardViewToolbarFilter(props: {
                 <div className={classes.filterOption}>
                     {'Unknown'}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-                        {policySets.filter((policySet: PolicySet) => {
-                            return policySet.status.results.filter(result => !result.compliant).length > 0
-                        }).length}
+                        {
+                            policySets.filter((policySet: PolicySet) => {
+                                return policySet.status.results.filter((result) => !result.compliant).length > 0
+                            }).length
+                        }
                     </Badge>
                 </div>
             </SelectOption>
