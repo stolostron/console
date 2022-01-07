@@ -31,17 +31,42 @@ import { policySetsState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 // import { deleteResource } from '../../../resources'
 import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../resources/policy-set'
-// import CardViewToolbarFilter from './components/CardViewToolbarFilter'
+import CardViewToolbarFilter from './components/CardViewToolbarFilter'
 import CardViewToolbarSearch from './components/CardViewToolbarSearch'
 import { PolicySetSidebar } from './components/PolicySetDetailSidebar'
+
+function clusterViolationFilterFn(policySet: PolicySet) {
+    return (
+        policySet.status.results.filter(
+            (result) => result.clusters && result.clusters?.some((cluster) => cluster.compliant === 'NonCompliant')
+        ).length > 0
+    )
+}
+function clusterNonViolationFilterFn(policySet: PolicySet) {
+    return policySet.status.results.every((result) => {
+        return (result.clusters && result.clusters.every((cluster) => cluster.compliant !== 'NonCompliant')) ?? true
+    })
+}
+function policyViolationFilterFn(policySet: PolicySet) {
+    return policySet.status.results.filter((result) => result.compliant === 'NonCompliant').length > 0
+}
+function policyNonViolationFilterFn(policySet: PolicySet) {
+    return policySet.status.results.every((result) => {
+        return (result && result.compliant !== 'NonCompliant') ?? true
+    })
+}
+function policyUnknownFilterFn(policySet: PolicySet) {
+    return policySet.status.results.filter((result) => !result.compliant).length > 0
+}
 
 export default function PolicySetsPage() {
     const { t } = useTranslation()
     const [policySets] = useRecoilState(policySetsState)
-    // const [placement] = useRecoilState(placementsState)
+    // const [placement] = useRecoilState(placementsState) to be used for getting cluster selector
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const [cardOpenIdx, setCardOpenIdx] = useState<number>()
     const [searchFilter, setSearchFilter] = useState<Record<string, string[]>>({})
+    const [violationFilters, setViolationFilters] = useState<string[]>([])
     const [page, setPage] = useState<number>(1)
     const [perPage, setPerPage] = useState<number>(10)
     const [filteredPolicySets, setFilteredPolicySets] = useState<PolicySet[]>(policySets)
@@ -57,9 +82,59 @@ export default function PolicySetsPage() {
     )
 
     useEffect(() => {
-        // multi values are OR, multi attributes are AND
         setPage(1)
-        const filteredResources: PolicySet[] = policySets.filter((policySet: PolicySet) => {
+        const filteredByViolation: PolicySet[] = policySets.filter((policySet: PolicySet) => {
+            // Return all if no filters
+            if (violationFilters.length === 0) {
+                return true
+            }
+            let clusterFilterMatch =
+                violationFilters.includes('cluster-violation') || violationFilters.includes('cluster-no-violation')
+                    ? false
+                    : true
+            let policyFilterMatch =
+                violationFilters.includes('policy-violation') ||
+                violationFilters.includes('policy-no-violation') ||
+                violationFilters.includes('policy-unknown')
+                    ? false
+                    : true
+
+            for (const filter of violationFilters) {
+                switch (filter) {
+                    case 'cluster-violation':
+                        if (clusterViolationFilterFn(policySet)) {
+                            clusterFilterMatch = true
+                        }
+                        break
+                    case 'cluster-no-violation':
+                        if (clusterNonViolationFilterFn(policySet)) {
+                            clusterFilterMatch = true
+                        }
+                        break
+                    case 'policy-violation':
+                        if (policyViolationFilterFn(policySet)) {
+                            policyFilterMatch = true
+                        }
+                        break
+                    case 'policy-no-violation':
+                        if (policyNonViolationFilterFn(policySet)) {
+                            policyFilterMatch = true
+                        }
+                        break
+                    case 'policy-unknown':
+                        if (policyUnknownFilterFn(policySet)) {
+                            policyFilterMatch = true
+                        }
+                        break
+                }
+            }
+
+            // AND different group filter selections
+            return clusterFilterMatch && policyFilterMatch
+        })
+
+        // multi values are OR, multi attributes are AND
+        const filteredBySearch: PolicySet[] = filteredByViolation.filter((policySet: PolicySet) => {
             let match = true
             if (searchFilter['Name'] && searchFilter['Name'].length > 0) {
                 match = searchFilter['Name'].indexOf(policySet.metadata.name) > -1
@@ -70,8 +145,8 @@ export default function PolicySetsPage() {
             }
             return true
         })
-        setFilteredPolicySets(filteredResources)
-    }, [searchFilter])
+        setFilteredPolicySets(filteredBySearch)
+    }, [searchFilter, violationFilters])
 
     const actualPage = useMemo<number>(() => {
         const start = (page - 1) * perPage
@@ -96,8 +171,8 @@ export default function PolicySetsPage() {
         return filteredPolicySets.slice(start, start + perPage)
     }, [filteredPolicySets, actualPage, perPage])
 
-    const policySetNames: string[] = filteredPolicySets.map((policySet: PolicySet) => policySet.metadata.name)
-    const policySetNamespaces: string[] = filteredPolicySets.map((policySet: PolicySet) => policySet.metadata.namespace)
+    const policySetNames: string[] = policySets.map((policySet: PolicySet) => policySet.metadata.name)
+    const policySetNamespaces: string[] = policySets.map((policySet: PolicySet) => policySet.metadata.namespace)
     const uniqueNs: string[] = policySetNamespaces.filter((p, idx) => {
         return policySetNamespaces.indexOf(p) === idx
     })
@@ -315,9 +390,12 @@ export default function PolicySetsPage() {
                     <ToolbarContent>
                         <Fragment>
                             <ToolbarGroup variant="filter-group">
-                                {/* <ToolbarItem variant="search-filter">
-                                    <CardViewToolbarFilter policySets={policySets} />
-                                </ToolbarItem> */}
+                                <ToolbarItem variant="search-filter">
+                                    <CardViewToolbarFilter
+                                        policySets={policySets}
+                                        setViolationFilters={setViolationFilters}
+                                    />
+                                </ToolbarItem>
                                 <ToolbarItem variant="search-filter">
                                     <CardViewToolbarSearch
                                         searchData={searchData}
