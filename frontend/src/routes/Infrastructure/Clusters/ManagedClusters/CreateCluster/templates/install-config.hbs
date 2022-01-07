@@ -253,16 +253,19 @@ platform:
     region: {{{../../region}}}
     {{#if ../../subnetID}}
     subnets:
-      {{#each ../../subnetID}}
-        - {{{.}}}
-      {{/each}}
+    {{#each ../../subnetID}}
+      - {{{.}}}
+    {{/each}}
     {{/if}}
-    {{#if ../../subnetID}}
+
+    {{#if (arrayItemHasKey ../../serviceEndpoints "endpointName")}}
     serviceEndpoints:
-      {{#each ../../serviceEndpoints}}
-      - name: '{{{endpointName}}}'
-        url: '{{{endpointURL}}}'
-      {{/each}}
+    {{#each ../../serviceEndpoints}}
+      {{#if endpointName}}
+      - name: {{{endpointName}}}
+        url: {{{endpointURL}}}
+      {{/if}}
+    {{/each}}
     {{/if}}
     {{#if ../../hostedZone}}
     hostedZone: {{{../../hostedZone}}}
@@ -270,7 +273,7 @@ platform:
     {{#if ../../amiID}}
     amiID: {{{../../amiID}}}
     {{/if}}
-{{#if ../../hostedZone}}
+{{#if ../../amiID}}
 publish: Internal
 {{/if}}
 {{/case}}
