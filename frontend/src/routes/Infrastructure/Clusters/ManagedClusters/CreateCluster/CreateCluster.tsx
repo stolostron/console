@@ -248,7 +248,7 @@ export default function CreateClusterPage() {
     //compile templates
     const template = Handlebars.compile(hiveTemplate)
     Handlebars.registerPartial('endpoints', Handlebars.compile(endpointTemplate))
-    Handlebars.registerHelper('someArrayItemHasKey', arrayItemHasKey)
+    Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
     // if opened from bma page, pass selected bma's to editor
     const urlParams = new URLSearchParams(location.search.substring(1))
     const bmasParam = urlParams.get('bmas')

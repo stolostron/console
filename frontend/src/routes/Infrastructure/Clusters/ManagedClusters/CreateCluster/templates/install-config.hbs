@@ -258,7 +258,7 @@ platform:
     {{/each}}
     {{/if}}
 
-    {{#if (someArrayItemHasKey ../../serviceEndpoints "endpointName")}}
+    {{#if (arrayItemHasKey ../../serviceEndpoints "endpointName")}}
     serviceEndpoints:
     {{#each ../../serviceEndpoints}}
       {{#if endpointName}}
