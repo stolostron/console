@@ -64,7 +64,7 @@ export function StatusSummaryCount() {
                 cards={[
                     {
                         id: 'nodes',
-                        count: /* istanbul ignore next */ cluster?.nodes?.nodeList?.length ?? 0,
+                        count: /* istanbul ignore next */ (cluster?.nodes?.nodeList ?? []).length,
                         countClick: () => push(NavigationPath.clusterNodes.replace(':id', cluster?.name!)),
                         title: t('summary.nodes'),
                         description: (
