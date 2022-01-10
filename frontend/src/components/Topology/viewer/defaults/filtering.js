@@ -71,7 +71,7 @@ export const getAllFilters = (
     activeFilters,
     knownTypes,
     userIsFiltering,
-    locale
+    t
 ) => {
     const availableFilters = {}
     let otherTypeFilters = []
@@ -165,7 +165,7 @@ export const getAllFilters = (
     // if using the filter view, get avaiable filters for that view
     // ex: purpose section when looking at filter view in clusters mode
     if (mode) {
-        addAssortedAvailableFilters(mode, availableFilters, activeFilters, nodes, locale)
+        addAssortedAvailableFilters(mode, availableFilters, activeFilters, nodes, t)
     }
 
     return {
@@ -175,10 +175,10 @@ export const getAllFilters = (
     }
 }
 
-export const getAvailableFilters = (mode, nodes, options, activeFilters, locale) => {
+export const getAvailableFilters = (mode, nodes, options, activeFilters, t) => {
     const availableFilters = {}
     if (mode) {
-        addAssortedAvailableFilters(mode, availableFilters, activeFilters, nodes, locale)
+        addAssortedAvailableFilters(mode, availableFilters, activeFilters, nodes, t)
     }
     return availableFilters
 }
@@ -203,19 +203,19 @@ export const getSearchFilter = (mode, filters = {}) => {
 }
 
 /////////////////////////////// AVAILABLE FILTERS //////////////////////////////////////////
-const addAssortedAvailableFilters = (mode, availableFilters, activeFilters, nodes, locale) => {
+const addAssortedAvailableFilters = (mode, availableFilters, activeFilters, nodes, t) => {
     if (nodes && nodes.length > 0) {
         switch (mode) {
             case 'cluster':
-                addAvailableClusterFilters(availableFilters, nodes, locale)
+                addAvailableClusterFilters(availableFilters, nodes, t)
                 break
 
             case 'policy':
-                addAvailablePolicyFilters(availableFilters, activeFilters, nodes, locale)
+                addAvailablePolicyFilters(availableFilters, activeFilters, nodes, t)
                 break
 
             default:
-                addAvailableRelationshipFilters(mode, availableFilters, activeFilters, nodes, locale)
+                addAvailableRelationshipFilters(mode, availableFilters, activeFilters, nodes, t)
                 break
         }
     }
@@ -241,7 +241,7 @@ const filterAvailable = (specs, clusterLabelsInfo, filterTypes, availableFilters
         }
     })
 }
-const addAvailableClusterFilters = (availableFilters, nodes, locale) => {
+const addAvailableClusterFilters = (availableFilters, nodes, t) => {
     // initialize filter
     const filterTypes = TypeFilters['cluster'].filterTypes
     Object.keys(filterTypes).forEach((type) => {
@@ -281,7 +281,7 @@ const addAvailableClusterFilters = (availableFilters, nodes, locale) => {
     })
 }
 
-export const addAvailableRelationshipFilters = (mode, availableFilters, activeFilters, nodes, locale) => {
+export const addAvailableRelationshipFilters = (mode, availableFilters, activeFilters, nodes, t) => {
     // what k8 types are being shown
     const activeTypes = new Set(activeFilters.type || [])
     const ignoreNodeTypes = TypeFilters[mode].ignored || new Set()
@@ -291,21 +291,21 @@ export const addAvailableRelationshipFilters = (mode, availableFilters, activeFi
         let availableSet = new Set()
         switch (type) {
             case 'resourceTypes':
-                name = t('topology.filter.category.resourceTypes')
+                name = t('Resource Types')
                 break
             case 'hostIPs':
-                name = t('topology.filter.category.hostIPs')
+                name = t('Host IPs')
                 break
             case 'namespaces':
-                name = t('topology.filter.category.namespaces')
+                name = t('Namespaces')
                 break
             case 'resourceStatuses':
-                name = t('topology.filter.category.resourceStatuses')
+                name = t('Resource status')
                 availableSet = new Map([
-                    ['green', t('topology.filter.category.status.success')],
-                    ['orange', t('topology.filter.category.status.pending')],
-                    ['yellow', t('topology.filter.category.status.warning')],
-                    ['red', t('topology.filter.category.status.error')],
+                    ['green', t('Success')],
+                    ['orange', t('Unknown')],
+                    ['yellow', t('Warning')],
+                    ['red', t('Error')],
                 ])
                 break
             // case 'clusterNames':
@@ -370,7 +370,7 @@ export const addAvailableRelationshipFilters = (mode, availableFilters, activeFi
     }
 }
 
-const addAvailablePolicyFilters = (availableFilters, activeFilters, nodes, locale) => {
+const addAvailablePolicyFilters = (availableFilters, activeFilters, nodes, t) => {
     // initialize filter
     const filterTypes = TypeFilters['policy'].filterTypes
     Object.keys(filterTypes).forEach((type) => {

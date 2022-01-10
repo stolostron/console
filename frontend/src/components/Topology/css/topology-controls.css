@@ -1,18 +1,32 @@
 .topology-controls {
     display: flex;
     flex-wrap: wrap;
-    margin-bottom: 5px;
-    justify-content: space-between;
+    margin-bottom: 8px;
 }
 .topology-controls .topology-control-container {
-    width: 100%;
     display: flex;
     align-items: center;
+    margin-right: 20px;
 }
 .topology-controls .topology-control-container > div {
-    width: 100%;
-    background-color: #fff;
+    color: #06c;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    align-items: center;
+    height: 26px;
 }
+
+.topology-controls .topology-control-container > div .button-icon {
+    width: 12px;
+    height: 20px;
+    fill: #06c;
+    stroke: none;
+    margin-right: 5px;
+}
+
 .topology-controls .topology-control-container > * input::placeholder {
     color: #a4a4a4;
 }

@@ -6,6 +6,7 @@ export default function Topology(props: {
         links: any[]
     }
     diagramViewer: any
+    diagramOptions: any
     searchName?: string
     fetchControl?: {
         isLoaded: boolean | undefined
@@ -25,6 +26,6 @@ export default function Topology(props: {
     canUpdateStatuses?: boolean
     processActionLink?: (resource: any, toggleLoading: boolean) => void
     searchUrl?: string
-    setDrawerContent?: (title: string, panelContent: React.ReactNode | React.ReactNode[]) => void
+    setDrawerContent?: (title: string, isInline: boolean, panelContent: React.ReactNode | React.ReactNode[]) => void
     t: (key: any) => string
 }): JSX.Element

@@ -82,6 +82,7 @@ class Search extends React.Component {
                 <SearchInput
                     id="search-name"
                     aria-label="Search-input"
+                    style={{ width: '350px' }}
                     value={searchName}
                     placeholder={t('Find')}
                     onChange={this.handleSearch}

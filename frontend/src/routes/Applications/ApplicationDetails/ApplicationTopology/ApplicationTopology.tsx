@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { PageSection, ActionListItem } from '@patternfly/react-core'
+import { FilterIcon } from '@patternfly/react-icons'
 import { AcmActionGroup } from '@open-cluster-management/ui-components'
 import { useState, useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -44,6 +45,13 @@ export type ArgoAppDetailsContainerData = {
     isLoading: boolean
 }
 
+const diagramOptions = {
+    filtering: 'application',
+    layout: 'application',
+    showLineLabels: true, // show labels on lines
+    showGroupTitles: false, // show titles over sections
+}
+
 export function ApplicationTopologyPageContent(props: { name: string; namespace: string }) {
     const { t } = useTranslation()
     const [applications] = useRecoilState(applicationsState)
@@ -84,18 +92,7 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
         //show toast message in parent container
     }
 
-    const setDrawerContent = (title: string, panelContent: React.ReactNode | React.ReactNode[]) => {
-        debugger
-        setDrawerContext({
-            isExpanded: true,
-            onCloseClick: () => setDrawerContext(undefined),
-            title,
-            panelContent,
-            panelContentProps: { minSize: '10%' },
-        })
-    }
-
-    const setDrawerContents = (title: string, isInline: boolean, panelContent: React.ReactNode | React.ReactNode[]) => {
+    const setDrawerContent = (title: string, isInline: boolean, panelContent: React.ReactNode | React.ReactNode[]) => {
         setDrawerContext({
             isExpanded: true,
             onCloseClick: () => setDrawerContext(undefined),
@@ -112,21 +109,19 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
                 {[
                     <ActionListItem>
                         <div className="diagram-title">
-                            <svg className="how-to-read-icon">
-                                <use href={'#diagramIcons_sidecar'} />
-                            </svg>
                             <span
                                 className="how-to-read-text"
                                 tabIndex={0}
-                                onClick={() =>
-                                    setDrawerContents(t('How to read topology'), false, <LegendView t={t} />)
-                                }
+                                onClick={() => setDrawerContent(t('How to read topology'), false, <LegendView t={t} />)}
                                 onKeyPress={() => {
                                     // noop function
                                 }}
                                 role="button"
                             >
                                 {t('How to read topology')}
+                                <svg className="how-to-read-icon">
+                                    <use href={'#diagramIcons_sidecar'} />
+                                </svg>
                             </span>
                         </div>
                     </ActionListItem>,
@@ -278,42 +273,18 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
 
     return (
         <PageSection>
-            <div className="resourceDiagramSourceContainer">
-                <>
-                    <>
-                        {/* <div className="topology-controls">
-                            <div className="topology-control-container">
-                                <SearchName
-                                    searchName={searchName}
-                                    onNameSearch={(searchName: string) => setSearchName(searchName)}
-                                    t={t}
-                                />
-                            </div>
-                        </div> */}
-                        {/* <div id="resource-toolbar" className="resource-toolbar">
-                        <div className="resource-toolbar-container">
-                            <div className="resource-toolbar-buttons">
-                                <div id={portals.assortedFilterOpenBtn} />
-                            </div>
-                            <div id={portals.assortedFilterCloseBtns} />
-                        </div>
-                    </div> */}
-                    </>
-                    <div className="resourceDiagramControlsContainer">
-                        <Topology
-                            diagramViewer={DiagramViewer}
-                            elements={elements}
-                            canUpdateStatuses={canUpdateStatuses}
-                            processActionLink={processActionLink}
-                            channelControl={channelControl}
-                            searchUrl={searchUrl}
-                            argoAppDetailsContainerControl={argoAppDetailsContainerControl}
-                            setDrawerContent={setDrawerContent}
-                            t={t}
-                        />
-                    </div>
-                </>
-            </div>
+            <Topology
+                diagramViewer={DiagramViewer}
+                elements={elements}
+                canUpdateStatuses={canUpdateStatuses}
+                processActionLink={processActionLink}
+                channelControl={channelControl}
+                searchUrl={searchUrl}
+                options={diagramOptions}
+                argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+                setDrawerContent={setDrawerContent}
+                t={t}
+            />
         </PageSection>
     )
 }
