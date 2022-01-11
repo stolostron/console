@@ -327,8 +327,11 @@ export const setArgoApplicationDeployStatus = (node, details, t) => {
 
     if ((appHealth === 'Unknown' || appHealth === 'Degraded' || appHealth === 'Missing') && appStatusConditions) {
         details.push({
-            labelKey: 'resource.argo.application.health',
-            value: t('resource.argo.application.error.msg', [_.get(node, 'name', ''), appHealth]),
+            labelKey: 'Health status',
+            value: t(
+                'The health status for application {{0}} is {{1}}. Use the Launch Argo editor action below to view the application details.',
+                [_.get(node, 'name', ''), appHealth]
+            ),
             status: failureStatus,
         })
     }
@@ -336,7 +339,7 @@ export const setArgoApplicationDeployStatus = (node, details, t) => {
     // related Argo apps
     details.push({
         type: 'label',
-        labelValue: t('resource.related.apps', [relatedArgoApps.length]),
+        labelValue: t('Related applications ({{0}})', [relatedArgoApps.length]),
     })
 
     details.push({
@@ -495,7 +498,7 @@ export const showMissingClusterDetails = (clusterName, node, details, t) => {
         clsNames.forEach((clsName) => {
             details.push(
                 {
-                    labelValue: t('topology.filter.category.clustername'),
+                    labelValue: t('Cluster name'),
                     value: clsName,
                 },
                 {
@@ -507,7 +510,7 @@ export const showMissingClusterDetails = (clusterName, node, details, t) => {
         })
     } else {
         details.push({
-            labelValue: t('topology.filter.category.clustername'),
+            labelValue: t('Cluster name'),
             value: clusterName,
         })
         const nsForCluster = targetNS[clusterName] || ['*']

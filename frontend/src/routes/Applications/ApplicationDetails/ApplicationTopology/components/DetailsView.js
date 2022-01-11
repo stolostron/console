@@ -15,8 +15,6 @@ import R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
-import { Scrollbars } from 'react-custom-scrollbars'
-import { TimesIcon } from '@patternfly/react-icons'
 import { Spinner } from '@patternfly/react-core'
 import jsYaml from 'js-yaml'
 import { createResourceSearchLink } from '../../../../../components/Topology/viewer/helpers/diagram-helpers'
@@ -100,16 +98,9 @@ class DetailsView extends React.Component {
                         </div>
                         <div className="openSearchLink">{this.renderLink(searchLink, t)}</div>
                     </div>
-                    <TimesIcon className="closeIcon" description={t('topology.details.close')} onClick={onClose} />
                 </div>
                 <hr />
-                <Scrollbars
-                    renderView={this.renderView}
-                    renderThumbVertical={this.renderThumbVertical}
-                    className="details-view-container"
-                >
-                    {details.map((detail) => this.renderDetail(detail, t))}
-                </Scrollbars>
+                {details.map((detail) => this.renderDetail(detail, t))}
             </div>
         )
     }
@@ -241,39 +232,12 @@ class DetailsView extends React.Component {
         )
     }
 
-    setSubmitBtn = (ref) => {
-        this.submitBtn = ref
-    }
-
-    enableSubmitBtn() {
-        this.submitBtn.disabled = false
-    }
-
-    onSubmit() {
-        this.props.onClose()
-    }
-
     renderSpacer() {
         return (
             <div className="sectionContent" key={Math.random()}>
                 <div className="spacer" />
             </div>
         )
-    }
-
-    renderView({ style, ...props }) {
-        style.height = 'calc(100vh - 370px)'
-        return <div {...props} style={{ ...style }} />
-    }
-
-    renderThumbVertical({ style, ...props }) {
-        const finalStyle = {
-            ...style,
-            cursor: 'pointer',
-            borderRadius: 'inherit',
-            backgroundColor: 'rgba(0,0,0,.2)',
-        }
-        return <div className={'details-view-scrollbar'} style={finalStyle} {...props} />
     }
 
     renderClusterDetailComboBox({ comboboxdata }, t) {
@@ -318,7 +282,6 @@ DetailsView.propTypes = {
         handleClusterDetailsContainerUpdate: PropTypes.func,
     }),
     getLayoutNodes: PropTypes.func,
-    getViewContainer: PropTypes.func,
     t: PropTypes.func,
     nodes: PropTypes.array,
     onClose: PropTypes.func,

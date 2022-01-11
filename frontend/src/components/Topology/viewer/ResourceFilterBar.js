@@ -53,7 +53,7 @@ const getBoundFilters = (activeFilters, updateActiveFilters, t) => {
                         let activeSet = activeFilters[key]
                         activeSet.delete(value)
                         updateActiveFilters(activeFilters)
-                    }).bind(null, key, value)
+                    }).bind(null, key, value),
                 })
             })
         }

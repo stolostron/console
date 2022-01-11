@@ -328,7 +328,7 @@
     width: 0px;
 }
 .topologyDetails .label {
-    font-size: 0.75rem;
+    font-size: 14px;
     font-weight: bold;
     color: #152935;
     line-height: 1.3rem;
@@ -342,7 +342,7 @@
     width: 10px;
 }
 .topologyDetails .value {
-    font-size: 0.75rem;
+    font-size: 14px;
     color: #5a6872;
     word-break: normal;
 }
@@ -359,7 +359,7 @@
 .topologyDetails .link {
     font-family: 'RedHatText';
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 14px;
     color: #06c;
     cursor: pointer;
 }

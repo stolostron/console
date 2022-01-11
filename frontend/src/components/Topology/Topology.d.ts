@@ -6,7 +6,7 @@ export default function Topology(props: {
         links: any[]
     }
     diagramViewer: any
-    diagramOptions: any
+    options?: any
     searchName?: string
     fetchControl?: {
         isLoaded: boolean | undefined

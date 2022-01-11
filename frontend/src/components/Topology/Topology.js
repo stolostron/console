@@ -83,7 +83,6 @@ class Topology extends React.Component {
         const { styles, options, searchUrl } = props
         this.staticResourceData = getResourceDefinitions(styles, options, searchUrl)
         this.ResourceFilterView = createRef()
-
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -166,6 +165,7 @@ class Topology extends React.Component {
             channelControl = {},
             processActionLink,
             argoAppDetailsContainerControl,
+            setDrawerContent,
             t,
         } = this.props
         const { isLoaded = true, isReloading = false } = fetchControl
@@ -225,6 +225,7 @@ class Topology extends React.Component {
                             showChannelsControl={showChannelsControl}
                             argoAppDetailsContainerControl={argoAppDetailsContainerControl}
                             canUpdateStatuses={this.props.canUpdateStatuses}
+                            setDrawerContent={setDrawerContent}
                             t={this.props.t}
                         />
                     </div>
@@ -272,7 +273,7 @@ class Topology extends React.Component {
                 this.staticResourceData.getAvailableFilters(nodes, options, activeFilters, t)
             )
             if (this.ResourceFilterView.current) {
-                this.ResourceFilterView.current.setState({activeFilters})
+                this.ResourceFilterView.current.setState({ activeFilters })
             }
             return { activeFilters, availableFilters, userIsFiltering: true }
         })

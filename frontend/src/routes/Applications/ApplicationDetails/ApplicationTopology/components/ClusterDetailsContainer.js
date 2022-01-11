@@ -285,7 +285,7 @@ class ClusterDetailsContainer extends React.Component {
                         onClick={this.processActionLink.bind(this, resource)}
                         onKeyDown={this.handleKeyPress.bind(this, resource)}
                     >
-                        {t('details.cluster.console')}
+                        {t('Open cluster console')}
                         <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
                             <use href="#diagramIcons_carbonLaunch" className="label-icon" />
                         </svg>
@@ -320,7 +320,7 @@ class ClusterDetailsContainer extends React.Component {
         return (
             showData && (
                 <div className={divClass}>
-                    <span className={labelClass}>{t('resource.memory')}: </span>
+                    <span className={labelClass}>{t('Memory')}: </span>
                     <span className={valueClass}>{getPercentage(inflateKubeValue(am), inflateKubeValue(cm))}%</span>
                 </div>
             )
@@ -413,7 +413,7 @@ class ClusterDetailsContainer extends React.Component {
                 action: 'open_link',
                 targetLink: consoleURL,
             }
-            const namespaceLabel = `${t('resource.namespace')}: ${clusterNamespace}`
+            const namespaceLabel = `${t('Namespace')}: ${clusterNamespace}`
             const parentDivStyle =
                 i === startIdx
                     ? {
@@ -453,26 +453,26 @@ class ClusterDetailsContainer extends React.Component {
                                     fontSize: '1rem',
                                 }}
                             >
-                                {t('prop.details.section')}
+                                {t('Details')}
                             </span>
                             <div className="spacer" />
                             <div className={divClass}>
-                                <span className={labelClass}>{t('resource.name')}: </span>
+                                <span className={labelClass}>{t('Name')}: </span>
                                 <span className={valueClass}>{clusterName}</span>
                             </div>
                             <div className={divClass}>
-                                <span className={labelClass}>{t('resource.namespace')}: </span>
+                                <span className={labelClass}>{t('Namespace')}: </span>
                                 <span className={valueClass}>{clusterNamespace}</span>
                             </div>
                             {this.renderConsoleURLLink(consoleURL, resource, t)}
                             <div className={divClass}>
-                                <span className={labelClass}>{t('resource.status')}: </span>
+                                <span className={labelClass}>{t('Status')}: </span>
                                 <span className={valueClass}>{status.toLowerCase()}</span>
                             </div>
                             {this.renderCPUData(cc, ac, divClass, labelClass, t, valueClass)}
                             {this.renderMemoryData(cm, am, divClass, labelClass, t, valueClass)}
                             <div className={divClass}>
-                                <span className={labelClass}>{t('resource.created')}: </span>
+                                <span className={labelClass}>{t('Created')}: </span>
                                 <span className={valueClass}>{getAge(creationTimestamp)}</span>
                             </div>
                             <div className="spacer" />

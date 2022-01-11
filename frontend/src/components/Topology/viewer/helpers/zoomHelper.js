@@ -114,7 +114,7 @@ export default class ZoomHelper {
     manualZoom(duration, cb) {
         return d3
             .zoom()
-            .scaleExtent([0.1, 2]) // can manually scale from 0.1 up to 2
+            .scaleExtent([0.1, 4]) // can manually scale from 0.1 up to 2
             .on('zoom', (evt) => {
                 this.currentZoom = evt.transform
                 this.isAutoZoom = false

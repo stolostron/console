@@ -45,16 +45,10 @@ import { getURLSearchData } from '../../../../routes/Applications/ApplicationDet
 
 const metadataName = 'specs.raw.metadata.name'
 const metadataNamespace = 'specs.raw.metadata.namespace'
-const notDeployedStr = 'spec.deploy.not.deployed' //t czcz
-const notDeployedNSStr = 'spec.deploy.not.deployed.ns' //t czcz
-const deployedStr = 'spec.deploy.deployed' //t czcz
-const deployedNSStr = 'spec.deploy.deployed.ns' //t czcz
+
 const specPulse = 'specs.pulse'
 const specShapeType = 'specs.shapeType'
-const specsPropsYaml = 'props.show.yaml'
-const showLocalYaml = 'props.show.local.yaml'
 const showResourceYaml = 'show_resource_yaml'
-const specLocation = 'raw.spec.host.location'
 const checkmarkStatus = 'checkmark'
 const warningStatus = 'warning'
 const pendingStatus = 'pending'
@@ -64,16 +58,15 @@ const warningCode = 2
 const pendingCode = 1
 const failureCode = 0
 //pod state contains any of these strings
-const resNotDeployedStates = [notDeployedStr.toLowerCase(), notDeployedNSStr.toLowerCase()]
 const resErrorStates = ['err', 'off', 'invalid', 'kill', 'propagationfailed']
 const resWarningStates = [pendingStatus, 'creating', 'terminating']
-const resSuccessStates = ['run', 'bound', deployedStr.toLowerCase(), deployedNSStr.toLowerCase(), 'propagated']
 const apiVersionPath = 'specs.raw.apiVersion'
 
 import {
     showAnsibleJobDetails,
     getPulseStatusForAnsibleNode,
 } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/ansible-task'
+import { t } from 'i18next'
 
 /*
  * UI helpers to help with data transformations
@@ -319,7 +312,9 @@ export const getPulseStatusForCluster = (node) => {
     return 'green'
 }
 
-const getPulseStatusForGenericNode = (node) => {
+const getPulseStatusForGenericNode = (node, t) => {
+    const { notDeployedStr, deployedStr, resNotDeployedStates } = getStateNames(t)
+
     //ansible job status
     const nodeType = _.get(node, 'type', '')
     if (nodeType === 'ansiblejob' && _.get(node, 'specs.raw.hookType')) {
@@ -419,7 +414,9 @@ export const getPulseForData = (previousPulse, available, desired, podsUnavailab
     return 'green'
 }
 
-export const getPulseForNodeWithPodStatus = (node) => {
+export const getPulseForNodeWithPodStatus = (node, t) => {
+    const { resSuccessStates } = getStateNames(t)
+
     let pulse = 'green'
     const pulseArr = []
     const pulseValueArr = ['red', 'orange', 'yellow', 'green']
@@ -553,7 +550,7 @@ export const getShapeTypeForSubscription = (node) => {
     }
 }
 
-export const computeNodeStatus = (node, isSearchingStatusComplete) => {
+export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
     let pulse = 'green'
     let shapeType = node.type
     let apiVersion
@@ -564,7 +561,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete) => {
     }
 
     if (nodeMustHavePods(node)) {
-        pulse = getPulseForNodeWithPodStatus(node)
+        pulse = getPulseForNodeWithPodStatus(node, t)
         _.set(node, specPulse, pulse)
         _.set(node, specShapeType, shapeType)
         return pulse
@@ -578,7 +575,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete) => {
                 pulse = getPulseStatusForArgoApp(node)
             } else {
                 if (isDeployable) {
-                    pulse = getPulseStatusForGenericNode(node)
+                    pulse = getPulseStatusForGenericNode(node, t)
                 } else if (!_.get(node, 'specs.channels')) {
                     pulse = 'red'
                 }
@@ -586,14 +583,14 @@ export const computeNodeStatus = (node, isSearchingStatusComplete) => {
             break
         case 'placements':
             if (isDeployable) {
-                pulse = getPulseStatusForGenericNode(node)
+                pulse = getPulseStatusForGenericNode(node, t)
             } else if (!_.get(node, 'specs.raw.status.decisions')) {
                 pulse = 'red'
             }
             break
         case 'subscription':
             if (isDeployable) {
-                pulse = getPulseStatusForGenericNode(node)
+                pulse = getPulseStatusForGenericNode(node, t)
             } else {
                 pulse = getPulseStatusForSubscription(node)
                 shapeType = getShapeTypeForSubscription(node)
@@ -603,7 +600,7 @@ export const computeNodeStatus = (node, isSearchingStatusComplete) => {
             pulse = getPulseStatusForCluster(node)
             break
         default:
-            pulse = getPulseStatusForGenericNode(node)
+            pulse = getPulseStatusForGenericNode(node, t)
     }
 
     _.set(node, specPulse, pulse)
@@ -647,7 +644,7 @@ export const createDeployableYamlLink = (node, details, t) => {
             details.push({
                 type: 'link',
                 value: {
-                    label: t(showLocalYaml),
+                    label: t('View resource YAML'),
                     data: {
                         action: showResourceYaml,
                         cluster: LOCAL_HUB_NAME,
@@ -750,11 +747,11 @@ export const setClusterStatus = (node, details, t) => {
         })
         details.push({
             type: 'label',
-            labelValue: `${t('prop.details.section.cluster.notselected')} (${zombieClusters.length})`,
+            labelValue: `${t('Not selected by placement rule')} (${zombieClusters.length})`,
         })
         zombieClusters.forEach((cls) => {
             details.push({
-                labelValue: t('topology.filter.category.clustername'),
+                labelValue: t('Cluster name'),
                 value: cls,
             })
         })
@@ -786,7 +783,7 @@ export const createResourceSearchLink = (node, t) => {
             result = {
                 type: 'link',
                 value: {
-                    label: t('props.show.search.view'),
+                    label: t('Launch resource in Search'),
                     id: node.id,
                     data: {
                         action: 'show_search',
@@ -820,7 +817,7 @@ export const createResourceSearchLink = (node, t) => {
             result = {
                 type: 'link',
                 value: {
-                    label: t('props.show.search.view'),
+                    label: t('Launch resource in Search'),
                     id: node.id,
                     data: {
                         action: 'show_search',
@@ -1210,6 +1207,8 @@ export const mapSingleApplication = (application) => {
 //show resource deployed status on the remote clusters
 //for resources not producing pods
 export const setResourceDeployStatus = (node, details, activeFilters, t) => {
+    const { notDeployedStr, notDeployedNSStr, deployedStr, deployedNSStr, resNotDeployedStates, resSuccessStates } =
+        getStateNames(t)
     const isDeployable = isDeployableResource(node)
     const { resourceStatuses = new Set() } = activeFilters
     const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
@@ -1251,7 +1250,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
             details.push({
                 type: 'link',
                 value: {
-                    label: t(specsPropsYaml),
+                    label: t('View resource YAML'),
                     data: {
                         action: showResourceYaml,
                         cluster: res.cluster,
@@ -1268,7 +1267,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
         })
         details.push({
             type: 'label',
-            labelKey: 'resource.deploy.statuses',
+            labelKey: t('Cluster deploy status'),
         })
     }
     clusterNames.forEach((clusterName) => {
@@ -1281,7 +1280,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
             return showMissingClusterDetails(clusterName, node, details, t)
         }
         details.push({
-            labelValue: t('topology.filter.category.clustername'),
+            labelValue: t('Cluster name'),
             value: clusterName,
         })
 
@@ -1351,7 +1350,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
                 details.push({
                     type: 'link',
                     value: {
-                        label: t(specsPropsYaml),
+                        label: t('View resource YAML'),
                         data: {
                             action: showResourceYaml,
                             cluster: res.cluster,
@@ -1373,6 +1372,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
 
 //show resource deployed status for resources producing pods
 export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t) => {
+    const { notDeployedStr } = getStateNames(t)
     const { resourceStatuses = new Set() } = activeFilters
     const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
 
@@ -1385,7 +1385,7 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
     })
     details.push({
         type: 'label',
-        labelKey: 'resource.deploy.pods.statuses',
+        labelKey: t('Cluster deploy status for pods'),
     })
 
     const podModel = _.get(node, 'specs.podModel', [])
@@ -1407,7 +1407,7 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
             return showMissingClusterDetails(clusterName, node, details, t)
         }
         details.push({
-            labelValue: t('topology.filter.category.clustername'),
+            labelValue: t('Cluster name'),
             value: clusterName,
         })
         const resourcesForCluster = resourceMap[`${resourceName}-${clusterName}`] || []
@@ -1497,15 +1497,15 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
             if (addPodDetails) {
                 addDetails(clusterDetails, [
                     {
-                        labelKey: 'resource.pod',
+                        labelKey: t('Pod'),
                         value: pod.name,
                     },
                     {
-                        labelKey: 'resource.namespace',
+                        labelKey: t('Namespace'),
                         value: pod.namespace,
                     },
                     {
-                        labelKey: 'resource.status',
+                        labelKey: t('Status'),
                         value: status,
                         status: statusStr,
                     },
@@ -1513,7 +1513,7 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
                 clusterDetails.push({
                     type: 'link',
                     value: {
-                        label: t('props.show.log'),
+                        label: t('View Pod YAML and Logs'),
                         data: {
                             action: showResourceYaml,
                             cluster: pod.cluster,
@@ -1524,15 +1524,15 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
                 })
                 addDetails(clusterDetails, [
                     {
-                        labelKey: 'resource.restarts',
+                        labelKey: t('Restarts'),
                         value: `${restarts}`,
                     },
                     {
-                        labelKey: 'resource.hostip',
+                        labelKey: t('Host and Pod IP'),
                         value: `${hostIP}, ${podIP}`,
                     },
                     {
-                        labelKey: 'resource.created',
+                        labelKey: t('Created'),
                         value: getAge(startedAt),
                     },
                 ])
@@ -1555,7 +1555,7 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
 
             details.push({
                 type: 'label',
-                labelValue: t('resource.container.logs', [clusterName]),
+                labelValue: t('Pod details for {{0}}', [clusterName]),
             })
 
             clusterDetails.forEach((podDetail) => {
@@ -1571,7 +1571,7 @@ const setClusterWindowStatus = (windowStatusArray, subscription, details) => {
     windowStatusArray.forEach((wstatus) => {
         if (_.startsWith(_.trimStart(wstatus), `${subscription.cluster}:`)) {
             details.push({
-                labelKey: 'spec.subscr.timeWindow',
+                labelKey: t('Current window status is'),
                 value: _.split(wstatus, ':')[1],
             })
         }
@@ -1597,28 +1597,28 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
 
         details.push({
             type: 'label',
-            labelKey: 'spec.subscr.timeWindow.title',
+            labelKey: t('Time Window'),
         })
         details.push({
-            labelKey: 'spec.subscr.timeWindow.type',
+            labelKey: t('Time Window type'),
             value: timeWindow,
         })
         timeWindowDays &&
             details.push({
-                labelKey: 'spec.subscr.timeWindow.days',
+                labelKey: t('Time Window days'),
                 value: R.toString(timeWindowDays),
             })
 
         if (timeWindowHours) {
             timeWindowHours.forEach((timeH) => {
                 details.push({
-                    labelKey: 'spec.subscr.timeWindow.hours',
+                    labelKey: t('Time Window hours'),
                     value: `${_.get(timeH, 'start', 'NA')}-${_.get(timeH, 'end', 'NA')}`,
                 })
             })
         }
         details.push({
-            labelKey: 'spec.subscr.timeWindow.timezone',
+            labelKey: t('Time zone'),
             value: timezone,
         })
     }
@@ -1629,7 +1629,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
             type: 'spacer',
         })
         details.push({
-            labelKey: 'resource.subscription.local',
+            labelKey: t('Subscription deployed on local cluster'),
             value: 'true',
         })
     }
@@ -1639,7 +1639,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
     })
     details.push({
         type: 'label',
-        labelKey: 'resource.deploy.statuses',
+        labelKey: t('Cluster deploy status'),
     })
 
     let localSubscriptionFailed = false
@@ -1656,7 +1656,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
             if (!_.includes(onlineClusters, subsCluster)) {
                 details.push({
                     labelValue: subsCluster,
-                    value: t('resource.cluster.offline'),
+                    value: t('Cluster is offline'),
                     status: warningStatus,
                 })
             } else {
@@ -1677,8 +1677,14 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
 
                     //if subscription has not status show an error message
                     const emptyStatusErrorMsg = subscription._hubClusterResource
-                        ? t('resource.subscription.nostatus.hub', ['Propagated'])
-                        : t('resource.subscription.nostatus.remote', ['Subscribed'])
+                        ? t(
+                              'This subscription has no status. If the status does not change to {{0}} after waiting for initial creation, verify that the multicluster-operators-hub-subscription pod is running on hub',
+                              ['Propagated']
+                          )
+                        : t(
+                              'This subscription has no status. If the status does not change to {{0}} after waiting for initial creation, verify that the klusterlet-addon-appmgr pod is running on the remote cluster.',
+                              ['Subscribed']
+                          )
 
                     const subscriptionStatus = R.pathOr(emptyStatusErrorMsg, ['status'])(subscription)
 
@@ -1690,7 +1696,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                     !isLocalPlacementSubs &&
                         isLinkedLocalPlacementSubs &&
                         details.push({
-                            labelKey: 'resource.subscription.local',
+                            labelKey: t('Subscription deployed on local cluster'),
                             value: 'true',
                         })
 
@@ -1708,15 +1714,21 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
 
                     if (failedSubscriptionStatus) {
                         details.push({
-                            labelValue: t('prop.error.section'),
-                            value: reason || t('resource.subscription.status.failed.phase'),
+                            labelValue: t('Error'),
+                            value:
+                                reason ||
+                                t(
+                                    'Some resources failed to deploy. Use View resource YAML link below to view the details.'
+                                ),
                             status: failureStatus,
                         })
                     }
                     if (failedPackage && !failedSubscriptionStatus) {
                         details.push({
-                            labelValue: t('prop.warning.section'),
-                            value: t('resource.subscription.status.failed.phase'),
+                            labelValue: t('Warning'),
+                            value: t(
+                                'Some resources failed to deploy. Use View resource YAML link below to view the details.'
+                            ),
                             status: warningStatus,
                         })
                     }
@@ -1724,7 +1736,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                     details.push({
                         type: 'link',
                         value: {
-                            label: t(specsPropsYaml),
+                            label: t('View resource YAML'),
                             data: {
                                 action: showResourceYaml,
                                 cluster: subscription.cluster,
@@ -1751,8 +1763,11 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
     ) {
         //no remote subscriptions
         details.push({
-            labelValue: t('resource.subscription.remote'),
-            value: t('resource.subscription.placed.error', [node.namespace]),
+            labelValue: t('Remote subscriptions'),
+            value: t(
+                'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the klusterlet-addon-appmgr pod runs on the managed clusters.',
+                [node.namespace]
+            ),
             status: failureStatus,
         })
         if (isSearchAvailable()) {
@@ -1760,7 +1775,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
             details.push({
                 type: 'link',
                 value: {
-                    label: t('props.show.yaml.rules.ns', [node.namespace]),
+                    label: t('View all placement rules in {{0}} namespace', [node.namespace]),
                     id: `${node.id}-subscrSearch`,
                     data: {
                         action: 'open_link',
@@ -1786,8 +1801,10 @@ export const setPlacementRuleDeployStatus = (node, details, t) => {
     const clusterStatus = _.get(node, 'specs.raw.status.decisions', [])
     if (clusterStatus.length === 0) {
         details.push({
-            labelValue: t('resource.rule.clusters.error.label'),
-            value: t('resource.rule.placed.error.msg'),
+            labelValue: t('Error'),
+            value: t(
+                'This Placement Rule does not match any remote clusters. Make sure the clusterSelector and clusterConditions properties, when used, are valid and match your clusters. If using the clusterReplicas property make sure is being set to a positive value.'
+            ),
             status: failureStatus,
         })
     }
@@ -1809,8 +1826,8 @@ export const setApplicationDeployStatus = (node, details, t) => {
             getNodePropery(
                 node,
                 ['specs', 'raw', 'spec', 'selector'],
-                'spec.selector.matchExpressions',
-                t('spec.selector.matchExpressions.err'),
+                t('This application has no subscription match selector (spec.selector.matchExpressions)'),
+                t('This application has no subscription match selector (spec.selector.matchExpressions)'),
                 true
             )
         )
@@ -1824,15 +1841,18 @@ export const setApplicationDeployStatus = (node, details, t) => {
             const appNS = _.get(node, metadataNamespace, 'NA')
 
             details.push({
-                labelKey: 'resource.rule.clusters.error.label',
-                value: t('resource.application.error.msg', [appNS]),
+                labelKey: t('Error'),
+                value: t(
+                    'This application has no matched subscription. Make sure the subscription match selector spec.selector.matchExpressions exists and matches a Subscription resource created in the {{0}} namespace.',
+                    [appNS]
+                ),
                 status: failureStatus,
             })
             const subscrSearchLink = `/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${LOCAL_HUB_NAME}"}`
             details.push({
                 type: 'link',
                 value: {
-                    label: t('props.show.yaml.subscr.ns', [appNS]),
+                    label: t('View all subscriptions in {{0}} namespace', [appNS]),
                     id: `${node.id}-subscrSearch`,
                     data: {
                         action: 'open_link',
@@ -1894,7 +1914,7 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details) => 
 
         details.push({
             type: 'label',
-            labelKey: specLocation,
+            labelKey: t('Location'),
         })
     }
 
@@ -1902,7 +1922,7 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details) => 
         details.push({
             type: 'link',
             value: {
-                labelKey: 'props.show.route.url',
+                labelKey: t('Launch Route URL'),
                 id: `${_.get(typeObject, '_uid', '0')}`,
                 data: {
                     action: 'open_route_url',
@@ -1952,7 +1972,7 @@ export const addIngressNodeInfo = (node, details) => {
     if (R.pathOr('', ['specs', 'raw', 'kind'])(node) === 'Ingress') {
         details.push({
             type: 'label',
-            labelKey: specLocation,
+            labelKey: t('Location'),
         })
 
         //ingress - single service
@@ -1969,17 +1989,17 @@ export const addIngressNodeInfo = (node, details) => {
         rules.forEach((ruleInfo) => {
             const hostName = R.pathOr('NA', ['host'])(ruleInfo)
             details.push({
-                labelKey: 'raw.spec.ingress.host',
+                labelKey: t('Host'),
                 value: hostName,
             })
             const paths = R.pathOr([], ['http', 'paths'])(ruleInfo)
             paths.forEach((pathInfo) => {
                 details.push({
-                    labelKey: 'raw.spec.ingress.service',
+                    labelKey: t('Service Name'),
                     value: R.pathOr('NA', ['backend', 'serviceName'])(pathInfo),
                 })
                 details.push({
-                    labelKey: 'raw.spec.ingress.service.port',
+                    labelKey: t('Service Port'),
                     value: R.pathOr('NA', ['backend', 'servicePort'])(pathInfo),
                 })
             })
@@ -2026,7 +2046,7 @@ export const addNodeServiceLocationForCluster = (node, typeObject, details) => {
 
         const location = `${typeObject.clusterIP}:${port}`
         details.push({
-            labelKey: specLocation,
+            labelKey: t('Location'),
             value: location,
         })
     }
@@ -2065,4 +2085,14 @@ export const processResourceActionLink = (resource, toggleLoading, handleErrorMs
 
 export const getType = (type) => {
     return _.capitalize(_.startCase(type))
+}
+
+const getStateNames = (t) => {
+    const notDeployedStr = t('Not Deployed')
+    const notDeployedNSStr = t('Not Created')
+    const deployedStr = t('Deployed')
+    const deployedNSStr = t('Created')
+    const resNotDeployedStates = [notDeployedStr.toLowerCase(), notDeployedNSStr.toLowerCase()]
+    const resSuccessStates = ['run', 'bound', deployedStr.toLowerCase(), deployedNSStr.toLowerCase(), 'propagated']
+    return { notDeployedStr, notDeployedNSStr, deployedStr, deployedNSStr, resNotDeployedStates, resSuccessStates }
 }

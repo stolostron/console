@@ -192,7 +192,6 @@ export class ResourceFilterView extends React.Component {
         this.setState({ activeFilters })
         updateActiveFilters(activeFilters)
     }
-    
 }
 
 ResourceFilterView.propTypes = {

@@ -45,6 +45,7 @@ class DiagramViewer extends React.Component {
         searchName: PropTypes.string,
         secondaryLoad: PropTypes.bool,
         selectedNode: PropTypes.object,
+        setDrawerContent: PropTypes.func,
         setViewer: PropTypes.func,
         showChannelsControl: PropTypes.bool,
         staticResourceData: PropTypes.object,
@@ -56,8 +57,6 @@ class DiagramViewer extends React.Component {
         this.state = {
             svgLinks: _.uniqBy(props.links, 'uid'),
             svgNodes: _.uniqBy(props.nodes, 'uid'),
-            selectedNodeId: props.selectedNode ? props.selectedNode.uid : '',
-            showDetailsView: null,
             observer: new ResizeObserver(() => {
                 this.getZoomHelper().zoomFit(true, false)
             }),
@@ -113,7 +112,6 @@ class DiagramViewer extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         return (
-            this.state.selectedNodeId !== nextState.selectedNodeId ||
             this.props.canUpdateStatuses !== nextProps.canUpdateStatuses ||
             !_.isEqual(this.state.nodes, nextState.nodes) ||
             !_.isEqual(this.state.links, nextState.links) ||
@@ -162,11 +160,6 @@ class DiagramViewer extends React.Component {
             const { searchName = '' } = props
             const searchChanged = searchName.localeCompare(prevState.searchName || '') !== 0
 
-            let { showDetailsView, selectedNodeId } = prevState
-            if (props.secondaryLoad) {
-                selectedNodeId = ''
-                showDetailsView = false
-            }
             return {
                 links,
                 nodes,
@@ -174,8 +167,6 @@ class DiagramViewer extends React.Component {
                 svgLinks,
                 searchName,
                 searchChanged,
-                showDetailsView,
-                selectedNodeId,
             }
         })
     }
@@ -217,29 +208,8 @@ class DiagramViewer extends React.Component {
     }
 
     render() {
-        const {
-            staticResourceData,
-            secondaryLoad,
-            processActionLink,
-            title,
-            channelControl,
-            showChannelsControl,
-            nodes,
-            activeFilters,
-            argoAppDetailsContainerControl,
-        } = this.props
-
-        const { selectedNodeId, showDetailsView, clusterDetailsContainerData } = this.state
-        const currentNode = nodes.find((n) => n.uid === selectedNodeId) || {}
-        const { layout = {} } = currentNode
-        const selectedResourceType = layout.type || currentNode.type
-        const validNodeSelected = selectedResourceType && showDetailsView
-        const clusterDetailsContainerControl = {
-            clusterDetailsContainerData,
-            handleClusterDetailsContainerUpdate: this.handleClusterDetailsContainerUpdate,
-        }
+        const { secondaryLoad, title, channelControl, showChannelsControl } = this.props
         const pointerEventStyle = secondaryLoad ? { pointerEvents: 'none' } : {}
-
         return (
             <div className="diagramViewerDiagram" ref={this.setContainerRef}>
                 {title && <div className="diagramTitle">{title}</div>}
@@ -274,21 +244,6 @@ class DiagramViewer extends React.Component {
                         t={this.props.t}
                     />
                 </span>
-                {validNodeSelected && (
-                    <DetailsView
-                        onClose={this.handleDetailsClose}
-                        staticResourceData={staticResourceData}
-                        getLayoutNodes={this.getLayoutNodes}
-                        selectedNodeId={selectedNodeId}
-                        getViewContainer={this.getViewContainer}
-                        processActionLink={processActionLink}
-                        nodes={nodes}
-                        clusterDetailsContainerControl={clusterDetailsContainerControl}
-                        argoAppDetailsContainerControl={argoAppDetailsContainerControl}
-                        activeFilters={activeFilters}
-                        t={this.props.t}
-                    />
-                )}
             </div>
         )
     }
@@ -303,21 +258,35 @@ class DiagramViewer extends React.Component {
             setSelections(svg, node)
         }
 
-        // for design nodes, sync with split screen text editor
-        let showDetailsView = !!node
-        if (showDetailsView) {
-            const { handleNodeSelected } = this.props
-            if (typeof handleNodeSelected === 'function' && handleNodeSelected(node)) {
-                showDetailsView = false
+        // show resource details in side drawer
+        if (node) {
+            const { staticResourceData, processActionLink, nodes, activeFilters, argoAppDetailsContainerControl, t } =
+                this.props
+            const { clusterDetailsContainerData } = this.state
+            const selectedNodeId = node.uid
+            const selectedResourceType = node.type
+            const clusterDetailsContainerControl = {
+                clusterDetailsContainerData,
+                handleClusterDetailsContainerUpdate: this.handleClusterDetailsContainerUpdate,
+            }
+            if (selectedResourceType) {
+                this.props.setDrawerContent(
+                    t('Details'),
+                    true,
+                    <DetailsView
+                        staticResourceData={staticResourceData}
+                        getLayoutNodes={this.getLayoutNodes}
+                        selectedNodeId={selectedNodeId}
+                        processActionLink={processActionLink}
+                        nodes={nodes}
+                        clusterDetailsContainerControl={clusterDetailsContainerControl}
+                        argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+                        activeFilters={activeFilters}
+                        t={t}
+                    />
+                )
             }
         }
-
-        // else just show details view
-        this.detailsViewUpdate = node ? true : false
-        this.setState({
-            selectedNodeId: node ? node.uid : '',
-            showDetailsView,
-        })
     }
 
     handleNodeDrag = (isDragging) => {
@@ -326,20 +295,6 @@ class DiagramViewer extends React.Component {
 
     getLayoutNodes = () => {
         return this.laidoutNodes
-    }
-
-    handleDetailsClose = () => {
-        this.detailsViewUpdate = true
-        this.setState({
-            selectedNodeId: '',
-            showDetailsView: false,
-        })
-    }
-
-    handleDesignClose = () => {
-        this.setState({
-            selectedNodeId: '',
-        })
     }
 
     isUserFiltering = (activeFilters) => {

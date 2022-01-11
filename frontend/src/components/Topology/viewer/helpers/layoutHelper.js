@@ -94,7 +94,7 @@ export default class LayoutHelper {
                     node.layout.description = this.getNodeDescription(node)
                 }
             }
-            computeNodeStatus(node, this.canUpdateStatuses)
+            computeNodeStatus(node, this.canUpdateStatuses, this.t)
         })
 
         // add node icons (ex: success)

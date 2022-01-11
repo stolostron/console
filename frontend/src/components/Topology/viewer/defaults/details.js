@@ -52,7 +52,7 @@ export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
         })
         if (type !== 'cluster') {
             if (type === 'placement') {
-                const showLocalYaml = 'props.show.local.yaml'
+                const showLocalYaml = t('View resource YAML')
                 const showResourceYaml = 'show_resource_yaml'
                 const editLink = createEditLink(node)
                 editLink &&
@@ -74,12 +74,12 @@ export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
             }
             details.push({
                 type: 'label',
-                labelKey: 'prop.details.section',
+                labelKey: t('Details'),
             })
         } else {
             details.push({
                 type: 'label',
-                labelKey: 'prop.details.section.cluster',
+                labelKey: t('Select a cluster to view details'),
             })
         }
         details.push({
@@ -99,7 +99,9 @@ export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
                     },
                     {
                         labelKey: 'resource.message',
-                        value: t('resource.helm.nodata.message'),
+                        value: t(
+                            'There is not enough information in the subscription to retrieve deployed objects data.'
+                        ),
                     },
                 ])
                 break
@@ -113,7 +115,7 @@ export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
         if (labels && labels.length) {
             details.push({
                 type: 'label',
-                labelKey: 'resource.labels',
+                labelKey: t('Labels'),
             })
             labels.forEach(({ name: lname, value: lvalue }) => {
                 const labelDetails = [{ value: `${lname} = ${lvalue}`, indent: true }]
@@ -170,31 +172,28 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
     // the main stuff
     const mainDetails = [
         {
-            labelKey: 'resource.type',
+            labelKey: t('Type'),
             value: kubeNaming(ltype, t) || kubeNaming(type, t),
         },
         {
-            labelKey: 'resource.api.version',
+            labelKey: t('API Version'),
             value: apiVersion ? apiVersion : undefined,
         },
         {
-            labelKey: 'resource.cluster',
+            labelKey: t('Cluster'),
             value: clusterName ? clusterName : undefined,
         },
         {
-            labelKey: 'resource.namespace',
+            labelKey: t('Namespace'),
             value: namespace ? namespace : R.pathOr('N/A', ['specs', 'raw', 'metadata', 'namespace'])(node),
         },
     ]
 
     //for charts
-    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'chartName'], 'raw.spec.chart.name'))
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'chartName'], t('Chart Name')))
 
-    addPropertyToList(
-        mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'spec', 'releaseName'], 'raw.spec.release.name')
-    )
-    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'version'], 'raw.spec.version'))
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'releaseName'], t('Release Name')))
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'version'], t('Version')))
 
     //
     if (!isDesign && isDesign !== undefined) {
@@ -205,71 +204,65 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
                 Object.keys(resourceModel).length > 0
                     ? resourceModel[Object.keys(resourceModel)[0]][0].label
                     : undefined
-            labels = resourceLabels ? resourceLabels.replace('; ', ',') : 'No labels'
+            labels = resourceLabels ? resourceLabels.replace('; ', ',') : t('No labels')
         } else {
             labels = 'No labels'
         }
 
         addPropertyToList(mainDetails, {
-            labelKey: 'raw.spec.metadata.label',
+            labelKey: t('Labels'),
             value: labels,
         })
     } else {
         addPropertyToList(
             mainDetails,
-            getNodePropery(node, ['specs', 'raw', 'metadata', 'labels'], 'raw.spec.metadata.label', 'No labels')
+            getNodePropery(node, ['specs', 'raw', 'metadata', 'labels'], t('Labels'), t('No labels'))
         )
     }
 
-    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'replicas'], 'raw.spec.replicas'))
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'replicas'], t('Required Replicas')))
 
     addPropertyToList(
         mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'spec', 'selector', 'matchLabels'], 'raw.spec.selector')
+        getNodePropery(node, ['specs', 'raw', 'spec', 'selector', 'matchLabels'], t('Pod Selector'))
     )
 
     if (!R.pathOr(['specs', 'raw', 'spec', 'selector', 'matchLabels'])) {
-        addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'selector'], 'raw.spec.selector'))
+        addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'selector'], t('Pod Selector')))
     }
 
-    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'ports'], 'raw.spec.ports'))
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'ports'], t('Ports')))
 
     //subscription specific
-    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'channel'], 'raw.spec.channel'))
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'channel'], t('Channel')))
 
     //subscription operator specific
     addPropertyToList(
         mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'spec', 'installPlanApproval'], 'raw.spec.installPlanApproval')
+        getNodePropery(node, ['specs', 'raw', 'spec', 'installPlanApproval'], t('Install plan approved'))
     )
 
-    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'source'], 'raw.spec.source'))
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'source'], t('Source')))
 
     //argo cd app status
-    addPropertyToList(
-        mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'status', 'health', 'status'], 'raw.status.health.status')
-    )
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'status', 'health', 'status'], t('Status')))
 
     addPropertyToList(
         mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'spec', 'sourceNamespace'], 'raw.spec.sourceNamespace')
+        getNodePropery(node, ['specs', 'raw', 'spec', 'sourceNamespace'], t('Source Namespace'))
     )
 
-    addPropertyToList(
-        mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'spec', 'startingCSV'], 'raw.spec.startingCSV')
-    )
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'startingCSV'], t('Starting CSV')))
     ////
 
     addPropertyToList(
         mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'spec', 'packageFilter', 'filterRef'], 'raw.spec.packageFilter')
+        getNodePropery(node, ['specs', 'raw', 'spec', 'packageFilter', 'filterRef'], t('Package Filter'))
     )
 
     addPropertyToList(
         mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'spec', 'placement', 'placementRef'], 'raw.spec.placementRef')
+        getNodePropery(node, ['specs', 'raw', 'spec', 'placement', 'placementRef'], t('Placement Ref'))
     )
 
     addPropertyToList(
@@ -326,38 +319,38 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
     //PR specific
     addPropertyToList(
         mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'spec', 'clusterSelector', 'matchLabels'], 'raw.spec.clusterSelector')
+        getNodePropery(node, ['specs', 'raw', 'spec', 'clusterSelector', 'matchLabels'], t('Cluster Selector'))
     )
 
     addPropertyToList(
         mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'spec', 'clusterConditions'], 'raw.spec.clusterConditions')
+        getNodePropery(node, ['specs', 'raw', 'spec', 'clusterConditions'], t('Cluster Conditions'))
     )
     addPropertyToList(
         mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'spec', 'clusterLabels', 'matchLabels'], 'raw.spec.clusterLabels')
+        getNodePropery(node, ['specs', 'raw', 'spec', 'clusterLabels', 'matchLabels'], t('Cluster Labels'))
     )
 
     addPropertyToList(
         mainDetails,
-        getNodePropery(node, ['specs', 'raw', 'spec', 'clusterReplicas'], 'raw.spec.clusterReplicas')
+        getNodePropery(node, ['specs', 'raw', 'spec', 'clusterReplicas'], t('Cluster Replicas'))
     )
 
     if (type === 'placements') {
         const specNbOfClustersTarget = R.pathOr([], ['specs', 'raw', 'status', 'decisions'])(node)
         mainDetails.push({
-            labelKey: 'raw.status.decisionCls',
+            labelKey: t('Matched Clusters'),
             value: specNbOfClustersTarget.length,
         })
     }
 
     //routes
-    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'to'], 'raw.spec.to'))
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'to'], t('To')))
 
-    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'host'], 'raw.spec.host'))
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'host'], t('Host')))
 
     //persistent volume claim
-    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'accessModes'], 'raw.spec.accessmode'))
+    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'accessModes'], t('Access Mode')))
     addDetails(details, mainDetails)
 
     details.push({

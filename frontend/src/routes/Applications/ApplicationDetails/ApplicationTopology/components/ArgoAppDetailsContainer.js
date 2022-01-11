@@ -276,7 +276,7 @@ class ArgoAppDetailsContainer extends React.Component {
                 onClick={this.processActionLink.bind(this, resource)}
                 onKeyDown={this.handleKeyPress.bind(this, resource)}
             >
-                {resource.action === 'open_argo_editor' ? t('props.show.argocd.editor') : t('props.show.yaml')}
+                {resource.action === 'open_argo_editor' ? t('Launch Argo editor') : t('View resource YAML')}
                 {isExternal ? (
                     <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
                         <use href="#diagramIcons_carbonLaunch" className="label-icon" />
@@ -331,9 +331,15 @@ class ArgoAppDetailsContainer extends React.Component {
                         <svg width="13px" height="13px" fill="#F0AB00" style={{ marginRight: '8px' }}>
                             <use href="#diagramIcons_warning" className="label-icon" />
                         </svg>
-                        <span>{t('resource.argo.application.health')}: </span>
+                        <span>{t('Health status')}: </span>
                     </span>
-                    <span className="value">{t('resource.argo.application.error.msg.appitem', [name, status])}: </span>
+                    <span className="value">
+                        {t(
+                            'The health status for application {{0}} is {{1}}. Use the Launch Argo editor action above to view the application details.',
+                            [name, status]
+                        )}
+                        :{' '}
+                    </span>
                 </div>
             )
         )
@@ -421,24 +427,24 @@ class ArgoAppDetailsContainer extends React.Component {
                                     fontSize: '0.75rem',
                                 }}
                             >
-                                {t('prop.details.section')}
+                                {t('Details')}
                             </span>
                             <div className="spacer" />
                             <div className={divClass}>{this.renderURLLink(appResourceYaml, false, t)}</div>
                             <div className={divClass}>
-                                <span className={labelClass}>{t('resource.argo.app.cluster')}: </span>
+                                <span className={labelClass}>{t('Created on')}: </span>
                                 <span className={valueClass}>{cluster}</span>
                             </div>
                             <div className={divClass}>
-                                <span className={labelClass}>{t('resource.argo.app.target.cluster')}: </span>
+                                <span className={labelClass}>{t('Destination cluster')}: </span>
                                 <span className={valueClass}>{destinationCluster}</span>
                             </div>
                             <div className={divClass}>
-                                <span className={labelClass}>{t('resource.argo.app.target.cluster.ns')}: </span>
+                                <span className={labelClass}>{t('Destination namespace')}: </span>
                                 <span className={valueClass}>{destinationNamespace}</span>
                             </div>
                             <div className={divClass}>
-                                <span className={labelClass}>{t('resource.status')}: </span>
+                                <span className={labelClass}>{t('Status')}: </span>
                                 <span className={valueClass}>{status}</span>
                             </div>
                             <div className="spacer" />

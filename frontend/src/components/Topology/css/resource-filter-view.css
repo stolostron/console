@@ -2,8 +2,13 @@
     width: 100%;
     color: black;
 }
+
+.resource-filter-view .filter-sections-container {
+    padding-bottom: 20px;
+}
+
 .resource-filter-view .filter-sections-container .filter-section {
-    margin: 0 0 25px 5px;
+    margin: 0 0 20px 5px;
 }
 .resource-filter-view .filter-sections-container .filter-section .filter-section-title {
     margin-bottom: 0.5rem;

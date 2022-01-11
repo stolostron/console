@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { PageSection, ActionListItem } from '@patternfly/react-core'
-import { FilterIcon } from '@patternfly/react-icons'
 import { AcmActionGroup } from '@open-cluster-management/ui-components'
 import { useState, useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -112,7 +111,7 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
                             <span
                                 className="how-to-read-text"
                                 tabIndex={0}
-                                onClick={() => setDrawerContent(t('How to read topology'), false, <LegendView t={t} />)}
+                                onClick={() => setDrawerContent(t('How to read topology'), true, <LegendView t={t} />)}
                                 onKeyPress={() => {
                                     // noop function
                                 }}
@@ -266,7 +265,7 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
             setAdditionalQuery(getAdditionalQuery(appData, searchRelated))
 
             // create topology elements with statuses provided by searches
-            setElements(getDiagramElements(appData, topology, searchRelated, additionalRelated, canUpdateStatuses))
+            setElements(getDiagramElements(appData, topology, searchRelated, additionalRelated, canUpdateStatuses, t))
         }
         setShouldRefresh(false)
     }, [searchRelated, additionalRelated, applicationRelated, canUpdateStatuses, shouldRefresh, activeChannel])
