@@ -6,6 +6,7 @@ on:
 jobs:
     npm-check-updates:
         runs-on: ubuntu-latest
+        timeout-minutes: 10
         defaults:
             run:
                 working-directory: backend
