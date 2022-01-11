@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    AcmTable,
-    IAcmRowAction,
-    IAcmTableAction,
-    IAcmTableColumn,
-    ITableFilter,
-} from '@stolostron/ui-components'
+import { AcmTable, IAcmRowAction, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
 import {
     ButtonVariant,
     Checkbox,
