@@ -8,7 +8,7 @@ import {
     AcmPageHeader,
     AcmErrorBoundary,
     AcmToastContext,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { useTranslation } from '../../../../../lib/acm-i18next'

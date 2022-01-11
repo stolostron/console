@@ -8,7 +8,7 @@ import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
 import cimTemplateHbs from '../templates/assisted-installer/cim-template.hbs'
 import aiTemplateHbs from '../templates/assisted-installer/ai-template.hbs'
-import { AcmIconVariant, AcmIcon } from '@open-cluster-management/ui-components'
+import { AcmIconVariant, AcmIcon } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ConnectedIcon } from '@patternfly/react-icons'
 

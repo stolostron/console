@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { Fragment } from 'react'
-import { AcmLabels, AcmModal } from '@open-cluster-management/ui-components'
+import { AcmLabels, AcmModal } from '@stolostron/ui-components'
 import { makeStyles } from '@material-ui/styles'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 

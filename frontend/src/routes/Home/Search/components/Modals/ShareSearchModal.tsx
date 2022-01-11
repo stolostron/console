@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { Fragment } from 'react'
 import { ModalVariant } from '@patternfly/react-core'
-import { AcmCodeSnippet, AcmModal } from '@open-cluster-management/ui-components'
+import { AcmCodeSnippet, AcmModal } from '@stolostron/ui-components'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 
 export const ShareSearchModal = (props: any) => {

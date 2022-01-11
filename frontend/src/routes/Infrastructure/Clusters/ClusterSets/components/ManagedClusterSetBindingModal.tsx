@@ -16,7 +16,7 @@ import {
     AcmModal,
     AcmMultiSelect,
     AcmSubmit,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ActionGroup, Button, ModalVariant, SelectOption, SelectVariant } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'

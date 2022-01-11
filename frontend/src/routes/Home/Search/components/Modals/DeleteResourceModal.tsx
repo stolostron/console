@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { AcmAlert, AcmButton, AcmModal } from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmButton, AcmModal } from '@stolostron/ui-components'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'

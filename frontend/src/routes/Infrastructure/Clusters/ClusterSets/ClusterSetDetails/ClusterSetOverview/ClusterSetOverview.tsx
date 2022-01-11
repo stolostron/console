@@ -6,7 +6,7 @@ import {
     AcmDescriptionList,
     AcmLabels,
     AcmPageContent,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { PageSection, Popover } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useContext } from 'react'

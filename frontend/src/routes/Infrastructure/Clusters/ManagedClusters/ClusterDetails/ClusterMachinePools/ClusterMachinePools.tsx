@@ -7,7 +7,7 @@ import {
     AcmTable,
     compareStrings,
     IAcmTableColumn,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { useContext, useState } from 'react'

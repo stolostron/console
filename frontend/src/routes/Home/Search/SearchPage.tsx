@@ -14,7 +14,7 @@ import {
     AcmRoute,
     AcmScrollable,
     AcmSearchbar,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import _ from 'lodash'
 import React, { Fragment, useEffect, useState } from 'react'

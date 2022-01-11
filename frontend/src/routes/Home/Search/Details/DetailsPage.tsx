@@ -10,7 +10,7 @@ import {
     AcmRoute,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { Link, Route, Switch, useHistory, useLocation } from 'react-router-dom'

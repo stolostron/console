@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmDrawerContext, AcmEmptyState } from '@open-cluster-management/ui-components'
+import { AcmDrawerContext, AcmEmptyState } from '@stolostron/ui-components'
 import {
     Button,
     Card,

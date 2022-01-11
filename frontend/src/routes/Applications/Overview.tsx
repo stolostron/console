@@ -6,7 +6,7 @@ import {
     AcmTable,
     IAcmRowAction,
     IAcmTableColumn,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'

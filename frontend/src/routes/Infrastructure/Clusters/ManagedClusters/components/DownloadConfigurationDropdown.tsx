@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { createDownloadFile, getSecret, unpackSecret } from '../../../../../resources'
-import { AcmDropdown } from '@open-cluster-management/ui-components'
+import { AcmDropdown } from '@stolostron/ui-components'
 import { useContext } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'

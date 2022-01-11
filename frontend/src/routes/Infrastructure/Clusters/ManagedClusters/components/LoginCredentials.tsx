@@ -9,7 +9,7 @@ import {
     AcmInlineCopy,
     AcmInlineStatus,
     StatusType,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, Tooltip } from '@patternfly/react-core'
 import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'

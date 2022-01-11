@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { AcmTable, AcmTablePaginationContextProvider } from '@open-cluster-management/ui-components'
+import { AcmTable, AcmTablePaginationContextProvider } from '@stolostron/ui-components'
 import { ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { TFunction } from 'i18next'
 import { useHistory } from 'react-router-dom'

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmButton } from '@open-cluster-management/ui-components'
+import { AcmButton } from '@stolostron/ui-components'
 import { Page, PageSection } from '@patternfly/react-core'
 import * as React from 'react'
 import { RouteComponentProps, useHistory } from 'react-router'

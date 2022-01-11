@@ -4,7 +4,7 @@ import {
     AcmTablePaginationContextProvider,
     AcmToastGroup,
     AcmToastProvider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import {
     Dropdown,
     DropdownItem,

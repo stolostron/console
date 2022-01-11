@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { AcmAlert, AcmLoadingPage, AcmLogWindow } from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmLoadingPage, AcmLogWindow } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'

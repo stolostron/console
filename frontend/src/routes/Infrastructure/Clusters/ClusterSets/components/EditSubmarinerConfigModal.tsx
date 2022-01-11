@@ -10,7 +10,7 @@ import {
     AcmSubmit,
     AcmTextInput,
     Provider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ActionGroup, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { useCallback, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'

@@ -6,7 +6,7 @@ import {
     AcmRoute,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { Fragment, ReactNode, Suspense, useEffect, useState } from 'react'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

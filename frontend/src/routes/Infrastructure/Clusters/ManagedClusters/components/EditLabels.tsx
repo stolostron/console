@@ -8,7 +8,7 @@ import {
     AcmLabelsInput,
     AcmModal,
     AcmSubmit,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
 import { useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'

@@ -17,7 +17,7 @@ import {
     ITableFilter,
     Provider,
     ProviderLongTextMap,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, PageSection, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'

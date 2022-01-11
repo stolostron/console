@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmRoute } from '@open-cluster-management/ui-components'
+import { AcmRoute } from '@stolostron/ui-components'
 import { render } from '@testing-library/react'
 import _ from 'lodash'
 import { Scope } from 'nock/types'
