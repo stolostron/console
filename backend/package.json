@@ -27,7 +27,7 @@
         "pluralize": "^8.0.0",
         "find-my-way": "^5.1.1",
         "node-fetch": "^2.6.6",
-        "pino": "^6.13.4",
+        "pino": "^7.6.3",
         "proxy-agent": "^5.0.0",
         "raw-body": "^2.4.2"
     },
