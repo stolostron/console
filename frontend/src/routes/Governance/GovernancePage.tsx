@@ -47,6 +47,8 @@ export default function GovernancePage() {
                     titleTooltip={t(
                         'Governance provides an extensible policy framework for enterprises to harden security for software engineering, secure engineering, and resiliency. Enhance your security to meet internal standards by using policies to verify which clusters are at risk'
                     )}
+                    popoverAutoWidth={false}
+                    popoverPosition='bottom'
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem isActive={isOverview}>
