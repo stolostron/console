@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import { AcmTable, compareNumbers, compareStrings } from '@open-cluster-management/ui-components'
+import { AcmTable, compareNumbers, compareStrings } from '@stolostron/ui-components'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'

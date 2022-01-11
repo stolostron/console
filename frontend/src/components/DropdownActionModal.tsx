@@ -1,13 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    AcmAlert,
-    AcmForm,
-    AcmFormProvider,
-    AcmModal,
-    AcmSelect,
-    AcmSubmit,
-} from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmForm, AcmFormProvider, AcmModal, AcmSelect, AcmSubmit } from '@stolostron/ui-components'
 import { ActionGroup, Button, ButtonVariant, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'

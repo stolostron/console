@@ -1,10 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-import {
-    AcmTablePaginationContextProvider,
-    AcmToastGroup,
-    AcmToastProvider,
-} from '@open-cluster-management/ui-components'
+import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '@stolostron/ui-components'
 import {
     Dropdown,
     DropdownItem,

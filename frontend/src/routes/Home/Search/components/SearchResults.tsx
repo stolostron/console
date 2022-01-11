@@ -9,7 +9,7 @@ import {
     AcmPageCard,
     AcmTable,
     AcmTile,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Fragment, useState } from 'react'

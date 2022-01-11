@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { makeStyles } from '@material-ui/styles'
-import { AcmAlert, AcmButton, AcmLoadingPage } from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmButton, AcmLoadingPage } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import jsYaml from 'js-yaml'

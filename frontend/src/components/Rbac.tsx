@@ -2,7 +2,7 @@
 
 import { makeStyles } from '@material-ui/styles'
 import { createSubjectAccessReview, ResourceAttributes } from '../resources'
-import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmDropdown } from '@stolostron/ui-components'
 import { ButtonProps } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'

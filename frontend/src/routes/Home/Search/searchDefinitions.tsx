@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { AcmLabels } from '@open-cluster-management/ui-components'
+import { AcmLabels } from '@stolostron/ui-components'
 import { Label, LabelGroup } from '@patternfly/react-core'
 import _ from 'lodash'
 import moment from 'moment'

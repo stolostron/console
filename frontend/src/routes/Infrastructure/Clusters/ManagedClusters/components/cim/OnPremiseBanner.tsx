@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmButton } from '@open-cluster-management/ui-components'
+import { AcmButton } from '@stolostron/ui-components'
 import {
     ActionGroup,
     Badge,

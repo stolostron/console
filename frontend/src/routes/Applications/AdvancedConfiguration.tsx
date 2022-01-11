@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '@open-cluster-management/ui-components'
+import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
 import {
     Card,
     CardBody,

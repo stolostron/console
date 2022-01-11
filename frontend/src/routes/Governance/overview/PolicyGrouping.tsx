@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmTable, IAcmTableColumn, ITableFilter } from '@open-cluster-management/ui-components'
+import { AcmTable, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
 import { Fragment, useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NoWrap } from '../../../components/NoWrap'

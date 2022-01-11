@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmInlineProvider, Provider } from '@open-cluster-management/ui-components'
+import { AcmInlineProvider, Provider } from '@stolostron/ui-components'
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
