@@ -10,7 +10,7 @@ import {
     AcmPageContent,
     AcmTable,
     StatusType,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import {
     ButtonVariant,
     Flex,

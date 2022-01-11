@@ -10,7 +10,7 @@ import {
     ResourceAttributes,
     Secret,
 } from '../../resources'
-import { Provider } from '@open-cluster-management/ui-components'
+import { Provider } from '@stolostron/ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route } from 'react-router-dom'

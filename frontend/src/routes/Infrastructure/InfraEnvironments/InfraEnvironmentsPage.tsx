@@ -9,7 +9,7 @@ import {
     AcmPageHeader,
     AcmRoute,
     AcmTable,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import isMatch from 'lodash/isMatch'

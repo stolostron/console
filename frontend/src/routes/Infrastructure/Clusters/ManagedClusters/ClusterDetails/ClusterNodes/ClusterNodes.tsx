@@ -8,7 +8,7 @@ import {
     compareNumbers,
     IAcmTableColumn,
     StatusType,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useContext } from 'react'

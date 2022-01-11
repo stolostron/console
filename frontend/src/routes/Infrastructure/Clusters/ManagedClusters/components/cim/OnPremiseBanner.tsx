@@ -15,7 +15,7 @@ import {
     Badge,
     Stack,
 } from '@patternfly/react-core'
-import { AcmButton } from '@open-cluster-management/ui-components'
+import { AcmButton } from '@stolostron/ui-components'
 import mainIcon from '../../../../../../logos/OnPremiseBannerIcon.svg'
 
 type OnPremisebannerProps = {

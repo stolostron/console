@@ -10,7 +10,7 @@ import {
     patchResource,
     ResourceErrorCode,
 } from '../../../../../resources'
-import { AcmInlineProvider, Provider } from '@open-cluster-management/ui-components'
+import { AcmInlineProvider, Provider } from '@stolostron/ui-components'
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'

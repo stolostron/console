@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmRoute } from '@open-cluster-management/ui-components'
+import { AcmRoute } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
