@@ -15,7 +15,7 @@ import {
     AcmPageCard,
     AcmTable,
     AcmTablePaginationContextProvider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useHistory } from 'react-router-dom'

@@ -5,7 +5,7 @@ import {
     AcmTable,
     AcmErrorBoundary,
     IAcmTableColumn,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { Page } from '@patternfly/react-core'
 import AWSIcon from '@patternfly/react-icons/dist/js/icons/aws-icon'
 import CheckIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'

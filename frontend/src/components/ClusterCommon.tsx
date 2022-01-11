@@ -10,7 +10,7 @@ import {
     AcmSubmit,
     AcmSelect,
     AcmAlert,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import {
     ButtonVariant,
     ModalVariant,

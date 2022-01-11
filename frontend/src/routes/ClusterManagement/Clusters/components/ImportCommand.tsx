@@ -1,5 +1,5 @@
-import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
-import { onCopy } from '@open-cluster-management/ui-components/lib/utils'
+import { AcmAlert, AcmButton } from '@stolostron/ui-components'
+import { onCopy } from '@stolostron/ui-components/lib/utils'
 import {
     AlertVariant,
     Card,

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation, Trans } from 'react-i18next'
-import { AcmCountCardSection } from '@open-cluster-management/ui-components'
+import { AcmCountCardSection } from '@stolostron/ui-components'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { queryStatusCount } from '../../../../lib/search'
 import { useQuery } from '../../../../lib/useQuery'

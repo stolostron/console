@@ -11,7 +11,7 @@ import {
     AcmTable,
     AcmTablePaginationContextProvider,
     AcmErrorBoundary,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { Page } from '@patternfly/react-core'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

@@ -8,7 +8,7 @@ import {
     AcmTablePaginationContextProvider,
     AcmTextInput,
     IAcmTableColumn,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import {
     ActionGroup,
     Button,

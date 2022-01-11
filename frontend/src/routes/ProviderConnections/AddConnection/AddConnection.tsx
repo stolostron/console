@@ -15,8 +15,8 @@ import {
     AcmInlineProvider,
     Provider,
     AcmErrorBoundary,
-} from '@open-cluster-management/ui-components'
-import { AcmTextArea } from '@open-cluster-management/ui-components/lib/AcmTextArea/AcmTextArea'
+} from '@stolostron/ui-components'
+import { AcmTextArea } from '@stolostron/ui-components/lib/AcmTextArea/AcmTextArea'
 import { ActionGroup, Button, Page, SelectOption, Title } from '@patternfly/react-core'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'

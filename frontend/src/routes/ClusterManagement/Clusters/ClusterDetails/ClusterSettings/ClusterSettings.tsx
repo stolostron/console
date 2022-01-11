@@ -6,7 +6,7 @@ import {
     AcmInlineStatus,
     StatusType,
     AcmErrorBoundary,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { Addon, AddonStatus } from '../../../../../lib/get-addons'
 import { ClusterContext } from '../ClusterDetails'

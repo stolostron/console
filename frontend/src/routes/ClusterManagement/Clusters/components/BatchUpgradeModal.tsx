@@ -1,7 +1,7 @@
 import './style.css'
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AcmSelect } from '@open-cluster-management/ui-components'
+import { AcmSelect } from '@stolostron/ui-components'
 import { SelectOption } from '@patternfly/react-core'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { postRequest, IRequestResult } from '../../../../lib/resource-request'

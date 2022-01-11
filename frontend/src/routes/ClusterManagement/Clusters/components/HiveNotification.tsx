@@ -1,5 +1,5 @@
 import React, { Fragment, useContext, useEffect, useState, useCallback } from 'react'
-import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmButton } from '@stolostron/ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { makeStyles } from '@material-ui/styles'
