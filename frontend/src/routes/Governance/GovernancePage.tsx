@@ -44,6 +44,9 @@ export default function GovernancePage() {
             header={
                 <AcmPageHeader
                     title={t('Governance')}
+                    titleTooltip={t(
+                        'Governance provides an extensible policy framework for enterprises to harden security for software engineering, secure engineering, and resiliency. Enhance your security to meet internal standards by using policies to verify which clusters are at risk'
+                    )}
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem isActive={isOverview}>
