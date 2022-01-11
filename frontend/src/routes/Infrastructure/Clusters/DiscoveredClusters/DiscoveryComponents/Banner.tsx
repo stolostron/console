@@ -10,7 +10,7 @@ import {
     SplitItem,
     ActionGroup,
 } from '@patternfly/react-core'
-import { AcmButton } from '@open-cluster-management/ui-components'
+import { AcmButton } from '@stolostron/ui-components'
 import { Trans, useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { useEffect, useState } from 'react'

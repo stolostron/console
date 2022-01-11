@@ -6,7 +6,7 @@ import {
     AcmTablePaginationContextProvider,
     AcmToastProvider,
     AcmToastGroup,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

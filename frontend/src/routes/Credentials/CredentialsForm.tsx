@@ -8,7 +8,7 @@ import {
     Provider,
     ProviderIconMap,
     ProviderLongTextMap,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

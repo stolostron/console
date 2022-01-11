@@ -10,7 +10,7 @@ import {
     AcmPageHeader,
     AcmTable,
     compareStrings,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
 import { useContext, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'

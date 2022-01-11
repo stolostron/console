@@ -10,7 +10,7 @@ import {
     AcmPageContent,
     AcmTable,
     IAcmTableAction,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, PageSection, Stack, StackItem, TextContent, Text, TextVariants } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react'

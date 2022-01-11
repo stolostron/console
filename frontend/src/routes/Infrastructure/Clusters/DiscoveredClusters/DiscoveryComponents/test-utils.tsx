@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { DiscoveredCluster } from '../../../../../resources/discovered-cluster'
 import { Secret, SecretApiVersion, SecretKind } from '../../../../../resources/secret'
-import { Provider } from '@open-cluster-management/ui-components'
+import { Provider } from '@stolostron/ui-components'
 import { SelfSubjectAccessReview } from '../../../../../resources/self-subject-access-review'
 import {
     DiscoveryConfig,

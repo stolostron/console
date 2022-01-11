@@ -17,7 +17,7 @@ import {
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
-import { AcmLabels, AcmTable, compareStrings } from '@open-cluster-management/ui-components'
+import { AcmLabels, AcmTable, compareStrings } from '@stolostron/ui-components'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
 import { useRecoilState } from 'recoil'
 import { configMapsState } from '../../../../../atoms'

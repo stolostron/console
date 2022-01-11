@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '@open-cluster-management/ui-components'
+import { AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'

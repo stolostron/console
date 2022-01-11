@@ -10,7 +10,7 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
     Provider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { Page } from '@patternfly/react-core'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

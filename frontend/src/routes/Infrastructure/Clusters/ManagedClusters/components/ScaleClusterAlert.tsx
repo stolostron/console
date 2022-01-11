@@ -2,7 +2,7 @@
 
 import { Fragment, useContext } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { AcmAlert, Provider } from '@open-cluster-management/ui-components'
+import { AcmAlert, Provider } from '@stolostron/ui-components'
 import { useRecoilState } from 'recoil'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { machinePoolsState, submarinerConfigsState } from '../../../../../atoms'

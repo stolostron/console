@@ -12,7 +12,7 @@ import {
     AcmButton,
     AcmExpandableSection,
     ProviderLongTextMap,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { PageSection, List, ListItem } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation, Trans } from 'react-i18next'
