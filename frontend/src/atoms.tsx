@@ -68,6 +68,8 @@ export const ansibleJobState = atom<AnsibleJob[]>({ key: 'ansiblejobs', default:
 
 interface Settings {
     LOG_LEVEL?: string
+    ansibleIntegration?: 'enabled' | 'disabled'
+    singleNodeOpenshift?: 'enabled' | 'disabled'
 }
 
 interface WatchEvent {

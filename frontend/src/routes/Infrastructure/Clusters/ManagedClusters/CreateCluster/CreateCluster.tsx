@@ -26,7 +26,7 @@ import { controlData } from './controlData/ControlData'
 import { setAvailableConnections, setAvailableTemplates } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
-import { featureGatesState, secretsState, managedClustersState, clusterCuratorsState } from '../../../../../atoms'
+import { secretsState, managedClustersState, clusterCuratorsState, settingsState } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
 import {
     ClusterCurator,
@@ -37,7 +37,6 @@ import { createCluster } from '../../../../../lib/create-cluster'
 import { ProviderConnection, unpackProviderConnection } from '../../../../../resources/provider-connection'
 import { Secret } from '../../../../../resources/secret'
 import { createResource as createResourceTool } from '../../../../../lib/resource-request'
-import { FeatureGates } from '../../../../../FeatureGates'
 
 declare const window: any
 if (window.monaco) {
@@ -90,8 +89,7 @@ export default function CreateClusterPage() {
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
     )
 
-    const [featureGateCache] = useRecoilState(featureGatesState)
-
+    const [settings] = useRecoilState(settingsState)
     const [managedClusters] = useRecoilState(managedClustersState)
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
     const curatorTemplates = filterForTemplatedCurators(clusterCurators)
@@ -269,7 +267,7 @@ export default function CreateClusterPage() {
                 setAvailableTemplates(control, curatorTemplates)
                 break
             case 'singleNodeFeatureFlag':
-                if (featureGateCache.find((fg) => fg.metadata.name === FeatureGates.singleNodeOpenShift)) {
+                if (settings.singleNodeOpenshift === 'enabled') {
                     control.active = true
                 }
                 break

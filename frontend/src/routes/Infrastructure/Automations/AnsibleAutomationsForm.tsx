@@ -5,14 +5,13 @@ import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { featureGatesState, secretsState } from '../../../atoms'
+import { secretsState, settingsState } from '../../../atoms'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { createResource, replaceResource } from '../../../lib/resource-request'
 import { NavigationPath } from '../../../NavigationPath'
-import { FeatureGates } from '../../../FeatureGates'
 import {
     AnsibleJob,
     ClusterCurator,
@@ -94,7 +93,7 @@ export function AnsibleAutomationsForm(props: {
     const { t } = useTranslation(['cluster', 'common', 'credentials', 'create'])
     const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
 
-    const [featureGateCache] = useRecoilState(featureGatesState)
+    const [settings] = useRecoilState(settingsState)
 
     const history = useHistory()
     const [editAnsibleJob, setEditAnsibleJob] = useState<AnsibleJob | undefined>()
@@ -324,9 +323,7 @@ export function AnsibleAutomationsForm(props: {
                             },
                         ],
                     },
-                    ...(featureGateCache.find(
-                        (featureGate) => featureGate.metadata.name === FeatureGates.ansibleAutomationTemplate
-                    )
+                    ...(settings.ansibleIntegration === 'enabled'
                         ? ([
                               {
                                   type: 'Section',
