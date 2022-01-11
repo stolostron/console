@@ -20,7 +20,7 @@
     },
     "dependencies": {
         "abort-controller": "^3.0.0",
-        "dotenv": "^10.0.0",
+        "dotenv": "^11.0.0",
         "event-stream": "^4.0.1",
         "get-value": "^3.0.1",
         "got": "^11.8.3",
