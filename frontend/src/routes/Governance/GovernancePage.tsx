@@ -49,14 +49,14 @@ export default function GovernancePage() {
                                 <Link to={NavigationPath.governance}>{t('Overview')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem
-                                isActive={!isOverview && location.pathname.startsWith(NavigationPath.policies)}
-                            >
-                                <Link to={NavigationPath.policies}>{t('Policies')}</Link>
-                            </AcmSecondaryNavItem>
-                            <AcmSecondaryNavItem
                                 isActive={!isOverview && location.pathname.startsWith(NavigationPath.policySets)}
                             >
                                 <Link to={NavigationPath.policySets}>{t('Policy Sets')}</Link>
+                            </AcmSecondaryNavItem>
+                            <AcmSecondaryNavItem
+                                isActive={!isOverview && location.pathname.startsWith(NavigationPath.policies)}
+                            >
+                                <Link to={NavigationPath.policies}>{t('Policies')}</Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
@@ -72,12 +72,12 @@ export default function GovernancePage() {
                             path={NavigationPath.governance}
                             render={() => <GovernanceOverview governanceData={governanceData} />}
                         />
+                        <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
                         <Route
                             exact
                             path={NavigationPath.policies}
                             render={() => <PoliciesPage governanceData={governanceData} />}
                         />
-                        <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
                     </Switch>
                 </Suspense>
             </PageContext.Provider>
