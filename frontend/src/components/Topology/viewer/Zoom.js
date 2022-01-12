@@ -12,7 +12,7 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import { PlusIcon, MinusIcon, ExpandIcon } from '@patternfly/react-icons'
+import { ExpandIcon, SearchPlusIcon, SearchMinusIcon } from '@patternfly/react-icons'
 import '../css/diagram-controls.css'
 
 const MAX_ZOOM = 2
@@ -46,7 +46,7 @@ export default class Zoom extends React.PureComponent {
                     onKeyPress={this.handleZoomIn}
                 >
                     <div className="icon">
-                        <PlusIcon />
+                        <SearchPlusIcon />
                     </div>
                 </div>
                 {/* zoom out */}
@@ -61,7 +61,7 @@ export default class Zoom extends React.PureComponent {
                     onKeyPress={this.handleZoomOut}
                 >
                     <div className="icon">
-                        <MinusIcon />
+                        <SearchMinusIcon />
                     </div>
                 </div>
                 {/* zoom target */}

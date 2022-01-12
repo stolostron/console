@@ -1,7 +1,6 @@
 .topology-controls {
     display: flex;
     flex-wrap: wrap;
-    margin-bottom: 8px;
 }
 .topology-controls .topology-control-container {
     display: flex;
