@@ -17,12 +17,7 @@ import {
     TextContent,
     Title,
 } from '@patternfly/react-core'
-import {
-    AcmAlertContext,
-    AcmAlertGroup,
-    AcmAlertProvider,
-    AcmErrorBoundary,
-} from '@stolostron/ui-components'
+import { AcmAlertContext, AcmAlertGroup, AcmAlertProvider, AcmErrorBoundary } from '@stolostron/ui-components'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import React, { Fragment, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
