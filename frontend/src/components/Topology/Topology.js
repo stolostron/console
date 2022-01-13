@@ -12,7 +12,7 @@
 
 import React, { createRef } from 'react'
 import PropTypes from 'prop-types'
-import { AcmAlert } from '@open-cluster-management/ui-components'
+import { AcmAlert } from '@stolostron/ui-components'
 import SearchName from './viewer/SearchName'
 import ResourceFilterView from './viewer/ResourceFilterView'
 import ResourceFilterBar from './viewer/ResourceFilterBar'

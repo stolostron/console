@@ -22,7 +22,7 @@ import {
     AcmAlertGroup,
     AcmAlertProvider,
     AcmErrorBoundary,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import React, { Fragment, ReactNode } from 'react'
 import { Link } from 'react-router-dom'

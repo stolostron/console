@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPageContent } from '@open-cluster-management/ui-components'
+import { AcmPageContent } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 
 export function ApplicationOverviewPageContent() {

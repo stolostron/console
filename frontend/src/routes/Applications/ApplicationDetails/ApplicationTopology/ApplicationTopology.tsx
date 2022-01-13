@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { PageSection, ActionListItem } from '@patternfly/react-core'
-import { AcmActionGroup } from '@open-cluster-management/ui-components'
+import { AcmActionGroup } from '@stolostron/ui-components'
 import { useState, useEffect, useContext } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'

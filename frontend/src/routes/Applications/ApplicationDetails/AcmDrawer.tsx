@@ -13,7 +13,7 @@ import {
     DrawerCloseButton,
     DrawerPanelContentProps,
 } from '@patternfly/react-core'
-import { AcmAlertProvider, AcmAlertContext } from '@open-cluster-management/ui-components'
+import { AcmAlertProvider, AcmAlertContext } from '@stolostron/ui-components'
 
 export const AcmDrawerContext = createContext<{
     drawerContext?: AcmDrawerProps
