@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    AcmPage,
-    AcmPageHeader,
-    AcmRoute,
-    AcmSecondaryNav,
-    AcmSecondaryNavItem,
-} from '@open-cluster-management/ui-components'
+import { AcmPage, AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 import { Fragment, ReactNode, Suspense, useEffect, useState } from 'react'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -44,20 +38,25 @@ export default function GovernancePage() {
             header={
                 <AcmPageHeader
                     title={t('Governance')}
+                    titleTooltip={t(
+                        'Governance provides an extensible policy framework for enterprises to harden security for software engineering, secure engineering, and resiliency. Enhance your security to meet internal standards by using policies to verify which clusters are at risk'
+                    )}
+                    popoverAutoWidth={false}
+                    popoverPosition="bottom"
                     navigation={
                         <AcmSecondaryNav>
                             <AcmSecondaryNavItem isActive={isOverview}>
                                 <Link to={NavigationPath.governance}>{t('Overview')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem
-                                isActive={!isOverview && location.pathname.startsWith(NavigationPath.policies)}
-                            >
-                                <Link to={NavigationPath.policies}>{t('Policies')}</Link>
-                            </AcmSecondaryNavItem>
-                            <AcmSecondaryNavItem
                                 isActive={!isOverview && location.pathname.startsWith(NavigationPath.policySets)}
                             >
                                 <Link to={NavigationPath.policySets}>{t('Policy Sets')}</Link>
+                            </AcmSecondaryNavItem>
+                            <AcmSecondaryNavItem
+                                isActive={!isOverview && location.pathname.startsWith(NavigationPath.policies)}
+                            >
+                                <Link to={NavigationPath.policies}>{t('Policies')}</Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
@@ -73,12 +72,12 @@ export default function GovernancePage() {
                             path={NavigationPath.governance}
                             render={() => <GovernanceOverview governanceData={governanceData} />}
                         />
+                        <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
                         <Route
                             exact
                             path={NavigationPath.policies}
                             render={() => <PoliciesPage governanceData={governanceData} />}
                         />
-                        <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
                     </Switch>
                 </Suspense>
             </PageContext.Provider>

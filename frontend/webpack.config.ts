@@ -109,6 +109,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 '/multicloud/apis': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/events': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/proxy/search': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/ansibletower': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/authenticated': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/common': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/version': { target: 'https://localhost:4000', secure: false },
@@ -119,6 +120,9 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             historyApiFallback: true,
             compress: true,
             https: true,
+            server: {
+                type: 'https',
+            },
             hot: true,
             static: {
                 publicPath: '/multicloud',

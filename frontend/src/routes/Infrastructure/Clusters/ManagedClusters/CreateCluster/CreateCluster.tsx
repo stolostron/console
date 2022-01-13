@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
+import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
@@ -149,15 +149,17 @@ export default function CreateClusterPage() {
                     })
                 }
 
-                // add source labels to secrets
+                // add source labels to secrets, add backup labels
                 createResources.forEach((resource) => {
                     if (resource.kind === 'Secret') {
-                        resource!.metadata!.labels = {
-                            'cluster.open-cluster-management.io/copiedFromNamespace':
-                                selectedConnection?.metadata.namespace!,
+                        resource!.metadata.labels! = { 'cluster.open-cluster-management.io/backup': 'cluster' }
+
+                        if (!resource!.metadata!.name.includes('install-config')) {
+                            resource!.metadata!.labels['cluster.open-cluster-management.io/copiedFromNamespace'] =
+                                selectedConnection?.metadata.namespace!
+                            resource!.metadata.labels!['cluster.open-cluster-management.io/copiedFromSecretName'] =
+                                selectedConnection?.metadata.name!
                         }
-                        resource!.metadata.labels!['cluster.open-cluster-management.io/copiedFromSecretName'] =
-                            selectedConnection?.metadata.name!
                     }
                 })
 

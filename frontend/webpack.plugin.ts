@@ -36,8 +36,14 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
                     test: /\.css$/,
+                    exclude: /node_modules\/\@patternfly/,
                     use: isDevelopment ? ['style-loader', 'css-loader'] : [MiniCssExtractPlugin.loader, 'css-loader'],
                 },
+                {
+                    test: /\.css$/,
+                    include: /node_modules\/\@patternfly/,
+                    loader: "null-loader"
+                  },
                 {
                     test: /\.(ts|tsx|js|jsx)$/,
                     exclude: /node_modules/,

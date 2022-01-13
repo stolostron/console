@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@open-cluster-management/ui-components'
+import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@stolostron/ui-components'
 import {
     ActionGroup,
     Button,

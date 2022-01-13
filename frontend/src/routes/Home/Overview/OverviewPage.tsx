@@ -18,7 +18,7 @@ import {
     AcmScrollable,
     AcmSummaryList,
     Provider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { PlusIcon } from '@patternfly/react-icons'
 import _ from 'lodash'

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmAlert, AcmModal } from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmModal } from '@stolostron/ui-components'
 import { Button, Checkbox, ModalVariant } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { TFunction } from 'i18next'

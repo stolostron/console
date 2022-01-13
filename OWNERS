@@ -15,6 +15,9 @@ approvers:
 - mark-nc
 - RobDolares
 - zlayne
+- mareklibra
+- jtomasek
+- rawagner
 
 reviewers:
 - jamestalton
@@ -33,3 +36,6 @@ reviewers:
 - mark-nc
 - RobDolares
 - zlayne
+- mareklibra
+- jtomasek
+- rawagner

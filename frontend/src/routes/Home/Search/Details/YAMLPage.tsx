@@ -2,15 +2,15 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { makeStyles } from '@material-ui/styles'
-import { AcmAlert, AcmButton, AcmLoadingPage } from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmButton, AcmLoadingPage } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import jsYaml from 'js-yaml'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { useEffect, useState } from 'react'
-import { useTranslation } from '../../../../lib/acm-i18next'
 import MonacoEditor, { monaco } from 'react-monaco-editor'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
 import './YAMLEditor.css'
@@ -228,7 +228,7 @@ export default function YAMLPage(props: {
                     smoothScrolling: true,
                     glyphMargin: true,
                     tabSize: 2,
-                    renderIndentGuides: false,
+                    // renderIndentGuides: false,
                     scrollbar: {
                         verticalScrollbarSize: 17,
                         horizontalScrollbarSize: 17,

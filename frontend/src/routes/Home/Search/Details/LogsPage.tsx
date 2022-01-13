@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { AcmAlert, AcmLoadingPage, AcmLogWindow } from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmLoadingPage, AcmLogWindow } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { getBackendUrl, fetchGet } from '../../../../resources'
+import { fetchRetry, getBackendUrl } from '../../../../resources'
 
 export default function LogsPage(props: {
     resourceError: string
@@ -27,34 +27,45 @@ export default function LogsPage(props: {
         }
     }, [containers, cluster, name])
 
-    if (cluster !== 'local-cluster' && container !== '') {
-        const abortController = new AbortController()
-        const logsResult = fetchGet(
-            getBackendUrl() +
-                `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${namespace}/${name}/${container}?tailLines=1000`,
-            abortController.signal
-        )
-        logsResult
-            .then((result) => {
-                setLogs(result.data as string)
+    useEffect(() => {
+        if (cluster !== 'local-cluster' && container !== '') {
+            const abortController = new AbortController()
+            const logsResult = fetchRetry({
+                method: 'GET',
+                url:
+                    getBackendUrl() +
+                    `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${namespace}/${name}/${container}?tailLines=1000`,
+                signal: abortController.signal,
+                retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+                headers: { Accept: '*/*' },
             })
-            .catch((err) => {
-                setLogsError(err.message)
+            logsResult
+                .then((result) => {
+                    setLogs(result.data as string)
+                })
+                .catch((err) => {
+                    setLogsError(err.message)
+                })
+        } else if (cluster === 'local-cluster' && container !== '') {
+            const abortController = new AbortController()
+            const logsResult = fetchRetry({
+                method: 'GET',
+                url:
+                    getBackendUrl() +
+                    `/api/v1/namespaces/${namespace}/pods/${name}/log?container=${container}&tailLines=1000`,
+                signal: abortController.signal,
+                retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+                headers: { Accept: '*/*' },
             })
-    } else if (cluster === 'local-cluster' && container !== '') {
-        const abortController = new AbortController()
-        const logsResult = fetchGet(
-            getBackendUrl() + `/api/v1/namespaces/${namespace}/pods/${name}/log?container=${container}&tailLines=1000`,
-            abortController.signal
-        )
-        logsResult
-            .then((result) => {
-                setLogs(result.data as string)
-            })
-            .catch((err) => {
-                setLogsError(err.message)
-            })
-    }
+            logsResult
+                .then((result) => {
+                    setLogs(result.data as string)
+                })
+                .catch((err) => {
+                    setLogsError(err.message)
+                })
+        }
+    }, [cluster, container])
 
     if (resourceError !== '') {
         return (

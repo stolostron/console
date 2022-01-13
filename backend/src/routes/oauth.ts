@@ -12,19 +12,26 @@ import { getToken } from '../lib/token'
 import { setDead } from './liveness'
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
-export const oauthInfoPromise = jsonRequest<OAuthInfo>(
-    `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
-).catch((err: Error) => {
-    logger.error({ msg: 'oauth-authorization-server error', error: err.message })
-    setDead()
-    return {
-        authorization_endpoint: '',
-        token_endpoint: '',
+let oauthInfoPromise: Promise<OAuthInfo>
+
+export function getOauthInfoPromise() {
+    if (oauthInfoPromise === undefined) {
+        oauthInfoPromise = jsonRequest<OAuthInfo>(
+            `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
+        ).catch((err: Error) => {
+            logger.error({ msg: 'oauth-authorization-server error', error: err.message })
+            setDead()
+            return {
+                authorization_endpoint: '',
+                token_endpoint: '',
+            }
+        })
     }
-})
+    return oauthInfoPromise
+}
 
 export async function login(_req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-    const oauthInfo = await oauthInfoPromise
+    const oauthInfo = await getOauthInfoPromise()
     const queryString = stringifyQuery({
         response_type: `code`,
         client_id: process.env.OAUTH2_CLIENT_ID,
@@ -38,7 +45,7 @@ export async function login(_req: Http2ServerRequest, res: Http2ServerResponse):
 export async function loginCallback(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const url = req.url
     if (url.includes('?')) {
-        const oauthInfo = await oauthInfoPromise
+        const oauthInfo = await getOauthInfoPromise()
         const queryString = url.substr(url.indexOf('?') + 1)
         const query = parseQueryString(queryString)
         const code = query.code as string
@@ -59,7 +66,8 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
                 } HttpOnly; Path=/`,
                 location: process.env.FRONTEND_URL,
             }
-            return res.writeHead(302, headers).end()
+            res.writeHead(302, headers).end()
+            return
         } else {
             return respondInternalServerError(req, res)
         }

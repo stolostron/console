@@ -29,7 +29,7 @@ import {
     AcmTable,
     compareStrings,
     IAcmTableColumn,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import {
     ActionGroup,
     ButtonVariant,

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmCountCardSection, AcmDrawerContext } from '@open-cluster-management/ui-components'
+import { AcmCountCardSection, AcmDrawerContext } from '@stolostron/ui-components'
 import { useCallback, useContext, useEffect } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
@@ -66,7 +66,7 @@ export function StatusSummaryCount() {
                 cards={[
                     {
                         id: 'nodes',
-                        count: /* istanbul ignore next */ cluster?.nodes?.nodeList?.length ?? 0,
+                        count: /* istanbul ignore next */ (cluster?.nodes?.nodeList ?? []).length,
                         countClick: () => push(NavigationPath.clusterNodes.replace(':id', cluster?.name!)),
                         title: t('summary.nodes'),
                         description: (

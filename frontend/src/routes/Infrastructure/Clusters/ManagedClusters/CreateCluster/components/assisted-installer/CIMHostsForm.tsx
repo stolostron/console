@@ -65,7 +65,7 @@ const CIMHostsForm: React.FC<CIMHostsFormProps> = ({ control, handleChange }) =>
             }
 
             try {
-                await onHostsNext({ values: control.active, clusterDeployment, agents })
+                await onHostsNext({ values: control.active, clusterDeployment, agents, agentClusterInstall })
             } catch (err) {
                 const msg = err instanceof Error ? err?.message : undefined
                 setError(msg || 'An error occured')

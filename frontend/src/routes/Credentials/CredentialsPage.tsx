@@ -11,7 +11,7 @@ import {
     compareStrings,
     Provider,
     ProviderLongTextMap,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'

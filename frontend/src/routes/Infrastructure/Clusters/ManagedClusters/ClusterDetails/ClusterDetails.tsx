@@ -21,7 +21,7 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
     Provider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { Page } from '@patternfly/react-core'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -61,14 +61,16 @@ export const ClusterContext = createContext<{
     readonly clusterDeployment?: ClusterDeployment
     readonly agents?: AgentK8sResource[]
     readonly agentClusterInstall?: AgentClusterInstallK8sResource
-    readonly infraEnv?: InfraEnvK8sResource
+    // readonly infraEnv?: InfraEnvK8sResource
+    readonly infraEnvAIFlow?: InfraEnvK8sResource
 }>({
     cluster: undefined,
     addons: undefined,
     clusterDeployment: undefined,
     agents: undefined,
     agentClusterInstall: undefined,
-    infraEnv: undefined,
+    // infraEnv: undefined,
+    infraEnvAIFlow: undefined,
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
@@ -123,10 +125,17 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const agentClusterInstall = agentClusterInstalls.find(
         (aci) => aci.metadata.name === match.params.id && aci.metadata.namespace === match.params.id
     )
+    /* I do not see this used anywhere. Moreover, the mapping infraEnvs:clusters is M:N
     const infraEnv = infraEnvs.find(
         (ie) =>
             ie.metadata.name === clusterDeployment?.metadata.name &&
             ie.metadata.namespace === clusterDeployment?.metadata.namespace
+    )
+    */
+    const infraEnvAIFlow = infraEnvs.find(
+        (ie: InfraEnvK8sResource) =>
+            ie.spec?.clusterRef?.name === clusterDeployment?.metadata.name &&
+            ie.spec?.clusterRef?.namespace === clusterDeployment?.metadata.namespace
     )
 
     const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo
@@ -203,7 +212,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 agentClusterInstall,
                 agents,
                 clusterDeployment,
-                infraEnv,
+                // infraEnv,
+                infraEnvAIFlow,
             }}
         >
             <AcmPage

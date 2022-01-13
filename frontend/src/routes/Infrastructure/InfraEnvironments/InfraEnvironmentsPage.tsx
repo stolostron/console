@@ -9,7 +9,7 @@ import {
     AcmPageHeader,
     AcmRoute,
     AcmTable,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import isMatch from 'lodash/isMatch'
@@ -153,7 +153,11 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
                             )
                             const errorAgents = infraAgents.filter((a) => getAgentStatus(a)[0] === 'error')
-                            const warningAgents = infraAgents.filter((a) => getAgentStatus(a)[0] === 'insufficient')
+                            const warningAgents = infraAgents.filter((a) =>
+                                ['pending-for-input', 'insufficient', 'insufficient-unbound'].includes(
+                                    getAgentStatus(a)[0]
+                                )
+                            )
 
                             return (
                                 <Link to={`${getDetailsLink(infraEnv)}/hosts`}>

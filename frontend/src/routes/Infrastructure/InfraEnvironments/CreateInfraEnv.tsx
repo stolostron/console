@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@open-cluster-management/ui-components'
+import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
 import { useState } from 'react'

@@ -17,7 +17,7 @@ import {
     SecretApiVersion,
     SecretKind,
 } from '../resources'
-import { Provider } from '@open-cluster-management/ui-components'
+import { Provider } from '@stolostron/ui-components'
 
 export const mockOpenShiftConsoleConfigMap: ConfigMap = {
     apiVersion: ConfigMapApiVersion,

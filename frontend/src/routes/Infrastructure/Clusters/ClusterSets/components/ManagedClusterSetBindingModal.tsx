@@ -9,14 +9,7 @@ import {
     ManagedClusterSetBindingKind,
     resultsSettled,
 } from '../../../../../resources'
-import {
-    AcmAlertContext,
-    AcmAlertGroup,
-    AcmForm,
-    AcmModal,
-    AcmMultiSelect,
-    AcmSubmit,
-} from '@open-cluster-management/ui-components'
+import { AcmAlertContext, AcmAlertGroup, AcmForm, AcmModal, AcmMultiSelect, AcmSubmit } from '@stolostron/ui-components'
 import { ActionGroup, Button, ModalVariant, SelectOption, SelectVariant } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'

@@ -3,14 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import React, { Fragment, useReducer, useEffect, useState } from 'react'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import {
-    AcmModal,
-    AcmButton,
-    AcmForm,
-    AcmTextInput,
-    AcmTextArea,
-    AcmAlert,
-} from '@open-cluster-management/ui-components'
+import { AcmModal, AcmButton, AcmForm, AcmTextInput, AcmTextArea, AcmAlert } from '@stolostron/ui-components'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { SavedSearchesDocument, useSaveSearchMutation, UserSearch } from '../../search-sdk/search-sdk'
 import { searchClient } from '../../search-sdk/search-client'

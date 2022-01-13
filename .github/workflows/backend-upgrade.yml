@@ -1,0 +1,32 @@
+name: Backend Upgrade
+on:
+    workflow_dispatch:
+    schedule:
+        - cron: '0 9 * * 1'
+jobs:
+    npm-check-updates:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        defaults:
+            run:
+                working-directory: backend
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  token: ${{ secrets.GH_TOKEN }}
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: '14'
+            - run: npm i -g npm-check-updates
+            - name: npm-check-updates --target latest
+              run: ncu -e 2 -x $SKIP > /dev/null 2>&1 || ncu --doctor -u -x $SKIP
+              env:
+                  SKIP: node-fetch,pino,@types/node,@types/pino,@types/node-fetch
+            - name: npm-check-updates --target minor
+              run: ncu -e 2 -t minor > /dev/null 2>&1 || ncu --doctor -u -t minor
+            - name: npm-check-updates --target patch
+              run: ncu -e 2 -t patch > /dev/null 2>&1 || ncu --doctor -u -t patch
+            - uses: EndBug/add-and-commit@v7
+              with:
+                  default_author: github_actions
+                  message: Upgraded package dependencies
