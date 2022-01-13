@@ -10,8 +10,6 @@
 'use strict'
 
 import React from 'react'
-import moment from 'moment'
-import 'moment/min/locales'
 import _ from 'lodash'
 import queryString from 'query-string'
 import { isYAMLEditAvailable } from './search-helper'
@@ -19,61 +17,8 @@ import { isYAMLEditAvailable } from './search-helper'
  * UI helpers to help with data transformations
  * */
 
-export const transform = (resource, key, locale, isSearch) => {
-    let value = _.get(resource, key.resourceKey)
-    if (key.type === 'timestamp') {
-        return moment.unix(value).format('MMM Do YYYY \\at h:mm A')
-    } else if (key.type === 'i18n') {
-        return t(key.resourceKey)
-    } else if (key.type === 'boolean') {
-        value = new Boolean(value).toString()
-        return t(value)
-    } else if (key.transformFunction && typeof key.transformFunction === 'function') {
-        return key.transformFunction(resource, locale, key.resourceKey, isSearch)
-    } else if (key.resourceKey === 'labels' && Array.isArray(value)) {
-        return value.length >= 1 ? value.join(', ') : '-'
-    } else {
-        return value || value === 0 ? value : '-'
-    }
-}
-
-const getMoment = (timestamp, locale = '') => {
-    const momentObj = moment(timestamp, timestamp.includes('T') ? 'YYYY-MM-DDTHH:mm:ssZ' : 'YYYY-MM-DD HH:mm:ss')
-    momentObj.locale(locale.toLowerCase())
-    return momentObj
-}
-
-export const getAge = (item, locale, timestampKey) => {
-    const key = timestampKey ? timestampKey : 'created'
-    const createdTime = _.get(item, key)
-    if (createdTime) {
-        return getMoment(createdTime, locale).fromNow()
-    }
-    return '-'
-}
-
-export const getShortDateTime = (timestamp, locale, now = null) => {
-    const timeFormat = 'h:mm a'
-    const monthDayFormat = 'MMM D'
-    const yearFormat = 'YYYY'
-    if (!timestamp) {
-        return '-'
-    }
-    if (!now) {
-        now = moment()
-    }
-    const date = getMoment(timestamp, locale)
-    if (date.isSame(now, 'day')) {
-        return date.format(timeFormat)
-    } else if (date.isSame(now, 'year')) {
-        return date.format(`${monthDayFormat}, ${timeFormat}`)
-    } else {
-        return date.format(`${monthDayFormat} ${yearFormat}, ${timeFormat}`)
-    }
-}
-
 export const getClusterCount = ({
-    locale,
+    t,
     remoteCount,
     localPlacement,
     name,
@@ -82,7 +27,7 @@ export const getClusterCount = ({
     apigroup = 'apps.open-cluster-management.io',
     clusterNames = [],
 }) => {
-    const clusterCountString = getClusterCountString(locale, remoteCount, localPlacement)
+    const clusterCountString = getClusterCountString(t, remoteCount, localPlacement)
 
     if (remoteCount) {
         const isArgoApp = apigroup.includes('argoproj.io')
@@ -113,13 +58,9 @@ export const getClusterCount = ({
     }
 }
 
-export const getClusterCountString = (locale, remoteCount, localPlacement) => {
+export const getClusterCountString = (t, remoteCount, localPlacement) => {
     if (remoteCount) {
-        return msgs.get(
-            localPlacement ? 'cluster.count.remote_and_local' : 'cluster.count.remote',
-            [remoteCount],
-            locale
-        )
+        return t(localPlacement ? 'cluster.count.remote_and_local' : 'cluster.count.remote', [remoteCount])
     } else if (localPlacement) {
         return t('cluster.count.local')
     } else {
@@ -134,7 +75,7 @@ export const normalizeChannelType = (chType) => {
 
 export const groupByChannelType = (channels) => _.groupBy(channels, (ch) => normalizeChannelType(ch.type))
 
-export const getChannelLabel = (chType, count, locale) => {
+export const getChannelLabel = (chType, count, t) => {
     const label = t(`channel.type.${chType}`)
     const optionalCount = count > 1 ? ` (${count})` : ''
     return label + optionalCount

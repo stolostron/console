@@ -10,9 +10,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import React, { Fragment, createRef } from 'react'
-import ReactDOM from 'react-dom'
-import ReactDOMServer from 'react-dom/server'
+import React, { createRef } from 'react'
 import PropTypes from 'prop-types'
 import { AcmAlert } from '@open-cluster-management/ui-components'
 import SearchName from './viewer/SearchName'
@@ -91,7 +89,7 @@ class Topology extends React.Component {
             showChannelsControl: _.get(nextProps.channelControl, 'allChannels', []).length > 1,
         })
 
-        this.setState((prevState, props) => {
+        this.setState((prevState) => {
             let { timestamp } = prevState
             const { userIsFiltering } = prevState
             const {

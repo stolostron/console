@@ -213,9 +213,9 @@ export default class LayoutHelper {
                     // fill edges
                     const edgeMap = {}
                     for (const uid in nodeMap) {
-                        if (nodeMap.hasOwnProperty(uid)) {
+                        if (nodeMap[uid]) {
                             directions.forEach(({ map, next, other }) => {
-                                if (map.hasOwnProperty(uid)) {
+                                if (map[uid]) {
                                     map[uid].forEach((entry) => {
                                         const { link } = entry
 
@@ -450,19 +450,17 @@ export default class LayoutHelper {
 
     readdConsolidatedGroups = (connected, newGroups) => {
         for (const key in newGroups) {
-            if (newGroups.hasOwnProperty(key)) {
-                const { nodeMap, edges, clusterName, typeMap } = newGroups[key]
-                const clusters = [clusterName]
-                const types = Object.keys(typeMap).sort()
-                connected.unshift({
-                    nodeMap,
-                    details: {
-                        edges,
-                        clusters: clusters.join('/'),
-                        title: this.getSectionTitle(clusters, types),
-                    },
-                })
-            }
+            const { nodeMap, edges, clusterName, typeMap } = newGroups[key]
+            const clusters = [clusterName]
+            const types = Object.keys(typeMap).sort()
+            connected.unshift({
+                nodeMap,
+                details: {
+                    edges,
+                    clusters: clusters.join('/'),
+                    title: this.getSectionTitle(clusters, types),
+                },
+            })
         }
     }
 
@@ -621,17 +619,15 @@ export default class LayoutHelper {
 
                 // for each cluster
                 for (const clusterName in detailMap) {
-                    if (detailMap.hasOwnProperty(clusterName)) {
-                        const { typeMap, nodes, environment } = detailMap[clusterName]
-                        const clusters = [clusterName]
-                        const types = Object.keys(typeMap).sort()
-                        const details = {
-                            title: this.getSectionTitle(clusters, types, environment),
-                            clusters: clusters.join('/'),
-                        }
-                        // break large unconnected groups into smaller groups
-                        this.breakUnconnected(cy, nodes, typeObj, collections, details)
+                    const { typeMap, nodes, environment } = detailMap[clusterName]
+                    const clusters = [clusterName]
+                    const types = Object.keys(typeMap).sort()
+                    const details = {
+                        title: this.getSectionTitle(clusters, types, environment),
+                        clusters: clusters.join('/'),
                     }
+                    // break large unconnected groups into smaller groups
+                    this.breakUnconnected(cy, nodes, typeObj, collections, details)
                 }
             }
         })

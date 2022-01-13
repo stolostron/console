@@ -3,7 +3,7 @@ import { getClusterName, nodeMustHavePods, isDeployableResource } from '../helpe
 import _ from 'lodash'
 import R from 'ramda'
 import { getArgoTopology } from './argo/topology'
-import { addArgoDiagramDetails } from './argo/details'
+//import { addArgoDiagramDetails } from './argo/details'
 import { getSubscriptionTopology } from './subscription/topology'
 
 export const getTopology = (application, managedClusters) => {
@@ -20,12 +20,8 @@ export const getDiagramElements = (appData, topology, searchRelated, additionalR
     // topology from api will have raw k8 objects, pods status
     const { links, nodes } = getTopologyElements(topology)
     // create yaml and what row links to what node
-    let row = 0
-    const yamls = []
-    const clustersList = []
     let activeChannelInfo
     let channelsList = []
-    const originalMap = {}
     const allResourcesMap = {}
     const isClusterGrouped = {
         value: false,

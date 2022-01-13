@@ -58,28 +58,10 @@ export const getSectionTitles = (clusters, types, environs, t) => {
     return Array.from(set).sort().join(', ')
 }
 
-export const getLegendTitle = (type, t) => {
+export const getLegendTitle = (type) => {
     if (type === undefined) {
         return ''
     }
-    // switch (type) {
-    //     case 'deploymentconfig':
-    //     case 'replicationcontroller':
-    //     case 'daemonset':
-    //     case 'replicaset':
-    //     case 'configmap':
-    //     case 'ansiblejob':
-    //     case 'customresource':
-    //     case 'statefulset':
-    //     case 'storageclass':
-    //     case 'serviceaccount':
-    //     case 'securitycontextconstraints':
-    //     case 'inmemorychannel':
-    //     case 'integrationplatform':
-    //     case 'persistentvolumeclaim':
-    //         return t(`topology.legend.title.${type}`)
-
-    //     default:
     return (type.charAt(0).toUpperCase() + type.slice(1))
         .replace('stream', ' Stream')
         .replace('channel', ' Channel')
@@ -88,29 +70,10 @@ export const getLegendTitle = (type, t) => {
 }
 
 // Convert types to OpenShift/Kube entities
-export function kubeNaming(type, t) {
+export function kubeNaming(type) {
     if (type === undefined) {
         return ''
     }
-    // switch (type) {
-    //     case 'deploymentconfig':
-    //     case 'replicationcontroller':
-    //     case 'daemonset':
-    //     case 'replicaset':
-    //     case 'configmap':
-    //     case 'ansiblejob':
-    //     case 'customresource':
-    //     case 'statefulset':
-    //     case 'storageclass':
-    //     case 'serviceaccount':
-    //     case 'securitycontextconstraints':
-    //     case 'inmemorychannel':
-    //     case 'integrationplatform':
-    //     case 'persistentvolumeclaim':
-    //     case 'imagestream':
-    //         return t(`topology.legend.title.${type}`)
-
-    //     default:
     return (
         type.charAt(0).toUpperCase() +
         type
@@ -122,7 +85,6 @@ export function kubeNaming(type, t) {
             .replace('account', 'Account')
             .replace('controller', 'Controller')
     )
-    //}
 }
 
 // Make nice carriage return for long titles

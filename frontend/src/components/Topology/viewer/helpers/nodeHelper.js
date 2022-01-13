@@ -107,13 +107,6 @@ export default class NodeHelper {
                 tooltip.style('display', 'none')
                 nodeClickHandler(d)
             })
-            // accessability--user presses enter key when node has focus
-            .on('keypress', (d, c, f) => {
-                if (currentEvent.keyCode === 32 || currentEvent.keyCode === 13) {
-                    tooltip.style('display', 'none')
-                    nodeClickHandler(d)
-                }
-            })
             // tooltip
             .on('mouseover', ({ currentTarget }, { layout }) => {
                 const bb = currentTarget.getBoundingClientRect()

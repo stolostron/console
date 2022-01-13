@@ -4,9 +4,6 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import { TimesIcon } from '@patternfly/react-icons'
-import { defaultShapes } from '../../../../../components/Topology/viewer/defaults/shapes'
-import { getLegendTitle } from '../../../../../components/Topology/viewer/defaults/titles'
 
 class LegendView extends React.Component {
     render() {

@@ -39,7 +39,6 @@ export function getArgoTopology(application, managedClusters, cluster) {
             clusterNames.push(clusterName)
             clusters.push({ metadata: { name: clusterName, namespace: clusterName }, destination, status: 'ok' })
         } catch (err) {
-            debugger
             //logger.error(err)
         }
         //})

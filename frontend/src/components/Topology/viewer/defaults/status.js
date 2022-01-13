@@ -17,7 +17,7 @@ import { LOCAL_HUB_NAME } from '../../../../routes/Applications/ApplicationDetai
 
 const HOURS = 1000 * 60 * 60
 
-const updateClusterNodeStatus = (node, locale, sizes, startedAts, now) => {
+const updateClusterNodeStatus = (node, t, sizes, startedAts, now) => {
     // collect data that will determine size of cluster
     const { specs = {} } = node
     const { cluster, violations = [] } = specs || {}
@@ -66,7 +66,7 @@ const updateClusterNodeStatus = (node, locale, sizes, startedAts, now) => {
     }
 }
 
-export const updateNodeStatus = (nodes, locale) => {
+export const updateNodeStatus = (nodes, t) => {
     // collect statistics
     const sizes = []
     const startedAts = []
@@ -75,7 +75,7 @@ export const updateNodeStatus = (nodes, locale) => {
         const { type } = node
 
         if (type === 'cluster') {
-            updateClusterNodeStatus(node, locale, sizes, startedAts, now)
+            updateClusterNodeStatus(node, t, sizes, startedAts, now)
         }
     })
 

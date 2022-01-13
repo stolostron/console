@@ -73,7 +73,7 @@ class DetailsView extends React.Component {
     }
 
     render() {
-        const { onClose, getLayoutNodes, staticResourceData, selectedNodeId, nodes, activeFilters, t } = this.props
+        const { getLayoutNodes, staticResourceData, selectedNodeId, nodes, activeFilters, t } = this.props
         const { typeToShapeMap, getNodeDetails } = staticResourceData
         const currentUpdatedNode = nodes.find((n) => n.uid === selectedNodeId)
         const currentNode = getLayoutNodes().find((n) => n.uid === selectedNodeId) || {}

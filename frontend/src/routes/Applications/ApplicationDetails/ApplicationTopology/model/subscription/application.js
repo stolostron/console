@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, endsWith, indexOf, includes, chunk, isEmpty } from 'lodash'
+import { get, chunk, isEmpty } from 'lodash'
 
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
 const EVERYTHING_CHANNEL = '__ALL__/__ALL__//__ALL__/__ALL__'
 const NAMESPACE = 'metadata.namespace'
 
-export const getSubscriptionApplication = (model, app, selectedChannel, recoilStates, cluster, apiversion) => {
+export const getSubscriptionApplication = (model, app, selectedChannel, recoilStates) => {
     // get subscriptions to channels (pipelines)
     let subscriptionNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/subscriptions"]')
     let deployableNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/deployables"]')
@@ -39,7 +39,7 @@ export const getSubscriptionApplication = (model, app, selectedChannel, recoilSt
             allSubscriptions,
             subscr
         )
-        const { deployableMap, channelsMap, rulesMap, preHooksMap, postHooksMap } = buildDeployablesMap(
+        const { deployableMap, rulesMap, preHooksMap, postHooksMap } = buildDeployablesMap(
             evaluateSingleOr(selectedSubscription, subscriptions),
             model.subscriptions
         )
@@ -332,11 +332,11 @@ const getAppDeployables = (deployableMap, deployables) => {
     })
 }
 
-const getAppHooks = (hooks, isPreHooks) => {
+const getAppHooks = (hooks) => {
+    //}, isPreHooks) => {
     if (!isEmpty(hooks)) {
-        debugger
     }
-    return
+    return //czcz
     // const requests = Object.entries(hooks).map(async ([namespace, values]) => {
     //   // get all ansible hooks in this namespace
     //   let response;
@@ -720,8 +720,6 @@ const longestCommonSubstring = (str1, str2) => {
 //   const transport = _.get(route, 'spec.tls') ? 'https' : 'http';
 //   return `${transport}://${hostName}`;
 // }
-
-const evaluateDoubleAnd = (operand1, operand2, operand3) => operand1 && operand2 && operand3
 
 const evaluateSingleOr = (operand1, operand2) => operand1 || operand2
 

@@ -13,7 +13,7 @@ import { getConnectedApplicationLayoutOptions } from './application'
 
 import { NODE_SIZE } from '../constants.js'
 
-export const getConnectedLayoutOptions = (mode = 'auto', typeToShapeMap, collection, options) => {
+export const getConnectedLayoutOptions = (mode, typeToShapeMap, collection) => {
     return getConnectedApplicationLayoutOptions(typeToShapeMap, collection)
 }
 

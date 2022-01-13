@@ -14,7 +14,7 @@ export function attrs(selection, map, s) {
     return (typeof map === 'function' ? attrsFunction : attrsObject)(selection, map, s)
 }
 
-function stylesFunction(selection, map, priority) {
+function stylesFunction(selection, map) {
     return selection.each(function (d, i, ns) {
         var x = map.apply(selection, arguments)
         for (var name in x) ns[i].style[name] = x[name]

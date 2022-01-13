@@ -37,7 +37,6 @@ import {
     getResourcesClustersForApp,
     allClustersAreOnline,
     findParentForOwnerID,
-    mustRefreshTopologyMap,
 } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/diagram-helpers-utils'
 import { getEditLink } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/resource-helper'
 import { isSearchAvailable } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/search-helper'
@@ -1233,7 +1232,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
 
     if (nodeType === 'ansiblejob' && isHookNode) {
         // process here only ansible hooks
-        showAnsibleJobDetails(node, details)
+        showAnsibleJobDetails(node, details, t)
 
         if (!_.get(node, 'specs.raw.spec') || Object.keys(resourceMap).length === 0) {
             const res = {
@@ -2054,10 +2053,11 @@ export const addNodeServiceLocationForCluster = (node, typeObject, details) => {
     return details
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const processResourceActionLink = (resource, toggleLoading, handleErrorMsg) => {
     let targetLink = ''
     const linkPath = R.pathOr('', ['action'])(resource)
-    const { name, namespace, cluster, editLink, kind, routeObject } = resource
+    const { name, namespace, editLink, kind } = resource //cluster, , routeObject
     const nsData = namespace ? ` namespace:${namespace}` : ''
     switch (linkPath) {
         case showResourceYaml:
@@ -2067,11 +2067,11 @@ export const processResourceActionLink = (resource, toggleLoading, handleErrorMs
             targetLink = `/search?filters={"textsearch":"kind:${kind}${nsData} name:${name}"}`
             break
         case 'open_argo_editor': {
-            openArgoCDEditor(cluster, namespace, name, toggleLoading, handleErrorMsg) // the editor opens here
+            //czcz openArgoCDEditor(cluster, namespace, name, toggleLoading, handleErrorMsg) // the editor opens here
             break
         }
         case 'open_route_url': {
-            openRouteURL(routeObject, toggleLoading, handleErrorMsg) // the route url opens here
+            // czcz openRouteURL(routeObject, toggleLoading, handleErrorMsg) // the route url opens here
             break
         }
         default:

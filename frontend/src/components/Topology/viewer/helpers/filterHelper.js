@@ -140,7 +140,7 @@ export default class FilterHelper {
         // are there any paths between?
         // mark srcs and tgts that have a path between them as matches
         for (const id in matchingMap) {
-            if (matchingMap.hasOwnProperty(id)) {
+            if (matchingMap[id]) {
                 const {
                     node: { layout },
                 } = matchingMap[id].data()
@@ -152,7 +152,7 @@ export default class FilterHelper {
 
         // mark elements between matched srcs and tgts as related
         for (const id in relatedMap) {
-            if (relatedMap.hasOwnProperty(id)) {
+            if (relatedMap[id]) {
                 const element = relatedMap[id]
                 const data = element.data()
                 let layout

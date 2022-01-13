@@ -3,7 +3,7 @@
 import { PageSection, ActionListItem } from '@patternfly/react-core'
 import { AcmActionGroup } from '@open-cluster-management/ui-components'
 import { useState, useEffect, useContext } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -18,7 +18,6 @@ import {
     deployablesState,
     managedClustersState,
 } from '../../../../atoms'
-import _ from 'lodash'
 import { searchClient } from '../../../Home/Search/search-sdk/search-client'
 import { useSearchResultRelatedItemsLazyQuery } from '../../../Home/Search/search-sdk/search-sdk'
 import './ApplicationTopology.css'

@@ -116,7 +116,7 @@ export const getStatusFromPulse = (pulse) => {
 
     return statusStr
 }
-export const showAnsibleJobDetails = (node, details) => {
+export const showAnsibleJobDetails = (node, details, t) => {
     const ansibleConditions = _.get(node, ansibleStatusStr, [])
 
     const taskStatus = getInfoForAnsibleTask(ansibleConditions)

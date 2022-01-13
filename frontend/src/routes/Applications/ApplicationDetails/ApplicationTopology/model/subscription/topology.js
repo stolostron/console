@@ -16,7 +16,7 @@ const localClusterName = 'local-cluster'
 const metadataName = 'metadata.name'
 const preHookType = 'pre-hook'
 
-export const getSubscriptionTopology = (application, managedClusters, cluster) => {
+export const getSubscriptionTopology = (application, managedClusters) => {
     const links = []
     const nodes = []
     let name

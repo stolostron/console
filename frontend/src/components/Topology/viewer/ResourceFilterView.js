@@ -11,10 +11,8 @@
 'use strict'
 
 import React from 'react'
-import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
-import { TimesIcon } from '@patternfly/react-icons'
-import { Checkbox, Chip, ChipGroup } from '@patternfly/react-core'
+import { Checkbox } from '@patternfly/react-core'
 import '../css/resource-filter-view.css'
 import _ from 'lodash'
 

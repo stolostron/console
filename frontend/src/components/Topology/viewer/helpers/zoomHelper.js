@@ -17,9 +17,6 @@ import { interruptLinks, counterZoomLinks } from './linkHelper'
 import { interruptNodes, counterZoomLabels } from './nodeHelper'
 import _ from 'lodash'
 
-// fix event issue with d3
-import { event as currentEvent } from 'd3-selection'
-
 export default class ZoomHelper {
     constructor(viewer, diagramOptions, noTitle) {
         this.viewer = viewer
