@@ -14,7 +14,10 @@ import SVG from 'svg.js'
 import { dragLinks } from './linkHelper'
 import { counterZoom, getTooltip } from './diagram-helpers'
 import _ from 'lodash'
-import { kubeNaming, titleBeautify } from '../defaults/titles'
+import {
+    kubeNaming,
+    titleBeautify,
+} from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/options/titles'
 
 import { FilterResults, RELATED_OPACITY, NODE_RADIUS, NODE_SIZE } from '../constants.js'
 

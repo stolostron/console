@@ -1,10 +1,10 @@
-import { addDiagramDetails, computeNodeStatus } from '../../../../../components/Topology/viewer/helpers/diagram-helpers'
+import { addDiagramDetails, computeNodeStatus } from '../../../../../components/Topology/helpers/diagram-helpers'
 import { getClusterName, nodeMustHavePods, isDeployableResource } from '../helpers/diagram-helpers-utils'
 import _ from 'lodash'
 import R from 'ramda'
-import { getArgoTopology } from './argo/topology'
+import { getArgoTopology } from './topologyArgo'
 //import { addArgoDiagramDetails } from './argo/details'
-import { getSubscriptionTopology } from './subscription/topology'
+import { getSubscriptionTopology } from './topologySubscription'
 
 export const getTopology = (application, managedClusters) => {
     let topology

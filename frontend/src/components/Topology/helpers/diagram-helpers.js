@@ -14,7 +14,7 @@ import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
 import moment from 'moment'
-import { LOCAL_HUB_NAME } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/constants'
+import { LOCAL_HUB_NAME } from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/constants'
 import {
     isDeployableResource,
     nodeMustHavePods,
@@ -37,10 +37,10 @@ import {
     getResourcesClustersForApp,
     allClustersAreOnline,
     findParentForOwnerID,
-} from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/diagram-helpers-utils'
-import { getEditLink } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/resource-helper'
-import { isSearchAvailable } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/search-helper'
-import { getURLSearchData } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/diagram-helpers-argo'
+} from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/diagram-helpers-utils'
+import { getEditLink } from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/resource-helper'
+import { isSearchAvailable } from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/search-helper'
+import { getURLSearchData } from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/diagram-helpers-argo'
 
 const metadataName = 'specs.raw.metadata.name'
 const metadataNamespace = 'specs.raw.metadata.namespace'
@@ -64,7 +64,7 @@ const apiVersionPath = 'specs.raw.apiVersion'
 import {
     showAnsibleJobDetails,
     getPulseStatusForAnsibleNode,
-} from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/ansible-task'
+} from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/ansible-task'
 import { t } from 'i18next'
 
 /*

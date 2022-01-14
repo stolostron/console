@@ -26,11 +26,11 @@ import {
     addIngressNodeInfo,
     setClusterStatus,
     createEditLink,
-} from '../helpers/diagram-helpers'
-import { LOCAL_HUB_NAME } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/constants'
-import { showArgoApplicationSetLink } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/diagram-helpers-argo'
+} from '../../../../../components/Topology/helpers/diagram-helpers'
+import { LOCAL_HUB_NAME } from '../helpers/constants'
+import { showArgoApplicationSetLink } from '../helpers/diagram-helpers-argo'
 
-import { isSearchAvailable } from '../../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/search-helper'
+import { isSearchAvailable } from '../helpers/search-helper'
 import { kubeNaming } from './titles'
 
 const resName = 'resource.name'

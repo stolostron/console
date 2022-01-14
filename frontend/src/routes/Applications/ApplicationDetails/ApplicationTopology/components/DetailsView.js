@@ -17,8 +17,8 @@ import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import { Spinner } from '@patternfly/react-core'
 import jsYaml from 'js-yaml'
-import { createResourceSearchLink } from '../../../../../components/Topology/viewer/helpers/diagram-helpers'
-import { getLegendTitle } from '../../../../../components/Topology/viewer/defaults/titles'
+import { createResourceSearchLink } from '../../../../../components/Topology/helpers/diagram-helpers'
+import { getLegendTitle } from '../options/titles'
 import ClusterDetailsContainer from './ClusterDetailsContainer'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
 
@@ -73,8 +73,8 @@ class DetailsView extends React.Component {
     }
 
     render() {
-        const { getLayoutNodes, staticResourceData, selectedNodeId, nodes, activeFilters, t } = this.props
-        const { typeToShapeMap, getNodeDetails } = staticResourceData
+        const { getLayoutNodes, options, selectedNodeId, nodes, activeFilters, t } = this.props
+        const { typeToShapeMap, getNodeDetails } = options
         const currentUpdatedNode = nodes.find((n) => n.uid === selectedNodeId)
         const currentNode = getLayoutNodes().find((n) => n.uid === selectedNodeId) || {}
         const { layout = {} } = currentNode
@@ -287,7 +287,7 @@ DetailsView.propTypes = {
     onClose: PropTypes.func,
     processActionLink: PropTypes.func,
     selectedNodeId: PropTypes.string,
-    staticResourceData: PropTypes.object,
+    options: PropTypes.object,
 }
 
 export default DetailsView

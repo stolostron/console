@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { get } from 'lodash'
-import { getSubscriptionApplication } from './subscription/application'
+import { getSubscriptionApplication } from './applicationSubscription'
 
 export const getApplication = (namespace, name, selectedChannel, recoilStates, cluster, apiversion) => {
     let app

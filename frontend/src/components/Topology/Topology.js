@@ -13,10 +13,9 @@
 import React, { createRef } from 'react'
 import PropTypes from 'prop-types'
 import { AcmAlert } from '@stolostron/ui-components'
-import SearchName from './viewer/SearchName'
-import ResourceFilterView from './viewer/ResourceFilterView'
-import ResourceFilterBar from './viewer/ResourceFilterBar'
-import { getResourceDefinitions } from './viewer/defaults'
+import SearchName from './components/SearchName'
+import ResourceFilterView from './components/ResourceFilterView'
+import ResourceFilterBar from './components/ResourceFilterBar'
 import { DiagramShapes } from './shapes/DiagramShapes'
 import { DiagramIcons } from './shapes/DiagramIcons'
 import './css/topology-details.css'
@@ -52,16 +51,12 @@ class Topology extends React.Component {
         t: PropTypes.func,
         options: PropTypes.object,
         processActionLink: PropTypes.func,
-        searchUrl: PropTypes.string,
         setDrawerContent: PropTypes.func,
         selectionControl: PropTypes.shape({
             selectedNode: PropTypes.object,
             handleNodeSelected: PropTypes.func,
         }),
         canUpdateStatuses: PropTypes.bool,
-        styles: PropTypes.shape({
-            shapes: PropTypes.object,
-        }),
         title: PropTypes.string,
     }
 
@@ -78,8 +73,6 @@ class Topology extends React.Component {
         }
 
         // merge styles and options with defaults
-        const { styles, options, searchUrl } = props
-        this.staticResourceData = getResourceDefinitions(styles, options, searchUrl)
         this.ResourceFilterView = createRef()
     }
 
@@ -101,8 +94,8 @@ class Topology extends React.Component {
             if (!_.isEqual(nodes, this.props.elements.nodes) && !isReloading) {
                 timestamp = new Date().toString()
             }
-            this.staticResourceData.updateNodeStatus(nodes, this.props.t)
-            const { availableFilters, activeFilters, otherTypeFilters } = this.staticResourceData.getAllFilters(
+            this.props.options.updateNodeStatus(nodes, this.props.t)
+            const { availableFilters, activeFilters, otherTypeFilters } = this.props.options.getAllFilters(
                 isLoaded,
                 nodes,
                 this.props.options,
@@ -218,7 +211,6 @@ class Topology extends React.Component {
                             processActionLink={processActionLink}
                             activeFilters={activeFilters}
                             availableFilters={availableFilters}
-                            staticResourceData={this.staticResourceData}
                             channelControl={channelControl}
                             showChannelsControl={showChannelsControl}
                             argoAppDetailsContainerControl={argoAppDetailsContainerControl}
@@ -268,7 +260,7 @@ class Topology extends React.Component {
             const availableFilters = Object.assign(
                 {},
                 prevState.availableFilters,
-                this.staticResourceData.getAvailableFilters(nodes, options, activeFilters, t)
+                options.getAvailableFilters(nodes, options, activeFilters, t)
             )
             if (this.ResourceFilterView.current) {
                 this.ResourceFilterView.current.setState({ activeFilters })

@@ -13,7 +13,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { SearchInput } from '@patternfly/react-core'
-import { getSearchNames } from './helpers/filterHelper'
+import { getSearchNames } from '../helpers/filterHelper'
 
 class Search extends React.Component {
     static propTypes = {

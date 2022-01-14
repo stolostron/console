@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get, uniq, uniqBy } from 'lodash'
 
-import { getClusterName, createReplicaChild, createIngressRouteChild, addClusters } from '../utils'
+import { getClusterName, createReplicaChild, createIngressRouteChild, addClusters } from './utils'
 
 export function getArgoTopology(application, managedClusters, cluster) {
     const links = []

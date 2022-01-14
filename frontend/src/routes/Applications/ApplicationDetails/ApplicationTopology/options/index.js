@@ -10,7 +10,7 @@
 'use strict'
 
 import { defaultShapes } from './shapes'
-import { getConnectedLayoutOptions, getUnconnectedLayoutOptions } from '../layouts'
+import { getConnectedApplicationLayoutOptions, getUnconnectedLayoutOptions } from './layouts'
 import { getNodeGroups } from './grouping'
 import { getNodeTooltips } from './tooltips'
 import { getNodeDescription } from './descriptions'
@@ -19,8 +19,8 @@ import { getNodeDetails } from './details.js'
 import { updateNodeIcons, updateNodeStatus } from './status.js'
 import { getAllFilters, getAvailableFilters, getSearchFilter, filterNodes } from './filtering.js'
 
-export const getResourceDefinitions = (styles = {}, options = {}, searchUrl) => {
-    const typeToShapeMap = { ...defaultShapes, ...(styles.shapes || {}) }
+export const getOptions = (searchUrl) => {
+    const typeToShapeMap = { ...defaultShapes }
     const shapeTypeOrder = [
         'internet',
         'host',
@@ -32,11 +32,17 @@ export const getResourceDefinitions = (styles = {}, options = {}, searchUrl) => 
         'pod',
         'container',
     ]
+
+    const diagramOptions = {
+        showLineLabels: true, // show labels on lines
+        showGroupTitles: false, // show titles over sections
+    }
+
     const def = {
         diagramCloneTypes: ['internet', 'host'],
         shapeTypeOrder,
         typeToShapeMap,
-        diagramOptions: options,
+        diagramOptions: diagramOptions,
         getNodeTooltips: getNodeTooltips.bind(null, searchUrl),
         getNodeDescription: getNodeDescription,
         getNodeTitle: getNodeTitle,
@@ -44,12 +50,12 @@ export const getResourceDefinitions = (styles = {}, options = {}, searchUrl) => 
         getNodeDetails: getNodeDetails,
         updateNodeStatus: updateNodeStatus,
         updateNodeIcons: updateNodeIcons,
-        getAllFilters: getAllFilters.bind(null, options.filtering, typeToShapeMap),
-        getAvailableFilters: getAvailableFilters.bind(null, options.filtering),
-        getNodeGroups: getNodeGroups.bind(null, options.filtering),
-        getSearchFilter: getSearchFilter.bind(null, options.filtering),
-        filterNodes: filterNodes.bind(null, options.filtering),
-        getConnectedLayoutOptions: getConnectedLayoutOptions.bind(null, options.layout, typeToShapeMap),
+        getAllFilters: getAllFilters.bind(null, 'application', typeToShapeMap),
+        getAvailableFilters: getAvailableFilters.bind(null, 'application'),
+        getNodeGroups: getNodeGroups.bind(null, 'application'),
+        getSearchFilter: getSearchFilter.bind(null, 'application'),
+        filterNodes: filterNodes.bind(null, 'application'),
+        getConnectedLayoutOptions: getConnectedApplicationLayoutOptions.bind(null, typeToShapeMap),
         getUnconnectedLayoutOptions,
     }
 

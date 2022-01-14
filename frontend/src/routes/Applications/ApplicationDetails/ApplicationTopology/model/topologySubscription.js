@@ -9,7 +9,7 @@ import {
     removeHelmReleaseName,
     addSubscriptionDeployable,
     addClusters,
-} from '../utils'
+} from './utils'
 
 const templateKind = 'spec.template.kind'
 const localClusterName = 'local-cluster'

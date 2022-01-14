@@ -14,10 +14,7 @@ import {
     AccordionContent,
     AccordionToggle,
 } from '@patternfly/react-core'
-import {
-    processResourceActionLink,
-    createEditLink,
-} from '../../../../../components/Topology/viewer/helpers/diagram-helpers'
+import { processResourceActionLink, createEditLink } from '../../../../../components/Topology/helpers/diagram-helpers'
 
 class ArgoAppDetailsContainer extends React.Component {
     static propTypes = {

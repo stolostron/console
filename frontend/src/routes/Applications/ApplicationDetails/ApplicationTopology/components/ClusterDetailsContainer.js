@@ -19,7 +19,7 @@ import {
     getPercentage,
     inflateKubeValue,
     getAge,
-} from '../../../../../components/Topology/viewer/helpers/diagram-helpers'
+} from '../../../../../components/Topology/helpers/diagram-helpers'
 
 class ClusterDetailsContainer extends React.Component {
     static propTypes = {

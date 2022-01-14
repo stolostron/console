@@ -24,14 +24,15 @@ import './ApplicationTopology.css'
 import Topology from '../../../../components/Topology/Topology'
 import DiagramViewer from './components/DiagramViewer'
 import LegendView from './components/LegendView'
+import { getOptions } from './options'
 import { useApplicationPageContext } from '../ApplicationDetails'
 import { AcmDrawerContext } from '../AcmDrawer'
 
-import { processResourceActionLink } from '../../../../components/Topology/viewer/helpers/diagram-helpers'
+import { processResourceActionLink } from '../../../../components/Topology/helpers/diagram-helpers'
 
 import { getApplication } from './model/application'
 import { getTopology, getDiagramElements } from './model/topology'
-import { getApplicationData, getApplicationQuery, getRelatedQuery, getAdditionalQuery } from './model/search'
+import { getApplicationData, getApplicationQuery, getRelatedQuery, getAdditionalQuery } from './model/searchQueries'
 
 export type ArgoAppDetailsContainerData = {
     page: number
@@ -41,13 +42,6 @@ export type ArgoAppDetailsContainerData = {
     selected: undefined
     selectedArgoAppList: []
     isLoading: boolean
-}
-
-const diagramOptions = {
-    filtering: 'application',
-    layout: 'application',
-    showLineLabels: true, // show labels on lines
-    showGroupTitles: false, // show titles over sections
 }
 
 export function ApplicationTopologyPageContent(props: { name: string; namespace: string }) {
@@ -85,6 +79,11 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
         nodes: any[]
         links: any[]
     }>({ nodes: [], links: [] })
+
+    const history = useHistory()
+    const location = history?.location?.pathname?.split('/')
+    const searchUrl = location ? '/' + location.slice(0, 3).join('/') : ''
+    const [options] = useState<any>(getOptions(searchUrl))
 
     const handleErrorMsg = () => {
         //show toast message in parent container
@@ -146,10 +145,6 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
     const processActionLink = (resource: any, toggleLoading: boolean) => {
         processResourceActionLink(resource, toggleLoading, handleErrorMsg)
     }
-
-    const history = useHistory()
-    const location = history?.location?.pathname?.split('/')
-    const searchUrl = location ? '/' + location.slice(0, 3).join('/') : ''
 
     // generate diagram every n seconds
     useEffect(() => {
@@ -277,8 +272,7 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
                 canUpdateStatuses={canUpdateStatuses}
                 processActionLink={processActionLink}
                 channelControl={channelControl}
-                searchUrl={searchUrl}
-                options={diagramOptions}
+                options={options}
                 argoAppDetailsContainerControl={argoAppDetailsContainerControl}
                 setDrawerContent={setDrawerContent}
                 t={t}

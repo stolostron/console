@@ -14,7 +14,7 @@ import cytoscape from 'cytoscape'
 import cycola from 'cytoscape-cola'
 import { getWrappedNodeLabel, getHashCode, computeNodeStatus } from './diagram-helpers'
 import { layoutEdges, setDraggedLineData } from './linkHelper'
-import { getNodeGroups } from '../defaults/grouping'
+import { getNodeGroups } from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/options/grouping'
 import FilterHelper from './filterHelper'
 import { NODE_SIZE } from '../constants.js'
 import _ from 'lodash'
@@ -25,9 +25,9 @@ export default class LayoutHelper {
      * Helper class to be used by TopologyDiagram.
      */
 
-    constructor(staticResourceData, titles, t) {
-        Object.assign(this, staticResourceData)
-        this.filterHelper = new FilterHelper(staticResourceData)
+    constructor(options, titles, t) {
+        Object.assign(this, options)
+        this.filterHelper = new FilterHelper(options)
         this.titles = titles
         this.t = t
         this.nodeClones = {}

@@ -15,14 +15,14 @@ import PropTypes from 'prop-types'
 import * as d3 from 'd3'
 import { Spinner } from '@patternfly/react-core'
 import DetailsView from './DetailsView'
-import Zoom from '../../../../../components/Topology/viewer/Zoom'
+import Zoom from '../../../../../components/Topology/components/Zoom'
 import ChannelControl from './ChannelControl'
-import LayoutHelper from '../../../../../components/Topology/viewer/helpers/layoutHelper'
-import ZoomHelper from '../../../../../components/Topology/viewer/helpers/zoomHelper'
-import TitleHelper from '../../../../../components/Topology/viewer/helpers/titleHelper'
-import LinkHelper, { defineLinkMarkers } from '../../../../../components/Topology/viewer/helpers/linkHelper'
-import NodeHelper, { showMatches, setSelections } from '../../../../../components/Topology/viewer/helpers/nodeHelper'
-import * as c from '../../../../../components/Topology/viewer/constants.js'
+import LayoutHelper from '../../../../../components/Topology/helpers/layoutHelper'
+import ZoomHelper from '../../../../../components/Topology/helpers/zoomHelper'
+import TitleHelper from '../../../../../components/Topology/helpers/titleHelper'
+import LinkHelper, { defineLinkMarkers } from '../../../../../components/Topology/helpers/linkHelper'
+import NodeHelper, { showMatches, setSelections } from '../../../../../components/Topology/helpers/nodeHelper'
+import * as c from '../../../../../components/Topology/constants.js'
 import _ from 'lodash'
 
 class DiagramViewer extends React.Component {
@@ -48,7 +48,7 @@ class DiagramViewer extends React.Component {
         setDrawerContent: PropTypes.func,
         setViewer: PropTypes.func,
         showChannelsControl: PropTypes.bool,
-        staticResourceData: PropTypes.object,
+        options: PropTypes.object,
         title: PropTypes.string,
     }
 
@@ -75,15 +75,15 @@ class DiagramViewer extends React.Component {
             props.setViewer(this)
         }
         this.titles = []
-        this.layoutHelper = new LayoutHelper(this.props.staticResourceData, this.titles, this.props.t)
-        this.diagramOptions = this.props.staticResourceData.diagramOptions || {}
+        this.layoutHelper = new LayoutHelper(this.props.options, this.titles, this.props.t)
+        this.diagramOptions = this.props.options.diagramOptions || {}
         this.zoomHelper = new ZoomHelper(this, this.diagramOptions, !props.title)
         this.getLayoutNodes = this.getLayoutNodes.bind(this)
         this.getZoomHelper = this.getZoomHelper.bind(this)
         this.getViewContainer = this.getViewContainer.bind(this)
         this.handleNodeClick = this.handleNodeClick.bind(this)
         this.handleNodeDrag = this.handleNodeDrag.bind(this)
-        this.showsShapeTitles = typeof this.props.staticResourceData.getNodeTitle === 'function'
+        this.showsShapeTitles = typeof this.props.options.getNodeTitle === 'function'
         this.lastLayoutBBox = null
         this.isDragging = false
         this.lastRefreshing = true
@@ -260,8 +260,7 @@ class DiagramViewer extends React.Component {
 
         // show resource details in side drawer
         if (node) {
-            const { staticResourceData, processActionLink, nodes, activeFilters, argoAppDetailsContainerControl, t } =
-                this.props
+            const { options, processActionLink, nodes, activeFilters, argoAppDetailsContainerControl, t } = this.props
             const { clusterDetailsContainerData } = this.state
             const selectedNodeId = node.uid
             const selectedResourceType = node.type
@@ -274,7 +273,7 @@ class DiagramViewer extends React.Component {
                     t('Details'),
                     true,
                     <DetailsView
-                        staticResourceData={staticResourceData}
+                        options={options}
                         getLayoutNodes={this.getLayoutNodes}
                         selectedNodeId={selectedNodeId}
                         processActionLink={processActionLink}
@@ -335,13 +334,13 @@ class DiagramViewer extends React.Component {
 
         // consolidate nodes/filter links/add layout data to each element
         const { svgNodes = [], svgLinks = [], searchChanged } = this.state
-        const { activeFilters, availableFilters, staticResourceData, searchName, canUpdateStatuses } = this.props
-        const options = {
+        const { activeFilters, availableFilters, options, searchName, canUpdateStatuses } = this.props
+        const layoutOptions = {
             firstLayout: this.lastLayoutBBox === undefined,
             searchName,
             activeFilters,
             availableFilters,
-            staticResourceData,
+            options,
             canUpdateStatuses,
             showLayoutLoading: () => {
                 //this.layoutLoadingRef.style.visibility = 'visible'
@@ -355,11 +354,11 @@ class DiagramViewer extends React.Component {
 
         const isFilterOn = this.isUserFiltering(activeFilters)
         // whether it was used or not, turn it off
-        this.layoutHelper.layout(svgNodes, svgLinks, new Set(), options, isFilterOn, (layoutResults) => {
+        this.layoutHelper.layout(svgNodes, svgLinks, new Set(), layoutOptions, isFilterOn, (layoutResults) => {
             const { laidoutNodes, titles, searchNames, selfLinks, layoutBBox } = layoutResults
             this.layoutBBox = layoutBBox
             this.titles = titles
-            const { firstLayout } = options
+            const { firstLayout } = layoutOptions
 
             // stop any current transitions
             this.zoomHelper.interruptElements()
@@ -376,7 +375,7 @@ class DiagramViewer extends React.Component {
             // Create or refresh the links in the diagram.
             const currentZoom = this.zoomHelper.getCurrentZoom()
             const transition = d3.transition().duration(0).ease(d3.easeCircleOut)
-            const { typeToShapeMap } = this.props.staticResourceData
+            const { typeToShapeMap } = this.props.options
             const linkHelper = new LinkHelper(
                 this.svg,
                 svgLinks,

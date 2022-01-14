@@ -11,19 +11,22 @@
 'use strict'
 
 import { FilterResults } from '../constants.js'
-import { getSearchFilter, filterNodes } from '../defaults/filtering'
+import {
+    getSearchFilter,
+    filterNodes,
+} from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/options/filtering'
 import _ from 'lodash'
 
 export default class FilterHelper {
-    constructor(staticResourceData) {
+    constructor(options) {
         this.lastFilters = null
         this.lastSearch = { searchName: '', searchFilter: undefined }
-        this.staticResourceData = staticResourceData
+        this.options = options
     }
 
     filterElements = (nodes, links, activeFilters, availableFilters, cbs) => {
         if (nodes.length > 0) {
-            const { filters } = (this.staticResourceData.getSearchFilter || getSearchFilter)(activeFilters)
+            const { filters } = (this.options.getSearchFilter || getSearchFilter)(activeFilters)
             if (this.lastFilters && !_.isEqual(this.lastFilters, filters)) {
                 cbs.resetLayout()
             }
@@ -31,8 +34,8 @@ export default class FilterHelper {
             const nodeMap = _.keyBy(nodes, 'uid')
 
             // hide and remove any nodes without the right filter
-            nodes = this.staticResourceData.filterNodes
-                ? this.staticResourceData.filterNodes(nodes, filters, availableFilters, FilterResults)
+            nodes = this.options.filterNodes
+                ? this.options.filterNodes(nodes, filters, availableFilters, FilterResults)
                 : filterNodes('', nodes)
 
             // d3 hides the shape--easier to do then constantly creating and destroying svg elements
@@ -66,7 +69,7 @@ export default class FilterHelper {
         // reset previous search
         this.cy = cy
         let searchNames = []
-        const { search: searchFilter } = (this.staticResourceData.getSearchFilter || getSearchFilter)(activeFilters)
+        const { search: searchFilter } = (this.options.getSearchFilter || getSearchFilter)(activeFilters)
         const isSearching = searchName.length > 0 || !!searchFilter
         const wasSearching = this.lastSearch.searchName || !!this.lastSearch.searchFilter
         const isNewSearch = !_.isEqual(this.lastSearch, {

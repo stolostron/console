@@ -10,7 +10,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { getWrappedNodeLabel, getType } from '../helpers/diagram-helpers'
+import { getWrappedNodeLabel, getType } from '../../../../../components/Topology/helpers/diagram-helpers'
 import _ from 'lodash'
 
 export const getNodeGroups = (mode, nodes, t) => {
