@@ -4,7 +4,6 @@ import { PageSection, ActionListItem } from '@patternfly/react-core'
 import { AcmActionGroup } from '@stolostron/ui-components'
 import { useState, useEffect, useContext } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     applicationsState,
@@ -66,6 +65,7 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
     const [canUpdateStatuses, setCanUpdateStatuses] = useState<boolean>(false)
     const [shouldRefresh, setShouldRefresh] = useState<boolean>(true)
     const { setDrawerContext } = useContext(AcmDrawerContext)
+    const [options] = useState<any>(getOptions())
     const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
         page: 1,
         startIdx: 0,
@@ -79,11 +79,6 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
         nodes: any[]
         links: any[]
     }>({ nodes: [], links: [] })
-
-    const history = useHistory()
-    const location = history?.location?.pathname?.split('/')
-    const searchUrl = location ? '/' + location.slice(0, 3).join('/') : ''
-    const [options] = useState<any>(getOptions(searchUrl))
 
     const handleErrorMsg = () => {
         //show toast message in parent container

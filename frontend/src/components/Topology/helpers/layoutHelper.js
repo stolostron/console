@@ -12,9 +12,8 @@
 
 import cytoscape from 'cytoscape'
 import cycola from 'cytoscape-cola'
-import { getWrappedNodeLabel, getHashCode, computeNodeStatus } from './diagram-helpers'
+import { getWrappedNodeLabel, getHashCode, computeNodeStatus, getTypeNodeGroups } from './diagram-helpers'
 import { layoutEdges, setDraggedLineData } from './linkHelper'
-import { getNodeGroups } from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/options/grouping'
 import FilterHelper from './filterHelper'
 import { NODE_SIZE } from '../constants.js'
 import _ from 'lodash'
@@ -62,10 +61,10 @@ export default class LayoutHelper {
         }
 
         // for each cluster, group into collections
-        const groups = this.getNodeGroups ? this.getNodeGroups(nodes, this.t) : getNodeGroups('', nodes)
+        const groups = this.getNodeGroups ? this.getNodeGroups(nodes, this.t) : getTypeNodeGroups(nodes, this.t)
 
         // make sure shape type order can work from this
-        this.shapeTypeOrder = _.union(this.shapeTypeOrder, Object.keys(groups.nodeGroups))
+        this.shapeTypeOrder = _.union(this.shapeTypeOrder || [], Object.keys(groups.nodeGroups))
 
         // group by connections which may pull nodes into other groups
         this.groupNodesByConnections(groups, links)

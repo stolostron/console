@@ -10,12 +10,14 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
+import { defaultShapes } from '../../../../../components/Topology/shapes/constants'
 import { NODE_SIZE } from '../../../../../components/Topology/constants.js'
 import { getClusterName } from '../helpers/diagram-helpers-utils'
 import _ from 'lodash'
 
-export const getConnectedApplicationLayoutOptions = (typeToShapeMap, { elements }) => {
+export const getConnectedLayoutOptions = ({ elements }) => {
     // pre position elements to try to keep webcola from random layouts
+    const typeToShapeMap = defaultShapes
     const nodes = elements.nodes()
     const roots = nodes
         .roots((n) => {

@@ -142,24 +142,4 @@ export const defaultShapes = Object.freeze({
         shape: 'subscriptionblocked',
         className: 'design',
     },
-    spare1: {
-        shape: 'star4',
-        className: 'daemonset',
-    },
-    spare2: {
-        shape: 'roundedSq',
-        className: 'daemonset',
-    },
-    spare3: {
-        shape: 'hexagon',
-        className: 'daemonset',
-    },
-    spare4: {
-        shape: 'irregularHexagon',
-        className: 'daemonset',
-    },
-    spare5: {
-        shape: 'roundedRect',
-        className: 'daemonset',
-    },
 })

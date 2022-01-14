@@ -164,6 +164,57 @@ const splitLabel = (label, width, rows) => {
     return lines.join('\n')
 }
 
+const getNodeLabel = (node) => {
+    let label = getType(node.type)
+
+    if (label === 'Cluster') {
+        const nbOfClusters = _.get(node, 'specs.clusterNames', []).length
+        if (nbOfClusters > 1) {
+            label = `${nbOfClusters} Clusters`
+        }
+    }
+
+    return label
+}
+
+export function getTypeNodeGroups(nodes) {
+    // separate into types
+    const groupMap = {}
+    const allNodeMap = {}
+    nodes.forEach((node) => {
+        allNodeMap[node.uid] = node
+        const type = node.type
+
+        let group = groupMap[type]
+        if (!group) {
+            group = groupMap[type] = { nodes: [] }
+        }
+
+        const label = getNodeLabel(node)
+        node.layout = Object.assign(node.layout || {}, {
+            uid: node.uid,
+            type: node.type,
+            label: getWrappedNodeLabel(label, 12, 3),
+            compactLabel: getWrappedNodeLabel(label, 10, 2),
+        })
+
+        delete node.layout.source
+        delete node.layout.target
+        delete node.layout.nodeIcons
+        delete node.layout.selfLink
+        if (node.selfLink) {
+            node.layout.selfLink = {
+                link: node.selfLink,
+                nodeLayout: node.layout,
+            }
+        }
+
+        group.nodes.push(node)
+    })
+
+    return { nodeGroups: groupMap, allNodeMap }
+}
+
 //as scale decreases from max to min, return a counter zoomed value from min to max
 export const counterZoom = (scale, scaleMin, scaleMax, valueMin, valueMax) => {
     if (scale >= scaleMax) {
