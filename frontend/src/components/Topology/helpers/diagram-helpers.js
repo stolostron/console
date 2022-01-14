@@ -14,7 +14,6 @@ import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
 import moment from 'moment'
-import { LOCAL_HUB_NAME } from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/constants'
 import {
     isDeployableResource,
     nodeMustHavePods,
@@ -276,8 +275,8 @@ export const getPulseStatusForCluster = (node) => {
             if (_.findIndex(clusters, (obj) => _.get(obj, 'name') === appCls) === -1) {
                 clusters.push({
                     name: appCls,
-                    _clusterNamespace: appCls === LOCAL_HUB_NAME ? appCls : '_',
-                    status: appCls === LOCAL_HUB_NAME ? 'ok' : '',
+                    _clusterNamespace: appCls === 'local-cluster' ? appCls : '_',
+                    status: appCls === 'local-cluster' ? 'ok' : '',
                 })
             }
         })
@@ -646,7 +645,7 @@ export const createDeployableYamlLink = (node, details, t) => {
                     label: t('View resource YAML'),
                     data: {
                         action: showResourceYaml,
-                        cluster: LOCAL_HUB_NAME,
+                        cluster: 'local-cluster',
                         editLink: editLink,
                     },
                 },
@@ -706,8 +705,8 @@ export const setClusterStatus = (node, details, t) => {
             //target cluster not deployed on
             clusterArr.push({
                 name: appCls,
-                _clusterNamespace: appCls === LOCAL_HUB_NAME ? appCls : '_',
-                status: appCls === LOCAL_HUB_NAME ? 'ok' : '',
+                _clusterNamespace: appCls === 'local-cluster' ? appCls : '_',
+                status: appCls === 'local-cluster' ? 'ok' : '',
             })
         }
     })
@@ -1043,7 +1042,9 @@ export const addDiagramDetails = (searchRelated, resourceMap, isClusterGrouped, 
         // we have all clusters information here
         const appNodeSearchClusters = _.get(appNode, 'specs.searchClusters', [])
         // search returns clusters information, use it here
-        const isLocal = _.find(appNodeSearchClusters, (cls) => _.get(cls, 'name', '') === LOCAL_HUB_NAME) ? true : false
+        const isLocal = _.find(appNodeSearchClusters, (cls) => _.get(cls, 'name', '') === 'local-cluster')
+            ? true
+            : false
         _.set(appNode, 'specs.allClusters', {
             isLocal,
             remoteCount: isLocal ? appNodeSearchClusters.length - 1 : appNodeSearchClusters.length,
@@ -1078,7 +1079,7 @@ export const addDiagramDetails = (searchRelated, resourceMap, isClusterGrouped, 
 
             if (
                 kind === 'subscription' &&
-                cluster === LOCAL_HUB_NAME &&
+                cluster === 'local-cluster' &&
                 _.get(relatedKind, 'localPlacement', '') === 'true' &&
                 _.endsWith(name, '-local')
             ) {
@@ -1130,7 +1131,7 @@ export const addDiagramDetails = (searchRelated, resourceMap, isClusterGrouped, 
                             _.get(
                                 resourceMapForObject,
                                 'clusters.specs.clustersNames',
-                                [LOCAL_HUB_NAME] // if no cluster found for this resource, this could be a local deployment
+                                ['local-cluster'] // if no cluster found for this resource, this could be a local deployment
                             ),
                             _.get(relatedKind, 'cluster')
                         ) ||
@@ -1226,7 +1227,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
     const namespace = _.get(node, metadataNamespace) || _.get(node, 'namespace', '')
 
     const isHookNode = _.get(node, 'specs.raw.hookType')
-    const clusterNames = isHookNode ? [LOCAL_HUB_NAME] : R.split(',', getClusterName(nodeId, node, true))
+    const clusterNames = isHookNode ? ['local-cluster'] : R.split(',', getClusterName(nodeId, node, true))
     const resourceMap = _.get(node, `specs.${node.type}Model`, {})
     const onlineClusters = getOnlineClusters(node)
 
@@ -1238,7 +1239,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
             const res = {
                 name: name,
                 namespace: namespace,
-                cluster: LOCAL_HUB_NAME,
+                cluster: 'local-cluster',
                 kind: 'ansiblejob',
                 apigroup: 'tower.ansible.com',
                 apiversion: 'v1alpha1',
@@ -1666,7 +1667,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                 }
                 const isLinkedLocalPlacementSubs =
                     isLocalPlacementSubs ||
-                    (_.get(subscription, 'localPlacement', '') === 'true' && subsCluster === LOCAL_HUB_NAME)
+                    (_.get(subscription, 'localPlacement', '') === 'true' && subsCluster === 'local-cluster')
                 if (isLinkedLocalPlacementSubs || !subscription._hubClusterResource || isLocalFailedSubscription) {
                     const subscriptionPulse = R.contains('Fail', R.pathOr('', ['status'])(subscription))
                         ? failureStatus
@@ -1770,7 +1771,9 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
             status: failureStatus,
         })
         if (isSearchAvailable()) {
-            const ruleSearchLink = `/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${node.namespace}%20cluster%3A${LOCAL_HUB_NAME}"}`
+            const ruleSearchLink = `/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${
+                node.namespace
+            }%20cluster%3A${'local-cluster'}"}`
             details.push({
                 type: 'link',
                 value: {
@@ -1847,7 +1850,7 @@ export const setApplicationDeployStatus = (node, details, t) => {
                 ),
                 status: failureStatus,
             })
-            const subscrSearchLink = `/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${LOCAL_HUB_NAME}"}`
+            const subscrSearchLink = `/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${'local-cluster'}"}`
             details.push({
                 type: 'link',
                 value: {

@@ -3,8 +3,6 @@
 
 import _ from 'lodash'
 
-import { LOCAL_HUB_NAME } from './constants'
-
 import { createEditLink } from '../../../../../components/Topology/helpers/diagram-helpers'
 import { isYAMLEditAvailable } from './search-helper'
 
@@ -22,7 +20,7 @@ export const showArgoApplicationSetLink = (node, details, t) => {
             value: _.get(appSet[0], 'name', 'unknown'),
         })
         const res = {
-            cluster: _.get(node, 'cluster', LOCAL_HUB_NAME),
+            cluster: _.get(node, 'cluster', 'local-cluster'),
             namespace: _.get(node, 'namespace', 'unknown'),
             name: _.get(appSet[0], 'name', 'unknown'),
             apiversion: 'v1alpha1',

@@ -118,31 +118,3 @@ export const createEditLink = (item) => {
 export const getResourceType = (item, locale, key) => {
     return key ? _.get(item, key) : item.resourceType
 }
-
-export const getStoredObject = (storageKey) => {
-    try {
-        storageKey = `${storageKey} ${window.location.href}`
-        const sessionObject = JSON.parse(sessionStorage.getItem(storageKey))
-        if (sessionObject && sessionObject.expiresAt && sessionObject.expiresAt > Date.now()) {
-            return sessionObject.sessionData
-        } else {
-            sessionStorage.removeItem(storageKey)
-        }
-    } catch (error) {
-        // no privileges
-    }
-    return null
-}
-
-export const saveStoredObject = (storageKey, object, expiring = 60) => {
-    try {
-        storageKey = `${storageKey} ${window.location.href}`
-        const sessionObject = {
-            expiresAt: Date.now() + expiring * 60 * 1000, // expire in 30 minutes
-            sessionData: object,
-        }
-        sessionStorage.setItem(storageKey, JSON.stringify(sessionObject))
-    } catch (error) {
-        // no privileges
-    }
-}

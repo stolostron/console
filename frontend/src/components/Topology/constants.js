@@ -15,8 +15,6 @@ export const NODE_RADIUS = 28
 export const NODE_SIZE = 50
 export const MINIMUM_ZOOM_FIT = 0.4 // auto zoom to fit won't drop below this scale
 export const RELATED_OPACITY = 0.3 // opacity of elements related to matched elements
-//   'topotopia-interval-refresh-cookie'
-export const TOPOLOGY_TYPE_FILTER_COOKIE = 'topotopia-type-filter-cookie'
 
 export const FilterResults = Object.freeze({
     nosearch: '', // no search in progress

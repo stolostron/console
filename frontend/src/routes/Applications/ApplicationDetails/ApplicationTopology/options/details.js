@@ -27,7 +27,6 @@ import {
     setClusterStatus,
     createEditLink,
 } from '../../../../../components/Topology/helpers/diagram-helpers'
-import { LOCAL_HUB_NAME } from '../helpers/constants'
 import { showArgoApplicationSetLink } from '../helpers/diagram-helpers-argo'
 
 import { isSearchAvailable } from '../helpers/search-helper'
@@ -63,7 +62,7 @@ export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
                             label: t(showLocalYaml),
                             data: {
                                 action: showResourceYaml,
-                                cluster: LOCAL_HUB_NAME,
+                                cluster: 'local-cluster',
                                 editLink: editLink,
                             },
                         },

@@ -13,15 +13,13 @@
 import { StatusIcon, ClusterCountIcon, ArgoAppCountIcon } from '../../../../../components/Topology/constants.js'
 import _ from 'lodash'
 
-import { LOCAL_HUB_NAME } from '../helpers/constants'
-
 const HOURS = 1000 * 60 * 60
 
 const updateClusterNodeStatus = (node, t, sizes, startedAts, now) => {
     // collect data that will determine size of cluster
     const { specs = {} } = node
     const { cluster, violations = [] } = specs || {}
-    if (cluster && _.get(cluster, 'metadata.name', '') !== LOCAL_HUB_NAME) {
+    if (cluster && _.get(cluster, 'metadata.name', '') !== 'local-cluster') {
         const { metadata = {}, usage, status } = cluster
         const { creationTimestamp } = metadata
 

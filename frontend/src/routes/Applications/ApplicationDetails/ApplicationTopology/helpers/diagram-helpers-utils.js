@@ -10,7 +10,6 @@
 'use strict'
 import R from 'ramda'
 import _ from 'lodash'
-import { LOCAL_HUB_NAME } from './constants'
 
 const checkmarkCode = 3
 const warningCode = 2
@@ -99,7 +98,7 @@ export const getClusterName = (nodeId, node, findAll) => {
         return nodeId.slice(startPos, endPos > 0 ? endPos : nodeId.length)
     }
     //node must be deployed locally on hub, such as ansible jobs
-    return LOCAL_HUB_NAME
+    return 'local-cluster'
 }
 
 /*
@@ -165,7 +164,7 @@ export const getOnlineClusters = (node) => {
     const onlineClusters = []
     clusterNames.forEach((clsName) => {
         const cluster = clsName.trim()
-        if (cluster === LOCAL_HUB_NAME) {
+        if (cluster === 'local-cluster') {
             onlineClusters.push(cluster)
         } else {
             const matchingCluster = _.find(
@@ -182,7 +181,7 @@ export const getOnlineClusters = (node) => {
         }
     })
     //always add local cluster
-    return _.uniqBy(_.union(onlineClusters, [LOCAL_HUB_NAME]))
+    return _.uniqBy(_.union(onlineClusters, ['local-cluster']))
 }
 
 export const getClusterHost = (consoleURL) => {
@@ -568,14 +567,14 @@ export const getResourcesClustersForApp = (searchClusters, nodes) => {
                 (node) => _.get(node, 'type', '') === 'placements' && _.get(node, 'id', '').indexOf('deployable') === -1
             ) || []
         if (placementNodes.length > 0) {
-            const localClusterRuleFn = (decision) => _.get(decision, 'clusterName', '') === LOCAL_HUB_NAME
+            const localClusterRuleFn = (decision) => _.get(decision, 'clusterName', '') === 'local-cluster'
             const localPlacement = _.find(
                 placementNodes,
                 (plc) => _.filter(_.get(plc, 'specs.raw.status.decisions', []), localClusterRuleFn).length > 0
             )
             if (!localPlacement) {
                 // this placement doesn't include local host so don't include local cluster, used for showing not deployed status
-                clustersList = _.filter(clustersList, (cls) => _.get(cls, 'name', '') !== LOCAL_HUB_NAME)
+                clustersList = _.filter(clustersList, (cls) => _.get(cls, 'name', '') !== 'local-cluster')
             }
         }
     }
