@@ -96,9 +96,8 @@ export function ProviderConnectionsTable(props: { providerConnections?: Provider
         'secret.edit': false,
         'secret.delete': false,
     }
-    const [tableActionRbacValues, setTableActionRbacValues] = useState<ProviderConnectionsTableActionsRbac>(
-        defaultTableRbacValues
-    )
+    const [tableActionRbacValues, setTableActionRbacValues] =
+        useState<ProviderConnectionsTableActionsRbac>(defaultTableRbacValues)
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const [abortRbacCheck, setRbacAborts] = useState<Function[]>()
     const history = useHistory()
