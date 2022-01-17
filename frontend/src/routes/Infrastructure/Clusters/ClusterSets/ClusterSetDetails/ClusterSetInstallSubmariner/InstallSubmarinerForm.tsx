@@ -27,7 +27,7 @@ import {
     AcmPageHeader,
     Provider,
     ProviderLongTextMap,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { List, ListItem, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useContext, useEffect, useState } from 'react'

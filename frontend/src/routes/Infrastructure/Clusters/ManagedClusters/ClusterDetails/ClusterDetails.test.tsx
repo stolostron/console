@@ -30,7 +30,7 @@ import {
     PodList,
     SelfSubjectAccessReview,
 } from '../../../../../resources'
-import { AcmRoute } from '@open-cluster-management/ui-components'
+import { AcmRoute } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'

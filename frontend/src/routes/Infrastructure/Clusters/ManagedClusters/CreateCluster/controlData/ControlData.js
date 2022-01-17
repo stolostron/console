@@ -7,7 +7,7 @@ import { Trans } from 'react-i18next'
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
 import aiTemplateHbs from '../templates/assisted-installer/assisted-template.hbs'
-import { AcmIconVariant, AcmIcon } from '@open-cluster-management/ui-components'
+import { AcmIconVariant, AcmIcon } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 
 import getControlDataAWS from './ControlDataAWS'

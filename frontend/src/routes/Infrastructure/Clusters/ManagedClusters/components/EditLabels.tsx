@@ -1,14 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { IResource, patchResource } from '../../../../../resources'
-import {
-    AcmAlertContext,
-    AcmAlertGroup,
-    AcmForm,
-    AcmLabelsInput,
-    AcmModal,
-    AcmSubmit,
-} from '@open-cluster-management/ui-components'
+import { AcmAlertContext, AcmAlertGroup, AcmForm, AcmLabelsInput, AcmModal, AcmSubmit } from '@stolostron/ui-components'
 import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
 import { useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
