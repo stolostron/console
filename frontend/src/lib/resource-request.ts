@@ -245,7 +245,7 @@ function axiosRequest<ResultType>(config: AxiosRequestConfig & IRequestOptions):
         })
             .then((response) => {
                 if ((response.data as any)?.kind === StatusKind) {
-                    const status = response.data as unknown as Status
+                    const status = (response.data as unknown) as Status
                     if (status.status === 'Success') {
                         // TODO...
                         return response.data as ResultType
