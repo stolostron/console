@@ -615,3 +615,40 @@ export const getOnSaveISOParams =
         }
         // quit anyway ...
     }
+
+export const saveSSHKey = (values: CIM.EditSSHKeyFormikValues, infraEnv: CIM.InfraEnvK8sResource) => {
+    const patches: any[] = []
+    appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey, infraEnv.spec.sshAuthorizedKey)
+    if (patches.length) {
+        return patchResource(infraEnv, patches).promise
+    }
+}
+
+export const savePullSecret = (values: CIM.EditPullSecretFormikValues, infraEnv: CIM.InfraEnvK8sResource) => {
+    const secret = {
+        apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+        namespace: infraEnv.metadata.namespace,
+        name: infraEnv.spec?.pullSecretRef?.name
+    }};
+    if (values.createSecret) {
+        return createResource<any>({
+            ...secret,
+            data: {
+                '.dockerconfigjson': btoa(values.pullSecret),
+            },
+            type: 'kubernetes.io/dockerconfigjson'
+        },).promise
+    } else {
+        return patchResource(
+            secret,
+            [{
+                op: 'replace',
+                path: '/data/.dockerconfigjson',
+                value: btoa(values.pullSecret),
+            }]).promise
+    }
+}
+
+
