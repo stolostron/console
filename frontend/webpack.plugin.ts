@@ -62,7 +62,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 'process.env.NODE_ENV': JSON.stringify('production'),
                 'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
                 'process.env.MODE': JSON.stringify('plugin'),
-                'process.env.PLUGIN_PROXY_PATH': JSON.stringify('/api/proxy/plugin/acm-plugin/console'),
+                'process.env.PLUGIN_PROXY_PATH': JSON.stringify('/api/proxy/acm-plugin/console'),
             }) as unknown as webpack.WebpackPluginInstance,
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
             new MonacoWebpackPlugin({ languages: ['yaml'] }),

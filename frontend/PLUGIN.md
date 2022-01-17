@@ -56,13 +56,13 @@ source ./contrib/oc-environment.sh
 ```
 
 ```
-./bin/bridge -plugins acm-plugin=http://localhost:3000 --plugin-proxy='{"services":[{"consoleAPIPath":"/api/proxy/plugin/acm-plugin/console/","endpoint":"https://localhost:4000","authorize":true}]}'
+./bin/bridge -plugins acm-plugin=http://localhost:3000 --plugin-proxy='{"services":[{"consoleAPIPath":"/api/proxy/acm-plugin/console/","endpoint":"https://localhost:4000","authorize":true}]}'
 ```
 
 Bridge variables can also be passes in as environment variables
 
 ```
-BRIDGE_PLUGIN_PROXY='{"services":[{"consoleAPIPath":"/api/proxy/plugin/acm-plugin/console/","endpoint":"https://localhost:4000","authorize":true}]}'
+BRIDGE_PLUGIN_PROXY='{"services":[{"consoleAPIPath":"/api/proxy/acm-plugin/console/","endpoint":"https://localhost:4000","authorize":true}]}'
 ```
 
 ### Dynamic Plugin support for getting resources
