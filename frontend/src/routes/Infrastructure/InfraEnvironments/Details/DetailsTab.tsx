@@ -5,13 +5,17 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue } from 'recoil'
 import { configMapsState } from '../../../../atoms'
 import { DOC_VERSION } from '../../../../lib/doc-util'
-import { getAIConfigMap } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
+import { fetchSecret, getAIConfigMap, savePullSecret, saveSSHKey } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 
 const { EnvironmentDetails, EnvironmentErrors } = CIM
 
-type DetailsTabProps = CIM.EnvironmentErrorsProps
+type DetailsTabProps = {
+    infraEnv: CIM.InfraEnvK8sResource
+    infraAgents: CIM.AgentK8sResource[]
+    bareMetalHosts: CIM.BareMetalHostK8sResource[]
+}
 
-const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv }) => {
+const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts }) => {
     const configMaps = useRecoilValue(configMapsState)
     const aiConfigMap = getAIConfigMap(configMaps)
     return (
@@ -20,7 +24,15 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv }) => {
                 <EnvironmentErrors infraEnv={infraEnv} docVersion={DOC_VERSION} />
                 <Card>
                     <CardBody>
-                        <EnvironmentDetails infraEnv={infraEnv} aiConfigMap={aiConfigMap} />
+                        <EnvironmentDetails
+                            infraEnv={infraEnv}
+                            aiConfigMap={aiConfigMap}
+                            fetchSecret={fetchSecret}
+                            onEditPullSecret={savePullSecret}
+                            onEditSSHKey={saveSSHKey}
+                            hasAgents={!!infraAgents.length}
+                            hasBMHs={!!bareMetalHosts.length}
+                        />
                     </CardBody>
                 </Card>
             </PageSection>
