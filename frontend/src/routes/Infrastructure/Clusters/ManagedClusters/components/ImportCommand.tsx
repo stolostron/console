@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmAlert, AcmButton, AcmInlineCopy } from '@open-cluster-management/ui-components'
-import { onCopy } from '@open-cluster-management/ui-components/lib/utils'
+import { AcmAlert, AcmButton, AcmInlineCopy } from '@stolostron/ui-components'
+import { onCopy } from '@stolostron/ui-components/lib/utils'
 import {
     AlertVariant,
     Card,

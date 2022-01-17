@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useHistory } from 'react-router-dom'
-import { AcmButton, AcmPageProcess } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmPageProcess } from '@stolostron/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation, Trans } from 'react-i18next'
 import { useRecoilState } from 'recoil'

@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 
 import '@patternfly/react-core/dist/styles/base.css'
-import { AcmHeader, AcmRoute } from '@open-cluster-management/ui-components'
+import { AcmHeader, AcmRoute } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { StrictMode, Suspense } from 'react'
 import ReactDOM from 'react-dom'

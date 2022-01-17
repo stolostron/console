@@ -14,7 +14,7 @@ import {
     AcmSubmit,
     AcmTextArea,
     AcmTextInput,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ActionGroup, Button, Label, PageSection, SelectOption, Text } from '@patternfly/react-core'
 import CheckCircleIcon from '@patternfly/react-icons/dist/js/icons/check-circle-icon'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'

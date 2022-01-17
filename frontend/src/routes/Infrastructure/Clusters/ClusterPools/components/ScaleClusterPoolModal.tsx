@@ -10,7 +10,7 @@ import {
     AcmAlertGroup,
     AcmAlertContext,
     AcmNumberInput,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ModalVariant, ActionGroup } from '@patternfly/react-core'
 import { ClusterPool } from '../../../../../resources/cluster-pool'
 import { patchResource } from '../../../../../lib/resource-request'

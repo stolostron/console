@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmInlineStatusGroup } from '@open-cluster-management/ui-components'
+import { AcmInlineStatusGroup } from '@stolostron/ui-components'
 import { ClusterStatus } from '../../../../../lib/get-cluster'
 import { ManagedClusterSet } from '../../../../../resources/managed-cluster-set'
 import { ClusterPool } from '../../../../../resources/cluster-pool'

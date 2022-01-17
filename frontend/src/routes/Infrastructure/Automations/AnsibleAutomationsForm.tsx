@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSubmit, AcmTextInput } from '@open-cluster-management/ui-components'
+import { AcmForm, AcmLabelsInput, AcmModal, AcmSubmit, AcmTextInput } from '@stolostron/ui-components'
 import { ActionGroup, Button, Chip, ChipGroup, Flex, FlexItem, ModalVariant } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

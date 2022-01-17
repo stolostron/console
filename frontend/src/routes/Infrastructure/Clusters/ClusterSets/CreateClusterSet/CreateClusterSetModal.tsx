@@ -11,7 +11,7 @@ import {
     AcmSubmit,
     AcmTextInput,
     AcmModal,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ModalVariant, ActionGroup } from '@patternfly/react-core'
 import {
     ManagedClusterSet,

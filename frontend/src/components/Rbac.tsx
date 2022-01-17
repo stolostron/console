@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmDropdown } from '@stolostron/ui-components'
 import { ButtonProps } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

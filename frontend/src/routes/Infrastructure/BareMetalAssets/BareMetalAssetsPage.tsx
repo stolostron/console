@@ -8,7 +8,7 @@ import {
     AcmPageHeader,
     AcmRoute,
     AcmTable,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ActionList, ActionListItem, Bullseye, PageSection, ButtonVariant } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'

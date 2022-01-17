@@ -14,7 +14,7 @@ import {
     AcmExpandableCard,
     AcmButton,
     AcmInlineProvider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { useRecoilState } from 'recoil'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'

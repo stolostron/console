@@ -7,7 +7,7 @@ import { MultiClusterHub, MultiClusterHubApiVersion, MultiClusterHubKind } from 
 import { DiscoveryConfig, DiscoveryConfigApiVersion, DiscoveryConfigKind } from '../resources/discovery-config'
 
 import { Secret, SecretApiVersion, SecretKind } from '../resources/secret'
-import { Provider } from '@open-cluster-management/ui-components'
+import { Provider } from '@stolostron/ui-components'
 
 export const mockOpenShiftConsoleConfigMap: ConfigMap = {
     apiVersion: ConfigMapApiVersion,

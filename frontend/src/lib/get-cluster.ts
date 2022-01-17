@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
-import { Provider } from '@open-cluster-management/ui-components'
+import { Provider } from '@stolostron/ui-components'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../resources/certificate-signing-requests'
 import { ClusterClaim } from '../resources/cluster-claim'
 import { ClusterCurator } from '../resources/cluster-curator'
