@@ -12,8 +12,7 @@
 
 import * as d3 from 'd3'
 import SVG from 'svg.js'
-import { counterZoom } from './diagram-helpers'
-import { attrs, styles } from './multipleHelper'
+import { attrs, styles, counterZoom } from './utilities'
 
 export default class TitleHelper {
     /**

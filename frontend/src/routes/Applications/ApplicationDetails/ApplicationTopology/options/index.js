@@ -10,6 +10,7 @@
 'use strict'
 
 import { defaultShapes } from '../../../../../components/Topology/shapes/constants'
+import { computeNodeStatus } from '../helpers/diagram-helpers'
 import { getConnectedLayoutOptions, getUnconnectedLayoutOptions } from './layouts'
 import { getNodeDescription } from './descriptions'
 import { getNodeTitle, getSectionTitles } from './titles'
@@ -24,6 +25,7 @@ export const getOptions = () => {
             showLineLabels: true, // show labels on lines
             showGroupTitles: false, // show titles over sections
         },
+        computeNodeStatus,
         getNodeDescription,
         getNodeTitle,
         getSectionTitles,

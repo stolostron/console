@@ -11,11 +11,11 @@
 'use strict'
 
 import * as d3 from 'd3'
-import { counterZoom } from './diagram-helpers'
+import { counterZoom } from './utilities'
 import { FilterResults, NODE_RADIUS } from '../constants.js'
 import _ from 'lodash'
 
-import { attrs, styles } from './multipleHelper'
+import { attrs, styles } from './utilities'
 
 const layoutUID = 'layout.uid'
 

@@ -11,7 +11,7 @@
 'use strict'
 import _ from 'lodash'
 
-import { getWrappedNodeLabel } from '../../../../../components/Topology/helpers/diagram-helpers'
+import { getWrappedNodeLabel } from '../../../../../components/Topology/helpers/utilities'
 
 export const getNodeDescription = (node) => {
     const { layout = {} } = node

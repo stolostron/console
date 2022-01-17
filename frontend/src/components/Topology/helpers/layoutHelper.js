@@ -12,7 +12,7 @@
 
 import cytoscape from 'cytoscape'
 import cycola from 'cytoscape-cola'
-import { getWrappedNodeLabel, getHashCode, computeNodeStatus, getTypeNodeGroups } from './diagram-helpers'
+import { getWrappedNodeLabel, getHashCode, getTypeNodeGroups } from './utilities'
 import { layoutEdges, setDraggedLineData } from './linkHelper'
 import FilterHelper from './filterHelper'
 import { NODE_SIZE } from '../constants.js'
@@ -93,7 +93,7 @@ export default class LayoutHelper {
                     node.layout.description = this.getNodeDescription(node)
                 }
             }
-            computeNodeStatus(node, this.canUpdateStatuses, this.t)
+            this.computeNodeStatus(node, this.canUpdateStatuses, this.t)
         })
 
         // add node icons (ex: success)

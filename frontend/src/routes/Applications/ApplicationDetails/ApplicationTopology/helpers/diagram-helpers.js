@@ -10,8 +10,6 @@
 'use strict'
 
 import R from 'ramda'
-import React from 'react'
-import ReactDOMServer from 'react-dom/server'
 import _ from 'lodash'
 import moment from 'moment'
 import {
@@ -36,10 +34,10 @@ import {
     getResourcesClustersForApp,
     allClustersAreOnline,
     findParentForOwnerID,
-} from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/diagram-helpers-utils'
-import { getEditLink } from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/resource-helper'
-import { isSearchAvailable } from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/search-helper'
-import { getURLSearchData } from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/diagram-helpers-argo'
+} from './diagram-helpers-utils'
+import { getEditLink } from './resource-helper'
+import { isSearchAvailable } from './search-helper'
+import { getURLSearchData } from './diagram-helpers-argo'
 
 const metadataName = 'specs.raw.metadata.name'
 const metadataNamespace = 'specs.raw.metadata.namespace'
@@ -60,10 +58,7 @@ const resErrorStates = ['err', 'off', 'invalid', 'kill', 'propagationfailed']
 const resWarningStates = [pendingStatus, 'creating', 'terminating']
 const apiVersionPath = 'specs.raw.apiVersion'
 
-import {
-    showAnsibleJobDetails,
-    getPulseStatusForAnsibleNode,
-} from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/helpers/ansible-task'
+import { showAnsibleJobDetails, getPulseStatusForAnsibleNode } from './ansible-task'
 import { t } from 'i18next'
 
 /*
@@ -93,169 +88,6 @@ export const addDetails = (details, dets) => {
             })
         }
     })
-}
-
-export const getWrappedNodeLabel = (label, width, rows = 3) => {
-    // if too long, add elipse and split the rest
-    const ip = /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.exec(label)
-    if (ip) {
-        label = label.substr(0, ip.index) + '\n' + ip[0]
-    } else {
-        if (label.length > width * rows) {
-            if (rows === 2) {
-                label = label.substr(0, width) + '..\n' + label.substr(-width)
-            } else {
-                label = splitLabel(label.substr(0, width * 2), width, rows - 1) + '..\n' + label.substr(-width)
-            }
-        } else {
-            label = splitLabel(label, width, rows)
-        }
-    }
-    return label
-}
-
-const splitLabel = (label, width, rows) => {
-    let line = ''
-    const lines = []
-    let parts = label.split(/([^A-Za-z0-9])+/)
-    if (parts.length === 1 && label.length > width) {
-        //split if length > width and no split separator in label
-        parts = R.splitAt(width, label)
-    }
-    let remaining = label.length
-    do {
-        // add label part
-        line += parts.shift()
-
-        // add splitter, check if next item is a splitter, 1 char
-        if (parts.length && parts[0].length === 1) {
-            line += parts.shift()
-        }
-
-        // if next label part puts it over width split it
-        if (parts.length) {
-            if (line.length + parts[0].length > width) {
-                remaining -= line.length
-                if (remaining > width && rows === 2) {
-                    // if penultimate row do a hard break
-                    const split = parts[0]
-                    const idx = width - line.length
-                    line += split.substr(0, idx)
-                    parts[0] = split.substr(idx)
-                }
-                lines.push(line)
-                line = ''
-                rows -= 1
-            }
-        } else {
-            // nothing left, push last line
-            lines.push(line)
-        }
-    } while (parts.length)
-
-    // pull last line in if too short
-    if (lines.length > 1) {
-        let lastLine = lines.pop()
-        if (lastLine.length <= 2) {
-            lastLine = lines.pop() + lastLine
-        }
-        lines.push(lastLine)
-    }
-    return lines.join('\n')
-}
-
-const getNodeLabel = (node) => {
-    let label = getType(node.type)
-
-    if (label === 'Cluster') {
-        const nbOfClusters = _.get(node, 'specs.clusterNames', []).length
-        if (nbOfClusters > 1) {
-            label = `${nbOfClusters} Clusters`
-        }
-    }
-
-    return label
-}
-
-export function getTypeNodeGroups(nodes) {
-    // separate into types
-    const groupMap = {}
-    const allNodeMap = {}
-    nodes.forEach((node) => {
-        allNodeMap[node.uid] = node
-        const type = node.type
-
-        let group = groupMap[type]
-        if (!group) {
-            group = groupMap[type] = { nodes: [] }
-        }
-
-        const label = getNodeLabel(node)
-        node.layout = Object.assign(node.layout || {}, {
-            uid: node.uid,
-            type: node.type,
-            label: getWrappedNodeLabel(label, 12, 3),
-            compactLabel: getWrappedNodeLabel(label, 10, 2),
-        })
-
-        delete node.layout.source
-        delete node.layout.target
-        delete node.layout.nodeIcons
-        delete node.layout.selfLink
-        if (node.selfLink) {
-            node.layout.selfLink = {
-                link: node.selfLink,
-                nodeLayout: node.layout,
-            }
-        }
-
-        group.nodes.push(node)
-    })
-
-    return { nodeGroups: groupMap, allNodeMap }
-}
-
-//as scale decreases from max to min, return a counter zoomed value from min to max
-export const counterZoom = (scale, scaleMin, scaleMax, valueMin, valueMax) => {
-    if (scale >= scaleMax) {
-        return valueMin
-    } else if (scale <= scaleMin) {
-        return valueMax
-    }
-    return valueMin + (1 - (scale - scaleMin) / (scaleMax - scaleMin)) * (valueMax - valueMin)
-}
-
-export const getTooltip = (tooltips) => {
-    return ReactDOMServer.renderToStaticMarkup(
-        <React.Fragment>
-            {tooltips.map(({ name, value, href, target = '_blank', rel = 'noopener noreferrer' }) => {
-                return (
-                    <div key={Math.random()}>
-                        {name && name.length > 0 ? <span className="label">{name}: </span> : <span>&nbsp;</span>}
-                        {href ? (
-                            <a className="link" href={href} target={target} rel={rel}>
-                                {value}
-                            </a>
-                        ) : (
-                            <span className="value">{value}</span>
-                        )}
-                    </div>
-                )
-            })}
-        </React.Fragment>
-    )
-}
-
-export const getHashCode = (str) => {
-    let hash = 0,
-        i,
-        chr
-    for (i = 0; i < str.length; i++) {
-        chr = str.charCodeAt(i)
-        hash = (hash << 5) - hash + chr
-        hash |= 0
-    }
-    return hash
 }
 
 export const getNodePropery = (node, propPath, key, defaultValue, status) => {
@@ -590,15 +422,6 @@ export const getPulseForNodeWithPodStatus = (node, t) => {
     return pulse
 }
 
-export const getShapeTypeForSubscription = (node) => {
-    const blocked = _.includes(_.get(node, 'specs.raw.status.message', ''), 'Blocked')
-    if (blocked) {
-        return 'subscriptionblocked'
-    } else {
-        return 'subscription'
-    }
-}
-
 export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
     let pulse = 'green'
     let shapeType = node.type
@@ -655,6 +478,15 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
     _.set(node, specPulse, pulse)
     _.set(node, specShapeType, shapeType)
     return pulse
+}
+
+export const getShapeTypeForSubscription = (node) => {
+    const blocked = _.includes(_.get(node, 'specs.raw.status.message', ''), 'Blocked')
+    if (blocked) {
+        return 'subscriptionblocked'
+    } else {
+        return 'subscription'
+    }
 }
 
 export const createEditLink = (node) => {
@@ -2135,10 +1967,6 @@ export const processResourceActionLink = (resource, toggleLoading, handleErrorMs
         window.open(targetLink, '_blank')
     }
     return targetLink
-}
-
-export const getType = (type) => {
-    return _.capitalize(_.startCase(type))
 }
 
 const getStateNames = (t) => {

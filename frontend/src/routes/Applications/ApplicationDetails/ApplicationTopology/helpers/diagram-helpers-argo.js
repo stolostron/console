@@ -3,7 +3,7 @@
 
 import _ from 'lodash'
 
-import { createEditLink } from '../../../../../components/Topology/helpers/diagram-helpers'
+import { createEditLink } from './diagram-helpers'
 import { isYAMLEditAvailable } from './search-helper'
 
 export const showArgoApplicationSetLink = (node, details, t) => {

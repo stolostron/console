@@ -26,9 +26,7 @@ import LegendView from './components/LegendView'
 import { getOptions } from './options'
 import { useApplicationPageContext } from '../ApplicationDetails'
 import { AcmDrawerContext } from '../AcmDrawer'
-
-import { processResourceActionLink } from '../../../../components/Topology/helpers/diagram-helpers'
-
+import { processResourceActionLink } from './helpers/diagram-helpers'
 import { getApplication } from './model/application'
 import { getTopology, getDiagramElements } from './model/topology'
 import { getApplicationData, getApplicationQuery, getRelatedQuery, getAdditionalQuery } from './model/searchQueries'

@@ -26,11 +26,11 @@ import {
     addIngressNodeInfo,
     setClusterStatus,
     createEditLink,
-} from '../../../../../components/Topology/helpers/diagram-helpers'
+} from '../helpers/diagram-helpers'
+import { kubeNaming } from '../../../../../components/Topology/helpers/utilities'
 import { showArgoApplicationSetLink } from '../helpers/diagram-helpers-argo'
 
 import { isSearchAvailable } from '../helpers/search-helper'
-import { kubeNaming } from './titles'
 
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'

@@ -12,12 +12,8 @@
 import * as d3 from 'd3'
 import SVG from 'svg.js'
 import { dragLinks } from './linkHelper'
-import { counterZoom, getTooltip } from './diagram-helpers'
+import { attrs, styles, kubeNaming, titleBeautify, counterZoom, getTooltip } from './utilities'
 import _ from 'lodash'
-import {
-    kubeNaming,
-    titleBeautify,
-} from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/options/titles'
 
 import { FilterResults, RELATED_OPACITY, NODE_RADIUS, NODE_SIZE } from '../constants.js'
 
@@ -32,8 +28,6 @@ const dotClusterCountIcon = '.clusterCountIcon'
 const gArgoAppCountText = 'g.argoAppCountText'
 const useArgoAppCountIcon = 'use.argoAppCountIcon'
 const dotArgoAppCountIcon = '.argoAppCountIcon'
-
-import { attrs, styles } from './multipleHelper'
 
 const hideTooltip = () => {
     return {
