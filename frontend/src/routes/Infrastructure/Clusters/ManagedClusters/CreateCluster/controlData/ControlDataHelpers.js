@@ -190,6 +190,47 @@ export const setAvailableConnections = (control, secrets) => {
     control.available = connections.map((secret) => secret.metadata.name)
 }
 
+export const onChangeConnection = (control, controlData) => {
+    const { active, availableMap = {} } = control
+    const replacements = _.get(availableMap[active], 'replacements')
+    if (replacements) {
+        controlData.forEach((control) => {
+            switch (control.id) {
+                case 'hasProxy':
+                    control.active = !!replacements['httpProxy']
+                    break
+                case 'isDisconnected':
+                    control.active = !!replacements['imageContentSources']
+                    break
+                default:
+                    if (replacements[control.id]) {
+                        switch (control.type) {
+                            case 'values':
+                                control.active = replacements[control.id].split(',')
+                                break
+                            default:
+                                control.active = replacements[control.id]
+                                break
+                        }
+                        control.disabled = false
+                        if (control.id === 'disconnectedAdditionalTrustBundle') {
+                        }
+                    }
+                    break
+            }
+        })
+    }
+    setTimeout(() => {
+        const control = controlData.find(({ id }) => {
+            return id === 'disconnectedAdditionalTrustBundle'
+        })
+        if (control) {
+            control.active = replacements['additionalTrustBundle']
+            control.disabled = !control.active
+        }
+    })
+}
+
 export const setAvailableTemplates = (control, templates) => {
     control.available = templates.map((template) => template.metadata.name)
 }

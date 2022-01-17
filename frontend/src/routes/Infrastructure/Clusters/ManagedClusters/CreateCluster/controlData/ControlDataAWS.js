@@ -14,6 +14,7 @@ import {
     getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
+    onChangeConnection,
     onChangeSNO,
     addSnoText,
 } from './ControlDataHelpers'
@@ -616,6 +617,7 @@ const controlDataAWS = [
         },
         available: [],
         providerId: 'aws',
+        onSelect: onChangeConnection,
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,
