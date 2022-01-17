@@ -12,7 +12,7 @@ import {
     compareStrings,
     Provider,
     AcmErrorBoundary,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, Link } from 'react-router-dom'

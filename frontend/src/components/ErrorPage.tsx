@@ -1,4 +1,4 @@
-import { AcmAlertInfo } from '@open-cluster-management/ui-components'
+import { AcmAlertInfo } from '@stolostron/ui-components'
 import {
     Card,
     CardBody,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { AcmErrorBoundary } from '@open-cluster-management/ui-components'
+import { AcmErrorBoundary } from '@stolostron/ui-components'
 import { FeatureGate, listFeatureGates } from '../resources/feature-gate'
 import { ClusterManagementAddOn, listClusterManagementAddOns } from '../resources/cluster-management-add-on'
 

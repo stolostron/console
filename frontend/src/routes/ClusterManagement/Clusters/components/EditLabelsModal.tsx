@@ -1,11 +1,4 @@
-import {
-    AcmAlertGroup,
-    AcmForm,
-    AcmLabelsInput,
-    AcmModal,
-    AcmSubmit,
-    AcmAlertContext,
-} from '@open-cluster-management/ui-components'
+import { AcmAlertGroup, AcmForm, AcmLabelsInput, AcmModal, AcmSubmit, AcmAlertContext } from '@stolostron/ui-components'
 import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
 import React, { useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

@@ -15,7 +15,7 @@ import {
 } from '../resources/certificate-signing-requests'
 import { IRequestResult, ResourceError, ResourceErrorCode } from './resource-request'
 import { getLatest } from './utils'
-import { Provider } from '@open-cluster-management/ui-components'
+import { Provider } from '@stolostron/ui-components'
 
 export enum ClusterStatus {
     'pending' = 'pending',

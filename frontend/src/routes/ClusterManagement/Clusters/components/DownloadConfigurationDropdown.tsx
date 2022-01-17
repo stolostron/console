@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { AcmDropdown } from '@open-cluster-management/ui-components'
+import { AcmDropdown } from '@stolostron/ui-components'
 import { useTranslation } from 'react-i18next'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { getSecret, unpackSecret } from '../../../../resources/secret'

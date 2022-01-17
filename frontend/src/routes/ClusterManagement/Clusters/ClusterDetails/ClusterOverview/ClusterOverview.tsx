@@ -6,7 +6,7 @@ import {
     AcmInlineProvider,
     AcmInlineCopy,
     AcmErrorBoundary,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { PageSection, ButtonVariant } from '@patternfly/react-core'
 import { PencilAltIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from 'react-i18next'

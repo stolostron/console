@@ -7,7 +7,7 @@ import {
     compareNumbers,
     IAcmTableColumn,
     AcmErrorBoundary,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { useTranslation } from 'react-i18next'
 import { NodeInfo } from '../../../../../resources/managed-cluster-info'
 import { ClusterContext } from '../ClusterDetails'

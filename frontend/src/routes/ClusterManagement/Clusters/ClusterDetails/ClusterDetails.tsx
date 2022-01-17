@@ -10,7 +10,7 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
     AcmSpinnerBackdrop,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import React, { Fragment, Suspense, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'

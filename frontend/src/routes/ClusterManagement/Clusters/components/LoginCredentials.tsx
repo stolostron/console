@@ -6,7 +6,7 @@ import {
     AcmInlineStatus,
     AcmInlineCopy,
     StatusType,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, Tooltip } from '@patternfly/react-core'
 import { useTranslation } from 'react-i18next'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'

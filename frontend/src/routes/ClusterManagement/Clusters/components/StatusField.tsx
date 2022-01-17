@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'
+import { AcmInlineStatus, StatusType, AcmButton } from '@stolostron/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Cluster, ClusterStatus } from '../../../../lib/get-cluster'
 import { launchLogs } from './HiveNotification'

@@ -1,12 +1,6 @@
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-    AcmPageCard,
-    AcmTable,
-    AcmInlineStatus,
-    StatusType,
-    AcmErrorBoundary,
-} from '@open-cluster-management/ui-components'
+import { AcmPageCard, AcmTable, AcmInlineStatus, StatusType, AcmErrorBoundary } from '@stolostron/ui-components'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { Addon, AddonStatus } from '../../../../../lib/get-addons'
 import { ClusterContext } from '../ClusterDetails'

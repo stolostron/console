@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { AcmButton, AcmPageProcess } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmPageProcess } from '@stolostron/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from 'react-i18next'
 import { createSubjectAccessReview, rbacMapping } from '../../../../resources/self-subject-access-review'

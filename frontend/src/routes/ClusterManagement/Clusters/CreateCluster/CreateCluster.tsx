@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { AcmPage, AcmPageHeader, AcmErrorBoundary } from '@open-cluster-management/ui-components'
+import { AcmPage, AcmPageHeader, AcmErrorBoundary } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../lib/create-cluster'
 import { useTranslation } from 'react-i18next'
