@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, waitFor } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
-import { waitForText, waitForNotText, clickByText } from '../../../lib/test-util'
+import { waitForText } from '../../../lib/test-util'
 import { PolicySet, PolicySetApiVersion, PolicySetKind } from '../../../resources'
 import PolicySetsPage from './PolicySets'
 
