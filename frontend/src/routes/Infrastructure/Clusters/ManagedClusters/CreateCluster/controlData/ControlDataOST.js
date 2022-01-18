@@ -16,6 +16,7 @@ import {
     isHidden_lt_OCP48,
     isHidden_gt_OCP46,
     isHidden_SNO,
+    onChangeConnection,
     onChangeSNO,
     addSnoText,
 } from './ControlDataHelpers'
@@ -42,6 +43,7 @@ const controlDataOST = [
             required: true,
         },
         available: [],
+        onSelect: onChangeConnection,
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,

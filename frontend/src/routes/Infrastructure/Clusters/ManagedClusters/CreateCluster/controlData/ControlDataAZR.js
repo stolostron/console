@@ -14,6 +14,7 @@ import {
     getWorkerName,
     isHidden_lt_OCP48,
     isHidden_SNO,
+    onChangeConnection,
     onChangeSNO,
     addSnoText,
 } from './ControlDataHelpers'
@@ -471,6 +472,7 @@ const controlDataAZR = [
             required: true,
         },
         available: [],
+        onSelect: onChangeConnection,
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,

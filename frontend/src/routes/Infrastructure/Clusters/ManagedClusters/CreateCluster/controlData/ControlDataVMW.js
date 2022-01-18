@@ -14,6 +14,7 @@ import {
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    onChangeConnection,
     addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
@@ -40,6 +41,7 @@ const controlDataVMW = [
         },
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
+        onSelect: onChangeConnection,
         encode: ['cacertificate'],
     },
     ...clusterDetailsControlData,

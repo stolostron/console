@@ -8,6 +8,7 @@ import {
     networkingControlData,
     proxyControlData,
     automationControlData,
+    onChangeConnection,
     getSimplifiedImageName,
     isHidden_SNO,
 } from './ControlDataHelpers'
@@ -194,6 +195,7 @@ const controlDataBMC = [
             required: true,
         },
         available: [],
+        onSelect: onChangeConnection,
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,
