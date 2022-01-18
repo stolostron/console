@@ -20,11 +20,10 @@ import '../../ManagedClusters/CreateCluster/style.css'
 import { controlData } from './controlData/ControlData'
 import { setAvailableConnections } from '../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import hiveTemplate from './templates/hive-template.hbs'
-import { featureGatesState, secretsState } from '../../../../../atoms'
+import { secretsState, settingsState } from '../../../../../atoms'
 
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
-import { FeatureGates } from '../../../../../FeatureGates'
 
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
@@ -124,7 +123,7 @@ export function CreateClusterPool() {
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const toastContext = useContext(AcmToastContext)
-    const [featureGateCache] = useRecoilState(featureGatesState)
+    const [settings] = useRecoilState(settingsState)
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -204,7 +203,7 @@ export function CreateClusterPool() {
                 control.available = namespaces.map((namespace) => namespace.metadata.name) as string[]
                 break
             case 'singleNodeFeatureFlag':
-                if (featureGateCache.find((fg) => fg.metadata.name === FeatureGates.singleNodeOpenShift)) {
+                if (settings.singleNodeOpenshift === 'enabled') {
                     control.active = true
                 }
                 break

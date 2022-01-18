@@ -9,10 +9,10 @@
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=security_rating&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=vulnerabilities&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
 
-
 ## What is console?
 
 The console provides a user interface for cluster related items such as:
+
 - Credentials management (For example, Cloud Providers)
 - Cluster management
   - Creating
@@ -40,6 +40,7 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 3. Setup environment
 
    You need:
+
    - to be connected to a OpenShift 4.x.x cluster
    - to have Advanced Cluster Management installed on the cluster
 
@@ -55,7 +56,7 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
    npm start
    ```
 
-   This will start the frontend and the backend in parallel.  (It may take up to 30 seconds for the UI to appear)
+   This will start the frontend and the backend in parallel. (It may take up to 30 seconds for the UI to appear)
 
    The frontend will proxy requests to the backend using react scripts.
 
@@ -107,12 +108,13 @@ If the backend responds with a `401 Unauthorized` the frontend starts an OAuth f
 
 ## Optional Features
 
-In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product.  These features are enabled using a FeatureGate CR.  The following features are available:
+In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product. These features are enabled by updating the `console-config` configmap in the installation namepsace (default: `open-cluster-management`). The following features are available:
 
 ### Single node OpenShift
 
-Enabling this feature will allow the user to create a cluster that only contains a single master node.  This option is only available for providers AWS, Azure, GCP, OpenStack and VMware when the OpenShift release image is version 4.8 or higher.
+Enabling this feature will allow the user to create a cluster that only contains a single control plane node. This option is only available for providers AWS, Azure, GCP, OpenStack and VMware when the OpenShift release image is version 4.8 or higher.
 
-To enable this feature, `oc apply -f features/single-node-openshift.yaml`.  
+
+## References
 
 `console` is an add-on for the open-cluster-management community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io)

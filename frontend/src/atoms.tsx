@@ -16,7 +16,6 @@ import { ClusterManagementAddOn, ClusterManagementAddOnKind } from './resources/
 import { ConfigMap, ConfigMapKind } from './resources/configmap'
 import { DiscoveryConfig, DiscoveryConfigKind } from './resources/discovery-config'
 import { DiscoveredCluster, DiscoveredClusterKind } from './resources/discovered-cluster'
-import { FeatureGate, FeatureGateKind } from './resources/feature-gate'
 import { MachinePool, MachinePoolKind } from './resources/machine-pool'
 import { ManagedCluster, ManagedClusterKind } from './resources/managed-cluster'
 import { ManagedClusterAddOn, ManagedClusterAddOnKind } from './resources/managed-cluster-add-on'
@@ -48,7 +47,6 @@ export const clusterManagementAddonsState = atom<ClusterManagementAddOn[]>({
 export const configMapsState = atom<ConfigMap[]>({ key: 'configMaps', default: [] })
 export const discoveryConfigState = atom<DiscoveryConfig[]>({ key: 'discoveryConfigs', default: [] })
 export const discoveredClusterState = atom<DiscoveredCluster[]>({ key: 'discoveredClusters', default: [] })
-export const featureGatesState = atom<FeatureGate[]>({ key: 'featureGates', default: [] })
 export const machinePoolsState = atom<MachinePool[]>({ key: 'machinePools', default: [] })
 export const managedClustersState = atom<ManagedCluster[]>({ key: 'managedClusters', default: [] })
 export const managedClusterAddonsState = atom<ManagedClusterAddOn[]>({ key: 'managedClusterAddons', default: [] })
@@ -68,6 +66,8 @@ export const ansibleJobState = atom<AnsibleJob[]>({ key: 'ansiblejobs', default:
 
 interface Settings {
     LOG_LEVEL?: string
+    ansibleIntegration?: 'enabled' | 'disabled'
+    singleNodeOpenshift?: 'enabled' | 'disabled'
 }
 
 interface WatchEvent {
@@ -104,7 +104,6 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setConfigMaps] = useRecoilState(configMapsState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
-    const [, setFeatureGates] = useRecoilState(featureGatesState)
     const [, setMachinePools] = useRecoilState(machinePoolsState)
     const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
@@ -133,7 +132,6 @@ export function LoadData(props: { children?: ReactNode }) {
         [ConfigMapKind]: setConfigMaps,
         [DiscoveryConfigKind]: setDiscoveryConfigs,
         [DiscoveredClusterKind]: setDiscoveredClusters,
-        [FeatureGateKind]: setFeatureGates,
         [MachinePoolKind]: setMachinePools,
         [ManagedClusterKind]: setManagedClusters,
         [ManagedClusterAddOnKind]: setManagedClusterAddons,
