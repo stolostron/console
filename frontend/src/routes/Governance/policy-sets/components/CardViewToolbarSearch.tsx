@@ -13,8 +13,7 @@ import {
     TextInputGroupMain,
     TextInputGroupUtilities,
 } from '@patternfly/react-core'
-import SearchIcon from '@patternfly/react-icons/dist/esm/icons/search-icon'
-import TimesIcon from '@patternfly/react-icons/dist/esm/icons/times-icon'
+import { SearchIcon, TimesIcon } from '@patternfly/react-icons/dist/js/icons'
 import { useEffect, useRef, useState } from 'react'
 
 function formatSearchSelections(currentSelections: string[]) {
