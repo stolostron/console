@@ -23,6 +23,7 @@ import {
     canEditHost,
     useNMStatesOfNamespace,
     useOnDeleteHost,
+    onChangeBMHHostname,
 } from './utils'
 import { isBMPlatform } from '../../../../../InfraEnvironments/utils'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
@@ -144,6 +145,7 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
                 fetchNMState={fetchNMState}
                 isBMPlatform={isBMPlatform(infraEnv)}
                 getClusterDeploymentLink={getClusterDeploymentLink}
+                onChangeBMHHostname={onChangeBMHHostname}
             />
         </>
     ) : (
