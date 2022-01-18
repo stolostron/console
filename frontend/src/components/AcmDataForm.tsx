@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmPageHeader, AcmIcon, AcmIconVariant, AcmButton } from '@open-cluster-management/ui-components'
+import { AcmPageHeader, AcmIcon, AcmIconVariant, AcmButton } from '@stolostron/ui-components'
 import {
     ActionGroup,
     ActionList,

@@ -9,7 +9,7 @@ import {
     AcmAlertGroup,
     AcmAlertContext,
     AcmTextInput,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { useTranslation, Trans } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import {

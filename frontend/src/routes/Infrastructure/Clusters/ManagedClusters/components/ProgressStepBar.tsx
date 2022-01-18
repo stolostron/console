@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '@open-cluster-management/ui-components'
+import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '@stolostron/ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'

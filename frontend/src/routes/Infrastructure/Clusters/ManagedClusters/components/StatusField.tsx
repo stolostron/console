@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useTranslation, Trans } from 'react-i18next'
-import { AcmInlineStatus, StatusType, AcmButton } from '@open-cluster-management/ui-components'
+import { AcmInlineStatus, StatusType, AcmButton } from '@stolostron/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

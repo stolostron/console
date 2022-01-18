@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmSelect } from '@open-cluster-management/ui-components'
+import { AcmSelect } from '@stolostron/ui-components'
 import { SelectOption } from '@patternfly/react-core'
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'

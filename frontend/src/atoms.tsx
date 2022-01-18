@@ -2,7 +2,7 @@
 import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
 import { LoadingPage } from './components/LoadingPage'
-import { AcmRoute } from '@open-cluster-management/ui-components'
+import { AcmRoute } from '@stolostron/ui-components'
 import { BareMetalAsset, BareMetalAssetKind } from './resources/bare-metal-asset'
 import { AnsibleJob, AnsibleJobKind } from './resources/ansible-job'
 import { CertificateSigningRequest, CertificateSigningRequestKind } from './resources/certificate-signing-requests'

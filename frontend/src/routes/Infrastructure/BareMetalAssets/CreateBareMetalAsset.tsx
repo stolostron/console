@@ -13,7 +13,7 @@ import {
     AcmSelect,
     AcmSubmit,
     AcmTextInput,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ActionGroup, Button, PageSection, SelectOption } from '@patternfly/react-core'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

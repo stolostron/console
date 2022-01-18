@@ -8,7 +8,7 @@ if [ $# -eq 0 ]; then
 fi
 
 VERSION=$1
-IMAGE=${2:-quay.io/open-cluster-management/console}
+IMAGE=${2:-quay.io/stolostron/console}
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 cd $DIR

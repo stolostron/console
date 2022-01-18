@@ -11,7 +11,7 @@ import {
     AcmCountCardSection,
     AcmLabels,
     AcmButton,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { clusterDangerStatuses } from '../../../../../../lib/get-cluster'
 import { NavigationPath } from '../../../../../../NavigationPath'

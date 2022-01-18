@@ -4,7 +4,7 @@ import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { AcmRoute } from '@open-cluster-management/ui-components'
+import { AcmRoute } from '@stolostron/ui-components'
 import { nockCreate, nockDelete, nockNamespacedList, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import {
     clickByLabel,

@@ -2,14 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import {
-    AcmAlertContext,
-    AcmAlertGroup,
-    AcmForm,
-    AcmSubmit,
-    AcmModal,
-    AcmMultiSelect,
-} from '@open-cluster-management/ui-components'
+import { AcmAlertContext, AcmAlertGroup, AcmForm, AcmSubmit, AcmModal, AcmMultiSelect } from '@stolostron/ui-components'
 import { useRecoilState } from 'recoil'
 import { ActionGroup, Button, ModalVariant, SelectVariant, SelectOption } from '@patternfly/react-core'
 import { ManagedClusterSet } from '../../../../../resources/managed-cluster-set'

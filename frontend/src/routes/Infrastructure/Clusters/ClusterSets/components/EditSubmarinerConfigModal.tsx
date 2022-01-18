@@ -11,7 +11,7 @@ import {
     AcmSelect,
     AcmButton,
     Provider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ModalVariant, SelectOption, ActionGroup } from '@patternfly/react-core'
 import { useTranslation, Trans } from 'react-i18next'
 import { SubmarinerConfig, CableDriver, submarinerConfigDefault } from '../../../../../resources/submariner-config'

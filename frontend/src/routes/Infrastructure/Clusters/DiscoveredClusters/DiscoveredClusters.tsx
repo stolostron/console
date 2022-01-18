@@ -13,7 +13,7 @@ import {
     compareStrings,
     IAcmTableColumn,
     Provider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ActionList, ActionListItem, ButtonVariant, PageSection, Bullseye } from '@patternfly/react-core'
 import * as moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'

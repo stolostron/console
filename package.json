@@ -1,5 +1,5 @@
 {
-    "name": "@open-cluster-management/console",
+    "name": "@stolostron/console",
     "version": "0.0.1",
     "license": "SEE LICENSE IN LICENSE",
     "scripts": {
