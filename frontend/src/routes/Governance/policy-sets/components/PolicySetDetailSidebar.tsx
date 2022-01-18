@@ -190,7 +190,7 @@ export function PolicySetSidebar(props: { policySet: PolicySet; policySetCluster
         {
             header: t('Labels'),
             cell: (clusterInfo: PolicySetResultClusters) => {
-                const cluster = managedClusters.find(cluster => cluster.metadata.name === clusterInfo.clusterName)
+                const cluster = managedClusters.find((cluster) => cluster.metadata.name === clusterInfo.clusterName)
                 if (cluster && cluster.metadata.labels) {
                     const labelKeys = Object.keys(cluster.metadata.labels)
                     const collapse =
@@ -224,7 +224,7 @@ export function PolicySetSidebar(props: { policySet: PolicySet; policySetCluster
                     return '-'
                 }
             },
-        }
+        },
     ]
 
     const policyColumnDefs = [
@@ -273,17 +273,17 @@ export function PolicySetSidebar(props: { policySet: PolicySet; policySetCluster
                         >{`${violationCount} of ${policySetClusters.length} in violation`}</p>
                     </div>
                 )
-            }, 
+            },
         },
         {
             header: t('Remediation'),
             sort: (a: PolicySetResultsStatus, b: PolicySetResultsStatus) => {
-                const policyA = policies.find(p => p.metadata.name === a.policy)
-                const policyB = policies.find(p => p.metadata.name === b.policy)
+                const policyA = policies.find((p) => p.metadata.name === a.policy)
+                const policyB = policies.find((p) => p.metadata.name === b.policy)
                 return compareStrings(policyA?.spec.remediationAction, policyB?.spec.remediationAction)
             },
             cell: (policyStatus: PolicySetResultsStatus) => {
-                const policy = policies.find(p => p.metadata.name === policyStatus.policy)
+                const policy = policies.find((p) => p.metadata.name === policyStatus.policy)
                 return policy?.spec.remediationAction ?? '-'
             },
         },
