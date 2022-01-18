@@ -10,7 +10,8 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { StatusIcon, ClusterCountIcon, ArgoAppCountIcon } from '../../../../../components/Topology/constants.js'
+import { StatusIcon } from '../../../../../components/Topology/constants.js'
+import { ClusterCountIcon, ArgoAppCountIcon } from './constants.js'
 import _ from 'lodash'
 
 const HOURS = 1000 * 60 * 60

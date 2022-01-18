@@ -868,7 +868,7 @@ export const interruptNodes = (svg) => {
         })
 }
 
-// counter zoom labels-- if smaller, show an abreviated smaller label
+// counter zoom labels-- if smaller, show an abbreviated smaller label
 export const counterZoomLabels = (svg, currentZoom) => {
     if (svg) {
         const s = currentZoom.k
@@ -929,9 +929,22 @@ export const counterZoomLabels = (svg, currentZoom) => {
             layout.textBBox.height = height
 
             // fix opaque background behind label
+            let padding = 2
+            if (s < 1) {
+                padding *= 1 / s
+            }
+            let textRect
+            shownLabel.each((d, k, txt) => {
+                textRect = txt[k].getBBox()
+            })
             nodeLabel.selectAll('rect').each((d, k, rc) => {
                 d3.select(rc[k]).call(attrs, () => {
-                    return { height }
+                    return {
+                        x: textRect.x - padding,
+                        y: textRect.y - padding,
+                        height: textRect.height + padding * 2,
+                        width: textRect.width + padding * 2,
+                    }
                 })
             })
 

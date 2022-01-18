@@ -17,9 +17,10 @@
     font-weight: bold;
 }
 .node rect {
-    fill: #fff;
+    fill: white;
     opacity: 0.85;
     pointer-events: none;
+    stroke: #c8c8c8;
 }
 .node .shadow {
     stroke-width: 2px;
