@@ -24,6 +24,7 @@ import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
 import { deleteResources } from '../../../../../../../lib/delete-resources'
 import { IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
+import { AgentK8sResource, BareMetalHostK8sResource } from 'openshift-assisted-ui-lib/cim'
 
 const {
     getAnnotationsFromAgentSelector,
@@ -496,7 +497,12 @@ export const onSaveBMH =
 
         if (editModal?.bmh) {
             const patches: any[] = []
-            appendPatch(patches, `/metadata/annotations/'${BMH_HOSTNAME_ANNOTATION.replace('/', '~1')}'`, values.hostname, editModal.bmh.metadata.annotations?.[BMH_HOSTNAME_ANNOTATION])
+            appendPatch(
+                patches,
+                `/metadata/annotations/'${BMH_HOSTNAME_ANNOTATION.replace('/', '~1')}'`,
+                values.hostname,
+                editModal.bmh.metadata.annotations?.[BMH_HOSTNAME_ANNOTATION]
+            )
             appendPatch(patches, '/spec/bmc/address', values.bmcAddress, editModal.bmh.spec.bmc.address)
             appendPatch(
                 patches,
@@ -556,7 +562,6 @@ export const onSaveAgent = async (agent: CIM.AgentK8sResource, hostname: string)
         },
     ]).promise
 
-
 export const onChangeBMHHostname = async (bmh: CIM.BareMetalHostK8sResource, hostname: string) =>
     patchResource(bmh, [
         {
@@ -566,22 +571,32 @@ export const onChangeBMHHostname = async (bmh: CIM.BareMetalHostK8sResource, hos
         },
     ]).promise
 
-export const useAgentsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }) => {
+export const useAgentsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }): AgentK8sResource[] => {
     const [agents] = useRecoilValue(waitForAll([agentsState]))
-    return useMemo(() => agents.filter((a) => isAgentOfCluster(a, name, namespace)), [agents])
+    return useMemo(() => agents.filter((a) => isAgentOfCluster(a, name, namespace)), [agents]) || []
 }
 
-export const useBMHsOfAIFlow = ({ name, namespace }: { name?: string; namespace?: string }) => {
+export const useBMHsOfAIFlow = ({
+    name,
+    namespace,
+}: {
+    name?: string
+    namespace?: string
+}): BareMetalHostK8sResource[] => {
     const [bmhs] = useRecoilValue(waitForAll([bareMetalAssetsState]))
-    return useMemo(
-        () =>
-            // TODO(mlibra): make that happen!
-            /* That label is added to the InfraEnv along creating ClusterDeployment, specific for the AI flow */
-            bmhs.filter(
-                (bmh: CIM.BareMetalHostK8sResource) =>
-                    namespace && name && bmh.metadata?.labels?.[INFRAENV_GENERATED_AI_FLOW] === `${namespace}-${name}`
-            ),
-        [bmhs]
+    return (
+        useMemo(
+            () =>
+                // TODO(mlibra): make that happen!
+                /* That label is added to the InfraEnv along creating ClusterDeployment, specific for the AI flow */
+                bmhs.filter(
+                    (bmh: CIM.BareMetalHostK8sResource) =>
+                        namespace &&
+                        name &&
+                        bmh.metadata?.labels?.[INFRAENV_GENERATED_AI_FLOW] === `${namespace}-${name}`
+                ),
+            [bmhs]
+        ) || []
     )
 }
 
