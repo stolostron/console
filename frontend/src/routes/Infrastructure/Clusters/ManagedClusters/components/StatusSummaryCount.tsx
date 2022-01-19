@@ -2,10 +2,10 @@
 
 import { AcmCountCardSection, AcmDrawerContext } from '@stolostron/ui-components'
 import { useCallback, useContext, useEffect } from 'react'
-import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { queryStatusCount } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -108,7 +108,7 @@ export function StatusSummaryCount() {
                             ),
                         title: t('summary.violations'),
                         linkText: t('summary.violations.launch'),
-                        onLinkClick: () => window.open('/multicloud/policies', '_self'),
+                        onLinkClick: () => window.open('/multicloud/governance/policies', '_self'),
                         isDanger: true,
                     },
                     {
