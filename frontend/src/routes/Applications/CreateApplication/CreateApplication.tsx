@@ -7,7 +7,9 @@ import { NavigationPath } from '../../../NavigationPath'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { isType } from '../../../lib/is-type'
-import { gitOpsClustersState, placementsState } from '../../../atoms'
+import { gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
+import { unpackProviderConnection } from '../../../resources'
+import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
 
 // interface CreationStatus {
 //     status: string
@@ -66,29 +68,25 @@ export default function CreateApplicationPage() {
 export function CreateApplication() {
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
+    const [namespaces] = useRecoilState(namespacesState)
+    const [secrets] = useRecoilState(secretsState)
+    const providerConnections = secrets.map(unpackProviderConnection)
 
     const availableArgoNS = gitOpsClusters
         .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
         .filter(isType)
     const availablePlacements = placements.map((placement) => placement.metadata.name).filter(isType)
+    const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
+    const ansibleCredentials = providerConnections.filter(
+        (providerConnection) =>
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+    )
 
-    // will wait to adopt AppForm
-
-    // return <AppForm />
     return (
-        <Fragment>
-            <h1>Argo Namespaces:</h1>
-            <ul>
-                {availableArgoNS.map((ns) => {
-                    return <li>{ns}</li>
-                })}
-            </ul>
-            <h1>Existing Placements:</h1>
-            <ul>
-                {availablePlacements.map((placement) => {
-                    return <li>{placement}</li>
-                })}
-            </ul>
-        </Fragment>
+        <ApplicationWizard
+            argoServers={availableArgoNS}
+            namespaces={availableNamespace}
+            placements={availablePlacements}
+        />
     )
 }
