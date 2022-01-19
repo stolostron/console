@@ -2,7 +2,7 @@
 
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { Fragment } from 'react'
+import { useHistory } from 'react-router'
 import { NavigationPath } from '../../../NavigationPath'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
@@ -66,6 +66,7 @@ export default function CreateApplicationPage() {
 }
 
 export function CreateApplication() {
+    const history = useHistory()
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
     const [namespaces] = useRecoilState(namespacesState)
@@ -81,12 +82,17 @@ export function CreateApplication() {
         (providerConnection) =>
             providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
     )
+    const availableAnsibleCredentials = ansibleCredentials
+        .map((ansibleCredential) => ansibleCredential.metadata.name)
+        .filter(isType)
 
     return (
         <ApplicationWizard
+            ansibleCredentials={availableAnsibleCredentials}
             argoServers={availableArgoNS}
             namespaces={availableNamespace}
             placements={availablePlacements}
+            onCancel={() => history.push('.')}
         />
     )
 }
