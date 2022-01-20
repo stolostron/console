@@ -33,7 +33,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../resources/policy-set'
 import CardViewToolbarFilter from './components/CardViewToolbarFilter'
 import CardViewToolbarSearch from './components/CardViewToolbarSearch'
-import { PolicySetSidebar } from './components/PolicySetDetailSidebar'
+import { PolicySetDetailSidebar } from './components/PolicySetDetailSidebar'
 
 function clusterViolationFilterFn(policySet: PolicySet) {
     return (
@@ -273,7 +273,7 @@ export default function PolicySetsPage() {
                                             isExpanded: true,
                                             onCloseClick: () => setDrawerContext(undefined),
                                             panelContent: (
-                                                <PolicySetSidebar
+                                                <PolicySetDetailSidebar
                                                     policySet={policySet}
                                                     policySetClusters={policySetClusters}
                                                 />
