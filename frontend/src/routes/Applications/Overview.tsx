@@ -157,7 +157,7 @@ export default function ApplicationsOverview() {
         open: false,
     })
     const tableItems: IResource[] = []
-    const { data, loading, startPolling } = useQuery(useCallback(() => queryRemoteArgoApps(), []))
+    const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
     useEffect(startPolling, [startPolling])
 
     const calculateClusterCount = (resource: ArgoApplication, clusterCount: any, clusterList: string[]) => {
