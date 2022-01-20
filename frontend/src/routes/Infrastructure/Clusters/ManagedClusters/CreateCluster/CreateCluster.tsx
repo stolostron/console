@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@open-cluster-management/ui-components'
+import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
 import { useState, useRef, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
@@ -149,15 +149,17 @@ export default function CreateClusterPage() {
                     })
                 }
 
-                // add source labels to secrets
+                // add source labels to secrets, add backup labels
                 createResources.forEach((resource) => {
                     if (resource.kind === 'Secret') {
-                        resource!.metadata!.labels = {
-                            'cluster.open-cluster-management.io/copiedFromNamespace':
-                                selectedConnection?.metadata.namespace!,
+                        resource!.metadata.labels! = { 'cluster.open-cluster-management.io/backup': 'cluster' }
+
+                        if (!resource!.metadata!.name.includes('install-config')) {
+                            resource!.metadata!.labels['cluster.open-cluster-management.io/copiedFromNamespace'] =
+                                selectedConnection?.metadata.namespace!
+                            resource!.metadata.labels!['cluster.open-cluster-management.io/copiedFromSecretName'] =
+                                selectedConnection?.metadata.name!
                         }
-                        resource!.metadata.labels!['cluster.open-cluster-management.io/copiedFromSecretName'] =
-                            selectedConnection?.metadata.name!
                     }
                 })
 
@@ -240,7 +242,7 @@ export default function CreateClusterPage() {
     const pauseCreate = () => {}
 
     // setup translation
-    const { t } = useTranslation(['create', 'cim'])
+    const { t } = useTranslation()
     const i18n = (key: string, arg: any) => {
         return t(key, arg)
     }
@@ -396,9 +398,9 @@ export default function CreateClusterPage() {
         if (control.controlId === 'infrastructure') {
             if (control.active?.includes('AI') && !isInfraEnvAvailable) {
                 setWarning({
-                    title: t('cim:cim.infra.missing.warning.title'),
-                    text: t('cim:cim.infra.missing.warning.text'),
-                    linkText: t('cim:cim.infra.manage.link'),
+                    title: t('cim.infra.missing.warning.title'),
+                    text: t('cim.infra.missing.warning.text'),
+                    linkText: t('cim.infra.manage.link'),
                     linkTo: NavigationPath.infraEnvironments,
                 })
             } else {
@@ -407,7 +409,12 @@ export default function CreateClusterPage() {
         }
     }
 
-    const controlData = getControlData(<Warning />, onControlSelect, settings.awsPrivateWizardStep === 'enabled')
+    const controlData = getControlData(
+        <Warning />,
+        onControlSelect,
+        settings.awsPrivateWizardStep === 'enabled',
+        settings.singleNodeOpenshift === 'enabled'
+    )
 
     return (
         <AcmPage
@@ -428,7 +435,7 @@ export default function CreateClusterPage() {
                         </>
                     }
                     breadcrumb={[
-                        { text: t('clusters'), to: NavigationPath.clusters },
+                        { text: t('Clusters'), to: NavigationPath.clusters },
                         { text: t('page.header.create-cluster'), to: '' },
                     ]}
                     switches={switches}

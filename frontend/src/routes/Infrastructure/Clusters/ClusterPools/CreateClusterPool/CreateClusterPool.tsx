@@ -2,16 +2,10 @@
 
 import { useState, useContext, useEffect } from 'react'
 import { useRecoilState } from 'recoil'
-import {
-    AcmPage,
-    AcmPageContent,
-    AcmPageHeader,
-    AcmErrorBoundary,
-    AcmToastContext,
-} from '@open-cluster-management/ui-components'
+import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
 import { NavigationPath } from '../../../../../NavigationPath'
 import Handlebars from 'handlebars'
@@ -21,7 +15,7 @@ import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/
 import '../../ManagedClusters/CreateCluster/style.css'
 
 // template/data
-import { controlData } from './controlData/ControlData'
+import { getControlData } from './controlData/ControlData'
 import { setAvailableConnections } from '../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import hiveTemplate from './templates/hive-template.hbs'
 import { secretsState } from '../../../../../atoms'
@@ -46,7 +40,7 @@ const Portals = Object.freeze({
 })
 
 export default function CreateClusterPoolPage() {
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation()
 
     // create portals for buttons in header
     const switches = (
@@ -147,7 +141,7 @@ export function CreateClusterPool() {
     const pauseCreate = () => {}
 
     // setup translation
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation()
     const i18n = (key: any, arg: any) => {
         return t(key, arg)
     }
@@ -210,7 +204,10 @@ export function CreateClusterPool() {
             type={'ClusterPool'}
             title={'ClusterPool YAML'}
             monacoEditor={<MonacoEditor />}
-            controlData={controlData}
+            controlData={getControlData(
+                settings.awsPrivateWizardStep === 'enabled',
+                settings.singleNodeOpenshift === 'enabled'
+            )}
             template={template}
             portals={Portals}
             fetchControl={fetchControl}

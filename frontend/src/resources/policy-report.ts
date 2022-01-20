@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 
 export const PolicyReportApiVersion = 'wgpolicyk8s.io/v1alpha2'
 export type PolicyReportApiVersionType = 'wgpolicyk8s.io/v1alpha2'
@@ -11,7 +10,7 @@ export type PolicyReportKindType = 'PolicyReport'
 export interface PolicyReport {
     apiVersion: PolicyReportApiVersionType
     kind: PolicyReportKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     results: PolicyReportResults[]
 }
 
@@ -19,6 +18,7 @@ export interface PolicyReportResults {
     policy: string
     message: string
     scored: boolean
+    source: string
     category: string
     result: string
     properties: {

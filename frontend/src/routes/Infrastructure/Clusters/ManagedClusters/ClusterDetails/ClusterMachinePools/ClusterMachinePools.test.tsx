@@ -8,8 +8,8 @@ import { machinePoolsState } from '../../../../../../atoms'
 import { nockDelete, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
 import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import { ClusterContext } from '../ClusterDetails'
-import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from '../ClusterDetails.test'
 import { MachinePoolsPageContent } from './ClusterMachinePools'
+import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
 
 const mockCluster: Cluster = {
     name: clusterName,
@@ -68,7 +68,7 @@ describe('ClusterMachinePools', () => {
                 { op: 'replace', path: '/spec/replicas', value: mockMachinePoolManual.spec!.replicas! + 1 },
             ]),
         ]
-        await clickByText('common:scale')
+        await clickByText('scale')
         await waitForNocks(patchNocks)
     })
     it('should be able to enable autoscaling for a machine pool', async () => {
@@ -90,7 +90,7 @@ describe('ClusterMachinePools', () => {
                 },
             ]),
         ]
-        await clickByText('common:scale')
+        await clickByText('scale')
         await waitForNocks(patchNocks)
     })
     it('should be able to edit autoscaling for a machine pool', async () => {
@@ -111,7 +111,7 @@ describe('ClusterMachinePools', () => {
                 },
             ]),
         ]
-        await clickByText('common:scale')
+        await clickByText('scale')
         await waitForNocks(patchNocks)
     })
     it('should be able to disable autoscaling for a machine pool', async () => {
@@ -129,7 +129,7 @@ describe('ClusterMachinePools', () => {
                 },
             ]),
         ]
-        await clickByText('common:scale')
+        await clickByText('scale')
         await waitForNocks(patchNocks)
     })
     it('should be able to delete machine pools', async () => {
@@ -140,7 +140,7 @@ describe('ClusterMachinePools', () => {
         await waitForText('bulk.title.deleteMachinePool')
         await typeByText('type.to.confirm', mockMachinePoolAuto.metadata.name!)
         const deleteNocks: Scope[] = [nockDelete(mockMachinePoolAuto)]
-        await clickByText('common:delete')
+        await clickByText('delete')
         await waitForNocks(deleteNocks)
     })
 })

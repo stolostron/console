@@ -1,9 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { createResource, replaceResource } from './utils/resource-request'
-import { IResource, IResourceDefinition } from './resource'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '.'
+import { Metadata } from './metadata'
+import { IResource, IResourceDefinition } from './resource'
+import { createResource, replaceResource } from './utils/resource-request'
 
 export const ProjectApiVersion = 'project.openshift.io/v1'
 export type ProjectApiVersionType = 'project.openshift.io/v1'
@@ -14,7 +13,7 @@ export type ProjectKindType = 'Project'
 export interface Project extends IResource {
     apiVersion: ProjectApiVersionType
     kind: 'Project'
-    metadata: V1ObjectMeta
+    metadata: Metadata
 }
 
 export const ProjectDefinition: IResourceDefinition = {
@@ -36,10 +35,10 @@ export const ProjectRequestDefinition: IResourceDefinition = {
 export interface ProjectRequest extends IResource {
     apiVersion: ProjectRequestApiVersionType
     kind: ProjectRequestKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
 }
 
-export const createProject = (name: string | undefined, labels?: V1ObjectMeta['labels']) => {
+export const createProject = (name: string | undefined, labels?: Metadata['labels']) => {
     if (!name) throw new Error('Project name is undefined')
     const response = createResource<ProjectRequest, Project>({
         apiVersion: ProjectRequestApiVersion,

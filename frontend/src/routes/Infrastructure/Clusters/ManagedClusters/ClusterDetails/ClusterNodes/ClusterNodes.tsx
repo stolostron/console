@@ -8,11 +8,11 @@ import {
     compareNumbers,
     IAcmTableColumn,
     StatusType,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useContext } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
@@ -28,7 +28,7 @@ export function NodePoolsPageContent() {
 }
 
 export function NodesPoolsTable() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
 
     const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
@@ -97,7 +97,7 @@ export function NodesPoolsTable() {
                 const hasOcpConsole = cluster?.distribution?.ocp?.version && cluster.consoleURL
                 const launchUrl = hasOcpConsole
                     ? `${cluster!.consoleURL}/k8s/cluster/nodes/${node.name}`
-                    : `/resources?cluster=${cluster!.name!}&kind=node&apiVersion=v1&name=${node.name}`
+                    : `/resources?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`
                 return (
                     <a href={launchUrl} target={hasOcpConsole ? '_self' : '_blank'} rel="noreferrer">
                         {hasOcpConsole && (

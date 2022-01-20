@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmButton, AcmDropdown } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmDropdown } from '@stolostron/ui-components'
 import { ActionList, ActionListItem, Bullseye } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../../resources'
 
 export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'primary' | 'link' }) {
-    const { t } = useTranslation('cluster')
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
@@ -29,7 +29,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                         <AcmButton
                             component={Link}
                             isDisabled={!canCreateCluster}
-                            tooltip={t('common:rbac.unauthorized')}
+                            tooltip={t('rbac.unauthorized')}
                             variant={props.buttonType ?? 'primary'}
                             to={NavigationPath.createCluster}
                         >
@@ -40,7 +40,7 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                         <AcmButton
                             component={Link}
                             isDisabled={!canCreateCluster}
-                            tooltip={t('common:rbac.unauthorized')}
+                            tooltip={t('rbac.unauthorized')}
                             variant={props.buttonType ?? 'primary'}
                             to={NavigationPath.importCluster}
                         >
@@ -68,13 +68,13 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                         id: 'create-cluster',
                         text: t('managed.createCluster'),
                         isDisabled: !canCreateCluster,
-                        tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
+                        tooltip: !canCreateCluster ? t('rbac.unauthorized') : '',
                     },
                     {
                         id: 'import-cluster',
                         text: t('managed.importCluster'),
                         isDisabled: !canCreateCluster,
-                        tooltip: !canCreateCluster ? t('common:rbac.unauthorized') : '',
+                        tooltip: !canCreateCluster ? t('rbac.unauthorized') : '',
                     },
                 ]}
                 text={t('managed.addCluster')}

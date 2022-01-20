@@ -35,7 +35,8 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         module: {
             rules: [
                 { test: /\.hbs$/, loader: 'raw-loader', exclude: /node_modules/ },
-                { test: /\.(jpg|jpeg|png|gif|svg|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
+                { test: /\.(svg)$/, use: '@svgr/webpack' },
+                { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
                     test: /\.css$/,
                     use: isDevelopment ? ['style-loader', 'css-loader'] : [MiniCssExtractPlugin.loader, 'css-loader'],
@@ -58,9 +59,6 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         plugins: [
             new webpack.DefinePlugin({
                 'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development'),
-                'process.env.REACT_APP_BACKEND_HOST': isProduction
-                    ? JSON.stringify('')
-                    : JSON.stringify('https://localhost:4000'),
                 'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
             }) as unknown as webpack.WebpackPluginInstance,
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
@@ -111,14 +109,20 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 '/multicloud/apis': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/events': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/proxy/search': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/ansibletower': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/authenticated': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/common': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/version': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/login': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/logout': { target: 'https://localhost:4000', secure: false },
             },
             open: true,
             historyApiFallback: true,
             compress: true,
             https: true,
+            server: {
+                type: 'https',
+            },
             hot: true,
             static: {
                 publicPath: '/multicloud',

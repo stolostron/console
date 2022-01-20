@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { createDownloadFile, getSecret, unpackSecret } from '../../../../../resources'
-import { AcmDropdown } from '@open-cluster-management/ui-components'
+import { AcmDropdown } from '@stolostron/ui-components'
 import { useContext } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const downloadConfig = async (id: string) => {
         /* istanbul ignore next */
@@ -32,32 +32,28 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
         }
     }
 
-    if (cluster?.hive.secrets?.installConfig || cluster?.hive.secrets?.kubeconfig) {
-        const dropdownItems = []
-        cluster?.hive.secrets?.installConfig &&
-            dropdownItems.push({
-                id: 'install-config.yaml',
-                text: 'install-config',
-                isDisabled: !props.canGetSecret,
-                tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
-            })
-        cluster?.hive.secrets?.kubeconfig &&
-            dropdownItems.push({
-                id: 'kubeconfig',
-                text: 'kubeconfig',
-                isDisabled: !props.canGetSecret,
-                tooltip: !props.canGetSecret ? t('common:rbac.unauthorized') : undefined,
-            })
-        return (
-            <AcmDropdown
-                isPlain={true}
-                dropdownItems={dropdownItems}
-                onSelect={(id: string) => downloadConfig(id)}
-                text={t('configuration.download')}
-                id="download-configuration"
-            />
-        )
-    } else {
-        return null
-    }
+    const dropdownItems = []
+    cluster?.hive.secrets?.installConfig &&
+        dropdownItems.push({
+            id: 'install-config.yaml',
+            text: 'install-config',
+            isDisabled: !props.canGetSecret,
+            tooltip: !props.canGetSecret ? t('rbac.unauthorized') : undefined,
+        })
+    cluster?.hive.secrets?.kubeconfig &&
+        dropdownItems.push({
+            id: 'kubeconfig',
+            text: 'kubeconfig',
+            isDisabled: !props.canGetSecret,
+            tooltip: !props.canGetSecret ? t('rbac.unauthorized') : undefined,
+        })
+    return (
+        <AcmDropdown
+            isPlain={true}
+            dropdownItems={dropdownItems}
+            onSelect={(id: string) => downloadConfig(id)}
+            text={t('configuration.download')}
+            id="download-configuration"
+        />
+    )
 }

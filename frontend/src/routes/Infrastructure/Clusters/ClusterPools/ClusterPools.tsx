@@ -11,7 +11,7 @@ import {
     AcmTable,
     IAcmTableButtonAction,
     Provider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import {
     ButtonVariant,
     Flex,
@@ -25,7 +25,7 @@ import {
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
@@ -53,7 +53,7 @@ import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './compone
 export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     useEffect(() => alertContext.clearAlerts, [])
 
     const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))
@@ -61,9 +61,9 @@ export default function ClusterPoolsPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
-                <TechPreviewAlert i18nKey="cluster:preview.clusterPools" docHref={DOC_LINKS.CLUSTER_POOLS} />
+                <TechPreviewAlert i18nKey="preview.clusterPools" docHref={DOC_LINKS.CLUSTER_POOLS} />
                 <Stack hasGutter style={{ height: 'unset' }}>
-                    <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-pools-learn">
+                    <AcmExpandableCard title={t('learn.terminology')} id="cluster-pools-learn">
                         <Flex style={{ flexWrap: 'inherit' }}>
                             <Flex style={{ maxWidth: '50%' }}>
                                 <FlexItem>
@@ -80,7 +80,7 @@ export default function ClusterPoolsPage() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('view.documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
@@ -99,7 +99,7 @@ export default function ClusterPoolsPage() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('view.documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
@@ -122,7 +122,7 @@ export default function ClusterPoolsPage() {
                                     title={t('managed.clusterPools.emptyStateHeader')}
                                     message={
                                         <Trans
-                                            i18nKey={'cluster:managed.clusterPools.emptyStateMsg'}
+                                            i18nKey={'managed.clusterPools.emptyStateMsg'}
                                             components={{ bold: <strong />, p: <p /> }}
                                         />
                                     }
@@ -162,7 +162,7 @@ export function ClusterPoolsTable(props: {
 }) {
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const { clusterPools } = props
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterPool> | { open: false }>({
         open: false,
     })
@@ -279,7 +279,7 @@ export function ClusterPoolsTable(props: {
                         cell: (clusterPool: ClusterPool) => {
                             return (
                                 <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
-                                    {t('common:outOf', {
+                                    {t('outOf', {
                                         firstNumber: clusterPool?.status?.ready,
                                         secondNumber: clusterPool.spec!.size,
                                     })}
@@ -371,8 +371,8 @@ export function ClusterPoolsTable(props: {
                                         setModalProps({
                                             open: true,
                                             title: t('bulk.title.destroyClusterPool'),
-                                            action: t('common:destroy'),
-                                            processing: t('common:destroying'),
+                                            action: t('destroy'),
+                                            processing: t('destroying'),
                                             resources: [clusterPool],
                                             description: t('bulk.message.destroyClusterPool'),
                                             columns: modalColumns,
@@ -422,8 +422,8 @@ export function ClusterPoolsTable(props: {
                             setModalProps({
                                 open: true,
                                 title: t('bulk.destroy.clusterPools'),
-                                action: t('common:destroy'),
-                                processing: t('common:destroying'),
+                                action: t('destroy'),
+                                processing: t('destroying'),
                                 resources: clusterPools,
                                 description: t('bulk.message.destroyClusterPool'),
                                 columns: modalColumns,
@@ -456,7 +456,7 @@ const useStyles = makeStyles({
 })
 
 function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const classes = useStyles()
     return (
         <div className={classes.table}>
@@ -507,11 +507,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                             ]
                             const isAvailable =
                                 !cluster.hive.clusterClaimName && availableStatuses.includes(cluster.status)
-                            return (
-                                <span style={{ whiteSpace: 'nowrap' }}>
-                                    {t(`${isAvailable ? 'common:yes' : 'common:no'}`)}
-                                </span>
-                            )
+                            return <span style={{ whiteSpace: 'nowrap' }}>{t(`${isAvailable ? 'Yes' : 'No'}`)}</span>
                         },
                     },
                 ]}

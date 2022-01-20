@@ -26,7 +26,7 @@ import {
     AcmSubmit,
     AcmToastContext,
     Provider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import {
     ActionGroup,
     ButtonVariant,
@@ -39,7 +39,7 @@ import {
     TextVariants,
 } from '@patternfly/react-core'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../../../atoms'
@@ -48,10 +48,10 @@ import { getErrorInfo } from '../../../../../components/ErrorPage'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 
-const discoveryVersions = ['4.6', '4.7', '4.8']
+const discoveryVersions = ['4.6', '4.7', '4.8', '4.9']
 
 export default function DiscoveryConfigPage() {
-    const { t } = useTranslation(['discovery'])
+    const { t } = useTranslation()
     const location = useLocation()
 
     return (
@@ -59,20 +59,20 @@ export default function DiscoveryConfigPage() {
             header={
                 location.pathname === NavigationPath.configureDiscovery ? (
                     <AcmPageHeader
-                        title={t('editDiscoveryConfig.title')}
+                        title={t('Configure discovery settings')}
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
-                            { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
-                            { text: t('editDiscoveryConfig.title'), to: '' },
+                            { text: t('Clusters'), to: NavigationPath.clusters },
+                            { text: t('Discovered clusters'), to: NavigationPath.discoveredClusters },
+                            { text: t('Create a discovery setting'), to: '' },
                         ]}
                     />
                 ) : (
                     <AcmPageHeader
                         title={t('addDiscoveryConfig.title')}
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
-                            { text: t('discoveredClusters'), to: NavigationPath.discoveredClusters },
-                            { text: t('addDiscoveryConfig.title'), to: '' },
+                            { text: t('Clusters'), to: NavigationPath.clusters },
+                            { text: t('Discovered clusters'), to: NavigationPath.discoveredClusters },
+                            { text: t('Create a discovery setting'), to: '' },
                         ]}
                     />
                 )
@@ -108,8 +108,8 @@ export function AddDiscoveryConfigData() {
     useEffect(() => {
         const CRHCredentials: Secret[] = []
         secrets.forEach((credential) => {
-            const labels = credential.metadata.labels!['cluster.open-cluster-management.io/type']
-            if (labels === Provider.redhatcloud) {
+            const provider = credential.metadata.labels?.['cluster.open-cluster-management.io/type']
+            if (provider === Provider.redhatcloud) {
                 CRHCredentials.push(credential)
             }
         })
@@ -147,7 +147,7 @@ export function DiscoveryConfigPageContent(props: {
         },
     })
     const alertContext = useContext(AcmAlertContext)
-    const { t } = useTranslation(['discovery', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const location = useLocation()
     const [editing] = useState<boolean>(location.pathname === NavigationPath.configureDiscovery)
@@ -214,7 +214,7 @@ export function DiscoveryConfigPageContent(props: {
                                 })
                                 resolve(deletecmd)
                                 toastContext.addAlert({
-                                    title: t('discovery:alert.deleted.header'),
+                                    title: t('alert.deleted.header'),
                                     message: t('alert.msg'),
                                     type: 'success',
                                     autoClose: true,
@@ -231,7 +231,7 @@ export function DiscoveryConfigPageContent(props: {
                     confirmText: t('discoveryConfig.delete.btn'),
                     message: (
                         <Trans
-                            i18nKey={'discovery:discoveryConfig.delete.message'}
+                            i18nKey={'discoveryConfig.delete.message'}
                             components={{ bold: <strong /> }}
                             values={{ discoveryConfigNamespace: discoveryConfig!.metadata!.namespace }}
                         />
@@ -252,7 +252,7 @@ export function DiscoveryConfigPageContent(props: {
                 if (err instanceof Error) {
                     alertContext.addAlert({
                         type: 'danger',
-                        title: t('common:request.failed'),
+                        title: t('request.failed'),
                         message: err.message,
                     })
                     reject()
@@ -270,7 +270,7 @@ export function DiscoveryConfigPageContent(props: {
                     const importcmd = await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
                     toastContext.addAlert({
-                        title: t('discovery:alert.created.header'),
+                        title: t('alert.created.header'),
                         message: t('alert.msg'),
                         type: 'success',
                         autoClose: true,
@@ -280,7 +280,7 @@ export function DiscoveryConfigPageContent(props: {
                     const importcmd = await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
                     toastContext.addAlert({
-                        title: t('discovery:alert.updated.header'),
+                        title: t('alert.updated.header'),
                         message: t('alert.msg'),
                         type: 'success',
                         autoClose: true,
@@ -292,7 +292,7 @@ export function DiscoveryConfigPageContent(props: {
                 if (err instanceof Error) {
                     alertContext.addAlert({
                         type: 'danger',
-                        title: t('common:request.failed'),
+                        title: t('request.failed'),
                         message: err.message,
                     })
                     reject()

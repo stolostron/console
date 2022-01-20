@@ -1,18 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { readFileSync } from 'fs'
-import { Http2ServerRequest, Http2ServerResponse, constants } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent } from 'https'
-import { FetchError, HeadersInit } from 'node-fetch'
+import { FetchError } from 'node-fetch'
 import { fetchRetry } from '../lib/fetch-retry'
 import { logger } from '../lib/logger'
 import { respondInternalServerError, respondOK } from '../lib/respond'
-import { oauthInfoPromise } from './oauth'
+import { getOauthInfoPromise } from './oauth'
 const { HTTP2_HEADER_AUTHORIZATION } = constants
 
 // The kubelet uses liveness probes to know when to restart a container.
 export async function liveness(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     if (!isLive) return respondInternalServerError(req, res)
-    const oauthInfo = await oauthInfoPromise
+    const oauthInfo = await getOauthInfoPromise()
     if (!oauthInfo.authorization_endpoint) return respondInternalServerError(req, res)
     return respondOK(req, res)
 }
@@ -26,18 +26,21 @@ export function setDead(): void {
     }
 }
 
-export let serviceAcccountToken: string
-if (process.env.NODE_ENV !== 'test') {
-    try {
-        serviceAcccountToken = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
-    } catch (err) {
-        serviceAcccountToken = process.env.TOKEN
-        if (!serviceAcccountToken) {
-            logger.error('service account token not found')
-            process.exit(1)
+export function getServiceAcccountToken(): string {
+    if (serviceAcccountToken === undefined) {
+        try {
+            serviceAcccountToken = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
+        } catch (err) {
+            serviceAcccountToken = process.env.TOKEN
+            if (!serviceAcccountToken) {
+                logger.error('service account token not found')
+                process.exit(1)
+            }
         }
     }
+    return serviceAcccountToken
 }
+let serviceAcccountToken: string
 
 const agent = new Agent({ rejectUnauthorized: false })
 

@@ -9,10 +9,10 @@ import {
     AcmInlineCopy,
     AcmInlineStatus,
     StatusType,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, Tooltip } from '@patternfly/react-core'
 import { Fragment, useContext, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 
 export type LoginCredential = {
@@ -58,7 +58,7 @@ const useStyles = makeStyles({
 
 export function LoginCredentials(props: { canGetSecret?: boolean }) {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [isVisible, setVisible] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [error, setError] = useState<boolean>(false)
@@ -120,7 +120,7 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
                                 return <AcmInlineStatus type={StatusType.progress} status={t('credentials.loading')} />
                             } else if (!props.canGetSecret) {
                                 return (
-                                    <Tooltip content={t('common:rbac.unauthorized')}>
+                                    <Tooltip content={t('rbac.unauthorized')}>
                                         <div className="credentials-toggle">
                                             <AcmIcon
                                                 icon={

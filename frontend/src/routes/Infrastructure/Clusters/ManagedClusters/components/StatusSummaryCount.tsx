@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmCountCardSection, AcmDrawerContext } from '@open-cluster-management/ui-components'
+import { AcmCountCardSection, AcmDrawerContext } from '@stolostron/ui-components'
 import { useCallback, useContext, useEffect } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
@@ -15,14 +15,16 @@ import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 const buildSearchLink = (filters: Record<string, string>, relatedKind?: string) => {
     let query = ''
     Object.keys(filters).forEach((key) => (query += `${query ? '%20' : ''}${key}:${filters[key]}`))
-    return `/search?filters={"textsearch":"${query}"}${relatedKind ? `&showrelated=${relatedKind}` : ''}`
+    return `/multicloud/home/search?filters={"textsearch":"${query}"}${
+        relatedKind ? `&showrelated=${relatedKind}` : ''
+    }`
 }
 
 export function StatusSummaryCount() {
     const [policyReports] = useRecoilState(policyreportState)
     const { cluster } = useContext(ClusterContext)
     const { setDrawerContext } = useContext(AcmDrawerContext)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { push } = useHistory()
     /* istanbul ignore next */
     const { data, loading, startPolling } = useQuery(
@@ -33,11 +35,12 @@ export function StatusSummaryCount() {
     const policyReport = policyReports.filter(
         (pr) => pr.metadata.name?.replace('-policyreport', '') === cluster?.name
     )[0]
-    const policyReportViolationsCount = policyReport?.results?.length ?? 0
-    const criticalCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '4').length
-    const importantCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '3').length
-    const moderateCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '2').length
-    const lowCount = policyReport?.results?.filter((item) => item.properties?.total_risk === '1').length
+    const policyReportViolations = policyReport?.results?.filter((violation) => violation.source === 'insights') || []
+    const policyReportViolationsCount = policyReportViolations.length ?? 0
+    const criticalCount = policyReportViolations.filter((item) => item.properties?.total_risk === '4').length
+    const importantCount = policyReportViolations.filter((item) => item.properties?.total_risk === '3').length
+    const moderateCount = policyReportViolations.filter((item) => item.properties?.total_risk === '2').length
+    const lowCount = policyReportViolations.filter((item) => item.properties?.total_risk === '1').length
 
     // Show cluster issues sidebar by default if showClusterIssues url param is present
     // This will be true if we are redirected to this page via search results table.
@@ -63,12 +66,12 @@ export function StatusSummaryCount() {
                 cards={[
                     {
                         id: 'nodes',
-                        count: /* istanbul ignore next */ cluster?.nodes?.nodeList?.length ?? 0,
+                        count: /* istanbul ignore next */ (cluster?.nodes?.nodeList ?? []).length,
                         countClick: () => push(NavigationPath.clusterNodes.replace(':id', cluster?.name!)),
                         title: t('summary.nodes'),
                         description: (
                             <Trans
-                                i18nKey="cluster:summary.nodes.inactive"
+                                i18nKey="summary.nodes.inactive"
                                 values={{
                                     number:
                                         /* istanbul ignore next */ cluster?.nodes?.unhealthy! +
@@ -133,7 +136,7 @@ export function StatusSummaryCount() {
                                   })
                                 : '',
                         // Show the card in danger mode if there is a Critical or Major violation on the cluster
-                        isDanger: policyReport?.results?.some((item) => parseInt(item.properties?.total_risk, 10) >= 3),
+                        isDanger: policyReportViolations.some((item) => parseInt(item.properties?.total_risk, 10) >= 3),
                     },
                 ]}
             />

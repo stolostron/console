@@ -9,7 +9,7 @@ import {
     AcmLaunchLink,
     AcmPageContent,
     AcmTable,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import {
     ButtonVariant,
     Flex,
@@ -23,7 +23,7 @@ import {
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
@@ -53,14 +53,14 @@ import {
     mapClusters,
     ResourceErrorCode,
 } from '../../../../resources'
-import { usePageContext } from '../Clusters'
+import { usePageContext } from '../ClustersPage'
 import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
 import { MultiClusterNetworkStatus } from './components/MultiClusterNetworkStatus'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 
 export default function ClusterSetsPage() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
     useEffect(() => alertContext.clearAlerts, [])
 
@@ -101,9 +101,9 @@ export default function ClusterSetsPage() {
     return (
         <AcmPageContent id="clusters">
             <PageSection>
-                <TechPreviewAlert i18nKey="cluster:preview.clusterSets" docHref={DOC_LINKS.CLUSTER_SETS} />
+                <TechPreviewAlert i18nKey="preview.clusterSets" docHref={DOC_LINKS.CLUSTER_SETS} />
                 <Stack hasGutter style={{ height: 'unset' }}>
-                    <AcmExpandableCard title={t('common:learn.terminology')} id="cluster-sets-learn">
+                    <AcmExpandableCard title={t('learn.terminology')} id="cluster-sets-learn">
                         <Flex style={{ flexWrap: 'inherit' }}>
                             <Flex style={{ maxWidth: '50%' }}>
                                 <FlexItem>
@@ -120,7 +120,7 @@ export default function ClusterSetsPage() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('view.documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
@@ -139,7 +139,7 @@ export default function ClusterSetsPage() {
                                         icon={<ExternalLinkAltIcon />}
                                         iconPosition="right"
                                     >
-                                        {t('common:view.documentation')}
+                                        {t('view.documentation')}
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
@@ -172,7 +172,7 @@ const PageActions = () => {
 }
 
 export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSets?: ManagedClusterSet[] }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
         open: false,
     })
@@ -344,7 +344,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         title: t('managed.createClusterSet'),
                         click: () => setCreateClusterSetModalOpen(true),
                         isDisabled: !canCreateClusterSet,
-                        tooltip: t('common:rbac.unauthorized'),
+                        tooltip: t('rbac.unauthorized'),
                         variant: ButtonVariant.primary,
                     },
                 ]}
@@ -355,7 +355,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                         title={t('managed.clusterSets.emptyStateHeader')}
                         message={
                             <Trans
-                                i18nKey={'cluster:managed.clusterSets.emptyStateMsg'}
+                                i18nKey={'managed.clusterSets.emptyStateMsg'}
                                 components={{ bold: <strong />, p: <p /> }}
                             />
                         }
@@ -364,7 +364,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                                 role="link"
                                 onClick={() => setCreateClusterSetModalOpen(true)}
                                 isDisabled={!canCreateClusterSet}
-                                tooltip={t('common:rbac.unauthorized')}
+                                tooltip={t('rbac.unauthorized')}
                             >
                                 {t('managed.createClusterSet')}
                             </AcmButton>

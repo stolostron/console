@@ -385,7 +385,7 @@ describe('DistributionField', () => {
         await renderDistributionInfoField(mockDistributionInfo, true, true)
         await clickByText('upgrade.available', 0)
         await waitForText('upgrade.table.name')
-        await clickByText('common:cancel', 0)
+        await clickByText('cancel', 0)
         await waitForNotText('upgrade.table.name')
     })
 

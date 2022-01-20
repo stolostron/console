@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ResourceError, ResourceErrorCode } from '../resources'
-import { AcmAlertInfo } from '@open-cluster-management/ui-components'
+import { AcmAlertInfo } from '@stolostron/ui-components'
 import {
     Card,
     CardBody,

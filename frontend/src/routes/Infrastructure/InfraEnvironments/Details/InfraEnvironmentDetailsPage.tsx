@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import {
     AcmButton,
     AcmPage,
@@ -7,35 +6,35 @@ import {
     AcmRoute,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
-} from '@open-cluster-management/ui-components'
-import isEqual from 'lodash/isEqual'
+} from '@stolostron/ui-components'
 import { Page } from '@patternfly/react-core'
 import { Fragment, Suspense, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
-import isMatch from 'lodash/isMatch'
-import { acmRouteState, infraEnvironmentsState } from '../../../../atoms'
+import { isMatch } from 'lodash'
+
+import { acmRouteState, infraEnvironmentsState, infrastructuresState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
+import { ResourceError } from '../../../../resources'
+import { agentsState, bareMetalHostsState } from '../../../../atoms'
+import { isBMPlatform } from '../utils'
+import { DOC_VERSION } from '../../../../lib/doc-util'
+import {
+    getOnCreateBMH,
+    getOnSaveISOParams,
+} from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
-import { ResourceError, createResource, patchResource } from '../../../../resources'
-import { agentsState, bareMetalHostsState } from '../../../../atoms'
 
-const {
-    AddHostModal,
-    getBareMetalHostCredentialsSecret,
-    getBareMetalHost,
-    InfraEnvHostsTabAgentsWarning,
-    INFRAENV_AGENTINSTALL_LABEL_KEY,
-} = CIM
+const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY } = CIM
 
 type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
 
 const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = ({ match }) => {
-    const { t } = useTranslation(['infraenv'])
+    const { t } = useTranslation()
     const history = useHistory()
     const location = useLocation()
     const [, setRoute] = useRecoilState(acmRouteState)
@@ -48,6 +47,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
         (i) => i.metadata.name === match.params.name && i.metadata.namespace === match.params.namespace
     )
 
+    const [infrastructures] = useRecoilState(infrastructuresState)
     const [agents, bareMetalHosts] = useRecoilValue(waitForAll([agentsState, bareMetalHostsState]))
     const infraAgents = agents.filter(
         (a) =>
@@ -124,14 +124,21 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                                 </AcmSecondaryNavItem>
                             </AcmSecondaryNav>
                         }
-                        actions={<AcmButton onClick={() => setISOModalOpen(true)}>{t('Add host')}</AcmButton>}
+                        actions={
+                            <AcmButton
+                                isDisabled={!infraEnv?.status?.isoDownloadURL}
+                                onClick={() => setISOModalOpen(true)}
+                            >
+                                {t('Add host')}
+                            </AcmButton>
+                        }
                     />
                 }
             >
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.infraEnvironmentOverview}>
-                            <DetailsTab infraEnv={infraEnv} />
+                            <DetailsTab infraEnv={infraEnv} docVersion={DOC_VERSION} />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentHosts}>
                             <HostsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />
@@ -149,31 +156,10 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
             <AddHostModal
                 infraEnv={infraEnv}
                 isOpen={isoModalOpen}
+                isBMPlatform={isBMPlatform(infrastructures[0])}
                 onClose={() => setISOModalOpen(false)}
-                onCreate={async (values: CIM.AddBmcValues, nmState: CIM.NMStateK8sResource) => {
-                    const secret = getBareMetalHostCredentialsSecret(values, infraEnv.metadata.namespace)
-                    const secretRes = await createResource<any>(secret).promise
-                    if (nmState) {
-                        await createResource<any>(nmState).promise
-                        const matchLabels = { infraEnv: infraEnv.metadata.name }
-                        if (!isEqual(infraEnv.spec.nmStateConfigLabelSelector?.matchLabels, matchLabels)) {
-                            const op = Object.prototype.hasOwnProperty.call(infraEnv.spec, 'nmStateConfigLabelSelector')
-                                ? 'replace'
-                                : 'add'
-                            await patchResource(infraEnv, [
-                                {
-                                    op: op,
-                                    path: `/spec/nmStateConfigLabelSelector`,
-                                    value: {
-                                        matchLabels,
-                                    },
-                                },
-                            ]).promise
-                        }
-                    }
-                    const bmh: CIM.BareMetalHostK8sResource = getBareMetalHost(values, infraEnv, secretRes)
-                    return createResource(bmh).promise
-                }}
+                onCreateBMH={getOnCreateBMH(infraEnv)}
+                onSaveISOParams={getOnSaveISOParams(infraEnv)}
             />
         </>
     )

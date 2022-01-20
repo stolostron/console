@@ -9,7 +9,7 @@ import { patchResource } from '../../../../../../../resources'
 import { agentClusterInstallsState, agentsState, clusterDeploymentsState } from '../../../../../../../atoms'
 import EditAgentModal from '../../../components/cim/EditAgentModal'
 
-const { ACMClusterDeploymentNetworkingStep } = CIM
+const { ACMClusterDeploymentNetworkingStep, getAgentsHostsNames } = CIM
 
 type FormControl = {
     active?: NetworkConfigurationValues
@@ -22,7 +22,6 @@ type FormControl = {
 
 type NetworkFormProps = {
     control: FormControl
-    resourceJSON: any
     handleChange: (control: FormControl) => void
 }
 
@@ -108,6 +107,8 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
         [agents, clusterDeployment]
     )
 
+    const usedHostnames = useMemo(() => getAgentsHostsNames(matchingAgents), [matchingAgents])
+
     const hostActions = useMemo(
         () => ({
             onEditHost: setEditAgent,
@@ -134,7 +135,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
                 agents={matchingAgents}
                 hostActions={hostActions}
             />
-            <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
+            <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
         </>
     )
 }

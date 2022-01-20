@@ -2,13 +2,15 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { Trans } from 'react-i18next'
+import { Trans } from '../../../../../../lib/acm-i18next'
 
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
-import aiTemplateHbs from '../templates/assisted-installer/assisted-template.hbs'
-import { AcmIconVariant, AcmIcon } from '@open-cluster-management/ui-components'
+import cimTemplateHbs from '../templates/assisted-installer/cim-template.hbs'
+import aiTemplateHbs from '../templates/assisted-installer/ai-template.hbs'
+import { AcmIconVariant, AcmIcon } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { ConnectedIcon } from '@patternfly/react-icons'
 
 import getControlDataAWS from './ControlDataAWS'
 import getControlDataGCP from './ControlDataGCP'
@@ -17,14 +19,15 @@ import getControlDataVMW from './ControlDataVMW'
 import getControlDataRHV from './ControlDataRHV'
 import getControlDataBMC from './ControlDataBMC'
 import getControlDataOST from './ControlDataOST'
-import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo, BaremetalLogo } from './Logos'
-import controlDataAI from './ControlDataAI'
-import Deprecated from '../../components/Deprecated'
+import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo } from './Logos'
+import ServerIcon from '@patternfly/react-icons/dist/js/icons/server-icon'
+import { controlDataCIM, controlDataAI } from './ControlDataAI'
 
 const { TechnologyPreview, PreviewBadgePosition } = CIM
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
+const cimTemplate = Handlebars.compile(cimTemplateHbs)
 const aiTemplate = Handlebars.compile(aiTemplateHbs)
 
 export const getActiveCardID = (control, fetchData = {}) => {
@@ -32,15 +35,21 @@ export const getActiveCardID = (control, fetchData = {}) => {
     if (requestedUIDs && requestedUIDs.length) {
         return 'BMC'
     }
+    I
     return null
 }
 
-export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate = false) => [
+export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate = false, snoFeatureGate = false) => [
     ///////////////////////  container platform  /////////////////////////////////////
     {
         id: 'distStep',
         type: 'step',
-        title: 'Infrastructure provider',
+        title: 'Installation type',
+    },
+    {
+        id: 'showSecrets',
+        type: 'hidden',
+        active: false,
     },
     {
         id: 'warning',
@@ -57,59 +66,85 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
         onSelect: onControlSelect,
         available: [
             {
+                id: 'CIM',
+                logo: <AcmIcon icon={AcmIconVariant.hybrid} />, // TODO(mlibra): change icon (requests graphics by UXD)
+                title: 'cluster.create.cim.subtitle',
+                tooltip: 'cluster.create.cim.tooltip',
+                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
+                change: {
+                    insertControlData: controlDataCIM,
+                    replacements: {},
+                    replaceTemplate: cimTemplate,
+                },
+                section: 'Assisted installation',
+            },
+            {
+                id: 'AI',
+                logo: <ConnectedIcon />,
+                title: 'cluster.create.ai.subtitle',
+                tooltip: 'cluster.create.ai.tooltip',
+                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
+                change: {
+                    insertControlData: controlDataAI,
+                    replacements: {},
+                    replaceTemplate: aiTemplate,
+                },
+                section: 'Assisted installation',
+            },
+            {
                 id: 'AWS',
                 logo: <AwsLogo />,
                 title: 'cluster.create.aws.subtitle',
                 change: {
-                    insertControlData: getControlDataAWS(true, awsPrivateFeatureGate),
+                    insertControlData: getControlDataAWS(true, awsPrivateFeatureGate, snoFeatureGate),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Providers',
+                section: 'Infrastructure providers',
             },
             {
                 id: 'GCP',
                 logo: <GoogleLogo />,
                 title: 'cluster.create.google.subtitle',
                 change: {
-                    insertControlData: getControlDataGCP(),
+                    insertControlData: getControlDataGCP(true, snoFeatureGate),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Providers',
+                section: 'Infrastructure providers',
             },
             {
                 id: 'Azure',
                 logo: <AzureLogo />,
                 title: 'cluster.create.azure.subtitle',
                 change: {
-                    insertControlData: getControlDataAZR(),
+                    insertControlData: getControlDataAZR(true, snoFeatureGate),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Providers',
+                section: 'Infrastructure providers',
             },
             {
                 id: 'vSphere',
                 logo: <VMwareLogo />,
                 title: 'cluster.create.vmware.subtitle',
                 change: {
-                    insertControlData: getControlDataVMW(),
+                    insertControlData: getControlDataVMW(true, snoFeatureGate),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Providers',
+                section: 'Infrastructure providers',
             },
             {
                 id: 'OpenStack',
                 logo: <RedHatLogo />,
                 title: 'cluster.create.redhat.subtitle',
                 change: {
-                    insertControlData: getControlDataOST(),
+                    insertControlData: getControlDataOST(true, snoFeatureGate),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
@@ -143,7 +178,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
             },
             {
                 id: 'BMC',
-                logo: <BaremetalLogo />,
+                logo: <ServerIcon color="slategray" />,
                 title: 'cluster.create.baremetal.subtitle',
                 // text: <Deprecated />,
                 change: {
@@ -152,7 +187,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
-                section: 'Providers',
+                section: 'Infrastructure providers',
             },
         ],
         sectionTooltips: {

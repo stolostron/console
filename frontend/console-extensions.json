@@ -1,0 +1,195 @@
+[
+    {
+        "type": "console.perspective",
+        "properties": {
+            "id": "acm",
+            "name": "%plugin__acm-plugin~All clusters%",
+            "icon": { "$codeRef": "perspective.icon" },
+            "landingPageURL": { "$codeRef": "perspective.getLandingPageURL" },
+            "importRedirectURL": { "$codeRef": "perspective.getImportRedirectURL" }
+        }
+    },
+    {
+        "type": "console.navigation/section",
+        "properties": {
+            "perspective": "acm",
+            "id": "acm-home",
+            "name": "%plugin__acm-plugin~Home%"
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-home",
+            "id": "acm-welcome",
+            "name": "%plugin__acm-plugin~Welcome%",
+            "href": "/multicloud/home/welcome"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/home/welcome",
+            "component": { "$codeRef": "welcome.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-home",
+            "id": "acm-overview",
+            "name": "%plugin__acm-plugin~Overview%",
+            "href": "/multicloud/home/overview"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/home/overview",
+            "component": { "$codeRef": "overview.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-home",
+            "id": "acm-search",
+            "name": "%plugin__acm-plugin~Search%",
+            "href": "/multicloud/home/search"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/home/search",
+            "component": { "$codeRef": "search.default" }
+        }
+    },
+    {
+        "type": "console.navigation/section",
+        "properties": {
+            "id": "acm-infrastructure",
+            "perspective": "acm",
+            "name": "%plugin__acm-plugin~Infrastructure%"
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-infrastructure",
+            "id": "acm-clusters",
+            "name": "%plugin__acm-plugin~Clusters%",
+            "href": "/multicloud/infrastructure/clusters"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/infrastructure/clusters",
+            "component": { "$codeRef": "clusters.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-infrastructure",
+            "id": "acm-bare-metal-assets",
+            "name": "%plugin__acm-plugin~Bare metal assets%",
+            "href": "/multicloud/infrastructure/bare-metal-assets"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/infrastructure/bare-metal-assets",
+            "component": { "$codeRef": "baremetalassets.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-infrastructure",
+            "id": "acm-automations",
+            "name": "%plugin__acm-plugin~Automations%",
+            "href": "/multicloud/infrastructure/automations"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/infrastructure/automations",
+            "component": { "$codeRef": "automations.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-infrastructure",
+            "id": "acm-infrastructure-environments",
+            "name": "%plugin__acm-plugin~Infrastructure environments%",
+            "href": "/multicloud/infrastructure/environments"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/infrastructure/environments",
+            "component": { "$codeRef": "environments.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "id": "acm-applications",
+            "name": "%plugin__acm-plugin~Applications%",
+            "href": "/multicloud/applications"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/applications",
+            "component": { "$codeRef": "applications.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "id": "acm-governance",
+            "name": "%plugin__acm-plugin~Governance%",
+            "href": "/multicloud/governance"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/governance",
+            "component": { "$codeRef": "governance.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "id": "acm-credentials",
+            "name": "%plugin__acm-plugin~Credentials%",
+            "href": "/multicloud/credentials"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/credentials",
+            "component": { "$codeRef": "credentials.default" }
+        }
+    }
+]

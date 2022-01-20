@@ -21,13 +21,13 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
     Provider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { Page } from '@patternfly/react-core'
 import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { AgentClusterInstallK8sResource, AgentK8sResource, InfraEnvK8sResource } from 'openshift-assisted-ui-lib/cim'
 import {
     acmRouteState,
     certificateSigningRequestsState,
@@ -46,7 +46,7 @@ import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
+import { ClusterActionDropdown, getClusterActions } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
 import { MachinePoolsPageContent } from './ClusterMachinePools/ClusterMachinePools'
@@ -59,22 +59,24 @@ export const ClusterContext = createContext<{
     readonly clusterCurator?: ClusterCurator
     readonly addons: Addon[] | undefined
     readonly clusterDeployment?: ClusterDeployment
-    readonly agents?: CIM.AgentK8sResource[]
-    readonly agentClusterInstall?: CIM.AgentClusterInstallK8sResource
-    readonly infraEnv?: CIM.InfraEnvK8sResource
+    readonly agents?: AgentK8sResource[]
+    readonly agentClusterInstall?: AgentClusterInstallK8sResource
+    // readonly infraEnv?: InfraEnvK8sResource
+    readonly infraEnvAIFlow?: InfraEnvK8sResource
 }>({
     cluster: undefined,
     addons: undefined,
     clusterDeployment: undefined,
     agents: undefined,
     agentClusterInstall: undefined,
-    infraEnv: undefined,
+    // infraEnv: undefined,
+    infraEnvAIFlow: undefined,
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
     const location = useLocation()
     const history = useHistory()
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
@@ -123,10 +125,17 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const agentClusterInstall = agentClusterInstalls.find(
         (aci) => aci.metadata.name === match.params.id && aci.metadata.namespace === match.params.id
     )
+    /* I do not see this used anywhere. Moreover, the mapping infraEnvs:clusters is M:N
     const infraEnv = infraEnvs.find(
         (ie) =>
             ie.metadata.name === clusterDeployment?.metadata.name &&
             ie.metadata.namespace === clusterDeployment?.metadata.namespace
+    )
+    */
+    const infraEnvAIFlow = infraEnvs.find(
+        (ie: InfraEnvK8sResource) =>
+            ie.spec?.clusterRef?.name === clusterDeployment?.metadata.name &&
+            ie.spec?.clusterRef?.namespace === clusterDeployment?.metadata.namespace
     )
 
     const clusterExists = !!managedCluster || !!clusterDeployment || !!managedClusterInfo
@@ -175,6 +184,25 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
         )
     }
 
+    const clusterActionGroupChildren = []
+    const addonLinks = addons.filter((addon) => addon.launchLink)
+    if (addonLinks.length > 0) {
+        clusterActionGroupChildren.push(
+            <AcmLaunchLink
+                links={addonLinks?.map((addon) => ({
+                    id: addon.launchLink?.displayText!,
+                    text: addon.launchLink?.displayText!,
+                    href: addon.launchLink?.href!,
+                }))}
+            />
+        )
+    }
+    if (cluster?.hive.secrets?.installConfig || cluster?.hive.secrets?.kubeconfig) {
+        clusterActionGroupChildren.push(<DownloadConfigurationDropdown canGetSecret={canGetSecret} />)
+    }
+    if (getClusterActions(cluster).length > 0) {
+        clusterActionGroupChildren.push(<ClusterActionDropdown cluster={cluster!} isKebab={false} />)
+    }
     return (
         <ClusterContext.Provider
             value={{
@@ -184,7 +212,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 agentClusterInstall,
                 agents,
                 clusterDeployment,
-                infraEnv,
+                // infraEnv,
+                infraEnvAIFlow,
             }}
         >
             <AcmPage
@@ -192,7 +221,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 header={
                     <AcmPageHeader
                         breadcrumb={[
-                            { text: t('clusters'), to: NavigationPath.clusters },
+                            { text: t('Clusters'), to: NavigationPath.clusters },
                             { text: cluster.displayName!, to: '' },
                         ]}
                         title={cluster.displayName!}
@@ -249,21 +278,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                                 </AcmSecondaryNavItem>
                             </AcmSecondaryNav>
                         }
-                        actions={
-                            <AcmActionGroup>
-                                <AcmLaunchLink
-                                    links={addons
-                                        ?.filter((addon) => addon.launchLink)
-                                        ?.map((addon) => ({
-                                            id: addon.launchLink?.displayText!,
-                                            text: addon.launchLink?.displayText!,
-                                            href: addon.launchLink?.href!,
-                                        }))}
-                                />
-                                <DownloadConfigurationDropdown canGetSecret={canGetSecret} />
-                                <ClusterActionDropdown cluster={cluster!} isKebab={false} />
-                            </AcmActionGroup>
-                        }
+                        actions={<AcmActionGroup>{clusterActionGroupChildren}</AcmActionGroup>}
                     />
                 }
             >

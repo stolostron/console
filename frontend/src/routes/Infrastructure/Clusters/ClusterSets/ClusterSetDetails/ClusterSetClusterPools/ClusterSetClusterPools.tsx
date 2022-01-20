@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ManagedClusterSetDefinition } from '../../../../../../resources'
-import { AcmEmptyState, AcmPageContent } from '@open-cluster-management/ui-components'
+import { AcmEmptyState, AcmPageContent } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useContext } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
@@ -13,7 +13,7 @@ import { ClusterPoolsTable } from '../../../ClusterPools/ClusterPools'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
 export function ClusterSetClusterPoolsPageContent() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { clusterSet, clusterPools } = useContext(ClusterSetContext)
     return (
         <AcmPageContent id="cluster-pools">
@@ -26,7 +26,7 @@ export function ClusterSetClusterPoolsPageContent() {
                             title={t('managed.clusterSets.clusterPools.emptyStateHeader')}
                             message={
                                 <Trans
-                                    i18nKey={'cluster:managed.clusterSets.clusterPools.emptyStateMsg'}
+                                    i18nKey={'managed.clusterSets.clusterPools.emptyStateMsg'}
                                     components={{ bold: <strong /> }}
                                 />
                             }

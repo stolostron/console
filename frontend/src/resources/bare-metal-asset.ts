@@ -1,11 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { V1Secret } from '@kubernetes/client-node/dist/gen/model/v1Secret'
 import { keyBy } from 'lodash'
+import { Metadata } from './metadata'
 import { createProject } from './project'
 import { IResourceDefinition } from './resource'
-import { SecretApiVersionType, SecretKindType } from './secret'
+import { Secret, SecretApiVersionType, SecretKindType } from './secret'
 import { createResource, deleteResource, getResource, IRequestResult, listResources } from './utils/resource-request'
 
 export const BareMetalAssetApiVersion = 'inventory.open-cluster-management.io/v1alpha1'
@@ -22,7 +20,7 @@ export const BareMetalAssetDefinition: IResourceDefinition = {
 export interface BareMetalAsset {
     apiVersion: BareMetalAssetApiVersionType
     kind: BareMetalAssetKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec?: {
         bmc: {
             address: string
@@ -42,10 +40,10 @@ export interface BareMetalAsset {
     }
 }
 
-export interface BMASecret extends V1Secret {
+export interface BMASecret extends Secret {
     apiVersion: SecretApiVersionType
     kind: SecretKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     stringData: {
         password: string
         username: string
@@ -89,7 +87,7 @@ export enum BareMetalAssetConditionTypes {
     ConditionAssetSyncCompleted = 'AssetSyncCompleted',
 }
 
-export function getBareMetalAsset(metadata: Object) {
+export function getBareMetalAsset(metadata: Metadata) {
     return getResource<BareMetalAsset>({
         kind: BareMetalAssetKind,
         apiVersion: BareMetalAssetApiVersion,

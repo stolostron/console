@@ -4,19 +4,18 @@ import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
-import { mockCRHCredential, mockDiscoveryConfig } from '../../../../lib/test-metadata'
-import { clickByText, waitForNotText, waitForText, waitForNocks } from '../../../../lib/test-util'
-import DiscoveredClustersPage from './DiscoveredClusters'
-import { NavigationPath } from '../../../../NavigationPath'
-import DiscoveryConfigPage from './DiscoveryConfig/DiscoveryConfig'
 import { nockCreate } from '../../../../lib/nock-util'
-
+import { mockCRHCredential, mockDiscoveryConfig } from '../../../../lib/test-metadata'
+import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
+import { NavigationPath } from '../../../../NavigationPath'
+import DiscoveredClustersPage from './DiscoveredClusters'
 import {
-    mockDiscoveredClusters,
-    mockRHOCMSecrets,
     discoveryConfigCreateSelfSubjectAccessRequest,
     discoveryConfigCreateSelfSubjectAccessResponse,
+    mockDiscoveredClusters,
+    mockRHOCMSecrets,
 } from './DiscoveryComponents/test-utils'
+import DiscoveryConfigPage from './DiscoveryConfig/DiscoveryConfig'
 
 beforeEach(() => {
     sessionStorage.clear()
@@ -62,9 +61,9 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('discovery:emptystate.defaultState.title')
-        await waitForText('discovery:emptystate.defaultState.msg')
-        await waitForText('discovery:emptystate.addCredential')
+        await waitForText('emptystate.defaultState.title')
+        await waitForText('emptystate.defaultState.msg')
+        await waitForText('emptystate.addCredential')
     })
 
     test('CRH credentials exist, but no discoveryconfig (Empty State 2)', async () => {
@@ -82,15 +81,15 @@ describe('DiscoveredClusters', () => {
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.discoveredClusters]}>
-                    <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
                     <Route path={NavigationPath.createDiscovery} render={() => <DiscoveryConfigPage />} />
+                    <Route path={NavigationPath.discoveredClusters} render={() => <DiscoveredClustersPage />} />
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('discovery:emptystate.credentials.title')
-        await waitForText('discovery:emptystate.credentials.msg')
-        await waitForText('discovery:discovery.addDiscovery')
-        await clickByText('discovery:discovery.addDiscovery')
+        await waitForText('emptystate.credentials.title')
+        await waitForText('emptystate.credentials.msg')
+        await waitForText('discovery.addDiscovery')
+        await clickByText('discovery.addDiscovery')
 
         await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
         await clickByText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
@@ -116,9 +115,9 @@ describe('DiscoveredClusters', () => {
             </RecoilRoot>
         )
 
-        await waitForText('discovery:emptystate.discoveryEnabled.title')
-        await waitForText('discovery:emptystate.discoveryEnabled.msg')
-        await waitForText('discovery:discovery.configureDiscovery')
-        await waitForText('discovery:discovery.addDiscovery')
+        await waitForText('emptystate.discoveryEnabled.title')
+        await waitForText('emptystate.discoveryEnabled.msg')
+        await waitForText('discovery.configureDiscovery')
+        await waitForText('discovery.addDiscovery')
     })
 })

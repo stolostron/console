@@ -1,17 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ClusterStatus, deleteResource, MachinePool } from '../../../../../../resources'
-import {
-    AcmEmptyState,
-    AcmPageContent,
-    AcmTable,
-    compareStrings,
-    IAcmTableColumn,
-} from '@open-cluster-management/ui-components'
+import { AcmEmptyState, AcmPageContent, AcmTable, compareStrings, IAcmTableColumn } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { useContext, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { machinePoolsState } from '../../../../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
@@ -27,7 +21,7 @@ export function MachinePoolsPageContent() {
     return (
         <AcmPageContent id="nodes">
             <PageSection>
-                <TechPreviewAlert i18nKey="cluster:preview.machinePools" docHref={DOC_LINKS.MACHINE_POOLS} />
+                <TechPreviewAlert i18nKey="preview.machinePools" docHref={DOC_LINKS.MACHINE_POOLS} />
                 <MachinePoolsTable />
             </PageSection>
         </AcmPageContent>
@@ -35,7 +29,7 @@ export function MachinePoolsPageContent() {
 }
 
 export function MachinePoolsTable() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<MachinePool> | { open: false }>({
         open: false,
@@ -55,7 +49,7 @@ export function MachinePoolsTable() {
     }
 
     function getAutoscaling(machinePool: MachinePool) {
-        return machinePool.spec?.autoscaling ? t('common:enabled') : t('common:disabled')
+        return machinePool.spec?.autoscaling ? t('enabled') : t('disabled')
     }
 
     function keyFn(machinePool: MachinePool) {
@@ -77,7 +71,7 @@ export function MachinePoolsTable() {
                 if (machinePool.spec?.replicas !== undefined) {
                     return (
                         <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
-                            {t('common:outOf', {
+                            {t('outOf', {
                                 firstNumber: machinePool.status?.replicas ?? 0,
                                 secondNumber: machinePool.spec.replicas,
                             })}
@@ -154,8 +148,8 @@ export function MachinePoolsTable() {
                             setModalProps({
                                 open: true,
                                 title: t('bulk.title.deleteMachinePool'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                action: t('delete'),
+                                processing: t('deleting'),
                                 resources: [machinePool],
                                 description: t('bulk.message.deleteMachinePool'),
                                 keyFn,
@@ -229,7 +223,7 @@ export function MachinePoolsTable() {
                         title={t('managed.cluster.machinePools.emptyStateHeader')}
                         message={
                             <Trans
-                                i18nKey={'cluster:managed.cluster.machinePools.emptyStateButton'}
+                                i18nKey={'managed.cluster.machinePools.emptyStateButton'}
                                 components={{ bold: <strong /> }}
                             />
                         }

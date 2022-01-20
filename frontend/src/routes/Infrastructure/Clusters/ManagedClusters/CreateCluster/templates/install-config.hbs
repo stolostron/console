@@ -337,8 +337,17 @@ publish: Internal
   openstack:
     cloud: {{{../../cloud}}}
     externalNetwork: {{{../../externalNetworkName}}}
-    lbFloatingIP: {{{../../apiFloatingIP}}}
+    {{#if ../../lbFloatingIP}}
+    lbFloatingIP: {{{../../lbFloatingIP}}}
+    {{/if}}
+    {{#if ../../apiFloatingIP}}
+    apiFloatingIP: {{{../../apiFloatingIP}}}
+    {{/if}}
     ingressFloatingIP: {{{../../ingressFloatingIP}}}
+    {{#if ../../clusterOSImage}}
+    clusterOSImage: >-
+      {{{../../clusterOSImage}}}
+    {{/if}}
     {{#if ../../externalDNS}}
     externalDNS:
     {{#each ../../externalDNS}}
@@ -349,7 +358,16 @@ publish: Internal
 
 {{/switch}}
 
+{{#if fips}}
+fips: true
+{{/if}}
+
+{{#if imageContentSources}}
+pullSecret: {{{pullSecret}}}
+{{else}}
 pullSecret: "" # skip, hive will inject based on it's secrets
+{{/if}}
+
 {{#if ssh-publickey}}
 sshKey: |-
 {{#each ssh-publickey}}
@@ -365,6 +383,12 @@ additionalTrustBundle: |-
 {{/each}}
 {{/if}}
 
+{{#if imageContentSources}}
+imageContentSources:
+{{#each imageContentSources}}
+{{{.}}}
+{{/each}}
+{{/if}}
 
 {{#if imageMirror}}
 {{#if imageMirror.[0]}}

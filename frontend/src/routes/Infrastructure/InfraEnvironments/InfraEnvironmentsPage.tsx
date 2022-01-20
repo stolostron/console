@@ -9,61 +9,56 @@ import {
     AcmPageHeader,
     AcmRoute,
     AcmTable,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import isMatch from 'lodash/isMatch'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { InfraEnvK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { acmRouteState, agentsState, infraEnvironmentsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
+import { deleteResources } from '../../../lib/delete-resources'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { deleteResource } from '../../../resources'
 import { OnPremiseBanner } from '../Clusters/ManagedClusters/components/cim/OnPremiseBanner'
 
 const { AGENT_LOCATION_LABEL_KEY, getAgentStatus } = CIM
+
+const deleteInfraEnv = (infraEnv: InfraEnvK8sResource) => {
+    const resources = [infraEnv]
+    if (infraEnv.spec?.pullSecretRef?.name) {
+        resources.push({
+            apiVersion: 'v1',
+            kind: 'Secret',
+            metadata: {
+                name: infraEnv.spec.pullSecretRef.name,
+                namespace: infraEnv.metadata.namespace,
+            },
+        })
+    }
+    return deleteResources(resources)
+}
 
 const InfraEnvironmentsPage: React.FC = () => {
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
 
     const [infraEnvs, agents] = useRecoilValue(waitForAll([infraEnvironmentsState, agentsState]))
-    const { t } = useTranslation(['infraenv', 'common'])
+    const { t } = useTranslation()
 
     return (
-        <AcmPage
-            hasDrawer
-            header={
-                <AcmPageHeader
-                    title={t('infraenv:infraenvs')}
-                    titleTooltip={
-                        <>
-                            {t('infraenv:infraenvs.tooltip')}
-                            <a
-                                href="foo"
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ display: 'block', marginTop: '4px' }}
-                            >
-                                {t('common:learn.more')}
-                            </a>
-                        </>
-                    }
-                />
-            }
-        >
+        <AcmPage hasDrawer header={<AcmPageHeader title={t('infraenvs')} />}>
             <AcmPageContent id="infra-environments">
                 <OnPremiseBanner
                     id="banner.infraenv"
                     WrappingComponent={PageSection}
-                    titleKey="cim:cim.infra.banner.header"
-                    textKey="cim:cim.infra.banner.body"
-                    footerKey="cim:cim.infra.banner.footer"
+                    titleKey="cim.infra.banner.header"
+                    textKey="cim.infra.banner.body"
                 />
 
                 <PageSection>
@@ -82,7 +77,7 @@ type InfraEnvsTableProps = {
 }
 
 const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) => {
-    const { t } = useTranslation(['infraenv', 'common'])
+    const { t } = useTranslation()
     const history = useHistory()
     const getDetailsLink = (infraEnv: CIM.InfraEnvK8sResource) =>
         NavigationPath.infraEnvironmentDetails
@@ -136,8 +131,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 return (
                                     <AcmLabels
                                         labels={infraEnv.metadata.labels}
-                                        expandedText={t('common:show.less')}
-                                        collapsedText={t('common:show.more', { number: collapse.length })}
+                                        expandedText={t('show.less')}
+                                        collapsedText={t('show.more', { number: collapse.length })}
                                         collapse={collapse}
                                     />
                                 )
@@ -145,6 +140,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 return '-'
                             }
                         },
+                        search: (infraEnv) => JSON.stringify(infraEnv.metadata?.labels) || '',
                     },
                     {
                         header: t('infraEnv.tableHeader.location'),
@@ -157,7 +153,11 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
                             )
                             const errorAgents = infraAgents.filter((a) => getAgentStatus(a)[0] === 'error')
-                            const warningAgents = infraAgents.filter((a) => getAgentStatus(a)[0] === 'insufficient')
+                            const warningAgents = infraAgents.filter((a) =>
+                                ['pending-for-input', 'insufficient', 'insufficient-unbound'].includes(
+                                    getAgentStatus(a)[0]
+                                )
+                            )
 
                             return (
                                 <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
@@ -187,8 +187,8 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                         setModalProps({
                                             open: true,
                                             title: t('action.title.delete'),
-                                            action: t('common:delete'),
-                                            processing: t('common:deleting'),
+                                            action: t('delete'),
+                                            processing: t('deleting'),
                                             resources: [infraEnv],
                                             description: t('action.message.delete'),
                                             columns: [
@@ -205,7 +205,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                             ],
                                             keyFn: (infraEnv: CIM.InfraEnvK8sResource) =>
                                                 infraEnv.metadata.uid as string,
-                                            actionFn: (infraEnv: CIM.InfraEnvK8sResource) => deleteResource(infraEnv),
+                                            actionFn: deleteInfraEnv,
                                             close: () => {
                                                 setModalProps({ open: false })
                                             },
@@ -244,11 +244,11 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                         click: (infraEnvs: CIM.InfraEnvK8sResource[]) => {
                             setModalProps({
                                 open: true,
-                                title: t('bulk.title.delete'),
-                                action: t('common:delete'),
-                                processing: t('common:deleting'),
+                                title: t('bulk.title.delete.infraenv'),
+                                action: t('delete'),
+                                processing: t('deleting'),
                                 resources: infraEnvs,
-                                description: t('bulk.message.delete'),
+                                description: t('bulk.message.delete.infraenv'),
                                 columns: [
                                     {
                                         header: t('infraEnv.tableHeader.name'),
@@ -262,7 +262,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                     },
                                 ],
                                 keyFn: (infraEnv: CIM.InfraEnvK8sResource) => infraEnv.metadata.uid as string,
-                                actionFn: (infraEnv: CIM.InfraEnvK8sResource) => deleteResource(infraEnv),
+                                actionFn: deleteInfraEnv,
                                 close: () => {
                                     setModalProps({ open: false })
                                 },

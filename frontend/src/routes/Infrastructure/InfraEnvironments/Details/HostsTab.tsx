@@ -1,15 +1,27 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { patchResource, deleteResource, getResource, listNamespacedResources } from '../../../../resources'
-import { AcmPageContent } from '@open-cluster-management/ui-components'
+import { useState, useMemo } from 'react'
+import { AcmPageContent } from '@stolostron/ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { useState } from 'react'
 
-import { NavigationPath } from '../../../../NavigationPath'
-import { onEditBMH } from './utils'
+import {
+    fetchNMState,
+    fetchSecret,
+    getClusterDeploymentLink,
+    useOnDeleteHost,
+    onApproveAgent,
+    onSaveBMH,
+    useNMStatesOfNamespace,
+} from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
+
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
+import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import {
+    useOnUnbindHost,
+    useCanUnbindAgent,
+} from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/unbindHost'
 
-const { InfraEnvAgentTable, EditBMHModal, AGENT_BMH_HOSTNAME_LABEL_KEY } = CIM
+const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames } = CIM
 
 type HostsTabProps = {
     infraEnv: CIM.InfraEnvK8sResource
@@ -17,79 +29,56 @@ type HostsTabProps = {
     bareMetalHosts: CIM.BareMetalHostK8sResource[]
 }
 
-const fetchSecret = (namespace: string, name: string) =>
-    getResource({ apiVersion: 'v1', kind: 'Secret', metadata: { namespace, name } }).promise
-
-const fetchNMState = async (namespace: string, bmhName: string) => {
-    const nmStates = await listNamespacedResources(
-        { apiVersion: 'agent-install.openshift.io/v1beta1', kind: 'NMStateConfig', metadata: { namespace } },
-        [AGENT_BMH_HOSTNAME_LABEL_KEY]
-    ).promise
-    return nmStates.find((nm) => nm.metadata?.labels?.[AGENT_BMH_HOSTNAME_LABEL_KEY] === bmhName)
-}
-
 const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts }) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
+    const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
+        { open: false }
+    )
+    const nmStates = useNMStatesOfNamespace(infraEnv.metadata.namespace)
+    const onDeleteHost = useOnDeleteHost(setBulkModalProps, bareMetalHosts, undefined, nmStates)
+    const onUnbindHost = useOnUnbindHost(setBulkModalProps, undefined, undefined)
+    const canUnbindAgent = useCanUnbindAgent(infraEnv)
+
+    const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents), [infraAgents])
 
     return (
-        <AcmPageContent id="hosts">
-            <PageSection>
-                <Card>
-                    <CardBody>
-                        <InfraEnvAgentTable
-                            agents={infraAgents}
-                            bareMetalHosts={bareMetalHosts}
-                            infraEnv={infraEnv}
-                            getClusterDeploymentLink={({ name }) => NavigationPath.clusterDetails.replace(':id', name)}
-                            onEditHost={setEditAgent}
-                            onApprove={(agent) => {
-                                patchResource(agent, [
-                                    {
-                                        op: 'replace',
-                                        path: '/spec/approved',
-                                        value: true,
-                                    },
-                                ])
-                            }}
-                            canDelete={(agent, bmh) => !!agent || !!bmh}
-                            onDeleteHost={async (agent, bmh) => {
-                                if (agent) {
-                                    await deleteResource(agent).promise
+        <>
+            <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
+            <AcmPageContent id="hosts">
+                <PageSection>
+                    <Card>
+                        <CardBody>
+                            <InfraEnvAgentTable
+                                agents={infraAgents}
+                                bareMetalHosts={bareMetalHosts}
+                                infraEnv={infraEnv}
+                                getClusterDeploymentLink={getClusterDeploymentLink}
+                                onEditHost={setEditAgent}
+                                onApprove={onApproveAgent}
+                                canDelete={(agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) =>
+                                    !!nmStates && (!!agent || !!bmh)
                                 }
-                                if (bmh) {
-                                    await deleteResource(bmh).promise
-                                    deleteResource({
-                                        apiVersion: 'v1',
-                                        kind: 'Secret',
-                                        metadata: {
-                                            namespace: bmh.metadata.namespace,
-                                            name: bmh.spec.bmc.credentialsName,
-                                        },
-                                    })
-
-                                    const nmState = await fetchNMState(bmh.metadata.namespace, bmh.metadata.name)
-                                    if (nmState) {
-                                        await deleteResource(nmState).promise
-                                    }
-                                }
-                            }}
-                            onEditBMH={setEditBMH}
-                        />
-                        <EditBMHModal
-                            infraEnv={infraEnv}
-                            bmh={editBMH}
-                            isOpen={!!editBMH}
-                            onClose={() => setEditBMH(undefined)}
-                            onEdit={onEditBMH}
-                            fetchSecret={fetchSecret}
-                            fetchNMState={fetchNMState}
-                        />
-                        <EditAgentModal agent={editAgent} setAgent={setEditAgent} />
-                    </CardBody>
-                </Card>
-            </PageSection>
-        </AcmPageContent>
+                                onDeleteHost={onDeleteHost}
+                                onEditBMH={setEditBMH}
+                                canUnbindHost={canUnbindAgent}
+                                onUnbindHost={onUnbindHost}
+                            />
+                            <EditBMHModal
+                                infraEnv={infraEnv}
+                                bmh={editBMH}
+                                isOpen={!!editBMH}
+                                onClose={() => setEditBMH(undefined)}
+                                onEdit={onSaveBMH}
+                                fetchSecret={fetchSecret}
+                                fetchNMState={fetchNMState}
+                            />
+                            <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
+                        </CardBody>
+                    </Card>
+                </PageSection>
+            </AcmPageContent>
+        </>
     )
 }
 

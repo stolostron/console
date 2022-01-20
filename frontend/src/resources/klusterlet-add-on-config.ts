@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
 import { createResource } from './utils/resource-request'
 import { IResource, IResourceDefinition } from './resource'
+import { Metadata } from './metadata'
 
 export const KlusterletAddonConfigApiVersion = 'agent.open-cluster-management.io/v1'
 export type KlusterletAddonConfigApiVersionType = 'agent.open-cluster-management.io/v1'
@@ -18,7 +17,7 @@ export const KlusterletAddonConfigDefinition: IResourceDefinition = {
 export interface KlusterletAddonConfig extends IResource {
     apiVersion: KlusterletAddonConfigApiVersionType
     kind: KlusterletAddonConfigKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec: {
         clusterName: string
         clusterNamespace: string
@@ -28,7 +27,6 @@ export interface KlusterletAddonConfig extends IResource {
         searchCollector: { enabled: boolean }
         certPolicyController: { enabled: boolean }
         iamPolicyController: { enabled: boolean }
-        version: string
     }
 }
 
@@ -50,7 +48,6 @@ export const createKlusterletAddonConfig = (data: {
             searchCollector: { enabled: true },
             certPolicyController: { enabled: true },
             iamPolicyController: { enabled: true },
-            version: '2.2.0',
         },
     })
 }

@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ClusterImageSet, ClusterPool, patchResource } from '../../../../../resources'
-import { AcmSelect } from '@open-cluster-management/ui-components'
+import { AcmSelect } from '@stolostron/ui-components'
 import { SelectOption } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { clusterImageSetsState } from '../../../../../atoms'
 import { BulkActionModel } from '../../../../../components/BulkActionModel'
@@ -15,7 +15,7 @@ export type UpdateReleaseImageModalProps = {
 }
 
 export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [imageSets, setImageSets] = useState<Record<string, string>>({})
     const [clusterImageSets] = useRecoilState(clusterImageSetsState)
 
@@ -99,8 +99,8 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
         <BulkActionModel<ClusterPool>
             open={props.clusterPools?.length !== undefined}
             title={t('bulk.title.updateReleaseImage')}
-            action={t('common:update')}
-            processing={t('common:updating')}
+            action={t('update')}
+            processing={t('updating')}
             resources={props.clusterPools ?? []}
             close={() => {
                 props.close?.()

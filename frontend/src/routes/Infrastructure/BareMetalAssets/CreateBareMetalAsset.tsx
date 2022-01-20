@@ -28,10 +28,10 @@ import {
     AcmSelect,
     AcmSubmit,
     AcmTextInput,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ActionGroup, Button, PageSection, SelectOption } from '@patternfly/react-core'
 import { useContext, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { namespacesState } from '../../../atoms'
@@ -42,7 +42,7 @@ import { getAuthorizedNamespaces, rbacCreate } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 
 export default function CreateBareMetalAssetPage() {
-    const { t } = useTranslation(['bma', 'common'])
+    const { t } = useTranslation()
     const params: { namespace?: string; name?: string } = useParams()
 
     if (params.namespace && params.name) {
@@ -50,23 +50,23 @@ export default function CreateBareMetalAssetPage() {
             <AcmPage
                 header={
                     <AcmPageHeader
-                        title={t('bma:editBareMetalAsset.title')}
+                        title={t('editBareMetalAsset.title')}
                         titleTooltip={
                             <>
-                                {t('bma:createBareMetalAsset.title.tooltip')}
+                                {t('createBareMetalAsset.title.tooltip')}
                                 <a
                                     href={DOC_LINKS.BARE_METAL_ASSETS}
                                     target="_blank"
                                     rel="noreferrer"
                                     style={{ display: 'block', marginTop: '4px' }}
                                 >
-                                    {t('common:learn.more')}
+                                    {t('learn.more')}
                                 </a>
                             </>
                         }
                         breadcrumb={[
-                            { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
-                            { text: t('bma:editBareMetalAsset.title'), to: '' },
+                            { text: t('bmas'), to: NavigationPath.bareMetalAssets },
+                            { text: t('editBareMetalAsset.title'), to: '' },
                         ]}
                     />
                 }
@@ -83,23 +83,23 @@ export default function CreateBareMetalAssetPage() {
         <AcmPage
             header={
                 <AcmPageHeader
-                    title={t('bma:createBareMetalAsset.title')}
+                    title={t('createBareMetalAsset.title')}
                     titleTooltip={
                         <>
-                            {t('bma:createBareMetalAsset.title.tooltip')}
+                            {t('createBareMetalAsset.title.tooltip')}
                             <a
                                 href={DOC_LINKS.BARE_METAL_ASSETS}
                                 target="_blank"
                                 rel="noreferrer"
                                 style={{ display: 'block', marginTop: '4px' }}
                             >
-                                {t('common:learn.more')}
+                                {t('learn.more')}
                             </a>
                         </>
                     }
                     breadcrumb={[
-                        { text: t('bma:bmas'), to: NavigationPath.bareMetalAssets },
-                        { text: t('bma:createBareMetalAsset.title'), to: '' },
+                        { text: t('bmas'), to: NavigationPath.bareMetalAssets },
+                        { text: t('createBareMetalAsset.title'), to: '' },
                     ]}
                 />
             }
@@ -154,7 +154,7 @@ export function EditBareMetalAssetPageData(props: { name: string; namespace: str
 }
 
 export function CreateBareMetalAssetPageData() {
-    const { t } = useTranslation(['bma', 'common'])
+    const { t } = useTranslation()
     const [namespaces] = useRecoilState(namespacesState)
     const [projects, setProjects] = useState<string[]>([])
     const [error, setError] = useState<Error>()
@@ -178,7 +178,7 @@ export function CreateBareMetalAssetPageData() {
         return (
             <ErrorPage
                 error={error}
-                actions={<AcmButton onClick={() => setRetry(retry + 1)}>{t('common:retry')}</AcmButton>}
+                actions={<AcmButton onClick={() => setRetry(retry + 1)}>{t('retry')}</AcmButton>}
             />
         )
     }
@@ -191,8 +191,8 @@ export function CreateBareMetalAssetPageData() {
         // returns empty state when user cannot create secret in any namespace
         return (
             <AcmEmptyState
-                title={t('common:rbac.title.unauthorized')}
-                message={t('common:rbac.namespaces.unauthorized')}
+                title={t('rbac.title.unauthorized')}
+                message={t('rbac.namespaces.unauthorized')}
                 showIcon={false}
             />
         )
@@ -206,7 +206,7 @@ export function CreateBareMetalAssetPageContent(props: {
     editBareMetalAsset?: BareMetalAsset
     editSecret?: Partial<Secret>
 }) {
-    const { t } = useTranslation(['bma'])
+    const { t } = useTranslation()
     const history = useHistory()
     const alertContext = useContext(AcmAlertContext)
 
@@ -413,7 +413,7 @@ export function CreateBareMetalAssetPageContent(props: {
                                             if (e instanceof Error) {
                                                 alertContext.addAlert({
                                                     type: 'danger',
-                                                    title: t('common:request.failed'),
+                                                    title: t('request.failed'),
                                                     message: e.message,
                                                 })
                                             }
@@ -424,7 +424,7 @@ export function CreateBareMetalAssetPageContent(props: {
                                     if (e instanceof Error) {
                                         alertContext.addAlert({
                                             type: 'danger',
-                                            title: t('common:request.failed'),
+                                            title: t('request.failed'),
                                             message: e.message,
                                         })
                                     }
@@ -444,7 +444,7 @@ export function CreateBareMetalAssetPageContent(props: {
                                             if (e instanceof Error) {
                                                 alertContext.addAlert({
                                                     type: 'danger',
-                                                    title: t('common:request.failed'),
+                                                    title: t('request.failed'),
                                                     message: e.message,
                                                 })
                                             }
@@ -455,7 +455,7 @@ export function CreateBareMetalAssetPageContent(props: {
                                     if (e instanceof Error) {
                                         alertContext.addAlert({
                                             type: 'danger',
-                                            title: t('common:request.failed'),
+                                            title: t('request.failed'),
                                             message: e.message,
                                         })
                                     }

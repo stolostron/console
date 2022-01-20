@@ -1,16 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    AcmAlert,
-    AcmForm,
-    AcmFormProvider,
-    AcmModal,
-    AcmSelect,
-    AcmSubmit,
-} from '@open-cluster-management/ui-components'
+import { AcmAlert, AcmForm, AcmFormProvider, AcmModal, AcmSelect, AcmSubmit } from '@stolostron/ui-components'
 import { ActionGroup, Button, ButtonVariant, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../lib/acm-i18next'
 import { IRequestResult } from '../resources'
 
 export interface IDropdownActionModalProps<T = undefined> {
@@ -38,7 +31,7 @@ interface ItemError<T> {
 }
 
 export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProps<T> | { open: false }) {
-    const { t } = useTranslation(['common'])
+    const { t } = useTranslation()
     const [error, setError] = useState<ItemError<T> | undefined>()
     const [selection, setSelection] = useState<string | undefined>('')
 
@@ -81,7 +74,7 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                                 isInline
                                 noClose
                                 variant="danger"
-                                title={t('common:there.were.errors')}
+                                title={t('there.were.errors')}
                                 message={error.error.message}
                             />
                             <div style={{ minHeight: '24px' }} />
@@ -91,7 +84,7 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                         {error
                             ? [
                                   <Button variant="primary" key="close-action" onClick={props.close}>
-                                      {t('common:close')}
+                                      {t('close')}
                                   </Button>,
                               ]
                             : [
@@ -124,7 +117,7 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                                       onClick={props.onCancel ? props.onCancel : props.close}
                                       key="cancel-bulk-action"
                                   >
-                                      {t('common:cancel')}
+                                      {t('cancel')}
                                   </Button>,
                               ]}
                     </ActionGroup>

@@ -15,6 +15,8 @@ import {
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    onChangeConnection,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -246,7 +248,8 @@ const GCPworkerInstanceTypes = [
     },
 ]
 
-export const getControlDataGCP = (includeAutomation = true) => {
+export const getControlDataGCP = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataGCP)
     if (includeAutomation) return [...controlDataGCP, ...automationControlData]
     return [...controlDataGCP]
 }
@@ -266,6 +269,7 @@ const controlDataGCP = [
             required: true,
         },
         available: [],
+        onSelect: onChangeConnection,
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,

@@ -10,10 +10,10 @@ import {
     AcmSubmit,
     AcmTextInput,
     Provider,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { ActionGroup, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { useCallback, useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
 import {
     CableDriver,
@@ -30,7 +30,7 @@ export type EditSubmarinerConfigModalProps = {
 }
 
 export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const [nattPort, setNattPort] = useState<string | undefined>()
     const [nattEnable, setNattEnable] = useState(submarinerConfigDefault.nattEnable)
@@ -77,7 +77,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                 {(alertContext) => (
                     <AcmForm>
                         <div>
-                            <Trans i18nKey="cluster:submariner.update.form.message" components={{ bold: <strong /> }} />
+                            <Trans i18nKey="submariner.update.form.message" components={{ bold: <strong /> }} />
                         </div>
                         <AcmTextInput
                             id="natt-port"
@@ -134,8 +134,8 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                             <AcmSubmit
                                 id="save"
                                 variant="primary"
-                                label={t('common:save')}
-                                processingLabel={t('common:saving')}
+                                label={t('save')}
+                                processingLabel={t('saving')}
                                 onClick={() => {
                                     alertContext.clearAlerts()
 
@@ -193,7 +193,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                                 }}
                             />
                             <AcmButton variant="link" onClick={reset}>
-                                {t('common:cancel')}
+                                {t('cancel')}
                             </AcmButton>
                         </ActionGroup>
                     </AcmForm>

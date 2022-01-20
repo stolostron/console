@@ -1,9 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
-import { V1Secret } from '@kubernetes/client-node/dist/gen/model/v1Secret'
-import { listResources } from './utils/resource-request'
+import { Metadata } from './metadata'
 import { IResourceDefinition } from './resource'
+import { Secret } from './secret'
+import { listResources } from './utils/resource-request'
 
 export const ProviderConnectionApiVersion = 'v1'
 export type ProviderConnectionApiVersionType = 'v1'
@@ -65,6 +64,11 @@ export interface ProviderConnectionStringData {
     ['ssh-privatekey']?: string
     ['ssh-publickey']?: string
 
+    httpProxy?: any
+    httpsProxy?: any
+    noProxy?: any
+    imageContentSources?: any
+
     host?: string
     token?: string
 }
@@ -72,7 +76,7 @@ export interface ProviderConnectionStringData {
 export interface ProviderConnection {
     apiVersion: ProviderConnectionApiVersionType
     kind: ProviderConnectionKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     data?: ProviderConnectionStringData
     stringData?: ProviderConnectionStringData
     type: 'Opaque'
@@ -94,7 +98,7 @@ export function listProviderConnections() {
     }
 }
 
-export function unpackProviderConnection(secret: ProviderConnection | V1Secret) {
+export function unpackProviderConnection(secret: ProviderConnection | Secret) {
     const providerConnection: ProviderConnection = {
         ...secret,
     } as ProviderConnection

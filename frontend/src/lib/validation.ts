@@ -8,15 +8,14 @@ import validator from 'validator'
 const lowercaseAlphaNumericCharacters = 'abcdefghijklmnopqrstuvwxyz1234567890'
 export function validateKubernetesDnsName(value: string, t: TFunction) {
     if (value) {
-        if (value.length > 63) return `${t('credentials:validate.kubernetesDnsName.length')}`
+        if (value.length > 63) return `${t('validate.kubernetesDnsName.length')}`
         for (const char of value) {
             if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-')
-                return `${t('credentials:validate.kubernetesDnsName.char')}`
+                return `${t('validate.kubernetesDnsName.char')}`
         }
-        if (!lowercaseAlphaNumericCharacters.includes(value[0]))
-            return `${t('credentials:validate.kubernetesDnsName.startchar')}`
+        if (!lowercaseAlphaNumericCharacters.includes(value[0])) return `${t('validate.kubernetesDnsName.startchar')}`
         if (!lowercaseAlphaNumericCharacters.includes(value[value.length - 1]))
-            return `${t('credentials:validate.kubernetesDnsName.endchar')}`
+            return `${t('validate.kubernetesDnsName.endchar')}`
     }
     return undefined
 }
@@ -74,10 +73,10 @@ export function validateJSON(value: string, t: TFunction) {
     try {
         const obj = JSON.parse(value)
         if (Object.entries(obj).length <= 0) {
-            return t('credentials:validate.json')
+            return t('validate.json')
         }
     } catch (e) {
-        return t('credentials:validate.json')
+        return t('validate.json')
     }
     return undefined
 }
@@ -225,4 +224,77 @@ export function validateWebURL(url: string, t: TFunction) {
         return undefined
 
     return t('validate.ansible.url.not.valid')
+}
+
+export function validateImageContentSources(value: string, t: TFunction) {
+    if (value) {
+        try {
+            //ensure we have valid YAML
+            const yamlData: { mirrors?: string[]; source?: string }[] = YAML.parse(value)
+            const isValid = yamlData.every((item) => {
+                return Array.isArray(item.mirrors) && item.source
+            })
+
+            //check for the clouds key
+            if (!isValid) {
+                return t('validate.yaml.not.valid')
+            }
+        } catch (e) {
+            return t('validate.yaml.not.valid')
+        }
+    }
+    return undefined
+}
+
+export function validateHttpProxy(value: string, t: TFunction) {
+    if (value) {
+        if (
+            validator.isURL(value, {
+                require_protocol: true,
+                require_valid_protocol: true,
+                protocols: ['http'],
+                require_host: true,
+            })
+        )
+            return undefined
+        return t('validate.ansible.url.not.valid')
+    }
+    return undefined
+}
+
+export function validateHttpsProxy(value: string, t: TFunction) {
+    if (value) {
+        if (
+            validator.isURL(value, {
+                require_protocol: true,
+                require_valid_protocol: true,
+                protocols: ['https'],
+                require_host: true,
+            })
+        )
+            return undefined
+        return t('validate.ansible.url.not.valid')
+    }
+    return undefined
+}
+
+export function validateNoProxy(value: string, t: TFunction) {
+    if (value) {
+        const noProxies = value.split(',')
+        if (noProxies) {
+            const allGood = noProxies.every((noProxy) => {
+                return validator.isURL(noProxy, {
+                    require_protocol: false,
+                    require_valid_protocol: false,
+                    require_host: false,
+                })
+            })
+            if (allGood) {
+                return undefined
+            }
+        }
+
+        return t('validate.ansible.url.not.valid')
+    }
+    return undefined
 }

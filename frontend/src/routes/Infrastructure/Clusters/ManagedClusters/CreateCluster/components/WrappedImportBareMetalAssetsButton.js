@@ -1,34 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // eslint-disable-next-line no-use-before-define
-import React from 'react'
-import PropTypes from 'prop-types'
+import React, { useCallback } from 'react'
 import { Button } from '@patternfly/react-core'
 import { Tooltip } from 'temptifly'
-import { Component } from 'react'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 
-class WrappedImportBareMetalAssetsButton extends Component {
-    static propTypes = {
-        appendTable: PropTypes.func,
-    }
-
-    render() {
-        const { t } = this.props
-        return (
-            <div>
-                <Button
-                    id={t('modal.import-acmbaremetalasset.button.key')}
-                    onClick={this.importCSV.bind(this)}
-                    variant="secondary"
-                >
-                    {t('modal.import-acmbaremetalasset.button.text')}
-                </Button>
-                <Tooltip control={{ tooltip: t('modal.import-acmbaremetalasset.button.tooltip') }} />
-            </div>
-        )
-    }
-
-    importCSV() {
-        const { appendTable } = this.props
+export default function WrappedImportBareMetalAssetsButton({ appendTable }) {
+    const importCSV = useCallback(() => {
         const input = document.createElement('input')
         input.type = 'file'
         input.accept = '.csv, .txt'
@@ -72,7 +50,15 @@ class WrappedImportBareMetalAssetsButton extends Component {
             }
         }
         input.click()
-    }
-}
+    }, [appendTable])
 
-export default WrappedImportBareMetalAssetsButton
+    const { t } = useTranslation()
+    return (
+        <div>
+            <Button id={t('modal.import-acmbaremetalasset.button.key')} onClick={importCSV} variant="secondary">
+                {t('modal.import-acmbaremetalasset.button.text')}
+            </Button>
+            <Tooltip control={{ tooltip: t('modal.import-acmbaremetalasset.button.tooltip') }} />
+        </div>
+    )
+}

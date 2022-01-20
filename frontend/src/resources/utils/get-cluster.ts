@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node/dist/gen/model/v1CustomResourceDefinitionCondition'
-import { Provider } from '@open-cluster-management/ui-components'
+import { Provider } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { CertificateSigningRequest, CSR_CLUSTER_LABEL } from '../certificate-signing-requests'
 import { ClusterClaim } from '../cluster-claim'
@@ -15,12 +15,13 @@ import { AddonStatus } from './get-addons'
 import { getLatest } from './utils'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 
-const { isDraft, getIsSNOCluster } = CIM
+const { isDraft, getIsSNOCluster, getConsoleUrl: getConsoleUrlAI, getClusterApiUrl: getClusterApiUrlAI } = CIM
 
 export enum ClusterStatus {
     'pending' = 'pending',
     'destroying' = 'destroying',
     'creating' = 'creating',
+    'notstarted' = 'notstarted',
     'provisionfailed' = 'provisionfailed',
     'deprovisionfailed' = 'deprovisionfailed',
     'failed' = 'failed',
@@ -46,6 +47,7 @@ export enum ClusterStatus {
 }
 
 export const clusterDangerStatuses = [
+    ClusterStatus.notstarted,
     ClusterStatus.provisionfailed,
     ClusterStatus.deprovisionfailed,
     ClusterStatus.failed,
@@ -222,8 +224,8 @@ export function getCluster(
         distribution: getDistributionInfo(managedClusterInfo, managedCluster, clusterDeployment, clusterCurator),
         labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
         nodes: getNodes(managedClusterInfo),
-        kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo),
-        consoleURL: getConsoleUrl(clusterDeployment, managedClusterInfo, managedCluster),
+        kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),
+        consoleURL: getConsoleUrl(clusterDeployment, managedClusterInfo, managedCluster, agentClusterInstall),
         isHive: !!clusterDeployment,
         isManaged: !!managedCluster || !!managedClusterInfo,
         isCurator: !!clusterCurator,
@@ -483,6 +485,8 @@ export function getDistributionInfo(
     let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
     switch (productClaim) {
         case 'OpenShiftDedicated':
+        case 'ROSA':
+        case 'ARO':
             isManagedOpenShift = true
             break
     }
@@ -599,20 +603,35 @@ export function getDistributionInfo(
     return undefined
 }
 
-export function getKubeApiServer(clusterDeployment?: ClusterDeployment, managedClusterInfo?: ManagedClusterInfo) {
-    return clusterDeployment?.status?.apiURL ?? managedClusterInfo?.spec?.masterEndpoint
+export function getKubeApiServer(
+    clusterDeployment?: ClusterDeployment,
+    managedClusterInfo?: ManagedClusterInfo,
+    agentClusterInstall?: CIM.AgentClusterInstallK8sResource
+) {
+    return (
+        clusterDeployment?.status?.apiURL ??
+        managedClusterInfo?.spec?.masterEndpoint ??
+        // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
+        getClusterApiUrlAI(clusterDeployment, agentClusterInstall)
+    )
 }
 
 export function getConsoleUrl(
     clusterDeployment?: ClusterDeployment,
     managedClusterInfo?: ManagedClusterInfo,
-    managedCluster?: ManagedCluster
+    managedCluster?: ManagedCluster,
+    agentClusterInstall?: CIM.AgentClusterInstallK8sResource
 ) {
     const consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
         (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
     )
     if (consoleUrlClaim) return consoleUrlClaim.value
-    return clusterDeployment?.status?.webConsoleURL ?? managedClusterInfo?.status?.consoleURL
+    return (
+        clusterDeployment?.status?.webConsoleURL ??
+        managedClusterInfo?.status?.consoleURL ??
+        // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
+        getConsoleUrlAI(clusterDeployment, agentClusterInstall)
+    )
 }
 
 export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
@@ -728,6 +747,10 @@ export function getClusterStatus(
             'ClusterImageSetNotFound',
             cdConditions
         )
+        const hasInvalidInstallConfig = checkForRequirementsMetConditionFailureReason(
+            'InstallConfigValidationFailed',
+            cdConditions
+        )
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
@@ -774,6 +797,12 @@ export function getClusterStatus(
                 )
                 cdStatus = ClusterStatus.provisionfailed
                 statusMessage = invalidImageSetCondition?.message
+            } else if (hasInvalidInstallConfig) {
+                const invalidInstallConfigCondition = cdConditions.find(
+                    (c) => c.type === 'RequirementsMet' && c.reason === 'InstallConfigValidationFailed'
+                )
+                cdStatus = ClusterStatus.notstarted
+                statusMessage = invalidInstallConfigCondition?.message
             } else if (provisionFailed) {
                 const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
                 const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''

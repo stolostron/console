@@ -4,8 +4,8 @@ import { FormikProps } from 'formik'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { set, get, isEqual, startCase, camelCase, debounce } from 'lodash'
 import { getValue } from 'temptifly'
-import { AcmLabelsInput, AcmSelect } from '@open-cluster-management/ui-components'
-import { useTranslation } from 'react-i18next'
+import { AcmLabelsInput, AcmSelect } from '@stolostron/ui-components'
+import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import { SelectOption, Text } from '@patternfly/react-core'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -35,6 +35,7 @@ type FormControl = {
     validate?: VoidFunction
     summary?: VoidFunction
     step?: any
+    additionalProps?: { [x: string]: string }
 }
 
 type DetailsFormProps = {
@@ -47,15 +48,12 @@ const fields: any = {
     baseDnsDomain: { path: 'ClusterDeployment[0].spec.baseDomain' },
     openshiftVersion: { path: 'AgentClusterInstall[0].spec.imageSetRef.name' },
     pullSecret: {},
-    // managedClusterSet: {
-    //     path: 'ClusterDeployment[0].metadata.labels["cluster.open-cluster-management.io/clusterset"]',
-    // },
 }
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
     const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
     const formRef = useRef<FormikProps<any>>(null)
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
@@ -63,26 +61,16 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
 
     useEffect(() => {
+        if (control.disabled && formRef?.current) {
+            Array.from(document.forms[0].elements as HTMLCollectionOf<HTMLElement>).forEach((item: HTMLElement) => {
+                item.setAttribute('disabled', 'true')
+            })
+        }
+    }, [control.disabled, formRef.current])
+
+    useEffect(() => {
         if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
             formRef?.current?.setValues(control.active, true)
-        }
-
-        if (control.disabled) {
-            Array.from(document.forms[0].elements as HTMLCollectionOf<HTMLElement>).forEach(
-                (item: HTMLElement, inx) => {
-                    item.style.backgroundColor = '#e0e0e0'
-                    item.style.pointerEvents = 'none'
-                    item.addEventListener('keydown', (event) => {
-                        event.preventDefault()
-                        return false
-                    })
-                    if (inx === 0) {
-                        setTimeout(() => {
-                            item.blur()
-                        })
-                    }
-                }
-            )
         }
 
         control.reverse = (
@@ -174,13 +162,16 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
             <AcmLabelsInput
                 id="additionalLabels"
                 label={t('import.form.labels.label')}
-                buttonLabel={t('common:label.add')}
+                buttonLabel={t('label.add')}
                 value={additionalLabels}
                 onChange={(label) => setAdditionaLabels(label)}
                 placeholder={t('labels.edit.placeholder')}
                 isDisabled={false}
             />
         ),
+        // pullSecret: control.additionalProps?.['promptSshPublicKey'] ? (
+        //     <ClusterSshKeyFields clusterSshKey="" imageSshKey="" /* Props are empty since we are in the Create flow ...*/ />
+        // ) : null,
     }
 
     useEffect(() => {

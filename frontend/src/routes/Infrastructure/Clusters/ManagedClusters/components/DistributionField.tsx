@@ -9,21 +9,19 @@ import {
     CuratorCondition,
     getLatestAnsibleJob,
 } from '../../../../../resources'
-import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmInlineStatus, StatusType } from '@stolostron/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { ansibleJobState } from '../../../../../atoms'
 import { RbacButton } from '../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 
-export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
-
 export function DistributionField(props: { cluster?: Cluster; clusterCurator?: ClusterCurator | undefined }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
     const [ansibleJobs] = useRecoilState(ansibleJobState)

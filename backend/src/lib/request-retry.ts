@@ -129,7 +129,7 @@ export function requestRetry(options: {
 
             clientRequest.end(body)
         } catch (err) {
-            handleError(err)
+            if (err instanceof Error) handleError(err)
         } finally {
             if (delay === 0) delay = 100
             else delay *= 2
@@ -139,7 +139,7 @@ export function requestRetry(options: {
     try {
         requestAttempt(options.url, requestOptions)
     } catch (err) {
-        options.onError(err)
+        if (err instanceof Error) options.onError(err)
         throw err
     }
 }

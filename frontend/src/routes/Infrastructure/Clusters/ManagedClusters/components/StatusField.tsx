@@ -1,18 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Cluster, ClusterStatus, getLatestAnsibleJob } from '../../../../../resources'
-import { AcmButton, AcmInlineStatus, StatusType } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmInlineStatus, StatusType } from '@stolostron/ui-components'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { ansibleJobState, configMapsState } from '../../../../../atoms'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
-import { launchLogs } from './HiveNotification'
+import { launchLogs, launchToYaml } from './HiveNotification'
 
 export function StatusField(props: { cluster: Cluster }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [configMaps] = useRecoilState(configMapsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
     const latestJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.name!)
@@ -27,6 +27,7 @@ export function StatusField(props: { cluster: Cluster }) {
             type = StatusType.warning
             break
         case ClusterStatus.failed:
+        case ClusterStatus.notstarted:
         case ClusterStatus.provisionfailed:
         case ClusterStatus.deprovisionfailed:
         case ClusterStatus.notaccepted:
@@ -68,6 +69,22 @@ export function StatusField(props: { cluster: Cluster }) {
     let hasAction = false
     let Action = () => <></>
     switch (props.cluster?.status) {
+        case ClusterStatus.notstarted:
+            hasAction = true
+            Action = () => (
+                <AcmButton
+                    style={{ padding: 0, fontSize: 'inherit' }}
+                    key={props.cluster.name}
+                    onClick={() => launchToYaml(props.cluster, configMaps)}
+                    variant="link"
+                    role="link"
+                    icon={<ExternalLinkAltIcon />}
+                    iconPosition="right"
+                >
+                    {t('view.yaml')}
+                </AcmButton>
+            )
+            break
         case ClusterStatus.prehookjob:
         case ClusterStatus.prehookfailed:
             hasAction = true
@@ -140,10 +157,7 @@ export function StatusField(props: { cluster: Cluster }) {
                 maxWidth: '448px',
                 bodyContent: (
                     <>
-                        <Trans
-                            i18nKey={`cluster:status.${props.cluster?.status}.message`}
-                            components={{ bold: <strong /> }}
-                        />
+                        <Trans i18nKey={`status.${props.cluster?.status}`} components={{ bold: <strong /> }} />
                         <ClusterStatusMessageAlert cluster={props.cluster!} padTop />
                     </>
                 ),

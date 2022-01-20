@@ -1,12 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import { Cluster, ClusterProvision, ClusterStatus, ConfigMap, getHivePod, getLatest } from '../../../../../resources'
-import { AcmAlert, AcmButton } from '@open-cluster-management/ui-components'
+import {
+    Cluster,
+    ClusterDeploymentKind,
+    ClusterPoolKind,
+    ClusterProvision,
+    ClusterStatus,
+    ConfigMap,
+    getHivePod,
+    getLatest,
+} from '../../../../../resources'
+import { AcmAlert, AcmButton } from '@stolostron/ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { clusterProvisionsState, configMapsState } from '../../../../../atoms'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -24,7 +33,7 @@ const useStyles = makeStyles({
 
 export function HiveNotification() {
     const { cluster } = useContext(ClusterContext)
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const classes = useStyles()
 
     const [clusterProvisions] = useRecoilState(clusterProvisionsState)
@@ -94,4 +103,18 @@ export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
                 window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace!}/pods/${podName}/logs?container=hive`)
         })
     }
+}
+
+export function launchToYaml(cluster: Cluster, configMaps: ConfigMap[]) {
+    let kind = ClusterDeploymentKind
+    let namespace = cluster.namespace
+    let name = cluster.name
+    if (cluster.hive.clusterPool) {
+        kind = ClusterPoolKind
+        name = cluster.hive.clusterPool
+        namespace = cluster.hive.clusterPoolNamespace
+    }
+    const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
+    const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
+    window.open(`${openShiftConsoleUrl}/k8s/ns/${namespace}/hive.openshift.io~v1~${kind}/${name}/yaml`)
 }

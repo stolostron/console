@@ -6,11 +6,11 @@ import {
     AcmDescriptionList,
     AcmLabels,
     AcmPageContent,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { PageSection, Popover } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useContext } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { clusterDangerStatuses } from '../../../../../../resources'
@@ -19,7 +19,7 @@ import { ClusterSetContext } from '../ClusterSetDetails'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
 
 export function ClusterSetOverviewPageContent() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { push } = useHistory()
     const { clusterSet, clusters, clusterPools, submarinerAddons, clusterSetBindings } = useContext(ClusterSetContext)
 
@@ -49,7 +49,7 @@ export function ClusterSetOverviewPageContent() {
                                 <Popover
                                     bodyContent={
                                         <Trans
-                                            i18nKey="cluster:clusterSetBinding.edit.message"
+                                            i18nKey="clusterSetBinding.edit.message"
                                             components={{ bold: <strong /> }}
                                         />
                                     }
@@ -90,7 +90,7 @@ export function ClusterSetOverviewPageContent() {
                             {
                                 id: 'clusters',
                                 count: clusters!.length,
-                                title: t('clusters'),
+                                title: t('Clusters'),
                                 linkText: t('summary.clusters.launch'),
                                 onLinkClick: () =>
                                     push(NavigationPath.clusterSetClusters.replace(':id', clusterSet!.metadata.name!)),

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmToastProvider, AcmToastGroup } from '@open-cluster-management/ui-components'
+import { AcmToastProvider, AcmToastGroup } from '@stolostron/ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -85,7 +85,7 @@ describe('discovery config page', () => {
         await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('discovery:alert.created.header')
+        await waitForText('alert.created.header')
         await waitForText('alert.msg')
     })
 
@@ -123,7 +123,7 @@ describe('discovery config page', () => {
         await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('discovery:alert.created.header')
+        await waitForText('alert.created.header')
         await waitForText('alert.msg')
     })
 
@@ -161,7 +161,7 @@ describe('discovery config page', () => {
         await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('discovery:alert.updated.header')
+        await waitForText('alert.updated.header')
         await waitForText('alert.msg')
     })
 
@@ -188,7 +188,7 @@ describe('discovery config page', () => {
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('discovery:alert.deleted.header')
+        await waitForText('alert.deleted.header')
         await waitForText('alert.msg')
     })
 })

@@ -1,22 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { AcmButton } from '@stolostron/ui-components'
 import {
+    ActionGroup,
+    Badge,
     ButtonVariant,
     Card,
     CardBody,
-    CardTitle,
     CardFooter,
+    CardTitle,
     Split,
     SplitItem,
-    ActionGroup,
-    StackItem,
-    Badge,
     Stack,
+    StackItem,
 } from '@patternfly/react-core'
-import { AcmButton } from '@open-cluster-management/ui-components'
-import mainIcon from '../../../../../../logos/OnPremiseBannerIcon.svg'
+import { useState } from 'react'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
+import MainIcon from '../../../../../../logos/OnPremiseBannerIcon.svg'
 
 type OnPremisebannerProps = {
     id: string
@@ -36,9 +36,9 @@ export function OnPremiseBanner({
     textKey,
     footerKey,
 }: OnPremisebannerProps) {
-    const { t } = useTranslation(['cim'])
+    const { t } = useTranslation()
     const localStorageKey = `OnPremiseBannerDismissed.${id}`
-    const [dismissed, setDismissed] = useState<Boolean>(localStorage.getItem(localStorageKey) === 'true')
+    const [dismissed, setDismissed] = useState<Boolean>(() => localStorage.getItem(localStorageKey) === 'true')
 
     if (dismissed) {
         return null
@@ -56,7 +56,7 @@ export function OnPremiseBanner({
                     <SplitItem>
                         <CardBody style={{ width: '200px' }}>
                             <Badge style={{ float: 'left' }}>New</Badge>
-                            <img src={mainIcon} alt="On Premise Banner Icon" id="onPremiseBannerIconPng" />
+                            <MainIcon />
                         </CardBody>
                     </SplitItem>
                     <SplitItem isFilled>

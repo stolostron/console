@@ -14,10 +14,14 @@ import {
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    onChangeConnection,
+    onChangeDisconnect,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
-export const getControlDataVMW = (includeAutomation = true) => {
+export const getControlDataVMW = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataVMW)
     if (includeAutomation) return [...controlDataVMW, ...automationControlData]
     return [...controlDataVMW]
 }
@@ -38,6 +42,7 @@ const controlDataVMW = [
         },
         available: [],
         prompts: CREATE_CLOUD_CONNECTION,
+        onSelect: onChangeConnection,
         encode: ['cacertificate'],
     },
     ...clusterDetailsControlData,
@@ -260,6 +265,39 @@ const controlDataVMW = [
         validation: VALIDATE_IP,
     },
     ...proxyControlData,
+    ///////////////////////  openstack  /////////////////////////////////////
+    {
+        id: 'disconnectedStep',
+        type: 'step',
+        title: 'Disconnected installation',
+    },
+    {
+        id: 'disconnectedInfo',
+        type: 'title',
+        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS (RHCOS) image.',
+    },
+    {
+        name: 'Create disconnected installation',
+        id: 'isDisconnected',
+        type: 'checkbox',
+        active: false,
+        onSelect: onChangeDisconnect,
+    },
+    {
+        id: 'imageContentSources',
+        type: 'textarea',
+        name: 'Image Content Sources',
+        disabled: true,
+        tip: 'The imageContentSources values that were generated during mirror registry creation.',
+    },
+    {
+        id: 'disconnectedAdditionalTrustBundle',
+        type: 'textarea',
+        name: 'Additional Trust Bundle',
+        disabled: true,
+        placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
+        tip: 'The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.',
+    },
 ]
 
 export default getControlDataVMW

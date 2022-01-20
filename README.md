@@ -1,9 +1,9 @@
 [comment]: # ( Copyright Contributors to the Open Cluster Management project )
 
-# @open-cluster-management/console
+# @stolostron/console
 
 [![License](https://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
-[![Build](https://img.shields.io/badge/build-Prow-informational)](https://prow.ci.openshift.org/?repo=open-cluster-management%2Fconsole)
+[![Build](https://img.shields.io/badge/build-Prow-informational)](https://prow.ci.openshift.org/?repo=stolostron%2Fconsole)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=coverage&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=sqale_rating&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=security_rating&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
@@ -121,7 +121,7 @@ If the backend responds with a `401 Unauthorized` the frontend starts an OAuth f
 
 ## Optional Features
 
-In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product.  These features are enabled by updating the config-config configmap in the open-cluster-management namepsace.  The following features are available:
+In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product.  These features are enabled by updating the `console-config` configmap in the installation namepsace (default: `open-cluster-management`).  The following features are available:
 
 ### Single node OpenShift
 
@@ -129,4 +129,4 @@ Enabling this feature will allow the user to create a cluster that only contains
 
 ## References
 
-`console` is part of the open-cluster-management community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io)
+`console` is an add-on for the open-cluster-management community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io)

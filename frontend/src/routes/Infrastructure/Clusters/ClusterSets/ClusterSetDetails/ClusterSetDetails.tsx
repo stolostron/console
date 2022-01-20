@@ -1,15 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    Cluster,
-    ClusterPool,
-    ManagedClusterAddOn,
-    ManagedClusterSet,
-    ManagedClusterSetBinding,
-    managedClusterSetLabel,
-    ResourceError,
-} from '../../../../../resources'
-import {
     AcmButton,
     AcmPage,
     AcmPageHeader,
@@ -17,10 +8,10 @@ import {
     AcmRoute,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
-} from '@open-cluster-management/ui-components'
+} from '@stolostron/ui-components'
 import { Page } from '@patternfly/react-core'
 import { createContext, Fragment, Suspense, useEffect } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import {
@@ -32,6 +23,15 @@ import {
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { NavigationPath } from '../../../../../NavigationPath'
+import {
+    Cluster,
+    ClusterPool,
+    ManagedClusterAddOn,
+    ManagedClusterSet,
+    ManagedClusterSetBinding,
+    managedClusterSetLabel,
+    ResourceError,
+} from '../../../../../resources'
 import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
 import { useClusterSetBindings } from '../components/ManagedClusterSetBindingModal'
 import { useClusters } from '../components/useClusters'
@@ -57,10 +57,10 @@ export const ClusterSetContext = createContext<{
     clusterSetBindings: undefined,
 })
 
-export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
+export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
     const location = useLocation()
     const history = useHistory()
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
@@ -92,7 +92,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 })}
                 loadingMessage={
                     <Trans
-                        i18nKey="cluster:deleting.managedClusterSet.inprogress.message"
+                        i18nKey="deleting.managedClusterSet.inprogress.message"
                         components={{ bold: <strong /> }}
                         values={{ managedClusterSetName: prevClusterSet!.metadata.name }}
                     />
@@ -102,7 +102,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 })}
                 successMessage={
                     <Trans
-                        i18nKey="cluster:deleting.managedClusterSet.success.message"
+                        i18nKey="deleting.managedClusterSet.success.message"
                         components={{ bold: <strong /> }}
                         values={{ managedClusterSetName: prevClusterSet!.metadata.name }}
                     />

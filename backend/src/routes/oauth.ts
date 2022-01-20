@@ -4,30 +4,38 @@ import { IncomingMessage } from 'http'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent, request } from 'https'
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
-import { deleteCookie, parseCookies } from '../lib/cookies'
+import { deleteCookie } from '../lib/cookies'
 import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { redirect, respondInternalServerError, unauthorized } from '../lib/respond'
+import { getToken } from '../lib/token'
 import { setDead } from './liveness'
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
-export const oauthInfoPromise = jsonRequest<OAuthInfo>(
-    `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
-).catch((err: Error) => {
-    logger.error({ msg: 'oauth-authorization-server error', error: err.message })
-    setDead()
-    return {
-        authorization_endpoint: '',
-        token_endpoint: '',
+let oauthInfoPromise: Promise<OAuthInfo>
+
+export function getOauthInfoPromise() {
+    if (oauthInfoPromise === undefined) {
+        oauthInfoPromise = jsonRequest<OAuthInfo>(
+            `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
+        ).catch((err: Error) => {
+            logger.error({ msg: 'oauth-authorization-server error', error: err.message })
+            setDead()
+            return {
+                authorization_endpoint: '',
+                token_endpoint: '',
+            }
+        })
     }
-})
+    return oauthInfoPromise
+}
 
 export async function login(_req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-    const oauthInfo = await oauthInfoPromise
+    const oauthInfo = await getOauthInfoPromise()
     const queryString = stringifyQuery({
         response_type: `code`,
         client_id: process.env.OAUTH2_CLIENT_ID,
-        redirect_uri: `${process.env.BACKEND_URL}/login/callback`,
+        redirect_uri: process.env.OAUTH2_REDIRECT_URL,
         scope: `user:full`,
         state: '',
     })
@@ -37,7 +45,7 @@ export async function login(_req: Http2ServerRequest, res: Http2ServerResponse):
 export async function loginCallback(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const url = req.url
     if (url.includes('?')) {
-        const oauthInfo = await oauthInfoPromise
+        const oauthInfo = await getOauthInfoPromise()
         const queryString = url.substr(url.indexOf('?') + 1)
         const query = parseQueryString(queryString)
         const code = query.code as string
@@ -45,7 +53,7 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
         const requestQuery: Record<string, string> = {
             grant_type: `authorization_code`,
             code: code,
-            redirect_uri: `${process.env.BACKEND_URL}/login/callback`,
+            redirect_uri: process.env.OAUTH2_REDIRECT_URL,
             client_id: process.env.OAUTH2_CLIENT_ID,
             client_secret: process.env.OAUTH2_CLIENT_SECRET,
         }
@@ -58,7 +66,8 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
                 } HttpOnly; Path=/`,
                 location: process.env.FRONTEND_URL,
             }
-            return res.writeHead(302, headers).end()
+            res.writeHead(302, headers).end()
+            return
         } else {
             return respondInternalServerError(req, res)
         }
@@ -68,7 +77,7 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
 }
 
 export function logout(req: Http2ServerRequest, res: Http2ServerResponse): void {
-    const token = parseCookies(req)['acm-access-token-cookie']
+    const token = getToken(req)
     if (!token) return unauthorized(req, res)
 
     let tokenName = token

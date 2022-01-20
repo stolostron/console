@@ -2,23 +2,28 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL } from 'temptifly'
+import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL, VALIDATE_URL } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
     clusterDetailsControlData,
-    networkingControlData,
     proxyControlData,
     automationControlData,
     getSimplifiedImageName,
+    getOSTNetworkingControlData,
     getWorkerName,
     isHidden_lt_OCP48,
+    isHidden_gt_OCP46,
     isHidden_SNO,
     onChangeSNO,
+    onChangeConnection,
+    onChangeDisconnect,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
-export const getControlDataOST = (includeAutomation = true) => {
+export const getControlDataOST = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataOST)
     if (includeAutomation) return [...controlDataOST, ...automationControlData]
     return [...controlDataOST]
 }
@@ -38,6 +43,7 @@ const controlDataOST = [
             required: true,
         },
         available: [],
+        onSelect: onChangeConnection,
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,
@@ -200,11 +206,32 @@ const controlDataOST = [
         },
     },
     {
+        id: 'lbFloatingIP',
+        type: 'text',
+        name: 'creation.ocp.cluster.ost.lb.floating.ip',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.lb.floating.ip',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.lb.floating.ip',
+        hidden: (control, controlData) => {
+            if (isHidden_gt_OCP46(control, controlData)) {
+                control.active = undefined
+                return true
+            }
+        },
+        active: '',
+        validation: VALIDATE_IP,
+    },
+    {
         id: 'apiFloatingIP',
         type: 'text',
         name: 'creation.ocp.cluster.ost.api.floating.ip',
         placeholder: 'placeholder.creation.ocp.cluster.ost.api.floating.ip',
         tooltip: 'tooltip.creation.ocp.cluster.ost.api.floating.ip',
+        hidden: (control, controlData) => {
+            if (!isHidden_gt_OCP46(control, controlData)) {
+                control.active = undefined
+                return true
+            }
+        },
         active: '',
         validation: VALIDATE_IP,
     },
@@ -226,8 +253,49 @@ const controlDataOST = [
         active: [],
         validation: VALIDATE_IP_OPTIONAL,
     },
-    ...networkingControlData,
+    ...getOSTNetworkingControlData(),
     ...proxyControlData,
+    ///////////////////////  openstack  /////////////////////////////////////
+    {
+        id: 'disconnectedStep',
+        type: 'step',
+        title: 'Disconnected installation',
+    },
+    {
+        id: 'disconnectedInfo',
+        type: 'title',
+        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS (RHCOS) image.',
+    },
+    {
+        name: 'Create disconnected installation',
+        id: 'isDisconnected',
+        type: 'checkbox',
+        active: false,
+        onSelect: onChangeDisconnect,
+    },
+    {
+        id: 'clusterOSImage',
+        type: 'text',
+        name: 'Cluster OS Image',
+        disabled: true,
+        tip: 'The location of the Red Hat Enterprise Linux CoreOS (RHCOS) image in your local registry.',
+        validation: VALIDATE_URL,
+    },
+    {
+        id: 'imageContentSources',
+        type: 'textarea',
+        name: 'Image Content Sources',
+        disabled: true,
+        tip: 'The imageContentSources values that were generated during mirror registry creation.',
+    },
+    {
+        id: 'disconnectedAdditionalTrustBundle',
+        type: 'textarea',
+        name: 'Additional Trust Bundle',
+        disabled: true,
+        placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
+        tip: 'The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.',
+    },
 ]
 
 export default getControlDataOST

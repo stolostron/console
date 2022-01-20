@@ -11,13 +11,12 @@ import {
     ResourceError,
     ResourceErrorCode,
 } from '../../../../../resources'
-import { AcmSelect } from '@open-cluster-management/ui-components'
+import { AcmSelect } from '@stolostron/ui-components'
 import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { BulkActionModel } from '../../../../../components/BulkActionModel'
 import './style.css'
-export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
 const isChannelSelectable = (c: Cluster) => {
     const isReadySelectChannels = c.distribution?.upgradeInfo?.isReadySelectChannels
@@ -55,7 +54,7 @@ export function BatchChannelSelectModal(props: {
     open: boolean
     clusters: Cluster[] | undefined
 }): JSX.Element {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [selectChannels, setSelectChannels] = useState<Record<string, string>>({})
     const [channelSelectableClusters, setChannelSelectableClusters] = useState<Array<Cluster>>([])
 

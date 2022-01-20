@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ClusterStatus, getLatestAnsibleJob } from '../../../../../resources'
-import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '@open-cluster-management/ui-components'
+import { AcmProgressTracker, ProgressTrackerStep, StatusType } from '@stolostron/ui-components'
 import { Card, CardBody } from '@patternfly/react-core'
 import { useContext } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { ansibleJobState, clusterCuratorsState, configMapsState } from '../../../../../atoms'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -11,7 +11,7 @@ import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { launchLogs } from './HiveNotification'
 
 export function ProgressStepBar() {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
     const [curators] = useRecoilState(clusterCuratorsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)

@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import {
     Namespace,
     NamespaceApiVersion,
@@ -59,6 +58,10 @@ function createProviderConnection(
                       pullSecret: '{"pull":"secret"}\n',
                       'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----\n',
                       'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com\n',
+                      httpProxy: '',
+                      httpsProxy: '',
+                      noProxy: '',
+                      additionalTrustBundle: '',
                   },
               }
             : stringData,
@@ -80,24 +83,27 @@ describe('add credentials page', () => {
         // Credentials type
         await clickByTestId('aws')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // AWS credentials
         await typeByTestId('aws_access_key_id', providerConnection.stringData?.aws_access_key_id!)
         await typeByTestId('aws_secret_access_key', providerConnection.stringData?.aws_secret_access_key!)
-        await clickByText('common:next')
+        await clickByText('Next')
+
+        // skip proxy
+        await clickByText('Next')
 
         // Pull secret and SSH
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
         await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
         await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // Add Credentials
         const createNock = nockCreate({ ...providerConnection })
-        await clickByText('credentialsForm.submitButton.add')
+        await clickByText('Add')
         await waitForNock(createNock)
     })
 
@@ -122,9 +128,9 @@ describe('add credentials page', () => {
         // Credentials type
         await clickByTestId('azr')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // AZR credentials
         await typeByTestId('baseDomainResourceGroupName', providerConnection.stringData?.baseDomainResourceGroupName!)
@@ -132,17 +138,20 @@ describe('add credentials page', () => {
         await typeByTestId('clientSecret', 'clientSecret')
         await typeByTestId('tenantId', 'tenantId')
         await typeByTestId('subscriptionId', 'subscriptionId')
-        await clickByText('common:next')
+        await clickByText('Next')
+
+        // skip proxy
+        await clickByText('Next')
 
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
         await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
         await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // Add Credentials
         const createNock = nockCreate({ ...providerConnection })
-        await clickByText('credentialsForm.submitButton.add')
+        await clickByText('Add')
         await waitForNock(createNock)
     })
 
@@ -161,24 +170,27 @@ describe('add credentials page', () => {
         // Credentials type
         await clickByTestId('gcp')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // GCP credentials
         await typeByTestId('projectID', providerConnection.stringData?.projectID!)
         await typeByTestId('osServiceAccount.json', providerConnection.stringData?.['osServiceAccount.json']!)
-        await clickByText('common:next')
+        await clickByText('Next')
+
+        // skip proxy
+        await clickByText('Next')
 
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
         await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
         await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // Add Credentials
         const createNock = nockCreate({ ...providerConnection })
-        await clickByText('credentialsForm.submitButton.add')
+        await clickByText('Add')
         await waitForNock(createNock)
     })
 
@@ -195,6 +207,7 @@ describe('add credentials page', () => {
                 cluster: 'cluster',
                 datacenter: 'datacenter',
                 defaultDatastore: 'defaultDatastore',
+                imageContentSources: '',
             },
             true
         )
@@ -202,9 +215,9 @@ describe('add credentials page', () => {
         // Credentials type
         await clickByTestId('vmw')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // credentials
         await typeByTestId('vCenter', providerConnection.stringData?.vCenter!)
@@ -214,17 +227,23 @@ describe('add credentials page', () => {
         await typeByTestId('cluster', providerConnection.stringData?.cluster!)
         await typeByTestId('datacenter', providerConnection.stringData?.datacenter!)
         await typeByTestId('defaultDatastore', providerConnection.stringData?.defaultDatastore!)
-        await clickByText('common:next')
+        await clickByText('Next')
+
+        // skip disconnected
+        await clickByText('Next')
+
+        // skip proxy
+        await clickByText('Next')
 
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
         await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
         await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // Add Credentials
         const createNock = nockCreate({ ...providerConnection })
-        await clickByText('credentialsForm.submitButton.add')
+        await clickByText('Add')
         await waitForNock(createNock)
     })
 
@@ -277,6 +296,8 @@ describe('add credentials page', () => {
                 'clouds.yaml':
                     'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
                 cloud: 'openstack',
+                clusterOSImage: '',
+                imageContentSources: '',
             },
             true
         )
@@ -284,24 +305,30 @@ describe('add credentials page', () => {
         // Credentials type
         await clickByTestId('ost')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // ost credentials
         await typeByTestId('cloud', providerConnection.stringData?.cloud!)
         await typeByTestId('clouds.yaml', providerConnection.stringData?.['clouds.yaml']!)
-        await clickByText('common:next')
+        await clickByText('Next')
+
+        // skip disconnected
+        await clickByText('Next')
+
+        // skip proxy
+        await clickByText('Next')
 
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
         await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
         await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // Add Credentials
         const createNock = nockCreate({ ...providerConnection })
-        await clickByText('credentialsForm.submitButton.add')
+        await clickByText('Add')
         await waitForNock(createNock)
     })
 
@@ -326,31 +353,34 @@ describe('add credentials page', () => {
         // Credentials type
         await clickByTestId('bmc')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // bmc credentials
         await typeByTestId('libvirtURI', providerConnection.stringData?.libvirtURI!)
         await typeByTestId('sshKnownHosts', providerConnection.stringData?.sshKnownHosts!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // bmc disconnected
         await typeByTestId('imageMirror', providerConnection.stringData?.imageMirror!)
         await typeByTestId('bootstrapOSImage', providerConnection.stringData?.bootstrapOSImage!)
         await typeByTestId('clusterOSImage', providerConnection.stringData?.clusterOSImage!)
         await typeByTestId('additionalTrustBundle', providerConnection.stringData?.additionalTrustBundle!)
-        await clickByText('common:next')
+        await clickByText('Next')
+
+        // skip proxy
+        await clickByText('Next')
 
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
         await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
         await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // Add Credentials
         const createNock = nockCreate({ ...providerConnection })
-        await clickByText('credentialsForm.submitButton.add')
+        await clickByText('Add')
         await waitForNock(createNock)
     })
 
@@ -369,17 +399,17 @@ describe('add credentials page', () => {
         // Credentials type
         await clickByTestId('ans')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
-        await clickByText('common:next')
+        await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+        await clickByText('Next')
 
         // ans credentials
         await typeByTestId('ansibleHost', providerConnection.stringData?.host!)
         await typeByTestId('ansibleToken', providerConnection.stringData?.token!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // Add Credentials
         const createNock = nockCreate({ ...providerConnection })
-        await clickByText('credentialsForm.submitButton.add')
+        await clickByText('Add')
         await waitForNock(createNock)
     })
 
@@ -393,16 +423,16 @@ describe('add credentials page', () => {
         // Credentials type
         await clickByTestId('rhocm')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
-        await clickByText('common:next')
+        await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+        await clickByText('Next')
 
         // rhocm credentials
         await typeByTestId('ocmAPIToken', providerConnection.stringData?.ocmAPIToken!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // Add Credentials
         const createNock = nockCreate({ ...providerConnection })
-        await clickByText('credentialsForm.submitButton.add')
+        await clickByText('Add')
         await waitForNock(createNock)
     })
 })

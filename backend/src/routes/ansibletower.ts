@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { request, RequestOptions } from 'https'
+import ProxyAgent from 'proxy-agent'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { logger } from '../lib/logger'
@@ -31,12 +32,15 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
         const options: RequestOptions = {
             protocol: towerUrl.protocol,
             hostname: towerUrl.hostname,
-            path: towerUrl.pathname,
+            path: `${towerUrl.pathname}${towerUrl.search ? towerUrl.search : ''}`,
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${ansibleCredential.token}`,
             },
             rejectUnauthorized: false,
+        }
+        if (process.env.HTTPS_PROXY) {
+            options.agent = new ProxyAgent()
         }
         pipeline(
             req,

@@ -1,5 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { AcmSelect } from '@stolostron/ui-components'
+import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { useEffect, useState } from 'react'
+import { BulkActionModel } from '../../../../../components/BulkActionModel'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
     Cluster,
     ClusterCurator,
@@ -11,14 +16,8 @@ import {
     ResourceError,
     ResourceErrorCode,
 } from '../../../../../resources'
-import { AcmSelect } from '@open-cluster-management/ui-components'
-import { SelectOption, Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { BulkActionModel } from '../../../../../components/BulkActionModel'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
 import './style.css'
-export const backendUrl = `${process.env.REACT_APP_BACKEND_PATH}`
 
 // compare version
 const compareVersion = (a: string, b: string) => {
@@ -49,9 +48,7 @@ const setLatestVersions = (
     clusters?.forEach((cluster: Cluster) => {
         if (cluster.name) {
             const clusterName = cluster.name
-            const availableUpdates =
-                cluster.distribution?.upgradeInfo?.availableUpdates &&
-                [...cluster.distribution?.upgradeInfo?.availableUpdates].sort(compareVersion)
+            const availableUpdates = (cluster.distribution?.upgradeInfo?.availableUpdates ?? []).sort(compareVersion)
             const latestVersion = availableUpdates && availableUpdates.length > 0 ? availableUpdates[0] : ''
             const currentValue = availableUpdates?.find(
                 (curr) => currentMappings[clusterName] && curr === currentMappings[clusterName]
@@ -67,7 +64,7 @@ export function BatchUpgradeModal(props: {
     open: boolean
     clusters: Cluster[] | undefined
 }): JSX.Element {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const [selectVersions, setSelectVersions] = useState<Record<string, string>>({})
     const [upgradeableClusters, setUpgradeableClusters] = useState<Array<Cluster>>([])
 
@@ -116,9 +113,9 @@ export function BatchUpgradeModal(props: {
                 {
                     header: t('upgrade.table.newversion'),
                     cell: (cluster: Cluster) => {
-                        const availableUpdates =
-                            cluster.distribution?.upgradeInfo?.availableUpdates &&
-                            [...cluster.distribution?.upgradeInfo?.availableUpdates].sort(compareVersion)
+                        const availableUpdates = (cluster.distribution?.upgradeInfo?.availableUpdates ?? []).sort(
+                            compareVersion
+                        )
                         const hasAvailableUpgrades = availableUpdates && availableUpdates.length > 0
                         return (
                             <div>

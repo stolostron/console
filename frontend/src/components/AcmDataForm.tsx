@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmButton, AcmIcon, AcmIconVariant, AcmPageHeader } from '@open-cluster-management/ui-components'
+import { AcmButton, AcmIcon, AcmIconVariant, AcmPageHeader } from '@stolostron/ui-components'
 import {
     ActionGroup,
     ActionList,
@@ -918,6 +918,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                     <TextInput
                         {...input}
                         validated={validated}
+                        spellCheck="false"
                         isReadOnly={isReadOnly}
                         type={!input.isSecret || showSecrets ? 'text' : 'password'}
                     />
@@ -969,6 +970,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                             {...input}
                             validated={validated}
                             isReadOnly={isReadOnly}
+                            spellCheck="false"
                             resizeOrientation="vertical"
                             autoResize={true}
                         />

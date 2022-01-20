@@ -15,6 +15,8 @@ import {
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    onChangeConnection,
+    addSnoText,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -432,7 +434,8 @@ const ApplicationCreationPage = [
     },
 ]
 
-export const getControlDataAZR = (includeAutomation = true) => {
+export const getControlDataAZR = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataAZR)
     if (includeAutomation) return [...controlDataAZR, ...automationControlData]
     return [...controlDataAZR]
 }
@@ -452,6 +455,8 @@ const setRegions = (control, controlData) => {
     } else {
         alterRegionData(controlData, regions, 'centralus')
     }
+
+    onChangeConnection(control, controlData)
 }
 
 const controlDataAZR = [

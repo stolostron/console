@@ -11,7 +11,7 @@ import {
     SecretApiVersion,
     SecretKind,
 } from '../../../resources'
-import { Provider } from '@open-cluster-management/ui-components/lib/AcmProvider'
+import { Provider } from '@stolostron/ui-components/lib/AcmProvider'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -127,36 +127,36 @@ describe('add ansible job template page', () => {
         // template information
         nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
         await typeByPlaceholderText('template.create.placeholder', mockClusterCurator.metadata.name!)
-        await clickByPlaceholderText('credentials:credentialsForm.ansibleCredentials.placeholder')
+        await clickByPlaceholderText('credentialsForm.ansibleCredentials.placeholder')
         await clickByText(mockSecret.metadata.name!)
-        await clickByText('common:next')
+        await clickByText('next')
 
         // install templates
         await clickByText('template.job.placeholder', 0)
-        await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
+        await clickByPlaceholderText('template.modal.name.placeholder', 0)
         await clickByText(mockTemplateList.results![0].name!, 0)
-        await clickByText('common:save')
+        await clickByText('Save')
         await clickByText('template.job.placeholder', 1)
-        await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
+        await clickByPlaceholderText('template.modal.name.placeholder', 0)
         await clickByText(mockTemplateList.results![1].name!, 0)
-        await clickByText('common:save')
-        await clickByText('common:next')
+        await clickByText('Save')
+        await clickByText('next')
 
         // upgrade templates
         await clickByText('template.job.placeholder', 0)
-        await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
+        await clickByPlaceholderText('template.modal.name.placeholder', 0)
         await clickByText(mockTemplateList.results![2].name!, 0)
-        await clickByText('common:save')
+        await clickByText('Save')
         await clickByText('template.job.placeholder', 1)
-        await clickByPlaceholderText('cluster:template.modal.name.placeholder', 0)
+        await clickByPlaceholderText('template.modal.name.placeholder', 0)
         await clickByText(mockTemplateList.results![3].name!, 0)
-        await clickByText('common:save')
-        await clickByText('common:next')
+        await clickByText('Save')
+        await clickByText('next')
 
         // add template
         const createNock = nockCreate(mockClusterCurator)
         nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
-        await clickByText('common:add')
+        await clickByText('add')
         await waitForNock(createNock)
     })
 })

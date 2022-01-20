@@ -1,5 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { AcmInlineProvider, Provider } from '@stolostron/ui-components'
+import { Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { useMemo, useState } from 'react'
+import { useTranslation } from '../../../../../lib/acm-i18next'
+import { useHistory } from 'react-router'
+import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
+import { RbacDropdown } from '../../../../../components/Rbac'
+import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
+import { createImportResources } from '../../../../../lib/import-cluster'
+import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
+import { NavigationPath } from '../../../../../NavigationPath'
 import {
     Cluster,
     ClusterCuratorDefinition,
@@ -10,24 +21,116 @@ import {
     patchResource,
     ResourceErrorCode,
 } from '../../../../../resources'
-import { AcmInlineProvider, Provider } from '@open-cluster-management/ui-components'
-import { Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useHistory } from 'react-router'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
-import { RbacDropdown } from '../../../../../components/Rbac'
-import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
-import { createImportResources } from '../../../../../lib/import-cluster'
-import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
 
+/**
+ * Function to return cluster actions available to a cluster
+ * @param cluster
+ */
+export function getClusterActions(cluster: Cluster) {
+    let actionIds = [
+        'edit-labels',
+        'upgrade-cluster',
+        'select-channel',
+        'search-cluster',
+        'import-cluster',
+        'hibernate-cluster',
+        'resume-cluster',
+        'detach-cluster',
+        'destroy-cluster',
+        'ai-edit',
+        'ai-scale-up',
+    ]
+
+    // ClusterCurator
+    if ([ClusterStatus.prehookjob, ClusterStatus.prehookfailed].includes(cluster.status)) {
+        const disabledPreHookActions = [
+            'upgrade-cluster',
+            'select-channel',
+            'search-cluster',
+            'import-cluster',
+            'hibernate-cluster',
+            'resume-cluster',
+            'detach-cluster',
+        ]
+        actionIds = actionIds.filter((id) => !disabledPreHookActions.includes(id))
+    }
+
+    if (cluster.status === ClusterStatus.importfailed) {
+        const disabledImportFailedActions = [
+            'upgrade-cluster',
+            'select-channel',
+            'search-cluster',
+            'import-cluster',
+            'detach-cluster',
+        ]
+        actionIds = actionIds.filter((id) => !disabledImportFailedActions.includes(id))
+    }
+
+    if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
+        const disabledHibernationActions = [
+            'upgrade-cluster',
+            'select-channel',
+            'search-cluster',
+            'hibernate-cluster',
+            'import-cluster',
+            'detach-cluster',
+        ]
+        actionIds = actionIds.filter((id) => !disabledHibernationActions.includes(id))
+    }
+
+    if (cluster.status !== ClusterStatus.hibernating) {
+        actionIds = actionIds.filter((id) => id !== 'resume-cluster')
+    }
+
+    if (!cluster.hive.isHibernatable) {
+        actionIds = actionIds.filter((id) => id !== 'hibernate-cluster')
+    }
+
+    if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadyUpdates) {
+        actionIds = actionIds.filter((id) => id !== 'upgrade-cluster')
+    }
+
+    if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadySelectChannels) {
+        actionIds = actionIds.filter((id) => id !== 'select-channel')
+    }
+
+    if (!cluster.isManaged || cluster.status === ClusterStatus.detaching) {
+        actionIds = actionIds.filter((id) => id !== 'edit-labels')
+        actionIds = actionIds.filter((id) => id !== 'search-cluster')
+    }
+
+    if (cluster.status !== ClusterStatus.detached) {
+        actionIds = actionIds.filter((id) => id !== 'import-cluster')
+    }
+
+    if (cluster.status === ClusterStatus.detached || !cluster.isManaged || cluster.status === ClusterStatus.detaching) {
+        actionIds = actionIds.filter((id) => id !== 'detach-cluster')
+    }
+
+    if (!cluster.isHive || (cluster.hive.clusterPool && !cluster.hive.clusterClaimName)) {
+        actionIds = actionIds.filter((id) => id !== 'destroy-cluster')
+    }
+
+    if (cluster.provider !== Provider.hybrid) {
+        actionIds = actionIds.filter((id) => id !== 'ai-edit')
+    }
+
+    if (
+        !(cluster.provider === Provider.hybrid && cluster.status === ClusterStatus.pendingimport) ||
+        cluster.isSNOCluster
+    ) {
+        actionIds = actionIds.filter((id) => id !== 'ai-scale-up')
+    }
+    return actionIds
+}
+
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     const history = useHistory()
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
@@ -115,7 +218,9 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 id: 'search-cluster',
                 text: t('managed.search'),
                 click: (cluster: Cluster) =>
-                    window.location.assign(`/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`),
+                    window.location.assign(
+                        `/multicloud/home/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
+                    ),
             },
             {
                 id: 'import-cluster',
@@ -124,8 +229,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     setModalProps({
                         open: true,
                         title: t('bulk.title.import'),
-                        action: t('common:import'),
-                        processing: t('common:importing'),
+                        action: t('import'),
+                        processing: t('importing'),
                         resources: [cluster],
                         close: () => {
                             setModalProps({ open: false })
@@ -285,7 +390,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 id: 'ai-edit',
                 text: t('managed.editAI'),
                 click: (cluster: Cluster) =>
-                    history.push(`/multicloud/cluster/edit/${cluster.namespace}/${cluster.name}`),
+                    history.push(
+                        NavigationPath.editCluster
+                            .replace(':namespace', cluster.namespace!)
+                            .replace(':name', cluster.name!)
+                    ),
                 isDisabled: cluster.status !== ClusterStatus.draft,
             },
             {
@@ -296,88 +405,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         ],
         []
     )
-
-    // ClusterCurator
-    if ([ClusterStatus.prehookjob, ClusterStatus.prehookfailed].includes(cluster.status)) {
-        const disabledPreHookActions = [
-            'upgrade-cluster',
-            'select-channel',
-            'search-cluster',
-            'import-cluster',
-            'hibernate-cluster',
-            'resume-cluster',
-            'detach-cluster',
-        ]
-        actions = actions.filter((a) => !disabledPreHookActions.includes(a.id))
-    }
-
-    if (cluster.status === ClusterStatus.importfailed) {
-        const disabledImportFailedActions = [
-            'upgrade-cluster',
-            'select-channel',
-            'search-cluster',
-            'import-cluster',
-            'detach-cluster',
-        ]
-        actions = actions.filter((a) => !disabledImportFailedActions.includes(a.id))
-    }
-
-    if ([ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cluster.status)) {
-        const disabledHibernationActions = [
-            'upgrade-cluster',
-            'select-channel',
-            'search-cluster',
-            'hibernate-cluster',
-            'import-cluster',
-            'detach-cluster',
-        ]
-        actions = actions.filter((a) => !disabledHibernationActions.includes(a.id))
-    }
-
-    if (cluster.status !== ClusterStatus.hibernating) {
-        actions = actions.filter((a) => a.id !== 'resume-cluster')
-    }
-
-    if (!cluster.hive.isHibernatable) {
-        actions = actions.filter((a) => a.id !== 'hibernate-cluster')
-    }
-
-    if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadyUpdates) {
-        actions = actions.filter((a) => a.id !== 'upgrade-cluster')
-    }
-
-    if (cluster.status !== ClusterStatus.ready || !cluster.distribution?.upgradeInfo?.isReadySelectChannels) {
-        actions = actions.filter((a) => a.id !== 'select-channel')
-    }
-
-    if (!cluster.isManaged || cluster.status === ClusterStatus.detaching) {
-        actions = actions.filter((a) => a.id !== 'edit-labels')
-        actions = actions.filter((a) => a.id !== 'search-cluster')
-    }
-
-    if (cluster.status !== ClusterStatus.detached) {
-        actions = actions.filter((a) => a.id !== 'import-cluster')
-    }
-
-    if (cluster.status === ClusterStatus.detached || !cluster.isManaged || cluster.status === ClusterStatus.detaching) {
-        actions = actions.filter((a) => a.id !== 'detach-cluster')
-    }
-
-    if (!cluster.isHive || (cluster.hive.clusterPool && !cluster.hive.clusterClaimName)) {
-        actions = actions.filter((a) => a.id !== 'destroy-cluster')
-    }
-
-    if (cluster.provider !== Provider.hybrid) {
-        actions = actions.filter((a) => a.id !== 'ai-edit')
-    }
-
-    if (
-        !(cluster.provider === Provider.hybrid && cluster.status === ClusterStatus.pendingimport) ||
-        cluster.isSNOCluster
-    ) {
-        actions = actions.filter((a) => a.id !== 'ai-scale-up')
-    }
-
+    const clusterActions = getClusterActions(cluster)
+    actions = actions.filter((action) => clusterActions.indexOf(action.id) > -1)
     return (
         <>
             <EditLabels

@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 /* istanbul ignore file */
-import * as Router from 'find-my-way'
+import Router from 'find-my-way'
 import { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { loadSettings, stopSettingsWatch } from './lib/config'
 import { cors } from './lib/cors'
 import { delay } from './lib/delay'
 import { logger, stopLogger } from './lib/logger'
@@ -10,16 +11,15 @@ import { startLoggingMemory } from './lib/memory'
 import { notFound, respondInternalServerError, respondOK } from './lib/respond'
 import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
+import { ansibleTower } from './routes/ansibletower'
 import { authenticated } from './routes/authenticated'
+import { events, startWatching, stopWatching } from './routes/events'
 import { liveness } from './routes/liveness'
 import { login, loginCallback, logout } from './routes/oauth'
 import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
 import { search } from './routes/search'
 import { serve } from './routes/serve'
-import { startWatching, stopWatching, events } from './routes/events'
-import { loadSettings, stopSettingsWatch } from './lib/config'
-import { ansibleTower } from './routes/ansibletower'
 
 export const router = Router<Router.HTTPVersion.V2>()
 router.get(`/readinessProbe`, readiness)
@@ -32,7 +32,7 @@ router.all(`/apis/*`, proxy)
 router.all(`/version`, proxy)
 router.all(`/version/`, proxy)
 router.get(`/login`, login)
-router.get(`/login/callback?*`, loginCallback)
+router.get(`/login/callback`, loginCallback)
 router.get(`/logout`, logout)
 router.get(`/logout/`, logout)
 router.get(`/events`, events)

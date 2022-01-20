@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { V1ObjectMeta } from '@kubernetes/client-node/dist/gen/model/v1ObjectMeta'
+import { Metadata } from './metadata'
 import { IResourceDefinition } from './resource'
 import { getLatest } from './utils/utils'
 
@@ -17,7 +17,7 @@ export const AnsibleJobDefinition: IResourceDefinition = {
 export interface AnsibleJob {
     apiVersion: AnsibleJobApiVersionType
     kind: AnsibleJobKindType
-    metadata: V1ObjectMeta
+    metadata: Metadata
     spec?: {
         extra_vars: {}
     }
@@ -52,6 +52,8 @@ export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string
 }
 
 export interface AnsibleTowerJobTemplateList {
+    count?: number
+    next?: string
     results?: Array<AnsibleTowerJobTemplate>
 }
 export interface AnsibleTowerJobTemplate {

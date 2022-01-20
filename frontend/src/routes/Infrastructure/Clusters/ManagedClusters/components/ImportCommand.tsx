@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ClusterStatus, getSecret, ResourceError, Secret } from '../../../../../resources'
-import { AcmAlert, AcmButton, AcmInlineCopy } from '@open-cluster-management/ui-components'
-import { onCopy } from '@open-cluster-management/ui-components/lib/utils'
+import { AcmAlert, AcmButton, AcmInlineCopy } from '@stolostron/ui-components'
+import { onCopy } from '@stolostron/ui-components/lib/utils'
 import {
     Alert,
     AlertVariant,
@@ -17,15 +17,15 @@ import {
     Tooltip,
 } from '@patternfly/react-core'
 import { CopyIcon } from '@patternfly/react-icons'
-import i18next from 'i18next'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useRecoilState } from 'recoil'
 import { secretsState } from '../../../../../atoms'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
+import { TFunction } from 'i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 
 export function ImportCommandContainer() {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
     const [secrets] = useRecoilState(secretsState)
     const { cluster } = useContext(ClusterContext)
     const [error, setError] = useState<string | undefined>()
@@ -69,7 +69,7 @@ export function ImportCommandContainer() {
     }
 
     if (error) {
-        return <AcmAlert isInline variant="danger" title={t('common:request.failed')} message={error} />
+        return <AcmAlert isInline variant="danger" title={t('request.failed')} message={error} />
     }
 
     if (cluster?.status === ClusterStatus.pendingimport && !autoImportSecret) {
@@ -94,7 +94,7 @@ type ImportCommandProps = {
 }
 
 export function ImportCommand(props: ImportCommandProps) {
-    const { t } = useTranslation(['cluster', 'common'])
+    const { t } = useTranslation()
 
     const [copied, setCopied] = useState<boolean>(false)
     useEffect(() => {
@@ -108,8 +108,8 @@ export function ImportCommand(props: ImportCommandProps) {
         return null
     }
 
-    const v1ImportCommand = getImportCommand(props.importSecret, 'v1')
-    const v1beta1ImportCommand = getImportCommand(props.importSecret, 'v1beta1')
+    const v1ImportCommand = getImportCommand(props.importSecret, 'v1', t)
+    const v1beta1ImportCommand = getImportCommand(props.importSecret, 'v1beta1', t)
 
     return (
         <Fragment>
@@ -122,7 +122,7 @@ export function ImportCommand(props: ImportCommandProps) {
                                 <strong style={{ marginBottom: '12px', fontSize: '14px', display: 'block' }}>
                                     {t('import.command.copy.description')}
                                 </strong>
-                                <Tooltip isVisible={copied} content={t('common:copied')} trigger="click">
+                                <Tooltip isVisible={copied} content={t('copied')} trigger="click">
                                     <AcmButton
                                         id="import-command"
                                         variant="secondary"
@@ -194,13 +194,13 @@ export async function pollImportYamlSecret(clusterName: string): Promise<Secret>
     return new Promise(poll)
 }
 
-export function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1') {
+function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1', t: TFunction) {
     let klusterletCRD = importSecret.data?.['crdsv1.yaml']
     if (version === 'v1beta1') {
         klusterletCRD = importSecret.data?.['crdsv1beta1.yaml']
     }
     const importYaml = importSecret.data?.['import.yaml']
-    const alreadyImported = i18next.t('cluster:import.command.alreadyimported')
+    const alreadyImported = t('import.command.alreadyimported')
     const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
     return `echo "${klusterletCRD}" | base64 -d | kubectl create -f - || test $? -eq 0 && sleep 2 && echo "${importYaml}" | base64 -d | kubectl apply -f - || echo "${alreadyImported64}" | base64 -d`
 }

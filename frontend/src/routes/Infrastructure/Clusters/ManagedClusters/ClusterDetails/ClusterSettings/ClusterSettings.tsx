@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Addon, AddonStatus } from '../../../../../../resources'
-import { AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '@open-cluster-management/ui-components'
+import { AcmInlineStatus, AcmPageContent, AcmTable, StatusType } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useContext } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { ClusterContext } from '../ClusterDetails'
 
 export function ClustersSettingsPageContent() {
@@ -19,7 +19,7 @@ export function ClustersSettingsPageContent() {
 }
 
 export function ClusterSettingsTable(props: { addons: Addon[] | undefined }) {
-    const { t } = useTranslation(['cluster'])
+    const { t } = useTranslation()
     return (
         <AcmTable<Addon>
             plural="add-ons"
