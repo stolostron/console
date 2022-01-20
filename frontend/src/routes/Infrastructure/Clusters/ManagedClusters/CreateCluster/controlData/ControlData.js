@@ -35,7 +35,6 @@ export const getActiveCardID = (control, fetchData = {}) => {
     if (requestedUIDs && requestedUIDs.length) {
         return 'BMC'
     }
-    I
     return null
 }
 
