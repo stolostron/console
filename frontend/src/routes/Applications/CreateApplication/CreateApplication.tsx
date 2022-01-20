@@ -9,7 +9,8 @@ import { useRecoilState } from 'recoil'
 import { isType } from '../../../lib/is-type'
 import { gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
 import { unpackProviderConnection } from '../../../resources'
-import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
+// import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
+import { ApplicationWizard } from '/Users/magchen/Downloads/github/react-form-wizard/wizards/Application/ApplicationWizard'
 
 // interface CreationStatus {
 //     status: string
@@ -88,6 +89,7 @@ export function CreateApplication() {
 
     return (
         <ApplicationWizard
+            addClusterSets={NavigationPath.clusterSets}
             ansibleCredentials={availableAnsibleCredentials}
             argoServers={availableArgoNS}
             namespaces={availableNamespace}
