@@ -4,7 +4,7 @@ import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } fr
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { TFunction } from 'react-i18next'
@@ -571,7 +571,6 @@ export default function ApplicationsOverview() {
     const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
     const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
     const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
-    const [tableContent, setTableContent] = useState<ReactNode>()
 
     let modalWarnings: string
     const getAppChildResources = (app: IResource) => {
@@ -836,8 +835,31 @@ export default function ApplicationsOverview() {
         return actions
     }
 
-    const generateTable = () => {
-        return (
+    useEffect(() => {
+        const canCreateApplicationPromise = canUser('create', ApplicationDefinition)
+        canCreateApplicationPromise.promise
+            .then((result) => setCanCreateApplication(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateApplicationPromise.abort()
+    }, [])
+    useEffect(() => {
+        const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
+        canDeleteApplicationPromise.promise
+            .then((result) => setCanDeleteApplication(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeleteApplicationPromise.abort()
+    }, [])
+    useEffect(() => {
+        const canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
+        canDeleteApplicationSetPromise.promise
+            .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeleteApplicationSetPromise.abort()
+    }, [])
+
+    return (
+        <PageSection>
+            <DeleteResourceModal {...modalProps} />
             <AcmTable<IResource>
                 key="data-table"
                 plural={t('Applications')}
@@ -871,46 +893,6 @@ export default function ApplicationsOverview() {
                 }
                 rowActionResolver={rowActionResolver}
             />
-        )
-    }
-
-    useEffect(() => {
-        const canCreateApplicationPromise = canUser('create', ApplicationDefinition)
-        canCreateApplicationPromise.promise
-            .then((result) => setCanCreateApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateApplicationPromise.abort()
-    }, [])
-    useEffect(() => {
-        const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
-        canDeleteApplicationPromise.promise
-            .then((result) => setCanDeleteApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationPromise.abort()
-    }, [])
-    useEffect(() => {
-        const canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
-        canDeleteApplicationSetPromise.promise
-            .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationSetPromise.abort()
-    }, [])
-
-    useEffect(() => {
-        setTableContent(generateTable())
-
-        const interval = setInterval(() => {
-            setTableContent(generateTable())
-        }, 5000)
-        return () => {
-            clearInterval(interval)
-        }
-    }, [canCreateApplication, canDeleteApplication, canDeleteApplicationSet, data])
-
-    return (
-        <PageSection>
-            <DeleteResourceModal {...modalProps} />
-            {tableContent}
         </PageSection>
     )
 }
