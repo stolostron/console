@@ -1,191 +1,78 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardBody, CardHeader, CardTitle, PageSection, Stack, Text, Title } from '@patternfly/react-core'
+import { Card, CardBody, PageSection, Split, SplitItem, Stack, Title } from '@patternfly/react-core'
+import { AcmButton, AcmEmptyState } from '@stolostron/ui-components'
+import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { NavigationPath } from '../../../NavigationPath'
-import { PolicyRiskLabels, RisksCard, RisksGauge } from '../components/PolicyRiskLabels'
-import { IGovernanceData } from '../useGovernanceData'
+import { ClusterPolicyViolationCard, PolicyViolationIcons } from '../components/ClusterPolicyViolations'
+import { PolicyViolationsCard } from '../components/PolicyViolations'
+import { IGovernanceData, IPolicyGrouping, risksHasValues } from '../useGovernanceData'
 
 export default function GovernanceOverview(props: { governanceData: IGovernanceData }) {
     const { governanceData } = props
+    const hasRisks = risksHasValues(props.governanceData.policyRisks)
+    if (!hasRisks) {
+        return (
+            <PageSection isWidthLimited>
+                <AcmEmptyState
+                    title={'You don’t have any policies applied to clusters'}
+                    action={
+                        <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
+                            {'Go to policies'}
+                        </AcmButton>
+                    }
+                />
+            </PageSection>
+        )
+    }
     return (
-        <PageSection>
+        <PageSection isWidthLimited>
             <Stack hasGutter>
-                <Text>
-                    Enterprises must meet internal standards for software engineering, secure engineering, resiliency,
-                    security, and regulatory compliance for workloads hosted on private, multi and hybrid clouds. Red
-                    Hat Advanced Cluster Management for Kubernetes governance provides an extensible policy framework
-                    for enterprises to introduce their own security policies.
-                </Text>
-
-                <div />
-                <Stack>
-                    <Title headingLevel="h3">Summary</Title>
-                </Stack>
-
-                <AcmMasonry>
-                    <div>
-                        <Link to={NavigationPath.policies} style={{ textDecoration: 'none' }}>
-                            <RisksCard
-                                title="Policies"
-                                risks={governanceData.policyRisks}
-                                singular="policy"
-                                plural="policies"
-                            />
-                        </Link>
-                    </div>
-                    <div>
-                        <Link to={NavigationPath.clusters} style={{ textDecoration: 'none' }}>
-                            <RisksCard
-                                title="Clusters"
-                                risks={governanceData.clusterRisks}
-                                singular="cluster"
-                                plural="clusters"
-                            />
-                        </Link>
-                    </div>
+                <AcmMasonry minSize={600}>
+                    <ClusterPolicyViolationCard risks={governanceData.clusterRisks} />
+                    <PolicyViolationsCard risks={governanceData.policyRisks} />
                 </AcmMasonry>
 
-                <div />
-                <Stack>
-                    <Title headingLevel="h3">Categories</Title>
-                    <Text>
-                        A security control category represent specific requirements for one or more standards. For
-                        example, a System and Information Integrity category might indicate that your policy contains a
-                        data transfer protocol to protect personal information, as required by the HIPAA and PCI
-                        standards.
-                    </Text>
-                </Stack>
-                <AcmMasonry>
-                    {governanceData.categories.groups.map((category) => {
-                        return (
-                            <div>
-                                <Card
-                                    isRounded
-                                    isHoverable
-                                    style={{ transition: 'box-shadow 0.25s', cursor: 'pointer', height: '100%' }}
-                                >
-                                    <CardHeader>
-                                        <CardTitle>
-                                            <Title headingLevel="h3" style={{ color: 'black' }}>
-                                                {category.name}
-                                            </Title>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardBody>
-                                        <Stack hasGutter>
-                                            <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
-                                                <RisksGauge risks={category.policyRisks} />
-                                                <div style={{ alignSelf: 'center' }}>
-                                                    <PolicyRiskLabels
-                                                        risks={category.policyRisks}
-                                                        isVertical
-                                                        showLabels
-                                                        singular={'policy'}
-                                                        plural={'policies'}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </Stack>
-                                    </CardBody>
-                                </Card>
-                            </div>
-                        )
-                    })}
-                </AcmMasonry>
-
-                <div />
-                <Stack>
-                    <Title headingLevel="h3">Standards</Title>
-                    <Text>
-                        The name or names of security standards the policy is related to. For example, National
-                        Institute of Standards and Technology (NIST) and Payment Card Industry (PCI).
-                    </Text>
-                </Stack>
-                <AcmMasonry>
-                    {governanceData.standards.groups.map((category) => {
-                        return (
-                            <div>
-                                <Card
-                                    isRounded
-                                    isHoverable
-                                    style={{ transition: 'box-shadow 0.25s', cursor: 'pointer', height: '100%' }}
-                                >
-                                    <CardHeader>
-                                        <CardTitle>
-                                            <Title headingLevel="h3" style={{ color: 'black' }}>
-                                                {category.name}
-                                            </Title>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardBody>
-                                        <Stack hasGutter>
-                                            <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
-                                                <RisksGauge risks={category.policyRisks} />
-                                                <div style={{ alignSelf: 'center' }}>
-                                                    <PolicyRiskLabels
-                                                        risks={category.policyRisks}
-                                                        isVertical
-                                                        showLabels
-                                                        singular={'policy'}
-                                                        plural={'policies'}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </Stack>
-                                    </CardBody>
-                                </Card>
-                            </div>
-                        )
-                    })}
-                </AcmMasonry>
-
-                <div />
-                <Stack>
-                    <Title headingLevel="h3">Controls</Title>
-                    <Text>
-                        The name of the security control that is being checked. For example, the certificate policy
-                        controller.
-                    </Text>
-                </Stack>
-
-                <AcmMasonry>
-                    {governanceData.controls.groups.map((category) => {
-                        return (
-                            <div>
-                                <Card
-                                    isRounded
-                                    isHoverable
-                                    style={{ transition: 'box-shadow 0.25s', cursor: 'pointer', height: '100%' }}
-                                >
-                                    <CardHeader>
-                                        <CardTitle>
-                                            <Title headingLevel="h3" style={{ color: 'black' }}>
-                                                {category.name}
-                                            </Title>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardBody>
-                                        <Stack hasGutter>
-                                            <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
-                                                <RisksGauge risks={category.policyRisks} />
-                                                <div style={{ alignSelf: 'center' }}>
-                                                    <PolicyRiskLabels
-                                                        risks={category.policyRisks}
-                                                        isVertical
-                                                        showLabels
-                                                        singular={'policy'}
-                                                        plural={'policies'}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </Stack>
-                                    </CardBody>
-                                </Card>
-                            </div>
-                        )
-                    })}
-                </AcmMasonry>
+                {['Standards', 'Categories', 'Controls'].map((key) => {
+                    const grouping = (governanceData as unknown as Record<string, IPolicyGrouping>)[key.toLowerCase()]
+                    if (!risksHasValues(grouping.risks)) return <Fragment />
+                    return (
+                        <Card>
+                            <CardBody>
+                                <Split hasGutter>
+                                    <SplitItem style={{ minWidth: 120 }}>
+                                        <Title headingLevel="h6">
+                                            <span style={{ whiteSpace: 'nowrap' }}>{key}</span>
+                                        </Title>
+                                    </SplitItem>
+                                    <SplitItem>
+                                        <div style={{ display: 'flex', columnGap: 48, rowGap: 16, flexWrap: 'wrap' }}>
+                                            {grouping.groups.map((group) => {
+                                                const hasRisks =
+                                                    group.policyRisks.high +
+                                                        group.policyRisks.low +
+                                                        group.policyRisks.medium +
+                                                        group.policyRisks.synced +
+                                                        group.policyRisks.unknown >
+                                                    0
+                                                if (!hasRisks) return <Fragment />
+                                                return (
+                                                    <Split hasGutter>
+                                                        <SplitItem>
+                                                            <span style={{ whiteSpace: 'nowrap' }}>{group.name}</span>
+                                                        </SplitItem>
+                                                        <PolicyViolationIcons risks={group.policyRisks} />
+                                                    </Split>
+                                                )
+                                            })}
+                                        </div>
+                                    </SplitItem>
+                                </Split>
+                            </CardBody>
+                        </Card>
+                    )
+                })}
             </Stack>
         </PageSection>
     )
