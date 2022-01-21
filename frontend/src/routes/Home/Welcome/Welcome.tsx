@@ -134,7 +134,7 @@ export default function WelcomePage() {
                 </div>
             </PageSection>
             <PageSection variant="default">
-                <AcmMasonry minSize={1000}>
+                <AcmMasonry minSize={600}>
                     {cards.map((card) => (
                         <div>
                             <Link to={card.link} style={{ color: 'black', textDecoration: 'none' }}>

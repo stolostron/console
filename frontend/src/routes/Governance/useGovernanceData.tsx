@@ -282,3 +282,12 @@ export function useGovernanceData(
 
     return governanceData
 }
+
+export function risksHasValues(risks: IPolicyRisks) {
+    if (risks.high > 0) return true
+    if (risks.medium > 0) return true
+    if (risks.low > 0) return true
+    if (risks.synced > 0) return true
+    if (risks.unknown > 0) return true
+    return false
+}
