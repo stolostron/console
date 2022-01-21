@@ -441,7 +441,6 @@ export function CredentialsForm(props: {
         // return packProviderConnection(secret)
     }
     const title = isViewing ? name : isEditing ? t('Edit credential') : t('Add credential')
-    console.log('all providers: ', Provider)
     const titleTooltip = (
         <Fragment>
             {t('A credential stores the access credentials and configuration information for creating clusters.')}
@@ -487,7 +486,6 @@ export function CredentialsForm(props: {
                                 options: credentialProviders
                                     .filter((provider) => providerGroup[provider] === ProviderGroup.CloudProvider)
                                     .map((provider) => {
-                                        console.log('cloud provider: ', provider)
                                         return {
                                             id: provider,
                                             value: provider,
@@ -501,7 +499,6 @@ export function CredentialsForm(props: {
                                 options: credentialProviders
                                     .filter((provider) => providerGroup[provider] === ProviderGroup.Datacenter)
                                     .map((provider) => {
-                                        console.log('datacenter provider: ', provider)
                                         return {
                                             id: provider,
                                             value: provider,
@@ -515,7 +512,6 @@ export function CredentialsForm(props: {
                                 options: credentialProviders
                                     .filter((provider) => providerGroup[provider] === ProviderGroup.Automation)
                                     .map((provider) => {
-                                        console.log('automation: ', provider)
                                         return {
                                             id: provider,
                                             value: provider,
@@ -529,7 +525,6 @@ export function CredentialsForm(props: {
                                 options: credentialProviders
                                     .filter((provider) => providerGroup[provider] === ProviderGroup.CentrallyManaged)
                                     .map((provider) => {
-                                        console.log('centrally managed: ', provider)
                                         return {
                                             id: provider,
                                             value: provider,
@@ -1324,7 +1319,6 @@ export function CredentialsForm(props: {
                     patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
                 }
                 return patchResource(secret, patch).promise.then(() => {
-                    console.log('name', name)
                     toastContext.addAlert({
                         title: t('Credentials updated'),
                         /*
