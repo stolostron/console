@@ -251,7 +251,7 @@ describe('add credentials page', () => {
         render(<AddCredentialsTest />)
 
         const providerConnection = createProviderConnection(
-            'rhv',
+            'redhatvirtualization',
             {
                 ovirt_url: 'rhv_url',
                 ovirt_username: 'username',
@@ -262,28 +262,31 @@ describe('add credentials page', () => {
         )
 
         // Credentials type
-        await clickByTestId('rhv')
+        await clickByTestId('redhatvirtualization')
         await typeByTestId('credentialsName', providerConnection.metadata.name!)
-        await selectByText('credentialsForm.namespaceName.placeholder', providerConnection.metadata.namespace!)
+        await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
         await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // credentials
-        await typeByTestId('ovirt_url', providerConnection.stringData?.vCenter!)
-        await typeByTestId('ovirt_username', providerConnection.stringData?.username!)
-        await typeByTestId('ovirt_password', providerConnection.stringData?.password!)
-        await typeByTestId('ovirt_ca_bundle', providerConnection.stringData?.cacertificate!)
-        await clickByText('common:next')
+        await typeByTestId('ovirt_url', providerConnection.stringData?.ovirt_url!)
+        await typeByTestId('ovirt_username', providerConnection.stringData?.ovirt_username!)
+        await typeByTestId('ovirt_password', providerConnection.stringData?.ovirt_password!)
+        await typeByTestId('ovirt_ca_bundle', providerConnection.stringData?.ovirt_ca_bundle!)
+        await clickByText('Next')
+
+        // skip proxy
+        await clickByText('Next')
 
         // Pull secret
         await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
         await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
         await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
-        await clickByText('common:next')
+        await clickByText('Next')
 
         // Add Credentials
         const createNock = nockCreate({ ...providerConnection })
-        await clickByText('credentialsForm.submitButton.add')
+        await clickByText('Add')
         await waitForNock(createNock)
     })
 
