@@ -8,9 +8,9 @@ import {
     ServerHttp2Stream,
     ServerStreamResponseOptions,
 } from 'http2'
+import nock from 'nock'
 import { Duplex } from 'stream'
 import { requestHandler, stop } from '../src/app'
-import * as nock from 'nock'
 
 export async function request(
     method: 'GET' | 'PUT' | 'POST' | 'DELETE',

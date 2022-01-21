@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable no-constant-condition */
-import { map, split } from 'event-stream'
+
+import eventStream from 'event-stream'
 import get from 'get-value'
 import got, { CancelError, HTTPError, TimeoutError } from 'got'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
@@ -15,6 +16,7 @@ import { getToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { getServiceAcccountToken } from './liveness'
 
+const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
 
 export function events(req: Http2ServerRequest, res: Http2ServerResponse): void {
