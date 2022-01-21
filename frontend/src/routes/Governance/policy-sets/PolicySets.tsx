@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmDrawerContext, AcmEmptyState } from '@stolostron/ui-components'
 import {
     Button,
     Card,
@@ -24,7 +23,8 @@ import {
     ToolbarGroup,
     ToolbarItem,
 } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon, QuestionCircleIcon } from '@patternfly/react-icons'
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { AcmDrawerContext, AcmEmptyState } from '@stolostron/ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
@@ -33,7 +33,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../resources/policy-set'
 import CardViewToolbarFilter from './components/CardViewToolbarFilter'
 import CardViewToolbarSearch from './components/CardViewToolbarSearch'
-import { PolicySetSidebar } from './components/PolicySetDetailSidebar'
+import { PolicySetDetailSidebar } from './components/PolicySetDetailSidebar'
 
 function clusterViolationFilterFn(policySet: PolicySet) {
     return (
@@ -254,6 +254,7 @@ export default function PolicySetsPage() {
                 isRounded
                 isLarge
                 isHoverable
+                isFullHeight
                 key={policySet.metadata.name}
                 style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
             >
@@ -272,7 +273,7 @@ export default function PolicySetsPage() {
                                             isExpanded: true,
                                             onCloseClick: () => setDrawerContext(undefined),
                                             panelContent: (
-                                                <PolicySetSidebar
+                                                <PolicySetDetailSidebar
                                                     policySet={policySet}
                                                     policySetClusters={policySetClusters}
                                                 />
@@ -351,7 +352,7 @@ export default function PolicySetsPage() {
                                 </Label>
                             )}
                             {policyUnknownCount > 0 && (
-                                <Label icon={<QuestionCircleIcon color="grey" />} color="grey">
+                                <Label icon={<ExclamationTriangleIcon color="orange" />} color="orange">
                                     {policyUnknownCount}
                                 </Label>
                             )}
@@ -437,19 +438,12 @@ export default function PolicySetsPage() {
                 <PageSection isFilled>
                     <Gallery
                         hasGutter
-                        maxWidths={{
-                            sm: '350px',
-                            md: '350px',
-                            lg: '350px',
-                            xl: '350px',
-                            '2xl': '350px',
-                        }}
                         minWidths={{
-                            sm: '350px',
-                            md: '350px',
-                            lg: '350px',
-                            xl: '350px',
-                            '2xl': '350px',
+                            sm: '300px',
+                            md: '300px',
+                            lg: '300px',
+                            xl: '300px',
+                            '2xl': '300px',
                         }}
                     >
                         {paged.map((policyset: PolicySet, cardIdx: number) => {

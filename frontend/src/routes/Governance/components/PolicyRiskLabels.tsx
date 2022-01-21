@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Card, CardBody, CardHeader, CardTitle, Title, Tooltip } from '@patternfly/react-core'
+import { Card, CardBody, CardTitle, Divider, Flex, FlexItem, Tooltip } from '@patternfly/react-core'
+import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon'
 import ChevronCircleDownIcon from '@patternfly/react-icons/dist/esm/icons/chevron-circle-down-icon'
 import ChevronCircleUpIcon from '@patternfly/react-icons/dist/esm/icons/chevron-circle-up-icon'
 import MinusCircleIcon from '@patternfly/react-icons/dist/esm/icons/minus-circle-icon'
-import OutlinedCircleIcon from '@patternfly/react-icons/dist/esm/icons/outlined-circle-icon'
 import QuestionCircleIcon from '@patternfly/react-icons/dist/esm/icons/question-circle-icon'
-import { ReactNode } from 'react'
+import { Children, Fragment, isValidElement, ReactElement, ReactNode } from 'react'
 import { NoWrap } from '../../../components/NoWrap'
 import { IPolicyRisks } from '../useGovernanceData'
 
@@ -17,76 +17,90 @@ const orange = '#EC7A08'
 const yellow = '#F0AB00'
 const grey = '#CCCCCC'
 
-export function RisksCard(props: { title: string; risks: IPolicyRisks; singular: string; plural: string }) {
+function FlexWithDividers(props: { children?: ReactNode }) {
+    const children: ReactElement[] = []
+    let needsDivider = false
+    Children.forEach(props.children, (child) => {
+        if (!isValidElement(child)) return
+        if (child.type === Fragment) return
+        if (needsDivider) children.push(<Divider isVertical />)
+        needsDivider = true
+        children.push(child as ReactElement)
+    })
+    return <Flex display={{ default: 'inlineFlex' }}>{children}</Flex>
+}
+
+export function RiskIcons(props: { risks: IPolicyRisks }) {
     return (
-        <Card isRounded isHoverable style={{ transition: 'box-shadow 0.25s', cursor: 'pointer', height: '100%' }}>
-            <CardHeader>
-                <CardTitle>
-                    <Title headingLevel="h3" style={{ color: 'black' }}>
-                        {props.title}
-                    </Title>
-                </CardTitle>
-            </CardHeader>
-            <CardBody>
-                <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
-                    <RisksGauge risks={props.risks} />
-                    <div style={{ alignSelf: 'center' }}>
-                        <PolicyRiskLabels
-                            risks={props.risks}
-                            isVertical
-                            showLabels
-                            singular={props.singular}
-                            plural={props.plural}
-                        />
-                    </div>
-                </div>
-            </CardBody>
-        </Card>
+        <FlexWithDividers>
+            {props.risks.synced !== 0 ? (
+                <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+                    <FlexItem>
+                        <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                    </FlexItem>
+                    <FlexItem>
+                        <a href="#">{props.risks.synced}</a>
+                    </FlexItem>
+                </Flex>
+            ) : (
+                <Fragment />
+            )}
+            {props.risks.low ? (
+                <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+                    <FlexItem>
+                        <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                    </FlexItem>
+                    <FlexItem>
+                        <a href="#">{props.risks.low}</a>
+                    </FlexItem>
+                </Flex>
+            ) : (
+                <Fragment />
+            )}
+            {props.risks.medium !== 0 ? (
+                <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+                    <FlexItem>
+                        <ExclamationTriangleIcon color="#EC7A08" />
+                    </FlexItem>
+                    <FlexItem>
+                        <a href="#">{props.risks.medium}</a>
+                    </FlexItem>
+                </Flex>
+            ) : (
+                <Fragment />
+            )}
+            {props.risks.high !== 0 ? (
+                <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+                    <FlexItem>
+                        <ExclamationTriangleIcon color="var(--pf-global--danger-color--100)" />
+                    </FlexItem>
+                    <FlexItem>
+                        <a href="#">{props.risks.high}</a>
+                    </FlexItem>
+                </Flex>
+            ) : (
+                <Fragment />
+            )}
+        </FlexWithDividers>
     )
 }
 
-export function RisksIcon(props: { risks: IPolicyRisks }) {
-    if (props.risks.high > 0) {
-        return (
-            <span style={{ color: red }}>
-                <ChevronCircleUpIcon />
-            </span>
-        )
+export function RisksCard(props: { title: string; risks: IPolicyRisks; singular: string; plural: string }) {
+    if (props.risks.synced + props.risks.low + props.risks.medium + props.risks.high + props.risks.unknown === 0) {
+        return <Fragment />
     }
-
-    if (props.risks.medium > 0) {
-        return (
-            <span style={{ color: orange }}>
-                <MinusCircleIcon />
-            </span>
-        )
-    }
-
-    if (props.risks.low > 0) {
-        return (
-            <span style={{ color: yellow }}>
-                <ChevronCircleDownIcon />
-            </span>
-        )
-    }
-
-    if (props.risks.unknown > 0) {
-        return (
-            <span style={{ color: grey }}>
-                <QuestionCircleIcon />
-            </span>
-        )
-    }
-
-    if (props.risks.synced > 0) {
-        return (
-            <span style={{ color: green }}>
-                <CheckCircleIcon />
-            </span>
-        )
-    }
-
-    return <OutlinedCircleIcon color="lightgrey" style={{ opacity: 0 }} />
+    return (
+        <Card
+            isRounded
+            isHoverable
+            style={{ transition: 'box-shadow 0.25s', cursor: 'pointer', height: '100%', textAlign: 'center' }}
+        >
+            <CardTitle>{props.title}</CardTitle>
+            <CardBody>
+                <RiskIcons risks={props.risks} />
+            </CardBody>
+        </Card>
+    )
 }
 
 export function PolicyRiskLabels(props: {

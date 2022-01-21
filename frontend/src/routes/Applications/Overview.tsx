@@ -44,6 +44,7 @@ import { Link } from 'react-router-dom'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import { useQuery } from '../../lib/useQuery'
 import { queryRemoteArgoApps } from '../../lib/search'
+import { NavigationPath } from '../../NavigationPath'
 
 const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
@@ -434,10 +435,20 @@ export default function ApplicationsOverview() {
         () => [
             {
                 header: t('Name'),
-                cell: 'metadata.name',
                 sort: 'metadata.name',
                 search: 'metadata.name',
                 transforms: [cellWidth(20)],
+                cell: (application) => (
+                    <span style={{ whiteSpace: 'nowrap' }}>
+                        <Link
+                            to={NavigationPath.applicationDetails
+                                .replace(':namespace', application.metadata?.namespace as string)
+                                .replace(':name', application.metadata?.name as string)}
+                        >
+                            {application.metadata?.name}
+                        </Link>
+                    </span>
+                ),
             },
             {
                 header: t('Type'),
