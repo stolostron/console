@@ -1,0 +1,108 @@
+.node .shape {
+    stroke-width: 3px;
+    stroke-opacity: 1;
+    fill: #f5f7fa;
+    cursor: pointer;
+}
+.node .shape.disabled {
+    stroke: #8c9ba5;
+}
+.node text {
+    text-anchor: middle;
+    font-size: 0.75rem;
+    fill: #394b54;
+    cursor: default;
+}
+.node .title {
+    font-weight: bold;
+}
+.node rect {
+    fill: white;
+    opacity: 0.85;
+    pointer-events: none;
+    stroke: #c8c8c8;
+}
+.node .shadow {
+    stroke-width: 2px;
+    stroke-opacity: 0;
+    stroke: #0062ff;
+    fill: none;
+    cursor: pointer;
+}
+.node:hover .shadow {
+    stroke-opacity: 0.4;
+}
+.node.selected .shadow {
+    stroke-opacity: 1;
+    fill: #ecf4ff;
+}
+.node .pulse.red {
+    fill: #ff8080;
+}
+.node .pulse.yellow {
+    fill: #efc100;
+}
+.node .pulse.green {
+    fill: green;
+}
+.node .centralCircle {
+    stroke-width: 0px;
+    stroke-opacity: 0;
+    opacity: 1;
+    pointer-events: none;
+}
+.node:focus *,
+.node:focus-within * {
+    outline: none;
+}
+.design {
+    stroke: #42535c;
+    fill: #42535c;
+}
+div.tooltip {
+    position: absolute;
+    z-index: 10000;
+    text-align: left;
+    width: auto;
+    height: auto;
+    max-width: 500px;
+    background: white;
+    padding: 8px;
+    cursor: default;
+    font-size: 14px;
+    border: 1px solid #dfe3e6;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+}
+div.tooltip div {
+    height: 100%;
+    padding: 0;
+    margin: 2px;
+}
+div.tooltip div .label {
+    font-weight: bold;
+    color: #152935;
+}
+div.tooltip div .value {
+    color: #5a6872;
+}
+div.tooltip div .link {
+    color: #06c;
+    text-decoration: none;
+}
+div.tooltip div .link:hover {
+    text-decoration: underline;
+}
+div.tooltip:after {
+    top: 100%;
+    left: 50%;
+    border: solid transparent;
+    content: ' ';
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    margin-left: -5px;
+    border-width: 5px;
+    border-color: transparent;
+    border-top-color: white;
+}

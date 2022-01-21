@@ -55,6 +55,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'InfraEnv', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'Application', apiVersion: 'app.k8s.io/v1beta1' },
     { kind: 'Channel', apiVersion: 'apps.open-cluster-management.io/v1' },
+    { kind: 'Deployable', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'GitOpsCluster', apiVersion: 'apps.open-cluster-management.io/v1beta1' },
     { kind: 'PlacementRule', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'Subscription', apiVersion: 'apps.open-cluster-management.io/v1' },
