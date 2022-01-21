@@ -34,7 +34,6 @@ const useStyles = makeStyles({
             fontSize: 'var(	--pf-global--FontSize--sm)',
         },
         '& > span': {
-            width: '2.8rem',
             margin: '0.4rem 0 !important',
             fontSize: 'var(--pf-global--FontSize--xs)',
             backgroundColor: 'var(--pf-global--palette--blue-50)',
