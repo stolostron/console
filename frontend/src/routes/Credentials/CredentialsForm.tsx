@@ -54,7 +54,7 @@ import {
 
 const credentialProviders: Provider[] = [
     Provider.openstack,
-    Provider.rhv,
+    Provider.redhatvirtualization,
     Provider.ansible,
     Provider.redhatcloud,
     Provider.aws,
@@ -80,7 +80,7 @@ const providerGroup: Record<string, string> = {
     [Provider.azure]: ProviderGroup.CloudProvider,
     [Provider.ibm]: ProviderGroup.CloudProvider,
     [Provider.openstack]: ProviderGroup.Datacenter,
-    [Provider.rhv]: ProviderGroup.Datacenter,
+    [Provider.redhatvirtualization]: ProviderGroup.Datacenter,
     [Provider.baremetal]: ProviderGroup.Datacenter,
     [Provider.vmware]: ProviderGroup.Datacenter,
     [Provider.hybrid]: ProviderGroup.CentrallyManaged,
@@ -406,7 +406,7 @@ export function CredentialsForm(props: {
                 secret.stringData!.noProxy = noProxy
                 secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 break
-            case Provider.rhv:
+            case Provider.redhatvirtualization:
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.ovirt_url = ovirtUrl
                 secret.stringData!.ovirt_username = ovirtUsername
@@ -441,6 +441,7 @@ export function CredentialsForm(props: {
         // return packProviderConnection(secret)
     }
     const title = isViewing ? name : isEditing ? t('Edit credential') : t('Add credential')
+    console.log('all providers: ', Provider)
     const titleTooltip = (
         <Fragment>
             {t('A credential stores the access credentials and configuration information for creating clusters.')}
@@ -486,6 +487,7 @@ export function CredentialsForm(props: {
                                 options: credentialProviders
                                     .filter((provider) => providerGroup[provider] === ProviderGroup.CloudProvider)
                                     .map((provider) => {
+                                        console.log('cloud provider: ', provider)
                                         return {
                                             id: provider,
                                             value: provider,
@@ -499,6 +501,7 @@ export function CredentialsForm(props: {
                                 options: credentialProviders
                                     .filter((provider) => providerGroup[provider] === ProviderGroup.Datacenter)
                                     .map((provider) => {
+                                        console.log('datacenter provider: ', provider)
                                         return {
                                             id: provider,
                                             value: provider,
@@ -512,6 +515,7 @@ export function CredentialsForm(props: {
                                 options: credentialProviders
                                     .filter((provider) => providerGroup[provider] === ProviderGroup.Automation)
                                     .map((provider) => {
+                                        console.log('automation: ', provider)
                                         return {
                                             id: provider,
                                             value: provider,
@@ -525,6 +529,7 @@ export function CredentialsForm(props: {
                                 options: credentialProviders
                                     .filter((provider) => providerGroup[provider] === ProviderGroup.CentrallyManaged)
                                     .map((provider) => {
+                                        console.log('centrally managed: ', provider)
                                         return {
                                             id: provider,
                                             value: provider,
@@ -574,7 +579,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
-                            Provider.rhv,
+                            Provider.redhatvirtualization,
                             Provider.hybrid,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
@@ -910,7 +915,7 @@ export function CredentialsForm(props: {
                 inputs: [
                     {
                         id: 'ovirt_url',
-                        isHidden: credentialsType !== Provider.rhv,
+                        isHidden: credentialsType !== Provider.redhatvirtualization,
                         type: 'Text',
                         label: t('credentialsForm.ovirt_url.label'),
                         placeholder: t('credentialsForm.ovirt_url.placeholder'),
@@ -923,7 +928,7 @@ export function CredentialsForm(props: {
                     },
                     {
                         id: 'ovirt_username',
-                        isHidden: credentialsType !== Provider.rhv,
+                        isHidden: credentialsType !== Provider.redhatvirtualization,
                         type: 'Text',
                         label: t('credentialsForm.ovirt_username.label'),
                         placeholder: t('credentialsForm.ovirt_username.placeholder'),
@@ -936,7 +941,7 @@ export function CredentialsForm(props: {
                     },
                     {
                         id: 'ovirt_password',
-                        isHidden: credentialsType !== Provider.rhv,
+                        isHidden: credentialsType !== Provider.redhatvirtualization,
                         type: 'Text',
                         label: t('credentialsForm.ovirt_password.label'),
                         placeholder: t('credentialsForm.ovirt_password.placeholder'),
@@ -949,7 +954,7 @@ export function CredentialsForm(props: {
                     },
                     {
                         id: 'ovirt_ca_bundle',
-                        isHidden: credentialsType !== Provider.rhv,
+                        isHidden: credentialsType !== Provider.redhatvirtualization,
                         type: 'TextArea',
                         label: t('credentialsForm.additionalTrustBundle.label'),
                         placeholder: t('credentialsForm.additionalTrustBundle.placeholder'),
@@ -1251,7 +1256,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
-                            Provider.rhv,
+                            Provider.redhatvirtualization,
                             Provider.hybrid,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
@@ -1274,7 +1279,7 @@ export function CredentialsForm(props: {
                             Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
-                            Provider.rhv,
+                            Provider.redhatvirtualization,
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
@@ -1295,7 +1300,7 @@ export function CredentialsForm(props: {
                             Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
-                            Provider.rhv,
+                            Provider.redhatvirtualization,
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
