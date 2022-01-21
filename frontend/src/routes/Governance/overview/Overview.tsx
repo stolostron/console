@@ -5,8 +5,8 @@ import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { NavigationPath } from '../../../NavigationPath'
-import { ClusterPolicyViolationCard, PolicyViolationIcons } from '../components/ClusterPolicyViolations'
-import { PolicyViolationsCard } from '../components/PolicyViolations'
+import { ClusterPolicyViolationCard } from '../components/ClusterPolicyViolations'
+import { PolicyViolationIcons, PolicyViolationsCard } from '../components/PolicyViolations'
 import { IGovernanceData, IPolicyGrouping, risksHasValues } from '../useGovernanceData'
 
 export default function GovernanceOverview(props: { governanceData: IGovernanceData }) {
