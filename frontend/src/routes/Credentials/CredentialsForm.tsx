@@ -407,14 +407,18 @@ export function CredentialsForm(props: {
                 secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.redhatvirtualization:
-                secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.ovirt_url = ovirtUrl
                 secret.stringData!.ovirt_username = ovirtUsername
                 secret.stringData!.ovirt_password = ovirtPassword
                 secret.stringData!.ovirt_ca_bundle = ovirtCABundle
+                secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-privatekey'] = sshPrivatekey
                 secret.stringData!['ssh-publickey'] = sshPublickey
+                secret.stringData!.httpProxy = httpProxy
+                secret.stringData!.httpsProxy = httpsProxy
+                secret.stringData!.noProxy = noProxy
+                secret.stringData!.additionalTrustBundle = additionalTrustBundle
                 break
             case Provider.ansible:
                 secret.stringData!.host = _.trimEnd(ansibleHost, '/')
@@ -1101,6 +1105,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('HTTP Proxy'),
@@ -1121,6 +1126,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('HTTPS Proxy'),
@@ -1141,6 +1147,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('No Proxy'),
@@ -1161,6 +1168,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
                         label: t('Additional trust bundle'),
