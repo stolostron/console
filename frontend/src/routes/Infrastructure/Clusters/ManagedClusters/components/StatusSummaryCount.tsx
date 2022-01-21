@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmCountCardSection, AcmDrawerContext } from '@stolostron/ui-components'
-import { useCallback, useContext, useEffect } from 'react'
+import { useContext, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
@@ -27,9 +27,7 @@ export function StatusSummaryCount() {
     const { t } = useTranslation()
     const { push } = useHistory()
     /* istanbul ignore next */
-    const { data, loading, startPolling } = useQuery(
-        useCallback(() => queryStatusCount(cluster?.name!), [cluster?.name])
-    )
+    const { data, loading, startPolling } = useQuery(() => queryStatusCount(cluster?.name!))
     useEffect(startPolling, [startPolling])
 
     const policyReport = policyReports.filter(

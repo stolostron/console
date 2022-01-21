@@ -41,7 +41,7 @@ import {
     ToggleGroupItem,
 } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { useCallback, useContext, useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
@@ -56,9 +56,9 @@ export function ClusterSetAccessManagement() {
     })
     const [addModalOpen, setAddModalOpen] = useState<boolean>(false)
 
-    const { data, refresh, error } = useQuery(useCallback(() => listClusterRoleBindings(), []))
-    const { data: users } = useQuery(useCallback(() => listUsers(), []))
-    const { data: groups } = useQuery(useCallback(() => listGroups(), []))
+    const { data, refresh, error } = useQuery(listClusterRoleBindings)
+    const { data: users } = useQuery(listUsers)
+    const { data: groups } = useQuery(listGroups)
 
     let clusterRoleBindings: ClusterRoleBinding[] | undefined
     if (data) {
