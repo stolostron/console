@@ -7,6 +7,31 @@ import readline from 'readline'
 
 const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'lib']
 
+async function checkFile(path: string) {
+    try {
+        let found = false
+        const rl = readline
+            .createInterface({
+                input: createReadStream(path),
+                crlfDelay: Infinity,
+            })
+            .on('line', (line) => {
+                if (line.includes('Copyright Contributors to the Open Cluster Management project')) {
+                    found = true
+                    rl.close()
+                }
+            })
+        await events.once(rl, 'close')
+        if (found) process.exitCode = 0
+        else {
+            console.log('error:', path, 'needs Copyright')
+            process.exitCode = 1
+        }
+    } catch (err) {
+        console.error(err)
+    }
+}
+
 export async function checkCopyright(directory: string, extensions = ['.ts', '.tsx', '.js']): Promise<void> {
     const names = await readdir(directory)
     for (const name of names) {
@@ -17,28 +42,7 @@ export async function checkCopyright(directory: string, extensions = ['.ts', '.t
             void checkCopyright(path)
         }
         if (!extensions.find((ext) => name.endsWith(ext))) continue
-        try {
-            let found = false
-            const rl = readline
-                .createInterface({
-                    input: createReadStream(path),
-                    crlfDelay: Infinity,
-                })
-                .on('line', (line) => {
-                    if (line.includes('Copyright Contributors to the Open Cluster Management project')) {
-                        found = true
-                        rl.close()
-                    }
-                })
-            await events.once(rl, 'close')
-            if (found) process.exitCode = 0
-            else {
-                console.log('error:', path, 'needs Copyright')
-                process.exitCode = 1
-            }
-        } catch (err) {
-            console.error(err)
-        }
+        checkFile(path)
     }
 }
 
