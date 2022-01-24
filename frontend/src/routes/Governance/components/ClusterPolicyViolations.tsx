@@ -39,17 +39,17 @@ export function ClusterPolicyViolationLabeledIcons(props: { risks: IPolicyRisks 
             readyStatus={`${risks.synced} compliant`}
             readySubtitle={risks.synced === 1 ? 'cluster' : 'clusters'}
             low={risks.low}
-            lowStatus={`${risks.low} low`}
-            lowSubtitle={`${risks.low === 1 ? 'violation' : 'violations'}`}
+            lowStatus={`${risks.low} low risk`}
+            lowSubtitle={`${risks.low === 1 ? 'cluster' : 'clusters'}`}
             medium={risks.medium}
-            mediumStatus={`${risks.medium} medium`}
-            mediumSubtitle={`${risks.medium === 1 ? 'violation' : 'violations'}`}
+            mediumStatus={`${risks.medium} medium risk`}
+            mediumSubtitle={`${risks.medium === 1 ? 'cluster' : 'clusters'}`}
             high={risks.high}
-            highStatus={`${risks.high} high`}
-            highSubtitle={`${risks.high === 1 ? 'violation' : 'violations'}`}
+            highStatus={`${risks.high} high risk`}
+            highSubtitle={`${risks.high === 1 ? 'cluster' : 'clusters'}`}
             unknown={risks.unknown}
-            unknownStatus={`${risks.unknown} unknown`}
-            unknownSubtitle={`${risks.unknown === 1 ? 'violation' : 'violations'}`}
+            unknownStatus={`${risks.unknown} unknown status`}
+            unknownSubtitle={`${risks.unknown === 1 ? 'cluster' : 'clusters'}`}
         />
     )
 }
