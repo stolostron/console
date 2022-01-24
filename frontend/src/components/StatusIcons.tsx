@@ -37,7 +37,7 @@ export function StatusIcons(props: {
         statuses.push({
             key: 'low',
             count: props.low,
-            icon: <ChevronCircleDownIcon color="var(--pf-global--info-color--100)" />,
+            icon: <ChevronCircleDownIcon color="var(--pf-global--warning-color--100)" />,
             tooltip: props.lowTooltip,
         })
     }
@@ -45,7 +45,15 @@ export function StatusIcons(props: {
         statuses.push({
             key: 'medium',
             count: props.medium,
-            icon: <MinusCircleIcon color="var(--pf-global--warning-color--100)" />,
+            icon: (
+                <span style={{ position: 'relative' }}>
+                    <MinusCircleIcon color="var(--pf-global--warning-color--100)" />
+                    <MinusCircleIcon
+                        color="var(--pf-global--danger-color--100)"
+                        style={{ position: 'absolute', opacity: 0.5, left: 0, top: 2 }}
+                    />
+                </span>
+            ),
             tooltip: props.mediumTooltip,
         })
     }

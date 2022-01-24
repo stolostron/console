@@ -10,6 +10,7 @@ import { IPolicyRisks } from '../useGovernanceData'
 
 export function ClusterPolicyViolationCard(props: { risks: IPolicyRisks }) {
     const history = useHistory()
+    // TODO - use real cluster total from cluster view
     const count = props.risks.synced + props.risks.low + props.risks.medium + props.risks.high + props.risks.unknown
     if (count === 0) {
         return <Fragment />
@@ -23,16 +24,17 @@ export function ClusterPolicyViolationCard(props: { risks: IPolicyRisks }) {
                 history.push(NavigationPath.clusters)
             }}
         >
-            <CardTitle>{count === 1 ? `${count} Cluster with policies` : `${count} Clusters with policies`}</CardTitle>
+            <CardTitle>{count === 1 ? `${count} Cluster` : `${count} Clusters`}</CardTitle>
             <CardBody>
-                <ClusterPolicyViolationLabeledIcons risks={props.risks} />
+                <ClusterPolicyViolationLabeledIcons risks={props.risks} clusterTotal={count} />
             </CardBody>
         </Card>
     )
 }
 
-export function ClusterPolicyViolationLabeledIcons(props: { risks: IPolicyRisks }) {
+export function ClusterPolicyViolationLabeledIcons(props: { risks: IPolicyRisks; clusterTotal: number }) {
     const { risks } = props
+    const unknownCount = props.clusterTotal - risks.low - risks.medium - risks.high - risks.synced
     return (
         <StatusLabeledIcons
             ready={risks.synced}
@@ -48,8 +50,8 @@ export function ClusterPolicyViolationLabeledIcons(props: { risks: IPolicyRisks 
             highStatus={`${risks.high} high risk`}
             highSubtitle={`${risks.high === 1 ? 'cluster' : 'clusters'}`}
             unknown={risks.unknown}
-            unknownStatus={`${risks.unknown} unknown status`}
-            unknownSubtitle={`${risks.unknown === 1 ? 'cluster' : 'clusters'}`}
+            unknownStatus={`${unknownCount} unknown status`}
+            unknownSubtitle={`${unknownCount === 1 ? 'cluster' : 'clusters'}`}
         />
     )
 }
