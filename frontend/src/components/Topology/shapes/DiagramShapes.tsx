@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 export const DiagramShapes = () => (
     <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="0" height="0">
         <symbol viewBox="0 0 41.5 41.3" id="diagramShapes_circle">

@@ -15,7 +15,7 @@
         "frontend": "cd frontend && npm start",
         "plugin:watch": "cd frontend && npm run plugin:watch",
         "plugin:serve": "cd frontend && npm run plugin:serve",
-        "test": "concurrently --kill-others-on-fail npm:frontend:test npm:backend:test -n frontend,backend -c green,blue",
+        "test": "concurrently --kill-others-on-fail npm:frontend:test npm:backend:test npm:copyright:check -n frontend,backend -c green,blue",
         "frontend:test": "cd frontend && npm test",
         "backend:test": "cd backend && npm test",
         "build": "concurrently npm:frontend:build npm:backend:build -n frontend,backend -c green,blue",

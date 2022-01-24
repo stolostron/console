@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { ReactNode } from 'react'
 export default function Topology(props: {
     title?: string

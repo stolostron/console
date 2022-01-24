@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { addDiagramDetails } from '../helpers/diagram-helpers'
 import { getClusterName, nodeMustHavePods, isDeployableResource } from '../helpers/diagram-helpers-utils'
 import { computeNodeStatus } from '../helpers/diagram-helpers'
