@@ -33,6 +33,12 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                 pullSecret: btoa(values.pullSecret),
             }
         }
+        if (values.enableNtpSources) {
+            control.active = {
+                ...control.active,
+                additionalNtpSources: values.additionalNtpSources.split(',').map((s) => s.trim()),
+            }
+        }
         handleChange(control)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])

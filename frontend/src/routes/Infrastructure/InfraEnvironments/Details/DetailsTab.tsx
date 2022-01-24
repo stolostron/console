@@ -10,6 +10,7 @@ import {
     getAIConfigMap,
     savePullSecret,
     saveSSHKey,
+    onEditNtpSources,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 
 const { EnvironmentDetails, EnvironmentErrors } = CIM
@@ -35,6 +36,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv, infraAgents, bareMeta
                             fetchSecret={fetchSecret}
                             onEditPullSecret={savePullSecret}
                             onEditSSHKey={saveSSHKey}
+                            onEditNtpSources={onEditNtpSources}
                             hasAgents={!!infraAgents.length}
                             hasBMHs={!!bareMetalHosts.length}
                         />

@@ -677,3 +677,23 @@ export const savePullSecret = (values: any, infraEnv: CIM.InfraEnvK8sResource) =
         ]).promise
     }
 }
+
+export const onEditNtpSources = (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
+    const patches: any[] = []
+    if (values.enableNtpSources === 'auto') {
+        if (infraEnv.spec?.additionalNTPSources) {
+            patches.push({
+                op: 'remove',
+                path: '/spec/additionalNTPSources',
+            })
+        }
+    } else {
+        appendPatch(
+            patches,
+            '/spec/additionalNTPSources',
+            (values.additionalNtpSources as string).split(',').map((s) => s.trim()),
+            infraEnv.spec.additionalNTPSources
+        )
+    }
+    return patchResource(infraEnv, patches).promise
+}
