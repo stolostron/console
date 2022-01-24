@@ -23,7 +23,7 @@ import { useContext, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { clusterPoolsState, managedClusterSetsState, managedClustersState } from '../../../../../../atoms'
+import { managedClusterSetsState, managedClustersState } from '../../../../../../atoms'
 import { BulkActionModel, errorIsNot } from '../../../../../../components/BulkActionModel'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -63,19 +63,19 @@ export function ClusterSetManageResourcesContent() {
     const { t } = useTranslation(['cluster', 'common'])
     const history = useHistory()
     const { clusterSet } = useContext(ClusterSetContext)
-    const [managedClusters, clusterPools, managedClusterSets] = useRecoilValue(
-        waitForAll([managedClustersState, clusterPoolsState, managedClusterSetsState])
+    const [managedClusters, managedClusterSets] = useRecoilValue(
+        waitForAll([managedClustersState, managedClusterSetsState])
     )
     const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
     const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
     const [selectedResources, setSelectedResources] = useState<IResource[]>(
-        [...managedClusters, ...clusterPools].filter(
+        [...managedClusters].filter(
             (resource) => resource.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
         )
     )
     const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false)
 
-    const availableResources = [...managedClusters, ...clusterPools].filter((resource) => {
+    const availableResources = [...managedClusters].filter((resource) => {
         const clusterSet = resource.metadata.labels?.[managedClusterSetLabel]
         return (
             clusterSet === undefined ||
