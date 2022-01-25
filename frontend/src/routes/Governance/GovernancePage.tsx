@@ -22,9 +22,6 @@ export default function GovernancePage() {
     useEffect(() => setRoute(AcmRoute.Governance), [setRoute])
 
     const [policies] = useRecoilState(policiesState)
-    const [policysets] = useRecoilState(policySetsState)
-    console.log('poliies from gp', policies)
-    console.log('policysets from gp', policysets)
 
     const [placementBindings] = useRecoilState(placementBindingsState)
     // const [placementRules] = useRecoilState(placementRulesState)
@@ -79,7 +76,7 @@ export default function GovernancePage() {
                         <Route
                             exact
                             path={NavigationPath.governance}
-                            render={() => <GovernanceOverview governanceData={governanceData} policies={policies} />}
+                            render={() => <GovernanceOverview governanceData={governanceData}/>}
                         />
                         <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
                         <Route
