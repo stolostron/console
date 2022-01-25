@@ -69,26 +69,26 @@ export function ClusterPolicyViolationIcons(props: { risks: IPolicyRisks }) {
             low={risks.low}
             lowTooltip={
                 risks.low == 1
-                    ? '{0} cluster with low policy violations'.replace('{0}', risks.low.toString())
-                    : '{0} clusters low with low policy violations'.replace('{0}', risks.low.toString())
+                    ? '{0} low risk cluster'.replace('{0}', risks.low.toString())
+                    : '{0} low risk clusters'.replace('{0}', risks.low.toString())
             }
             medium={risks.medium}
             mediumTooltip={
                 risks.medium == 1
-                    ? '{0} cluster with medium policy violations'.replace('{0}', risks.medium.toString())
-                    : '{0} clusters low with medium policy violations'.replace('{0}', risks.medium.toString())
+                    ? '{0} medium risk cluster'.replace('{0}', risks.medium.toString())
+                    : '{0} medium risk clusters'.replace('{0}', risks.medium.toString())
             }
             high={risks.high}
             highTooltip={
                 risks.high == 1
-                    ? '{0} cluster with high policy violations'.replace('{0}', risks.high.toString())
-                    : '{0} clusters low with high policy violations'.replace('{0}', risks.high.toString())
+                    ? '{0} high risk cluster'.replace('{0}', risks.high.toString())
+                    : '{0} high risk clusters'.replace('{0}', risks.high.toString())
             }
             unknown={risks.unknown}
             unknownTooltip={
                 risks.unknown == 1
-                    ? '{0} cluster with unknown policy violations'.replace('{0}', risks.unknown.toString())
-                    : '{0} clusters low with unknown policy violations'.replace('{0}', risks.unknown.toString())
+                    ? '{0} cluster with unknown risk status'.replace('{0}', risks.unknown.toString())
+                    : '{0} clusters with unknown risk status'.replace('{0}', risks.unknown.toString())
             }
         />
     )
