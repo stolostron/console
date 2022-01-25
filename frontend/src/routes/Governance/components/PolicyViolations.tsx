@@ -39,13 +39,13 @@ export function PolicyViolationLabeledIcons(props: { risks: IPolicyRisks }) {
             readyStatus={`${risks.synced} compliant`}
             readySubtitle={risks.synced === 1 ? 'policy' : 'policies'}
             low={risks.low}
-            lowStatus={`${risks.low} low`}
+            lowStatus={`${risks.low} low risk`}
             lowSubtitle={`${risks.low === 1 ? 'violation' : 'violations'}`}
             medium={risks.medium}
-            mediumStatus={`${risks.medium} medium`}
+            mediumStatus={`${risks.medium} medium risk`}
             mediumSubtitle={`${risks.medium === 1 ? 'violation' : 'violations'}`}
             high={risks.high}
-            highStatus={`${risks.high} high`}
+            highStatus={`${risks.high} high risk`}
             highSubtitle={`${risks.high === 1 ? 'violation' : 'violations'}`}
             unknown={risks.unknown}
             unknownStatus={`${risks.unknown} unknown`}

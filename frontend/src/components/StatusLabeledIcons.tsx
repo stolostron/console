@@ -1,8 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Flex, FlexItem, Stack } from '@patternfly/react-core'
-import { ExclamationTriangleIcon, QuestionCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'
-import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon'
+import {
+    CheckCircleIcon,
+    ChevronCircleDownIcon,
+    ChevronCircleUpIcon,
+    MinusCircleIcon,
+    QuestionCircleIcon,
+} from '@patternfly/react-icons'
 import { ReactNode } from 'react'
 
 export function StatusLabeledIcons(props: {
@@ -38,7 +43,7 @@ export function StatusLabeledIcons(props: {
         statuses.push({
             key: 'low',
             count: props.low,
-            icon: <CheckCircleIcon color="var(--pf-global--info-color--100)" />,
+            icon: <ChevronCircleDownIcon color="var(--pf-global--warning-color--100)" />,
             status: props.lowStatus,
             subtitle: props.lowSubtitle,
         })
@@ -47,7 +52,15 @@ export function StatusLabeledIcons(props: {
         statuses.push({
             key: 'medium',
             count: props.medium,
-            icon: <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />,
+            icon: (
+                <span style={{ position: 'relative' }}>
+                    <MinusCircleIcon color="var(--pf-global--warning-color--100)" />
+                    <MinusCircleIcon
+                        color="var(--pf-global--danger-color--100)"
+                        style={{ position: 'absolute', opacity: 0.5, left: 0, top: 2 }}
+                    />
+                </span>
+            ),
             status: props.mediumStatus,
             subtitle: props.mediumSubtitle,
         })
@@ -56,7 +69,7 @@ export function StatusLabeledIcons(props: {
         statuses.push({
             key: 'high',
             count: props.high,
-            icon: <TimesCircleIcon color="var(--pf-global--danger-color--100)" />,
+            icon: <ChevronCircleUpIcon color="var(--pf-global--danger-color--100)" />,
             status: props.highStatus,
             subtitle: props.highSubtitle,
         })

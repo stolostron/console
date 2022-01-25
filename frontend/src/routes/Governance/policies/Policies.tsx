@@ -75,7 +75,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             //     search: 'metadata.namespace',
             // },
             {
-                header: t('Clusters'),
+                header: t('Cluster risks'),
                 cell: (policy) => {
                     if (policy.status?.status) {
                         return <ClusterPolicyViolationIcons risks={policy.clusterRisks} />

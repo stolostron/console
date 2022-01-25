@@ -1,8 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Divider, Flex, FlexItem, Tooltip } from '@patternfly/react-core'
-import { ExclamationTriangleIcon, QuestionCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'
-import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon'
+import {
+    CheckCircleIcon,
+    ChevronCircleDownIcon,
+    ChevronCircleUpIcon,
+    MinusCircleIcon,
+    QuestionCircleIcon,
+} from '@patternfly/react-icons'
 import { Fragment, ReactNode } from 'react'
 
 export function StatusIcons(props: {
@@ -32,7 +37,7 @@ export function StatusIcons(props: {
         statuses.push({
             key: 'low',
             count: props.low,
-            icon: <CheckCircleIcon color="var(--pf-global--info-color--100)" />,
+            icon: <ChevronCircleDownIcon color="var(--pf-global--warning-color--100)" />,
             tooltip: props.lowTooltip,
         })
     }
@@ -40,7 +45,15 @@ export function StatusIcons(props: {
         statuses.push({
             key: 'medium',
             count: props.medium,
-            icon: <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />,
+            icon: (
+                <span style={{ position: 'relative' }}>
+                    <MinusCircleIcon color="var(--pf-global--warning-color--100)" />
+                    <MinusCircleIcon
+                        color="var(--pf-global--danger-color--100)"
+                        style={{ position: 'absolute', opacity: 0.5, left: 0, top: 2 }}
+                    />
+                </span>
+            ),
             tooltip: props.mediumTooltip,
         })
     }
@@ -48,7 +61,7 @@ export function StatusIcons(props: {
         statuses.push({
             key: 'high',
             count: props.high,
-            icon: <TimesCircleIcon color="var(--pf-global--danger-color--100)" />,
+            icon: <ChevronCircleUpIcon color="var(--pf-global--danger-color--100)" />,
             tooltip: props.highTooltip,
         })
     }
