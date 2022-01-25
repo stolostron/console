@@ -25,7 +25,7 @@ export default function GovernancePage() {
     const [policysets] = useRecoilState(policySetsState)
     console.log('poliies from gp', policies)
     console.log('policysets from gp', policysets)
-    
+
     const [placementBindings] = useRecoilState(placementBindingsState)
     // const [placementRules] = useRecoilState(placementRulesState)
     const governanceData = useGovernanceData(
@@ -55,19 +55,17 @@ export default function GovernancePage() {
                             </AcmSecondaryNavItem>
                             {/* {policies.length > 0 || policysets.length > 0 ? (
                                 <> */}
-                                    <AcmSecondaryNavItem
-                                        isActive={
-                                            !isOverview && location.pathname.startsWith(NavigationPath.policySets)
-                                        }
-                                    >
-                                        <Link to={NavigationPath.policySets}>{t('Policy sets')}</Link>
-                                    </AcmSecondaryNavItem>
-                                    <AcmSecondaryNavItem
-                                        isActive={!isOverview && location.pathname.startsWith(NavigationPath.policies)}
-                                    >
-                                        <Link to={NavigationPath.policies}>{t('Policies')}</Link>
-                                    </AcmSecondaryNavItem>
-                                {/* </>
+                            <AcmSecondaryNavItem
+                                isActive={!isOverview && location.pathname.startsWith(NavigationPath.policySets)}
+                            >
+                                <Link to={NavigationPath.policySets}>{t('Policy sets')}</Link>
+                            </AcmSecondaryNavItem>
+                            <AcmSecondaryNavItem
+                                isActive={!isOverview && location.pathname.startsWith(NavigationPath.policies)}
+                            >
+                                <Link to={NavigationPath.policies}>{t('Policies')}</Link>
+                            </AcmSecondaryNavItem>
+                            {/* </>
                             ) : null} */}
                         </AcmSecondaryNav>
                     }

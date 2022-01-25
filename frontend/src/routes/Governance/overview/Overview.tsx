@@ -5,7 +5,10 @@ import { AcmMasonry } from '../../../components/AcmMasonry'
 import { ClusterPolicyViolationCard } from '../components/ClusterPolicyViolations'
 import { PolicyViolationIcons, PolicyViolationsCard } from '../components/PolicyViolations'
 import { IGovernanceData, IPolicyGrouping, risksHasValues } from '../useGovernanceData'
-import { GovernanceCreatePolicyEmptyState, GovernanceManagePoliciesEmptyState } from '../components/GovernanceEmptyState'
+import {
+    GovernanceCreatePolicyEmptyState,
+    GovernanceManagePoliciesEmptyState,
+} from '../components/GovernanceEmptyState'
 import { Policy } from '../../../resources'
 
 export default function GovernanceOverview(props: { governanceData: IGovernanceData; policies: Policy[] }) {
