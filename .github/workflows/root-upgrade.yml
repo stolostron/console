@@ -4,6 +4,7 @@ on:
     schedule:
         - cron: '0 12 * * 1'
 jobs:
+    if: (github.event_name == 'schedule' && github.repository == 'stolostron/console') || (github.event_name != 'schedule')
     npm-check-updates:
         runs-on: ubuntu-latest
         steps:
