@@ -32,7 +32,7 @@ const controlDataRHV = [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'rhv',
+        providerId: 'redhatvirtualization',
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: true,
