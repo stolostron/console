@@ -202,6 +202,15 @@ export default function CreateClusterPage() {
                     const ansibleSecret = ansibleCredentials.find(
                         (secret) => secret.metadata.name === currentTemplate?.spec?.install?.towerAuthSecret
                     )
+                    
+                    if (ansibleSecret === undefined) {
+                        setCreationStatus({
+                            status: 'ERROR',
+                            messages: ['Your ansible credential secret has been destroyed, create a new Automation template with an existing Ansible automation credential to proceed.'],
+                        }) 
+                        return status;
+                    }
+                    
                     const ansibleSecretMutable: Secret = JSON.parse(JSON.stringify(ansibleSecret))
                     ansibleSecretMutable!.metadata.name = 'toweraccess'
                     ansibleSecretMutable!.metadata.namespace = createResources[0].metadata.namespace
