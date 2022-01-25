@@ -4,7 +4,7 @@ import { AcmPage, AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem 
 import { Fragment, ReactNode, Suspense, useEffect, useState } from 'react'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState, placementBindingsState, policiesState } from '../../atoms'
+import { acmRouteState, placementBindingsState, policiesState, policySetsState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { PageContext } from '../Infrastructure/Clusters/ClustersPage'
@@ -22,6 +22,10 @@ export default function GovernancePage() {
     useEffect(() => setRoute(AcmRoute.Governance), [setRoute])
 
     const [policies] = useRecoilState(policiesState)
+    const [policysets] = useRecoilState(policySetsState)
+    console.log('poliies from gp', policies)
+    console.log('policysets from gp', policysets)
+    
     const [placementBindings] = useRecoilState(placementBindingsState)
     // const [placementRules] = useRecoilState(placementRulesState)
     const governanceData = useGovernanceData(
@@ -32,6 +36,7 @@ export default function GovernancePage() {
     )
 
     const isOverview = location.pathname == NavigationPath.governance
+
     return (
         <AcmPage
             hasDrawer
@@ -48,16 +53,22 @@ export default function GovernancePage() {
                             <AcmSecondaryNavItem isActive={isOverview}>
                                 <Link to={NavigationPath.governance}>{t('Overview')}</Link>
                             </AcmSecondaryNavItem>
-                            <AcmSecondaryNavItem
-                                isActive={!isOverview && location.pathname.startsWith(NavigationPath.policySets)}
-                            >
-                                <Link to={NavigationPath.policySets}>{t('Policy sets')}</Link>
-                            </AcmSecondaryNavItem>
-                            <AcmSecondaryNavItem
-                                isActive={!isOverview && location.pathname.startsWith(NavigationPath.policies)}
-                            >
-                                <Link to={NavigationPath.policies}>{t('Policies')}</Link>
-                            </AcmSecondaryNavItem>
+                            {/* {policies.length > 0 || policysets.length > 0 ? (
+                                <> */}
+                                    <AcmSecondaryNavItem
+                                        isActive={
+                                            !isOverview && location.pathname.startsWith(NavigationPath.policySets)
+                                        }
+                                    >
+                                        <Link to={NavigationPath.policySets}>{t('Policy sets')}</Link>
+                                    </AcmSecondaryNavItem>
+                                    <AcmSecondaryNavItem
+                                        isActive={!isOverview && location.pathname.startsWith(NavigationPath.policies)}
+                                    >
+                                        <Link to={NavigationPath.policies}>{t('Policies')}</Link>
+                                    </AcmSecondaryNavItem>
+                                {/* </>
+                            ) : null} */}
                         </AcmSecondaryNav>
                     }
                     actions={actions}
@@ -70,7 +81,7 @@ export default function GovernancePage() {
                         <Route
                             exact
                             path={NavigationPath.governance}
-                            render={() => <GovernanceOverview governanceData={governanceData} />}
+                            render={() => <GovernanceOverview governanceData={governanceData} policies={policies} />}
                         />
                         <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
                         <Route

@@ -29,4 +29,6 @@ export const DOC_LINKS = {
     MACHINE_POOLS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#resizing-a-cluster`,
     MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/managing-applications`,
     ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#ansible-config-cluster`,
+    POLICIES: `${DOC_BASE_PATH}/governance/governance#policy-overview`,     /* TODO - UPDATE LINK */
+    POLICY_SETS: `${DOC_BASE_PATH}/governance/governance#policy-overview`,  /* TODO - UPDATE LINK */
 }
