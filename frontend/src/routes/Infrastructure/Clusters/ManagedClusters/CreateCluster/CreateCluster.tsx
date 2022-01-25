@@ -295,8 +295,14 @@ export default function CreateClusterPage() {
                 })
                 break
             case 'templateName':
-                control.available = curatorTemplates.map((template) => template.metadata.name)
-                setAvailableTemplates(control, curatorTemplates)
+                control.available = curatorTemplates.map((template) => {
+                    let ansibleSecret = ansibleCredentials.find(
+                        (secret) => secret.metadata.name === template?.spec?.install?.towerAuthSecret
+                    )
+                    if (ansibleSecret !== undefined) {
+                        return template.metadata.name;
+                    }
+                })
                 break
             case 'singleNodeFeatureFlag':
                 if (settings.singleNodeOpenshift === 'enabled') {
