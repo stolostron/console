@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    ClusterDeployment,
     IResource,
     ManagedClusterKind,
     managedClusterSetLabel,
@@ -62,7 +63,10 @@ export function ClusterSetManageResourcesPage() {
 export function ClusterSetManageResourcesContent() {
     const { t } = useTranslation(['cluster', 'common'])
     const history = useHistory()
-    const { clusterSet } = useContext(ClusterSetContext)
+    const { clusterSet, clusterDeployments } = useContext(ClusterSetContext)
+    const deploymentDictionary = new Map<string | undefined, ClusterDeployment>()
+    clusterDeployments?.forEach((deployment) => deploymentDictionary.set(deployment.metadata.name, deployment))
+
     const [managedClusters, managedClusterSets] = useRecoilValue(
         waitForAll([managedClustersState, managedClusterSetsState])
     )
@@ -77,16 +81,19 @@ export function ClusterSetManageResourcesContent() {
 
     const availableResources = [...managedClusters].filter((resource) => {
         const clusterSet = resource.metadata.labels?.[managedClusterSetLabel]
+
         return (
-            clusterSet === undefined ||
-            canJoinClusterSetList?.includes(clusterSet) ||
-            // hack because controller does not remove clusterset labels when a ManagedClusterSet is deleted
-            // since we query the rbac list against the actual available ManagedClusterSets
-            // the cluster set specified in the label is not among the list
-            (!canJoinClusterSetList?.includes(clusterSet) &&
-                !managedClusterSets.find(
-                    (mcs) => mcs.metadata.name === resource.metadata.labels?.[managedClusterSetLabel]
-                ))
+            // check deployment for a clusterpool claim reference, we cannot change the set of claimed clusters
+            deploymentDictionary.get(resource.metadata.name)?.spec?.clusterPoolRef?.claimName == undefined &&
+            (clusterSet === undefined ||
+                canJoinClusterSetList?.includes(clusterSet) ||
+                // hack because controller does not remove clusterset labels when a ManagedClusterSet is deleted
+                // since we query the rbac list against the actual available ManagedClusterSets
+                // the cluster set specified in the label is not among the list
+                (!canJoinClusterSetList?.includes(clusterSet) &&
+                    !managedClusterSets.find(
+                        (mcs) => mcs.metadata.name === resource.metadata.labels?.[managedClusterSetLabel]
+                    )))
         )
     })
     const notSelectedResources = availableResources.filter(

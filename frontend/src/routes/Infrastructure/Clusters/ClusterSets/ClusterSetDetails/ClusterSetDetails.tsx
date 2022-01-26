@@ -3,6 +3,7 @@
 import {
     Cluster,
     ClusterPool,
+    ClusterDeployment,
     ManagedClusterAddOn,
     ManagedClusterSet,
     ManagedClusterSetBinding,
@@ -25,6 +26,7 @@ import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLoca
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import {
     acmRouteState,
+    clusterDeploymentsState,
     clusterPoolsState,
     managedClusterAddonsState,
     managedClusterSetsState,
@@ -49,12 +51,14 @@ export const ClusterSetContext = createContext<{
     readonly clusterPools: ClusterPool[] | undefined
     readonly submarinerAddons: ManagedClusterAddOn[] | undefined
     readonly clusterSetBindings: ManagedClusterSetBinding[] | undefined
+    readonly clusterDeployments: ClusterDeployment[] | undefined
 }>({
     clusterSet: undefined,
     clusters: undefined,
     clusterPools: undefined,
     submarinerAddons: undefined,
     clusterSetBindings: undefined,
+    clusterDeployments: undefined,
 })
 
 export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: string }>) {
@@ -67,6 +71,8 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const [managedClusterSets, managedClusterAddons] = useRecoilValue(
         waitForAll([managedClusterSetsState, managedClusterAddonsState])
     )
+
+    const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
 
     const clusterSet = managedClusterSets.find((mcs) => mcs.metadata.name === match.params.id)
     const prevClusterSet = usePrevious(clusterSet)
@@ -144,6 +150,7 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
                 clusterPools: clusterSetClusterPools,
                 submarinerAddons,
                 clusterSetBindings,
+                clusterDeployments,
             }}
         >
             <Suspense fallback={<Fragment />}>
