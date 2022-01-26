@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card, CardBody, PageSection, Split, SplitItem, Stack, Title } from '@patternfly/react-core'
-import { AcmButton, AcmEmptyState, AcmTable } from '@stolostron/ui-components'
+import { AcmButton, AcmEmptyState } from '@stolostron/ui-components'
 import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { AcmMasonry } from '../../../components/AcmMasonry'
@@ -73,8 +73,6 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
                         </Card>
                     )
                 })}
-
-                <AcmTable></AcmTable>
             </Stack>
         </PageSection>
     )
