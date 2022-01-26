@@ -413,7 +413,7 @@ export default function CreateClusterPage() {
 
     const onControlSelect = (control: any) => {
         if (control.controlId === 'infrastructure') {
-            if (control.active?.includes('AI') && !isInfraEnvAvailable) {
+            if (control.active?.includes('CIM') && !isInfraEnvAvailable) {
                 setWarning({
                     title: t('cim.infra.missing.warning.title'),
                     text: t('cim.infra.missing.warning.text'),
