@@ -26,14 +26,20 @@ const AGENT_INSTALLING = 'It is not possible to remove a host which is being ins
 const CLUSTER_INSTALLING = 'It is not possible to remove a node from a cluster during installation.'
 const UNSUPPORTED_MASTER_COUNT = 'It is not possible to remove control plane node from an installed cluster.'
 const UNSUPPORTED_WORKER_COUNT = 'This host cannot be removed as there are only 2 workers in the cluster.'
-const AI_FLOW = 'This host is discovered for a single cluster, delete it instead.'
+const AI_FLOW = '' // 'This host is discovered for a single cluster, delete it instead.'
 
 export const useCanUnbindAgent = (singleInfraEnv?: CIM.InfraEnvK8sResource) => {
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
     const isAIFlow = isAIFlowInfraEnv(singleInfraEnv)
 
     const callback = useCallback(
-        (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource): [enabled: boolean, reason: string] => {
+        (
+            agent?: CIM.AgentK8sResource,
+            bmh?: CIM.BareMetalHostK8sResource
+        ): [
+            enabled: boolean,
+            reason: string /* The action is expected to be not rendered when (!enabled && !reason) */
+        ] => {
             if (isAIFlow) {
                 // Unbind is for CIM flow only. Delete Agent otherwise.
                 return [false, AI_FLOW]
@@ -85,8 +91,8 @@ export const useCanUnbindAgent = (singleInfraEnv?: CIM.InfraEnvK8sResource) => {
 
                 return [true, '']
             } else if (bmh) {
-                // TODO(mlibra): To be done
-                return [true, '']
+                // Should not happen
+                return [false, 'Bare Metal Host can not be removed from cluster.']
             }
 
             return [false, 'No agent selected.']
