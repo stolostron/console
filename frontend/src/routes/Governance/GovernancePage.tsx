@@ -22,6 +22,7 @@ export default function GovernancePage() {
     useEffect(() => setRoute(AcmRoute.Governance), [setRoute])
 
     const [policies] = useRecoilState(policiesState)
+
     const [placementBindings] = useRecoilState(placementBindingsState)
     // const [placementRules] = useRecoilState(placementRulesState)
     const governanceData = useGovernanceData(
@@ -32,6 +33,7 @@ export default function GovernancePage() {
     )
 
     const isOverview = location.pathname == NavigationPath.governance
+
     return (
         <AcmPage
             hasDrawer
@@ -48,6 +50,8 @@ export default function GovernancePage() {
                             <AcmSecondaryNavItem isActive={isOverview}>
                                 <Link to={NavigationPath.governance}>{t('Overview')}</Link>
                             </AcmSecondaryNavItem>
+                            {/* {policies.length > 0 || policysets.length > 0 ? (
+                                <> */}
                             <AcmSecondaryNavItem
                                 isActive={!isOverview && location.pathname.startsWith(NavigationPath.policySets)}
                             >
@@ -58,6 +62,8 @@ export default function GovernancePage() {
                             >
                                 <Link to={NavigationPath.policies}>{t('Policies')}</Link>
                             </AcmSecondaryNavItem>
+                            {/* </>
+                            ) : null} */}
                         </AcmSecondaryNav>
                     }
                     actions={actions}

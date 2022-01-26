@@ -20,6 +20,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
 import { patchResource, Policy, PolicyApiVersion, PolicyKind, ResourceErrorCode } from '../../../resources'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
+import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
 import { IGovernanceData, IPolicy } from '../useGovernanceData'
 
 export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
@@ -770,6 +771,14 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             }
             return false
         })
+    }
+
+    if (!governanceData.policies || governanceData.policies.length === 0) {
+        return (
+            <PageSection isWidthLimited>
+                <GovernanceCreatePolicyEmptyState />
+            </PageSection>
+        )
     }
 
     return (
