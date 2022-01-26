@@ -83,7 +83,7 @@ export function ClusterSetManageResourcesContent() {
         const clusterSet = resource.metadata.labels?.[managedClusterSetLabel]
 
         return (
-            // check deployment for a clusterpool claim reference, we cannot change the set of claimed clusters
+            // check deployment for a clusterpool claim reference, as we cannot change the set of claimed clusters
             deploymentDictionary.get(resource.metadata.name)?.spec?.clusterPoolRef?.claimName == undefined &&
             (clusterSet === undefined ||
                 canJoinClusterSetList?.includes(clusterSet) ||
