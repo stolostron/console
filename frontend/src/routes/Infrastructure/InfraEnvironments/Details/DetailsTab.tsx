@@ -5,7 +5,12 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue } from 'recoil'
 import { configMapsState } from '../../../../atoms'
 import { DOC_VERSION } from '../../../../lib/doc-util'
-import { fetchSecret, getAIConfigMap, savePullSecret, saveSSHKey } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
+import {
+    fetchSecret,
+    getAIConfigMap,
+    savePullSecret,
+    saveSSHKey,
+} from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 
 const { EnvironmentDetails, EnvironmentErrors } = CIM
 

@@ -642,7 +642,7 @@ export const getOnSaveISOParams =
         // quit anyway ...
     }
 
-export const saveSSHKey = (values: CIM.EditSSHKeyFormikValues, infraEnv: CIM.InfraEnvK8sResource) => {
+export const saveSSHKey = async (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
     const patches: any[] = []
     appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey, infraEnv.spec.sshAuthorizedKey)
     if (patches.length) {
@@ -650,31 +650,30 @@ export const saveSSHKey = (values: CIM.EditSSHKeyFormikValues, infraEnv: CIM.Inf
     }
 }
 
-export const savePullSecret = (values: CIM.EditPullSecretFormikValues, infraEnv: CIM.InfraEnvK8sResource) => {
+export const savePullSecret = (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
     const secret = {
         apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-        namespace: infraEnv.metadata.namespace,
-        name: infraEnv.spec?.pullSecretRef?.name
-    }};
+        kind: 'Secret',
+        metadata: {
+            namespace: infraEnv.metadata.namespace,
+            name: infraEnv.spec?.pullSecretRef?.name,
+        },
+    }
     if (values.createSecret) {
         return createResource<any>({
             ...secret,
             data: {
                 '.dockerconfigjson': btoa(values.pullSecret),
             },
-            type: 'kubernetes.io/dockerconfigjson'
-        },).promise
+            type: 'kubernetes.io/dockerconfigjson',
+        }).promise
     } else {
-        return patchResource(
-            secret,
-            [{
+        return patchResource(secret, [
+            {
                 op: 'replace',
                 path: '/data/.dockerconfigjson',
                 value: btoa(values.pullSecret),
-            }]).promise
+            },
+        ]).promise
     }
 }
-
-
