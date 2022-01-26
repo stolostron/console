@@ -16,7 +16,10 @@ import '../../ManagedClusters/CreateCluster/style.css'
 
 // template/data
 import { getControlData } from './controlData/ControlData'
-import { setAvailableConnections } from '../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
+import {
+    setAvailableConnections,
+    arrayItemHasKey,
+} from '../../ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import hiveTemplate from './templates/hive-template.hbs'
 import { secretsState } from '../../../../../atoms'
 
@@ -38,6 +41,8 @@ const Portals = Object.freeze({
     createBtn: 'create-button-portal-id',
     cancelBtn: 'cancel-button-portal-id',
 })
+
+Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
 
 export default function CreateClusterPoolPage() {
     const { t } = useTranslation()
