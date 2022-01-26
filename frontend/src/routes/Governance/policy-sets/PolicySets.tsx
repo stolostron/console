@@ -31,6 +31,7 @@ import { policySetsState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 // import { deleteResource } from '../../../resources'
 import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../resources/policy-set'
+import { GovernanceCreatePolicysetEmptyState } from '../components/GovernanceEmptyState'
 import CardViewToolbarFilter from './components/CardViewToolbarFilter'
 import CardViewToolbarSearch from './components/CardViewToolbarSearch'
 import { PolicySetDetailSidebar } from './components/PolicySetDetailSidebar'
@@ -62,6 +63,7 @@ function policyUnknownFilterFn(policySet: PolicySet) {
 export default function PolicySetsPage() {
     const { t } = useTranslation()
     const [policySets] = useRecoilState(policySetsState)
+
     // const [placement] = useRecoilState(placementsState) to be used for getting cluster selector
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const [cardOpenIdx, setCardOpenIdx] = useState<number>()
@@ -365,22 +367,9 @@ export default function PolicySetsPage() {
 
     if (!policySets || policySets.length === 0) {
         return (
-            <AcmEmptyState
-                title={t('No resources found')}
-                message={t('You do not have any PolicySets')}
-                showIcon={true}
-                action={
-                    <Button
-                        id={'create-policy-set'}
-                        key={'create-policy-set'}
-                        // onClick={() => {})} // TODO create PolicySet wizard
-                        isDisabled={true} // TODO create PolicySet wizard
-                        variant={'primary'}
-                    >
-                        {t('Create policy set')}
-                    </Button>
-                }
-            />
+            <PageSection isWidthLimited>
+                <GovernanceCreatePolicysetEmptyState />
+            </PageSection>
         )
     }
 
