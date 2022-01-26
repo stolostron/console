@@ -2,9 +2,8 @@
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as frontend-packages
 WORKDIR /app/frontend
-COPY ./frontend/package-lock.json ./frontend/package.json ./
-RUN npm ci --no-optional
 COPY ./frontend .
+RUN npm ci --no-optional
 
 FROM frontend-packages as frontend
 RUN npm run build
@@ -14,19 +13,16 @@ RUN npm run plugin:build
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as backend
 WORKDIR /app/backend
-COPY ./backend/package-lock.json ./backend/package.json ./
-RUN npm ci --no-optional
 COPY ./backend .
+RUN npm ci --no-optional
 RUN npm run build
-RUN npx rollup --format es --file backend.mjs -- build/lib/main.js
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --no-optional --only=production
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal
-COPY --from=registry.ci.openshift.org/stolostron/builder:nodejs14-linux /usr/bin/node /usr/bin/node
+FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-14
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules
