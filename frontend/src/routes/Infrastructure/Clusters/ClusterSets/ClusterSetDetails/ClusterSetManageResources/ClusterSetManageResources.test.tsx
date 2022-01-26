@@ -193,6 +193,7 @@ const Component = () => (
                 clusterPools: [],
                 submarinerAddons: undefined,
                 clusterSetBindings: undefined,
+                clusterDeployments: undefined,
             }}
         >
             <MemoryRouter
