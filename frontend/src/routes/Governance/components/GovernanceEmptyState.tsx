@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { TextContent, Text, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton, AcmEmptyState } from '@stolostron/ui-components'

@@ -1,38 +1,31 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card, CardBody, PageSection, Split, SplitItem, Stack, Title } from '@patternfly/react-core'
+import { AcmButton, AcmEmptyState, AcmTable } from '@stolostron/ui-components'
 import { Fragment } from 'react'
+import { Link } from 'react-router-dom'
 import { AcmMasonry } from '../../../components/AcmMasonry'
+import { NavigationPath } from '../../../NavigationPath'
 import { ClusterPolicyViolationCard } from '../components/ClusterPolicyViolations'
 import { PolicyViolationIcons, PolicyViolationsCard } from '../components/PolicyViolations'
 import { IGovernanceData, IPolicyGrouping, risksHasValues } from '../useGovernanceData'
-import {
-    GovernanceCreatePolicyEmptyState,
-    GovernanceManagePoliciesEmptyState,
-} from '../components/GovernanceEmptyState'
-import { Policy } from '../../../resources'
 
-export default function GovernanceOverview(props: { governanceData: IGovernanceData; policies: Policy[] }) {
+export default function GovernanceOverview(props: { governanceData: IGovernanceData }) {
     const { governanceData } = props
     const hasRisks = risksHasValues(props.governanceData.policyRisks)
-
-    // No policies in place
-    if (props.policies.length === 0) {
-        return (
-            <PageSection isWidthLimited>
-                <GovernanceCreatePolicyEmptyState />
-            </PageSection>
-        )
-    }
-
-    // Policies exist but none assigned to clusters
     if (!hasRisks) {
         return (
             <PageSection isWidthLimited>
-                <GovernanceManagePoliciesEmptyState />
+                <AcmEmptyState
+                    title={'You don’t have any policies applied to clusters'}
+                    action={
+                        <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
+                            {'Go to policies'}
+                        </AcmButton>
+                    }
+                />
             </PageSection>
         )
     }
-
     return (
         <PageSection isWidthLimited>
             <Stack hasGutter>
@@ -80,6 +73,8 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
                         </Card>
                     )
                 })}
+
+                <AcmTable></AcmTable>
             </Stack>
         </PageSection>
     )

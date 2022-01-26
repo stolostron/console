@@ -76,7 +76,7 @@ export default function GovernancePage() {
                         <Route
                             exact
                             path={NavigationPath.governance}
-                            render={() => <GovernanceOverview governanceData={governanceData}/>}
+                            render={() => <GovernanceOverview governanceData={governanceData} />}
                         />
                         <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
                         <Route
