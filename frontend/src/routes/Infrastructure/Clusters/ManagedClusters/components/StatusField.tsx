@@ -157,7 +157,7 @@ export function StatusField(props: { cluster: Cluster }) {
                 maxWidth: '448px',
                 bodyContent: (
                     <>
-                        <Trans i18nKey={`cluster:status.${props.cluster?.status}`} components={{ bold: <strong /> }} />
+                        <Trans i18nKey={`cluster:status.${props.cluster?.status}.message`} components={{ bold: <strong /> }} />
                         <ClusterStatusMessageAlert cluster={props.cluster!} padTop />
                     </>
                 ),
