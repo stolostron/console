@@ -19,7 +19,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import { getControlData } from './controlData/ControlData'
-import { setAvailableConnections, setAvailableTemplates, arrayItemHasKey } from './controlData/ControlDataHelpers'
+import { setAvailableConnections, arrayItemHasKey } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
 import endpointTemplate from './templates/endpoints.hbs'
