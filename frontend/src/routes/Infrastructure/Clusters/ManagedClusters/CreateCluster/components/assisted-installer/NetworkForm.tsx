@@ -90,7 +90,9 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
         debounce((values) => {
             if (!isEqual(values, control.active)) {
                 control.active = values
-                control.step.title.isComplete = false
+                if (control.step?.title) {
+                    control.step.title.isComplete = false
+                }
                 handleChange(control)
             }
             // eslint-disable-next-line

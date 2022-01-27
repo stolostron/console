@@ -9,7 +9,7 @@ import { infraEnvironmentsState } from '../../../../atoms'
 import { nockGet, nockList, nockPatch } from '../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForTestId, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import { infraEnvName, mockInfraEnv1 } from '../InfraEnvironmentsPage.test'
+import { infraEnvName, mockInfraEnv1, mockPullSecret } from '../InfraEnvironmentsPage.test'
 
 import InfraEnvironmentDetailsPage from './InfraEnvironmentDetailsPage'
 import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim/EditAICluster.sharedmocks'
@@ -54,9 +54,10 @@ const Component = () => {
 
 describe('Infrastructure Environment Details page', () => {
     test('can render', async () => {
+        const initialNocks = [nockGet(mockPullSecret)]
         const { getByTestId } = render(<Component />)
-
         await waitForText('Environment details', true)
+        await waitForNocks(initialNocks)
 
         // The Overview tab
         await waitForText('Infrastructure Environment name')

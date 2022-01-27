@@ -11,7 +11,7 @@ import InfraEnvironmentsPage from './InfraEnvironmentsPage'
 
 export const infraEnvName = 'infra-env-name'
 
-export const mockInfraEnv1 = {
+export const mockInfraEnv1: CIM.InfraEnvK8sResource = {
     apiVersion: 'agent-install.openshift.io/v1beta1',
     kind: 'InfraEnv',
     metadata: {
@@ -49,6 +49,21 @@ export const mockInfraEnv1 = {
         createdTime: '2021-11-10T13:00:00Z',
         isoDownloadURL: 'https://my.funny.download.url',
     },
+}
+
+export const mockPullSecret: CIM.SecretK8sResource = {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+        name: `pullsecret-${infraEnvName}`,
+        namespace: infraEnvName,
+        labels: { 'cluster.open-cluster-management.io/backup': 'cluster' },
+    },
+    data: {
+        '.dockerconfigjson':
+            'eyJhdXRocyI6eyJjbG91ZC5vcGVuc2hpZnQuY29tIjp7ImF1dGgiOiJiM0JsYlNLSVBQRUQiLCJlbWFpbCI6Im15QGVtYWlsLnNvbWV3aGVyZS5jb20ifX19',
+    },
+    type: 'kubernetes.io/dockerconfigjson',
 }
 
 const mockInfraEnvironments: CIM.InfraEnvK8sResource[] = [mockInfraEnv1]
