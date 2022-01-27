@@ -1490,6 +1490,7 @@
     "status.notaccepted.message": "The cluster was not approved by the cluster administrator to attach to the hub cluster.",
     "status.notstarted": "Failed",
     "status.notstarted.alert.title": "The cluster provision could not be started",
+    "status.notstarted.message": "The cluster provision could not be started.",
     "status.offline": "Offline",
     "status.offline.alert.title": "The cluster is not available",
     "status.offline.message": "The cluster is not available. The Kubernetes API server or core management agents are not in a healthy state.",
