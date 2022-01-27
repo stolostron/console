@@ -195,7 +195,7 @@ describe('PolicySets Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText('You do not have any PolicySets')
+        await waitForText('Use the button below to create a policy set.')
     })
 
     test('Should render PolicySet page correctly', async () => {
