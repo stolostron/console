@@ -24,11 +24,18 @@ import {
     useNMStatesOfNamespace,
     useOnDeleteHost,
     onChangeBMHHostname,
+    useClusterImages,
 } from './utils'
 import { isBMPlatform } from '../../../../../InfraEnvironments/utils'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
 
-const { ACMClusterDeploymentHostsDiscoveryStep, LoadingState, getTotalCompute, getAgentsHostsNames } = CIM
+const {
+    ACMClusterDeploymentHostsDiscoveryStep,
+    LoadingState,
+    getTotalCompute,
+    getAgentsHostsNames,
+    ACMFeatureSupportLevelProvider,
+} = CIM
 
 const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
     const { resourceJSON = {} } = control
@@ -58,6 +65,8 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
         const msg = err instanceof Error ? err?.message : undefined
         setError(msg || 'An error occured')
     }
+
+    const clusterImages = useClusterImages()
 
     useEffect(() => {
         if (control.active && formRef?.current?.values && !isEqual(control.active, formRef.current.values)) {
@@ -116,9 +125,9 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
         []
     )
 
-    return clusterDeployment && agentClusterInstall ? (
+    return clusterDeployment && agentClusterInstall && clusterImages ? (
         // onApproveAgent is missing here - done automatically in the AI flow
-        <>
+        <ACMFeatureSupportLevelProvider clusterImages={clusterImages}>
             <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
             <ACMClusterDeploymentHostsDiscoveryStep
                 formRef={formRef}
@@ -147,7 +156,7 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
                 getClusterDeploymentLink={getClusterDeploymentLink}
                 onChangeBMHHostname={onChangeBMHHostname}
             />
-        </>
+        </ACMFeatureSupportLevelProvider>
     ) : (
         <LoadingState />
     )

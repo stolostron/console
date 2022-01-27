@@ -1354,7 +1354,7 @@ describe('CreateCluster', () => {
         await typeByTestId('form-input-baseDnsDomain-field', baseDomain)
 
         await clickByTestId('form-input-highAvailabilityMode-field')
-        await waitForText('SNO is in a proof-of-concept stage and is not supported in any way.')
+        await waitForText('SNO enables you to install OpenShift using only one host.')
         await clickByTestId('form-input-highAvailabilityMode-field')
 
         await waitForText('OpenShift 4.8.15') // single value of combobox
@@ -1365,7 +1365,7 @@ describe('CreateCluster', () => {
 
         // transition to Automation
         await clickByText('Next')
-
+        // await new Promise((resolve) => setTimeout(resolve, 500))
         await waitForText('template.clusterCreate.name')
 
         // skip Automation to the Review and Save step

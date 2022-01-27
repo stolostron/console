@@ -11,6 +11,8 @@ import {
     createResource,
     getResource,
     listNamespacedResources,
+    ClusterImageSet,
+    listClusterImageSets,
 } from '../../../../../../../resources'
 import {
     agentClusterInstallsState,
@@ -598,6 +600,23 @@ export const useBMHsOfAIFlow = ({
             [bmhs]
         ) || []
     )
+}
+export const useClusterImages = () => {
+    const [clusterImages, setClusterImages] = useState<ClusterImageSet[]>()
+    useEffect(() => {
+        const fetchImages = async () => {
+            try {
+                const images = await listClusterImageSets().promise
+                if (!isEqual(images, clusterImages)) {
+                    setClusterImages(images)
+                }
+            } catch {
+                setClusterImages([])
+            }
+        }
+        fetchImages()
+    }, [])
+    return clusterImages
 }
 
 const refetchInfraEnv = async (infraEnv: CIM.InfraEnvK8sResource) =>
