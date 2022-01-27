@@ -51,7 +51,7 @@
         "lodash": "^4.17.21",
         "moment": "^2.29.1",
         "monaco-editor": "^0.31.1",
-        "openshift-assisted-ui-lib": "2.0.9",
+        "openshift-assisted-ui-lib": "2.0.11",
         "ramda": "^0.28.0",
         "react-masonry-css": "^1.0.16",
         "string-similarity": "^4.0.4",
