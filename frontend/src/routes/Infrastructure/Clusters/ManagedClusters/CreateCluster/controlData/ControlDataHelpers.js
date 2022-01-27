@@ -481,6 +481,7 @@ export const automationControlData = [
         name: 'template.clusterCreate.name',
         id: 'templateName',
         type: 'combobox',
+        tooltip: 'template.clusterCreate.tooltip',
         placeholder: 'template.clusterCreate.select.placeholder',
         validation: {
             required: false,
