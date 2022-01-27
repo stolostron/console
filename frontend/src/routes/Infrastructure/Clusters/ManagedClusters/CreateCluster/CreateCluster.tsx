@@ -19,7 +19,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import { getControlData } from './controlData/ControlData'
-import { setAvailableConnections, setAvailableTemplates } from './controlData/ControlDataHelpers'
+import { setAvailableConnections } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
 import endpointTemplate from './templates/endpoints.hbs'
@@ -202,15 +202,17 @@ export default function CreateClusterPage() {
                     const ansibleSecret = ansibleCredentials.find(
                         (secret) => secret.metadata.name === currentTemplate?.spec?.install?.towerAuthSecret
                     )
-                    
+
                     if (ansibleSecret === undefined) {
                         setCreationStatus({
                             status: 'ERROR',
-                            messages: ['Your ansible credential secret has been destroyed, create a new Automation template with an existing Ansible automation credential to proceed.'],
-                        }) 
-                        return status;
+                            messages: [
+                                'Your ansible credential secret has been destroyed, create a new Automation template with an existing Ansible automation credential to proceed.',
+                            ],
+                        })
+                        return status
                     }
-                    
+
                     const ansibleSecretMutable: Secret = JSON.parse(JSON.stringify(ansibleSecret))
                     ansibleSecretMutable!.metadata.name = 'toweraccess'
                     ansibleSecretMutable!.metadata.namespace = createResources[0].metadata.namespace
@@ -296,11 +298,11 @@ export default function CreateClusterPage() {
                 break
             case 'templateName':
                 control.available = curatorTemplates.map((template) => {
-                    let ansibleSecret = ansibleCredentials.find(
+                    const ansibleSecret = ansibleCredentials.find(
                         (secret) => secret.metadata.name === template?.spec?.install?.towerAuthSecret
                     )
                     if (ansibleSecret !== undefined) {
-                        return template.metadata.name;
+                        return template.metadata.name
                     }
                 })
                 break
