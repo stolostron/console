@@ -11,13 +11,15 @@ import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 
 import { NavigationPath } from '../../../../../../../NavigationPath'
-import { ClusterImageSet, listClusterImageSets, Secret } from '../../../../../../../resources'
+import { Secret } from '../../../../../../../resources'
 import { clusterDeploymentsState } from '../../../../../../../atoms'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'
+import { useClusterImages } from './utils'
 
 const {
     ACMClusterDeploymentDetailsStep,
     FeatureGateContextProvider,
+    ACMFeatureSupportLevelProvider,
     ACM_ENABLED_FEATURES,
     labelsToArray,
     LoadingState,
@@ -111,20 +113,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         }
     }, [control])
 
-    const [clusterImages, setClusterImages] = useState<ClusterImageSet[]>()
-    useEffect(() => {
-        const fetchImages = async () => {
-            try {
-                const images = await listClusterImageSets().promise
-                if (!isEqual(images, clusterImages)) {
-                    setClusterImages(images)
-                }
-            } catch {
-                setClusterImages([])
-            }
-        }
-        fetchImages()
-    }, [])
+    const clusterImages = useClusterImages()
 
     const usedClusterNames = useMemo(() => clusterDeployments.map((cd) => cd.metadata.name || ''), [])
 
@@ -208,15 +197,17 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
 
     return clusterImages ? (
         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
-            <ACMClusterDeploymentDetailsStep
-                formRef={formRef}
-                onValuesChanged={onValuesChanged}
-                clusterImages={clusterImages}
-                usedClusterNames={usedClusterNames}
-                pullSecret={controlProps?.stringData?.pullSecret}
-                defaultBaseDomain={controlProps?.stringData?.baseDomain}
-                extensionAfter={extensionAfter}
-            />
+            <ACMFeatureSupportLevelProvider clusterImages={clusterImages}>
+                <ACMClusterDeploymentDetailsStep
+                    formRef={formRef}
+                    onValuesChanged={onValuesChanged}
+                    clusterImages={clusterImages}
+                    usedClusterNames={usedClusterNames}
+                    pullSecret={controlProps?.stringData?.pullSecret}
+                    defaultBaseDomain={controlProps?.stringData?.baseDomain}
+                    extensionAfter={extensionAfter}
+                />
+            </ACMFeatureSupportLevelProvider>
         </FeatureGateContextProvider>
     ) : (
         <LoadingState />

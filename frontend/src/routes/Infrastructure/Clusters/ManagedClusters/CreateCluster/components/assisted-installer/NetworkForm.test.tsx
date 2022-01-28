@@ -4,8 +4,15 @@ import { RecoilRoot } from 'recoil'
 import { render } from '@testing-library/react'
 
 import { agentClusterInstallsState, agentsState, clusterDeploymentsState } from '../../../../../../../atoms'
-import { mockAgentClusterInstall, mockAgents, mockClusterDeploymentAI } from '../../CreateCluster.sharedmocks'
-import { waitForSelector, waitForText, waitForTestId } from '../../../../../../../lib/test-util'
+import {
+    clusterImageSet,
+    mockAgentClusterInstall,
+    mockAgents,
+    mockClusterDeploymentAI,
+    mockClusterImageSet,
+} from '../../CreateCluster.sharedmocks'
+import { waitForSelector, waitForText, waitForTestId, waitForNocks } from '../../../../../../../lib/test-util'
+import { nockList } from '../../../../../../../lib/nock-util'
 import NetworkForm from './NetworkForm'
 
 const Component = () => {
@@ -33,11 +40,13 @@ const Component = () => {
 
 describe('Cluster network step for AI', () => {
     test('can render', async () => {
+        const initialNocks = [nockList(clusterImageSet, mockClusterImageSet)]
         const { container } = render(<Component />)
-
         await waitForText('Host inventory')
+        await waitForNocks(initialNocks)
+
         await waitForSelector(container, '[aria-label="Hosts table"]')
-        await waitForText('host-1 *')
+        await waitForText('host-1')
         await waitForText('0f093a00-5df8-40d7-840f-bca562164710')
         await waitForText('Available subnets')
         await waitForText('No subnets are currently available')
