@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -19,7 +20,7 @@ const policy0: IPolicy = {
         remediationAction: '',
     },
     status: {},
-    clusterRisks: { high: 0, medium: 0, low: 0, unknown: 0, synced: 0},
+    clusterRisks: { high: 0, medium: 0, low: 0, unknown: 0, synced: 0 },
 }
 
 const mockEmptyGovernanceData: IGovernanceData = {
@@ -29,7 +30,7 @@ const mockEmptyGovernanceData: IGovernanceData = {
     clusterMap: {},
     categories: { risks: { high: 0, medium: 0, low: 0, unknown: 0, synced: 0 }, groups: [] },
     standards: { risks: { high: 0, medium: 0, low: 0, unknown: 0, synced: 0 }, groups: [] },
-    controls: {risks: {high: 0, medium: 0, low: 0, unknown: 0, synced: 0 }, groups:[]},
+    controls: { risks: { high: 0, medium: 0, low: 0, unknown: 0, synced: 0 }, groups: [] },
 }
 
 const mockGovernanceData: IGovernanceData = {
@@ -39,7 +40,7 @@ const mockGovernanceData: IGovernanceData = {
     clusterMap: {},
     categories: { risks: { high: 0, medium: 0, low: 0, unknown: 0, synced: 0 }, groups: [] },
     standards: { risks: { high: 0, medium: 0, low: 0, unknown: 0, synced: 0 }, groups: [] },
-    controls: { risks: { high: 0, medium: 0, low: 0, unknown: 0, synced: 0 }, groups:[] },
+    controls: { risks: { high: 0, medium: 0, low: 0, unknown: 0, synced: 0 }, groups: [] },
 }
 
 export const mockEmptyPolicy: Policy[] = []
