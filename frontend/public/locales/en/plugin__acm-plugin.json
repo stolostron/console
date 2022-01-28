@@ -1462,6 +1462,7 @@
     "status.creating.message": "The cluster creation is in progress.",
     "status.degraded": "Degraded",
     "status.degraded.message": "One or more of the cluster's add-ons are in a degraded state.",
+    "status.deleted.ansible.credential": "Your Ansible Automation Platform credential was deleted. Create a new template with an Ansible Automation Platform credential.",
     "status.deprovisionfailed": "Failed",
     "status.deprovisionfailed.message": "The cluster destroy process failed.",
     "status.destroying": "Destroying",
