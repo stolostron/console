@@ -26,6 +26,7 @@ import {
     useAgentClusterInstall,
     useInfraEnv,
     useNMStatesOfNamespace,
+    fetchInfraEnv,
 } from '../../CreateCluster/components/assisted-installer/utils'
 
 import EditAgentModal from './EditAgentModal'
@@ -201,6 +202,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onFinish={onFinish}
                 aiConfigMap={aiConfigMap}
                 infraEnv={infraEnv}
+                fetchInfraEnv={fetchInfraEnv}
             />
             <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
         </FeatureGateContextProvider>

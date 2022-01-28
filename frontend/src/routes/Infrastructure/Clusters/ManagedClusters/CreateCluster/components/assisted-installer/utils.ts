@@ -251,6 +251,24 @@ export const getNetworkingPatches = (agentClusterInstall: CIM.AgentClusterInstal
         )
     }
 
+    if (values.enableProxy) {
+        const proxySettings: {
+            httpProxy?: string
+            httpsProxy?: string
+            noProxy?: string
+        } = {}
+        if (values.httpProxy) {
+            proxySettings.httpProxy = values.httpProxy
+        }
+        if (values.httpsProxy) {
+            proxySettings.httpsProxy = values.httpsProxy
+        }
+        if (values.noProxy) {
+            proxySettings.noProxy = values.noProxy
+        }
+        appendPatch(agentClusterInstallPatches, '/spec/proxy', proxySettings, agentClusterInstall.spec?.proxy)
+    }
+
     return agentClusterInstallPatches
 }
 
@@ -716,3 +734,7 @@ export const onEditNtpSources = (values: any, infraEnv: CIM.InfraEnvK8sResource)
     }
     return patchResource(infraEnv, patches).promise
 }
+
+export const fetchInfraEnv = (name: string, namespace: string) =>
+    getResource({ apiVersion: 'agent-install.openshift.io/v1beta1', kind: 'InfraEnv', metadata: { namespace, name } })
+        .promise
