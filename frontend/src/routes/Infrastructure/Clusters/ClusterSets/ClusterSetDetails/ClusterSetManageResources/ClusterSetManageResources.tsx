@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    IResource,
+    ClusterDeployment,
+    ManagedCluster,
     ManagedClusterKind,
     managedClusterSetLabel,
     patchResource,
@@ -23,7 +24,7 @@ import { useContext, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { clusterPoolsState, managedClusterSetsState, managedClustersState } from '../../../../../../atoms'
+import { managedClusterSetsState, managedClustersState } from '../../../../../../atoms'
 import { BulkActionModel, errorIsNot } from '../../../../../../components/BulkActionModel'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -62,31 +63,37 @@ export function ClusterSetManageResourcesPage() {
 export function ClusterSetManageResourcesContent() {
     const { t } = useTranslation(['cluster', 'common'])
     const history = useHistory()
-    const { clusterSet } = useContext(ClusterSetContext)
-    const [managedClusters, clusterPools, managedClusterSets] = useRecoilValue(
-        waitForAll([managedClustersState, clusterPoolsState, managedClusterSetsState])
+    const { clusterSet, clusterDeployments } = useContext(ClusterSetContext)
+    const deploymentDictionary = new Map<string | undefined, ClusterDeployment>()
+    clusterDeployments?.forEach((deployment) => deploymentDictionary.set(deployment.metadata.name, deployment))
+
+    const [managedClusters, managedClusterSets] = useRecoilValue(
+        waitForAll([managedClustersState, managedClusterSetsState])
     )
     const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
     const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
-    const [selectedResources, setSelectedResources] = useState<IResource[]>(
-        [...managedClusters, ...clusterPools].filter(
+    const [selectedResources, setSelectedResources] = useState<ManagedCluster[]>(
+        [...managedClusters].filter(
             (resource) => resource.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
         )
     )
     const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false)
 
-    const availableResources = [...managedClusters, ...clusterPools].filter((resource) => {
+    const availableResources = [...managedClusters].filter((resource) => {
         const clusterSet = resource.metadata.labels?.[managedClusterSetLabel]
+
         return (
-            clusterSet === undefined ||
-            canJoinClusterSetList?.includes(clusterSet) ||
-            // hack because controller does not remove clusterset labels when a ManagedClusterSet is deleted
-            // since we query the rbac list against the actual available ManagedClusterSets
-            // the cluster set specified in the label is not among the list
-            (!canJoinClusterSetList?.includes(clusterSet) &&
-                !managedClusterSets.find(
-                    (mcs) => mcs.metadata.name === resource.metadata.labels?.[managedClusterSetLabel]
-                ))
+            // check deployment for a clusterpool claim reference, as we cannot change the set of claimed clusters
+            deploymentDictionary.get(resource.metadata.name)?.spec?.clusterPoolRef?.claimName == undefined &&
+            (clusterSet === undefined ||
+                canJoinClusterSetList?.includes(clusterSet) ||
+                // hack because controller does not remove clusterset labels when a ManagedClusterSet is deleted
+                // since we query the rbac list against the actual available ManagedClusterSets
+                // the cluster set specified in the label is not among the list
+                (!canJoinClusterSetList?.includes(clusterSet) &&
+                    !managedClusterSets.find(
+                        (mcs) => mcs.metadata.name === resource.metadata.labels?.[managedClusterSetLabel]
+                    )))
         )
     })
     const notSelectedResources = availableResources.filter(
@@ -110,19 +117,19 @@ export function ClusterSetManageResourcesContent() {
                         components={{ bold: <strong />, p: <p /> }}
                     />
                 </div>
-                <AcmTable<IResource>
+                <AcmTable<ManagedCluster>
                     plural="resources"
                     items={isLoading ? undefined : availableResources}
                     initialSelectedItems={selectedResources}
-                    onSelect={(resources: IResource[]) => setSelectedResources(resources)}
-                    keyFn={(resource: IResource) => resource.metadata!.uid!}
+                    onSelect={(resources: ManagedCluster[]) => setSelectedResources(resources)}
+                    keyFn={(resource: ManagedCluster) => resource.metadata!.uid!}
                     key="clusterSetManageClustersTable"
                     columns={[
                         {
                             header: t('table.name'),
                             sort: 'metadata.name',
                             search: 'metadata.name',
-                            cell: (resource: IResource) => (
+                            cell: (resource: ManagedCluster) => (
                                 <span style={{ whiteSpace: 'nowrap' }}>{resource.metadata!.name}</span>
                             ),
                         },
@@ -130,11 +137,11 @@ export function ClusterSetManageResourcesContent() {
                             header: t('table.kind'),
                             sort: 'kind',
                             search: 'kind',
-                            cell: (resource: IResource) => resource.kind,
+                            cell: (resource: ManagedCluster) => resource.kind,
                         },
                         {
                             header: t('table.assignedToSet'),
-                            sort: (a: IResource, b: IResource) =>
+                            sort: (a: ManagedCluster, b: ManagedCluster) =>
                                 compareStrings(
                                     a?.metadata!.labels?.[managedClusterSetLabel],
                                     b?.metadata!.labels?.[managedClusterSetLabel]
@@ -176,7 +183,7 @@ export function ClusterSetManageResourcesContent() {
                     </ActionGroup>
                 )}
             </AcmForm>
-            <BulkActionModel<IResource>
+            <BulkActionModel<ManagedCluster>
                 open={showConfirmModal}
                 title={t('manageClusterSet.form.modal.title')}
                 action={t('common:save')}
@@ -198,7 +205,7 @@ export function ClusterSetManageResourcesContent() {
                     {
                         header: t('table.kind'),
                         sort: 'kind',
-                        cell: (resource: IResource) => resource.kind,
+                        cell: (resource: ManagedCluster) => resource.kind,
                     },
                     {
                         header: t('table.change'),
@@ -222,7 +229,7 @@ export function ClusterSetManageResourcesContent() {
                     },
                     {
                         header: t('table.assignedToSet'),
-                        sort: (a: IResource, b: IResource) =>
+                        sort: (a: ManagedCluster, b: ManagedCluster) =>
                             compareStrings(
                                 a?.metadata!.labels?.[managedClusterSetLabel],
                                 b?.metadata!.labels?.[managedClusterSetLabel]
@@ -231,7 +238,7 @@ export function ClusterSetManageResourcesContent() {
                     },
                 ]}
                 keyFn={(item) => item.metadata!.uid!}
-                actionFn={(resource: IResource) => {
+                actionFn={(resource: ManagedCluster) => {
                     // return dummy promise if the resource is not changed
                     if (
                         selectedResources.find((sr) => sr.metadata!.uid === resource.metadata!.uid) &&

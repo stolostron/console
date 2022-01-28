@@ -4,6 +4,9 @@ import {
     ClusterDeployment,
     ClusterDeploymentApiVersion,
     ClusterDeploymentKind,
+    ClusterPool,
+    ClusterPoolApiVersion,
+    ClusterPoolKind,
     ManagedCluster,
     ManagedClusterApiVersion,
     ManagedClusterKind,
@@ -19,6 +22,7 @@ import { RecoilRoot } from 'recoil'
 import {
     certificateSigningRequestsState,
     clusterDeploymentsState,
+    clusterPoolsState,
     managedClusterInfosState,
     managedClusterSetsState,
     managedClustersState,
@@ -130,6 +134,72 @@ const mockManagedClusterTransfer: ManagedCluster = {
     spec: { hubAcceptsClient: true },
 }
 
+const mockManagedClusterClaimed: ManagedCluster = {
+    apiVersion: ManagedClusterApiVersion,
+    kind: ManagedClusterKind,
+    metadata: {
+        name: 'd-managed-cluster-claimed',
+        uid: 'd-managed-cluster-claimed',
+    },
+    spec: { hubAcceptsClient: true },
+}
+
+const mockClusterDeploymentClaimed: ClusterDeployment = {
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
+    metadata: {
+        name: mockManagedClusterClaimed.metadata.name!,
+        namespace: mockManagedClusterClaimed.metadata.name!,
+        uid: mockManagedClusterClaimed.metadata.name!,
+    },
+    spec: {
+        clusterName: mockManagedClusterClaimed.metadata.name!,
+        installed: true,
+        provisioning: {
+            imageSetRef: {
+                name: '',
+            },
+            installConfigSecretRef: {
+                name: '',
+            },
+            sshPrivateKeySecretRef: {
+                name: '',
+            },
+        },
+        pullSecretRef: {
+            name: '',
+        },
+        clusterPoolRef: {
+            claimName: 'e-managed-cluster-claim',
+            namespace: 'e-managed-cluster-claim',
+            poolName: 'a-cluster-pool-i',
+        },
+    },
+}
+
+const mockClusterPool: ClusterPool = {
+    apiVersion: ClusterPoolApiVersion,
+    kind: ClusterPoolKind,
+    metadata: {
+        name: 'a-cluster-pool',
+        namespace: 'a-cluster-pool',
+        uid: 'a-cluster-pool',
+    },
+    spec: {
+        baseDomain: '',
+        installConfigSecretTemplateRef: {
+            name: '',
+        },
+        imageSetRef: {
+            name: '',
+        },
+        pullSecretRef: {
+            name: '',
+        },
+        size: 1,
+    },
+}
+
 function nockPatchManagedCluster(clusterName: string, op: 'replace' | 'add' | 'remove', value?: string) {
     const patch: { op: 'replace' | 'add' | 'remove'; path: string; value?: string } = {
         op,
@@ -179,11 +249,17 @@ const Component = () => (
                 mockManagedClusterRemove,
                 mockManagedClusterUnchanged,
                 mockManagedClusterTransfer,
+                mockManagedClusterClaimed,
             ])
             snapshot.set(managedClusterSetsState, [mockManagedClusterSet, mockManagedClusterSetTransfer])
-            snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAdd, mockClusterDeploymentRemove])
+            snapshot.set(clusterDeploymentsState, [
+                mockClusterDeploymentAdd,
+                mockClusterDeploymentRemove,
+                mockClusterDeploymentClaimed,
+            ])
             snapshot.set(managedClusterInfosState, [])
             snapshot.set(certificateSigningRequestsState, [])
+            snapshot.set(clusterPoolsState, [mockClusterPool])
         }}
     >
         <ClusterSetContext.Provider
@@ -193,6 +269,7 @@ const Component = () => (
                 clusterPools: [],
                 submarinerAddons: undefined,
                 clusterSetBindings: undefined,
+                clusterDeployments: [mockClusterDeploymentClaimed],
             }}
         >
             <MemoryRouter
@@ -215,6 +292,30 @@ describe('ClusterSetManageClusters', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
     })
+
+    test('does not display claimed clusters for reassignment', async () => {
+        render(<Component />)
+        await waitForNotText('Loading')
+        await waitForText(mockManagedClusterAdd.metadata.name!)
+        await waitForText(mockManagedClusterRemove.metadata.name!)
+        await waitForText(mockManagedClusterUnchanged.metadata.name!)
+        await waitForText(mockManagedClusterTransfer.metadata.name!)
+
+        await waitForNotText(mockManagedClusterClaimed.metadata.name!)
+        await waitForText(mockManagedClusterAdd.metadata.name!)
+    })
+
+    test('does not display cluster pools for reassignment', async () => {
+        render(<Component />)
+        await waitForNotText('Loading')
+        await waitForText(mockManagedClusterAdd.metadata.name!)
+        await waitForText(mockManagedClusterRemove.metadata.name!)
+        await waitForText(mockManagedClusterUnchanged.metadata.name!)
+        await waitForText(mockManagedClusterTransfer.metadata.name!)
+
+        await waitForNotText(mockClusterPool.metadata.name!)
+    })
+
     test('can update cluster assignments', async () => {
         const { container } = render(<Component />)
         await waitForNotText('Loading')
