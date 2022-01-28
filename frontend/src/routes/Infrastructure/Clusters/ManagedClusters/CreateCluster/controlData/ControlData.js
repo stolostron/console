@@ -163,19 +163,6 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                 section: 'Providers',
             },
             {
-                id: 'AI',
-                logo: <AcmIcon icon={AcmIconVariant.hybrid} />,
-                title: 'cluster.create.ai.subtitle',
-                tooltip: 'cluster.create.ai.tooltip',
-                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
-                change: {
-                    insertControlData: controlDataAI,
-                    replacements: {},
-                    replaceTemplate: aiTemplate,
-                },
-                section: 'Centrally managed',
-            },
-            {
                 id: 'BMC',
                 logo: <ServerIcon color="slategray" />,
                 title: 'cluster.create.baremetal.subtitle',
