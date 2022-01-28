@@ -2,7 +2,7 @@
 
 import {
     ClusterDeployment,
-    IResource,
+    ManagedCluster,
     ManagedClusterKind,
     managedClusterSetLabel,
     patchResource,
@@ -72,7 +72,7 @@ export function ClusterSetManageResourcesContent() {
     )
     const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
     const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
-    const [selectedResources, setSelectedResources] = useState<IResource[]>(
+    const [selectedResources, setSelectedResources] = useState<ManagedCluster[]>(
         [...managedClusters].filter(
             (resource) => resource.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
         )
@@ -117,19 +117,19 @@ export function ClusterSetManageResourcesContent() {
                         components={{ bold: <strong />, p: <p /> }}
                     />
                 </div>
-                <AcmTable<IResource>
+                <AcmTable<ManagedCluster>
                     plural="resources"
                     items={isLoading ? undefined : availableResources}
                     initialSelectedItems={selectedResources}
-                    onSelect={(resources: IResource[]) => setSelectedResources(resources)}
-                    keyFn={(resource: IResource) => resource.metadata!.uid!}
+                    onSelect={(resources: ManagedCluster[]) => setSelectedResources(resources)}
+                    keyFn={(resource: ManagedCluster) => resource.metadata!.uid!}
                     key="clusterSetManageClustersTable"
                     columns={[
                         {
                             header: t('table.name'),
                             sort: 'metadata.name',
                             search: 'metadata.name',
-                            cell: (resource: IResource) => (
+                            cell: (resource: ManagedCluster) => (
                                 <span style={{ whiteSpace: 'nowrap' }}>{resource.metadata!.name}</span>
                             ),
                         },
@@ -137,11 +137,11 @@ export function ClusterSetManageResourcesContent() {
                             header: t('table.kind'),
                             sort: 'kind',
                             search: 'kind',
-                            cell: (resource: IResource) => resource.kind,
+                            cell: (resource: ManagedCluster) => resource.kind,
                         },
                         {
                             header: t('table.assignedToSet'),
-                            sort: (a: IResource, b: IResource) =>
+                            sort: (a: ManagedCluster, b: ManagedCluster) =>
                                 compareStrings(
                                     a?.metadata!.labels?.[managedClusterSetLabel],
                                     b?.metadata!.labels?.[managedClusterSetLabel]
@@ -183,7 +183,7 @@ export function ClusterSetManageResourcesContent() {
                     </ActionGroup>
                 )}
             </AcmForm>
-            <BulkActionModel<IResource>
+            <BulkActionModel<ManagedCluster>
                 open={showConfirmModal}
                 title={t('manageClusterSet.form.modal.title')}
                 action={t('common:save')}
@@ -205,7 +205,7 @@ export function ClusterSetManageResourcesContent() {
                     {
                         header: t('table.kind'),
                         sort: 'kind',
-                        cell: (resource: IResource) => resource.kind,
+                        cell: (resource: ManagedCluster) => resource.kind,
                     },
                     {
                         header: t('table.change'),
@@ -229,7 +229,7 @@ export function ClusterSetManageResourcesContent() {
                     },
                     {
                         header: t('table.assignedToSet'),
-                        sort: (a: IResource, b: IResource) =>
+                        sort: (a: ManagedCluster, b: ManagedCluster) =>
                             compareStrings(
                                 a?.metadata!.labels?.[managedClusterSetLabel],
                                 b?.metadata!.labels?.[managedClusterSetLabel]
@@ -238,7 +238,7 @@ export function ClusterSetManageResourcesContent() {
                     },
                 ]}
                 keyFn={(item) => item.metadata!.uid!}
-                actionFn={(resource: IResource) => {
+                actionFn={(resource: ManagedCluster) => {
                     // return dummy promise if the resource is not changed
                     if (
                         selectedResources.find((sr) => sr.metadata!.uid === resource.metadata!.uid) &&
