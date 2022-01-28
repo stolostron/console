@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { cloneDeep } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { ConfigMap } from '../../../../../resources'
+import { ClusterImageSetApiVersion, ClusterImageSetKind, ConfigMap } from '../../../../../resources'
 
 export const clusterName = 'test'
 export const baseDomain = 'base.domain.com'
@@ -106,3 +106,15 @@ export const mockAgents = Array.from({ length: 5 }, (_val, index) => {
     mockedAgent.spec.hostname = `${mockedAgent.spec.hostname}-${index}`
     return mockedAgent
 })
+
+export const clusterImageSet: CIM.ClusterImageSetK8sResource = {
+    apiVersion: ClusterImageSetApiVersion,
+    kind: ClusterImageSetKind,
+    metadata: {
+        name: 'ocp-release48',
+    },
+    spec: {
+        releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.8.15-x86_64',
+    },
+}
+export const mockClusterImageSet = [clusterImageSet]

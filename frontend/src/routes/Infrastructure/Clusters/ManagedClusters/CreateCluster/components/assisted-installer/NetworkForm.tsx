@@ -4,15 +4,15 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
 import { debounce, get, isEqual } from 'lodash'
-import { NetworkConfigurationValues } from 'openshift-assisted-ui-lib/dist/src/common/types/clusters'
 import { patchResource } from '../../../../../../../resources'
 import { agentClusterInstallsState, agentsState, clusterDeploymentsState } from '../../../../../../../atoms'
 import EditAgentModal from '../../../components/cim/EditAgentModal'
+import { useClusterImages } from './utils'
 
-const { ACMClusterDeploymentNetworkingStep, getAgentsHostsNames } = CIM
+const { ACMClusterDeploymentNetworkingStep, getAgentsHostsNames, ACMFeatureSupportLevelProvider, LoadingState } = CIM
 
 type FormControl = {
-    active?: NetworkConfigurationValues
+    active?: CIM.NetworkConfigurationValues
     agentClusterInstall: CIM.AgentClusterInstallK8sResource
     validate?: () => void
     summary?: () => void
@@ -35,7 +35,7 @@ const fields: any = {
 }
 
 const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
-    const formRef = useRef<FormikProps<NetworkConfigurationValues>>(null)
+    const formRef = useRef<FormikProps<CIM.NetworkConfigurationValues>>(null)
     useEffect(() => {
         if (control.active) {
             formRef?.current?.setValues(control.active, false)
@@ -63,6 +63,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
         waitForAll([agentsState, clusterDeploymentsState, agentClusterInstallsState])
     )
 
+    const clusterImages = useClusterImages()
     const { resourceJSON = {} } = control
     const { createResources = [] } = resourceJSON
     const cdName = createResources.find((r: { kind: string }) => r.kind === 'ClusterDeployment').metadata.name
@@ -89,7 +90,9 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
         debounce((values) => {
             if (!isEqual(values, control.active)) {
                 control.active = values
-                control.step.title.isComplete = false
+                if (control.step?.title) {
+                    control.step.title.isComplete = false
+                }
                 handleChange(control)
             }
             // eslint-disable-next-line
@@ -125,8 +128,8 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
         [setEditAgent]
     )
 
-    return (
-        <>
+    return clusterImages ? (
+        <ACMFeatureSupportLevelProvider clusterImages={clusterImages}>
             <ACMClusterDeploymentNetworkingStep
                 formRef={formRef}
                 onValuesChanged={onValuesChanged}
@@ -136,7 +139,9 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
                 hostActions={hostActions}
             />
             <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
-        </>
+        </ACMFeatureSupportLevelProvider>
+    ) : (
+        <LoadingState />
     )
 }
 
