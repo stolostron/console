@@ -1,30 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card, CardBody, PageSection, Split, SplitItem, Stack, Title } from '@patternfly/react-core'
-import { AcmButton, AcmEmptyState } from '@stolostron/ui-components'
 import { Fragment } from 'react'
-import { Link } from 'react-router-dom'
 import { AcmMasonry } from '../../../components/AcmMasonry'
-import { NavigationPath } from '../../../NavigationPath'
 import { ClusterPolicyViolationCard } from '../components/ClusterPolicyViolations'
+import {
+    GovernanceCreatePolicyEmptyState,
+    GovernanceManagePoliciesEmptyState,
+} from '../components/GovernanceEmptyState'
 import { PolicyViolationIcons, PolicyViolationsCard } from '../components/PolicyViolations'
 import { IGovernanceData, IPolicyGrouping, risksHasValues } from '../useGovernanceData'
 
 export default function GovernanceOverview(props: { governanceData: IGovernanceData }) {
     const { governanceData } = props
     const hasRisks = risksHasValues(props.governanceData.policyRisks)
+
+    if (!governanceData.policies || governanceData.policies.length === 0) {
+        return <GovernanceCreatePolicyEmptyState />
+    }
+
     if (!hasRisks) {
-        return (
-            <PageSection isWidthLimited>
-                <AcmEmptyState
-                    title={'You don’t have any policies applied to clusters'}
-                    action={
-                        <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
-                            {'Go to policies'}
-                        </AcmButton>
-                    }
-                />
-            </PageSection>
-        )
+        return <GovernanceManagePoliciesEmptyState />
     }
     return (
         <PageSection isWidthLimited>

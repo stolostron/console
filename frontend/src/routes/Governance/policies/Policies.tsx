@@ -774,11 +774,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
     }
 
     if (!governanceData.policies || governanceData.policies.length === 0) {
-        return (
-            <PageSection isWidthLimited>
-                <GovernanceCreatePolicyEmptyState />
-            </PageSection>
-        )
+        return <GovernanceCreatePolicyEmptyState />
     }
 
     return (
