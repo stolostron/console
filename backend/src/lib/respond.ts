@@ -36,7 +36,8 @@ export function respondCreated(res: Http2ServerResponse, data: Record<string, un
 }
 
 export function redirect(res: Http2ServerResponse, location: string): void {
-    return res.writeHead(302, { location }).end()
+    res.writeHead(302, { location }).end()
+    return
 }
 
 export function respondBadRequest(_req: Http2ServerRequest, res: Http2ServerResponse): void {
