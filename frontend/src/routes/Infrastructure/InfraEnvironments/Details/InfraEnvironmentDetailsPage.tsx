@@ -15,12 +15,11 @@ import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { isMatch } from 'lodash'
 
-import { acmRouteState, configMapsState, infraEnvironmentsState, infrastructuresState } from '../../../../atoms'
+import { acmRouteState, configMapsState, infraEnvironmentsState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError } from '../../../../resources'
 import { agentsState, bareMetalHostsState } from '../../../../atoms'
-import { isBMPlatform } from '../utils'
 import {
     getOnCreateBMH,
     getOnSaveISOParams,
@@ -41,8 +40,8 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
     const [isoModalOpen, setISOModalOpen] = useState(false)
 
-    const [infraEnvironments, infrastructures, agents, bareMetalHosts, configMaps] = useRecoilValue(
-        waitForAll([infraEnvironmentsState, infrastructuresState, agentsState, bareMetalHostsState, configMapsState])
+    const [infraEnvironments, agents, bareMetalHosts, configMaps] = useRecoilValue(
+        waitForAll([infraEnvironmentsState, agentsState, bareMetalHostsState, configMapsState])
     )
 
     const infraEnv = infraEnvironments.find(
@@ -163,7 +162,6 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
             <AddHostModal
                 infraEnv={infraEnv}
                 isOpen={isoModalOpen}
-                isBMPlatform={isBMPlatform(infrastructures[0])}
                 onClose={() => setISOModalOpen(false)}
                 onCreateBMH={getOnCreateBMH(infraEnv)}
                 onSaveISOParams={getOnSaveISOParams(infraEnv)}

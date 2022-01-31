@@ -26,7 +26,6 @@ import {
     onChangeBMHHostname,
     useClusterImages,
 } from './utils'
-import { isBMPlatform } from '../../../../../InfraEnvironments/utils'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
 
 const {
@@ -152,7 +151,6 @@ const AIHostsForm: React.FC<AIHostsFormProps> = ({ control, handleChange }) => {
                 onFormSaveError={setErrorHandler}
                 fetchSecret={fetchSecret}
                 fetchNMState={fetchNMState}
-                isBMPlatform={isBMPlatform(infraEnv)}
                 getClusterDeploymentLink={getClusterDeploymentLink}
                 onChangeBMHHostname={onChangeBMHHostname}
             />
