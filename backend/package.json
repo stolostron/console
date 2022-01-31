@@ -2,15 +2,16 @@
     "name": "backend",
     "version": "0.0.1",
     "private": true,
+    "type": "module",
     "scripts": {
-        "start": "ts-node-dev --no-notify --no-deps --respawn --transpile-only src/lib/main.ts | pino-zen -i time",
+        "start": "nodemon --watch './**/*.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm/transpile-only' src/lib/main.ts | pino-zen -i time",
         "postinstall": "[ ! -d ./certs ] && npm run generate-certs || true",
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt",
-        "build": "tsc --sourceMap false --declaration false",
+        "build": "tsc --sourceMap false --declaration false && npx rollup --format es --file backend.mjs -- build/lib/main.js",
         "tsc:noEmit": "tsc --noEmit",
         "clean": "rm -rf coverage build",
         "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc:noEmit -c green,blue,cyan,magenta",
-        "jest": "jest",
+        "jest": "node --experimental-vm-modules node_modules/.bin/jest",
         "eslint": "eslint src test --ext .ts --max-warnings=0",
         "eslint:fix": "eslint src test --ext .ts --fix",
         "prettier": "prettier --check src test",
@@ -19,41 +20,42 @@
     },
     "dependencies": {
         "abort-controller": "^3.0.0",
-        "dotenv": "^10.0.0",
+        "dotenv": "^15.0.0",
         "event-stream": "^4.0.1",
         "get-value": "^3.0.1",
         "got": "^11.8.3",
         "pluralize": "^8.0.0",
         "find-my-way": "^5.1.1",
-        "node-fetch": "^2.6.6",
-        "pino": "^6.13.4",
+        "node-fetch": "^2.6.7",
+        "pino": "^7.6.5",
         "proxy-agent": "^5.0.0",
         "raw-body": "^2.4.2"
     },
     "devDependencies": {
         "@types/dotenv": "^8.2.0",
+        "@types/eslint": "^8.4.1",
         "@types/event-stream": "^4.0.0",
         "@types/get-value": "^3.0.2",
-        "@types/pluralize": "0.0.29",
-        "@types/eslint": "^8.2.1",
         "@types/jest": "^27.4.0",
-        "@types/node": "^14.18.4",
+        "@types/node": "^14.18.9",
         "@types/node-fetch": "^2.5.12",
-        "@types/pino": "^6.3.12",
-        "@types/prettier": "^2.4.2",
+        "@types/pino": "^7.0.4",
+        "@types/pluralize": "0.0.29",
+        "@types/prettier": "^2.4.3",
         "@types/raw-body": "^2.3.0",
-        "@typescript-eslint/eslint-plugin": "^5.9.0",
-        "@typescript-eslint/parser": "^5.9.0",
+        "@typescript-eslint/eslint-plugin": "^5.10.1",
+        "@typescript-eslint/parser": "^5.10.1",
         "concurrently": "^7.0.0",
-        "eslint": "^8.6.0",
+        "eslint": "^8.8.0",
         "jest": "^27.x.x",
-        "nock": "^13.2.1",
+        "nock": "^13.2.2",
+        "nodemon": "^2.0.15",
         "pino-zen": "^1.0.20",
         "prettier": "^2.5.1",
+        "rollup": "^2.66.1",
         "ts-jest": "^27.x.x",
         "ts-node": "^10.4.0",
-        "ts-node-dev": "^1.1.8",
-        "typescript": "^4.5.4"
+        "typescript": "^4.5.5"
     },
     "prettier": {
         "printWidth": 120,
@@ -62,41 +64,15 @@
         "singleQuote": true
     },
     "jest": {
-        "preset": "ts-jest",
-        "testEnvironment": "node",
-        "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-        "collectCoverage": true,
-        "coverageThreshold": {
-            "global": {
-                "branches": 0,
-                "functions": 0,
-                "lines": 0,
-                "statements": 0
+        "preset": "ts-jest/presets/default-esm",
+        "globals": {
+            "ts-jest": {
+                "useESM": true
             }
         },
-        "coverageReporters": [
-            "text",
-            "text-summary",
-            "html"
-        ],
-        "collectCoverageFrom": [
-            "src/**/*.ts",
-            "!**/node_modules/**"
-        ],
-        "moduleFileExtensions": [
-            "ts",
-            "tsx",
-            "js",
-            "jsx",
-            "json",
-            "node"
-        ],
-        "setupFiles": [
-            "<rootDir>/test/jest-setup.ts"
-        ],
-        "watchPathIgnorePatterns": [
-            "coverage"
-        ]
+        "moduleNameMapper": {
+            "^(\\.{1,2}/.*)\\.js$": "$1"
+        }
     },
     "eslintConfig": {
         "parser": "@typescript-eslint/parser",

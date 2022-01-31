@@ -1,19 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmPage, AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
-import { Fragment, lazy, ReactNode, Suspense, useEffect, useState } from 'react'
+import { Fragment, lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
-import { Link, Route, Switch, useLocation } from 'react-router-dom'
+import { Link, Route, Switch, useLocation, Redirect } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState } from '../../atoms'
 import { NavigationPath } from '../../NavigationPath'
-import { PageContext } from '../Infrastructure/Clusters/ClustersPage'
 
 const ApplicationsOverviewPage = lazy(() => import('./Overview'))
 const AdvancedConfigurationPage = lazy(() => import('./AdvancedConfiguration'))
 
 export default function ApplicationsPage() {
-    const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const location = useLocation()
     const { t } = useTranslation()
 
@@ -37,22 +35,18 @@ export default function ApplicationsPage() {
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
-                    actions={actions}
                 />
             }
         >
-            <PageContext.Provider value={{ actions, setActions }}>
-                <Suspense fallback={<Fragment />}>
-                    <Switch>
-                        <Route exact path={NavigationPath.applications} component={ApplicationsOverviewPage} />
-                        <Route
-                            exact
-                            path={NavigationPath.advancedConfiguration}
-                            component={AdvancedConfigurationPage}
-                        />
-                    </Switch>
-                </Suspense>
-            </PageContext.Provider>
+            <Suspense fallback={<Fragment />}>
+                <Switch>
+                    <Route exact path={NavigationPath.applications} component={ApplicationsOverviewPage} />
+                    <Route exact path={NavigationPath.advancedConfiguration} component={AdvancedConfigurationPage} />
+                    <Route path="*">
+                        <Redirect to={NavigationPath.applications} />
+                    </Route>
+                </Switch>
+            </Suspense>
         </AcmPage>
     )
 }

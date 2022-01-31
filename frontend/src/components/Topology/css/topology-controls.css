@@ -1,0 +1,44 @@
+.topology-controls {
+    display: flex;
+    flex-wrap: wrap;
+}
+.topology-controls .topology-control-container {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+}
+.topology-controls .topology-control-container > div {
+    color: #06c;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    align-items: center;
+    height: 26px;
+}
+
+.topology-controls .topology-control-container > div .button-icon {
+    width: 12px;
+    height: 20px;
+    fill: #06c;
+    stroke: none;
+    margin-right: 5px;
+}
+
+.topology-controls .topology-control-container > * input::placeholder {
+    color: #a4a4a4;
+}
+.topology-controls .topology-control-container .clear-filters .closeIcon {
+    fill: #152935;
+    cursor: pointer;
+    margin-left: 5px;
+}
+.topology-controls .topology-control-container .pf-c-input-group {
+    max-width: 100%;
+}
+.topology-controls .topology-type-filter-bar {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+}

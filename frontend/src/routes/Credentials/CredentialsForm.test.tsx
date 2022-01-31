@@ -247,6 +247,49 @@ describe('add credentials page', () => {
         await waitForNock(createNock)
     })
 
+    it('should create rhv (Red Hat Virtualization) credentials', async () => {
+        render(<AddCredentialsTest />)
+
+        const providerConnection = createProviderConnection(
+            'redhatvirtualization',
+            {
+                ovirt_url: 'rhv_url',
+                ovirt_username: 'username',
+                ovirt_password: 'password',
+                ovirt_ca_bundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
+            },
+            true
+        )
+
+        // Credentials type
+        await clickByTestId('redhatvirtualization')
+        await typeByTestId('credentialsName', providerConnection.metadata.name!)
+        await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+        await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
+        await clickByText('Next')
+
+        // credentials
+        await typeByTestId('ovirt_url', providerConnection.stringData?.ovirt_url!)
+        await typeByTestId('ovirt_username', providerConnection.stringData?.ovirt_username!)
+        await typeByTestId('ovirt_password', providerConnection.stringData?.ovirt_password!)
+        await typeByTestId('ovirt_ca_bundle', providerConnection.stringData?.ovirt_ca_bundle!)
+        await clickByText('Next')
+
+        // skip proxy
+        await clickByText('Next')
+
+        // Pull secret
+        await typeByTestId('pullSecret', providerConnection.stringData?.pullSecret!)
+        await typeByTestId('ssh-privatekey', providerConnection.stringData?.['ssh-privatekey']!)
+        await typeByTestId('ssh-publickey', providerConnection.stringData?.['ssh-publickey']!)
+        await clickByText('Next')
+
+        // Add Credentials
+        const createNock = nockCreate({ ...providerConnection })
+        await clickByText('Add')
+        await waitForNock(createNock)
+    })
+
     it('should create ost (OpenStack) credentials', async () => {
         render(<AddCredentialsTest />)
 

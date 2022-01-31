@@ -15,8 +15,7 @@ export async function fixCopyright(directory: string, extensions = ['.ts', '.tsx
         }
         if (!extensions.find((ext) => name.endsWith(ext))) continue
         const file = await readFile(path)
-        if (!file.toString().startsWith('/* Copyright Contributors to the Open Cluster Management project */\n')) {
-            process.exitCode = 1
+        if (!file.toString().includes('Copyright Contributors to the Open Cluster Management project')) {
             const fixed = '/* Copyright Contributors to the Open Cluster Management project */\n' + file.toString()
             console.log('fixed:', path)
             void writeFile(path, fixed)

@@ -19,7 +19,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import { getControlData } from './controlData/ControlData'
-import { setAvailableConnections, setAvailableTemplates } from './controlData/ControlDataHelpers'
+import { setAvailableConnections, arrayItemHasKey } from './controlData/ControlDataHelpers'
 import './style.css'
 import hiveTemplate from './templates/hive-template.hbs'
 import endpointTemplate from './templates/endpoints.hbs'
@@ -202,6 +202,17 @@ export default function CreateClusterPage() {
                     const ansibleSecret = ansibleCredentials.find(
                         (secret) => secret.metadata.name === currentTemplate?.spec?.install?.towerAuthSecret
                     )
+
+                    if (ansibleSecret === undefined) {
+                        setCreationStatus({
+                            status: 'ERROR',
+                            messages: [
+                                'Your ansible credential secret has been destroyed, create a new Automation template with an existing Ansible automation credential to proceed.',
+                            ],
+                        })
+                        return status
+                    }
+
                     const ansibleSecretMutable: Secret = JSON.parse(JSON.stringify(ansibleSecret))
                     ansibleSecretMutable!.metadata.name = 'toweraccess'
                     ansibleSecretMutable!.metadata.namespace = createResources[0].metadata.namespace
@@ -250,8 +261,9 @@ export default function CreateClusterPage() {
     //compile templates
     const template = Handlebars.compile(hiveTemplate)
     Handlebars.registerPartial('endpoints', Handlebars.compile(endpointTemplate))
+    Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
 
-    // if openned from bma page, pass selected bma's to editor
+    // if opened from bma page, pass selected bma's to editor
     const urlParams = new URLSearchParams(location.search.substring(1))
     const bmasParam = urlParams.get('bmas')
     const requestedUIDs = bmasParam ? bmasParam.split(',') : []
@@ -286,8 +298,14 @@ export default function CreateClusterPage() {
                 })
                 break
             case 'templateName':
-                control.available = curatorTemplates.map((template) => template.metadata.name)
-                setAvailableTemplates(control, curatorTemplates)
+                control.available = curatorTemplates.map((template) => {
+                    const ansibleSecret = ansibleCredentials.find(
+                        (secret) => secret.metadata.name === template?.spec?.install?.towerAuthSecret
+                    )
+                    if (ansibleSecret !== undefined) {
+                        return template.metadata.name
+                    }
+                })
                 break
             case 'singleNodeFeatureFlag':
                 if (settings.singleNodeOpenshift === 'enabled') {
@@ -396,7 +414,7 @@ export default function CreateClusterPage() {
 
     const onControlSelect = (control: any) => {
         if (control.controlId === 'infrastructure') {
-            if (control.active?.includes('AI') && !isInfraEnvAvailable) {
+            if (control.active?.includes('CIM') && !isInfraEnvAvailable) {
                 setWarning({
                     title: t('cim.infra.missing.warning.title'),
                     text: t('cim.infra.missing.warning.text'),

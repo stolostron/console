@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmTable, IAcmRowAction, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
 import {
     ButtonVariant,
     Checkbox,
@@ -12,14 +11,16 @@ import {
     PageSection,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
+import { AcmTable, IAcmRowAction, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
 import moment from 'moment'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from '../../../lib/acm-i18next'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { NoWrap } from '../../../components/NoWrap'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
-import { patchResource, ResourceErrorCode, Policy, PolicyApiVersion, PolicyKind } from '../../../resources'
-import { PolicyRiskLabels } from '../components/PolicyRiskLabels'
+import { patchResource, Policy, PolicyApiVersion, PolicyKind, ResourceErrorCode } from '../../../resources'
+import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
+import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
 import { IGovernanceData, IPolicy } from '../useGovernanceData'
 
 export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
@@ -74,20 +75,10 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             //     search: 'metadata.namespace',
             // },
             {
-                header: t('Clusters'),
+                header: t('Cluster risks'),
                 cell: (policy) => {
                     if (policy.status?.status) {
-                        return (
-                            <Fragment>
-                                <PolicyRiskLabels
-                                    risks={policy.clusterRisks}
-                                    singular="cluster"
-                                    plural="clusters"
-                                    showLabels
-                                    isVertical
-                                />
-                            </Fragment>
-                        )
+                        return <ClusterPolicyViolationIcons risks={policy.clusterRisks} />
                     } else {
                         return <Fragment />
                     }
@@ -780,6 +771,14 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             }
             return false
         })
+    }
+
+    if (!governanceData.policies || governanceData.policies.length === 0) {
+        return (
+            <PageSection isWidthLimited>
+                <GovernanceCreatePolicyEmptyState />
+            </PageSection>
+        )
     }
 
     return (
