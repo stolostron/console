@@ -3,9 +3,7 @@ import { createReadStream } from 'fs'
 import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { extname } from 'path'
 import { pipeline } from 'stream'
-import { parseCookies } from '../lib/cookies'
 import { logger } from '../lib/logger'
-import { redirect } from '../lib/respond'
 
 const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=604800' : 'no-store'
 
@@ -39,7 +37,8 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
         const contentType = contentTypes[ext]
         if (contentType === undefined) {
             logger.debug('unknown content type', `ext=${ext}`)
-            return res.writeHead(404).end()
+            res.writeHead(404).end()
+            return
         }
         if (/\bgzip\b/.test(acceptEncoding)) {
             try {
@@ -61,7 +60,8 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
                 })
             } catch (err) {
                 logger.error(err)
-                return res.writeHead(404).end()
+                res.writeHead(404).end()
+                return
             }
         } else {
             const readStream = createReadStream('./public' + url, { autoClose: true })
@@ -82,7 +82,8 @@ export function serve(req: Http2ServerRequest, res: Http2ServerResponse): void {
         return
     } catch (err) {
         logger.error(err)
-        return res.writeHead(404).end()
+        res.writeHead(404).end()
+        return
     }
 }
 
