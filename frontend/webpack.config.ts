@@ -65,6 +65,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             new webpack.DefinePlugin({
                 'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development'),
                 'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
+                'process.env.TRANSLATION_NAMESPACE': JSON.stringify('translation')
             }) as unknown as webpack.WebpackPluginInstance,
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
             new MonacoWebpackPlugin({ languages: ['yaml'] }),
