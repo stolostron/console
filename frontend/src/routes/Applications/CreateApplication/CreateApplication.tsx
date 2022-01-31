@@ -7,9 +7,10 @@ import { NavigationPath } from '../../../NavigationPath'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { isType } from '../../../lib/is-type'
-import { gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
+import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
 import { unpackProviderConnection } from '../../../resources'
 import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
+import { useMemo } from 'react'
 
 // interface CreationStatus {
 //     status: string
@@ -69,6 +70,12 @@ export function CreateApplication() {
     const history = useHistory()
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
+    const [channels] = useRecoilState(channelsState)
+    const gitChannels = useMemo(
+        () => channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub'),
+        [channels]
+    )
+    const helmChannels = useMemo(() => channels.filter((channel) => channel.spec.type === 'HelmRepo'), [channels])
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
@@ -93,6 +100,8 @@ export function CreateApplication() {
             namespaces={availableNamespace}
             placements={availablePlacements}
             onCancel={() => history.push('.')}
+            gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
+            helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
         />
     )
 }
