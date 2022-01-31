@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import moment from 'moment'
+import moment, { Moment } from 'moment'
 import queryString from 'query-string'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { IResource } from '../../../resources'
@@ -100,4 +100,24 @@ export const getEditLink = (params: {
         kind,
         apiversion,
     })}`
+}
+
+export const getShortDateTime = (timestamp: string, now?: Moment) => {
+    const timeFormat = 'h:mm a'
+    const monthDayFormat = 'MMM D'
+    const yearFormat = 'YYYY'
+    if (!timestamp) {
+        return '-'
+    }
+    if (!now) {
+        now = moment()
+    }
+    const date = getMoment(timestamp)
+    if (date.isSame(now, 'day')) {
+        return date.format(timeFormat)
+    } else if (date.isSame(now, 'year')) {
+        return date.format(`${monthDayFormat}, ${timeFormat}`)
+    } else {
+        return date.format(`${monthDayFormat} ${yearFormat}, ${timeFormat}`)
+    }
 }
