@@ -14,11 +14,11 @@ export function GovernanceCreatePolicyEmptyState() {
     return (
         <AcmEmptyState
             title={'Create policies to start monitoring cluster health'}
-            message={t('Use the button below to create policies.')}
+            message={t('Use the button below to create a policy.')}
             action={
                 <div>
                     <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
-                        {'Create a policy'}
+                        {t('Create policy')}
                     </AcmButton>
                     <TextContent>
                         <Text
@@ -52,7 +52,7 @@ export function GovernanceManagePoliciesEmptyState() {
             action={
                 <div>
                     <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
-                        {'Create a policy'}
+                        {t('Create policy')}
                     </AcmButton>
                     <TextContent>
                         <Text
@@ -86,7 +86,7 @@ export function GovernanceCreatePolicysetEmptyState() {
             action={
                 <div>
                     <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
-                        {'Create policy set'}
+                        {t('Create policy set')}
                     </AcmButton>
                     <TextContent>
                         <Text

@@ -366,11 +366,7 @@ export default function PolicySetsPage() {
     }
 
     if (!policySets || policySets.length === 0) {
-        return (
-            <PageSection isWidthLimited>
-                <GovernanceCreatePolicysetEmptyState />
-            </PageSection>
-        )
+        return <GovernanceCreatePolicysetEmptyState />
     }
 
     return (
