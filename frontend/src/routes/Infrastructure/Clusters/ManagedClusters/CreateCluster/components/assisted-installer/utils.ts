@@ -124,6 +124,11 @@ export const onHostsNext = async ({ values, clusterDeployment, agents, agentClus
                     op: 'remove',
                     path: '/spec/clusterDeploymentName',
                 },
+                {
+                    op: 'replace',
+                    path: '/spec/role',
+                    value: '',
+                },
             ]).promise
         })
     )
