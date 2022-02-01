@@ -15,6 +15,7 @@ import {
 } from '@patternfly/react-core'
 import { SearchIcon, TimesIcon } from '@patternfly/react-icons/dist/js/icons'
 import { useEffect, useRef, useState } from 'react'
+import { NavigationPath } from '../../../../NavigationPath'
 
 function formatSearchSelections(currentSelections: string[]) {
     const searchChipObjects = currentSelections.map((chip: string) => {
@@ -35,13 +36,22 @@ function formatSearchSelections(currentSelections: string[]) {
 export default function CardViewToolbarSearch(props: {
     searchData: any
     dataKeyNames: string[]
+    searchFilter: Record<string, string[]>
     setSearchFilter: React.Dispatch<React.SetStateAction<Record<string, string[]>>>
 }) {
-    const { searchData, dataKeyNames, setSearchFilter } = props
+    const { searchData, dataKeyNames, searchFilter, setSearchFilter } = props
+
+    // If filter has already been preset generate chips here first
+    const presetChips: string[] = []
+    const searchFilterKeys = Object.keys(searchFilter)
+    searchFilterKeys.forEach((key: string) =>
+        searchFilter[key].forEach((value: string) => presetChips.push(`${key}: ${value}`))
+    )
+
     const [inputValue, setInputValue] = useState<string>('')
     const [selectedKey, setSelectedKey] = useState<string>('')
     const [menuIsOpen, setMenuIsOpen] = useState<boolean>(false)
-    const [currentChips, setCurrentChips] = useState<string[]>([])
+    const [currentChips, setCurrentChips] = useState<string[]>(presetChips)
     const [menuItemsText, setMenuItemsText] = useState<string[]>(dataKeyNames)
     const [menuItems, setMenuItems] = useState<JSX.Element[]>([])
 
@@ -56,6 +66,7 @@ export default function CardViewToolbarSearch(props: {
 
     /** callback for removing a chip from the chip selections */
     const deleteChip = (chipToDelete: any) => {
+        window.history.pushState({}, '', NavigationPath.policySets)
         const newChips = currentChips.filter((chip) => !Object.is(chip, chipToDelete))
         setCurrentChips(newChips)
         setSearchFilter(formatSearchSelections(newChips))
@@ -63,6 +74,7 @@ export default function CardViewToolbarSearch(props: {
 
     /** reset state hooks associated with key selection */
     const clearSelectedKey = () => {
+        window.history.pushState({}, '', NavigationPath.policySets)
         setInputValue('')
         setSelectedKey('')
         setMenuItemsText(dataKeyNames)
@@ -70,6 +82,7 @@ export default function CardViewToolbarSearch(props: {
 
     /** callback for clearing all selected chips, the text input, and any selected keys */
     const clearChipsAndInput = () => {
+        window.history.pushState({}, '', NavigationPath.policySets)
         setCurrentChips([])
         clearSelectedKey()
         setSearchFilter({})
@@ -194,6 +207,7 @@ export default function CardViewToolbarSearch(props: {
     const onSelect = (event: React.MouseEvent<Element, MouseEvent>) => {
         const target = event.target as HTMLElement
         const selectedText = target.innerText
+        window.history.pushState({}, '', NavigationPath.policySets)
 
         if (selectedKey.length) {
             selectValue(selectedText)

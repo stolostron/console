@@ -7,11 +7,11 @@ import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { managedClustersState, policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../../resources/policy-set'
+import { PolicySet, PolicySetResultCluster, PolicySetStatusResult } from '../../../../resources'
 
 const useStyles = makeStyles({
     body: {
@@ -30,7 +30,7 @@ const useStyles = makeStyles({
     },
     sectionSeparator: {
         borderBottom: '1px solid #D2D2D2',
-        margin: '0 -2rem',
+        margin: '0 -2rem 1rem -2rem',
     },
     donutContainer: {
         maxWidth: '450px',
@@ -66,17 +66,17 @@ const useStyles = makeStyles({
     },
 })
 
-function renderDonutChart(clusters: PolicySetResultClusters[], t: TFunction) {
+function renderDonutChart(clusters: PolicySetResultCluster[], t: TFunction) {
     const clusterCompliantCount = clusters.filter((cluster) => cluster.compliant === 'Compliant').length
     const clusterNonCompliantCount = clusters.filter((cluster) => cluster.compliant === 'NonCompliant').length
     const formattedData = [
         {
-            key: t('Clusters with policy violations'),
+            key: t('Clusters without policy violations'),
             value: clusterCompliantCount,
             isPrimary: true,
         },
         {
-            key: t('Clusters without policy violations'),
+            key: t('Clusters with policy violations'),
             value: clusterNonCompliantCount,
         },
     ]
@@ -115,8 +115,8 @@ function renderDonutChart(clusters: PolicySetResultClusters[], t: TFunction) {
     )
 }
 
-export function PolicySetDetailSidebar(props: { policySet: PolicySet; policySetClusters: PolicySetResultClusters[] }) {
-    const { policySet, policySetClusters } = props
+export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
+    const { policySet } = props
     const classes = useStyles()
     const { t } = useTranslation()
     const [managedClusters] = useRecoilState(managedClustersState)
@@ -126,8 +126,20 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet; policySetC
         setType(type)
     }
 
-    const policySetPolicies: PolicySetResultsStatus[] = policySet.status?.results.map(
-        (result: PolicySetResultsStatus) => {
+    const policySetClusters: PolicySetResultCluster[] = useMemo(() => {
+        return policySet.status.results.reduce((acc: PolicySetResultCluster[], curr: PolicySetStatusResult) => {
+            const currClusters = curr.clusters ?? []
+            const newClusters: PolicySetResultCluster[] = currClusters.filter((cluster: PolicySetResultCluster) => {
+                if (acc.filter((c) => c.clusterName === cluster.clusterName).length === 0) {
+                    return cluster
+                }
+            })
+            return acc.concat(newClusters)
+        }, [])
+    }, [policySet])
+
+    const policySetPolicies: PolicySetStatusResult[] = policySet.status?.results.map(
+        (result: PolicySetStatusResult) => {
             return result
         },
         []
@@ -136,11 +148,11 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet; policySetC
     const clusterColumnDefs = [
         {
             header: t('Cluster name'),
-            search: (cluster: PolicySetResultClusters) => cluster.clusterName,
-            sort: (a: PolicySetResultClusters, b: PolicySetResultClusters) =>
+            search: (cluster: PolicySetResultCluster) => cluster.clusterName,
+            sort: (a: PolicySetResultCluster, b: PolicySetResultCluster) =>
                 /* istanbul ignore next */
                 compareStrings(a.clusterName, b.clusterName),
-            cell: (cluster: PolicySetResultClusters) => (
+            cell: (cluster: PolicySetResultCluster) => (
                 <a href={`/multicloud/infrastructure/clusters/details/${cluster.clusterName}/overview`}>
                     {cluster.clusterName}
                 </a>
@@ -148,12 +160,12 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet; policySetC
         },
         {
             header: t('Policy violation'),
-            sort: (a: PolicySetResultClusters, b: PolicySetResultClusters) => {
+            sort: (a: PolicySetResultCluster, b: PolicySetResultCluster) => {
                 let violationCountA = 0
                 let violationCountB = 0
-                policySet.status?.results.forEach((result: PolicySetResultsStatus) => {
+                policySet.status?.results.forEach((result: PolicySetStatusResult) => {
                     result?.clusters &&
-                        result.clusters.forEach((c: PolicySetResultClusters) => {
+                        result.clusters.forEach((c: PolicySetResultCluster) => {
                             if (c.clusterName === a.clusterName && a.compliant === 'NonCompliant') {
                                 violationCountA++
                             } else if (c.clusterName === b.clusterName && b.compliant === 'NonCompliant') {
@@ -163,14 +175,18 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet; policySetC
                 })
                 return compareNumbers(violationCountA, violationCountB)
             },
-            cell: (cluster: PolicySetResultClusters) => {
+            cell: (cluster: PolicySetResultCluster) => {
                 let violationCount = 0
+                let totalPolicySetPoliciesOnCluster = 0
                 // Get total count of policy violations for a specific cluster
-                policySet.status?.results.forEach((result: PolicySetResultsStatus) => {
+                policySet.status?.results.forEach((result: PolicySetStatusResult) => {
                     result?.clusters &&
-                        result.clusters.forEach((c: PolicySetResultClusters) => {
-                            if (c.clusterName === cluster.clusterName && cluster.compliant === 'NonCompliant') {
-                                violationCount++
+                        result.clusters.forEach((c: PolicySetResultCluster) => {
+                            if (c.clusterName === cluster.clusterName) {
+                                if (c.compliant === 'NonCompliant') {
+                                    violationCount++
+                                }
+                                totalPolicySetPoliciesOnCluster++
                             }
                         })
                 })
@@ -183,14 +199,14 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet; policySetC
                         )}
                         <p
                             style={{ marginLeft: '.25rem' }}
-                        >{`${violationCount} of ${policySet.spec.policies.length} in violation`}</p>
+                        >{`${violationCount} of ${totalPolicySetPoliciesOnCluster} in violation`}</p>
                     </div>
                 )
             },
         },
         {
             header: t('Labels'),
-            cell: (clusterInfo: PolicySetResultClusters) => {
+            cell: (clusterInfo: PolicySetResultCluster) => {
                 const cluster = managedClusters.find((cluster) => cluster.metadata.name === clusterInfo.clusterName)
                 if (cluster && cluster.metadata.labels) {
                     const labelKeys = Object.keys(cluster.metadata.labels)
@@ -233,35 +249,37 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet; policySetC
     const policyColumnDefs = [
         {
             header: t('Policy name'),
-            search: (policy: PolicySetResultsStatus) => policy.policy,
-            sort: (a: PolicySetResultsStatus, b: PolicySetResultsStatus) =>
+            search: (policy: PolicySetStatusResult) => policy.policy,
+            sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) =>
                 /* istanbul ignore next */
                 compareStrings(a.policy, b.policy),
-            cell: (policy: PolicySetResultsStatus) => (
-                <a href={`/multicloud/governance/policies/${policy.policy}`}>{policy.policy}</a>
-            ),
+            cell: (policy: PolicySetStatusResult) => {
+                // TODO after policydetails page is added
+                // <a href={`/multicloud/governance/policies/${policy.policy}`}>{policy.policy}</a>
+                return policy.policy
+            },
         },
         {
             header: t('Cluster violation'),
-            sort: (a: PolicySetResultsStatus, b: PolicySetResultsStatus) => {
+            sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) => {
                 let violationCountA = 0
                 let violationCountB = 0
-                a?.clusters?.forEach((c: PolicySetResultClusters) => {
+                a?.clusters?.forEach((c: PolicySetResultCluster) => {
                     if (c.compliant === 'NonCompliant') {
                         violationCountA++
                     }
                 })
-                b?.clusters?.forEach((c: PolicySetResultClusters) => {
+                b?.clusters?.forEach((c: PolicySetResultCluster) => {
                     if (c.compliant === 'NonCompliant') {
                         violationCountB++
                     }
                 })
                 return compareNumbers(violationCountA, violationCountB)
             },
-            cell: (policy: PolicySetResultsStatus) => {
+            cell: (policy: PolicySetStatusResult) => {
                 let violationCount = 0
                 // Get total count of cluster violations for a specific policy
-                policy?.clusters?.forEach((c: PolicySetResultClusters) => {
+                policy?.clusters?.forEach((c: PolicySetResultCluster) => {
                     if (c.compliant === 'NonCompliant') {
                         violationCount++
                     }
@@ -282,13 +300,13 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet; policySetC
         },
         {
             header: t('Remediation'),
-            sort: (a: PolicySetResultsStatus, b: PolicySetResultsStatus) => {
+            sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) => {
                 const policyA = policies.find((p) => p.metadata.name === a.policy)
                 const policyB = policies.find((p) => p.metadata.name === b.policy)
                 /* istanbul ignore next */
                 return compareStrings(policyA?.spec.remediationAction, policyB?.spec.remediationAction)
             },
-            cell: (policyStatus: PolicySetResultsStatus) => {
+            cell: (policyStatus: PolicySetStatusResult) => {
                 const policy = policies.find((p) => p.metadata.name === policyStatus.policy)
                 return policy?.spec.remediationAction ?? '-'
             },
@@ -329,7 +347,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet; policySetC
                 </ToggleGroup>
             </div>
             {type === 'Clusters' ? (
-                <AcmTable<PolicySetResultClusters>
+                <AcmTable<PolicySetResultCluster>
                     plural="Clusters"
                     items={policySetClusters}
                     initialSort={{
@@ -345,7 +363,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet; policySetC
                     searchPlaceholder={t('Find by name')}
                 />
             ) : (
-                <AcmTable<PolicySetResultsStatus>
+                <AcmTable<PolicySetStatusResult>
                     plural="Clusters"
                     items={policySetPolicies}
                     initialSort={{
