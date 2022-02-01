@@ -55,7 +55,7 @@ export default function WrappedImportBareMetalAssetsButton({ appendTable }) {
     const { t } = useTranslation()
     return (
         <div>
-            <Button id={t('modal.import-acmbaremetalasset.button.key')} onClick={importCSV} variant="secondary">
+            <Button id={'modal.import-acmbaremetalasset.button.key'} onClick={importCSV} variant="secondary">
                 {t('modal.import-acmbaremetalasset.button.text')}
             </Button>
             <Tooltip control={{ tooltip: t('modal.import-acmbaremetalasset.button.tooltip') }} />
