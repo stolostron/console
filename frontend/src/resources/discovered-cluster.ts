@@ -3,8 +3,8 @@ import { listResources } from './utils/resource-request'
 import { IResource, IResourceDefinition } from './resource'
 import { Metadata } from './metadata'
 
-export const DiscoveredClusterApiVersion = 'discovery.open-cluster-management.io/v1alpha1'
-export type DiscoveredClusterApiVersionType = 'discovery.open-cluster-management.io/v1alpha1'
+export const DiscoveredClusterApiVersion = 'discovery.open-cluster-management.io/v1'
+export type DiscoveredClusterApiVersionType = 'discovery.open-cluster-management.io/v1'
 
 export const DiscoveredClusterKind = 'DiscoveredCluster'
 export type DiscoveredClusterKindType = 'DiscoveredCluster'
