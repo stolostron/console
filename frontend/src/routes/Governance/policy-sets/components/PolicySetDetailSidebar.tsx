@@ -127,15 +127,23 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
     }
 
     const policySetClusters: PolicySetResultCluster[] = useMemo(() => {
-        return policySet.status.results.reduce((acc: PolicySetResultCluster[], curr: PolicySetStatusResult) => {
-            const currClusters = curr.clusters ?? []
-            const newClusters: PolicySetResultCluster[] = currClusters.filter((cluster: PolicySetResultCluster) => {
-                if (acc.filter((c) => c.clusterName === cluster.clusterName).length === 0) {
-                    return cluster
+        const clusters: PolicySetResultCluster[] = []
+        policySet.status.results.forEach((statusResult: PolicySetStatusResult) => {
+            const currentClusters = statusResult.clusters ?? []
+            currentClusters.forEach((cluster: PolicySetResultCluster) => {
+                const matchIdx = clusters.findIndex(
+                    (c: PolicySetResultCluster) => c.clusterName === cluster.clusterName
+                )
+                if (matchIdx === -1) {
+                    clusters.push(cluster)
+                }
+                if (matchIdx > -1 && clusters[matchIdx].compliant === 'Compliant') {
+                    clusters.splice(matchIdx, 1)
+                    clusters.push(cluster)
                 }
             })
-            return acc.concat(newClusters)
-        }, [])
+        })
+        return clusters
     }, [policySet])
 
     const policySetPolicies: PolicySetStatusResult[] = policySet.status?.results.map(

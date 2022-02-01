@@ -52,9 +52,9 @@ function calculatePolicySetPolicyStats(summary: IPolicySetSummary, policySet: Po
 }
 
 function caculatePolicySetClusterStats(summary: IPolicySetSummary, policySet: PolicySet) {
+    const clusterStats: { [clusterName: string]: boolean } = {}
     for (const result of policySet.status.results) {
         if (!result.clusters) continue
-        const clusterStats: { [clusterName: string]: boolean } = {}
         for (const clusterResult of result.clusters) {
             if (clusterResult.compliant === 'Compliant' && clusterStats[clusterResult.clusterName] !== false) {
                 clusterStats[clusterResult.clusterName] = true
