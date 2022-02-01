@@ -50,6 +50,7 @@
         "js-yaml": "^4.1.0",
         "lodash": "^4.17.21",
         "moment": "^2.29.1",
+        "moment-timezone": "^0.5.34",
         "monaco-editor": "^0.31.1",
         "openshift-assisted-ui-lib": "2.0.11",
         "ramda": "^0.28.0",
