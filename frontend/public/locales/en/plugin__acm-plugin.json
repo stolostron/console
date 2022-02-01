@@ -1687,7 +1687,6 @@
     "table.submariner.nodes": "Gateway nodes labeled",
     "table.type": "Type",
     "table.zone": "Zone",
-    "techpreview.msg": "<bold>Technology Preview</bold>: For more information, <a>view documentation</a> on Discovered clusters",
     "template.add": "Add template",
     "template.clusterCreate.info": "(Optional) Choose an automation job template to automatically run Ansible jobs at different stages of a cluster's life cycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed.",
     "template.clusterCreate.name": "Ansible Automation Template",
