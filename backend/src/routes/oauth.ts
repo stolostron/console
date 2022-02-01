@@ -58,12 +58,12 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
                 } HttpOnly; Path=/`,
                 location: process.env.FRONTEND_URL,
             }
-            return res.writeHead(302, headers).end()
+            res.writeHead(302, headers).end()
         } else {
-            return respondInternalServerError(req, res)
+            respondInternalServerError(req, res)
         }
     } else {
-        return respondInternalServerError(req, res)
+        respondInternalServerError(req, res)
     }
 }
 
