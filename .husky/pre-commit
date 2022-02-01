@@ -1,4 +1,5 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-node_modules/.bin/ts-node --skip-project scripts/copyright-fix
+npm run copyright:fix
+cd frontend && npm run i18n && ! (git diff --name-only | grep locales)
