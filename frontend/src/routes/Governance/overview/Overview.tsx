@@ -13,8 +13,6 @@ import {
     TextVariants,
 } from '@patternfly/react-core'
 import {
-    AcmButton,
-    AcmEmptyState,
     AcmInlineProvider,
     AcmInlineStatusGroup,
     AcmLabels,
@@ -32,6 +30,7 @@ import { DistributionField } from '../../Infrastructure/Clusters/ManagedClusters
 import { StatusField } from '../../Infrastructure/Clusters/ManagedClusters/components/StatusField'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { ClusterPolicyViolationCard, ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
+import { GovernanceManagePoliciesEmptyState } from '../components/GovernanceEmptyState'
 import { PolicyViolationIcons, PolicyViolationsCard } from '../components/PolicyViolations'
 import { IGovernanceData, IPolicyGrouping, risksHasValues } from '../useGovernanceData'
 
@@ -175,18 +174,7 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
     )
 
     if (!hasRisks) {
-        return (
-            <PageSection isWidthLimited>
-                <AcmEmptyState
-                    title={'You don’t have any policies applied to clusters'}
-                    action={
-                        <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
-                            {'Go to policies'}
-                        </AcmButton>
-                    }
-                />
-            </PageSection>
-        )
+        return <GovernanceManagePoliciesEmptyState />
     }
     return (
         <PageSection isWidthLimited>

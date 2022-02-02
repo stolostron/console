@@ -207,7 +207,7 @@ export default function CreateClusterPage() {
                         setCreationStatus({
                             status: 'ERROR',
                             messages: [
-                                'Your ansible credential secret has been destroyed, create a new Automation template with an existing Ansible automation credential to proceed.',
+                                'Your Ansible Automation Platform credential was deleted. Create a new template with an Ansible Automation Platform credential.',
                             ],
                         })
                         return status
