@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Policy/PolicyWizard'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
