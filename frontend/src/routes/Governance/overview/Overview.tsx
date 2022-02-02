@@ -30,7 +30,10 @@ import { DistributionField } from '../../Infrastructure/Clusters/ManagedClusters
 import { StatusField } from '../../Infrastructure/Clusters/ManagedClusters/components/StatusField'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { ClusterPolicyViolationCard, ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
-import { GovernanceManagePoliciesEmptyState } from '../components/GovernanceEmptyState'
+import {
+    GovernanceCreatePolicyEmptyState,
+    GovernanceManagePoliciesEmptyState,
+} from '../components/GovernanceEmptyState'
 import { PolicyViolationIcons, PolicyViolationsCard } from '../components/PolicyViolations'
 import { IGovernanceData, IPolicyGrouping, risksHasValues } from '../useGovernanceData'
 
@@ -172,7 +175,9 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
         ],
         []
     )
-
+    if (!governanceData.policies || governanceData.policies.length === 0) {
+        return <GovernanceCreatePolicyEmptyState />
+    }
     if (!hasRisks) {
         return <GovernanceManagePoliciesEmptyState />
     }
