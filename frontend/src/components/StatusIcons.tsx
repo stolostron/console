@@ -33,9 +33,9 @@ export function StatusIcons(props: {
 
     if (props.unknown !== undefined && props.unknown) {
         statuses.push({
-            key: 'ready',
+            key: 'unknown',
             count: props.unknown,
-            icon: <ExclamationTriangleIcon color="var(--pf-global--icon--Color--light)" />,
+            icon: <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />,
             tooltip: props.unknownTooltip,
         })
     }

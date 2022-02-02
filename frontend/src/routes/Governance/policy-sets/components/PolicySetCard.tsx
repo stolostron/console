@@ -10,13 +10,11 @@ import {
     DropdownItem,
     DropdownSeparator,
     KebabToggle,
-    Label,
-    LabelGroup,
     Stack,
 } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmDrawerContext } from '@stolostron/ui-components'
 import { useContext, useState } from 'react'
+import { StatusIcons } from '../../../../components/StatusIcons'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { deleteResource, PolicySet } from '../../../../resources'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
@@ -98,58 +96,46 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                 <CardTitle>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         {policySet.metadata.name}
-                        <p style={{ fontSize: '12px', color: '#6A6E73', fontWeight: 100 }}>
+                        <div style={{ fontSize: 'small', opacity: 0.6 }}>
                             {`Namespace: ${policySet.metadata.namespace}`}
-                        </p>
+                        </div>
                     </div>
                 </CardTitle>
             </CardHeader>
-            <CardBody>
-                <Stack hasGutter>
-                    <div>{policySet.spec.description}</div>
-                    <Stack>
-                        <div style={{ marginTop: '.5rem' }}>
-                            <strong>{totalClusterCount}</strong> clusters
-                        </div>
+            {(totalClusterCount || policySet.spec.description) && (
+                <CardBody>
+                    <Stack hasGutter>
+                        <div>{policySet.spec.description}</div>
                         {totalClusterCount > 0 && (
-                            <LabelGroup>
-                                {clusterNonViolationCount > 0 && (
-                                    <Label icon={<CheckCircleIcon />} color="green">
-                                        {clusterNonViolationCount}
-                                    </Label>
-                                )}
-                                {clusterViolationCount > 0 && (
-                                    <Label icon={<ExclamationCircleIcon />} color="red">
-                                        {clusterViolationCount}
-                                    </Label>
-                                )}
-                            </LabelGroup>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <span>
+                                    <strong>{totalClusterCount}</strong> clusters
+                                </span>
+                                <div style={{ paddingLeft: 16 }}>
+                                    <StatusIcons
+                                        compliant={clusterNonViolationCount}
+                                        violations={clusterViolationCount}
+                                    />
+                                </div>
+                            </div>
                         )}
-                        <div style={{ marginTop: '.5rem' }}>
-                            <strong>{totalPolicyCount}</strong> policies
-                        </div>
-                        {totalPolicyCount > 0 && (
-                            <LabelGroup>
-                                {policyNonViolationCount > 0 && (
-                                    <Label icon={<CheckCircleIcon />} color="green">
-                                        {policyNonViolationCount}
-                                    </Label>
-                                )}
-                                {policyViolationCount > 0 && (
-                                    <Label icon={<ExclamationCircleIcon />} color="red">
-                                        {policyViolationCount}
-                                    </Label>
-                                )}
-                                {policyUnknownCount > 0 && (
-                                    <Label icon={<ExclamationTriangleIcon color="orange" />} color="orange">
-                                        {policyUnknownCount}
-                                    </Label>
-                                )}
-                            </LabelGroup>
+                        {totalClusterCount > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <span>
+                                    <strong>{totalPolicyCount}</strong> policies
+                                </span>
+                                <div style={{ paddingLeft: 16 }}>
+                                    <StatusIcons
+                                        compliant={policyNonViolationCount}
+                                        violations={policyViolationCount}
+                                        unknown={policyUnknownCount}
+                                    />
+                                </div>
+                            </div>
                         )}
                     </Stack>
-                </Stack>
-            </CardBody>
+                </CardBody>
+            )}
         </Card>
     )
 }

@@ -48,7 +48,7 @@ export function StatusLabeledIcons(props: {
     }
 
     return (
-        <Flex justifyContent={{ default: 'justifyContentSpaceAround' }} style={{ rowGap: 24 }}>
+        <Flex justifyContent={{ default: 'justifyContentSpaceAround' }} style={{ gap: 24 }}>
             {statuses.map(({ key, icon, status, subtitle }) => (
                 <Flex key={key}>
                     <FlexItem>{icon}</FlexItem>

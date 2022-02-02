@@ -1,8 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-    Gallery,
     PageSection,
-    PageSectionVariants,
     Pagination,
     PaginationVariant,
     Toolbar,
@@ -15,6 +13,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
+import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { PolicySet } from '../../../resources/policy-set'
@@ -194,8 +193,8 @@ export default function PolicySetsPage() {
 
     return (
         <Fragment>
-            <PageSection variant={PageSectionVariants.light}>
-                <Toolbar isFullHeight={true} id="toolbar-group-types">
+            <div style={{ overflowY: 'scroll', height: '100%' }}>
+                <Toolbar id="toolbar-group-types" isSticky>
                     <ToolbarContent>
                         <Fragment>
                             <ToolbarGroup variant="filter-group">
@@ -231,31 +230,22 @@ export default function PolicySetsPage() {
                         </Fragment>
                     </ToolbarContent>
                 </Toolbar>
-            </PageSection>
-            {filteredPolicySets.length === 0 ? (
-                <AcmEmptyState title={t('No resources match the current filter')} showIcon={true} />
-            ) : (
-                <PageSection isFilled>
-                    <Gallery
-                        hasGutter
-                        minWidths={{
-                            sm: '350px',
-                            md: '350px',
-                            lg: '350px',
-                            xl: '350px',
-                            '2xl': '350px',
-                        }}
-                    >
-                        {/* Need to compute all cards here then slice. The PolicySet card render uses usePolicySetSummary which includes a react hook.
+                {filteredPolicySets.length === 0 ? (
+                    <AcmEmptyState title={t('No resources match the current filter')} showIcon={true} />
+                ) : (
+                    <PageSection isFilled>
+                        <AcmMasonry minSize={400}>
+                            {/* Need to compute all cards here then slice. The PolicySet card render uses usePolicySetSummary which includes a react hook.
                         So paging to a page with less cards than the previous causes a react hook error if rendered in time. */}
-                        {filteredPolicySets
-                            .map((policyset: PolicySet, cardIdx: number) => {
-                                return <PolicySetCard policySet={policyset} cardIdx={cardIdx} />
-                            })
-                            .slice((actualPage - 1) * perPage, (actualPage - 1) * perPage + perPage)}
-                    </Gallery>
-                </PageSection>
-            )}
+                            {filteredPolicySets
+                                .map((policyset: PolicySet, cardIdx: number) => {
+                                    return <PolicySetCard policySet={policyset} cardIdx={cardIdx} />
+                                })
+                                .slice((actualPage - 1) * perPage, (actualPage - 1) * perPage + perPage)}
+                        </AcmMasonry>
+                    </PageSection>
+                )}
+            </div>
             <Pagination
                 itemCount={filteredPolicySets.length}
                 perPage={perPage}
@@ -264,6 +254,7 @@ export default function PolicySetsPage() {
                 onSetPage={/* istanbul ignore next */ (_event, page) => setPage(page)}
                 onPerPageSelect={/* istanbul ignore next */ (_event, perPage) => updatePerPage(perPage)}
                 aria-label="Pagination bottom"
+                isSticky
             />
         </Fragment>
     )
