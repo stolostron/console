@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import {
-    Button,
     Card,
     CardActions,
     CardBody,
@@ -24,12 +22,13 @@ import {
     ToolbarItem,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmDrawerContext, AcmEmptyState } from '@stolostron/ui-components'
+import { AcmButton, AcmDrawerContext, AcmEmptyState } from '@stolostron/ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
-// import { deleteResource } from '../../../resources'
+import { NavigationPath } from '../../../NavigationPath'
 import { PolicySet, PolicySetResultClusters, PolicySetResultsStatus } from '../../../resources/policy-set'
 import { GovernanceCreatePolicysetEmptyState } from '../components/GovernanceEmptyState'
 import CardViewToolbarFilter from './components/CardViewToolbarFilter'
@@ -395,15 +394,9 @@ export default function PolicySetsPage() {
                                 </ToolbarItem>
                             </ToolbarGroup>
                             <ToolbarItem key={`create-policy-set-toolbar-item`}>
-                                <Button
-                                    id={'create-policy-set'}
-                                    key={'create-policy-set'}
-                                    // onClick={() => {})} // TODO create PolicySet wizard
-                                    isDisabled={true} // TODO create PolicySet wizard
-                                    variant={'primary'}
-                                >
+                                <AcmButton component={Link} variant="primary" to={NavigationPath.createPolicySet}>
                                     {t('Create policy set')}
-                                </Button>
+                                </AcmButton>
                             </ToolbarItem>
                             <ToolbarItem variant="pagination">
                                 <Pagination

@@ -85,7 +85,7 @@ export function GovernanceCreatePolicysetEmptyState() {
             message={t('Use the button below to create a policy set.')}
             action={
                 <div>
-                    <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
+                    <AcmButton component={Link} variant="primary" to={NavigationPath.createPolicySet}>
                         {'Create policy set'}
                     </AcmButton>
                     <TextContent>

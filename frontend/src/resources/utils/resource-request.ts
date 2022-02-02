@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { noop } from 'lodash'
 import { getCookie } from '.'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
@@ -59,6 +60,37 @@ export function createResource<Resource extends IResource, ResultType = Resource
 ): IRequestResult<ResultType> {
     const url = getBackendUrl() + getResourceApiPath(resource)
     return postRequest<Resource, ResultType>(url, resource)
+}
+
+export async function createResources(resources: IResource[]): Promise<string | undefined> {
+    if (!Array.isArray(resources)) return 'Error - resources are not an array'
+    for (const resource of resources) {
+        try {
+            const existingResource = await getResource(resource).promise
+            if (existingResource)
+                return 'Resource of kind {0} in namespace {1} already exists'
+                    .replace('{0}', resource.metadata?.name ?? '')
+                    .replace('{1}', resource.metadata?.namespace ?? '')
+        } catch (err) {
+            // no nothing
+        }
+    }
+    const createdResources: IResource[] = []
+    try {
+        for (const resource of resources) {
+            const createdResource = await createResource(resource).promise
+            createdResources.push(createdResource)
+        }
+    } catch (err) {
+        for (const createdResource of createdResources) {
+            deleteResource(createdResource).promise.catch(noop)
+        }
+        if (err instanceof Error) {
+            return err.message
+        } else {
+            return 'unknown error'
+        }
+    }
 }
 
 export function replaceResource<Resource extends IResource, ResultType = Resource>(
