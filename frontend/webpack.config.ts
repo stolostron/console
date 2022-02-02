@@ -34,7 +34,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         },
         module: {
             rules: [
-                { test: /\.(hbs|yaml)$/, loader: 'raw-loader' },
+                { test: /\.(hbs|yaml)$/, type: 'asset/source' },
                 { test: /\.(svg)$/, use: '@svgr/webpack' },
                 { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
