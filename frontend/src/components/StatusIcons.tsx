@@ -49,7 +49,9 @@ export function StatusIcons(props: {
                         <Flex spaceItems={{ default: 'spaceItemsSm' }}>
                             <FlexItem>{icon}</FlexItem>
                             <FlexItem>
-                                <a href="#">{count}</a>
+                                {/* TODO add custom href capability */}
+                                {/* <a href="#">{count}</a> */}
+                                {count}
                             </FlexItem>
                         </Flex>
                     </Tooltip>
