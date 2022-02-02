@@ -193,7 +193,7 @@ export default function PolicySetsPage() {
 
     return (
         <Fragment>
-            <div style={{ overflowY: 'scroll', height: '100%' }}>
+            <div style={{ overflowY: 'auto', height: '100%' }}>
                 <Toolbar id="toolbar-group-types" isSticky>
                     <ToolbarContent>
                         <Fragment>
