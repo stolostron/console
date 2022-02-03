@@ -55,7 +55,6 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                                     <a>{policy.metadata.name}</a>
                                 </NoWrap>
                             </div>
-                            <div style={{ opacity: 0.7, fontSize: 'smaller' }}>ns: {policy.metadata.namespace}</div>
                         </Fragment>
                         // <Link
                         //     to={{
