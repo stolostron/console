@@ -183,7 +183,7 @@ export default function WelcomePage() {
                     <AcmMasonry minSize={400}>
                         {connections.map((card) => (
                             <div>
-                                <Link to={card.link} style={{ color: 'black', textDecoration: 'none' }}>
+                                <a href={card.link} target="_blank" style={{ color: 'black', textDecoration: 'none' }}>
                                     <Card
                                         isRounded
                                         isHoverable
@@ -198,7 +198,7 @@ export default function WelcomePage() {
                                         </CardTitle>
                                         <CardBody>{card.description}</CardBody>
                                     </Card>
-                                </Link>
+                                </a>
                             </div>
                         ))}
                     </AcmMasonry>
