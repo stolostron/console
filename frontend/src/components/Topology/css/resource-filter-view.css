@@ -1,0 +1,29 @@
+.resource-filter-view {
+    width: 100%;
+    color: black;
+}
+
+.resource-filter-view .filter-sections-container {
+    padding-bottom: 20px;
+}
+
+.resource-filter-view .filter-sections-container .filter-section {
+    margin: 0 0 20px 5px;
+}
+.resource-filter-view .filter-sections-container .filter-section .filter-section-title {
+    margin-bottom: 0.5rem;
+    font-size: 14px;
+    font-weight: 600;
+}
+.resource-filter-view .filter-sections-container .filter-section .pf-c-check {
+    margin-bottom: 1rem;
+}
+.resource-filter-view .filter-sections-container .filter-section .pf-c-check__label {
+    font-size: 14px;
+}
+.resource-filter-view .filter-sections-container .filter-section .filter-section-expand {
+    font-size: 12px;
+    color: #1383f3;
+    cursor: pointer;
+    outline: none;
+}

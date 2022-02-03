@@ -15,12 +15,13 @@
         "frontend": "cd frontend && npm start",
         "plugin:watch": "cd frontend && npm run plugin:watch",
         "plugin:serve": "cd frontend && npm run plugin:serve",
-        "test": "concurrently --kill-others-on-fail npm:frontend:test npm:backend:test -n frontend,backend -c green,blue",
+        "test": "concurrently --kill-others-on-fail npm:frontend:test npm:backend:test npm:copyright:check -n frontend,backend -c green,blue",
         "frontend:test": "cd frontend && npm test",
         "backend:test": "cd backend && npm test",
-        "build": "concurrently npm:frontend:build npm:backend:build -n frontend,backend -c green,blue",
+        "build": "concurrently npm:frontend:build npm:backend:build npm:plugin:build -n frontend,backend,plugin -c green,blue,magenta",
         "backend:build": "cd backend && npm run build",
         "frontend:build": "cd frontend && npm run build",
+        "plugin:build": "cd frontend && npm run plugin:build",
         "clean": "concurrently npm:frontend:clean npm:backend:clean -n frontend,backend -c green,blue",
         "backend:clean": "cd backend && npm run clean",
         "frontend:clean": "cd frontend && npm run clean",
@@ -39,12 +40,12 @@
         "prepare": "husky install"
     },
     "devDependencies": {
-        "@types/node": "^14.18.6",
+        "@types/node": "^14.18.9",
         "concurrently": "^7.0.0",
         "husky": "^7.0.4",
         "prettier": "^2.5.1",
         "ts-node": "^10.4.0",
-        "typescript": "^4.5.4"
+        "typescript": "^4.5.5"
     },
     "prettier": {
         "printWidth": 120,

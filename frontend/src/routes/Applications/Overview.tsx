@@ -4,7 +4,7 @@ import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } fr
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { TFunction } from 'react-i18next'
@@ -45,6 +45,7 @@ import { Link } from 'react-router-dom'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import { useQuery } from '../../lib/useQuery'
 import { queryRemoteArgoApps } from '../../lib/search'
+import { NavigationPath } from '../../NavigationPath'
 
 const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
@@ -158,7 +159,7 @@ export default function ApplicationsOverview() {
         open: false,
     })
     const tableItems: IResource[] = []
-    const { data, loading, startPolling } = useQuery(useCallback(() => queryRemoteArgoApps(), []))
+    const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
     useEffect(startPolling, [startPolling])
 
     const calculateClusterCount = (resource: ArgoApplication, clusterCount: any, clusterList: string[]) => {
@@ -435,10 +436,20 @@ export default function ApplicationsOverview() {
         () => [
             {
                 header: t('Name'),
-                cell: 'metadata.name',
                 sort: 'metadata.name',
                 search: 'metadata.name',
                 transforms: [cellWidth(20)],
+                cell: (application) => (
+                    <span style={{ whiteSpace: 'nowrap' }}>
+                        <Link
+                            to={NavigationPath.applicationDetails
+                                .replace(':namespace', application.metadata?.namespace as string)
+                                .replace(':name', application.metadata?.name as string)}
+                        >
+                            {application.metadata?.name}
+                        </Link>
+                    </span>
+                ),
             },
             {
                 header: t('Type'),
@@ -572,7 +583,6 @@ export default function ApplicationsOverview() {
     const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
     const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
     const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
-    const [tableContent, setTableContent] = useState<ReactNode>()
 
     let modalWarnings: string
     const getAppChildResources = (app: IResource) => {
@@ -837,8 +847,31 @@ export default function ApplicationsOverview() {
         return actions
     }
 
-    const generateTable = () => {
-        return (
+    useEffect(() => {
+        const canCreateApplicationPromise = canUser('create', ApplicationDefinition)
+        canCreateApplicationPromise.promise
+            .then((result) => setCanCreateApplication(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreateApplicationPromise.abort()
+    }, [])
+    useEffect(() => {
+        const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
+        canDeleteApplicationPromise.promise
+            .then((result) => setCanDeleteApplication(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeleteApplicationPromise.abort()
+    }, [])
+    useEffect(() => {
+        const canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
+        canDeleteApplicationSetPromise.promise
+            .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeleteApplicationSetPromise.abort()
+    }, [])
+
+    return (
+        <PageSection>
+            <DeleteResourceModal {...modalProps} />
             <AcmTable<IResource>
                 key="data-table"
                 plural={t('Applications')}
@@ -872,46 +905,6 @@ export default function ApplicationsOverview() {
                 }
                 rowActionResolver={rowActionResolver}
             />
-        )
-    }
-
-    useEffect(() => {
-        const canCreateApplicationPromise = canUser('create', ApplicationDefinition)
-        canCreateApplicationPromise.promise
-            .then((result) => setCanCreateApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateApplicationPromise.abort()
-    }, [])
-    useEffect(() => {
-        const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
-        canDeleteApplicationPromise.promise
-            .then((result) => setCanDeleteApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationPromise.abort()
-    }, [])
-    useEffect(() => {
-        const canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
-        canDeleteApplicationSetPromise.promise
-            .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationSetPromise.abort()
-    }, [])
-
-    useEffect(() => {
-        setTableContent(generateTable())
-
-        const interval = setInterval(() => {
-            setTableContent(generateTable())
-        }, 5000)
-        return () => {
-            clearInterval(interval)
-        }
-    }, [canCreateApplication, canDeleteApplication, canDeleteApplicationSet, data])
-
-    return (
-        <PageSection>
-            <DeleteResourceModal {...modalProps} />
-            {tableContent}
         </PageSection>
     )
 }

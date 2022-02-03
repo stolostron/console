@@ -10,6 +10,7 @@ import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 import * as path from 'path'
 import ReactRefreshTypeScript from 'react-refresh-typescript'
 import webpack from 'webpack'
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 
 module.exports = function (_env: any, argv: { hot?: boolean; mode: string | undefined }) {
@@ -34,7 +35,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         },
         module: {
             rules: [
-                { test: /\.hbs$/, loader: 'raw-loader' },
+                { test: /\.(hbs|yaml)$/, type: 'asset/source' },
                 { test: /\.(svg)$/, use: '@svgr/webpack' },
                 { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
@@ -77,6 +78,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 chunkFilename: '[id].[contenthash:8].css',
                 ignoreOrder: false, // Enable to remove warnings about conflicting order
             }),
+            new BundleAnalyzerPlugin({ analyzerMode: 'disabled' }),
         ].filter(Boolean) as webpack.WebpackPluginInstance[],
         output: {
             assetModuleFilename: 'assets/[name].[contenthash:8][ext][query]',

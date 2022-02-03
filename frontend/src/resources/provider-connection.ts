@@ -16,16 +16,20 @@ export const ProviderConnectionDefinition: IResourceDefinition = {
 }
 
 export interface ProviderConnectionStringData {
+    // AWS
     aws_access_key_id?: string
     aws_secret_access_key?: string
 
+    // Azure
     baseDomainResourceGroupName?: string
     ['osServicePrincipal.json']?: string
     cloudName?: string
 
+    // GCP
     projectID?: string
     ['osServiceAccount.json']?: string
 
+    // vSphere
     username?: string
     password?: string
     vCenter?: string
@@ -34,6 +38,7 @@ export interface ProviderConnectionStringData {
     datacenter?: string
     defaultDatastore?: string
 
+    // Hive BareMetal
     libvirtURI?: string
     sshKnownHosts?: string
     imageMirror?: string
@@ -41,10 +46,18 @@ export interface ProviderConnectionStringData {
     clusterOSImage?: string
     additionalTrustBundle?: string
 
+    // OpenShift Cluster Manager
     ocmAPIToken?: string
 
+    // OpenStack
     ['clouds.yaml']?: string
     cloud?: string
+
+    // Red Hat Virtualization
+    ovirt_url?: string
+    ovirt_username?: string
+    ovirt_password?: string
+    ovirt_ca_bundle?: string
 
     baseDomain?: string
     pullSecret?: string

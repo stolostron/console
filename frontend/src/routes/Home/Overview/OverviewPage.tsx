@@ -218,11 +218,11 @@ const PageActions = (props: { timestamp: string; reloading: boolean; refetch: ()
                     component={Link}
                     variant={ButtonVariant.link}
                     to={NavigationPath.addCredentials}
-                    id="add-provider-connection"
+                    id="add-credential"
                     icon={<PlusIcon />}
                     iconPosition="left"
                 >
-                    {t('Add provider connection')}
+                    {t('Add credential')}
                 </AcmButton>
                 <AcmAutoRefreshSelect refetch={props.refetch} refreshIntervals={[30, 60, 5 * 60, 30 * 60, 0]} />
             </AcmActionGroup>

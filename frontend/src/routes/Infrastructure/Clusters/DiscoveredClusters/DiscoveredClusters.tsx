@@ -22,7 +22,6 @@ import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
-import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
@@ -354,7 +353,6 @@ export function DiscoveredClustersTable(props: {
 
     return (
         <Fragment>
-            <TechPreviewAlert i18nKey="techpreview.msg" docHref={DOC_LINKS.DISCOVERED_CLUSTERS} />
             <AcmTable<DiscoveredCluster>
                 plural={t('Discovered clusters')}
                 items={props.discoveredClusters}

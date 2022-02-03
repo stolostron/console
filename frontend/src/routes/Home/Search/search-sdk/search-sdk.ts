@@ -639,6 +639,7 @@ export type SearchResultRelatedCountQueryResult = Apollo.QueryResult<
 export const SearchResultRelatedItemsDocument = gql`
     query searchResultRelatedItems($input: [SearchInput]) {
         searchResult: search(input: $input) {
+            items
             related {
                 kind
                 items

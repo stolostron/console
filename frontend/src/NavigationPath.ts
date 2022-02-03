@@ -75,11 +75,16 @@ export enum NavigationPath {
     advancedConfiguration = '/multicloud/applications/advanced',
     applications = '/multicloud/applications',
     createApplication = '/multicloud/applications/create',
+    applicationDetails = '/multicloud/applications/details/:namespace/:name',
+    applicationOverview = '/multicloud/applications/details/:namespace/:name/overview',
+    applicationTopology = '/multicloud/applications/details/:namespace/:name/topology',
 
     // Governance
     governance = '/multicloud/governance',
     policies = '/multicloud/governance/policies',
     policySets = '/multicloud/governance/policy-sets',
+    createPolicy = '/multicloud/governance/policies/create',
+    createPolicySet = '/multicloud/governance/policy-sets/create',
 
     // Credentials
     credentials = '/multicloud/credentials',
