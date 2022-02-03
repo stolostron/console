@@ -35,20 +35,15 @@ export function ClusterPolicyViolationCard(props: { risks: IPolicyRisks }) {
 export function ClusterPolicyViolationLabeledIcons(props: { risks: IPolicyRisks; clusterTotal: number }) {
     const { risks } = props
     const unknownCount = props.clusterTotal - risks.low - risks.medium - risks.high - risks.synced
+    const violations = risks.high + risks.medium + risks.low
     return (
         <StatusLabeledIcons
-            ready={risks.synced}
-            readyStatus={`${risks.synced} compliant`}
-            readySubtitle={risks.synced === 1 ? 'cluster' : 'clusters'}
-            low={risks.low}
-            lowStatus={`${risks.low} low risk`}
-            lowSubtitle={`${risks.low === 1 ? 'cluster' : 'clusters'}`}
-            medium={risks.medium}
-            mediumStatus={`${risks.medium} medium risk`}
-            mediumSubtitle={`${risks.medium === 1 ? 'cluster' : 'clusters'}`}
-            high={risks.high}
-            highStatus={`${risks.high} high risk`}
-            highSubtitle={`${risks.high === 1 ? 'cluster' : 'clusters'}`}
+            violations={violations}
+            violationStatus={`${violations} ${violations ? 'cluster' : 'clusters'}`}
+            violationSubtitle={`with policy violations`}
+            compliant={risks.synced}
+            compliantStatus={`${risks.synced} ${risks.synced === 1 ? 'cluster' : 'clusters'}`}
+            compliantSubtitle={`without policy violations`}
             unknown={risks.unknown}
             unknownStatus={`${unknownCount} ungoverned`}
             unknownSubtitle={`${unknownCount === 1 ? 'cluster' : 'clusters'}`}
@@ -58,37 +53,26 @@ export function ClusterPolicyViolationLabeledIcons(props: { risks: IPolicyRisks;
 
 export function ClusterPolicyViolationIcons(props: { risks: IPolicyRisks }) {
     const { risks } = props
+    const violations = risks.high + risks.medium + risks.low
     return (
         <StatusIcons
-            ready={risks.synced}
-            readyTooltip={
+            compliant={risks.synced}
+            compliantTooltip={
                 risks.synced == 1
-                    ? '{0} cluster in compliance'.replace('{0}', risks.synced.toString())
+                    ? '1 cluster in compliance'
                     : '{0} clusters in compliance'.replace('{0}', risks.synced.toString())
             }
-            low={risks.low}
-            lowTooltip={
-                risks.low == 1
-                    ? '{0} low risk cluster'.replace('{0}', risks.low.toString())
-                    : '{0} low risk clusters'.replace('{0}', risks.low.toString())
-            }
-            medium={risks.medium}
-            mediumTooltip={
-                risks.medium == 1
-                    ? '{0} medium risk cluster'.replace('{0}', risks.medium.toString())
-                    : '{0} medium risk clusters'.replace('{0}', risks.medium.toString())
-            }
-            high={risks.high}
-            highTooltip={
-                risks.high == 1
-                    ? '{0} high risk cluster'.replace('{0}', risks.high.toString())
-                    : '{0} high risk clusters'.replace('{0}', risks.high.toString())
+            violations={violations}
+            violationsTooltip={
+                violations == 1
+                    ? '1 cluster with violations'
+                    : '{0} clusters with violations'.replace('{0}', violations.toString())
             }
             unknown={risks.unknown}
             unknownTooltip={
                 risks.unknown == 1
-                    ? '{0} cluster with unknown risk status'.replace('{0}', risks.unknown.toString())
-                    : '{0} clusters with unknown risk status'.replace('{0}', risks.unknown.toString())
+                    ? '1 cluster with unknown status'
+                    : '{0} clusters with unknown status'.replace('{0}', risks.unknown.toString())
             }
         />
     )

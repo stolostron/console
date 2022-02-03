@@ -1343,6 +1343,7 @@
     "Policy sets": "Policy sets",
     "Policy Sets": "Policy Sets",
     "Policy violation": "Policy violation",
+    "Policy violations": "Policy violations",
     "policy.bulk.title.delete": "policy.bulk.title.delete",
     "policy.modal.delete.associatedResources.placementBinding": "Associated PlacementBindings",
     "policy.modal.delete.associatedResources.placementRule": "Associated PlacementRules",

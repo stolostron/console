@@ -83,6 +83,8 @@ export enum NavigationPath {
     governance = '/multicloud/governance',
     policies = '/multicloud/governance/policies',
     policySets = '/multicloud/governance/policy-sets',
+    createPolicy = '/multicloud/governance/policies/create',
+    createPolicySet = '/multicloud/governance/policy-sets/create',
 
     // Credentials
     credentials = '/multicloud/credentials',

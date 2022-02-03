@@ -14,10 +14,12 @@ import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmTable, IAcmRowAction, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
 import moment from 'moment'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useHistory } from 'react-router-dom'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { NoWrap } from '../../../components/NoWrap'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
+import { NavigationPath } from '../../../NavigationPath'
 import { patchResource, Policy, PolicyApiVersion, PolicyKind, ResourceErrorCode } from '../../../resources'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
@@ -25,6 +27,8 @@ import { IGovernanceData, IPolicy } from '../useGovernanceData'
 
 export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
     const { governanceData } = props
+
+    const history = useHistory()
 
     const { t } = useTranslation()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Policy> | { open: false }>({
@@ -794,7 +798,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                         variant: ButtonVariant.primary,
                         id: 'create',
                         title: 'Create policy',
-                        click: () => {},
+                        click: () => history.push(NavigationPath.createPolicy),
                     },
                 ]}
                 addSubRows={(policy) => {

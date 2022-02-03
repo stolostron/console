@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { TextContent, Text, TextVariants } from '@patternfly/react-core'
+import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton, AcmEmptyState } from '@stolostron/ui-components'
 import { Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { NavigationPath } from '../../../NavigationPath'
 import { DOC_LINKS } from '../../../lib/doc-util'
+import { NavigationPath } from '../../../NavigationPath'
 
 // GovernanceCreatePolicysetEmptyState
 
@@ -85,8 +85,8 @@ export function GovernanceCreatePolicysetEmptyState() {
             message={t('Use the button below to create a policy set.')}
             action={
                 <div>
-                    <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
-                        {t('Create policy set')}
+                    <AcmButton component={Link} variant="primary" to={NavigationPath.createPolicySet}>
+                        {'Create policy set'}
                     </AcmButton>
                     <TextContent>
                         <Text
