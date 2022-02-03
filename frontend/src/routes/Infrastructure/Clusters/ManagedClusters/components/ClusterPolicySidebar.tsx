@@ -282,15 +282,12 @@ function DetailsView(props: {
                 </GridItem>
             </Grid>
             <Tabs activeKey={tabState} onSelect={(_e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
-                <Tab
-                    eventKey={0}
-                    title={<TabTitleText>{t('policy.report.flyout.details.tab.remediation')}</TabTitleText>}
-                >
+                <Tab eventKey={0} title={<TabTitleText>{t('How to remediate')}</TabTitleText>}>
                     <TextContent>
                         <Markdown template={policyContentData?.resolution ?? ''} definitions={getExtraData()} />
                     </TextContent>
                 </Tab>
-                <Tab eventKey={1} title={<TabTitleText>{t('policy.report.flyout.details.tab.reason')}</TabTitleText>}>
+                <Tab eventKey={1} title={<TabTitleText>{t('Reason')}</TabTitleText>}>
                     <TextContent>
                         <Markdown template={policyContentData?.reason ?? ''} definitions={getExtraData()} />
                     </TextContent>
