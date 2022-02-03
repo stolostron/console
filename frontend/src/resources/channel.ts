@@ -26,11 +26,6 @@ export interface Channel extends IResource {
         secretRef?: string
     }
 }
-/*
-TODO:
-    1. Consider how this might be divided with the backend (...is the right place for OctoKit implementation?)
-    2. Proxy?
-*/
 async function getChannelSecret(secretArgs?: { secretRef?: string; namespace?: string }) {
     if (secretArgs && secretArgs.secretRef && secretArgs.namespace) {
         const { secretRef, namespace } = secretArgs
@@ -44,16 +39,12 @@ async function getChannelSecret(secretArgs?: { secretRef?: string; namespace?: s
 }
 
 function getGitConnection(secretArgs?: { secretRef?: string; namespace?: string }) {
-    // const envProxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY
     return getChannelSecret(secretArgs)
         .then(({ accessToken }) => {
             const authBaseUrl = 'https://api.github.com'
             const authOptions = {
                 baseUrl: authBaseUrl,
                 auth: accessToken,
-                // request: {
-                //     agent: envProxy ? new HttpsProxyAgent.HttpsProxyAgent(envProxy) : undefined,
-                //   },
             }
             return new Octokit(authOptions)
         })
