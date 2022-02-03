@@ -14,9 +14,11 @@ import {
 } from '@patternfly/react-core'
 import { AcmDrawerContext } from '@stolostron/ui-components'
 import { useContext, useState } from 'react'
-import { StatusIcons } from '../../../../components/StatusIcons'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { deleteResource, PolicySet } from '../../../../resources'
+import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
+import { PolicyViolationIcons } from '../../components/PolicyViolations'
+import { IPolicyRisks } from '../../useGovernanceData'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
 import { usePolicySetSummary } from '../usePolicySetSummary'
 
@@ -36,10 +38,24 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
     const clusterViolationCount = policySetSummary.clusterViolations
     const clusterNonViolationCount = policySetSummary.clusterCount - clusterViolationCount
     const totalClusterCount = policySetSummary.clusterCount
+    const clusterRisks: IPolicyRisks = {
+        synced: clusterNonViolationCount,
+        high: clusterViolationCount,
+        medium: 0,
+        low: 0,
+        unknown: 0,
+    }
     const policyViolationCount = policySetSummary.policyViolations
     const policyUnknownCount = policySetSummary.policyUnknownStatusCount
     const policyNonViolationCount = policySetSummary.policyCount - policyViolationCount - policyUnknownCount
     const totalPolicyCount = policySetSummary.policyCount
+    const policyRisks: IPolicyRisks = {
+        synced: policyNonViolationCount,
+        high: policyViolationCount,
+        medium: 0,
+        low: 0,
+        unknown: policyUnknownCount,
+    }
 
     return (
         <Card
@@ -102,40 +118,31 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                     </div>
                 </CardTitle>
             </CardHeader>
-            {(totalClusterCount || policySet.spec.description) && (
-                <CardBody>
-                    <Stack hasGutter>
-                        <div>{policySet.spec.description}</div>
-                        {totalClusterCount > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <span>
-                                    <strong>{totalClusterCount}</strong> clusters
-                                </span>
-                                <div style={{ paddingLeft: 16 }}>
-                                    <StatusIcons
-                                        compliant={clusterNonViolationCount}
-                                        violations={clusterViolationCount}
-                                    />
-                                </div>
+            <CardBody>
+                <Stack hasGutter>
+                    {policySet.spec.description && <div>{policySet.spec.description ?? ''}</div>}
+                    {totalClusterCount > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            <span>
+                                <strong>{totalClusterCount}</strong> clusters
+                            </span>
+                            <div style={{ paddingLeft: 16 }}>
+                                <ClusterPolicyViolationIcons risks={clusterRisks} />
                             </div>
-                        )}
-                        {totalClusterCount > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <span>
-                                    <strong>{totalPolicyCount}</strong> policies
-                                </span>
-                                <div style={{ paddingLeft: 16 }}>
-                                    <StatusIcons
-                                        compliant={policyNonViolationCount}
-                                        violations={policyViolationCount}
-                                        unknown={policyUnknownCount}
-                                    />
-                                </div>
+                        </div>
+                    )}
+                    {totalPolicyCount > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            <span>
+                                <strong>{totalPolicyCount}</strong> policies
+                            </span>
+                            <div style={{ paddingLeft: 16 }}>
+                                <PolicyViolationIcons risks={policyRisks} />
                             </div>
-                        )}
-                    </Stack>
-                </CardBody>
-            )}
+                        </div>
+                    )}
+                </Stack>
+            </CardBody>
         </Card>
     )
 }
