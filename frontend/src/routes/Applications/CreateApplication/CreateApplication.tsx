@@ -8,8 +8,8 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { isType } from '../../../lib/is-type'
 import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
-import { unpackProviderConnection } from '../../../resources'
-import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
+import { getGitChannelBranches, getGitChannelPaths, unpackProviderConnection } from '../../../resources'
+import { ApplicationWizard } from '/Users/rbrunopi/go/src/github.com/main/react-form-wizard/wizards/Application/ApplicationWizard'
 import { useMemo } from 'react'
 
 // interface CreationStatus {
@@ -92,7 +92,6 @@ export function CreateApplication() {
     const availableAnsibleCredentials = ansibleCredentials
         .map((ansibleCredential) => ansibleCredential.metadata.name)
         .filter(isType)
-
     return (
         <ApplicationWizard
             ansibleCredentials={availableAnsibleCredentials}
