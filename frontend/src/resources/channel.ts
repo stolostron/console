@@ -28,10 +28,8 @@ export interface Channel extends IResource {
 }
 /*
 TODO:
-    1. Consider how this might be divided with the backend...
-    2. Find better way to organize arguments for getGitConnection
-    3. Proxy?
-    4. Determine if this is the right place for OctoKit method?
+    1. Consider how this might be divided with the backend (...is the right place for OctoKit implementation?)
+    2. Proxy?
 */
 async function getChannelSecret(secretArgs?: { secretRef?: string; namespace?: string }) {
     if (secretArgs && secretArgs.secretRef && secretArgs.namespace) {
