@@ -96,23 +96,20 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                         if (options.logRequest) {
                             options.logRequest(req, res)
                         } else {
+                            if (req.url === '/authenticated') return
                             if (req.url === '/readinessProbe') return
                             if (req.url === '/livenessProbe') return
+                            if (req.url === '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews') return
 
                             let msg: Record<string, string | number | undefined>
-                            res.getHeader('content-type') === 'text/event-stream'
-                                ? (msg = {
-                                      msg: 'event stream closed',
-                                      path: req.url,
-                                      ms: 0,
-                                  })
-                                : (msg = {
-                                      msg: STATUS_CODES[res.statusCode],
-                                      status: res.statusCode,
-                                      method: req.method,
-                                      path: req.url,
-                                      ms: 0,
-                                  })
+                            if (res.getHeader('content-type') !== 'text/event-stream')
+                                msg = {
+                                    msg: STATUS_CODES[res.statusCode],
+                                    status: res.statusCode,
+                                    method: req.method,
+                                    path: req.url,
+                                    ms: 0,
+                                }
 
                             const diff = process.hrtime(start)
                             const time = Math.round((diff[0] * 1e9 + diff[1]) / 10000) / 100

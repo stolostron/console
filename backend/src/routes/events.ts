@@ -146,7 +146,7 @@ async function watch(options: IWatchOptions) {
             if (err instanceof HTTPError) {
                 switch (err.response.statusCode) {
                     case 404:
-                        logger.warn({ msg: 'watch', ...options, error: err.message, name: err.name })
+                        logger.trace({ msg: 'watch', ...options, status: 'Not found' })
                         await new Promise((resolve) =>
                             setTimeout(resolve, 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
                         )
@@ -199,7 +199,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
         if (!_continue) break
     }
 
-    logger.debug({ msg: 'list', ...options, count: items.length })
+    logger.info({ msg: 'list', ...options, count: items.length })
 
     items = items.map((resource) => {
         resource.kind = options.kind
@@ -261,20 +261,41 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                             case 'DELETED':
                                 deleteResource(watchEvent.object)
                                 break
-                            case 'BOOKMARK':
-                                break
                         }
 
-                        logger.trace({
-                            msg: 'watch',
-                            type: watchEvent.type,
-                            kind: watchEvent.object.kind,
-                            apiVersion: watchEvent.object.apiVersion,
-                            name: watchEvent.object.metadata.name,
-                            namespace: watchEvent.object.metadata.namespace,
-                        })
-
-                        resourceVersion = watchEvent.object.metadata.resourceVersion
+                        switch (watchEvent.type) {
+                            case 'ADDED':
+                            case 'MODIFIED':
+                            case 'DELETED':
+                                logger.debug({
+                                    msg: watchEvent.type.toLowerCase(),
+                                    kind: watchEvent.object.kind,
+                                    apiVersion: watchEvent.object.apiVersion,
+                                    name: watchEvent.object.metadata.name,
+                                    namespace: watchEvent.object.metadata.namespace,
+                                })
+                                resourceVersion = watchEvent.object.metadata.resourceVersion
+                                break
+                            case 'BOOKMARK':
+                                logger.trace({
+                                    msg: watchEvent.type.toLowerCase(),
+                                    kind: options.kind,
+                                    apiVersion: options.apiVersion,
+                                    message: (watchEvent.object as unknown as { message: string }).message,
+                                    reason: (watchEvent.object as unknown as { reason: string }).reason,
+                                })
+                                resourceVersion = watchEvent.object.metadata.resourceVersion
+                                break
+                            case 'ERROR':
+                                logger.error({
+                                    msg: 'watch error',
+                                    kind: watchEvent.object.kind,
+                                    apiVersion: watchEvent.object.apiVersion,
+                                    name: watchEvent.object.metadata.name,
+                                    namespace: watchEvent.object.metadata.namespace,
+                                })
+                                break
+                        }
                     })
                 )
             } finally {
@@ -282,13 +303,15 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
             }
         } catch (err: unknown) {
             if (err instanceof TimeoutError) {
-                // Do Nothing
+                logger.debug({ msg: 'retry', ...options })
             } else if (err instanceof CancelError) {
                 // Do Nothing
+            } else if (err instanceof SyntaxError) {
+                logger.debug({ msg: 'retry', ...options })
             } else if (err instanceof HTTPError) {
                 switch (err.response.statusCode) {
                     case 410:
-                        logger.warn({ msg: 'watch retry', error: err.message, name: err.name, ...options })
+                        logger.debug({ msg: 'retry', ...options })
                         break
                     default:
                         throw err
