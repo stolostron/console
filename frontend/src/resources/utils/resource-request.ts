@@ -94,6 +94,38 @@ export async function createResources(resources: IResource[]): Promise<string | 
     }
 }
 
+export async function createOrUpdateResources(resources: IResource[]): Promise<string | undefined> {
+    if (!Array.isArray(resources)) return 'Error - resources are not an array'
+    const createdResources: IResource[] = []
+    try {
+        for (const resource of resources) {
+            let isExisting: boolean
+            try {
+                await getResource(resource).promise
+                isExisting = true
+            } catch (err) {
+                isExisting = false
+            }
+
+            if (isExisting) {
+                await replaceResource(resource).promise
+            } else {
+                const createdResource = await createResource(resource).promise
+                createdResources.push(createdResource)
+            }
+        }
+    } catch (err) {
+        for (const createdResource of createdResources) {
+            deleteResource(createdResource).promise.catch(noop)
+        }
+        if (err instanceof Error) {
+            return err.message
+        } else {
+            return 'unknown error'
+        }
+    }
+}
+
 export function replaceResource<Resource extends IResource, ResultType = Resource>(
     resource: Resource
 ): IRequestResult<ResultType> {
