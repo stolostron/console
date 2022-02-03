@@ -1,16 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@stolostron/ui-components'
+import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
+import { useContext } from 'react'
 import { useHistory } from 'react-router'
 import { NavigationPath } from '../../../NavigationPath'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { isType } from '../../../lib/is-type'
 import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
-import { getGitChannelBranches, getGitChannelPaths, unpackProviderConnection } from '../../../resources'
-import { ApplicationWizard } from '/Users/rbrunopi/go/src/github.com/main/react-form-wizard/wizards/Application/ApplicationWizard'
 import { useMemo } from 'react'
+import { unpackProviderConnection } from '../../../resources'
+import moment from 'moment-timezone'
+// import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
+import { ApplicationWizard } from '/Users/magchen/Downloads/github/react-form-wizard/wizards/Application/ApplicationWizard'
+import { createResource } from '../../../resources'
 
 // interface CreationStatus {
 //     status: string
@@ -76,6 +80,7 @@ export function CreateApplication() {
         [channels]
     )
     const helmChannels = useMemo(() => channels.filter((channel) => channel.spec.type === 'HelmRepo'), [channels])
+    const toastContext = useContext(AcmToastContext)
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
@@ -92,8 +97,35 @@ export function CreateApplication() {
     const availableAnsibleCredentials = ansibleCredentials
         .map((ansibleCredential) => ansibleCredential.metadata.name)
         .filter(isType)
+    const gitChannels = channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub')
+    const availableGitChannels = gitChannels.map((gitChannel) => {
+        return {
+            name: gitChannel.metadata.name,
+            namespace: gitChannel.metadata.namespace,
+            pathname: gitChannel.spec.pathname,
+        }
+    })
+    const currentTimeZone = moment.tz.guess(true)
+    const timeZones = currentTimeZone
+        ? [currentTimeZone, ...moment.tz.names().filter((e) => e !== currentTimeZone)]
+        : moment.tz.names()
+
+    const onSubmit = (resource) => {
+        debugger
+        // return createResource().promise.then(() => {
+        //     toastContext.addAlert({
+        //         title: t('Application created'),
+        //         message: t('credentialsForm.created.message', { name }),
+        //         type: 'success',
+        //         autoClose: true,
+        //     })
+        //     history.push(NavigationPath.applications)
+        // })
+    }
+
     return (
         <ApplicationWizard
+            addClusterSets={NavigationPath.clusterSets}
             ansibleCredentials={availableAnsibleCredentials}
             argoServers={availableArgoNS}
             namespaces={availableNamespace}
@@ -101,6 +133,9 @@ export function CreateApplication() {
             onCancel={() => history.push('.')}
             gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
             helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
+            onSubmit={onSubmit}
+            subscriptionGitChannels={availableGitChannels}
+            timeZones={timeZones}
         />
     )
 }

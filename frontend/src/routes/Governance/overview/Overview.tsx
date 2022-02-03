@@ -2,6 +2,7 @@
 import {
     Card,
     CardBody,
+    Flex,
     PageSection,
     Select,
     SelectOption,
@@ -13,6 +14,7 @@ import {
     TextVariants,
 } from '@patternfly/react-core'
 import {
+    AcmDonutChart,
     AcmInlineProvider,
     AcmInlineStatusGroup,
     AcmLabels,
@@ -29,12 +31,12 @@ import { Cluster } from '../../../resources'
 import { DistributionField } from '../../Infrastructure/Clusters/ManagedClusters/components/DistributionField'
 import { StatusField } from '../../Infrastructure/Clusters/ManagedClusters/components/StatusField'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { ClusterPolicyViolationCard, ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
+import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import {
     GovernanceCreatePolicyEmptyState,
     GovernanceManagePoliciesEmptyState,
 } from '../components/GovernanceEmptyState'
-import { PolicyViolationIcons, PolicyViolationsCard } from '../components/PolicyViolations'
+import { PolicyViolationIcons } from '../components/PolicyViolations'
 import { IGovernanceData, IPolicyGrouping, risksHasValues } from '../useGovernanceData'
 
 export default function GovernanceOverview(props: { governanceData: IGovernanceData }) {
@@ -184,14 +186,88 @@ export default function GovernanceOverview(props: { governanceData: IGovernanceD
     return (
         <PageSection isWidthLimited>
             <Stack hasGutter>
-                <Split hasGutter>
+                <Flex>
+                    <AcmDonutChart
+                        title="Cluster policy violations"
+                        description={t('Overview of cluster policy violations')}
+                        donutLabel={{
+                            title: (
+                                governanceData.clusterRisks.high +
+                                governanceData.clusterRisks.medium +
+                                governanceData.clusterRisks.low
+                            ).toString(),
+                            subTitle: 'Violations',
+                        }}
+                        data={[
+                            {
+                                key: 'Violations',
+                                value:
+                                    governanceData.clusterRisks.high +
+                                    governanceData.clusterRisks.medium +
+                                    governanceData.clusterRisks.low,
+                                isPrimary: true,
+                            },
+                            {
+                                key: 'Compliant',
+                                value: governanceData.clusterRisks.synced,
+                            },
+                            {
+                                key: 'Unknown',
+                                value: governanceData.clusterRisks.unknown,
+                                isPrimary: true,
+                            },
+                        ]}
+                        colorScale={[
+                            'var(--pf-global--danger-color--100)',
+                            'var(--pf-global--success-color--100)',
+                            'var(--pf-global--warning-color--100)',
+                        ]}
+                    />
+                    <AcmDonutChart
+                        title="Policy violations"
+                        description={t('Overview of policy violations')}
+                        donutLabel={{
+                            title: (
+                                governanceData.policyRisks.high +
+                                governanceData.policyRisks.medium +
+                                governanceData.policyRisks.low
+                            ).toString(),
+                            subTitle: 'Violations',
+                        }}
+                        data={[
+                            {
+                                key: 'Violations',
+                                value:
+                                    governanceData.policyRisks.high +
+                                    governanceData.policyRisks.medium +
+                                    governanceData.policyRisks.low,
+                                isPrimary: true,
+                            },
+                            {
+                                key: 'Compliant',
+                                value: governanceData.policyRisks.synced,
+                            },
+                            {
+                                key: 'Unknown',
+                                value: governanceData.policyRisks.unknown,
+                                isPrimary: true,
+                            },
+                        ]}
+                        colorScale={[
+                            'var(--pf-global--danger-color--100)',
+                            'var(--pf-global--success-color--100)',
+                            'var(--pf-global--warning-color--100)',
+                        ]}
+                    />
+                </Flex>
+                {/* <Split hasGutter>
                     <SplitItem>
                         <ClusterPolicyViolationCard risks={governanceData.clusterRisks} />
                     </SplitItem>
                     <SplitItem>
                         <PolicyViolationsCard risks={governanceData.policyRisks} />
                     </SplitItem>
-                </Split>
+                </Split> */}
                 <Card>
                     <CardBody>
                         <Split hasGutter>
