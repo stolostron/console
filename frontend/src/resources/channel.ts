@@ -50,9 +50,9 @@ function getGitConnection(secretRef?: string, namespace?: string) {
         .catch(handleGitError)
 }
 
-async function getChannelSecret(secretName: string | undefined, namespace: string | undefined) {
-    if (secretName)
-        return getSecret({ name: secretName, namespace: secretName })
+async function getChannelSecret(secretName: string | undefined, secretNamespace: string | undefined) {
+    if (secretName && secretNamespace)
+        return getSecret({ name: secretName, namespace: secretNamespace })
             .promise.then((response) => ({
                 user: window.atob(_.get(response, 'data.user', '')),
                 accessToken: window.atob(_.get(response, 'data.accessToken', '')),
