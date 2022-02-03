@@ -12,10 +12,11 @@ import {
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmTable, IAcmRowAction, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { NoWrap } from '../../../components/NoWrap'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
 import { NavigationPath } from '../../../NavigationPath'
@@ -45,18 +46,29 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 header: t('Name'),
                 cell: (policy) => {
                     return (
-                        <Link
-                            to={{
-                                pathname: NavigationPath.policyDetails
-                                    .replace(':namespace', policy.metadata.namespace as string)
-                                    .replace(':name', policy.metadata.name as string),
-                                state: {
-                                    from: NavigationPath.policies,
-                                },
-                            }}
-                        >
-                            {policy.metadata.name}
-                        </Link>
+                        <Fragment>
+                            <div>
+                                <NoWrap>
+                                    {/* <RisksIcon risks={policy.clusterRisks} />
+                            &nbsp;&nbsp; */}
+                                    {/* <ExclamationCircleIcon color="red" /> &nbsp; */}
+                                    <a>{policy.metadata.name}</a>
+                                </NoWrap>
+                            </div>
+                            <div style={{ opacity: 0.7, fontSize: 'smaller' }}>ns: {policy.metadata.namespace}</div>
+                        </Fragment>
+                        // <Link
+                        //     to={{
+                        //         pathname: NavigationPath.policyDetails
+                        //             .replace(':namespace', policy.metadata.namespace as string)
+                        //             .replace(':name', policy.metadata.name as string),
+                        //         state: {
+                        //             from: NavigationPath.policies,
+                        //         },
+                        //     }}
+                        // >
+                        //     {policy.metadata.name}
+                        // </Link>
                     )
                 },
                 sort: 'metadata.name',
