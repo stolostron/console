@@ -78,7 +78,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 chunkFilename: '[id].[contenthash:8].css',
                 ignoreOrder: false, // Enable to remove warnings about conflicting order
             }),
-            new BundleAnalyzerPlugin({ openAnalyzer: false }),
+            new BundleAnalyzerPlugin({ analyzerMode: 'disabled' }),
         ].filter(Boolean) as webpack.WebpackPluginInstance[],
         output: {
             assetModuleFilename: 'assets/[name].[contenthash:8][ext][query]',
