@@ -29,7 +29,7 @@ export interface Channel extends IResource {
 /*
 TODO:
     1. Consider how this might be divided with the backend...
-    2. Find better way to deliver arguments to getGitConnection
+    2. Find better way to organize arguments for getGitConnection
     3. Proxy?
     4. Determine if this is the right place for OctoKit method?
 */
