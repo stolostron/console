@@ -4,7 +4,7 @@ import { AcmPage, AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem 
 import { Fragment, ReactNode, Suspense, useEffect, useState } from 'react'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState, placementBindingsState, policiesState } from '../../atoms'
+import { acmRouteState, policiesState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { PageContext } from '../Infrastructure/Clusters/ClustersPage'
@@ -22,14 +22,10 @@ export default function GovernancePage() {
     useEffect(() => setRoute(AcmRoute.Governance), [setRoute])
 
     const [policies] = useRecoilState(policiesState)
-
-    const [placementBindings] = useRecoilState(placementBindingsState)
-    // const [placementRules] = useRecoilState(placementRulesState)
     const governanceData = useGovernanceData(
         policies.filter(
             (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
-        ),
-        placementBindings
+        )
     )
 
     const isOverview = location.pathname == NavigationPath.governance
