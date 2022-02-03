@@ -69,7 +69,7 @@ export async function createResources(resources: IResource[]): Promise<string | 
             const existingResource = await getResource(resource).promise
             if (existingResource)
                 return 'Resource of kind {kind} with name {name} in namespace {namespace} already exists.'
-                    .replace('{kind}', resource.metadata?.name ?? '')
+                    .replace('{kind}', resource.kind)
                     .replace('{name}', resource.metadata?.name ?? '')
                     .replace('{namespace}', resource.metadata?.namespace ?? '')
         } catch (err) {
