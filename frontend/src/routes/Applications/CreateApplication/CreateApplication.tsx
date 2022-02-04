@@ -3,6 +3,7 @@
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useHistory } from 'react-router'
+import { useMemo } from 'react'
 import { NavigationPath } from '../../../NavigationPath'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
@@ -61,9 +62,14 @@ export default function CreateApplicationPage() {
 
 export function CreateApplication() {
     const history = useHistory()
-    const [channels] = useRecoilState(channelsState)
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
+    const [channels] = useRecoilState(channelsState)
+    const gitChannels = useMemo(
+        () => channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub'),
+        [channels]
+    )
+    const helmChannels = useMemo(() => channels.filter((channel) => channel.spec.type === 'HelmRepo'), [channels])
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
@@ -80,7 +86,6 @@ export function CreateApplication() {
     const availableAnsibleCredentials = ansibleCredentials
         .map((ansibleCredential) => ansibleCredential.metadata.name)
         .filter(isType)
-    const gitChannels = channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub')
     const availableGitChannels = gitChannels.map((gitChannel) => {
         return {
             name: gitChannel.metadata.name,
@@ -107,6 +112,8 @@ export function CreateApplication() {
                     return error
                 })
             }
+            gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
+            helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
             subscriptionGitChannels={availableGitChannels}
             timeZones={timeZones}
         />
