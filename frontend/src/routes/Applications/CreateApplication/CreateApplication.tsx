@@ -87,10 +87,12 @@ export function CreateApplication() {
         .map((ansibleCredential) => ansibleCredential.metadata.name)
         .filter(isType)
     const availableGitChannels = gitChannels.map((gitChannel) => {
+        const { name, namespace } = gitChannel.metadata
+        const { pathname } = gitChannel.spec
         return {
-            name: gitChannel.metadata.name,
-            namespace: gitChannel.metadata.namespace,
-            pathname: gitChannel.spec.pathname,
+            name: name || '',
+            namespace: namespace || '',
+            pathname: pathname || '',
         }
     })
     const currentTimeZone = moment.tz.guess(true)
