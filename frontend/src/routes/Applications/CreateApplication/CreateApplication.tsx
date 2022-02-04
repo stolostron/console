@@ -1,25 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '@stolostron/ui-components'
+import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { useContext } from 'react'
 import { useHistory } from 'react-router'
 import { NavigationPath } from '../../../NavigationPath'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { isType } from '../../../lib/is-type'
 import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
-import { unpackProviderConnection } from '../../../resources'
+import { createResources, IResource, unpackProviderConnection } from '../../../resources'
 import moment from 'moment-timezone'
-// import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
-import { ApplicationWizard } from '/Users/magchen/Downloads/github/react-form-wizard/wizards/Application/ApplicationWizard'
-import { createResource } from '../../../resources'
-// interface CreationStatus {
-//     status: string
-//     messages: any[] | null
-// }
-
-// where to put Create/Cancel buttons
+import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
 const Portals = Object.freeze({
     editBtn: 'edit-button-portal-id',
     createBtn: 'create-button-portal-id',
@@ -70,7 +61,6 @@ export default function CreateApplicationPage() {
 
 export function CreateApplication() {
     const history = useHistory()
-    const toastContext = useContext(AcmToastContext)
     const [channels] = useRecoilState(channelsState)
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
@@ -103,19 +93,6 @@ export function CreateApplication() {
         ? [currentTimeZone, ...moment.tz.names().filter((e) => e !== currentTimeZone)]
         : moment.tz.names()
 
-    const onSubmit = (resource) => {
-        debugger
-        // return createResource().promise.then(() => {
-        //     toastContext.addAlert({
-        //         title: t('Application created'),
-        //         message: t('credentialsForm.created.message', { name }),
-        //         type: 'success',
-        //         autoClose: true,
-        //     })
-        //     history.push(NavigationPath.applications)
-        // })
-    }
-
     return (
         <ApplicationWizard
             addClusterSets={NavigationPath.clusterSets}
@@ -124,7 +101,12 @@ export function CreateApplication() {
             namespaces={availableNamespace}
             placements={availablePlacements}
             onCancel={() => history.push('.')}
-            onSubmit={onSubmit}
+            onSubmit={(resources) =>
+                createResources(resources as IResource[]).then((error) => {
+                    history.push(NavigationPath.applications)
+                    return error
+                })
+            }
             subscriptionGitChannels={availableGitChannels}
             timeZones={timeZones}
         />
