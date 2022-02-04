@@ -128,7 +128,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
 
     const policySetClusters: PolicySetResultCluster[] = useMemo(() => {
         const clusters: PolicySetResultCluster[] = []
-        policySet.status.results.forEach((statusResult: PolicySetStatusResult) => {
+        policySet.status?.results.forEach((statusResult: PolicySetStatusResult) => {
             const currentClusters = statusResult.clusters ?? []
             currentClusters.forEach((cluster: PolicySetResultCluster) => {
                 const matchIdx = clusters.findIndex(
@@ -146,12 +146,13 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         return clusters
     }, [policySet])
 
-    const policySetPolicies: PolicySetStatusResult[] = policySet.status?.results.map(
-        (result: PolicySetStatusResult) => {
-            return result
-        },
-        []
-    )
+    const policySetPolicies: PolicySetStatusResult[] = useMemo(() => {
+        const policies: PolicySetStatusResult[] = []
+        policySet.status?.results.map((result: PolicySetStatusResult) => {
+            policies.push(result)
+        })
+        return policies
+    }, [policySet])
 
     const clusterColumnDefs = [
         {

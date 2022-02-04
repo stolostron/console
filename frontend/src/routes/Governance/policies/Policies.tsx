@@ -3,7 +3,6 @@
 import {
     ButtonVariant,
     Checkbox,
-    Chip,
     DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
@@ -12,25 +11,26 @@ import {
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmTable, IAcmRowAction, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
-import moment from 'moment'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { policySetsState } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { NoWrap } from '../../../components/NoWrap'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
 import { NavigationPath } from '../../../NavigationPath'
-import { patchResource, Policy, PolicyApiVersion, PolicyKind, ResourceErrorCode } from '../../../resources'
+import { patchResource, Policy, PolicyApiVersion, PolicyKind, PolicySet, ResourceErrorCode } from '../../../resources'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
 import { IGovernanceData, IPolicy } from '../useGovernanceData'
+import { PolicySetList } from './util'
 
 export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
     const { governanceData } = props
-
     const history = useHistory()
-
     const { t } = useTranslation()
+    const [policySets] = useRecoilState(policySetsState)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Policy> | { open: false }>({
         open: false,
     })
@@ -45,16 +45,6 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             {
                 header: t('Name'),
                 cell: (policy) => {
-                    // let compliantCount = 0
-                    // let noncompliantCount = 0
-                    // if (policy.status?.status) {
-                    //     compliantCount = policy.status.status.filter(
-                    //         (cluster) => cluster.compliant === 'Compliant'
-                    //     ).length
-                    //     noncompliantCount = policy.status.status.filter(
-                    //         (cluster) => cluster.compliant === 'NonCompliant'
-                    //     ).length
-                    // }
                     return (
                         <Fragment>
                             <div>
@@ -65,26 +55,59 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                                     <a>{policy.metadata.name}</a>
                                 </NoWrap>
                             </div>
-                            <div style={{ opacity: 0.7, fontSize: 'smaller' }}>ns: {policy.metadata.namespace}</div>
                         </Fragment>
+                        // <Link
+                        //     to={{
+                        //         pathname: NavigationPath.policyDetails
+                        //             .replace(':namespace', policy.metadata.namespace as string)
+                        //             .replace(':name', policy.metadata.name as string),
+                        //         state: {
+                        //             from: NavigationPath.policies,
+                        //         },
+                        //     }}
+                        // >
+                        //     {policy.metadata.name}
+                        // </Link>
                     )
                 },
                 sort: 'metadata.name',
                 search: 'metadata.name',
             },
-            // {
-            //     header: t('Namespace'),
-            //     cell: 'metadata.namespace',
-            //     sort: 'metadata.namespace',
-            //     search: 'metadata.namespace',
-            // },
             {
-                header: t('Cluster risks'),
+                header: t('Namespace'),
+                cell: 'metadata.namespace',
+                sort: 'metadata.namespace',
+                search: 'metadata.namespace',
+            },
+            {
+                header: t('Status'),
+                cell: (policy: Policy) => <span>{policy.spec.disabled === true ? t('Disabled') : t('Enabled')}</span>,
+            },
+            {
+                header: t('Remediation'),
+                cell: 'spec.remediationAction',
+                sort: 'spec.remediationAction',
+            },
+            {
+                header: t('Policy set'),
+                cell: (policy: Policy) => {
+                    const policySetsMatch = policySets.filter((policySet: PolicySet) =>
+                        policySet.spec.policies.includes(policy.metadata.name!)
+                    )
+                    if (policySetsMatch.length > 0) {
+                        return <PolicySetList policySets={policySetsMatch} />
+                    }
+                    return '-'
+                },
+            },
+            {
+                header: t('Cluster violations'),
                 cell: (policy) => {
                     if (policy.status?.status) {
+                        // TODO - add link to the policy details page clusters tab
                         return <ClusterPolicyViolationIcons risks={policy.clusterRisks} />
                     } else {
-                        return <Fragment />
+                        return '-'
                     }
                 },
                 sort: (lhs, rhs) => {
@@ -99,112 +122,15 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                     return 0
                 },
             },
-            // {
-            //     header: t('Severity'),
-            //     cell: (policy) => {
-            //         switch (getPolicySeverity(policy)) {
-            //             case PolicySeverity.Low:
-            //                 return 'Low'
-            //             case PolicySeverity.Medium:
-            //                 return 'Medium'
-            //             default:
-            //             case PolicySeverity.High:
-            //                 return 'High'
-            //         }
-            //     },
-            //     sort: (lhs, rhs) => compareNumbers(getPolicySeverity(lhs), getPolicySeverity(rhs)),
-            // },
             {
-                header: t('Status'),
-                cell: (policy: Policy) => (
-                    <span>
-                        {policy.spec.disabled === true
-                            ? t('policy.table.actionGroup.status.disabled')
-                            : t('policy.table.actionGroup.status.enabled')}
-                    </span>
-                ),
-            },
-            {
-                header: t('Remediation'),
-                cell: 'spec.remediationAction',
-                sort: 'spec.remediationAction',
-            },
-            // {
-            //     header: t('Source'),
-            //     cell: () => 'TODO',
-            // },
-            {
-                header: t('Controls'),
-                cell: (policy) => {
-                    const controls = policy.metadata.annotations?.['policy.open-cluster-management.io/controls']
-                    if (!controls) return <Fragment />
-                    return (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {controls
-                                .split(',')
-                                .map((v) => v.trim())
-                                .map((group) => (
-                                    <Chip isReadOnly>{group}</Chip>
-                                ))}
-                        </div>
-                    )
-                },
-            },
-            // {
-            //     header: t('Automation'),
-            //     cell: () => 'TODO',
-            // },
-            {
-                header: t('Categories'),
-                cell: (policy) => {
-                    const categories = policy.metadata.annotations?.['policy.open-cluster-management.io/categories']
-                    if (!categories) return <Fragment />
-                    return (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {categories
-                                .split(',')
-                                .map((v) => v.trim())
-                                .map((group) => (
-                                    <Chip isReadOnly>{group}</Chip>
-                                ))}
-                        </div>
-                        // <LabelGroup>
-                        //     {categories
-                        //         .split(',')
-                        //         .map((v) => v.trim())
-                        //         .map((category) => (
-                        //             <div color={policy.spec.disabled ? 'grey' : 'blue'}>{category}</div>
-                        //         ))}
-                        // </LabelGroup>
-                    )
+                header: t('Source'),
+                cell: () => {
+                    return '-'
                 },
             },
             {
-                header: t('Standards'),
-                cell: (policy) => {
-                    const standards = policy.metadata.annotations?.['policy.open-cluster-management.io/standards']
-                    if (!standards) return <Fragment />
-                    return (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {standards
-                                .split(',')
-                                .map((v) => v.trim())
-                                .map((group) => (
-                                    <Chip isReadOnly>{group}</Chip>
-                                ))}
-                        </div>
-                    )
-                },
-            },
-            {
-                header: t('Created'),
-                cell: (resource) => (
-                    <span style={{ whiteSpace: 'nowrap' }}>
-                        {resource.metadata.creationTimestamp &&
-                            moment(new Date(resource.metadata.creationTimestamp)).fromNow()}
-                    </span>
-                ),
-                sort: 'metadata.creationTimestamp',
+                header: t('Automation'),
+                cell: () => '-',
             },
         ],
         []

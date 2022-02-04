@@ -108,25 +108,29 @@ describe('ClusterPolicySidebar', () => {
         render(<Component />)
         await act(async () => {
             // Check the sidebar has loaded with static text
-            await waitForText('policy.report.flyout.description')
+            await waitForText(
+                'Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.'
+            )
 
             // wait for policy reports to be displayed and click the first report in table
             await waitForText('policyreport testing risk 1 policy: policyreport testing risk 1')
             await clickByText('policyreport testing risk 1 policy: policyreport testing risk 1')
 
             // wait for drilldown risk subdetail component
-            await waitForText('policy.report.low')
+            await waitForText('Low')
 
             // wait for resolution
             await waitForText('testing-resolution')
 
             // wait for reason
-            await clickByText('policy.report.flyout.details.tab.reason')
+            await clickByText('Reason')
             await waitForText('testing-reason')
 
             // Click back button and wait for static text
-            await clickByText('policy.report.flyout.back')
-            await waitForText('policy.report.flyout.description')
+            await clickByText('Back')
+            await waitForText(
+                'Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.'
+            )
         })
     })
 })
