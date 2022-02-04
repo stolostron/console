@@ -892,6 +892,7 @@
     "Displays the namespace of the application resource, which by default is where the application deploys other resources. For Argo applications, this is the destination namespace.": "Displays the namespace of the application resource, which by default is where the application deploys other resources. For Argo applications, this is the destination namespace.",
     "Displays the number of remote and local clusters where resources are deployed because of the placement.": "Displays the number of remote and local clusters where resources are deployed because of the placement.",
     "Displays the number of remote and local clusters where resources for the application are deployed. For an individual Argo application, the name of the destination cluster is displayed. Click to search for all related clusters.": "Displays the number of remote and local clusters where resources for the application are deployed. For an individual Argo application, the name of the destination cluster is displayed. Click to search for all related clusters.",
+    "Displays the type of the application. ": "Displays the type of the application. ",
     "Donut chart of cluster violations": "Donut chart of cluster violations",
     "Edit": "Edit",
     "Edit application": "Edit application",
