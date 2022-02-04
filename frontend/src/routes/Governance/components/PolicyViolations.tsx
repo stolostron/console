@@ -61,7 +61,7 @@ export function PolicyViolationIcons(props: { risks: IPolicyRisks }) {
             }
             violations={violations}
             violationsTooltip={
-                risks.high == 1
+                violations == 1
                     ? '1 policy with violations'
                     : '{0} policies with violations'.replace('{0}', violations.toString())
             }
