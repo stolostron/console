@@ -96,10 +96,16 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                         if (options.logRequest) {
                             options.logRequest(req, res)
                         } else {
-                            if (req.url === '/authenticated') return
                             if (req.url === '/readinessProbe') return
                             if (req.url === '/livenessProbe') return
-                            if (req.url === '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews') return
+
+                            let logTrace = false
+                            if (
+                                req.url === '/authenticated' ||
+                                req.url === '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews'
+                            ) {
+                                logTrace = true
+                            }
 
                             let msg: Record<string, string | number | undefined>
                             if (res.getHeader('content-type') !== 'text/event-stream')
@@ -115,7 +121,9 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                             const time = Math.round((diff[0] * 1e9 + diff[1]) / 10000) / 100
                             msg.ms = time
 
-                            if (res.statusCode < 500) {
+                            if (logTrace) {
+                                logger.trace(msg)
+                            } else if (res.statusCode < 500) {
                                 logger.info(msg)
                             } else {
                                 logger.error(msg)
