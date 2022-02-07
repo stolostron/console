@@ -26,6 +26,8 @@
     "dependencies": {
         "@apollo/client": "^3.5.7",
         "@kubernetes/client-node": "^0.16.2",
+        "@octokit/rest": "^18.12.0",
+        "@octokit/types": "^6.34.0",
         "@patternfly-labs/react-form-wizard": "^1.5.9",
         "@patternfly/react-code-editor": "^4.33.18",
         "@patternfly/react-core": "^4.192.18",
@@ -50,6 +52,7 @@
         "js-yaml": "^4.1.0",
         "lodash": "^4.17.21",
         "moment": "^2.29.1",
+        "moment-timezone": "^0.5.34",
         "monaco-editor": "^0.32.1",
         "openshift-assisted-ui-lib": "2.0.11",
         "ramda": "^0.28.0",

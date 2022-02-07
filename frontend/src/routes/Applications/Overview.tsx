@@ -905,7 +905,7 @@ export default function ApplicationsOverview() {
                     {
                         id: 'createApplication',
                         title: t('Create application'),
-                        click: () => history.push(''), // TODO add link to wizard
+                        click: () => history.push(NavigationPath.createApplication), // TODO add link to wizard
                         isDisabled: !canCreateApplication,
                         tooltip: t(
                             'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
@@ -919,7 +919,7 @@ export default function ApplicationsOverview() {
                         title={t('You don’t have any applications')}
                         message={getEmptyMessage(t)}
                         action={
-                            <AcmButton component={Link} variant="primary" to={''}>
+                            <AcmButton component={Link} variant="primary" to={NavigationPath.createApplication}>
                                 {t('Create application')}
                             </AcmButton>
                         }
