@@ -22,7 +22,6 @@ function viewDocumentation(doclink: string) {
                 display: 'inline-block',
                 padding: '15px 10px',
                 fontSize: '14px',
-                color: '#0066cc',
             }}
         >
             {t('View documentation')} <ExternalLinkAltIcon />
