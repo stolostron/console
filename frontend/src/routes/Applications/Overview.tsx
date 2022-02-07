@@ -37,7 +37,6 @@ import {
     PlacementRuleApiVersion,
     ManagedCluster,
 } from '../../resources'
-import { NavigationPath } from '../../NavigationPath'
 import ResourceLabels from './components/ResourceLabels'
 import { getAge, getClusterCountString, getSearchLink } from './helpers/resource-helper'
 import { canUser } from '../../lib/rbac-util'

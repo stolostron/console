@@ -114,8 +114,8 @@ export function CreateApplication() {
                     return error
                 })
             }
-            gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
-            helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
+            // gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
+            // helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
             subscriptionGitChannels={availableGitChannels}
             timeZones={timeZones}
         />
