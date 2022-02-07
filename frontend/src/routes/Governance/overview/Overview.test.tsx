@@ -70,7 +70,7 @@ describe('Overview Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText('Use the button below to create a policy.')
+        await waitForText('Use the following button to create a policy.')
     })
     test('Should render empty Overview page with manage policies message correctly', async () => {
         render(
@@ -85,7 +85,7 @@ describe('Overview Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText('Use the button below to manage policies.')
+        await waitForText('Use the following button to manage policies.')
     })
 
     test('Should render Policies page correctly', async () => {

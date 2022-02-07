@@ -60,7 +60,7 @@ describe('Policies Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText('Use the button below to create a policy.')
+        await waitForText('Use the following button to create a policy.')
     })
 
     test('Should render Policies page correctly', async () => {
