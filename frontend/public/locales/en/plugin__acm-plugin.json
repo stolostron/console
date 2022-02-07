@@ -1432,7 +1432,6 @@
     "provision.notification.deprovisionfailed": "Cluster destroy failed:",
     "provision.notification.destroying": "Cluster creation is in progress:",
     "provision.notification.provisionfailed": "Cluster creation failed:",
-    "proxy": "proxy",
     "Proxy": "Proxy",
     "Pull secret": "Pull secret",
     "Pull secret and SSH": "Pull secret and SSH",
