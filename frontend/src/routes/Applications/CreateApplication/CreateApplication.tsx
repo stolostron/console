@@ -69,7 +69,7 @@ export function CreateApplication() {
         () => channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub'),
         [channels]
     )
-    const helmChannels = useMemo(() => channels.filter((channel) => channel.spec.type === 'HelmRepo'), [channels])
+    // const helmChannels = useMemo(() => channels.filter((channel) => channel.spec.type === 'HelmRepo'), [channels])
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
