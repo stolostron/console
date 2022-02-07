@@ -703,7 +703,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
         })
     }
 
-    if (true) {
+    if (!governanceData.policies || governanceData.policies.length === 0) {
         return <GovernanceCreatePolicyEmptyState />
     }
 
