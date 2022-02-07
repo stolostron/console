@@ -1089,7 +1089,7 @@ export function CredentialsForm(props: {
             {
                 type: 'Section',
                 title: t('Proxy'),
-                wizardTitle: t('proxy'),
+                wizardTitle: t('Proxy'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION_PROXY} target="_blank" rel="noreferrer">
                         {t('How do I configure a proxy?')}
