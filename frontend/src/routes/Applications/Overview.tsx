@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { ButtonVariant, PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -45,6 +45,8 @@ import { DeleteResourceModal, IDeleteResourceModalProps } from './components/Del
 import { useQuery } from '../../lib/useQuery'
 import { queryRemoteArgoApps } from '../../lib/search'
 import { NavigationPath } from '../../NavigationPath'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { DOC_LINKS } from '../../lib/doc-util'
 
 const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
@@ -454,7 +456,28 @@ export default function ApplicationsOverview() {
                 header: t('Type'),
                 cell: (resource) => <span>{getResourceType(resource)}</span>,
                 sort: 'kind',
-                tooltip: t('Link to Learn more about different types'),
+                tooltip: () => (
+                    <span>
+                        {t('Displays the type of the application. ')}
+                        <TextContent>
+                            <Text
+                                component={TextVariants.a}
+                                isVisitedLink
+                                href={DOC_LINKS.MANAGE_APPLICATIONS}
+                                target="_blank"
+                                style={{
+                                    cursor: 'pointer',
+                                    display: 'inline-block',
+                                    padding: '0px',
+                                    fontSize: '14px',
+                                    color: '#0066cc',
+                                }}
+                            >
+                                {t('View documentation')} <ExternalLinkAltIcon />
+                            </Text>
+                        </TextContent>
+                    </span>
+                ),
                 transforms: [cellWidth(15)],
                 // probably don't need search if we have a type filter
             },
