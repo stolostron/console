@@ -42,7 +42,7 @@ function calculatePolicySetPolicyStats(summary: IPolicySetSummary, policySet: Po
     summary.policyCount = 0
     summary.policyViolations = 0
     summary.policyUnknownStatusCount = 0
-    for (const result of policySet.status.results) {
+    for (const result of policySet.status?.results ?? []) {
         summary.policyCount++
         if (!result.compliant) {
             summary.policyUnknownStatusCount++
@@ -54,7 +54,7 @@ function calculatePolicySetPolicyStats(summary: IPolicySetSummary, policySet: Po
 
 function caculatePolicySetClusterStats(summary: IPolicySetSummary, policySet: PolicySet) {
     const clusterStats: { [clusterName: string]: boolean } = {}
-    for (const result of policySet.status.results) {
+    for (const result of policySet.status?.results ?? []) {
         if (!result.clusters) continue
         for (const clusterResult of result.clusters) {
             if (clusterResult.compliant === 'Compliant' && clusterStats[clusterResult.clusterName] !== false) {

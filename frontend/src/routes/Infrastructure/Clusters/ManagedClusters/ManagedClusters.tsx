@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ButtonVariant, PageSection, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { fitContent } from '@patternfly/react-table'
 import {
     AcmAlertContext,
     AcmButton,
@@ -18,14 +20,12 @@ import {
     Provider,
     ProviderLongTextMap,
 } from '@stolostron/ui-components'
-import { ButtonVariant, PageSection, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { fitContent } from '@patternfly/react-table'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { clusterCuratorsState, clusterManagementAddonsState } from '../../../../atoms'
+import { clusterCuratorsState, clusterManagementAddonsState, policiesState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -33,6 +33,7 @@ import {
     addonPathKey,
     addonTextKey,
     Cluster,
+    ClusterCurator,
     ClusterDeployment,
     ClusterDeploymentDefinition,
     ClusterStatus,
@@ -40,6 +41,8 @@ import {
     patchResource,
     ResourceErrorCode,
 } from '../../../../resources'
+import { useClusterPolicyViolationsColumn } from '../../../Governance/clusters/useClusterPolicyViolationsColumn'
+import { useClusterViolationSummaryMap } from '../../../Governance/overview/ClusterViolationSummary'
 import { usePageContext } from '../ClustersPage'
 import { AddCluster } from './components/AddCluster'
 import { BatchChannelSelectModal } from './components/BatchChannelSelectModal'
@@ -178,144 +181,37 @@ export function ClustersTable(props: {
         return cluster.name!
     }, [])
 
+    const clusterNameColumn = useClusterNameColumn()
+    const clusterStatusColumn = useClusterStatusColumn()
+    const clusterProviderColumn = useClusterProviderColumn()
+    const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators)
+    const clusterLabelsColumn = useClusterLabelsColumn()
+    const clusterNodesColumn = useClusterNodesColumn()
+    const [policiesSource] = useRecoilState(policiesState)
+    const policies = useMemo(
+        () =>
+            policiesSource.filter(
+                (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
+            ),
+        [policiesSource]
+    )
+    const clusterViolationSummaryMap = useClusterViolationSummaryMap(policies)
+    const clusterPolicyViolationsColumn = useClusterPolicyViolationsColumn(clusterViolationSummaryMap)
+
     const modalColumns = useMemo(
-        () => [
-            {
-                header: t('table.name'),
-                sort: 'displayName',
-                cell: (cluster: Cluster) => (
-                    <>
-                        <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
-                        {cluster.hive.clusterClaimName && (
-                            <TextContent>
-                                <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-                            </TextContent>
-                        )}
-                    </>
-                ),
-            },
-            {
-                header: t('table.status'),
-                sort: 'status',
-                cell: (cluster: Cluster) => (
-                    <span style={{ whiteSpace: 'nowrap' }}>
-                        <StatusField cluster={cluster} />
-                    </span>
-                ),
-            },
-            {
-                header: t('table.provider'),
-                sort: 'provider',
-                cell: (cluster: Cluster) =>
-                    cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-',
-            },
-        ],
-        [t]
+        () => [clusterNameColumn, clusterStatusColumn, clusterProviderColumn],
+        [clusterNameColumn, clusterStatusColumn, clusterProviderColumn]
     )
 
     const columns = useMemo<IAcmTableColumn<Cluster>[]>(
         () => [
-            {
-                header: t('table.name'),
-                tooltip: t('table.name.helperText.noBold'),
-                sort: 'displayName',
-                search: (cluster) => [cluster.displayName as string, cluster.hive.clusterClaimName as string],
-                cell: (cluster) => (
-                    <>
-                        <span style={{ whiteSpace: 'nowrap' }}>
-                            <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
-                                {cluster.displayName}
-                            </Link>
-                        </span>
-                        {cluster.hive.clusterClaimName && (
-                            <TextContent>
-                                <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-                            </TextContent>
-                        )}
-                    </>
-                ),
-            },
-            {
-                header: t('table.status'),
-                sort: 'status',
-                search: 'status',
-                cell: (cluster) => (
-                    <span style={{ whiteSpace: 'nowrap' }}>
-                        <StatusField cluster={cluster} />
-                    </span>
-                ),
-            },
-            {
-                header: t('table.provider'),
-                sort: 'provider',
-                search: 'provider',
-                cell: (cluster) => (cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-'),
-            },
-            {
-                header: t('table.distribution'),
-                sort: 'distribution.displayVersion',
-                search: 'distribution.displayVersion',
-                cell: (cluster) => (
-                    <DistributionField
-                        cluster={cluster}
-                        clusterCurator={clusterCurators.find((curator) => curator.metadata.name === cluster.name)}
-                    />
-                ),
-            },
-            {
-                header: t('table.labels'),
-                search: (cluster) =>
-                    cluster.labels ? Object.keys(cluster.labels).map((key) => `${key}=${cluster.labels![key]}`) : '',
-                cell: (cluster) => {
-                    if (cluster.labels) {
-                        const labelKeys = Object.keys(cluster.labels)
-                        const collapse =
-                            [
-                                'cloud',
-                                'clusterID',
-                                'installer.name',
-                                'installer.namespace',
-                                'name',
-                                'vendor',
-                                'managed-by',
-                                'local-cluster',
-                                'openshiftVersion',
-                            ].filter((label) => {
-                                return labelKeys.includes(label)
-                            }) ?? []
-                        labelKeys.forEach((label) => {
-                            if (label.includes('open-cluster-management.io')) {
-                                collapse.push(label)
-                            }
-                        })
-                        return (
-                            <AcmLabels
-                                labels={cluster.labels}
-                                expandedText={t('show.less')}
-                                collapsedText={t('show.more', { number: collapse.length })}
-                                allCollapsedText={t('count.labels', { number: collapse.length })}
-                                collapse={collapse}
-                            />
-                        )
-                    } else {
-                        return '-'
-                    }
-                },
-            },
-            {
-                header: t('table.nodes'),
-                cell: (cluster) => {
-                    return cluster.nodes!.nodeList!.length > 0 ? (
-                        <AcmInlineStatusGroup
-                            healthy={cluster.nodes!.ready}
-                            danger={cluster.nodes!.unhealthy}
-                            unknown={cluster.nodes!.unknown}
-                        />
-                    ) : (
-                        '-'
-                    )
-                },
-            },
+            clusterNameColumn,
+            clusterStatusColumn,
+            clusterPolicyViolationsColumn,
+            clusterProviderColumn,
+            clusterDistributionColumn,
+            clusterLabelsColumn,
+            clusterNodesColumn,
             {
                 header: '',
                 cell: (cluster: Cluster) => {
@@ -324,7 +220,15 @@ export function ClustersTable(props: {
                 cellTransforms: [fitContent],
             },
         ],
-        []
+        [
+            clusterNameColumn,
+            clusterStatusColumn,
+            clusterPolicyViolationsColumn,
+            clusterProviderColumn,
+            clusterDistributionColumn,
+            clusterLabelsColumn,
+            clusterNodesColumn,
+        ]
     )
 
     const tableActions = useMemo<IAcmTableAction<Cluster>[]>(
@@ -531,4 +435,129 @@ export function ClustersTable(props: {
             />
         </Fragment>
     )
+}
+
+export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
+    const { t } = useTranslation()
+    return {
+        header: t('table.name'),
+        tooltip: t('table.name.helperText.noBold'),
+        sort: 'displayName',
+        search: (cluster) => [cluster.displayName as string, cluster.hive.clusterClaimName as string],
+        cell: (cluster) => (
+            <>
+                <span style={{ whiteSpace: 'nowrap' }}>
+                    <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
+                        {cluster.displayName}
+                    </Link>
+                </span>
+                {cluster.hive.clusterClaimName && (
+                    <TextContent>
+                        <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
+                    </TextContent>
+                )}
+            </>
+        ),
+    }
+}
+
+export function useClusterStatusColumn(): IAcmTableColumn<Cluster> {
+    const { t } = useTranslation()
+    return {
+        header: t('table.status'),
+        sort: 'status',
+        search: 'status',
+        cell: (cluster) => (
+            <span style={{ whiteSpace: 'nowrap' }}>
+                <StatusField cluster={cluster} />
+            </span>
+        ),
+    }
+}
+
+export function useClusterProviderColumn(): IAcmTableColumn<Cluster> {
+    const { t } = useTranslation()
+    return {
+        header: t('table.provider'),
+        sort: 'provider',
+        search: 'provider',
+        cell: (cluster) => (cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-'),
+    }
+}
+
+export function useClusterDistributionColumn(clusterCurators: ClusterCurator[]): IAcmTableColumn<Cluster> {
+    const { t } = useTranslation()
+    return {
+        header: t('table.distribution'),
+        sort: 'distribution.displayVersion',
+        search: 'distribution.displayVersion',
+        cell: (cluster) => (
+            <DistributionField
+                cluster={cluster}
+                clusterCurator={clusterCurators.find((curator) => curator.metadata.name === cluster.name)}
+            />
+        ),
+    }
+}
+
+export function useClusterLabelsColumn(): IAcmTableColumn<Cluster> {
+    const { t } = useTranslation()
+    return {
+        header: t('table.labels'),
+        search: (cluster) =>
+            cluster.labels ? Object.keys(cluster.labels).map((key) => `${key}=${cluster.labels![key]}`) : '',
+        cell: (cluster) => {
+            if (cluster.labels) {
+                const labelKeys = Object.keys(cluster.labels)
+                const collapse =
+                    [
+                        'cloud',
+                        'clusterID',
+                        'installer.name',
+                        'installer.namespace',
+                        'name',
+                        'vendor',
+                        'managed-by',
+                        'local-cluster',
+                        'openshiftVersion',
+                    ].filter((label) => {
+                        return labelKeys.includes(label)
+                    }) ?? []
+                labelKeys.forEach((label) => {
+                    if (label.includes('open-cluster-management.io')) {
+                        collapse.push(label)
+                    }
+                })
+                return (
+                    <AcmLabels
+                        labels={cluster.labels}
+                        expandedText={t('show.less')}
+                        collapsedText={t('show.more', { number: collapse.length })}
+                        allCollapsedText={t('count.labels', { number: collapse.length })}
+                        collapse={collapse}
+                    />
+                )
+            } else {
+                return '-'
+            }
+        },
+    }
+}
+
+export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
+    const { t } = useTranslation()
+    return {
+        header: t('table.nodes'),
+        cell: (cluster) => {
+            return cluster.nodes!.nodeList!.length > 0 ? (
+                <AcmInlineStatusGroup
+                    healthy={cluster.nodes!.ready}
+                    danger={cluster.nodes!.unhealthy}
+                    unknown={cluster.nodes!.unknown}
+                />
+            ) : (
+                '-'
+            )
+        },
+    }
 }

@@ -51,8 +51,8 @@ const resourceCache: {
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
 
 const definitions: IWatchOptions[] = [
-    { kind: 'ClusterManagementAddon', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
-    { kind: 'ManagedClusterAddon', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
+    { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
+    { kind: 'ManagedClusterAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
     { kind: 'Agent', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'InfraEnv', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'Application', apiVersion: 'app.k8s.io/v1beta1' },

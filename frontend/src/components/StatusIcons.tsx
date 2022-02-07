@@ -14,20 +14,21 @@ export function StatusIcons(props: {
 }) {
     const statuses: { key: string; count: number; icon: ReactNode; tooltip?: string }[] = []
 
-    if (props.violations !== undefined && props.violations) {
-        statuses.push({
-            key: 'violations',
-            count: props.violations,
-            icon: <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />,
-            tooltip: props.violationsTooltip,
-        })
-    }
     if (props.compliant !== undefined && props.compliant) {
         statuses.push({
             key: 'compliant',
             count: props.compliant,
             icon: <CheckCircleIcon color="var(--pf-global--success-color--100)" />,
             tooltip: props.compliantTooltip,
+        })
+    }
+
+    if (props.violations !== undefined && props.violations) {
+        statuses.push({
+            key: 'violations',
+            count: props.violations,
+            icon: <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />,
+            tooltip: props.violationsTooltip,
         })
     }
 
