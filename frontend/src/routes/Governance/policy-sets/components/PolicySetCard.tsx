@@ -60,7 +60,6 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
     return (
         <Card
             isRounded
-            isLarge
             isHoverable
             isFullHeight
             key={`policyset-${cardIdx}`}
@@ -112,7 +111,7 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                 <CardTitle>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         {policySet.metadata.name}
-                        <div style={{ fontSize: 'small', opacity: 0.6 }}>
+                        <div style={{ fontSize: 'small', opacity: 0.6, fontWeight: 'normal' }}>
                             {`Namespace: ${policySet.metadata.namespace}`}
                         </div>
                     </div>

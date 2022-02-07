@@ -24,7 +24,7 @@ export interface PolicySet {
         ownerReferences?: any[]
     }
     spec: PolicySetSpec
-    status: PolicySetStatus
+    status?: PolicySetStatus
 }
 
 export interface PolicySetSpec {

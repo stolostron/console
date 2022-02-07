@@ -41,7 +41,7 @@ export interface Policy {
         remediationAction: string
     }
     status?: {
-        compliant?: string
+        compliant?: 'Compliant' | 'NonCompliant'
         details?: {
             compliant: string
             history?: { eventName: string; lastTimestamp: string; message: string }[]

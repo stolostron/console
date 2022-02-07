@@ -1,335 +1,128 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-    Card,
-    CardBody,
-    Flex,
-    PageSection,
-    Select,
-    SelectOption,
-    Split,
-    SplitItem,
-    Stack,
-    Text,
-    TextContent,
-    TextVariants,
-} from '@patternfly/react-core'
-import {
-    AcmDonutChart,
-    AcmInlineProvider,
-    AcmInlineStatusGroup,
-    AcmLabels,
-    AcmTable,
-    IAcmTableColumn,
-} from '@stolostron/ui-components'
-import { Fragment, useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Card, CardBody, CardTitle, PageSection, Stack } from '@patternfly/react-core'
+import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { Fragment, useMemo } from 'react'
 import { useRecoilState } from 'recoil'
-import { clusterCuratorsState } from '../../../atoms'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { NavigationPath } from '../../../NavigationPath'
-import { Cluster } from '../../../resources'
-import { DistributionField } from '../../Infrastructure/Clusters/ManagedClusters/components/DistributionField'
-import { StatusField } from '../../Infrastructure/Clusters/ManagedClusters/components/StatusField'
-import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
+import { policiesState } from '../../../atoms'
+import { AcmMasonry } from '../../../components/AcmMasonry'
+import { Policy } from '../../../resources'
 import {
     GovernanceCreatePolicyEmptyState,
     GovernanceManagePoliciesEmptyState,
 } from '../components/GovernanceEmptyState'
-import { PolicyViolationIcons } from '../components/PolicyViolations'
-import { IGovernanceData, IPolicyGrouping, risksHasValues } from '../useGovernanceData'
+import { ClusterViolationsCard, useClusterViolationSummaryMap } from './ClusterViolationSummary'
+import { PolicySetViolationsCard } from './PolicySetViolationSummary'
+import { PolicyViolationsCard, usePolicyViolationSummary } from './PolicyViolationSummary'
 
-export default function GovernanceOverview(props: { governanceData: IGovernanceData }) {
-    const { governanceData } = props
-    const hasRisks = risksHasValues(props.governanceData.policyRisks)
-    const [group, setGroup] = useState<'standards' | 'categories' | 'controls'>('categories')
-    const [groupOpen, setGroupOpen] = useState(false)
-    const { t } = useTranslation()
-    const [clusterCurators] = useRecoilState(clusterCuratorsState)
-
-    let clusters = useAllClusters()
-    clusters = clusters.filter((cluster) => {
-        // don't show clusters in cluster pools in table
-        if (cluster.hive.clusterPool) {
-            return cluster.hive.clusterClaimName !== undefined
-        } else {
-            return true
-        }
-    })
-    const mckeyFn = useCallback(function mckeyFn(cluster: Cluster) {
-        return cluster.name!
-    }, [])
-    const columns = useMemo<IAcmTableColumn<Cluster>[]>(
-        () => [
-            {
-                header: t('table.name'),
-                tooltip: t('table.name.helperText.noBold'),
-                sort: 'displayName',
-                search: (cluster) => [cluster.displayName as string, cluster.hive.clusterClaimName as string],
-                cell: (cluster) => (
-                    <>
-                        <span style={{ whiteSpace: 'nowrap' }}>
-                            <Link to={NavigationPath.clusterDetails.replace(':id', cluster.name as string)}>
-                                {cluster.displayName}
-                            </Link>
-                        </span>
-                        {cluster.hive.clusterClaimName && (
-                            <TextContent>
-                                <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-                            </TextContent>
-                        )}
-                    </>
-                ),
-            },
-            {
-                header: t('Policy violations'),
-                // sort: 'status',
-                // search: 'status',
-                cell: (cluster) => (
-                    <span style={{ whiteSpace: 'nowrap' }}>
-                        {governanceData.clusterMap[cluster.name ?? ''] && (
-                            <ClusterPolicyViolationIcons risks={governanceData.clusterMap[cluster.name ?? '']} />
-                        )}
-                    </span>
-                ),
-            },
-            {
-                header: t('table.status'),
-                sort: 'status',
-                search: 'status',
-                cell: (cluster) => (
-                    <span style={{ whiteSpace: 'nowrap' }}>
-                        <StatusField cluster={cluster} />
-                    </span>
-                ),
-            },
-            {
-                header: t('table.provider'),
-                sort: 'provider',
-                search: 'provider',
-                cell: (cluster) => (cluster?.provider ? <AcmInlineProvider provider={cluster?.provider} /> : '-'),
-            },
-            {
-                header: t('table.distribution'),
-                sort: 'distribution.displayVersion',
-                search: 'distribution.displayVersion',
-                cell: (cluster) => (
-                    <DistributionField
-                        cluster={cluster}
-                        clusterCurator={clusterCurators.find((curator) => curator.metadata.name === cluster.name)}
-                    />
-                ),
-            },
-            {
-                header: t('table.labels'),
-                search: (cluster) =>
-                    cluster.labels ? Object.keys(cluster.labels).map((key) => `${key}=${cluster.labels![key]}`) : '',
-                cell: (cluster) => {
-                    if (cluster.labels) {
-                        const labelKeys = Object.keys(cluster.labels)
-                        const collapse =
-                            [
-                                'cloud',
-                                'clusterID',
-                                'installer.name',
-                                'installer.namespace',
-                                'name',
-                                'vendor',
-                                'managed-by',
-                                'local-cluster',
-                                'openshiftVersion',
-                            ].filter((label) => {
-                                return labelKeys.includes(label)
-                            }) ?? []
-                        labelKeys.forEach((label) => {
-                            if (label.includes('open-cluster-management.io')) {
-                                collapse.push(label)
-                            }
-                        })
-                        return (
-                            <AcmLabels
-                                labels={cluster.labels}
-                                expandedText={t('show.less')}
-                                collapsedText={t('show.more', { number: collapse.length })}
-                                allCollapsedText={t('count.labels', { number: collapse.length })}
-                                collapse={collapse}
-                            />
-                        )
-                    } else {
-                        return '-'
-                    }
-                },
-            },
-            {
-                header: t('table.nodes'),
-                cell: (cluster) => {
-                    return cluster.nodes!.nodeList!.length > 0 ? (
-                        <AcmInlineStatusGroup
-                            healthy={cluster.nodes!.ready}
-                            danger={cluster.nodes!.unhealthy}
-                            unknown={cluster.nodes!.unknown}
-                        />
-                    ) : (
-                        '-'
-                    )
-                },
-            },
-        ],
-        []
+export default function GovernanceOverview() {
+    const [policiesSource] = useRecoilState(policiesState)
+    const policies = useMemo(
+        () =>
+            policiesSource.filter(
+                (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
+            ),
+        [policiesSource]
     )
-    if (!governanceData.policies || governanceData.policies.length === 0) {
+    const policyViolationSummary = usePolicyViolationSummary(policies)
+    const clusterViolationSummaryMap = useClusterViolationSummaryMap(policies)
+    if (policies.length === 0) {
         return <GovernanceCreatePolicyEmptyState />
     }
-    if (!hasRisks) {
+    if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant)) {
         return <GovernanceManagePoliciesEmptyState />
     }
     return (
         <PageSection isWidthLimited>
             <Stack hasGutter>
-                <Flex>
-                    <AcmDonutChart
-                        title="Cluster policy violations"
-                        description={t('Overview of cluster policy violations')}
-                        donutLabel={{
-                            title: (
-                                governanceData.clusterRisks.high +
-                                governanceData.clusterRisks.medium +
-                                governanceData.clusterRisks.low
-                            ).toString(),
-                            subTitle: 'Violations',
-                        }}
-                        data={[
-                            {
-                                key: 'Violations',
-                                value:
-                                    governanceData.clusterRisks.high +
-                                    governanceData.clusterRisks.medium +
-                                    governanceData.clusterRisks.low,
-                                isPrimary: true,
-                            },
-                            {
-                                key: 'Compliant',
-                                value: governanceData.clusterRisks.synced,
-                            },
-                            {
-                                key: 'Unknown',
-                                value: governanceData.clusterRisks.unknown,
-                                isPrimary: true,
-                            },
-                        ]}
-                        colorScale={[
-                            'var(--pf-global--danger-color--100)',
-                            'var(--pf-global--success-color--100)',
-                            'var(--pf-global--warning-color--100)',
-                        ]}
-                    />
-                    <AcmDonutChart
-                        title="Policy violations"
-                        description={t('Overview of policy violations')}
-                        donutLabel={{
-                            title: (
-                                governanceData.policyRisks.high +
-                                governanceData.policyRisks.medium +
-                                governanceData.policyRisks.low
-                            ).toString(),
-                            subTitle: 'Violations',
-                        }}
-                        data={[
-                            {
-                                key: 'Violations',
-                                value:
-                                    governanceData.policyRisks.high +
-                                    governanceData.policyRisks.medium +
-                                    governanceData.policyRisks.low,
-                                isPrimary: true,
-                            },
-                            {
-                                key: 'Compliant',
-                                value: governanceData.policyRisks.synced,
-                            },
-                            {
-                                key: 'Unknown',
-                                value: governanceData.policyRisks.unknown,
-                                isPrimary: true,
-                            },
-                        ]}
-                        colorScale={[
-                            'var(--pf-global--danger-color--100)',
-                            'var(--pf-global--success-color--100)',
-                            'var(--pf-global--warning-color--100)',
-                        ]}
-                    />
-                </Flex>
-                {/* <Split hasGutter>
-                    <SplitItem>
-                        <ClusterPolicyViolationCard risks={governanceData.clusterRisks} />
-                    </SplitItem>
-                    <SplitItem>
-                        <PolicyViolationsCard risks={governanceData.policyRisks} />
-                    </SplitItem>
-                </Split> */}
-                <Card>
-                    <CardBody>
-                        <Split hasGutter>
-                            <SplitItem style={{ minWidth: 160, marginLeft: -8, marginTop: -6 }}>
-                                <Select
-                                    selections={group}
-                                    isOpen={groupOpen}
-                                    onToggle={setGroupOpen}
-                                    onSelect={(_, v) => {
-                                        setGroup(v as 'standards' | 'categories' | 'controls')
-                                        setGroupOpen(false)
-                                    }}
-                                    isPlain
-                                >
-                                    <SelectOption value="categories">
-                                        <b>Categories</b>
-                                    </SelectOption>
-                                    <SelectOption value="standards">
-                                        <b>Standards</b>
-                                    </SelectOption>
-                                    <SelectOption value="controls">
-                                        <b>Controls</b>
-                                    </SelectOption>
-                                </Select>
-                            </SplitItem>
-                            <SplitItem>
-                                <div style={{ display: 'flex', columnGap: 48, rowGap: 16, flexWrap: 'wrap' }}>
-                                    {(governanceData as unknown as Record<string, IPolicyGrouping>)[group].groups.map(
-                                        (group) => {
-                                            const hasRisks =
-                                                group.policyRisks.high +
-                                                    group.policyRisks.low +
-                                                    group.policyRisks.medium +
-                                                    group.policyRisks.synced +
-                                                    group.policyRisks.unknown >
-                                                0
-                                            if (!hasRisks) return <Fragment />
-                                            return (
-                                                <Split hasGutter>
-                                                    <SplitItem>
-                                                        <span style={{ whiteSpace: 'nowrap' }}>{group.name}</span>
-                                                    </SplitItem>
-                                                    <PolicyViolationIcons risks={group.policyRisks} />
-                                                </Split>
-                                            )
-                                        }
-                                    )}
-                                </div>
-                            </SplitItem>
-                        </Split>
-                    </CardBody>
-                </Card>
-                <div>
-                    <AcmTable<Cluster>
-                        plural="clusters"
-                        items={clusters}
-                        columns={columns}
-                        keyFn={mckeyFn}
-                        key="managedClustersTable"
-                    />
-                </div>
+                <AcmMasonry minSize={400} maxColumns={3}>
+                    <PolicySetViolationsCard />
+                    <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
+                    <ClusterViolationsCard clusterViolationSummaryMap={clusterViolationSummaryMap} />
+                    <SecurityGroupCard key="categories" title="Categories" group="categories" policies={policies} />
+                    <SecurityGroupCard key="standards" title="Standards" group="standards" policies={policies} />
+                    <SecurityGroupCard key="controls" title="Controls" group="controls" policies={policies} />
+                </AcmMasonry>
             </Stack>
         </PageSection>
     )
+}
+
+interface SecurityGroupViolations {
+    name: string
+    compliant: number
+    noncompliant: number
+}
+
+function SecurityGroupCard(props: { title: string; group: string; policies: Policy[] }) {
+    const violations = useSecurityGroupViolations(props.group, props.policies)
+    return (
+        <div>
+            <Card isRounded>
+                <CardTitle>{props.title}</CardTitle>
+                <CardBody>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16 }}>
+                        {violations.map((violation) => {
+                            if (!(violation.compliant || violation.noncompliant)) return <Fragment />
+                            return (
+                                <Fragment>
+                                    <span>{violation.name}</span>
+                                    {violation.compliant ? (
+                                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                            {violation.compliant} &nbsp;
+                                            <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                                        </span>
+                                    ) : (
+                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
+                                            {violation.compliant} &nbsp;
+                                            <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                                        </span>
+                                    )}
+                                    {violation.noncompliant ? (
+                                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                            {violation.noncompliant} &nbsp;
+                                            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                                        </span>
+                                    ) : (
+                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
+                                            {violation.noncompliant} &nbsp;
+                                            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                                        </span>
+                                    )}
+                                </Fragment>
+                            )
+                        })}
+                    </div>
+                </CardBody>
+            </Card>
+        </div>
+    )
+}
+
+function useSecurityGroupViolations(group: string, policies: Policy[]) {
+    const violations = useMemo(() => {
+        const clusterViolations: Record<string, SecurityGroupViolations> = {}
+        for (const policy of policies) {
+            if (policy.spec.disabled) continue
+            const annotation = policy.metadata.annotations?.[`policy.open-cluster-management.io/${group}`]
+            if (!annotation) continue
+            const names = annotation.split(',')
+            for (const name of names) {
+                let v = clusterViolations[name]
+                if (!v) {
+                    v = { name, compliant: 0, noncompliant: 0 }
+                    clusterViolations[name] = v
+                }
+                switch (policy.status?.compliant) {
+                    case 'Compliant':
+                        v.compliant++
+                        break
+                    case 'NonCompliant':
+                        v.noncompliant++
+                        break
+                }
+            }
+        }
+        return Object.values(clusterViolations)
+    }, [policies])
+    return violations
 }
