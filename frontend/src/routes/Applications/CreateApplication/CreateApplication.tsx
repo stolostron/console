@@ -64,12 +64,6 @@ export function CreateApplication() {
     const history = useHistory()
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
-    const [channels] = useRecoilState(channelsState)
-    const gitChannels = useMemo(
-        () => channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub'),
-        [channels]
-    )
-    // const helmChannels = useMemo(() => channels.filter((channel) => channel.spec.type === 'HelmRepo'), [channels])
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
@@ -86,15 +80,8 @@ export function CreateApplication() {
     const availableAnsibleCredentials = ansibleCredentials
         .map((ansibleCredential) => ansibleCredential.metadata.name)
         .filter(isType)
-    const availableGitChannels = gitChannels.map((gitChannel) => {
-        const { name, namespace } = gitChannel.metadata
-        const { pathname } = gitChannel.spec
-        return {
-            name: name || '',
-            namespace: namespace || '',
-            pathname: pathname || '',
-        }
-    })
+
+    const [channels] = useRecoilState(channelsState)
     const currentTimeZone = moment.tz.guess(true)
     const timeZones = currentTimeZone
         ? [currentTimeZone, ...moment.tz.names().filter((e) => e !== currentTimeZone)]
@@ -114,9 +101,7 @@ export function CreateApplication() {
                     return error
                 })
             }
-            // gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
-            // helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
-            subscriptionGitChannels={availableGitChannels}
+            channels={channels}
             timeZones={timeZones}
         />
     )
