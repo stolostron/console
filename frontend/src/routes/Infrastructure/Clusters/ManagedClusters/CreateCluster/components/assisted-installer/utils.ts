@@ -719,3 +719,14 @@ export const onEditNtpSources = (values: any, infraEnv: CIM.InfraEnvK8sResource)
     }
     return patchResource(infraEnv, patches).promise
 }
+
+export const onMassDeleteHost = (agent: CIM.AgentK8sResource, bmh: CIM.BareMetalHostK8sResource) => {
+    const toDelete = [];
+    if (agent) {
+        toDelete.push(agent)
+    }
+    if (bmh) {
+        toDelete.push(bmh)
+    }
+    return deleteResources(toDelete).promise
+} 
