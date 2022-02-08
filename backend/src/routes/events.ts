@@ -291,7 +291,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                                     msg: 'watch error',
                                     kind: options.kind,
                                     apiVersion: options.apiVersion,
-                                    error: (watchEvent as unknown as { message: string }).message,
+                                    event: watchEvent,
                                 })
                                 break
                         }

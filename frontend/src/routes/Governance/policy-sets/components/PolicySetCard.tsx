@@ -14,7 +14,9 @@ import {
 } from '@patternfly/react-core'
 import { AcmDrawerContext } from '@stolostron/ui-components'
 import { useContext, useState } from 'react'
+import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { NavigationPath } from '../../../../NavigationPath'
 import { deleteResource, PolicySet } from '../../../../resources'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { PolicyViolationIcons } from '../../components/PolicyViolations'
@@ -28,6 +30,7 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const [cardOpenIdx, setCardOpenIdx] = useState<number>()
     const policySetSummary = usePolicySetSummary(policySet)
+    const history = useHistory()
 
     function onCardToggle(cardIdx: number) {
         if (cardOpenIdx === cardIdx) {
@@ -85,7 +88,16 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                             >
                                 {t('View details')}
                             </DropdownItem>,
-                            <DropdownItem key="edit" isDisabled>
+                            <DropdownItem
+                                key="edit"
+                                onClick={() => {
+                                    history.push(
+                                        NavigationPath.editPolicySet
+                                            .replace(':namespace', policySet.metadata.namespace)
+                                            .replace(':name', policySet.metadata.name)
+                                    )
+                                }}
+                            >
                                 {t('Edit')}
                             </DropdownItem>,
                             <DropdownSeparator key="separator" />,
@@ -121,7 +133,7 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                 <Stack hasGutter>
                     {policySet.spec.description && <div>{policySet.spec.description ?? ''}</div>}
                     {totalClusterCount > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             <span>
                                 <strong>{totalClusterCount}</strong> clusters
                             </span>
@@ -131,7 +143,7 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                         </div>
                     )}
                     {totalPolicyCount > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             <span>
                                 <strong>{totalPolicyCount}</strong> policies
                             </span>
