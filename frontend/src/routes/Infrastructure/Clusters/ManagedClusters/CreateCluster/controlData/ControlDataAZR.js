@@ -455,6 +455,8 @@ const setRegions = (control, controlData) => {
     } else {
         alterRegionData(controlData, regions, 'centralus')
     }
+
+    onChangeConnection(control, controlData)
 }
 
 const controlDataAZR = [
@@ -472,7 +474,6 @@ const controlDataAZR = [
             required: true,
         },
         available: [],
-        onSelect: onChangeConnection,
         prompts: CREATE_CLOUD_CONNECTION,
     },
     ...clusterDetailsControlData,
