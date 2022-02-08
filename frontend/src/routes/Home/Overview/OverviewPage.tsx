@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
+import { ButtonVariant, PageSection, Stack } from '@patternfly/react-core'
+import { PlusIcon } from '@patternfly/react-icons'
 import {
     AcmActionGroup,
     AcmAlert,
@@ -19,11 +20,8 @@ import {
     AcmSummaryList,
     Provider,
 } from '@stolostron/ui-components'
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
-import { PlusIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
-import { useTranslation } from '../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -33,6 +31,7 @@ import {
     managedClustersState,
     policiesState,
 } from '../../../atoms'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { Policy } from '../../../resources'
 import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
@@ -569,86 +568,94 @@ export default function OverviewPage() {
             }
         >
             <AcmScrollable>
-                {searchLoading || searchPolicyReportLoading ? (
-                    <AcmLoadingPage />
-                ) : (
-                    <PageSection>
-                        <AcmOverviewProviders providers={providers} />
-                    </PageSection>
-                )}
-
                 <PageSection>
-                    {searchLoading || searchPolicyReportLoading ? (
-                        <AcmSummaryList key="loading" loading title={t('Summary')} list={summary} />
-                    ) : (
-                        <AcmSummaryList title={t('Summary')} list={summary} />
-                    )}
-                </PageSection>
+                    <Stack hasGutter>
+                        {searchLoading || searchPolicyReportLoading ? (
+                            <AcmLoadingPage />
+                        ) : (
+                            <AcmOverviewProviders providers={providers} />
+                        )}
 
-                <PageSection>
-                    {searchLoading || searchPolicyReportLoading ? (
-                        <AcmChartGroup>
-                            <AcmDonutChart
-                                loading
-                                key="chart-loading-1"
-                                title="Cluster compliance"
-                                description={t('Overview of policy compliance status')}
-                                data={[]}
-                            />
-                            <AcmDonutChart
-                                loading
-                                key="chart-loading-2"
-                                title="Pods"
-                                description={t('Overview of pod count and status')}
-                                data={[]}
-                            />
-                            <AcmDonutChart
-                                loading
-                                key="chart-loading-3"
-                                title="Cluster status"
-                                description={t('Overview of cluster status')}
-                                data={[]}
-                            />
-                            <AcmDonutChart
-                                loading
-                                key="chart-loading-4"
-                                title="Clusters with issues"
-                                description={t('Overview of cluster issues')}
-                                data={[]}
-                            />
-                        </AcmChartGroup>
-                    ) : (
-                        <AcmChartGroup>
-                            <AcmDonutChart
-                                title="Cluster compliance"
-                                description={t('Overview of policy compliance status')}
-                                data={complianceData}
-                                colorScale={['#E62326', '#0066CC']}
-                            />
-                            <AcmDonutChart
-                                title="Pods"
-                                description={t('Overview of pod count and status')}
-                                data={podData}
-                                colorScale={['#E62326', '#8BC1F7', '#0066CC']}
-                            />
-                            <AcmDonutChart
-                                title="Cluster status"
-                                description={t('Overview of cluster status')}
-                                data={clusterData}
-                                colorScale={['#E62326', '#0066CC']}
-                            />
-                            <AcmDonutChart
-                                title="Cluster issues"
-                                description={t('Overview of cluster issues')}
-                                data={policyReportData}
-                                donutLabel={{
-                                    title: `${policyReportItems.length}`,
-                                    subTitle: t('Clusters with issues'),
-                                }}
-                                colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
-                            />
-                        </AcmChartGroup>
-                    )}
+                        {searchLoading || searchPolicyReportLoading ? (
+                            <AcmSummaryList key="loading" loading title={t('Summary')} list={summary} />
+                        ) : (
+                            <AcmSummaryList title={t('Summary')} list={summary} />
+                        )}
+
+                        {searchLoading || searchPolicyReportLoading ? (
+                            <AcmChartGroup>
+                                <AcmDonutChart
+                                    loading
+                                    key="chart-loading-1"
+                                    title="Cluster compliance"
+                                    description={t('Overview of policy compliance status')}
+                                    data={[]}
+                                />
+                                <AcmDonutChart
+                                    loading
+                                    key="chart-loading-2"
+                                    title="Pods"
+                                    description={t('Overview of pod count and status')}
+                                    data={[]}
+                                />
+                                <AcmDonutChart
+                                    loading
+                                    key="chart-loading-3"
+                                    title="Cluster status"
+                                    description={t('Overview of cluster status')}
+                                    data={[]}
+                                />
+                                <AcmDonutChart
+                                    loading
+                                    key="chart-loading-4"
+                                    title="Clusters with issues"
+                                    description={t('Overview of cluster issues')}
+                                    data={[]}
+                                />
+                            </AcmChartGroup>
+                        ) : (
+                            <AcmChartGroup>
+                                <AcmDonutChart
+                                    title="Cluster compliance"
+                                    description={t('Overview of policy compliance status')}
+                                    data={complianceData}
+                                    colorScale={[
+                                        'var(--pf-global--danger-color--100)',
+                                        'var(--pf-global--success-color--100)',
+                                    ]}
+                                />
+                                <AcmDonutChart
+                                    title="Pods"
+                                    description={t('Overview of pod count and status')}
+                                    data={podData}
+                                    colorScale={[
+                                        'var(--pf-global--danger-color--100)',
+                                        'var(--pf-global--info-color--100)',
+                                        'var(--pf-global--success-color--100)',
+                                    ]}
+                                />
+                                <AcmDonutChart
+                                    title="Cluster status"
+                                    description={t('Overview of cluster status')}
+                                    data={clusterData}
+                                    colorScale={[
+                                        'var(--pf-global--danger-color--100)',
+                                        'var(--pf-global--success-color--100)',
+                                    ]}
+                                />
+                                <AcmDonutChart
+                                    title="Cluster issues"
+                                    description={t('Overview of cluster issues')}
+                                    data={policyReportData}
+                                    donutLabel={{
+                                        title: `${policyReportItems.length}`,
+                                        subTitle: t('Clusters with issues'),
+                                    }}
+                                    colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
+                                />
+                            </AcmChartGroup>
+                        )}
+                    </Stack>
                 </PageSection>
             </AcmScrollable>
         </AcmPage>

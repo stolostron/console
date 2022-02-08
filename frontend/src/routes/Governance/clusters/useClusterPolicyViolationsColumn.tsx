@@ -3,7 +3,7 @@ import { IAcmTableColumn } from '@stolostron/ui-components'
 import { Fragment } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Cluster } from '../../../resources'
-import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
+import { PolicyViolationIcons2 } from '../components/PolicyViolations'
 import { ClusterViolationSummaryMap } from '../overview/ClusterViolationSummary'
 
 export function useClusterPolicyViolationsColumn(
@@ -16,7 +16,7 @@ export function useClusterPolicyViolationsColumn(
             const clusterViolationSummary = clusterViolationSummaryMap[cluster.name ?? '']
             if (!clusterViolationSummary) return <Fragment />
             return (
-                <ClusterPolicyViolationIcons2
+                <PolicyViolationIcons2
                     compliant={clusterViolationSummary.compliant}
                     noncompliant={clusterViolationSummary.noncompliant}
                 />
