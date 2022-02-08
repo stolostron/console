@@ -2,6 +2,8 @@
     ".bma": ".bma",
     "(1 of {{0}})": "(1 of {{0}})",
     "{0} identified issues": "{0} identified issues",
+    "{0} policies violations.": "{0} policies violations.",
+    "{0} policies with no violations.": "{0} policies with no violations.",
     "{0} policies with violations": "{0} policies with violations",
     "{0} policies without violations": "{0} policies without violations",
     "1 policy with violations": "1 policy with violations",

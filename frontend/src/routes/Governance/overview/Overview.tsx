@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardBody, CardTitle, PageSection, Stack } from '@patternfly/react-core'
+import { Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { t } from 'i18next'
 import { Fragment, useMemo } from 'react'
 import { useRecoilState } from 'recoil'
 import { policiesState } from '../../../atoms'
@@ -68,8 +69,17 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                                     <span>{violation.name}</span>
                                     {violation.compliant ? (
                                         <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                                            {violation.compliant} &nbsp;
-                                            <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                                            <Tooltip
+                                                content={t('{0} policies with no violations.').replace(
+                                                    '{0}',
+                                                    violation.compliant.toString()
+                                                )}
+                                            >
+                                                <Fragment>
+                                                    {violation.compliant} &nbsp;
+                                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                                                </Fragment>
+                                            </Tooltip>
                                         </span>
                                     ) : (
                                         <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
@@ -78,10 +88,19 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                                         </span>
                                     )}
                                     {violation.noncompliant ? (
-                                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                                            {violation.noncompliant} &nbsp;
-                                            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
-                                        </span>
+                                        <Tooltip
+                                            content={t('{0} policies violations.').replace(
+                                                '{0}',
+                                                violation.compliant.toString()
+                                            )}
+                                        >
+                                            <Fragment>
+                                                <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                    {violation.noncompliant} &nbsp;
+                                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                                                </span>
+                                            </Fragment>
+                                        </Tooltip>
                                     ) : (
                                         <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
                                             {violation.noncompliant} &nbsp;
