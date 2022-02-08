@@ -92,6 +92,7 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                             <DropdownItem
                                 key="delete"
                                 onClick={() => {
+                                    setCardOpenIdx(undefined)
                                     deleteResource({
                                         apiVersion: 'policy.open-cluster-management.io/v1',
                                         kind: 'PolicySet',

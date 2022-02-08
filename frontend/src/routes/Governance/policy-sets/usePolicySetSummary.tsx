@@ -57,10 +57,13 @@ function caculatePolicySetClusterStats(summary: IPolicySetSummary, policySet: Po
     for (const result of policySet.status?.results ?? []) {
         if (!result.clusters) continue
         for (const clusterResult of result.clusters) {
-            if (clusterResult.compliant === 'Compliant' && clusterStats[clusterResult.clusterName] !== false) {
-                clusterStats[clusterResult.clusterName] = true
-            } else {
-                clusterStats[clusterResult.clusterName] = false
+            // If the cluster results dont have compliance status we want to skip the clustere
+            if (clusterResult.compliant) {
+                if (clusterResult.compliant === 'Compliant' && clusterStats[clusterResult.clusterName] !== false) {
+                    clusterStats[clusterResult.clusterName] = true
+                } else {
+                    clusterStats[clusterResult.clusterName] = false
+                }
             }
         }
         const clusterNames = Object.keys(clusterStats)

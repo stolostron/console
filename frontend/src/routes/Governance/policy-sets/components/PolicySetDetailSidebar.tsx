@@ -191,7 +191,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 policySet.status?.results.forEach((result: PolicySetStatusResult) => {
                     result?.clusters &&
                         result.clusters.forEach((c: PolicySetResultCluster) => {
-                            if (c.clusterName === cluster.clusterName) {
+                            if (c.clusterName === cluster.clusterName && c.compliant) {
                                 if (c.compliant === 'NonCompliant') {
                                     violationCount++
                                 }
@@ -199,6 +199,9 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                             }
                         })
                 })
+                if (totalPolicySetPoliciesOnCluster === 0) {
+                    return '-'
+                }
                 return (
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         {violationCount > 0 ? (
@@ -288,23 +291,27 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
             cell: (policy: PolicySetStatusResult) => {
                 let violationCount = 0
                 // Get total count of cluster violations for a specific policy
-                policy?.clusters?.forEach((c: PolicySetResultCluster) => {
-                    if (c.compliant === 'NonCompliant') {
-                        violationCount++
-                    }
-                })
-                return (
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        {violationCount > 0 ? (
-                            <ExclamationCircleIcon color="#C9190B" />
-                        ) : (
-                            <CheckCircleIcon color="#3E8635" />
-                        )}
-                        <p
-                            style={{ marginLeft: '.25rem' }}
-                        >{`${violationCount} of ${policySetClusters.length} in violation`}</p>
-                    </div>
-                )
+                const hasCompliance = policy?.clusters?.filter((cluster) => cluster.compliant) ?? []
+                if (hasCompliance.length > 0) {
+                    hasCompliance.forEach((c: PolicySetResultCluster) => {
+                        if (c.compliant === 'NonCompliant') {
+                            violationCount++
+                        }
+                    })
+                    return (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            {violationCount > 0 ? (
+                                <ExclamationCircleIcon color="#C9190B" />
+                            ) : (
+                                <CheckCircleIcon color="#3E8635" />
+                            )}
+                            <p
+                                style={{ marginLeft: '.25rem' }}
+                            >{`${violationCount} of ${hasCompliance.length} in violation`}</p>
+                        </div>
+                    )
+                }
+                return '-'
             },
         },
         {
