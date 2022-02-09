@@ -25,6 +25,7 @@ import { Policy } from '../../../../resources'
 export default function PolicyDetailsClusters(props: { policy: Policy }) {
     const { t } = useTranslation()
     const { policy } = props
+    console.debug(policy)
 
     const columns = useMemo(
         () => [
@@ -66,7 +67,8 @@ export default function PolicyDetailsClusters(props: { policy: Policy }) {
                     // items={tableDataByClusters.rows} // items from PolicyStatus query: https://github.com/stolostron/grc-ui/blob/main/src-web/utils/client/queries.js#L275
                     items={[]}
                     columns={columns}
-                    keyFn={(item) => item.uid.toString()}
+                    // keyFn={(item) => item.uid.toString()}
+                    keyFn={() => Math.random().toString()}
                     // search={clusterQuery}
                     // setSearch={this.handleSearch}
                     initialSort={{
