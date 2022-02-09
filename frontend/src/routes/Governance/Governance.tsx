@@ -2,6 +2,7 @@
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
 import GovernancePage from './GovernancePage'
+import PolicyDetailsPage from './policies/policy-details/PolicyDetailsPage'
 import { PolicyWizardPage } from './policies/PolicyWizardPage'
 import { CreatePolicySet } from './policy-sets/CreatePolicySet'
 import { EditPolicySet } from './policy-sets/EditPolicySet'
@@ -12,7 +13,12 @@ export default function Governance() {
             <Route exact path={NavigationPath.createPolicy} render={() => <PolicyWizardPage />} />
             <Route exact path={NavigationPath.createPolicySet} render={() => <CreatePolicySet />} />
             <Route exact path={NavigationPath.editPolicySet} render={() => <EditPolicySet />} />
-            <Route path={NavigationPath.governance} component={GovernancePage} />
+            {/* Specify the three exact routes for GovernancePage so we can implement the policy details page under a different AcmPageNav */}
+            <Route exact path={NavigationPath.governance} component={GovernancePage} />
+            <Route exact path={NavigationPath.policies} component={GovernancePage} />
+            <Route exact path={NavigationPath.policySets} component={GovernancePage} />
+            <Route exact path={NavigationPath.governanceClusters} component={GovernancePage} />
+            <Route path={NavigationPath.policyDetails} component={PolicyDetailsPage} />
             <Route path="*">
                 <Redirect to={NavigationPath.governance} />
             </Route>
