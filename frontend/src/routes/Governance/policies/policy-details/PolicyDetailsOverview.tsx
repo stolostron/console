@@ -252,7 +252,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                                     >
                                         {Array.from(clusterList[status]).map((cluster: string, index) => {
                                             // If there's no status, there's no point in linking to the status page
-                                            let href: string = ''
+                                            let href = ''
                                             if (status !== 'nostatus') {
                                                 href = NavigationPath.policyDetailsResults
                                                     .replace(':namespace', policy.metadata.namespace!)
