@@ -3,8 +3,8 @@ import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 import { createResource, getResource, listResources, replaceResource } from './utils/resource-request'
 
-export const DiscoveryConfigApiVersion = 'discovery.open-cluster-management.io/v1alpha1'
-export type DiscoveryConfigApiVersionType = 'discovery.open-cluster-management.io/v1alpha1'
+export const DiscoveryConfigApiVersion = 'discovery.open-cluster-management.io/v1'
+export type DiscoveryConfigApiVersionType = 'discovery.open-cluster-management.io/v1'
 
 export const DiscoveryConfigKind = 'DiscoveryConfig'
 export type DiscoveryConfigKindType = 'DiscoveryConfig'

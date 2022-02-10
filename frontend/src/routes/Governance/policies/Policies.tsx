@@ -1,10 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmTable, IAcmRowAction, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
 import {
     ButtonVariant,
     Checkbox,
-    Chip,
     DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
@@ -12,20 +10,39 @@ import {
     PageSection,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import moment from 'moment'
+import { AcmTable, IAcmRowAction, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from '../../../lib/acm-i18next'
+import { Link, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { namespacesState, policiesState, policySetsState } from '../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { NoWrap } from '../../../components/NoWrap'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
-import { patchResource, ResourceErrorCode, Policy, PolicyApiVersion, PolicyKind } from '../../../resources'
-import { PolicyRiskLabels } from '../components/PolicyRiskLabels'
-import { IGovernanceData, IPolicy } from '../useGovernanceData'
+import { NavigationPath } from '../../../NavigationPath'
+import { patchResource, Policy, PolicyApiVersion, PolicyKind, PolicySet, ResourceErrorCode } from '../../../resources'
+import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
+import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
+import {
+    PolicyClusterViolationSummaryMap,
+    usePolicyClusterViolationSummaryMap,
+} from '../overview/PolicyViolationSummary'
+import { PolicySetList } from './util'
 
-export default function PoliciesPage(props: { governanceData: IGovernanceData }) {
-    const { governanceData } = props
+export default function PoliciesPage() {
+    const [policiesSource] = useRecoilState(policiesState)
+    const policies = useMemo(
+        () =>
+            policiesSource.filter(
+                (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
+            ),
+        [policiesSource]
+    )
 
+    const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(policies)
+
+    const history = useHistory()
     const { t } = useTranslation()
+    const [policySets] = useRecoilState(policySetsState)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Policy> | { open: false }>({
         open: false,
     })
@@ -35,184 +52,70 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
         (resource: Policy) => resource.metadata.uid ?? `${resource.metadata.name}/${resource.metadata.namespace}`,
         []
     )
-    const policyColumns = useMemo<IAcmTableColumn<IPolicy>[]>(
+    const policyClusterViolationsColumn = usePolicyViolationsColumn(policyClusterViolationSummaryMap)
+    const policyColumns = useMemo<IAcmTableColumn<Policy>[]>(
         () => [
             {
                 header: t('Name'),
                 cell: (policy) => {
-                    // let compliantCount = 0
-                    // let noncompliantCount = 0
-                    // if (policy.status?.status) {
-                    //     compliantCount = policy.status.status.filter(
-                    //         (cluster) => cluster.compliant === 'Compliant'
-                    //     ).length
-                    //     noncompliantCount = policy.status.status.filter(
-                    //         (cluster) => cluster.compliant === 'NonCompliant'
-                    //     ).length
-                    // }
                     return (
-                        <Fragment>
-                            <div>
-                                <NoWrap>
-                                    {/* <RisksIcon risks={policy.clusterRisks} />
-                            &nbsp;&nbsp; */}
-                                    {/* <ExclamationCircleIcon color="red" /> &nbsp; */}
-                                    <a>{policy.metadata.name}</a>
-                                </NoWrap>
-                            </div>
-                            <div style={{ opacity: 0.7, fontSize: 'smaller' }}>ns: {policy.metadata.namespace}</div>
-                        </Fragment>
+                        <Link
+                            to={{
+                                pathname: NavigationPath.policyDetails
+                                    .replace(':namespace', policy.metadata.namespace as string)
+                                    .replace(':name', policy.metadata.name as string),
+                                state: {
+                                    from: NavigationPath.policies,
+                                },
+                            }}
+                        >
+                            {policy.metadata.name}
+                        </Link>
                     )
                 },
                 sort: 'metadata.name',
                 search: 'metadata.name',
             },
-            // {
-            //     header: t('Namespace'),
-            //     cell: 'metadata.namespace',
-            //     sort: 'metadata.namespace',
-            //     search: 'metadata.namespace',
-            // },
             {
-                header: t('Clusters'),
-                cell: (policy) => {
-                    if (policy.status?.status) {
-                        return (
-                            <Fragment>
-                                <PolicyRiskLabels
-                                    risks={policy.clusterRisks}
-                                    singular="cluster"
-                                    plural="clusters"
-                                    showLabels
-                                    isVertical
-                                />
-                            </Fragment>
-                        )
-                    } else {
-                        return <Fragment />
-                    }
-                },
-                sort: (lhs, rhs) => {
-                    if (lhs.clusterRisks.high > rhs.clusterRisks.high) return -1
-                    if (lhs.clusterRisks.high < rhs.clusterRisks.high) return 1
-                    if (lhs.clusterRisks.medium > rhs.clusterRisks.medium) return -1
-                    if (lhs.clusterRisks.medium < rhs.clusterRisks.medium) return 1
-                    if (lhs.clusterRisks.low > rhs.clusterRisks.low) return -1
-                    if (lhs.clusterRisks.low < rhs.clusterRisks.low) return 1
-                    if (lhs.clusterRisks.synced > rhs.clusterRisks.synced) return -1
-                    if (lhs.clusterRisks.synced < rhs.clusterRisks.synced) return 1
-                    return 0
-                },
+                header: t('Namespace'),
+                cell: 'metadata.namespace',
+                sort: 'metadata.namespace',
+                search: 'metadata.namespace',
             },
-            // {
-            //     header: t('Severity'),
-            //     cell: (policy) => {
-            //         switch (getPolicySeverity(policy)) {
-            //             case PolicySeverity.Low:
-            //                 return 'Low'
-            //             case PolicySeverity.Medium:
-            //                 return 'Medium'
-            //             default:
-            //             case PolicySeverity.High:
-            //                 return 'High'
-            //         }
-            //     },
-            //     sort: (lhs, rhs) => compareNumbers(getPolicySeverity(lhs), getPolicySeverity(rhs)),
-            // },
             {
                 header: t('Status'),
-                cell: (policy: Policy) => (
-                    <span>
-                        {policy.spec.disabled === true
-                            ? t('policy.table.actionGroup.status.disabled')
-                            : t('policy.table.actionGroup.status.enabled')}
-                    </span>
-                ),
+                cell: (policy: Policy) => <span>{policy.spec.disabled === true ? t('Disabled') : t('Enabled')}</span>,
             },
             {
                 header: t('Remediation'),
                 cell: 'spec.remediationAction',
                 sort: 'spec.remediationAction',
             },
-            // {
-            //     header: t('Source'),
-            //     cell: () => 'TODO',
-            // },
             {
-                header: t('Controls'),
-                cell: (policy) => {
-                    const controls = policy.metadata.annotations?.['policy.open-cluster-management.io/controls']
-                    if (!controls) return <Fragment />
-                    return (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {controls
-                                .split(',')
-                                .map((v) => v.trim())
-                                .map((group) => (
-                                    <Chip isReadOnly>{group}</Chip>
-                                ))}
-                        </div>
+                header: t('Policy set'),
+                cell: (policy: Policy) => {
+                    const policySetsMatch = policySets.filter((policySet: PolicySet) =>
+                        policySet.spec.policies.includes(policy.metadata.name!)
                     )
+                    if (policySetsMatch.length > 0) {
+                        return <PolicySetList policySets={policySetsMatch} />
+                    }
+                    return '-'
                 },
             },
-            // {
-            //     header: t('Automation'),
-            //     cell: () => 'TODO',
-            // },
+            policyClusterViolationsColumn,
             {
-                header: t('Categories'),
-                cell: (policy) => {
-                    const categories = policy.metadata.annotations?.['policy.open-cluster-management.io/categories']
-                    if (!categories) return <Fragment />
-                    return (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {categories
-                                .split(',')
-                                .map((v) => v.trim())
-                                .map((group) => (
-                                    <Chip isReadOnly>{group}</Chip>
-                                ))}
-                        </div>
-                        // <LabelGroup>
-                        //     {categories
-                        //         .split(',')
-                        //         .map((v) => v.trim())
-                        //         .map((category) => (
-                        //             <div color={policy.spec.disabled ? 'grey' : 'blue'}>{category}</div>
-                        //         ))}
-                        // </LabelGroup>
-                    )
+                header: t('Source'),
+                cell: () => {
+                    return '-'
                 },
             },
             {
-                header: t('Standards'),
-                cell: (policy) => {
-                    const standards = policy.metadata.annotations?.['policy.open-cluster-management.io/standards']
-                    if (!standards) return <Fragment />
-                    return (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                            {standards
-                                .split(',')
-                                .map((v) => v.trim())
-                                .map((group) => (
-                                    <Chip isReadOnly>{group}</Chip>
-                                ))}
-                        </div>
-                    )
-                },
-            },
-            {
-                header: t('Created'),
-                cell: (resource) => (
-                    <span style={{ whiteSpace: 'nowrap' }}>
-                        {resource.metadata.creationTimestamp &&
-                            moment(new Date(resource.metadata.creationTimestamp)).fromNow()}
-                    </span>
-                ),
-                sort: 'metadata.creationTimestamp',
+                header: t('Automation'),
+                cell: () => '-',
             },
         ],
-        []
+        [policyClusterViolationsColumn]
     )
 
     let pbcheck = false
@@ -662,18 +565,9 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
         [placementRuleChecked, placementBindingChecked]
     )
 
-    const namespaces = useMemo(() => {
-        return Object.keys(
-            governanceData.policies.reduce((namespaces, policy) => {
-                if (policy.metadata.namespace) {
-                    namespaces[policy.metadata.namespace] = true
-                }
-                return namespaces
-            }, {} as Record<string, true>)
-        )
-    }, [governanceData.policies])
+    const [namespaces] = useRecoilState(namespacesState)
 
-    const filters = useMemo<ITableFilter<IPolicy>[]>(
+    const filters = useMemo<ITableFilter<Policy>[]>(
         () => [
             {
                 id: 'compliance',
@@ -690,11 +584,10 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 ],
                 tableFilterFn: (selectedValues, policy) => {
                     if (selectedValues.includes('NonCompliant')) {
-                        if (policy.clusterRisks.high || policy.clusterRisks.medium || policy.clusterRisks.low)
-                            return true
+                        if (policy.status?.compliant === 'NonCompliant') return true
                     }
                     if (selectedValues.includes('Compliant')) {
-                        if (policy.clusterRisks.synced) return true
+                        if (policy.status?.compliant === 'Compliant') return true
                     }
                     return false
                 },
@@ -703,8 +596,8 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                 id: 'namespace',
                 label: 'Namespace',
                 options: namespaces.map((namespace) => ({
-                    label: namespace,
-                    value: namespace,
+                    label: namespace.metadata.name,
+                    value: namespace.metadata.name ?? '',
                 })),
                 tableFilterFn: (selectedValues, policy) => {
                     return selectedValues.includes(policy.metadata.namespace ?? '')
@@ -757,7 +650,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
     }, [])
 
     let activeColumns = policyColumns
-    let subColumns: IAcmTableColumn<IPolicy>[] | undefined = undefined
+    let subColumns: IAcmTableColumn<Policy>[] | undefined = undefined
 
     if (compact) {
         activeColumns = policyColumns.filter((column) => {
@@ -782,14 +675,18 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
         })
     }
 
+    if (policies.length === 0) {
+        return <GovernanceCreatePolicyEmptyState />
+    }
+
     return (
-        <PageSection>
+        <PageSection isWidthLimited>
             <BulkActionModel<Policy> {...modalProps} />
-            <AcmTable<IPolicy>
+            <AcmTable<Policy>
                 plural={t('Policies')}
                 columns={activeColumns}
                 keyFn={policyKeyFn}
-                items={governanceData.policies}
+                items={policies}
                 rowActions={policyRowActions}
                 tableActions={tableActions}
                 gridBreakPoint={TableGridBreakpoint.none}
@@ -799,7 +696,7 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
                         variant: ButtonVariant.primary,
                         id: 'create',
                         title: 'Create policy',
-                        click: () => {},
+                        click: () => history.push(NavigationPath.createPolicy),
                     },
                 ]}
                 addSubRows={(policy) => {
@@ -833,4 +730,39 @@ export default function PoliciesPage(props: { governanceData: IGovernanceData })
             />
         </PageSection>
     )
+}
+
+function usePolicyViolationsColumn(
+    policyClusterViolationSummaryMap: PolicyClusterViolationSummaryMap
+): IAcmTableColumn<Policy> {
+    const { t } = useTranslation()
+    return {
+        header: t('Cluster violations'),
+        cell: (policy) => {
+            const clusterViolationSummary = policyClusterViolationSummaryMap[policy.metadata.uid ?? '']
+            if (clusterViolationSummary) {
+                // TODO - add link to the policy details page clusters tab
+                return (
+                    <ClusterPolicyViolationIcons2
+                        compliant={clusterViolationSummary.compliant}
+                        noncompliant={clusterViolationSummary.noncompliant}
+                    />
+                )
+            } else {
+                return '-'
+            }
+        },
+        sort: (lhs, rhs) => {
+            const lhsViolations = policyClusterViolationSummaryMap[lhs.metadata.uid ?? '']
+            const rhsViolations = policyClusterViolationSummaryMap[rhs.metadata.uid ?? '']
+            if (lhsViolations === rhsViolations) return 0
+            if (!lhsViolations) return -1
+            if (!rhsViolations) return 1
+            if (lhsViolations.noncompliant > rhsViolations.noncompliant) return -1
+            if (lhsViolations.noncompliant < rhsViolations.noncompliant) return 1
+            if (lhsViolations.compliant > rhsViolations.compliant) return -1
+            if (lhsViolations.compliant < rhsViolations.compliant) return 1
+            return 0
+        },
+    }
 }

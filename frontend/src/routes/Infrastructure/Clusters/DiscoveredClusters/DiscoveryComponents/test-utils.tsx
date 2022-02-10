@@ -13,7 +13,7 @@ import { Provider } from '@stolostron/ui-components'
 
 export const mockDiscoveredClusters: DiscoveredCluster[] = [
     {
-        apiVersion: 'discovery.open-cluster-management.io/v1alpha1',
+        apiVersion: 'discovery.open-cluster-management.io/v1',
         kind: 'DiscoveredCluster',
         metadata: { name: 'test-cluster-01', namespace: 'alpha' },
         spec: {
@@ -39,7 +39,7 @@ export const mockDiscoveredClusters: DiscoveredCluster[] = [
         },
     },
     {
-        apiVersion: 'discovery.open-cluster-management.io/v1alpha1',
+        apiVersion: 'discovery.open-cluster-management.io/v1',
         kind: 'DiscoveredCluster',
         metadata: { name: 'test-cluster-02', namespace: 'discovered-cluster-namespace' },
         spec: {
@@ -57,7 +57,7 @@ export const mockDiscoveredClusters: DiscoveredCluster[] = [
         },
     },
     {
-        apiVersion: 'discovery.open-cluster-management.io/v1alpha1',
+        apiVersion: 'discovery.open-cluster-management.io/v1',
         kind: 'DiscoveredCluster',
         metadata: { name: 'test-cluster-03', namespace: 'discovered-cluster-namespace' },
         spec: {

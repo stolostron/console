@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { noop } from 'lodash'
 import { getCookie } from '.'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
@@ -59,6 +60,42 @@ export function createResource<Resource extends IResource, ResultType = Resource
 ): IRequestResult<ResultType> {
     const url = getBackendUrl() + getResourceApiPath(resource)
     return postRequest<Resource, ResultType>(url, resource)
+}
+
+export async function createResources(resources: IResource[]): Promise<void> {
+    if (!Array.isArray(resources)) throw new Error('Error - resources are not an array')
+    for (const resource of resources) {
+        try {
+            const existingResource = await getResource(resource).promise
+            if (existingResource)
+                throw new Error(
+                    'Resource of kind {kind} with name {name} in namespace {namespace} already exists.'
+                        .replace('{kind}', resource.kind)
+                        .replace('{name}', resource.metadata?.name ?? '')
+                        .replace('{namespace}', resource.metadata?.namespace ?? '')
+                )
+        } catch (err) {
+            // no nothing
+        }
+    }
+    const createdResources: IResource[] = []
+    try {
+        for (const resource of resources) {
+            const createdResource = await createResource(resource).promise
+            createdResources.push(createdResource)
+        }
+    } catch (err) {
+        for (const createdResource of createdResources) {
+            deleteResource(createdResource).promise.catch(noop)
+        }
+        throw err
+    }
+}
+
+export async function updateResources(resources: IResource[]): Promise<void> {
+    for (const resource of resources) {
+        await replaceResource(resource).promise
+    }
 }
 
 export function replaceResource<Resource extends IResource, ResultType = Resource>(
@@ -472,7 +509,7 @@ export async function fetchRetry<T>(options: {
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
                 case 404:
-                    throw new ResourceError('Unauthorized', ResourceErrorCode.NotFound)
+                    throw new ResourceError('Not found', ResourceErrorCode.NotFound)
                 case 408: // Request Timeout
                 case 429: // Too Many Requests
                 case 500: // Internal Server Error

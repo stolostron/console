@@ -10,3 +10,7 @@
 .temptifly.showEditor .infra-env-form > .pf-l-grid__item {
     --pf-l-grid__item--GridColumnEnd: span 12;
 }
+
+.infra-env-form__footer {
+    padding-top: var(--pf-global--spacer--md);
+}

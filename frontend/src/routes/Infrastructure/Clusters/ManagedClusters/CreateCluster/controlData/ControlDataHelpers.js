@@ -481,6 +481,7 @@ export const automationControlData = [
         name: 'template.clusterCreate.name',
         id: 'templateName',
         type: 'combobox',
+        tooltip: 'template.clusterCreate.tooltip',
         placeholder: 'template.clusterCreate.select.placeholder',
         validation: {
             required: false,
@@ -543,4 +544,8 @@ export const addSnoText = (controlData) => {
     const masterPool = controlData.find((object) => object.id == 'masterPool')
     const poolControlData = masterPool.controlData.find((object) => object.id == 'masterPool')
     poolControlData.info = 'creation.ocp.node.controlplane.pool.info.sno_enabled'
+}
+
+export const arrayItemHasKey = (options, key) => {
+    return options && options.some((o) => o[key])
 }

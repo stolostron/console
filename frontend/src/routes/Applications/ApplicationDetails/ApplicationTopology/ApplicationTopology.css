@@ -1,0 +1,16 @@
+.how-to-read-text {
+    font-weight: bold;
+    color: #06c;
+    font-size: 14px;
+    line-height: 20px;
+    text-align: left;
+    cursor: pointer;
+    margin-right: 4px;
+}
+
+.how-to-read-icon {
+    width: 14px;
+    height: 11px;
+    margin-left: 9px;
+    fill: #06c;
+}

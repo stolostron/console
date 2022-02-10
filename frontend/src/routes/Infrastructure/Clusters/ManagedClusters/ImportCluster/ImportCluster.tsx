@@ -101,7 +101,7 @@ export default function ImportClusterPage() {
                                         rel="noreferrer"
                                         style={{ display: 'block', marginTop: '4px' }}
                                     >
-                                        {t('common:learn.more')}
+                                        {t('Learn more')}
                                     </a>
                                 </>
                             }

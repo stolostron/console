@@ -10,6 +10,24 @@ import { isBMPlatform } from './utils'
 
 const { InfraEnvFormPage, getLabels } = CIM
 
+// where to put Create/Cancel buttons
+export const Portals = Object.freeze({
+    editBtn: 'edit-button-portal-id',
+    createBtn: 'create-button-portal-id',
+    cancelBtn: 'cancel-button-portal-id',
+})
+
+const portals = (
+    <Split hasGutter className="infra-env-form__footer">
+        <SplitItem>
+            <div id={Portals.createBtn} />
+        </SplitItem>
+        <SplitItem>
+            <div id={Portals.cancelBtn} />
+        </SplitItem>
+    </Split>
+)
+
 type InfraEnvFormProps = {
     control?: any
     handleChange?: any
@@ -31,6 +49,12 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
             control.active = {
                 ...control.active,
                 pullSecret: btoa(values.pullSecret),
+            }
+        }
+        if (values.enableNtpSources) {
+            control.active = {
+                ...control.active,
+                additionalNtpSources: values.additionalNtpSources.split(',').map((s) => s.trim()),
             }
         }
         handleChange(control)
@@ -73,6 +97,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                     </Split>
                 </Card>
             </GridItem>
+            <GridItem>{portals}</GridItem>
         </Grid>
     )
 }

@@ -7,7 +7,7 @@ import { managedClustersState, policiesState } from '../../../../atoms'
 import { clickByText, waitForText } from '../../../../lib/test-util'
 import { ManagedCluster } from '../../../../resources/managed-cluster'
 import { Policy } from '../../../../resources/policy'
-import { PolicySet, PolicySetResultClusters } from '../../../../resources/policy-set'
+import { PolicySet } from '../../../../resources/policy-set'
 import { PolicySetDetailSidebar } from './PolicySetDetailSidebar'
 
 const mockLocalCluster: ManagedCluster = {
@@ -126,14 +126,7 @@ describe('PolicySets Page', () => {
             metadata: { name: 'test-policyset', namespace: 'test-ns' },
             spec: {
                 description: 'Policies for PCI-2 compliance',
-                policies: [
-                    'policy-testing',
-                    'policy-role',
-                    'policy-securitycontextconstraints',
-                    'policy-testing-1',
-                    'policy-role-1',
-                    'policy-securitycontextconstraints-1',
-                ],
+                policies: ['policy-testing', 'policy-role', 'policy-securitycontextconstraints'],
             },
             status: {
                 placement: [
@@ -167,10 +160,7 @@ describe('PolicySets Page', () => {
                 ],
             },
         }
-        const policySetClusters: PolicySetResultClusters[] = [
-            { clusterName: 'local-cluster', clusterNamespace: 'local-cluster', compliant: 'Compliant' },
-            { clusterName: 'managed', clusterNamespace: 'managed', compliant: 'NonCompliant' },
-        ]
+
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -179,7 +169,7 @@ describe('PolicySets Page', () => {
                 }}
             >
                 <MemoryRouter>
-                    <PolicySetDetailSidebar policySet={policySet} policySetClusters={policySetClusters} />
+                    <PolicySetDetailSidebar policySet={policySet} />
                 </MemoryRouter>
             </RecoilRoot>
         )

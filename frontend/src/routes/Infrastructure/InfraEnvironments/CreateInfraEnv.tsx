@@ -10,7 +10,7 @@ import TemplateEditor from 'temptifly'
 
 import { NavigationPath } from '../../../NavigationPath'
 import infraEnvTemplate from './infraenv-template.hbs'
-import InfraEnvForm from './InfraEnvForm'
+import InfraEnvForm, { Portals } from './InfraEnvForm'
 
 // include monaco editor
 import 'monaco-editor/esm/vs/editor/editor.all.js'
@@ -31,13 +31,6 @@ const controlData = [
     },
 ]
 
-// where to put Create/Cancel buttons
-const Portals = Object.freeze({
-    editBtn: 'edit-button-portal-id',
-    createBtn: 'create-button-portal-id',
-    cancelBtn: 'cancel-button-portal-id',
-})
-
 const CreateInfraEnv: React.FC = () => {
     const template = Handlebars.compile(infraEnvTemplate)
     const history = useHistory()
@@ -50,13 +43,6 @@ const CreateInfraEnv: React.FC = () => {
     const switches = (
         <div className="switch-controls">
             <div id={Portals.editBtn} />
-        </div>
-    )
-
-    const portals = (
-        <div className="portal-controls">
-            <div id={Portals.cancelBtn} />
-            <div id={Portals.createBtn} />
         </div>
     )
 
@@ -124,7 +110,6 @@ const CreateInfraEnv: React.FC = () => {
                         { text: t('createInfraEnv.title'), to: '' },
                     ]}
                     switches={switches}
-                    actions={portals}
                 />
             }
         >

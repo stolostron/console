@@ -11,6 +11,8 @@ import {
     createResource,
     getResource,
     listNamespacedResources,
+    ClusterImageSet,
+    listClusterImageSets,
 } from '../../../../../../../resources'
 import {
     agentClusterInstallsState,
@@ -24,6 +26,7 @@ import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
 import { deleteResources } from '../../../../../../../lib/delete-resources'
 import { IBulkActionModelProps } from '../../../../../../../components/BulkActionModel'
+import { AgentK8sResource, BareMetalHostK8sResource } from 'openshift-assisted-ui-lib/cim'
 
 const {
     getAnnotationsFromAgentSelector,
@@ -32,6 +35,7 @@ const {
     getBareMetalHostCredentialsSecret,
     getBareMetalHost,
     isAgentOfCluster,
+    BMH_HOSTNAME_ANNOTATION,
 } = CIM
 
 type OnHostsNext = {
@@ -318,15 +322,14 @@ export const useInfraEnv = ({ name, namespace }: { name: string; namespace: stri
     )
 }
 
-export const onApproveAgent = (agent: CIM.AgentK8sResource) => {
+export const onApproveAgent = (agent: CIM.AgentK8sResource) =>
     patchResource(agent, [
         {
             op: 'replace',
             path: '/spec/approved',
             value: true,
         },
-    ])
-}
+    ]).promise
 
 export const getClusterDeploymentLink = ({ name }: { name: string }) =>
     NavigationPath.clusterDetails.replace(':id', name)
@@ -496,6 +499,12 @@ export const onSaveBMH =
 
         if (editModal?.bmh) {
             const patches: any[] = []
+            appendPatch(
+                patches,
+                `/metadata/annotations/'${BMH_HOSTNAME_ANNOTATION.replace('/', '~1')}'`,
+                values.hostname,
+                editModal.bmh.metadata.annotations?.[BMH_HOSTNAME_ANNOTATION]
+            )
             appendPatch(patches, '/spec/bmc/address', values.bmcAddress, editModal.bmh.spec.bmc.address)
             appendPatch(
                 patches,
@@ -555,23 +564,59 @@ export const onSaveAgent = async (agent: CIM.AgentK8sResource, hostname: string)
         },
     ]).promise
 
-export const useAgentsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }) => {
+export const onChangeBMHHostname = async (bmh: CIM.BareMetalHostK8sResource, hostname: string) =>
+    patchResource(bmh, [
+        {
+            op: 'replace',
+            path: `/metadata/annotations/${BMH_HOSTNAME_ANNOTATION.replace('/', '~1')}`,
+            value: hostname,
+        },
+    ]).promise
+
+export const useAgentsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }): AgentK8sResource[] => {
     const [agents] = useRecoilValue(waitForAll([agentsState]))
-    return useMemo(() => agents.filter((a) => isAgentOfCluster(a, name, namespace)), [agents])
+    return useMemo(() => agents.filter((a) => isAgentOfCluster(a, name, namespace)), [agents]) || []
 }
 
-export const useBMHsOfAIFlow = ({ name, namespace }: { name?: string; namespace?: string }) => {
+export const useBMHsOfAIFlow = ({
+    name,
+    namespace,
+}: {
+    name?: string
+    namespace?: string
+}): BareMetalHostK8sResource[] => {
     const [bmhs] = useRecoilValue(waitForAll([bareMetalAssetsState]))
-    return useMemo(
-        () =>
-            // TODO(mlibra): make that happen!
-            /* That label is added to the InfraEnv along creating ClusterDeployment, specific for the AI flow */
-            bmhs.filter(
-                (bmh: CIM.BareMetalHostK8sResource) =>
-                    namespace && name && bmh.metadata?.labels?.[INFRAENV_GENERATED_AI_FLOW] === `${namespace}-${name}`
-            ),
-        [bmhs]
+    return (
+        useMemo(
+            () =>
+                // TODO(mlibra): make that happen!
+                /* That label is added to the InfraEnv along creating ClusterDeployment, specific for the AI flow */
+                bmhs.filter(
+                    (bmh: CIM.BareMetalHostK8sResource) =>
+                        namespace &&
+                        name &&
+                        bmh.metadata?.labels?.[INFRAENV_GENERATED_AI_FLOW] === `${namespace}-${name}`
+                ),
+            [bmhs]
+        ) || []
     )
+}
+export const useClusterImages = () => {
+    const [clusterImages, setClusterImages] = useState<ClusterImageSet[]>()
+    useEffect(() => {
+        const fetchImages = async () => {
+            try {
+                const images = await listClusterImageSets().promise
+                if (!isEqual(images, clusterImages)) {
+                    setClusterImages(images)
+                }
+            } catch {
+                setClusterImages([])
+            }
+        }
+        fetchImages()
+    }, [])
+    return clusterImages
 }
 
 const refetchInfraEnv = async (infraEnv: CIM.InfraEnvK8sResource) =>
@@ -615,3 +660,59 @@ export const getOnSaveISOParams =
         }
         // quit anyway ...
     }
+
+export const saveSSHKey = async (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
+    const patches: any[] = []
+    appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey, infraEnv.spec.sshAuthorizedKey)
+    if (patches.length) {
+        return patchResource(infraEnv, patches).promise
+    }
+}
+
+export const savePullSecret = (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
+    const secret = {
+        apiVersion: 'v1',
+        kind: 'Secret',
+        metadata: {
+            namespace: infraEnv.metadata.namespace,
+            name: infraEnv.spec?.pullSecretRef?.name,
+        },
+    }
+    if (values.createSecret) {
+        return createResource<any>({
+            ...secret,
+            data: {
+                '.dockerconfigjson': btoa(values.pullSecret),
+            },
+            type: 'kubernetes.io/dockerconfigjson',
+        }).promise
+    } else {
+        return patchResource(secret, [
+            {
+                op: 'replace',
+                path: '/data/.dockerconfigjson',
+                value: btoa(values.pullSecret),
+            },
+        ]).promise
+    }
+}
+
+export const onEditNtpSources = (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
+    const patches: any[] = []
+    if (values.enableNtpSources === 'auto') {
+        if (infraEnv.spec?.additionalNTPSources) {
+            patches.push({
+                op: 'remove',
+                path: '/spec/additionalNTPSources',
+            })
+        }
+    } else {
+        appendPatch(
+            patches,
+            '/spec/additionalNTPSources',
+            (values.additionalNtpSources as string).split(',').map((s) => s.trim()),
+            infraEnv.spec.additionalNTPSources
+        )
+    }
+    return patchResource(infraEnv, patches).promise
+}
