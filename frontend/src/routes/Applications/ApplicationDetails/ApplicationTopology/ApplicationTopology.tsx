@@ -14,7 +14,7 @@ import {
     channelsState,
     placementsState,
     placementRulesState,
-    deployablesState,
+    subscriptionReportsState,
     managedClustersState,
 } from '../../../../atoms'
 import { searchClient } from '../../../Home/Search/search-sdk/search-client'
@@ -30,6 +30,7 @@ import { processResourceActionLink } from './helpers/diagram-helpers'
 import { getApplication } from './model/application'
 import { getTopology, getDiagramElements } from './model/topology'
 import { getApplicationData, getApplicationQuery, getRelatedQuery, getAdditionalQuery } from './model/searchQueries'
+import { getRelatedResources } from './model/relatedResources'
 
 export type ArgoAppDetailsContainerData = {
     page: number
@@ -51,10 +52,12 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
     const [channels] = useRecoilState(channelsState)
     const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)
-    const [deployables] = useRecoilState(deployablesState)
+    const [subscriptionReports] = useRecoilState(subscriptionReportsState)
     const [managedClusters] = useRecoilState(managedClustersState)
     const [allChannels, setAllChannels] = useState<[]>()
     const [activeChannel, setActiveChannel] = useState<string>()
+    const [reports, setReports] = useState<[] | undefined>(undefined)
+    const [relatedResources, setRelatedResources] = useState<any>()
     const [applicationQuery, setApplicationQuery] = useState<any>()
     const [relatedQuery, setRelatedQuery] = useState<any>()
     const [additionalQuery, setAdditionalQuery] = useState<any>()
@@ -147,6 +150,21 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
         return () => clearInterval(interval)
     }, [])
 
+    useEffect(() => {
+        let active = true
+        load()
+        return () => {
+            active = false
+        }
+        async function load() {
+            const res = await getRelatedResources(reports)
+            if (!active) {
+                return
+            }
+            setRelatedResources(res)
+        }
+    }, [JSON.stringify(reports)])
+
     // search for related resources after diagram generation
     const [
         fireSearchQuery,
@@ -232,14 +250,15 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
             ansibleJob,
             subscriptions,
             channels,
-            deployables,
+            subscriptionReports,
             placements,
             placementRules,
         })
         if (application) {
             setActiveChannel(application.activeChannel)
             setAllChannels(application.channels)
-            const topology = getTopology(application, managedClusters)
+            setReports(application.reports)
+            const topology = getTopology(application, managedClusters, relatedResources)
             const appData = getApplicationData(topology.nodes)
 
             // optionally search for details on app
@@ -255,7 +274,15 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
             setElements(getDiagramElements(appData, topology, searchRelated, additionalRelated, canUpdateStatuses, t))
         }
         setShouldRefresh(false)
-    }, [searchRelated, additionalRelated, applicationRelated, canUpdateStatuses, shouldRefresh, activeChannel])
+    }, [
+        relatedResources,
+        searchRelated,
+        additionalRelated,
+        applicationRelated,
+        canUpdateStatuses,
+        shouldRefresh,
+        activeChannel,
+    ])
 
     return (
         <PageSection>

@@ -8,12 +8,12 @@ import { getArgoTopology } from './topologyArgo'
 //import { addArgoDiagramDetails } from './argo/details'
 import { getSubscriptionTopology } from './topologySubscription'
 
-export const getTopology = (application, managedClusters) => {
+export const getTopology = (application, managedClusters, relatedResources) => {
     let topology
     if (application.isArgoApp) {
         topology = getArgoTopology(application, managedClusters)
     } else {
-        topology = getSubscriptionTopology(application, managedClusters)
+        topology = getSubscriptionTopology(application, managedClusters, relatedResources)
     }
     return topology
 }

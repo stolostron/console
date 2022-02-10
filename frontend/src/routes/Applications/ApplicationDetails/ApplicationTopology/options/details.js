@@ -267,52 +267,32 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
 
     addPropertyToList(
         mainDetails,
-        getNodePropery(
-            node,
-            ['specs', 'raw', 'metadata', 'annotations', gitBranchAnnotation],
-            'spec.subscr.annotations.gitBranch'
-        )
+        getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitBranchAnnotation], 'Git branch')
     )
 
     addPropertyToList(
         mainDetails,
-        getNodePropery(
-            node,
-            ['specs', 'raw', 'metadata', 'annotations', gitPathAnnotation],
-            'spec.subscr.annotations.gitPath'
-        )
+        getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitPathAnnotation], 'Git path')
     )
 
     if (nodeAnnotations[gitTagAnnotation]) {
         addPropertyToList(
             mainDetails,
-            getNodePropery(
-                node,
-                ['specs', 'raw', 'metadata', 'annotations', gitTagAnnotation],
-                'spec.subscr.annotations.gitTag'
-            )
+            getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitTagAnnotation], 'Git tag')
         )
     }
 
     if (nodeAnnotations[gitCommitAnnotation]) {
         addPropertyToList(
             mainDetails,
-            getNodePropery(
-                node,
-                ['specs', 'raw', 'metadata', 'annotations', gitCommitAnnotation],
-                'spec.subscr.annotations.gitCommit'
-            )
+            getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', gitCommitAnnotation], 'Git commit')
         )
     }
 
     if (nodeAnnotations[reconcileRateAnnotation]) {
         addPropertyToList(
             mainDetails,
-            getNodePropery(
-                node,
-                ['specs', 'raw', 'metadata', 'annotations', reconcileRateAnnotation],
-                'spec.subscr.annotations.reconcileRate'
-            )
+            getNodePropery(node, ['specs', 'raw', 'metadata', 'annotations', reconcileRateAnnotation], 'Reconcile rate')
         )
     }
 
