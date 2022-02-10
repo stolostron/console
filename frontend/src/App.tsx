@@ -2,8 +2,8 @@
 /* istanbul ignore file */
 import { useMediaQuery } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { getBackendUrl, listMultiClusterHubs } from './resources'
-import { getApplinks } from './lib/applinks'
+import { getBackendUrl, listMultiClusterHubs, MultiClusterHub } from './resources'
+import { getApplinks, IAppSwitcherData } from './lib/applinks'
 import { configure } from './lib/configure'
 import { getUsername } from './lib/username'
 import { 
@@ -505,13 +505,9 @@ function AppHeader() {
             </ApplicationLauncherItem>
         )
     }
-    interface AppSwitcherData {
-        name: string
-        url: string
-        icon: string
-    }
+
     function AppSwitcherTopBar() {
-        const [extraItems, setExtraItems] = useState<Record<string, [AppSwitcherData]>>({})
+        const [extraItems, setExtraItems] = useState<Record<string, [IAppSwitcherData]>>({})
         const [appSwitcherOpen, setAppSwitcherOpen] = useState<boolean>(false)
 
         useEffect(() => {

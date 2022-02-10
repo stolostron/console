@@ -11,6 +11,20 @@ import { getToken } from '../lib/token'
 const { HTTP2_HEADER_AUTHORIZATION } = constants
 const agent = new Agent({ rejectUnauthorized: false })
 
+// Type returned by /apis/authentication.k8s.io/v1/tokenreviews
+interface TokenReview {
+    spec: {
+        token: string
+    },
+    status: {
+        authenticated: boolean,
+        error: string,
+        user: {
+            username: string
+        }
+    }
+}
+
 export async function username(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const serviceAccountPath = '/var/run/secrets/kubernetes.io/serviceaccount'
     const token = getToken(req)
@@ -28,7 +42,7 @@ export async function username(req: Http2ServerRequest, res: Http2ServerResponse
     }  
 
     try {
-        const response = await jsonPost(
+        const response = await jsonPost<TokenReview>(
             process.env.CLUSTER_API_URL + '/apis/authentication.k8s.io/v1/tokenreviews', 
             {
                 apiVersion: 'authentication.k8s.io/v1',

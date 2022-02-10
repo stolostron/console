@@ -4,7 +4,11 @@ import { getBackendUrl, getRequest } from '../resources'
 
 export const configureUrl = '/configure'
 
+export type IConfigureResult = {
+    token_endpoint: string
+}
+
 export function configure() {
     const url = getBackendUrl() + '/configure'
-    return getRequest(url)
+    return getRequest<IConfigureResult>(url)
 }

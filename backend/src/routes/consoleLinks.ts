@@ -8,6 +8,21 @@ import { logger } from '../lib/logger'
 import { respondInternalServerError, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
 
+// Type of ApplicationMenu in a ConsoleLink object
+interface ApplicationMenu {
+    imageURL: string,
+    section: string
+}
+// Type returned by /apis/console.openshift.io/v1/consolelinks
+interface ConsoleLink {
+    spec: {
+        applicationMenu: ApplicationMenu,
+        href: string,
+        location: string,
+        namespaceDashboard?: Object,
+        text: string 
+    }
+}
 interface FormatedConsoleLink {
     url: string; 
     name: string; 
@@ -34,7 +49,7 @@ export async function consoleLinks(req: Http2ServerRequest, res: Http2ServerResp
     }  
 
     try {
-        const body = await jsonRequest<{ items: object[] }>(
+        const body = await jsonRequest<{ items: ConsoleLink[] }>(
             process.env.CLUSTER_API_URL + '/apis/console.openshift.io/v1/consolelinks', serviceaccountToken
         )
         const consoleLinks = body.items ? body.items : []
