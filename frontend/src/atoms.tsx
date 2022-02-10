@@ -67,6 +67,9 @@ import {
     GitOpsCluster,
     GitOpsClusterApiVersion,
     GitOpsClusterKind,
+    HelmRelease,
+    HelmReleaseApiVersion,
+    HelmReleaseKind,
     InfraEnvApiVersion,
     InfraEnvKind,
     InfrastructureApiVersion,
@@ -152,6 +155,7 @@ export const configMapsState = AtomArray<ConfigMap>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
 export const gitOpsClustersState = AtomArray<GitOpsCluster>()
+export const helmReleaseState = AtomArray<HelmRelease>()
 export const infraEnvironmentsState = AtomArray<CIM.InfraEnvK8sResource>()
 export const infrastructuresState = AtomArray<CIM.InfrastructureK8sResource>()
 export const machinePoolsState = AtomArray<MachinePool>()
@@ -228,6 +232,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setGitOpsClustersState] = useRecoilState(gitOpsClustersState)
+    const [, setHelmReleases] = useRecoilState(helmReleaseState)
     const [, setInfraEnvironments] = useRecoilState(infraEnvironmentsState)
     const [, setInfrastructure] = useRecoilState(infrastructuresState)
     const [, setMachinePools] = useRecoilState(machinePoolsState)
@@ -284,6 +289,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ConfigMapApiVersion, ConfigMapKind, setConfigMaps)
         addSetter(DiscoveredClusterApiVersion, DiscoveredClusterKind, setDiscoveredClusters)
         addSetter(DiscoveryConfigApiVersion, DiscoveryConfigKind, setDiscoveryConfigs)
+        addSetter(HelmReleaseApiVersion, HelmReleaseKind, setHelmReleases)
         addSetter(InfraEnvApiVersion, InfraEnvKind, setInfraEnvironments)
         addSetter(InfrastructureApiVersion, InfrastructureKind, setInfrastructure)
         addSetter(MachinePoolApiVersion, MachinePoolKind, setMachinePools)

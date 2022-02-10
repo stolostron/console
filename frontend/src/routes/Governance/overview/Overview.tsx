@@ -1,74 +1,147 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardBody, PageSection, Split, SplitItem, Stack, Title } from '@patternfly/react-core'
-import { Fragment } from 'react'
+import { Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@patternfly/react-core'
+import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { t } from 'i18next'
+import { Fragment, useMemo } from 'react'
+import { useRecoilState } from 'recoil'
+import { policiesState } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
-import { ClusterPolicyViolationCard } from '../components/ClusterPolicyViolations'
+import { Policy } from '../../../resources'
 import {
     GovernanceCreatePolicyEmptyState,
     GovernanceManagePoliciesEmptyState,
 } from '../components/GovernanceEmptyState'
-import { PolicyViolationIcons, PolicyViolationsCard } from '../components/PolicyViolations'
-import { IGovernanceData, IPolicyGrouping, risksHasValues } from '../useGovernanceData'
+import { ClusterViolationsCard, useClusterViolationSummaryMap } from './ClusterViolationSummary'
+import { PolicySetViolationsCard } from './PolicySetViolationSummary'
+import { PolicyViolationsCard, usePolicyViolationSummary } from './PolicyViolationSummary'
 
-export default function GovernanceOverview(props: { governanceData: IGovernanceData }) {
-    const { governanceData } = props
-    const hasRisks = risksHasValues(props.governanceData.policyRisks)
-
-    if (!governanceData.policies || governanceData.policies.length === 0) {
+export default function GovernanceOverview() {
+    const [policiesSource] = useRecoilState(policiesState)
+    const policies = useMemo(
+        () =>
+            policiesSource.filter(
+                (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
+            ),
+        [policiesSource]
+    )
+    const policyViolationSummary = usePolicyViolationSummary(policies)
+    const clusterViolationSummaryMap = useClusterViolationSummaryMap(policies)
+    if (policies.length === 0) {
         return <GovernanceCreatePolicyEmptyState />
     }
-
-    if (!hasRisks) {
+    if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant)) {
         return <GovernanceManagePoliciesEmptyState />
     }
     return (
         <PageSection isWidthLimited>
             <Stack hasGutter>
-                <AcmMasonry minSize={600}>
-                    <ClusterPolicyViolationCard risks={governanceData.clusterRisks} />
-                    <PolicyViolationsCard risks={governanceData.policyRisks} />
+                <AcmMasonry minSize={400} maxColumns={3}>
+                    <PolicySetViolationsCard />
+                    <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
+                    <ClusterViolationsCard clusterViolationSummaryMap={clusterViolationSummaryMap} />
+                    <SecurityGroupCard key="categories" title="Categories" group="categories" policies={policies} />
+                    <SecurityGroupCard key="standards" title="Standards" group="standards" policies={policies} />
+                    <SecurityGroupCard key="controls" title="Controls" group="controls" policies={policies} />
                 </AcmMasonry>
-
-                {['Standards', 'Categories', 'Controls'].map((key) => {
-                    const grouping = (governanceData as unknown as Record<string, IPolicyGrouping>)[key.toLowerCase()]
-                    if (!risksHasValues(grouping.risks)) return <Fragment />
-                    return (
-                        <Card>
-                            <CardBody>
-                                <Split hasGutter>
-                                    <SplitItem style={{ minWidth: 120 }}>
-                                        <Title headingLevel="h6">
-                                            <span style={{ whiteSpace: 'nowrap' }}>{key}</span>
-                                        </Title>
-                                    </SplitItem>
-                                    <SplitItem>
-                                        <div style={{ display: 'flex', columnGap: 48, rowGap: 16, flexWrap: 'wrap' }}>
-                                            {grouping.groups.map((group) => {
-                                                const hasRisks =
-                                                    group.policyRisks.high +
-                                                        group.policyRisks.low +
-                                                        group.policyRisks.medium +
-                                                        group.policyRisks.synced +
-                                                        group.policyRisks.unknown >
-                                                    0
-                                                if (!hasRisks) return <Fragment />
-                                                return (
-                                                    <Split hasGutter>
-                                                        <SplitItem>
-                                                            <span style={{ whiteSpace: 'nowrap' }}>{group.name}</span>
-                                                        </SplitItem>
-                                                        <PolicyViolationIcons risks={group.policyRisks} />
-                                                    </Split>
-                                                )
-                                            })}
-                                        </div>
-                                    </SplitItem>
-                                </Split>
-                            </CardBody>
-                        </Card>
-                    )
-                })}
             </Stack>
         </PageSection>
     )
+}
+
+interface SecurityGroupViolations {
+    name: string
+    compliant: number
+    noncompliant: number
+}
+
+function SecurityGroupCard(props: { title: string; group: string; policies: Policy[] }) {
+    const violations = useSecurityGroupViolations(props.group, props.policies)
+    return (
+        <div>
+            <Card isRounded>
+                <CardTitle>{props.title}</CardTitle>
+                <CardBody>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16 }}>
+                        {violations.map((violation) => {
+                            if (!(violation.compliant || violation.noncompliant)) return <Fragment />
+                            return (
+                                <Fragment>
+                                    <span>{violation.name}</span>
+                                    {violation.compliant ? (
+                                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                            <Tooltip
+                                                content={t('{0} policies with no violations.').replace(
+                                                    '{0}',
+                                                    violation.compliant.toString()
+                                                )}
+                                            >
+                                                <Fragment>
+                                                    {violation.compliant} &nbsp;
+                                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                                                </Fragment>
+                                            </Tooltip>
+                                        </span>
+                                    ) : (
+                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
+                                            {violation.compliant} &nbsp;
+                                            <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                                        </span>
+                                    )}
+                                    {violation.noncompliant ? (
+                                        <Tooltip
+                                            content={t('{0} policies violations.').replace(
+                                                '{0}',
+                                                violation.compliant.toString()
+                                            )}
+                                        >
+                                            <Fragment>
+                                                <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                    {violation.noncompliant} &nbsp;
+                                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                                                </span>
+                                            </Fragment>
+                                        </Tooltip>
+                                    ) : (
+                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
+                                            {violation.noncompliant} &nbsp;
+                                            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                                        </span>
+                                    )}
+                                </Fragment>
+                            )
+                        })}
+                    </div>
+                </CardBody>
+            </Card>
+        </div>
+    )
+}
+
+function useSecurityGroupViolations(group: string, policies: Policy[]) {
+    const violations = useMemo(() => {
+        const clusterViolations: Record<string, SecurityGroupViolations> = {}
+        for (const policy of policies) {
+            if (policy.spec.disabled) continue
+            const annotation = policy.metadata.annotations?.[`policy.open-cluster-management.io/${group}`]
+            if (!annotation) continue
+            const names = annotation.split(',')
+            for (const name of names) {
+                let v = clusterViolations[name]
+                if (!v) {
+                    v = { name, compliant: 0, noncompliant: 0 }
+                    clusterViolations[name] = v
+                }
+                switch (policy.status?.compliant) {
+                    case 'Compliant':
+                        v.compliant++
+                        break
+                    case 'NonCompliant':
+                        v.noncompliant++
+                        break
+                }
+            }
+        }
+        return Object.values(clusterViolations)
+    }, [policies])
+    return violations
 }

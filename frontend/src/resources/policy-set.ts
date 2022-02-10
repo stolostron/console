@@ -24,7 +24,7 @@ export interface PolicySet {
         ownerReferences?: any[]
     }
     spec: PolicySetSpec
-    status: PolicySetStatus
+    status?: PolicySetStatus
 }
 
 export interface PolicySetSpec {
@@ -33,24 +33,25 @@ export interface PolicySetSpec {
 }
 
 export interface PolicySetStatus {
-    placement: PolicySetPlacementStatus[]
-    results: PolicySetResultsStatus[]
+    compliant?: 'NonCompliant' | 'Compliant'
+    placement?: PolicySetStatusPlacement[]
+    results: PolicySetStatusResult[]
 }
 
-export interface PolicySetPlacementStatus {
+export interface PolicySetStatusPlacement {
     placement: string
     placementBinding: string
     placementDecisions: string[]
 }
 
-export interface PolicySetResultsStatus {
+export interface PolicySetStatusResult {
     policy: string
     compliant?: 'NonCompliant' | 'Compliant'
     message?: string
-    clusters?: PolicySetResultClusters[]
+    clusters?: PolicySetResultCluster[]
 }
 
-export interface PolicySetResultClusters {
+export interface PolicySetResultCluster {
     clusterName: string
     clusterNamespace: string
     compliant: 'NonCompliant' | 'Compliant'

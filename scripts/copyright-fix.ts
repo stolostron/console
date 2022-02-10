@@ -2,7 +2,9 @@
 import { lstat, readdir, readFile, writeFile } from 'fs/promises'
 import { join } from 'path'
 
-const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'lib', 'dist']
+const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'dist']
+
+var filesChanged = false
 
 export async function fixCopyright(directory: string, extensions = ['.ts', '.tsx', '.js']): Promise<void> {
     const names = await readdir(directory)
@@ -11,7 +13,7 @@ export async function fixCopyright(directory: string, extensions = ['.ts', '.tsx
         const path = join(directory, name)
         const stats = await lstat(path)
         if (stats.isDirectory()) {
-            void fixCopyright(path)
+            await fixCopyright(path)
         }
         if (!extensions.find((ext) => name.endsWith(ext))) continue
         const file = await readFile(path)
@@ -19,8 +21,12 @@ export async function fixCopyright(directory: string, extensions = ['.ts', '.tsx
             const fixed = '/* Copyright Contributors to the Open Cluster Management project */\n' + file.toString()
             console.log('fixed:', path)
             void writeFile(path, fixed)
+            filesChanged = true
         }
     }
 }
 
-void fixCopyright('.')
+fixCopyright('.').then(() => {
+    // exit code 1 if files change to block pre-commit
+    process.exit(filesChanged ? 1: 0)
+})

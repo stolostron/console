@@ -2,19 +2,16 @@
 
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { Fragment } from 'react'
+import { useHistory } from 'react-router'
+import { useMemo } from 'react'
 import { NavigationPath } from '../../../NavigationPath'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 import { isType } from '../../../lib/is-type'
-import { gitOpsClustersState, placementsState } from '../../../atoms'
-
-// interface CreationStatus {
-//     status: string
-//     messages: any[] | null
-// }
-
-// where to put Create/Cancel buttons
+import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
+import { createResources, IResource, unpackProviderConnection } from '../../../resources'
+import moment from 'moment-timezone'
+import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
 const Portals = Object.freeze({
     editBtn: 'edit-button-portal-id',
     createBtn: 'create-button-portal-id',
@@ -64,31 +61,63 @@ export default function CreateApplicationPage() {
 }
 
 export function CreateApplication() {
+    const history = useHistory()
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
+    const [channels] = useRecoilState(channelsState)
+    const gitChannels = useMemo(
+        () => channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub'),
+        [channels]
+    )
+    // const helmChannels = useMemo(() => channels.filter((channel) => channel.spec.type === 'HelmRepo'), [channels])
+    const [namespaces] = useRecoilState(namespacesState)
+    const [secrets] = useRecoilState(secretsState)
+    const providerConnections = secrets.map(unpackProviderConnection)
 
     const availableArgoNS = gitOpsClusters
         .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
         .filter(isType)
     const availablePlacements = placements.map((placement) => placement.metadata.name).filter(isType)
+    const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
+    const ansibleCredentials = providerConnections.filter(
+        (providerConnection) =>
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+    )
+    const availableAnsibleCredentials = ansibleCredentials
+        .map((ansibleCredential) => ansibleCredential.metadata.name)
+        .filter(isType)
+    const availableGitChannels = gitChannels.map((gitChannel) => {
+        const { name, namespace } = gitChannel.metadata
+        const { pathname } = gitChannel.spec
+        return {
+            name: name || '',
+            namespace: namespace || '',
+            pathname: pathname || '',
+        }
+    })
+    const currentTimeZone = moment.tz.guess(true)
+    const timeZones = currentTimeZone
+        ? [currentTimeZone, ...moment.tz.names().filter((e) => e !== currentTimeZone)]
+        : moment.tz.names()
 
-    // will wait to adopt AppForm
-
-    // return <AppForm />
     return (
-        <Fragment>
-            <h1>Argo Namespaces:</h1>
-            <ul>
-                {availableArgoNS.map((ns) => {
-                    return <li>{ns}</li>
-                })}
-            </ul>
-            <h1>Existing Placements:</h1>
-            <ul>
-                {availablePlacements.map((placement) => {
-                    return <li>{placement}</li>
-                })}
-            </ul>
-        </Fragment>
+        <ApplicationWizard
+            addClusterSets={NavigationPath.clusterSets}
+            ansibleCredentials={availableAnsibleCredentials}
+            argoServers={availableArgoNS}
+            namespaces={availableNamespace}
+            placements={availablePlacements}
+            onCancel={() => history.push('.')}
+            onSubmit={(resources) =>
+                createResources(resources as IResource[]).then((error) => {
+                    history.push(NavigationPath.applications)
+                    return error
+                })
+            }
+            // gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
+            // helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
+            subscriptionGitChannels={availableGitChannels}
+            timeZones={timeZones}
+        />
     )
 }

@@ -1,92 +1,51 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Card, CardBody, CardTitle } from '@patternfly/react-core'
-import { Fragment } from 'react'
-import { useHistory } from 'react-router-dom'
 import { StatusIcons } from '../../../components/StatusIcons'
-import { StatusLabeledIcons } from '../../../components/StatusLabeledIcons'
-import { NavigationPath } from '../../../NavigationPath'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { IPolicyRisks } from '../useGovernanceData'
-
-export function PolicyViolationsCard(props: { risks: IPolicyRisks }) {
-    const history = useHistory()
-    const count = props.risks.synced + props.risks.low + props.risks.medium + props.risks.high + props.risks.unknown
-    if (count === 0) {
-        return <Fragment />
-    }
-    return (
-        <Card
-            isRounded
-            isHoverable
-            style={{ transition: 'box-shadow 0.25s', cursor: 'pointer', height: '100%', textAlign: 'center' }}
-            onClick={() => {
-                history.push(NavigationPath.policies)
-            }}
-        >
-            <CardTitle>{count === 1 ? `1 Policy` : `${count} Policies`}</CardTitle>
-            <CardBody>
-                <PolicyViolationLabeledIcons risks={props.risks} />
-            </CardBody>
-        </Card>
-    )
-}
-
-export function PolicyViolationLabeledIcons(props: { risks: IPolicyRisks }) {
-    const { risks } = props
-    return (
-        <StatusLabeledIcons
-            ready={risks.synced}
-            readyStatus={`${risks.synced} compliant`}
-            readySubtitle={risks.synced === 1 ? 'policy' : 'policies'}
-            low={risks.low}
-            lowStatus={`${risks.low} low risk`}
-            lowSubtitle={`${risks.low === 1 ? 'violation' : 'violations'}`}
-            medium={risks.medium}
-            mediumStatus={`${risks.medium} medium risk`}
-            mediumSubtitle={`${risks.medium === 1 ? 'violation' : 'violations'}`}
-            high={risks.high}
-            highStatus={`${risks.high} high risk`}
-            highSubtitle={`${risks.high === 1 ? 'violation' : 'violations'}`}
-            unknown={risks.unknown}
-            unknownStatus={`${risks.unknown} unknown`}
-            unknownSubtitle={`${risks.unknown === 1 ? 'violation' : 'violations'}`}
-        />
-    )
-}
 
 export function PolicyViolationIcons(props: { risks: IPolicyRisks }) {
     const { risks } = props
+    const violations = risks.high + risks.medium + risks.low
     return (
         <StatusIcons
-            ready={risks.synced}
-            readyTooltip={
+            compliant={risks.synced}
+            compliantTooltip={
                 risks.synced == 1
-                    ? '{0} policy in compliance'.replace('{0}', risks.synced.toString())
-                    : '{0} policies in compliance'.replace('{0}', risks.synced.toString())
+                    ? '1 compliannt policy'
+                    : '{0} compliannt policies'.replace('{0}', risks.synced.toString())
             }
-            low={risks.low}
-            lowTooltip={
-                risks.low == 1
-                    ? '{0} low violation policy'.replace('{0}', risks.low.toString())
-                    : '{0} low violation policies'.replace('{0}', risks.low.toString())
-            }
-            medium={risks.medium}
-            mediumTooltip={
-                risks.medium == 1
-                    ? '{0} medium violation policy'.replace('{0}', risks.medium.toString())
-                    : '{0} medium violation policies'.replace('{0}', risks.medium.toString())
-            }
-            high={risks.high}
-            highTooltip={
-                risks.high == 1
-                    ? '{0} high violation policy'.replace('{0}', risks.high.toString())
-                    : '{0} high violation policies'.replace('{0}', risks.high.toString())
+            violations={violations}
+            violationsTooltip={
+                violations == 1
+                    ? '1 policy with violations'
+                    : '{0} policies with violations'.replace('{0}', violations.toString())
             }
             unknown={risks.unknown}
             unknownTooltip={
                 risks.unknown == 1
-                    ? '{0} unknown violation policy'.replace('{0}', risks.unknown.toString())
-                    : '{0} unknown violation policies'.replace('{0}', risks.unknown.toString())
+                    ? '1 policy with unknown status'
+                    : '{0} policies with unknown status'.replace('{0}', risks.unknown.toString())
+            }
+        />
+    )
+}
+
+export function PolicyViolationIcons2(props: { compliant: number; noncompliant: number }) {
+    const { t } = useTranslation()
+    return (
+        <StatusIcons
+            compliant={props.compliant}
+            compliantTooltip={
+                props.compliant == 1
+                    ? t('1 policy without violations')
+                    : t('{0} policies without violations').replace('{0}', props.compliant.toString())
+            }
+            violations={props.noncompliant}
+            violationsTooltip={
+                props.noncompliant == 1
+                    ? t('1 policy with violations')
+                    : t('{0} policies with violations').replace('{0}', props.noncompliant.toString())
             }
         />
     )

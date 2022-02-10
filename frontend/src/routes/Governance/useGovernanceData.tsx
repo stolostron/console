@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useMemo } from 'react'
-import { PlacementBinding } from '../../resources/placement-binding'
 import { getPolicySeverity, Policy, PolicySeverity } from '../../resources/policy'
 
 export interface IGovernanceData {
@@ -85,11 +84,7 @@ export interface IPolicyRisks {
     unknown: number
 }
 
-export function useGovernanceData(
-    policies: Policy[],
-    placementBindings: PlacementBinding[]
-    // placementRules: PlacementRule[]
-): IGovernanceData {
+export function useGovernanceData(policies: Policy[]): IGovernanceData {
     const governanceData = useMemo(() => {
         const governanceDataMap: IGovernanceDataMap = {
             policies: [],
@@ -124,9 +119,9 @@ export function useGovernanceData(
                         }
                     }
                     break
-                // default:
-                //     governanceDataMap.policyRisks.unknown++
-                //     break
+                default:
+                    governanceDataMap.policyRisks.unknown++
+                    break
             }
 
             if (policyData.status?.status) {
@@ -142,7 +137,6 @@ export function useGovernanceData(
                     }
                     switch (cluster.compliant) {
                         case 'Compliant':
-                            console.log(policyData.metadata.name, cluster.clustername, policyData.status.status)
                             policyData.clusterRisks.synced++
                             governanceDataMap.clustersMap[cluster.clustername].synced++
                             break
@@ -164,10 +158,10 @@ export function useGovernanceData(
                                 }
                             }
                             break
-                        // default:
-                        //     policyData.clusterRisks.unknown++
-                        //     governanceDataMap.clustersMap[cluster.clustername].unknown++
-                        //     break
+                        default:
+                            policyData.clusterRisks.unknown++
+                            governanceDataMap.clustersMap[cluster.clustername].unknown++
+                            break
                     }
                 }
             }
@@ -276,9 +270,8 @@ export function useGovernanceData(
                 }),
             }
         }
-        console.log(governanceData)
         return governanceData
-    }, [policies, placementBindings])
+    }, [policies])
 
     return governanceData
 }
