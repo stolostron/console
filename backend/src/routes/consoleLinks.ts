@@ -19,7 +19,6 @@ interface ConsoleLink {
         applicationMenu: ApplicationMenu
         href: string
         location: string
-        namespaceDashboard?: Object
         text: string
     }
 }
@@ -44,8 +43,12 @@ export async function consoleLinks(req: Http2ServerRequest, res: Http2ServerResp
         } else {
             serviceaccountToken = process.env.TOKEN || ''
         }
-    } catch (err) {
-        logger.error('Error reading service account token', err && err.message)
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            logger.error('Error reading service account token', err && err.message)
+        } else {
+            logger.error({ msg: 'Error reading service account token', err: err })
+        }
     }
 
     try {

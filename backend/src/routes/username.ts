@@ -37,8 +37,12 @@ export async function username(req: Http2ServerRequest, res: Http2ServerResponse
         } else {
             serviceaccountToken = process.env.TOKEN || ''
         }
-    } catch (err) {
-        logger.error('Error reading service account token', err && err.message)
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            logger.error('Error reading service account token', err && err.message)
+        } else {
+            logger.error({ msg: 'Error reading service account token', err: err })
+        }
     }
 
     try {

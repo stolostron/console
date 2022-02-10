@@ -93,7 +93,7 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     })
 }
 
-function apiNoJSON<T>(url: string, headers?: Record<string, unknown>): Promise<unknown> {
+function apiNoJSON(url: string, headers?: Record<string, unknown>): Promise<unknown> {
     return fetch(url, headers).then((response) => {
         if (!response.ok) {
             throw new Error(response.statusText)
@@ -241,7 +241,7 @@ function UserDropdown() {
         const logoutUrl = getBackendUrl() + '/logout'
         console.log(location.href)
         console.log(location.origin)
-        apiNoJSON<void>(logoutUrl)
+        apiNoJSON(logoutUrl)
             .then(() => {
                 const onLogout = (delay = 0, isAdmin = false) => {
                     return setTimeout(() => {
