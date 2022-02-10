@@ -81,7 +81,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
             text={props.text}
             onToggle={onToggle}
             isDisabled={props.isDisabled}
-            tooltip={props.tooltip}
+            tooltip={props.isDisabled ? props.tooltip : undefined}
         />
     )
 }
