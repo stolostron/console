@@ -31,7 +31,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         },
         module: {
             rules: [
-                { test: /\.hbs$/, loader: 'raw-loader', exclude: /node_modules/ },
+                { test: /\.(hbs|yaml)$/, type: 'asset/source' },
                 { test: /\.(svg)$/, use: '@svgr/webpack' },
                 { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
@@ -42,8 +42,8 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 {
                     test: /\.css$/,
                     include: /node_modules\/\@patternfly/,
-                    loader: "null-loader"
-                  },
+                    loader: 'null-loader',
+                },
                 {
                     test: /\.(ts|tsx|js|jsx)$/,
                     exclude: /node_modules/,
@@ -62,7 +62,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 'process.env.NODE_ENV': JSON.stringify('production'),
                 'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
                 'process.env.MODE': JSON.stringify('plugin'),
-                'process.env.PLUGIN_PROXY_PATH': JSON.stringify('/api/proxy/acm-plugin/console'),
+                'process.env.PLUGIN_PROXY_PATH': JSON.stringify('/api/proxy/plugin/acm-plugin/console'),
             }) as unknown as webpack.WebpackPluginInstance,
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
             new MonacoWebpackPlugin({ languages: ['yaml'] }),
@@ -76,7 +76,9 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                     {
                         from: './public/locales/*/plugin__acm-plugin.json',
                         to: ({ absoluteFilename }) => {
-                            const { groups: { locale } } = absoluteFilename.match(/locales\/(?<locale>.+)\/plugin__acm-plugin.json/)
+                            const {
+                                groups: { locale },
+                            } = absoluteFilename.match(/locales\/(?<locale>.+)\/plugin__acm-plugin.json/)
                             return `locales/${locale}/plugin__acm-plugin.json`
                         },
                     },

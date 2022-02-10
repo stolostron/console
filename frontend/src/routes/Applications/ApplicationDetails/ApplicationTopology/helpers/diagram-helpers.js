@@ -260,7 +260,7 @@ export const getPodState = (podItem, clusterName, types) => {
     let result = 0
     if (!clusterName || R.equals(clusterName, R.pathOr('unkown', ['cluster'])(podItem))) {
         types.forEach((type) => {
-            if (R.contains(type, podStatus)) {
+            if (R.includes(type, podStatus)) {
                 result = 1
             }
         })
@@ -517,7 +517,7 @@ export const createDeployableYamlLink = (node, details, t) => {
     if (
         details &&
         node &&
-        R.contains(_.get(node, 'type', ''), ['application', 'placements', 'subscription']) &&
+        R.includes(_.get(node, 'type', ''), ['application', 'placements', 'subscription']) &&
         node.specs.isDesign // only for top-level resources
     ) {
         const editLink = createEditLink(node)
@@ -844,7 +844,7 @@ export const getNameWithoutPodHash = (relatedKind) => {
                 }
                 nameNoHash = R.replace(`-${podHash}`, '')(nameNoHash)
             }
-            if (labelKey === 'openshift.io/deployment-config.name' || R.contains('deploymentconfig')(resLabel)) {
+            if (labelKey === 'openshift.io/deployment-config.name' || R.includes('deploymentconfig')(resLabel)) {
                 //look for deployment config info in the label; the name of the resource could be different than the one defined by the deployable
                 //openshift.io/deployment-config.name
                 deployableName = values[1].trim()
@@ -1099,7 +1099,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
     if (
         nodeMustHavePods(node) ||
         node.type === 'package' ||
-        (!isDeployable && R.contains(node.type, ['application', 'placements', 'placement', 'cluster', 'subscription']))
+        (!isDeployable && R.includes(node.type, ['application', 'placements', 'placement', 'cluster', 'subscription']))
     ) {
         //resource with pods info is processed separately
         //ignore packages or any resources from the above list not defined as a deployable
@@ -1545,7 +1545,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                 })
             } else {
                 const isLocalFailedSubscription =
-                    subscription._hubClusterResource && R.contains('Fail', R.pathOr('Fail', ['status'])(subscription))
+                    subscription._hubClusterResource && R.includes('Fail', R.pathOr('Fail', ['status'])(subscription))
                 if (isLocalFailedSubscription) {
                     localSubscriptionFailed = true
                 }
@@ -1553,7 +1553,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                     isLocalPlacementSubs ||
                     (_.get(subscription, 'localPlacement', '') === 'true' && subsCluster === 'local-cluster')
                 if (isLinkedLocalPlacementSubs || !subscription._hubClusterResource || isLocalFailedSubscription) {
-                    const subscriptionPulse = R.contains('Fail', R.pathOr('', ['status'])(subscription))
+                    const subscriptionPulse = R.includes('Fail', R.pathOr('', ['status'])(subscription))
                         ? failureStatus
                         : R.pathOr(null, ['status'])(subscription) === null
                         ? warningStatus

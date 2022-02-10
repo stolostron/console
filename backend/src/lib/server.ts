@@ -99,26 +99,31 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                             if (req.url === '/readinessProbe') return
                             if (req.url === '/livenessProbe') return
 
+                            let logTrace = false
+                            if (
+                                req.url === '/authenticated' ||
+                                req.url === '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews'
+                            ) {
+                                logTrace = true
+                            }
+
                             let msg: Record<string, string | number | undefined>
-                            res.getHeader('content-type') === 'text/event-stream'
-                                ? (msg = {
-                                      msg: 'event stream closed',
-                                      path: req.url,
-                                      ms: 0,
-                                  })
-                                : (msg = {
-                                      msg: STATUS_CODES[res.statusCode],
-                                      status: res.statusCode,
-                                      method: req.method,
-                                      path: req.url,
-                                      ms: 0,
-                                  })
+                            if (res.getHeader('content-type') !== 'text/event-stream')
+                                msg = {
+                                    msg: STATUS_CODES[res.statusCode],
+                                    status: res.statusCode,
+                                    method: req.method,
+                                    path: req.url,
+                                    ms: 0,
+                                }
 
                             const diff = process.hrtime(start)
                             const time = Math.round((diff[0] * 1e9 + diff[1]) / 10000) / 100
                             msg.ms = time
 
-                            if (res.statusCode < 500) {
+                            if (logTrace) {
+                                logger.trace(msg)
+                            } else if (res.statusCode < 500) {
                                 logger.info(msg)
                             } else {
                                 logger.error(msg)

@@ -1,10 +1,9 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as frontend-packages
+FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as frontend-packages
 WORKDIR /app/frontend
-COPY ./frontend/package-lock.json ./frontend/package.json ./
-RUN npm ci --no-optional
 COPY ./frontend .
+RUN npm ci --no-optional
 
 FROM frontend-packages as frontend
 RUN npm run build
@@ -12,25 +11,23 @@ RUN npm run build
 FROM frontend-packages as dynamic-plugin
 RUN npm run plugin:build
 
-FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as backend
+FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as backend
 WORKDIR /app/backend
-COPY ./backend/package-lock.json ./backend/package.json ./
-RUN npm ci --no-optional
 COPY ./backend .
+RUN npm ci --no-optional
 RUN npm run build
 
-FROM registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux as production
+FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --no-optional --only=production
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal
-COPY --from=registry.ci.openshift.org/open-cluster-management/builder:nodejs14-linux /usr/bin/node /usr/bin/node
+FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-14
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules
-COPY --from=backend /app/backend/build ./
+COPY --from=backend /app/backend/backend.mjs ./
 COPY --from=frontend /app/frontend/build ./public
 COPY --from=dynamic-plugin /app/frontend/dist ./public/plugin
 USER 1001
-CMD ["node", "lib/main.js"]
+CMD ["node", "backend.mjs"]

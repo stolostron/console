@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { ButtonVariant, PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { TFunction } from 'react-i18next'
@@ -45,6 +45,8 @@ import { DeleteResourceModal, IDeleteResourceModalProps } from './components/Del
 import { useQuery } from '../../lib/useQuery'
 import { queryRemoteArgoApps } from '../../lib/search'
 import { NavigationPath } from '../../NavigationPath'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { DOC_LINKS } from '../../lib/doc-util'
 
 const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
@@ -158,7 +160,7 @@ export default function ApplicationsOverview() {
         open: false,
     })
     const tableItems: IResource[] = []
-    const { data, loading, startPolling } = useQuery(useCallback(() => queryRemoteArgoApps(), []))
+    const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
     useEffect(startPolling, [startPolling])
 
     const calculateClusterCount = (resource: ArgoApplication, clusterCount: any, clusterList: string[]) => {
@@ -454,7 +456,28 @@ export default function ApplicationsOverview() {
                 header: t('Type'),
                 cell: (resource) => <span>{getResourceType(resource)}</span>,
                 sort: 'kind',
-                tooltip: t('Link to Learn more about different types'),
+                tooltip: () => (
+                    <span>
+                        {t('Displays the type of the application. ')}
+                        <TextContent>
+                            <Text
+                                component={TextVariants.a}
+                                isVisitedLink
+                                href={DOC_LINKS.MANAGE_APPLICATIONS}
+                                target="_blank"
+                                style={{
+                                    cursor: 'pointer',
+                                    display: 'inline-block',
+                                    padding: '0px',
+                                    fontSize: '14px',
+                                    color: '#0066cc',
+                                }}
+                            >
+                                {t('View documentation')} <ExternalLinkAltIcon />
+                            </Text>
+                        </TextContent>
+                    </span>
+                ),
                 transforms: [cellWidth(15)],
                 // probably don't need search if we have a type filter
             },
@@ -582,7 +605,6 @@ export default function ApplicationsOverview() {
     const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
     const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
     const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
-    const [tableContent, setTableContent] = useState<ReactNode>()
 
     let modalWarnings: string
     const getAppChildResources = (app: IResource) => {
@@ -847,44 +869,6 @@ export default function ApplicationsOverview() {
         return actions
     }
 
-    const generateTable = () => {
-        return (
-            <AcmTable<IResource>
-                key="data-table"
-                plural={t('Applications')}
-                columns={columns}
-                keyFn={keyFn}
-                items={tableItems}
-                filters={filters}
-                tableActionButtons={[
-                    {
-                        id: 'createApplication',
-                        title: t('Create application'),
-                        click: () => history.push(''), // TODO add link to wizard
-                        isDisabled: !canCreateApplication,
-                        tooltip: t(
-                            'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
-                        ),
-                        variant: ButtonVariant.primary,
-                    },
-                ]}
-                emptyState={
-                    <AcmEmptyState
-                        key="appOverviewEmptyState"
-                        title={t('You don’t have any applications')}
-                        message={getEmptyMessage(t)}
-                        action={
-                            <AcmButton component={Link} variant="primary" to={''}>
-                                {t('Create application')}
-                            </AcmButton>
-                        }
-                    />
-                }
-                rowActionResolver={rowActionResolver}
-            />
-        )
-    }
-
     useEffect(() => {
         const canCreateApplicationPromise = canUser('create', ApplicationDefinition)
         canCreateApplicationPromise.promise
@@ -907,21 +891,42 @@ export default function ApplicationsOverview() {
         return () => canDeleteApplicationSetPromise.abort()
     }, [])
 
-    useEffect(() => {
-        setTableContent(generateTable())
-
-        const interval = setInterval(() => {
-            setTableContent(generateTable())
-        }, 5000)
-        return () => {
-            clearInterval(interval)
-        }
-    }, [canCreateApplication, canDeleteApplication, canDeleteApplicationSet, data])
-
     return (
         <PageSection>
             <DeleteResourceModal {...modalProps} />
-            {tableContent}
+            <AcmTable<IResource>
+                key="data-table"
+                plural={t('Applications')}
+                columns={columns}
+                keyFn={keyFn}
+                items={tableItems}
+                filters={filters}
+                tableActionButtons={[
+                    {
+                        id: 'createApplication',
+                        title: t('Create application'),
+                        click: () => history.push(NavigationPath.createApplication), // TODO add link to wizard
+                        isDisabled: !canCreateApplication,
+                        tooltip: t(
+                            'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                        ),
+                        variant: ButtonVariant.primary,
+                    },
+                ]}
+                emptyState={
+                    <AcmEmptyState
+                        key="appOverviewEmptyState"
+                        title={t('You don’t have any applications')}
+                        message={getEmptyMessage(t)}
+                        action={
+                            <AcmButton component={Link} variant="primary" to={NavigationPath.createApplication}>
+                                {t('Create application')}
+                            </AcmButton>
+                        }
+                    />
+                }
+                rowActionResolver={rowActionResolver}
+            />
         </PageSection>
     )
 }

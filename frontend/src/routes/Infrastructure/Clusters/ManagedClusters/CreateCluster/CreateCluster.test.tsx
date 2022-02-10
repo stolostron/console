@@ -57,24 +57,19 @@ import {
 import { NavigationPath } from '../../../../../NavigationPath'
 import CreateClusterPage from './CreateCluster'
 import { Scope } from 'nock/types'
-import { clusterName, baseDomain, mockAgentClusterInstall, mockClusterDeploymentAI } from './CreateCluster.sharedmocks'
+import {
+    clusterName,
+    baseDomain,
+    mockAgentClusterInstall,
+    mockClusterDeploymentAI,
+    clusterImageSet,
+    mockClusterImageSet,
+} from './CreateCluster.sharedmocks'
 
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
 //const awsProjectNamespace = 'test-aws-namespace'
 
 ///////////////////////////////// FILL FORM //////////////////////////////////////////////////
-
-const clusterImageSet: ClusterImageSet = {
-    apiVersion: ClusterImageSetApiVersion,
-    kind: ClusterImageSetKind,
-    metadata: {
-        name: 'ocp-release48',
-    },
-    spec: {
-        releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.8.15-x86_64',
-    },
-}
-const mockClusterImageSet = [clusterImageSet]
 
 const providerConnection: ProviderConnection = {
     apiVersion: ProviderConnectionApiVersion,
@@ -410,7 +405,7 @@ const mockInstallConfigSecretPrivate = {
     type: 'Opaque',
     data: {
         'install-config.yaml':
-            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluLmNvbQpjb250cm9sUGxhbmU6CiAgaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiBtYXN0ZXIKICByZXBsaWNhczogMwogIHBsYXRmb3JtOgogICAgYXdzOgogICAgICByb290Vm9sdW1lOgogICAgICAgIGlvcHM6IDQwMDAKICAgICAgICBzaXplOiAxMDAKICAgICAgICB0eXBlOiBpbzEKICAgICAgdHlwZTogbTUueGxhcmdlCmNvbXB1dGU6Ci0gaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiAnd29ya2VyJwogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogMjAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKbmV0d29ya2luZzoKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgY2x1c3Rlck5ldHdvcms6CiAgLSBjaWRyOiAxMC4xMjguMC4wLzE0CiAgICBob3N0UHJlZml4OiAyMwogIG1hY2hpbmVOZXR3b3JrOgogIC0gY2lkcjogMTAuMC4wLjAvMTYKICBzZXJ2aWNlTmV0d29yazoKICAtIDE3Mi4zMC4wLjAvMTYKcGxhdGZvcm06CiAgYXdzOgogICAgcmVnaW9uOiB1cy1lYXN0LTEKICAgIHN1Ym5ldHM6CiAgICAgICAgLSBzdWJuZXQtMDIyMTZkZDRkYWU3YzQ1ZDAKICAgIHNlcnZpY2VFbmRwb2ludHM6CiAgICAgIC0gbmFtZTogJ2VuZHBvaW50LTEnCiAgICAgICAgdXJsOiAnYXdzLmVuZHBvaW50LTEuY29tJwogICAgaG9zdGVkWm9uZTogYXdzLWhvc3RlZC16b25lLmNvbQogICAgYW1pSUQ6IGFtaS0wODc2ZWFjYjM4MTkxZTkxZgpwdWJsaXNoOiBJbnRlcm5hbApwdWxsU2VjcmV0OiAiIiAjIHNraXAsIGhpdmUgd2lsbCBpbmplY3QgYmFzZWQgb24gaXQncyBzZWNyZXRzCnNzaEtleTogfC0KICAgIHNzaC1yc2EgQUFBQUIxIGZha2VAZW1haWwuY29tCg==',
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ3Rlc3QnCmJhc2VEb21haW46IGJhc2UuZG9tYWluLmNvbQpjb250cm9sUGxhbmU6CiAgaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiBtYXN0ZXIKICByZXBsaWNhczogMwogIHBsYXRmb3JtOgogICAgYXdzOgogICAgICByb290Vm9sdW1lOgogICAgICAgIGlvcHM6IDQwMDAKICAgICAgICBzaXplOiAxMDAKICAgICAgICB0eXBlOiBpbzEKICAgICAgdHlwZTogbTUueGxhcmdlCmNvbXB1dGU6Ci0gaHlwZXJ0aHJlYWRpbmc6IEVuYWJsZWQKICBuYW1lOiAnd29ya2VyJwogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBhd3M6CiAgICAgIHJvb3RWb2x1bWU6CiAgICAgICAgaW9wczogMjAwMAogICAgICAgIHNpemU6IDEwMAogICAgICAgIHR5cGU6IGlvMQogICAgICB0eXBlOiBtNS54bGFyZ2UKbmV0d29ya2luZzoKICBuZXR3b3JrVHlwZTogT3BlblNoaWZ0U0ROCiAgY2x1c3Rlck5ldHdvcms6CiAgLSBjaWRyOiAxMC4xMjguMC4wLzE0CiAgICBob3N0UHJlZml4OiAyMwogIG1hY2hpbmVOZXR3b3JrOgogIC0gY2lkcjogMTAuMC4wLjAvMTYKICBzZXJ2aWNlTmV0d29yazoKICAtIDE3Mi4zMC4wLjAvMTYKcGxhdGZvcm06CiAgYXdzOgogICAgcmVnaW9uOiB1cy1lYXN0LTEKICAgIHN1Ym5ldHM6CiAgICAgIC0gc3VibmV0LTAyMjE2ZGQ0ZGFlN2M0NWQwCiAgICBzZXJ2aWNlRW5kcG9pbnRzOgogICAgICAtIG5hbWU6IGVuZHBvaW50LTEKICAgICAgICB1cmw6IGF3cy5lbmRwb2ludC0xLmNvbQogICAgaG9zdGVkWm9uZTogYXdzLWhvc3RlZC16b25lLmNvbQogICAgYW1pSUQ6IGFtaS0wODc2ZWFjYjM4MTkxZTkxZgpwdWJsaXNoOiBJbnRlcm5hbApwdWxsU2VjcmV0OiAiIiAjIHNraXAsIGhpdmUgd2lsbCBpbmplY3QgYmFzZWQgb24gaXQncyBzZWNyZXRzCnNzaEtleTogfC0KICAgIHNzaC1yc2EgQUFBQUIxIGZha2VAZW1haWwuY29tCg==',
     },
 }
 
@@ -1329,70 +1324,75 @@ describe('CreateCluster', () => {
         await waitForNocks(createNocks)
     })
 
-    test('can create On Premise cluster', async () => {
-        const initialNocks: Scope[] = [nockList(clusterImageSet, mockClusterImageSet)]
-        render(<Component />)
-        await new Promise((resolve) => setTimeout(resolve, 500))
+    test(
+        'can create On Premise cluster',
+        async () => {
+            const initialNocks: Scope[] = [nockList(clusterImageSet, mockClusterImageSet)]
+            render(<Component />)
 
-        // Create On Premise cluster
-        // TODO(mlibra) Add specific test case for the ai flow (start by clicking cluster.create.ai.subtitle hear instead)
-        await clickByTestId('cluster.create.cim.subtitle')
-        await clickByText('Next')
+            // Create On Premise cluster
+            // TODO(mlibra) Add specific test case for the ai flow (start by clicking cluster.create.ai.subtitle hear instead)
+            await clickByTestId('cluster.create.cim.subtitle')
+            await clickByText('Next')
 
-        // wait for tables/combos to fill in
-        await waitForNocks(initialNocks)
+            // wait for tables/combos to fill in
+            await waitForNocks(initialNocks)
 
-        // check integration of AI in the left-side navigation
-        await waitForText('Cluster details', true)
-        await waitForText('Review and Save')
-        await waitForText('Cluster hosts')
-        await waitForText('Cluster network')
-        await waitForText('Review and install')
+            // check integration of AI in the left-side navigation
+            await waitForText('Cluster details', true)
+            await waitForText('Review and Save')
+            await waitForText('Cluster hosts')
+            await waitForText('Cluster network')
+            await waitForText('Review and install')
 
-        // fill-in Cluster details
-        await typeByTestId('form-input-name-field', clusterName)
-        await typeByTestId('form-input-baseDnsDomain-field', baseDomain)
+            // fill-in Cluster details
+            await typeByTestId('form-input-name-field', clusterName)
+            await typeByTestId('form-input-baseDnsDomain-field', baseDomain)
 
-        await clickByTestId('form-input-highAvailabilityMode-field')
-        await waitForText('SNO is in a proof-of-concept stage and is not supported in any way.')
-        await clickByTestId('form-input-highAvailabilityMode-field')
+            await clickByTestId('form-input-highAvailabilityMode-field')
+            await waitForText('SNO enables you to install OpenShift using only one host.')
+            await clickByTestId('form-input-highAvailabilityMode-field')
 
-        await waitForText('OpenShift 4.8.15') // single value of combobox
-        await typeByTestId('additionalLabels', 'myLabelKey=myValue')
-        await clickByTestId('form-input-pullSecret-field')
+            await waitForText('OpenShift 4.8.15') // single value of combobox
+            await typeByTestId('additionalLabels', 'myLabelKey=myValue')
+            await clickByTestId('form-input-pullSecret-field')
 
-        await typeByTestId('form-input-pullSecret-field', pullSecretAI)
+            await typeByTestId('form-input-pullSecret-field', pullSecretAI)
 
-        // transition to Automation
-        await clickByText('Next')
+            // transition to Automation
+            await new Promise((resolve) => setTimeout(resolve, 500))
+            await clickByText('Next')
+            // The test is flaky here
+            await new Promise((resolve) => setTimeout(resolve, 500))
+            await waitForText('template.clusterCreate.name')
 
-        await waitForText('template.clusterCreate.name')
+            // skip Automation to the Review and Save step
+            await clickByText('Next')
+            await waitForText('creation.ocp.cloud.connection')
 
-        // skip Automation to the Review and Save step
-        await clickByText('Next')
-        await waitForText('creation.ocp.cloud.connection')
+            await waitForText(
+                'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.'
+            )
 
-        await waitForText(
-            'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.'
-        )
+            // Let's save it
+            const createNocks = [
+                nockCreate(mockClusterProject, mockClusterProjectResponse),
+                nockCreate(mockClusterDeploymentAI),
+                nockCreate(mockManagedClusterAI),
+                nockCreate(mockAgentClusterInstall),
+                nockCreate(mockPullSecretAI),
+                nockCreate(mockKlusterletAddonConfigAI),
+            ]
 
-        // Let's save it
-        const createNocks = [
-            nockCreate(mockClusterProject, mockClusterProjectResponse),
-            nockCreate(mockClusterDeploymentAI),
-            nockCreate(mockManagedClusterAI),
-            nockCreate(mockAgentClusterInstall),
-            nockCreate(mockPullSecretAI),
-            nockCreate(mockKlusterletAddonConfigAI),
-        ]
+            await clickByText('Save')
 
-        await clickByText('Save')
+            // make sure creating
+            await waitForNocks(createNocks)
 
-        // make sure creating
-        await waitForNocks(createNocks)
+            // next step (Hosts selection) is tested in the HostsForm.test
 
-        // next step (Hosts selection) is tested in the HostsForm.test
-
-        // screen.debug(undefined, -1)
-    })
+            // screen.debug(undefined, -1)
+        },
+        2 * 60 * 1000
+    )
 })

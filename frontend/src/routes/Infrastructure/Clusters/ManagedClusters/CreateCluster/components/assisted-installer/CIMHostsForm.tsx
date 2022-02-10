@@ -5,12 +5,12 @@ import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
 import { debounce, isEmpty, isEqual } from 'lodash'
 import { agentsState } from '../../../../../../../atoms'
-import { useAgentClusterInstall, onHostsNext, useAIConfigMap, useClusterDeployment } from './utils'
+import { useAgentClusterInstall, onHostsNext, useAIConfigMap, useClusterDeployment, useClusterImages } from './utils'
 import { CIMHostsFormProps } from './types'
 
 import './cim-hosts-form.css'
 
-const { ACMClusterDeploymentHostsStep, LoadingState, getTotalCompute } = CIM
+const { ACMClusterDeploymentHostsStep, LoadingState, getTotalCompute, ACMFeatureSupportLevelProvider } = CIM
 
 const CIMHostsForm: React.FC<CIMHostsFormProps> = ({ control, handleChange }) => {
     const { resourceJSON = {} } = control
@@ -29,6 +29,7 @@ const CIMHostsForm: React.FC<CIMHostsFormProps> = ({ control, handleChange }) =>
     const aiConfigMap = useAIConfigMap()
     const clusterDeployment = useClusterDeployment({ name: cdName, namespace: cdNamespace })
     const agentClusterInstall = useAgentClusterInstall({ name: aciName, namespace: aciNamespace })
+    const clusterImages = useClusterImages()
 
     useEffect(() => {
         if (control.active && formRef?.current?.values && !isEqual(control.active, formRef.current.values)) {
@@ -88,17 +89,19 @@ const CIMHostsForm: React.FC<CIMHostsFormProps> = ({ control, handleChange }) =>
         []
     )
 
-    return agents && clusterDeployment && agentClusterInstall ? (
+    return agents && clusterDeployment && agentClusterInstall && clusterImages ? (
         <div className="hosts-form" id="hosts-form">
-            <ACMClusterDeploymentHostsStep
-                formRef={formRef}
-                onValuesChanged={onValuesChanged}
-                clusterDeployment={clusterDeployment}
-                agentClusterInstall={agentClusterInstall}
-                agents={agents}
-                error={error}
-                aiConfigMap={aiConfigMap}
-            />
+            <ACMFeatureSupportLevelProvider clusterImages={clusterImages}>
+                <ACMClusterDeploymentHostsStep
+                    formRef={formRef}
+                    onValuesChanged={onValuesChanged}
+                    clusterDeployment={clusterDeployment}
+                    agentClusterInstall={agentClusterInstall}
+                    agents={agents}
+                    error={error}
+                    aiConfigMap={aiConfigMap}
+                />
+            </ACMFeatureSupportLevelProvider>
         </div>
     ) : (
         <LoadingState />

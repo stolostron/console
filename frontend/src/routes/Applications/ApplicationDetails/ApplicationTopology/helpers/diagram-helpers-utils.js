@@ -39,12 +39,12 @@ export const isDeployableResource = (node) => {
 export const nodeMustHavePods = (node) => {
     //returns true if the node should deploy pods
 
-    if (!node || !node.type || R.contains(node.type, ['application', 'placements', 'subscription'])) {
+    if (!node || !node.type || R.includes(node.type, ['application', 'placements', 'subscription'])) {
         return false
     }
 
     if (
-        R.contains(R.pathOr('', ['type'])(node), [
+        R.includes(R.pathOr('', ['type'])(node), [
             'pod',
             'replicaset',
             'daemonset',
@@ -210,7 +210,7 @@ export const getPulseStatusForSubscription = (node) => {
     _.flatten(Object.values(resourceMap)).forEach((subscriptionItem) => {
         const clsName = _.get(subscriptionItem, 'cluster', '')
         if (subscriptionItem.status) {
-            if (R.contains('Failed', subscriptionItem.status)) {
+            if (R.includes('Failed', subscriptionItem.status)) {
                 pulse = 'red'
             }
             if (subscriptionItem.status === 'Subscribed') {

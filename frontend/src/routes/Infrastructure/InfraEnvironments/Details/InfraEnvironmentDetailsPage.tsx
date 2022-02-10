@@ -8,7 +8,7 @@ import {
     AcmSecondaryNavItem,
 } from '@stolostron/ui-components'
 import { Page } from '@patternfly/react-core'
-import { Fragment, Suspense, useEffect, useState } from 'react'
+import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
@@ -21,7 +21,6 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError } from '../../../../resources'
 import { agentsState, bareMetalHostsState } from '../../../../atoms'
 import { isBMPlatform } from '../utils'
-import { DOC_VERSION } from '../../../../lib/doc-util'
 import {
     getOnCreateBMH,
     getOnSaveISOParams,
@@ -29,7 +28,7 @@ import {
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
 
-const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY } = CIM
+const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY, getAgentsHostsNames } = CIM
 
 type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
 
@@ -60,6 +59,8 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
             bmh.metadata.namespace === infraEnv?.metadata?.namespace &&
             bmh.metadata.labels?.[INFRAENV_AGENTINSTALL_LABEL_KEY] === infraEnv?.metadata?.name
     )
+
+    const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, infraBMHs), [infraAgents])
 
     if (!infraEnv) {
         return (
@@ -138,7 +139,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.infraEnvironmentOverview}>
-                            <DetailsTab infraEnv={infraEnv} docVersion={DOC_VERSION} />
+                            <DetailsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentHosts}>
                             <HostsTab infraEnv={infraEnv} infraAgents={infraAgents} bareMetalHosts={infraBMHs} />
@@ -160,6 +161,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 onClose={() => setISOModalOpen(false)}
                 onCreateBMH={getOnCreateBMH(infraEnv)}
                 onSaveISOParams={getOnSaveISOParams(infraEnv)}
+                usedHostnames={usedHostnames}
             />
         </>
     )

@@ -54,6 +54,7 @@ import {
 
 const credentialProviders: Provider[] = [
     Provider.openstack,
+    Provider.redhatvirtualization,
     Provider.ansible,
     Provider.redhatcloud,
     Provider.aws,
@@ -79,6 +80,7 @@ const providerGroup: Record<string, string> = {
     [Provider.azure]: ProviderGroup.CloudProvider,
     [Provider.ibm]: ProviderGroup.CloudProvider,
     [Provider.openstack]: ProviderGroup.Datacenter,
+    [Provider.redhatvirtualization]: ProviderGroup.Datacenter,
     [Provider.baremetal]: ProviderGroup.Datacenter,
     [Provider.vmware]: ProviderGroup.Datacenter,
     [Provider.hybrid]: ProviderGroup.CentrallyManaged,
@@ -259,6 +261,12 @@ export function CredentialsForm(props: {
     const [cloudsYaml, setOpenstackCloudsYaml] = useState(providerConnection?.stringData?.['clouds.yaml'] ?? '')
     const [cloud, setOpenstackCloud] = useState(providerConnection?.stringData?.cloud ?? '')
 
+    // Red Hat Virtualization
+    const [ovirtUrl, setOvirtUrl] = useState(providerConnection?.stringData?.ovirt_url ?? '')
+    const [ovirtUsername, setOvirtUsername] = useState(providerConnection?.stringData?.ovirt_username ?? '')
+    const [ovirtPassword, setOvirtPassword] = useState(providerConnection?.stringData?.ovirt_password ?? '')
+    const [ovirtCABundle, setOvirtCABundle] = useState(providerConnection?.stringData?.ovirt_ca_bundle ?? '')
+
     // BareMetal
     const [libvirtURI, setLibvirtURI] = useState(providerConnection?.stringData?.libvirtURI ?? '')
     const [sshKnownHosts, setSshKnownHosts] = useState(providerConnection?.stringData?.sshKnownHosts ?? '')
@@ -389,6 +397,20 @@ export function CredentialsForm(props: {
                 secret.stringData!.imageMirror = imageMirror
                 secret.stringData!.bootstrapOSImage = bootstrapOSImage
                 secret.stringData!.clusterOSImage = clusterOSImage
+                secret.stringData!.baseDomain = baseDomain
+                secret.stringData!.pullSecret = pullSecret
+                secret.stringData!['ssh-privatekey'] = sshPrivatekey
+                secret.stringData!['ssh-publickey'] = sshPublickey
+                secret.stringData!.httpProxy = httpProxy
+                secret.stringData!.httpsProxy = httpsProxy
+                secret.stringData!.noProxy = noProxy
+                secret.stringData!.additionalTrustBundle = additionalTrustBundle
+                break
+            case Provider.redhatvirtualization:
+                secret.stringData!.ovirt_url = ovirtUrl
+                secret.stringData!.ovirt_username = ovirtUsername
+                secret.stringData!.ovirt_password = ovirtPassword
+                secret.stringData!.ovirt_ca_bundle = ovirtCABundle
                 secret.stringData!.baseDomain = baseDomain
                 secret.stringData!.pullSecret = pullSecret
                 secret.stringData!['ssh-privatekey'] = sshPrivatekey
@@ -556,6 +578,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.redhatvirtualization,
                             Provider.hybrid,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
@@ -881,6 +904,68 @@ export function CredentialsForm(props: {
             },
             {
                 type: 'Section',
+                title: t('credentialsForm.rhvCredentials.title'),
+                wizardTitle: t('credentialsForm.rhvCredentials.wizardTitle'),
+                description: (
+                    <a href={DOC_LINKS.CREATE_CONNECTION_OPENSTACK} target="_blank" rel="noreferrer">
+                        {t('credentialsForm.rhvCredentials.wizardDescription')}
+                    </a>
+                ),
+                inputs: [
+                    {
+                        id: 'ovirt_url',
+                        isHidden: credentialsType !== Provider.redhatvirtualization,
+                        type: 'Text',
+                        label: t('credentialsForm.ovirt_url.label'),
+                        placeholder: t('credentialsForm.ovirt_url.placeholder'),
+                        labelHelp: t('credentialsForm.ovirt_url.labelHelp'),
+                        value: ovirtUrl,
+                        onChange: setOvirtUrl,
+                        isRequired: true,
+                        isSecret: false,
+                        // validation: (value) => validateCloudsYaml(value, cloud, t),
+                    },
+                    {
+                        id: 'ovirt_username',
+                        isHidden: credentialsType !== Provider.redhatvirtualization,
+                        type: 'Text',
+                        label: t('credentialsForm.ovirt_username.label'),
+                        placeholder: t('credentialsForm.ovirt_username.placeholder'),
+                        labelHelp: t('credentialsForm.ovirt_username.labelHelp'),
+                        value: ovirtUsername,
+                        onChange: setOvirtUsername,
+                        isRequired: true,
+                        isSecret: false,
+                        // validation: (value) => validateCloudsYaml(value, cloud, t),
+                    },
+                    {
+                        id: 'ovirt_password',
+                        isHidden: credentialsType !== Provider.redhatvirtualization,
+                        type: 'Text',
+                        label: t('credentialsForm.ovirt_password.label'),
+                        placeholder: t('credentialsForm.ovirt_password.placeholder'),
+                        labelHelp: t('credentialsForm.ovirt_password.labelHelp'),
+                        value: ovirtPassword,
+                        onChange: setOvirtPassword,
+                        isRequired: true,
+                        isSecret: true,
+                        // validation: (value) => validateCloudsYaml(value, cloud, t),
+                    },
+                    {
+                        id: 'ovirt_ca_bundle',
+                        isHidden: credentialsType !== Provider.redhatvirtualization,
+                        type: 'TextArea',
+                        label: t('credentialsForm.additionalTrustBundle.label'),
+                        placeholder: t('credentialsForm.additionalTrustBundle.placeholder'),
+                        labelHelp: t('credentialsForm.additionalTrustBundle.labelHelp'),
+                        value: ovirtCABundle,
+                        onChange: setOvirtCABundle,
+                        isRequired: true,
+                    },
+                ],
+            },
+            {
+                type: 'Section',
                 title: t('Bare metal credentials'),
                 wizardTitle: t('Enter the bare metal credentials'),
                 description: (
@@ -1004,7 +1089,7 @@ export function CredentialsForm(props: {
             {
                 type: 'Section',
                 title: t('Proxy'),
-                wizardTitle: t('proxy'),
+                wizardTitle: t('Proxy'),
                 description: (
                     <a href={DOC_LINKS.CREATE_CONNECTION_PROXY} target="_blank" rel="noreferrer">
                         {t('How do I configure a proxy?')}
@@ -1020,6 +1105,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('HTTP Proxy'),
@@ -1040,6 +1126,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('HTTPS Proxy'),
@@ -1060,6 +1147,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('No Proxy'),
@@ -1080,6 +1168,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
                         label: t('Additional trust bundle'),
@@ -1170,6 +1259,7 @@ export function CredentialsForm(props: {
                             Provider.gcp,
                             Provider.openstack,
                             Provider.vmware,
+                            Provider.redhatvirtualization,
                             Provider.hybrid,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
@@ -1192,6 +1282,7 @@ export function CredentialsForm(props: {
                             Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
+                            Provider.redhatvirtualization,
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
@@ -1212,6 +1303,7 @@ export function CredentialsForm(props: {
                             Provider.baremetal,
                             Provider.gcp,
                             Provider.openstack,
+                            Provider.redhatvirtualization,
                             Provider.vmware,
                         ].includes(credentialsType as Provider),
                         type: 'TextArea',
@@ -1235,7 +1327,6 @@ export function CredentialsForm(props: {
                     patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
                 }
                 return patchResource(secret, patch).promise.then(() => {
-                    console.log('name', name)
                     toastContext.addAlert({
                         title: t('Credentials updated'),
                         /*

@@ -5,6 +5,7 @@ on:
         - cron: '0 9 * * 1'
 jobs:
     npm-check-updates:
+        if: (github.event_name == 'schedule' && github.repository == 'stolostron/console') || (github.event_name != 'schedule')
         runs-on: ubuntu-latest
         timeout-minutes: 10
         defaults:
@@ -21,7 +22,7 @@ jobs:
             - name: npm-check-updates --target latest
               run: ncu -e 2 -x $SKIP > /dev/null 2>&1 || ncu --doctor -u -x $SKIP
               env:
-                  SKIP: node-fetch,pino,@types/node,@types/pino,@types/node-fetch
+                  SKIP: node-fetch,@types/node,@types/node-fetch,got
             - name: npm-check-updates --target minor
               run: ncu -e 2 -t minor > /dev/null 2>&1 || ncu --doctor -u -t minor
             - name: npm-check-updates --target patch

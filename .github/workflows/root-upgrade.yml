@@ -5,6 +5,7 @@ on:
         - cron: '0 12 * * 1'
 jobs:
     npm-check-updates:
+        if: (github.event_name == 'schedule' && github.repository == 'stolostron/console') || (github.event_name != 'schedule')
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2

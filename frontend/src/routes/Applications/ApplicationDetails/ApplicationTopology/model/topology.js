@@ -78,7 +78,7 @@ export const getDiagramElements = (appData, topology, searchRelated, additionalR
 export const processNodeData = (node, topoResourceMap, isClusterGrouped, hasHelmReleases, topology) => {
     const { name, type } = node
 
-    if (!isDeployableResource(node) && R.contains(type, ['cluster', 'application', 'placements'])) {
+    if (!isDeployableResource(node) && R.includes(type, ['cluster', 'application', 'placements'])) {
         return //ignore these types
     }
 

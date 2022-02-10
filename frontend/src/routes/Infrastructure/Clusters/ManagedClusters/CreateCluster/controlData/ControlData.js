@@ -16,6 +16,7 @@ import getControlDataAWS from './ControlDataAWS'
 import getControlDataGCP from './ControlDataGCP'
 import getControlDataAZR from './ControlDataAZR'
 import getControlDataVMW from './ControlDataVMW'
+import getControlDataRHV from './ControlDataRHV'
 import getControlDataBMC from './ControlDataBMC'
 import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo } from './Logos'
@@ -63,32 +64,6 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
         scrollViewAfterSelection: 300,
         onSelect: onControlSelect,
         available: [
-            {
-                id: 'CIM',
-                logo: <AcmIcon icon={AcmIconVariant.hybrid} />, // TODO(mlibra): change icon (requests graphics by UXD)
-                title: 'cluster.create.cim.subtitle',
-                tooltip: 'cluster.create.cim.tooltip',
-                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
-                change: {
-                    insertControlData: controlDataCIM,
-                    replacements: {},
-                    replaceTemplate: cimTemplate,
-                },
-                section: 'Assisted installation',
-            },
-            {
-                id: 'AI',
-                logo: <ConnectedIcon />,
-                title: 'cluster.create.ai.subtitle',
-                tooltip: 'cluster.create.ai.tooltip',
-                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
-                change: {
-                    insertControlData: controlDataAI,
-                    replacements: {},
-                    replaceTemplate: aiTemplate,
-                },
-                section: 'Assisted installation',
-            },
             {
                 id: 'AWS',
                 logo: <AwsLogo />,
@@ -138,6 +113,19 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                 section: 'Infrastructure providers',
             },
             {
+                id: 'BMC',
+                logo: <ServerIcon color="slategray" />,
+                title: 'cluster.create.baremetal.subtitle',
+                // text: <Deprecated />,
+                change: {
+                    insertControlData: getControlDataBMC(),
+                    replacements: {
+                        'install-config': { template: installConfig, encode: true, newTab: true },
+                    },
+                },
+                section: 'Infrastructure providers',
+            },
+            {
                 id: 'OpenStack',
                 logo: <RedHatLogo />,
                 title: 'cluster.create.redhat.subtitle',
@@ -150,17 +138,42 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                 section: 'Infrastructure providers',
             },
             {
-                id: 'BMC',
-                logo: <ServerIcon color="slategray" />,
-                title: 'cluster.create.baremetal.subtitle',
-                // text: <Deprecated />,
+                id: 'RHV',
+                logo: <RedHatLogo />,
+                title: 'cluster.create.rhv.subtitle',
                 change: {
-                    insertControlData: getControlDataBMC(),
+                    insertControlData: getControlDataRHV(),
                     replacements: {
                         'install-config': { template: installConfig, encode: true, newTab: true },
                     },
                 },
                 section: 'Infrastructure providers',
+            },
+            {
+                id: 'CIM',
+                logo: <AcmIcon icon={AcmIconVariant.hybrid} />, // TODO(mlibra): change icon (requests graphics by UXD)
+                title: 'cluster.create.cim.subtitle',
+                tooltip: 'cluster.create.cim.tooltip',
+                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
+                change: {
+                    insertControlData: controlDataCIM,
+                    replacements: {},
+                    replaceTemplate: cimTemplate,
+                },
+                section: 'Assisted installation',
+            },
+            {
+                id: 'AI',
+                logo: <ConnectedIcon />,
+                title: 'cluster.create.ai.subtitle',
+                tooltip: 'cluster.create.ai.tooltip',
+                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
+                change: {
+                    insertControlData: controlDataAI,
+                    replacements: {},
+                    replaceTemplate: aiTemplate,
+                },
+                section: 'Assisted installation',
             },
         ],
         sectionTooltips: {

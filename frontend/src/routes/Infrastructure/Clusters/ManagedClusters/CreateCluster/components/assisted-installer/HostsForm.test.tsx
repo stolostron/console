@@ -10,15 +10,18 @@ import {
     configMapsState,
 } from '../../../../../../../atoms'
 import {
+    clusterImageSet,
     mockAgentClusterInstall,
     mockAgents,
     mockClusterDeploymentAI,
+    mockClusterImageSet,
     mockConfigMapAI,
 } from '../../CreateCluster.sharedmocks'
 import CIMHostsForm from './CIMHostsForm'
 import {
     clickBySelector,
     clickByTestId,
+    waitForNocks,
     waitForNoSelector,
     waitForNotText,
     waitForSelector,
@@ -26,6 +29,7 @@ import {
     waitForValueBySelector,
 } from '../../../../../../../lib/test-util'
 import { FormControl } from './types'
+import { nockList } from '../../../../../../../lib/nock-util'
 
 const Component = () => {
     const mockControl: FormControl = {
@@ -54,9 +58,11 @@ describe('Hosts selection step for AI', () => {
     const minusButtonSelector = '#form-numberinput-hostCount-hostcount-field [aria-label="Minus"]'
 
     test('can render', async () => {
+        const initialNocks = [nockList(clusterImageSet, mockClusterImageSet)]
         const { container } = render(<Component />)
 
         waitForText('Number of hosts')
+        await waitForNocks(initialNocks)
 
         // Automatic selection
         waitForValueBySelector(container, hostCountSelector, 3)

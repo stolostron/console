@@ -25,11 +25,11 @@ export default function ApplicationsPage() {
                     title={t('Applications')}
                     navigation={
                         <AcmSecondaryNav>
-                            <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.applications)}>
+                            <AcmSecondaryNavItem isActive={location.pathname.endsWith(NavigationPath.applications)}>
                                 <Link to={NavigationPath.applications}>{t('Overview')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem
-                                isActive={location.pathname.startsWith(NavigationPath.advancedConfiguration)}
+                                isActive={location.pathname.endsWith(NavigationPath.advancedConfiguration)}
                             >
                                 <Link to={NavigationPath.advancedConfiguration}>{t('Advanced configuration')}</Link>
                             </AcmSecondaryNavItem>

@@ -251,6 +251,8 @@ export class ServerSideEvents {
             if (this.clients[clientID]?.writableStream === writableStream) {
                 delete this.clients[clientID]
             }
+
+            logger.info({ msg: 'event stream close' })
         })
 
         let lastEventID = 0
@@ -271,13 +273,7 @@ export class ServerSideEvents {
             sentCount++
         }
 
-        logger.info({
-            msg: 'event stream start',
-            status: 200,
-            method: req.method,
-            path: req.url,
-            events: sentCount,
-        })
+        logger.info({ msg: 'event stream start', events: sentCount })
 
         return eventClient
     }

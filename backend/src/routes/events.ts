@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable no-constant-condition */
-import { map, split } from 'event-stream'
+
+import eventStream from 'event-stream'
 import get from 'get-value'
 import got, { CancelError, HTTPError, TimeoutError } from 'got'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
@@ -15,6 +16,7 @@ import { getToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { getServiceAcccountToken } from './liveness'
 
+const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
 
 export function events(req: Http2ServerRequest, res: Http2ServerResponse): void {
@@ -49,14 +51,15 @@ const resourceCache: {
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
 
 const definitions: IWatchOptions[] = [
-    { kind: 'ClusterManagementAddon', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
-    { kind: 'ManagedClusterAddon', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
+    { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
+    { kind: 'ManagedClusterAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
     { kind: 'Agent', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'InfraEnv', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'Application', apiVersion: 'app.k8s.io/v1beta1' },
     { kind: 'Channel', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'Deployable', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'GitOpsCluster', apiVersion: 'apps.open-cluster-management.io/v1beta1' },
+    { kind: 'HelmRelease', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'PlacementRule', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'Subscription', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'AppProject', apiVersion: 'argoproj.io/v1alpha1' },
@@ -74,8 +77,8 @@ const definitions: IWatchOptions[] = [
     { kind: 'ManagedClusterSetBinding', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ManagedClusterSet', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ClusterCurator', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
-    { kind: 'DiscoveredCluster', apiVersion: 'discovery.open-cluster-management.io/v1alpha1' },
-    { kind: 'DiscoveryConfig', apiVersion: 'discovery.open-cluster-management.io/v1alpha1' },
+    { kind: 'DiscoveredCluster', apiVersion: 'discovery.open-cluster-management.io/v1' },
+    { kind: 'DiscoveryConfig', apiVersion: 'discovery.open-cluster-management.io/v1' },
     { kind: 'AgentClusterInstall', apiVersion: 'extensions.hive.openshift.io/v1beta1' },
     { kind: 'ClusterClaim', apiVersion: 'hive.openshift.io/v1' },
     { kind: 'ClusterDeployment', apiVersion: 'hive.openshift.io/v1' },
@@ -144,7 +147,7 @@ async function watch(options: IWatchOptions) {
             if (err instanceof HTTPError) {
                 switch (err.response.statusCode) {
                     case 404:
-                        logger.warn({ msg: 'watch', ...options, error: err.message, name: err.name })
+                        logger.trace({ msg: 'watch', ...options, status: 'Not found' })
                         await new Promise((resolve) =>
                             setTimeout(resolve, 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
                         )
@@ -197,7 +200,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
         if (!_continue) break
     }
 
-    logger.debug({ msg: 'list', ...options, count: items.length })
+    logger.info({ msg: 'list', ...options, count: items.length })
 
     items = items.map((resource) => {
         resource.kind = options.kind
@@ -259,20 +262,40 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                             case 'DELETED':
                                 deleteResource(watchEvent.object)
                                 break
-                            case 'BOOKMARK':
-                                break
                         }
 
-                        logger.trace({
-                            msg: 'watch',
-                            type: watchEvent.type,
-                            kind: watchEvent.object.kind,
-                            apiVersion: watchEvent.object.apiVersion,
-                            name: watchEvent.object.metadata.name,
-                            namespace: watchEvent.object.metadata.namespace,
-                        })
-
-                        resourceVersion = watchEvent.object.metadata.resourceVersion
+                        switch (watchEvent.type) {
+                            case 'ADDED':
+                            case 'MODIFIED':
+                            case 'DELETED':
+                                logger.debug({
+                                    msg: watchEvent.type.toLowerCase(),
+                                    kind: watchEvent.object.kind,
+                                    apiVersion: watchEvent.object.apiVersion,
+                                    name: watchEvent.object.metadata.name,
+                                    namespace: watchEvent.object.metadata.namespace,
+                                })
+                                resourceVersion = watchEvent.object.metadata.resourceVersion
+                                break
+                            case 'BOOKMARK':
+                                logger.trace({
+                                    msg: watchEvent.type.toLowerCase(),
+                                    kind: options.kind,
+                                    apiVersion: options.apiVersion,
+                                    message: (watchEvent.object as unknown as { message: string }).message,
+                                    reason: (watchEvent.object as unknown as { reason: string }).reason,
+                                })
+                                resourceVersion = watchEvent.object.metadata.resourceVersion
+                                break
+                            case 'ERROR':
+                                logger.error({
+                                    msg: 'watch error',
+                                    kind: options.kind,
+                                    apiVersion: options.apiVersion,
+                                    event: watchEvent,
+                                })
+                                break
+                        }
                     })
                 )
             } finally {
@@ -280,13 +303,15 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
             }
         } catch (err: unknown) {
             if (err instanceof TimeoutError) {
-                // Do Nothing
+                logger.debug({ msg: 'retry', ...options })
             } else if (err instanceof CancelError) {
                 // Do Nothing
+            } else if (err instanceof SyntaxError) {
+                logger.debug({ msg: 'retry', ...options })
             } else if (err instanceof HTTPError) {
                 switch (err.response.statusCode) {
                     case 410:
-                        logger.warn({ msg: 'watch retry', error: err.message, name: err.name, ...options })
+                        logger.debug({ msg: 'retry', ...options })
                         break
                     default:
                         throw err
@@ -509,5 +534,10 @@ export function stopWatching(): void {
 }
 
 function pruneResource(resource: IResource) {
-    delete resource.metadata.managedFields
+    switch (resource.kind) {
+        case 'Policy':
+            break
+        default:
+            delete resource.metadata.managedFields
+    }
 }

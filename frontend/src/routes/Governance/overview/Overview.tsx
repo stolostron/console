@@ -1,192 +1,147 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardBody, CardHeader, CardTitle, PageSection, Stack, Text, Title } from '@patternfly/react-core'
-import { Link } from 'react-router-dom'
+import { Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@patternfly/react-core'
+import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { t } from 'i18next'
+import { Fragment, useMemo } from 'react'
+import { useRecoilState } from 'recoil'
+import { policiesState } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
-import { NavigationPath } from '../../../NavigationPath'
-import { PolicyRiskLabels, RisksCard, RisksGauge } from '../components/PolicyRiskLabels'
-import { IGovernanceData } from '../useGovernanceData'
+import { Policy } from '../../../resources'
+import {
+    GovernanceCreatePolicyEmptyState,
+    GovernanceManagePoliciesEmptyState,
+} from '../components/GovernanceEmptyState'
+import { ClusterViolationsCard, useClusterViolationSummaryMap } from './ClusterViolationSummary'
+import { PolicySetViolationsCard } from './PolicySetViolationSummary'
+import { PolicyViolationsCard, usePolicyViolationSummary } from './PolicyViolationSummary'
 
-export default function GovernanceOverview(props: { governanceData: IGovernanceData }) {
-    const { governanceData } = props
+export default function GovernanceOverview() {
+    const [policiesSource] = useRecoilState(policiesState)
+    const policies = useMemo(
+        () =>
+            policiesSource.filter(
+                (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
+            ),
+        [policiesSource]
+    )
+    const policyViolationSummary = usePolicyViolationSummary(policies)
+    const clusterViolationSummaryMap = useClusterViolationSummaryMap(policies)
+    if (policies.length === 0) {
+        return <GovernanceCreatePolicyEmptyState />
+    }
+    if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant)) {
+        return <GovernanceManagePoliciesEmptyState />
+    }
     return (
-        <PageSection>
+        <PageSection isWidthLimited>
             <Stack hasGutter>
-                <Text>
-                    Enterprises must meet internal standards for software engineering, secure engineering, resiliency,
-                    security, and regulatory compliance for workloads hosted on private, multi and hybrid clouds. Red
-                    Hat Advanced Cluster Management for Kubernetes governance provides an extensible policy framework
-                    for enterprises to introduce their own security policies.
-                </Text>
-
-                <div />
-                <Stack>
-                    <Title headingLevel="h3">Summary</Title>
-                </Stack>
-
-                <AcmMasonry>
-                    <div>
-                        <Link to={NavigationPath.policies} style={{ textDecoration: 'none' }}>
-                            <RisksCard
-                                title="Policies"
-                                risks={governanceData.policyRisks}
-                                singular="policy"
-                                plural="policies"
-                            />
-                        </Link>
-                    </div>
-                    <div>
-                        <Link to={NavigationPath.clusters} style={{ textDecoration: 'none' }}>
-                            <RisksCard
-                                title="Clusters"
-                                risks={governanceData.clusterRisks}
-                                singular="cluster"
-                                plural="clusters"
-                            />
-                        </Link>
-                    </div>
-                </AcmMasonry>
-
-                <div />
-                <Stack>
-                    <Title headingLevel="h3">Categories</Title>
-                    <Text>
-                        A security control category represent specific requirements for one or more standards. For
-                        example, a System and Information Integrity category might indicate that your policy contains a
-                        data transfer protocol to protect personal information, as required by the HIPAA and PCI
-                        standards.
-                    </Text>
-                </Stack>
-                <AcmMasonry>
-                    {governanceData.categories.groups.map((category) => {
-                        return (
-                            <div>
-                                <Card
-                                    isRounded
-                                    isHoverable
-                                    style={{ transition: 'box-shadow 0.25s', cursor: 'pointer', height: '100%' }}
-                                >
-                                    <CardHeader>
-                                        <CardTitle>
-                                            <Title headingLevel="h3" style={{ color: 'black' }}>
-                                                {category.name}
-                                            </Title>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardBody>
-                                        <Stack hasGutter>
-                                            <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
-                                                <RisksGauge risks={category.policyRisks} />
-                                                <div style={{ alignSelf: 'center' }}>
-                                                    <PolicyRiskLabels
-                                                        risks={category.policyRisks}
-                                                        isVertical
-                                                        showLabels
-                                                        singular={'policy'}
-                                                        plural={'policies'}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </Stack>
-                                    </CardBody>
-                                </Card>
-                            </div>
-                        )
-                    })}
-                </AcmMasonry>
-
-                <div />
-                <Stack>
-                    <Title headingLevel="h3">Standards</Title>
-                    <Text>
-                        The name or names of security standards the policy is related to. For example, National
-                        Institute of Standards and Technology (NIST) and Payment Card Industry (PCI).
-                    </Text>
-                </Stack>
-                <AcmMasonry>
-                    {governanceData.standards.groups.map((category) => {
-                        return (
-                            <div>
-                                <Card
-                                    isRounded
-                                    isHoverable
-                                    style={{ transition: 'box-shadow 0.25s', cursor: 'pointer', height: '100%' }}
-                                >
-                                    <CardHeader>
-                                        <CardTitle>
-                                            <Title headingLevel="h3" style={{ color: 'black' }}>
-                                                {category.name}
-                                            </Title>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardBody>
-                                        <Stack hasGutter>
-                                            <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
-                                                <RisksGauge risks={category.policyRisks} />
-                                                <div style={{ alignSelf: 'center' }}>
-                                                    <PolicyRiskLabels
-                                                        risks={category.policyRisks}
-                                                        isVertical
-                                                        showLabels
-                                                        singular={'policy'}
-                                                        plural={'policies'}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </Stack>
-                                    </CardBody>
-                                </Card>
-                            </div>
-                        )
-                    })}
-                </AcmMasonry>
-
-                <div />
-                <Stack>
-                    <Title headingLevel="h3">Controls</Title>
-                    <Text>
-                        The name of the security control that is being checked. For example, the certificate policy
-                        controller.
-                    </Text>
-                </Stack>
-
-                <AcmMasonry>
-                    {governanceData.controls.groups.map((category) => {
-                        return (
-                            <div>
-                                <Card
-                                    isRounded
-                                    isHoverable
-                                    style={{ transition: 'box-shadow 0.25s', cursor: 'pointer', height: '100%' }}
-                                >
-                                    <CardHeader>
-                                        <CardTitle>
-                                            <Title headingLevel="h3" style={{ color: 'black' }}>
-                                                {category.name}
-                                            </Title>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardBody>
-                                        <Stack hasGutter>
-                                            <div style={{ display: 'flex', gap: '24px', alignItems: 'start' }}>
-                                                <RisksGauge risks={category.policyRisks} />
-                                                <div style={{ alignSelf: 'center' }}>
-                                                    <PolicyRiskLabels
-                                                        risks={category.policyRisks}
-                                                        isVertical
-                                                        showLabels
-                                                        singular={'policy'}
-                                                        plural={'policies'}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </Stack>
-                                    </CardBody>
-                                </Card>
-                            </div>
-                        )
-                    })}
+                <AcmMasonry minSize={400} maxColumns={3}>
+                    <PolicySetViolationsCard />
+                    <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
+                    <ClusterViolationsCard clusterViolationSummaryMap={clusterViolationSummaryMap} />
+                    <SecurityGroupCard key="categories" title="Categories" group="categories" policies={policies} />
+                    <SecurityGroupCard key="standards" title="Standards" group="standards" policies={policies} />
+                    <SecurityGroupCard key="controls" title="Controls" group="controls" policies={policies} />
                 </AcmMasonry>
             </Stack>
         </PageSection>
     )
+}
+
+interface SecurityGroupViolations {
+    name: string
+    compliant: number
+    noncompliant: number
+}
+
+function SecurityGroupCard(props: { title: string; group: string; policies: Policy[] }) {
+    const violations = useSecurityGroupViolations(props.group, props.policies)
+    return (
+        <div>
+            <Card isRounded>
+                <CardTitle>{props.title}</CardTitle>
+                <CardBody>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16 }}>
+                        {violations.map((violation) => {
+                            if (!(violation.compliant || violation.noncompliant)) return <Fragment />
+                            return (
+                                <Fragment>
+                                    <span>{violation.name}</span>
+                                    {violation.compliant ? (
+                                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                            <Tooltip
+                                                content={t('{0} policies with no violations.').replace(
+                                                    '{0}',
+                                                    violation.compliant.toString()
+                                                )}
+                                            >
+                                                <Fragment>
+                                                    {violation.compliant} &nbsp;
+                                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                                                </Fragment>
+                                            </Tooltip>
+                                        </span>
+                                    ) : (
+                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
+                                            {violation.compliant} &nbsp;
+                                            <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                                        </span>
+                                    )}
+                                    {violation.noncompliant ? (
+                                        <Tooltip
+                                            content={t('{0} policies violations.').replace(
+                                                '{0}',
+                                                violation.compliant.toString()
+                                            )}
+                                        >
+                                            <Fragment>
+                                                <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                    {violation.noncompliant} &nbsp;
+                                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                                                </span>
+                                            </Fragment>
+                                        </Tooltip>
+                                    ) : (
+                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
+                                            {violation.noncompliant} &nbsp;
+                                            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                                        </span>
+                                    )}
+                                </Fragment>
+                            )
+                        })}
+                    </div>
+                </CardBody>
+            </Card>
+        </div>
+    )
+}
+
+function useSecurityGroupViolations(group: string, policies: Policy[]) {
+    const violations = useMemo(() => {
+        const clusterViolations: Record<string, SecurityGroupViolations> = {}
+        for (const policy of policies) {
+            if (policy.spec.disabled) continue
+            const annotation = policy.metadata.annotations?.[`policy.open-cluster-management.io/${group}`]
+            if (!annotation) continue
+            const names = annotation.split(',')
+            for (const name of names) {
+                let v = clusterViolations[name]
+                if (!v) {
+                    v = { name, compliant: 0, noncompliant: 0 }
+                    clusterViolations[name] = v
+                }
+                switch (policy.status?.compliant) {
+                    case 'Compliant':
+                        v.compliant++
+                        break
+                    case 'NonCompliant':
+                        v.noncompliant++
+                        break
+                }
+            }
+        }
+        return Object.values(clusterViolations)
+    }, [policies])
+    return violations
 }
