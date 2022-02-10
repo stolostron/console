@@ -2,16 +2,16 @@
 /* istanbul ignore file */
 import { useMediaQuery } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { getBackendUrl, listMultiClusterHubs, MultiClusterHub } from './resources'
+import { getBackendUrl, listMultiClusterHubs } from './resources'
 import { getApplinks, IAppSwitcherData } from './lib/applinks'
 import { configure } from './lib/configure'
 import { getUsername } from './lib/username'
-import { 
-    AcmIcon, 
-    AcmIconVariant, 
-    AcmTablePaginationContextProvider, 
-    AcmToastGroup, 
-    AcmToastProvider 
+import {
+    AcmIcon,
+    AcmIconVariant,
+    AcmTablePaginationContextProvider,
+    AcmToastGroup,
+    AcmToastProvider,
 } from '@stolostron/ui-components'
 import {
     AboutModal,
@@ -140,7 +140,7 @@ function UserDropdownToggle() {
         const resp = getUsername()
         resp.promise
             .then((payload) => {
-                (payload && payload.body && payload.body.username) ? setName(payload.body.username) : setName('undefined')
+                payload && payload.body && payload.body.username ? setName(payload.body.username) : setName('undefined')
             })
             .catch((error) => {
                 // eslint-disable-next-line no-console
@@ -204,7 +204,7 @@ function UserDropdown() {
         const resp = configure()
         resp.promise
             .then((payload) => {
-                (payload && payload.token_endpoint) ? window.open(`${payload.token_endpoint}/request`, '_blank') : ''
+                payload && payload.token_endpoint ? window.open(`${payload.token_endpoint}/request`, '_blank') : ''
             })
             .catch((error) => {
                 // eslint-disable-next-line no-console
@@ -220,8 +220,8 @@ function UserDropdown() {
         userResp.promise
             .then((payload) => {
                 if (payload && payload.body && payload.body.username) {
-                    admin = (payload.body.username === 'kube:admin')
-                }                   
+                    admin = payload.body.username === 'kube:admin'
+                }
             })
             .catch((error) => {
                 // eslint-disable-next-line no-console
@@ -232,7 +232,7 @@ function UserDropdown() {
         const configResp = configure()
         configResp.promise
             .then((payload) => {
-                (payload && payload.token_endpoint) ? oauthTokenEndpoint = payload.token_endpoint : ''
+                payload && payload.token_endpoint ? (oauthTokenEndpoint = payload.token_endpoint) : ''
             })
             .catch((error) => {
                 // eslint-disable-next-line no-console
@@ -248,7 +248,7 @@ function UserDropdown() {
                         // location.assign(getBackendUrl() + '/login')
                         // location.assign('https://multicloud-console.apps.cs-aws-410-hr4pw.dev02.red-chesterfield.com/')
                         console.log('======Logout> ' + isAdmin + ' <=====')
-                        isAdmin ? location.pathname = '/' : location.reload(true) 
+                        isAdmin ? (location.pathname = '/') : location.reload(true)
                         // location.reload(true)
                         // location.assign(href)
                     }, delay)
@@ -280,7 +280,7 @@ function UserDropdown() {
                     document.body.appendChild(form)
                     form.submit()
                 } else {
-                onLogout(500, admin)
+                    onLogout(500, admin)
                 }
             })
             .catch((error) => {
@@ -327,7 +327,7 @@ function AboutModalVersion() {
         const mchs = listMultiClusterHubs()
         mchs.promise
             .then((hubs) => {
-                (hubs.length > 0) ? setVersion(hubs[0].status.currentVersion) : setVersion('undefined')
+                hubs.length > 0 ? setVersion(hubs[0].status.currentVersion) : setVersion('undefined')
             })
             .catch((error) => {
                 // eslint-disable-next-line no-console
@@ -353,9 +353,9 @@ function AboutContent() {
 }
 
 const useStyles = makeStyles({
-    about: { 
-        height: 'min-content'
-    }, 
+    about: {
+        height: 'min-content',
+    },
 })
 
 export default function App() {
@@ -615,7 +615,6 @@ function AppHeader() {
             </PageHeaderToolsGroup>
         </PageHeaderTools>
     )
-
 
     return (
         <PageHeader

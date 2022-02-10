@@ -7,7 +7,7 @@ export const usernameUrl = '/username'
 export type IUsernameResult = {
     body: {
         username: string
-    },
+    }
     statusCode: number
 }
 

@@ -15,10 +15,10 @@ const agent = new Agent({ rejectUnauthorized: false })
 interface TokenReview {
     spec: {
         token: string
-    },
+    }
     status: {
-        authenticated: boolean,
-        error: string,
+        authenticated: boolean
+        error: string
         user: {
             username: string
         }
@@ -39,11 +39,11 @@ export async function username(req: Http2ServerRequest, res: Http2ServerResponse
         }
     } catch (err) {
         logger.error('Error reading service account token', err && err.message)
-    }  
+    }
 
     try {
         const response = await jsonPost<TokenReview>(
-            process.env.CLUSTER_API_URL + '/apis/authentication.k8s.io/v1/tokenreviews', 
+            process.env.CLUSTER_API_URL + '/apis/authentication.k8s.io/v1/tokenreviews',
             {
                 apiVersion: 'authentication.k8s.io/v1',
                 kind: 'TokenReview',
@@ -53,11 +53,13 @@ export async function username(req: Http2ServerRequest, res: Http2ServerResponse
             },
             serviceaccountToken
         )
-        const name = (response.body && response.body.status && response.body.status.user 
-                        && response.body.status.user.username) ? response.body.status.user.username : ''
+        const name =
+            response.body && response.body.status && response.body.status.user && response.body.status.user.username
+                ? response.body.status.user.username
+                : ''
         const responsePayload = {
             statusCode: response.statusCode,
-            body: { username: name }
+            body: { username: name },
         }
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify(responsePayload))
