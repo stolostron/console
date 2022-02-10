@@ -1,29 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, startsWith, includes, concat, uniqBy, filter, remove, split, toLower, parseInt, indexOf } from 'lodash'
+import { get, includes, concat, uniqBy, filter, keyBy } from 'lodash'
 
-import {
-    isPrePostHookDeployable,
-    createReplicaChild,
-    createGenericPackageObject,
-    removeHelmReleaseName,
-    addSubscriptionDeployable,
-    addClusters,
-} from './utils'
+import { createChildNode, addClusters } from './utils'
 
-const templateKind = 'spec.template.kind'
 const localClusterName = 'local-cluster'
-const metadataName = 'metadata.name'
-const preHookType = 'pre-hook'
 
-export const getSubscriptionTopology = (application, managedClusters) => {
+export const getSubscriptionTopology = (application, managedClusters, relatedResources) => {
     const links = []
     const nodes = []
     let name
     let namespace
     ;({ name, namespace } = application)
 
-    // create application node
+    // add application node
     const allAppClusters = application.allClusters ? application.allClusters : []
     const appId = `application--${name}`
     nodes.push({
@@ -48,20 +38,15 @@ export const getSubscriptionTopology = (application, managedClusters) => {
     })
 
     // get clusters names
-    let clusterNames = managedClusters.map((cluster) => {
+    let managedClusterNames = managedClusters.map((cluster) => {
         return cluster?.metadata?.name
     })
     // if application has subscriptions
-    let memberId
     let parentId
     let clusterId
     if (application.subscriptions) {
         const createdClusterElements = new Set()
         application.subscriptions.forEach((subscription) => {
-            const subscriptionChannel = get(subscription, 'spec.channel')
-            const subscriptionName = get(subscription, metadataName, '')
-            const topoAnnotation = get(subscription, 'metadata.annotations', {})['apps.open-cluster-management.io/topo']
-            const isObjectApp = topoAnnotation ? startsWith(topoAnnotation, 'object//') : false
             // get cluster placement if any
             const ruleDecisionMap = {}
             if (subscription.rules) {
@@ -77,7 +62,7 @@ export const getSubscriptionTopology = (application, managedClusters) => {
             if (
                 get(subscription, 'spec.placement.local', '') === true &&
                 subscription.rules &&
-                includes(clusterNames, localClusterName) === false
+                includes(managedClusterNames, localClusterName) === false
             ) {
                 const localCluster = {
                     metadata: {
@@ -85,34 +70,21 @@ export const getSubscriptionTopology = (application, managedClusters) => {
                         namespace: localClusterName,
                     },
                 }
-                clusterNames = concat(clusterNames, localCluster)
+                managedClusterNames = concat(managedClusterNames, localCluster)
                 ruleDecisionMap[localClusterName] = localClusterName
             }
-
             const ruleClusterNames = Object.keys(ruleDecisionMap)
             const isRulePlaced = ruleClusterNames.length > 0
 
-            // get subscription statuses
-            const subscriptionStatusMap = {}
-            const subscribeDecisions = get(subscription, 'status.statuses')
-            if (subscribeDecisions) {
-                Object.entries(subscribeDecisions).forEach(([clusterName, value]) => {
-                    subscriptionStatusMap[clusterName] = get(value, 'packages')
-                })
-            }
-
-            // add subscription
+            // add subscription node
             parentId = addSubscription(appId, subscription, isRulePlaced, links, nodes)
 
-            // add rules if any
-            let hasPlacementRules = false
+            // add rules node
             if (subscription.rules) {
                 addSubscriptionRules(parentId, subscription, links, nodes)
                 delete subscription.rules
-                hasPlacementRules = true
             }
 
-            // add cluster(s)
             // if no cluster found by the placement, use a default empty cluster name so that the deployables are parsed and shown
             let clusterShapes = [['']]
             if (ruleClusterNames.length > 1) {
@@ -121,87 +93,33 @@ export const getSubscriptionTopology = (application, managedClusters) => {
                 clusterShapes = ruleClusterNames.map((cn) => [cn])
             }
 
-            clusterShapes.forEach((names) => {
-                // add cluster element
+            // add cluster nodes
+            clusterShapes.forEach((clusterNames) => {
                 clusterId = addClusters(
                     parentId,
                     createdClusterElements,
                     subscription,
-                    names,
                     clusterNames,
+                    managedClusterNames,
                     links,
                     nodes
                 )
 
-                if (subscription.deployables && !isObjectApp) {
-                    // add deployables if any
-
-                    processDeployables(
-                        subscription.deployables,
+                // add deployed resource nodes using subscription report
+                if (subscription.report) {
+                    processReport(
+                        subscription.report,
                         clusterId,
                         links,
                         nodes,
-                        subscriptionStatusMap,
-                        names,
+                        clusterNames,
                         namespace,
-                        subscription
-                    )
-                }
-
-                if (topoAnnotation) {
-                    addSubscriptionCharts(
-                        clusterId,
-                        subscriptionStatusMap,
-                        nodes,
-                        links,
-                        names,
-                        namespace,
-                        subscriptionChannel,
-                        subscriptionName,
-                        topoAnnotation,
-                        subscription
+                        subscription,
+                        relatedResources
                     )
                 }
             })
-
-            // no deployables was placed on a cluster but there were subscription decisions
-            if (!subscription.deployables && !hasPlacementRules && subscribeDecisions) {
-                addSubscriptionCharts(
-                    parentId,
-                    subscriptionStatusMap,
-                    nodes,
-                    links,
-                    null,
-                    namespace,
-                    subscriptionChannel,
-                    subscriptionName,
-                    topoAnnotation,
-                    subscription
-                )
-            }
-            delete subscription.deployables
-        })
-
-        // if application has deployables
-        // (unsubscribed--possibly a template)
-    } else if (application.deployables) {
-        application.deployables.forEach((deployable) => {
-            ;({ name, namespace } = get(deployable, 'metadata'))
-            memberId = `member--deployable--${name}`
-            nodes.push({
-                name,
-                namespace,
-                type: 'deployable',
-                id: memberId,
-                uid: memberId,
-                specs: { isDesign: true, raw: deployable },
-            })
-            links.push({
-                from: { uid: parentId },
-                to: { uid: memberId },
-                type: '',
-                specs: { isDesign: true },
-            })
+            delete subscription.report
         })
     }
 
@@ -260,351 +178,202 @@ const addSubscriptionRules = (parentId, subscription, links, nodes) => {
     })
 }
 
+const processReport = (report, clusterId, links, nodes, clusterNames, namespace, subscription, relatedResources) => {
+    // for each resource, add what it's related to
+    if (relatedResources) {
+        report.resources.forEach((resource) => {
+            const { name, namespace } = resource
+            resource.template = relatedResources[`${name}-${namespace}`]
+        })
+    }
+
+    const serviceOwners = filter(report.resources, (obj) => {
+        const kind = get(obj, 'kind', '')
+        return includes(['Route', 'Ingress', 'StatefulSet'], kind)
+    })
+
+    // process route and service first
+    const serviceMap = processServiceOwner(
+        clusterId,
+        serviceOwners,
+        links,
+        nodes,
+        clusterNames,
+        namespace,
+        subscription,
+        relatedResources
+    )
+
+    const services = filter(report.resources, (obj) => {
+        const kind = get(obj, 'kind', '')
+        return includes(['Service'], kind)
+    })
+
+    // then service
+    processServices(clusterId, services, links, nodes, clusterNames, namespace, serviceMap, subscription)
+
+    // then the rest
+    const other = filter(report.resources, (obj) => {
+        const kind = get(obj, 'kind', '')
+        return !includes(['Route', 'Ingress', 'StatefulSet', 'Service'], kind)
+    })
+
+    other.forEach((resource) => {
+        addSubscriptionDeployedResource(clusterId, resource, links, nodes, clusterNames, namespace, subscription)
+    })
+}
+
 // Route, Ingress, StatefulSet
 const processServiceOwner = (
     clusterId,
-    routes,
+    serviceOwners,
     links,
     nodes,
-    subscriptionStatusMap,
-    names,
+    clusterNames,
     namespace,
-    subscription
+    subscription,
+    relatedResources
 ) => {
     const servicesMap = {}
-    routes.forEach((deployable) => {
-        const topoObject = addSubscriptionDeployable(
+    serviceOwners.forEach((serviceOwner, inx) => {
+        const node = addSubscriptionDeployedResource(
             clusterId,
-            deployable,
+            serviceOwner,
             links,
             nodes,
-            subscriptionStatusMap,
-            names,
+            clusterNames,
             namespace,
             subscription
         )
 
-        // get service info and map it to the object id
-        const kind = get(deployable, templateKind, '')
-
-        if (kind === 'Route') {
-            const service = get(deployable, 'spec.template.spec.to.name')
-            if (service) {
-                servicesMap[service] = topoObject.id
-            }
-        } else if (kind === 'Ingress') {
-            // ingress
-            const rules = get(deployable, 'spec.template.spec.rules', [])
-
-            rules.forEach((rule) => {
-                const rulePaths = get(rule, 'http.paths', [])
-                rulePaths.forEach((path) => {
-                    const service = get(path, 'backend.serviceName')
+        if (relatedResources) {
+            // get service info and map it to the object id
+            let service
+            const { kind, template } = serviceOwner
+            switch (kind) {
+                case 'Route':
+                    service = get(template, 'template.spec.to.name')
                     if (service) {
-                        servicesMap[service] = topoObject.id
+                        servicesMap[service] = node.id
                     }
-                })
-            })
-        } else if (kind === 'StatefulSet') {
-            const service = get(deployable, 'spec.template.spec.serviceName')
-            if (service) {
-                servicesMap[service] = topoObject.id
+                    break
             }
+            // if (kind === 'Route') {
+            //     const service = get(deployable, 'spec.template.spec.to.name')
+            //     if (service) {
+            //         servicesMap[service] = node.id
+            //     }
+            // } else if (kind === 'Ingress') {
+            //     // ingress
+            //     const rules = get(deployable, 'spec.template.spec.rules', [])
+
+            //     rules.forEach((rule) => {
+            //         const rulePaths = get(rule, 'http.paths', [])
+            //         rulePaths.forEach((path) => {
+            //             const service = get(path, 'backend.serviceName')
+            //             if (service) {
+            //                 servicesMap[service] = node.id
+            //             }
+            //         })
+            //     })
+            // } else if (kind === 'StatefulSet') {
+            //     const service = get(deployable, 'spec.template.spec.serviceName')
+            //     if (service) {
+            //         servicesMap[service] = node.id
+            //     }
+            // }
+        } else {
+            servicesMap[`serviceOwner${inx}`] = node.id
         }
     })
     // return a map of services that must be linked to these router
     return servicesMap
 }
 
-const processServices = (
-    clusterId,
-    services,
-    links,
-    nodes,
-    subscriptionStatusMap,
-    names,
-    namespace,
-    servicesMap,
-    subscription
-) => {
-    services.forEach((deployable) => {
-        const serviceName = get(deployable, 'spec.template.metadata.name', '')
+const processServices = (clusterId, services, links, nodes, clusterNames, namespace, servicesMap, subscription) => {
+    services.forEach((service, inx) => {
+        const serviceName = service.name
         let parentId = servicesMap[serviceName]
+        if (!parentId) {
+            parentId = servicesMap[`serviceOwner${inx}`]
+        }
         if (!parentId) {
             parentId = clusterId
         }
 
-        addSubscriptionDeployable(
-            parentId,
-            deployable,
-            links,
-            nodes,
-            subscriptionStatusMap,
-            names,
-            namespace,
-            subscription
-        )
+        addSubscriptionDeployedResource(parentId, service, links, nodes, clusterNames, namespace, subscription)
     })
 }
 
-const processDeployables = (
-    deployables,
-    clusterId,
-    links,
-    nodes,
-    subscriptionStatusMap,
-    names,
-    namespace,
-    subscription
-) => {
-    const routes = filter(deployables, (obj) => {
-        const kind = get(obj, templateKind, '')
-        return includes(['Route', 'Ingress', 'StatefulSet'], kind)
-    })
+const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
+    const parentNode = nodes.find((n) => n.id === parentId)
+    const parentObject = parentNode
+        ? {
+              parentId,
+              parentName: parentNode.name,
+              parentType: parentNode.type,
+          }
+        : undefined
 
-    // process route and ingress first
-    const serviceMap = processServiceOwner(
-        clusterId,
-        routes,
-        links,
-        nodes,
-        subscriptionStatusMap,
-        names,
-        namespace,
-        subscription
-    )
+    const { name, namespace, template } = resource
+    const kind = resource.kind.toLowerCase()
+    const memberId = `member--deployed-resource--${parentId}--${namespace}--${name}--${kind}`
 
-    const services = filter(deployables, (obj) => {
-        const kind = get(obj, templateKind, '')
-        return includes(['Service'], kind)
-    })
-
-    // then service
-    processServices(
-        clusterId,
-        services,
-        links,
-        nodes,
-        subscriptionStatusMap,
-        names,
-        namespace,
-        serviceMap,
-        subscription
-    )
-
-    // then the rest
-    const other = remove(deployables, (obj) => {
-        const kind = get(obj, templateKind, '')
-        return !includes(['Route', 'Ingress', 'Service', 'StatefulSet', 'HelmRelease'], kind)
-    })
-
-    other.forEach((deployable) => {
-        addSubscriptionDeployable(
-            clusterId,
-            deployable,
-            links,
-            nodes,
-            subscriptionStatusMap,
-            names,
-            namespace,
-            subscription
-        )
-    })
-}
-
-const getSubscriptionPackageInfo = (topoAnnotation, subscriptionName, appNamespace, channelInfo, subscription) => {
-    const deployablesList = []
-
-    const deployables = split(topoAnnotation, ',')
-    const packageName = get(get(subscription, 'spec.packageOverrides', [{}])[0], 'packageName')
-    const aliasName = get(get(subscription, 'spec.packageOverrides', [{}])[0], 'packageAlias')
-
-    deployables.forEach((deployableInfo) => {
-        const deployableData = split(deployableInfo, '/')
-
-        if (deployableData.length === 6) {
-            let dName = deployableData[4]
-
-            let namespace = deployableData[3].length === 0 ? appNamespace : deployableData[3]
-            let deployableName = deployableData[4]
-            const deployableTypeLower = toLower(deployableData[2])
-
-            const isHook = isPrePostHookDeployable(subscription, dName, namespace)
-            // process only helm charts, object storage resources and hooks
-            if (deployableData[0] === 'helmchart' || deployableData[0] === 'object' || isHook) {
-                if (!isHook) {
-                    dName =
-                        deployableData[0] === 'object'
-                            ? deployableData[4]
-                            : removeHelmReleaseName(deployableData[4], deployableData[1], packageName, aliasName)
-                    namespace = deployableData[3].length === 0 ? appNamespace : deployableData[3]
-                    deployableName = `${subscriptionName}-${dName}-${dName}-${deployableTypeLower}`
-                }
-                const version = 'apps.open-cluster-management.io/v1'
-                const hasReplica = deployableData[5] !== '0'
-                const deployable = {
-                    apiVersion: version,
-                    kind: 'Deployable',
-                    metadata: {
-                        namespace,
-                        name: deployableName,
-                        selfLink: `/apis/${version}/namespaces/${deployableData[3]}/deployables/${dName}-${deployableTypeLower}`,
-                    },
-                    spec: {
-                        template: {
-                            apiVersion: 'apps/v1',
-                            kind: deployableData[2],
-                            metadata: {
-                                namespace,
-                                name: dName,
-                            },
-                            spec: {},
-                        },
-                    },
-                }
-
-                if (hasReplica) {
-                    deployable.spec.template.spec.replicas = parseInt(deployableData[5])
-                }
-
-                if (deployableTypeLower === 'helmrelease') {
-                    deployable.spec.template.spec.channel = channelInfo
-                }
-                deployablesList.push(deployable)
-            }
-        }
-    })
-    return deployablesList
-}
-
-const createDeployableObject = (subscription, name, namespace, type, specData, parentId, nodes, links, linkName) => {
-    let linkType = isPrePostHookDeployable(subscription, name, namespace)
-    if (linkType === null) {
-        linkType = linkName
-    }
-    const objId = `member--deployable--${parentId}--${type.toLowerCase()}--${name}`
-    const newObject = {
-        id: objId,
-        uid: objId,
-        name,
-        namespace,
-        type: type.toLowerCase(),
+    const node = {
+        name: name,
+        namespace: namespace,
+        type: kind,
+        id: memberId,
+        uid: memberId,
         specs: {
-            isDesign: false,
-            raw: {
-                kind: type,
-                metadata: {
-                    name,
-                    namespace,
-                },
-                spec: specData,
-            },
+            parent: parentObject,
         },
     }
-    nodes.push(newObject)
-    if (linkType === preHookType) {
-        links.push({
-            from: { uid: objId },
-            to: { uid: parentId },
-            type: linkType,
-        })
-    } else {
-        links.push({
-            from: { uid: parentId },
-            to: { uid: objId },
-            type: linkType,
-        })
-    }
-    return newObject
+
+    nodes.push(node)
+    links.push({
+        from: { uid: parentId },
+        to: { uid: memberId },
+        type: '',
+    })
+
+    // create replica subobject, if this object defines a replicas
+    createReplicaChild(node, template, links, nodes)
+
+    // create controllerrevision subobject, if this object is a daemonset
+    createControllerRevisionChild(node, links, nodes)
+
+    // create route subobject, if this object is an ingress
+    createIngressRouteChild(node, links, nodes)
+
+    return node
 }
 
-const addSubscriptionCharts = (
-    parentId,
-    subscriptionStatusMap,
-    nodes,
-    links,
-    names,
-    appNamespace,
-    channelInfo,
-    subscriptionName,
-    topoAnnotation,
-    subscription
-) => {
-    if (topoAnnotation) {
-        const deployablesFromTopo = getSubscriptionPackageInfo(
-            topoAnnotation,
-            subscriptionName,
-            appNamespace,
-            channelInfo,
-            subscription
-        )
-        processDeployables(
-            deployablesFromTopo,
-            parentId,
-            links,
-            nodes,
-            subscriptionStatusMap,
-            names,
-            appNamespace,
-            subscription
-        )
-        return nodes
-    }
-
-    let channelName = null
-    if (channelInfo) {
-        const splitIndex = indexOf(channelInfo, '/')
-        if (splitIndex !== -1) {
-            channelName = channelInfo.substring(splitIndex + 1)
+const createReplicaChild = (parentObject, template, links, nodes) => {
+    const parentType = get(parentObject, 'type', '')
+    if (template && template.related && (parentType === 'deploymentconfig' || parentType === 'deployment')) {
+        const relatedMap = keyBy(template.related, 'kind')
+        if (relatedMap['replicaset']) {
+            const type = parentType === 'deploymentconfig' ? 'replicationcontroller' : 'replicaset'
+            return createChildNode(parentObject, type, links, nodes)
+        } else if (relatedMap['pod']) {
+            return createChildNode(parentObject, 'pod', links, nodes)
         }
     }
-    const packagedObjects = {}
+}
 
-    if (!channelName) {
-        createGenericPackageObject(parentId, appNamespace, nodes, links, subscriptionName)
-        return nodes // could not find the subscription channel name, abort
+const createIngressRouteChild = (parentObject, links, nodes) => {
+    const parentType = get(parentObject, 'type', '')
+    if (parentType === 'ingress') {
+        const type = 'route'
+        return createChildNode(parentObject, type, links, nodes)
     }
+}
 
-    let foundDeployables = false
-    Object.values(subscriptionStatusMap).forEach((packageItem) => {
-        if (packageItem) {
-            Object.keys(packageItem).forEach((packageItemKey) => {
-                if (packageItemKey.startsWith(channelName)) {
-                    const objectInfo = packageItemKey.substring(channelName.length + 1)
-                    let objectType
-                    let objectName
-                    // now find the type-name
-                    const splitIndex = indexOf(objectInfo, '-')
-                    if (splitIndex !== -1) {
-                        objectName = objectInfo.substring(splitIndex + 1)
-                        objectType = objectInfo.substring(0, splitIndex)
-                        const keyStr = `${objectName}-${objectType}`
-                        if (!packagedObjects[keyStr]) {
-                            const resStatus = get(packageItem[packageItemKey], 'resourceStatus')
-                            const chartObject = createDeployableObject(
-                                subscription,
-                                objectName,
-                                appNamespace,
-                                objectType,
-                                resStatus,
-                                parentId,
-                                nodes,
-                                links,
-                                ''
-                            )
-                            // create subobject replica subobject, if this object defines a replicas
-                            createReplicaChild(chartObject, chartObject.specs.raw, links, nodes)
-
-                            packagedObjects[keyStr] = chartObject
-                            foundDeployables = true
-                        }
-                    }
-                }
-            })
-        }
-    })
-    if (!foundDeployables) {
-        createGenericPackageObject(parentId, appNamespace, nodes, links, subscriptionName)
+const createControllerRevisionChild = (parentObject, links, nodes) => {
+    const parentType = get(parentObject, 'type', '')
+    if (parentType === 'daemonset' || parentType === 'statefulset') {
+        // create only for daemonset or statefulset types
+        return createChildNode(parentObject, 'controllerrevision', links, nodes)
     }
-    return nodes
 }
