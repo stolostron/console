@@ -150,9 +150,13 @@ export function StatusField(props: { cluster: Cluster }) {
         case ClusterStatus.draft:
             hasAction = true
             Action = () => (
-            <Link to={`${NavigationPath.editCluster.replace(':namespace', props.cluster?.namespace!).replace(':name', props.cluster?.name!)}`}>
-                {t('cluster.edit')}
-            </Link>
+                <Link
+                    to={`${NavigationPath.editCluster
+                        .replace(':namespace', props.cluster?.namespace!)
+                        .replace(':name', props.cluster?.name!)}`}
+                >
+                    {t('cluster.edit')}
+                </Link>
             )
             break
     }
