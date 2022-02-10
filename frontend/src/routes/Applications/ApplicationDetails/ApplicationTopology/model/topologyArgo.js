@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get, uniq, uniqBy } from 'lodash'
 
-import { getClusterName, createReplicaChild, createIngressRouteChild, addClusters } from './utils'
+import { getClusterName, addClusters } from './utils'
 
 export function getArgoTopology(application, managedClusters, cluster) {
     const links = []
@@ -144,12 +144,6 @@ export function getArgoTopology(application, managedClusters, cluster) {
             to: { uid: memberId },
             type: '',
         })
-
-        const template = { metadata: {} }
-        // create replica subobject, if this object defines a replicas
-        createReplicaChild(deployableObj, template, links, nodes, true)
-        // create route subobject, if this object is an ingress
-        createIngressRouteChild(deployableObj, template, links, nodes)
     })
 
     return { nodes: uniqBy(nodes, 'uid'), links }

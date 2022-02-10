@@ -57,9 +57,6 @@ import {
     ConfigMap,
     ConfigMapApiVersion,
     ConfigMapKind,
-    Deployable,
-    DeployableApiVersion,
-    DeployableKind,
     DiscoveredCluster,
     DiscoveredClusterApiVersion,
     DiscoveredClusterKind,
@@ -117,6 +114,9 @@ import {
     Subscription,
     SubscriptionApiVersion,
     SubscriptionKind,
+    SubscriptionReport,
+    SubscriptionReportApiVersion,
+    SubscriptionReportKind,
 } from './resources'
 import { PlacementBinding, PlacementBindingApiVersion, PlacementBindingKind } from './resources/placement-binding'
 import { Policy, PolicyApiVersion, PolicyKind } from './resources/policy'
@@ -149,7 +149,6 @@ export const clusterManagementAddonsState = AtomArray<ClusterManagementAddOn>()
 export const clusterPoolsState = AtomArray<ClusterPool>()
 export const clusterProvisionsState = AtomArray<ClusterProvision>()
 export const configMapsState = AtomArray<ConfigMap>()
-export const deployablesState = AtomArray<Deployable>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
 export const gitOpsClustersState = AtomArray<GitOpsCluster>()
@@ -173,6 +172,7 @@ export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
 export const subscriptionsState = AtomArray<Subscription>()
+export const subscriptionReportsState = AtomArray<SubscriptionReport>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
@@ -225,7 +225,6 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setClusterPools] = useRecoilState(clusterPoolsState)
     const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setConfigMaps] = useRecoilState(configMapsState)
-    const [, setDeployables] = useRecoilState(deployablesState)
     const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setGitOpsClustersState] = useRecoilState(gitOpsClustersState)
@@ -249,6 +248,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setSettings] = useRecoilState(settingsState)
     const [, setSubmarinerConfigs] = useRecoilState(submarinerConfigsState)
     const [, setSubscriptionsState] = useRecoilState(subscriptionsState)
+    const [, setSubscriptionReportsState] = useRecoilState(subscriptionReportsState)
 
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
         const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
@@ -262,6 +262,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(PlacementApiVersion, PlacementKind, setPlacementsState)
         addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
         addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
+        addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
         addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)
         addSetter('argoproj.io/v1alpha1', 'appProjects', setAppProjectsState)
         addSetter(ApplicationSetApiVersion, ApplicationSetKind, setApplicationSetsState)
@@ -281,7 +282,6 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ClusterPoolApiVersion, ClusterPoolKind, setClusterPools)
         addSetter(ClusterProvisionApiVersion, ClusterProvisionKind, setClusterProvisions)
         addSetter(ConfigMapApiVersion, ConfigMapKind, setConfigMaps)
-        addSetter(DeployableApiVersion, DeployableKind, setDeployables)
         addSetter(DiscoveredClusterApiVersion, DiscoveredClusterKind, setDiscoveredClusters)
         addSetter(DiscoveryConfigApiVersion, DiscoveryConfigKind, setDiscoveryConfigs)
         addSetter(InfraEnvApiVersion, InfraEnvKind, setInfraEnvironments)
