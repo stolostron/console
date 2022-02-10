@@ -158,7 +158,18 @@ export default function PolicySetsPage() {
             }
             return true
         })
-        setFilteredPolicySets(filteredBySearch)
+        setFilteredPolicySets(
+            // Always keep the Policysets sorted alphabetically
+            filteredBySearch.sort((a, b) => {
+                if (a.metadata.name < b.metadata.name) {
+                    return -1
+                }
+                if (a.metadata.name > b.metadata.name) {
+                    return 1
+                }
+                return 0
+            })
+        )
     }, [searchFilter, violationFilters, policySets])
 
     const actualPage = useMemo<number>(() => {
