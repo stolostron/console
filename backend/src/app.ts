@@ -20,6 +20,9 @@ import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
 import { search } from './routes/search'
 import { serve } from './routes/serve'
+import { configure } from './routes/configure'
+import { consoleLinks } from './routes/consoleLinks'
+import { username } from './routes/username'
 
 export const router = Router<Router.HTTPVersion.V2>()
 router.get(`/readinessProbe`, readiness)
@@ -40,6 +43,9 @@ router.post(`/proxy/search`, search)
 router.get(`/authenticated`, authenticated)
 router.post(`/ansibletower`, ansibleTower)
 router.get(`/*`, serve)
+router.get('/configure', configure)
+router.get('/console-links', consoleLinks)
+router.get('/username', username)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     if (process.env.NODE_ENV !== 'production') {
