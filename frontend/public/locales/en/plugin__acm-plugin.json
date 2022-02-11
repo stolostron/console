@@ -940,6 +940,7 @@
     "emptystate.discoveryEnabled.msg": "You don't have any discovered clusters. Cluster discovery was configured. Return to this page later, configure Discovery again, or <a>view documentation <icon /></a>",
     "emptystate.discoveryEnabled.title": "No discovered clusters found",
     "emptystate.enableClusterDiscovery": "Configure Discovery",
+    "Enable": "Enable",
     "Enable resource editing": "Enable resource editing",
     "enabled": "Enabled",
     "Enabled": "Enabled",
