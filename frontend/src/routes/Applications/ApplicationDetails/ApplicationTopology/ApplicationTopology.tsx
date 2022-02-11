@@ -151,18 +151,10 @@ export function ApplicationTopologyPageContent(props: { name: string; namespace:
     }, [])
 
     useEffect(() => {
-        let active = true
-        load()
-        return () => {
-            active = false
-        }
-        async function load() {
+        ;(async () => {
             const res = await getRelatedResources(reports)
-            if (!active) {
-                return
-            }
             setRelatedResources(res)
-        }
+        })()
     }, [JSON.stringify(reports)])
 
     // search for related resources after diagram generation

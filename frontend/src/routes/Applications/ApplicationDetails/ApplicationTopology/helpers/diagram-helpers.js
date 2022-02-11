@@ -1033,7 +1033,7 @@ export const addDiagramDetails = (searchRelated, resourceMap, isClusterGrouped, 
 }
 
 export const mapSingleApplication = (application) => {
-    const items = application ? _.get(application, 'items', []) : []
+    const items = (application ? _.get(application, 'items', []) : []) || []
 
     const result =
         items.length > 0
