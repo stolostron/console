@@ -322,6 +322,7 @@ const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
         uid: memberId,
         specs: {
             parent: parentObject,
+            template,
         },
     }
 
