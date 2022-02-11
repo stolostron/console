@@ -42,6 +42,14 @@ export async function getRelatedResources(reports = []) {
                             fireManagedClusterView(cluster, 'route', 'route.openshift.io/v1', name, namespace)
                         )
                         break
+                    case 'Ingress':
+                        promises.push(
+                            fireManagedClusterView(cluster, 'ingress', 'networking.k8s.io/v1', name, namespace)
+                        )
+                        break
+                    case 'StatefulSet':
+                        promises.push(fireManagedClusterView(cluster, 'statefulset', 'apps/v1', name, namespace))
+                        break
                 }
             })
         })

@@ -45,7 +45,7 @@ export const getSubscriptionApplication = (model, app, selectedChannel, recoilSt
                 )
             })
             if (report) {
-                subscription.report = cloneDeep(report)
+                subscription.report = report
                 model.reports.push(subscription.report)
             }
         })

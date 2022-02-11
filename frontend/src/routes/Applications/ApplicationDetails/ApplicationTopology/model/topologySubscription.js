@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, includes, concat, uniqBy, filter, keyBy } from 'lodash'
+import { get, includes, concat, uniqBy, filter, keyBy, cloneDeep } from 'lodash'
 
 import { createChildNode, addClusters } from './utils'
 
@@ -180,6 +180,7 @@ const addSubscriptionRules = (parentId, subscription, links, nodes) => {
 
 const processReport = (report, clusterId, links, nodes, clusterNames, namespace, subscription, relatedResources) => {
     // for each resource, add what it's related to
+    report = cloneDeep(report)
     if (relatedResources) {
         report.resources.forEach((resource) => {
             const { name, namespace } = resource
@@ -248,7 +249,7 @@ const processServiceOwner = (
 
         if (relatedResources) {
             // get service info and map it to the object id
-            let service
+            let service, rules
             const { kind, template } = serviceOwner
             switch (kind) {
                 case 'Route':
@@ -257,31 +258,25 @@ const processServiceOwner = (
                         servicesMap[service] = node.id
                     }
                     break
+                case 'Ingress':
+                    rules = get(template, 'template.spec.rules', [])
+                    rules.forEach((rule) => {
+                        const rulePaths = get(rule, 'http.paths', [])
+                        rulePaths.forEach((path) => {
+                            service = get(path, 'backend.serviceName')
+                            if (service) {
+                                servicesMap[service] = node.id
+                            }
+                        })
+                    })
+                    break
+                case 'StatefulSet':
+                    service = get(template, 'template.spec.serviceName')
+                    if (service) {
+                        servicesMap[service] = node.id
+                    }
+                    break
             }
-            // if (kind === 'Route') {
-            //     const service = get(deployable, 'spec.template.spec.to.name')
-            //     if (service) {
-            //         servicesMap[service] = node.id
-            //     }
-            // } else if (kind === 'Ingress') {
-            //     // ingress
-            //     const rules = get(deployable, 'spec.template.spec.rules', [])
-
-            //     rules.forEach((rule) => {
-            //         const rulePaths = get(rule, 'http.paths', [])
-            //         rulePaths.forEach((path) => {
-            //             const service = get(path, 'backend.serviceName')
-            //             if (service) {
-            //                 servicesMap[service] = node.id
-            //             }
-            //         })
-            //     })
-            // } else if (kind === 'StatefulSet') {
-            //     const service = get(deployable, 'spec.template.spec.serviceName')
-            //     if (service) {
-            //         servicesMap[service] = node.id
-            //     }
-            // }
         } else {
             servicesMap[`serviceOwner${inx}`] = node.id
         }
@@ -351,13 +346,17 @@ const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
 
 const createReplicaChild = (parentObject, template, links, nodes) => {
     const parentType = get(parentObject, 'type', '')
-    if (template && template.related && (parentType === 'deploymentconfig' || parentType === 'deployment')) {
-        const relatedMap = keyBy(template.related, 'kind')
-        if (relatedMap['replicaset']) {
-            const type = parentType === 'deploymentconfig' ? 'replicationcontroller' : 'replicaset'
+    if (parentType === 'deploymentconfig' || parentType === 'deployment') {
+        const type = parentType === 'deploymentconfig' ? 'replicationcontroller' : 'replicaset'
+        if (template && template.related) {
+            const relatedMap = keyBy(template.related, 'kind')
+            if (relatedMap['replicaset']) {
+                return createChildNode(parentObject, type, links, nodes)
+            } else if (relatedMap['pod']) {
+                return createChildNode(parentObject, 'pod', links, nodes)
+            }
+        } else {
             return createChildNode(parentObject, type, links, nodes)
-        } else if (relatedMap['pod']) {
-            return createChildNode(parentObject, 'pod', links, nodes)
         }
     }
 }
