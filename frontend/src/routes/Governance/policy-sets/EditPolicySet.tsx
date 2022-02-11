@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode } from '@patternfly-labs/react-form-wizard'
 import { PolicySetWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicySet/PolicySetWizard'
-import { useEffect, useMemo, useState } from 'react'
+import { AcmToastContext } from '@stolostron/ui-components'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -20,16 +21,17 @@ import { IResource, PlacementKind, PlacementRuleKind, PolicySetKind, updateResou
 
 export function EditPolicySet() {
     const { t } = useTranslation()
+    const toast = useContext(AcmToastContext)
+    const params: { namespace?: string; name?: string } = useParams()
     const history = useHistory()
+    const [policies] = useRecoilState(policiesState)
     const [policySets] = useRecoilState(policySetsState)
+    const [namespaces] = useRecoilState(namespacesState)
     const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [placementBindings] = useRecoilState(placementBindingsState)
-    const [namespaces] = useRecoilState(namespacesState)
-    const [policies] = useRecoilState(policiesState)
-    const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
-    const params: { namespace?: string; name?: string } = useParams()
+    const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
     const [resources, setResources] = useState<IResource[]>()
     useEffect(() => {
         const policySet = policySets.find(
@@ -73,17 +75,25 @@ export function EditPolicySet() {
     return (
         <PolicySetWizard
             title={t('Edit policy set')}
-            editMode={EditMode.Edit}
-            namespaces={namespaceNames}
             policies={policies}
+            namespaces={namespaceNames}
+            placements={placements}
+            placementRules={placementRules}
             clusterSetBindings={clusterSetBindings}
-            onCancel={() => history.push(NavigationPath.policySets)}
+            editMode={EditMode.Edit}
             resources={resources}
             onSubmit={(resources) =>
                 updateResources(resources as IResource[]).then(() => {
+                    toast.addAlert({
+                        title: t('Policy set updated'),
+                        message: t('{{name}} was successfully updated.', { name: 'TODO' }),
+                        type: 'success',
+                        autoClose: true,
+                    })
                     history.push(NavigationPath.policySets)
                 })
             }
+            onCancel={() => history.push(NavigationPath.policySets)}
         />
     )
 }
