@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
-    managedClusterSetsState,
+    managedClusterSetBindingsState,
     namespacesState,
     placementBindingsState,
     placementRulesState,
@@ -28,7 +28,7 @@ export function EditPolicySet() {
     const [namespaces] = useRecoilState(namespacesState)
     const [policies] = useRecoilState(policiesState)
     const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
-    const [clusterSets] = useRecoilState(managedClusterSetsState)
+    const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const params: { namespace?: string; name?: string } = useParams()
     const [resources, setResources] = useState<IResource[]>()
     useEffect(() => {
@@ -76,7 +76,7 @@ export function EditPolicySet() {
             editMode={EditMode.Edit}
             namespaces={namespaceNames}
             policies={policies}
-            clusterSets={clusterSets}
+            clusterSetBindings={clusterSetBindings}
             onCancel={() => history.push(NavigationPath.policySets)}
             resources={resources}
             onSubmit={(resources) =>

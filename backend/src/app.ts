@@ -24,7 +24,9 @@ import { configure } from './routes/configure'
 import { consoleLinks } from './routes/consoleLinks'
 import { username } from './routes/username'
 
-export const router = Router<Router.HTTPVersion.V2>()
+// Router defaults to max param length of 100 - We need to override to 200 to handle resources with very long names
+// If the route exceeds 200 chars the route will not be found from this fn: router.find()
+export const router = Router<Router.HTTPVersion.V2>({ maxParamLength: 200 })
 router.get(`/readinessProbe`, readiness)
 router.get(`/livenessProbe`, liveness)
 router.get(`/ping`, respondOK)
