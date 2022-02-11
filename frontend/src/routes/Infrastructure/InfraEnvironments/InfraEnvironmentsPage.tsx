@@ -144,10 +144,10 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                             const infraAgents = agents.filter((a) =>
                                 isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
                             )
-                            const errorAgents = infraAgents.filter((a) => getAgentStatus(a).status === 'error')
+                            const errorAgents = infraAgents.filter((a) => getAgentStatus(a).status.key === 'error')
                             const warningAgents = infraAgents.filter((a) =>
                                 ['pending-for-input', 'insufficient', 'insufficient-unbound'].includes(
-                                    getAgentStatus(a).status
+                                    getAgentStatus(a).status.key
                                 )
                             )
 
