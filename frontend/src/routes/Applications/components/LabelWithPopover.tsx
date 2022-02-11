@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Label, Popover, PopoverPosition } from '@patternfly/react-core'
-import { ReactNode } from 'react'
+import { ReactNode, ReactElement } from 'react'
 import '../css/ResourceLabels.css'
 
 export function LabelWithPopover(props: {
     children?: ReactNode
-    labelContent: string | Element
+    labelContent: string | ReactElement
     labelIcon?: string
     labelColor?: string
-    popoverHeader: string
+    popoverHeader?: string
     popoverPosition?: PopoverPosition
 }) {
     return (
