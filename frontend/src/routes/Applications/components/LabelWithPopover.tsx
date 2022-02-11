@@ -6,7 +6,7 @@ import '../css/ResourceLabels.css'
 
 export function LabelWithPopover(props: {
     children?: ReactNode
-    labelContent: string
+    labelContent: string | Element
     labelIcon?: string
     labelColor?: string
     popoverHeader: string
