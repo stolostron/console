@@ -1,7 +1,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-    name: policy-with-2-placement-rules
+    name: policy-with-2-placements
     namespace: test
     annotations:
         policy.open-cluster-management.io/standards: NIST-CSF
@@ -15,7 +15,7 @@ spec:
               apiVersion: policy.open-cluster-management.io/v1
               kind: ConfigurationPolicy
               metadata:
-                  name: policy-with-2-placement-rules
+                  name: policy-with-2-placements
               spec:
                   remediationAction: inform
                   severity: low
@@ -32,62 +32,54 @@ spec:
                             metadata:
                                 name: test
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: PlacementBinding
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: Placement
 metadata:
-    name: policy-with-2-placement-rules-1
-    namespace: test
-placementRef:
-    name: policy-with-2-placement-rules-1
-    kind: PlacementRule
-    apiGroup: apps.open-cluster-management.io
-subjects:
-    - name: policy-with-2-placement-rules
-      kind: Policy
-      apiGroup: policy.open-cluster-management.io
----
-apiVersion: apps.open-cluster-management.io/v1
-kind: PlacementRule
-metadata:
-    name: policy-with-2-placement-rules-1
+    name: policy-with-2-placements-1
     namespace: test
 spec:
-    clusterConditions:
-        - status: 'True'
-          type: ManagedClusterConditionAvailable
-    clusterSelector:
-        matchExpressions:
-            - key: local-cluster
-              operator: In
-              values:
-                  - 'true'
+    predicates:
+        - requiredClusterSelector:
+              labelSelector:
+                  matchExpressions:
+                      - key: local-cluster
+                        operator: In
+                        values:
+                            - 'true'
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
-    name: policy-with-2-placement-rules-2
+    name: policy-with-2-placements-1
     namespace: test
 placementRef:
-    name: policy-with-2-placement-rules-2
-    kind: PlacementRule
-    apiGroup: apps.open-cluster-management.io
+    name: policy-with-2-placements-1
+    kind: Placement
+    apiGroup: cluster.open-cluster-management.io
 subjects:
-    - name: policy-with-2-placement-rules
-      kind: Policy
+    - name: policy-with-2-placements
+      kind: PolicySet
       apiGroup: policy.open-cluster-management.io
 ---
-apiVersion: apps.open-cluster-management.io/v1
-kind: PlacementRule
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: Placement
 metadata:
-    name: policy-with-2-placement-rules-2
+    name: policy-with-2-placements-2
     namespace: test
 spec:
-    clusterConditions:
-        - status: 'True'
-          type: ManagedClusterConditionAvailable
-    clusterSelector:
-        matchExpressions:
-            - key: abc
-              operator: In
-              values:
-                  - '123'
+    clusterSets:
+        - cluster-set
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+    name: policy-with-2-placements-2
+    namespace: test
+placementRef:
+    name: policy-with-2-placements-2
+    kind: Placement
+    apiGroup: cluster.open-cluster-management.io
+subjects:
+    - name: policy-with-2-placements
+      kind: PolicySet
+      apiGroup: policy.open-cluster-management.io

@@ -1,7 +1,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-    name: my-policy-with-1-placement-rule
+    name: policy-with-1-placement-rule
     namespace: test
     annotations:
         policy.open-cluster-management.io/standards: NIST-CSF
@@ -15,7 +15,7 @@ spec:
               apiVersion: policy.open-cluster-management.io/v1
               kind: ConfigurationPolicy
               metadata:
-                  name: my-policy-with-1-placement-rule
+                  name: policy-with-1-placement-rule
               spec:
                   remediationAction: inform
                   severity: low
@@ -35,21 +35,21 @@ spec:
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
-    name: my-policy-with-1-placement-rule
+    name: policy-with-1-placement-rule
     namespace: test
 placementRef:
-    name: my-policy-with-1-placement-rule
+    name: policy-with-1-placement-rule
     kind: PlacementRule
     apiGroup: apps.open-cluster-management.io
 subjects:
-    - name: my-policy-with-1-placement-rule
+    - name: policy-with-1-placement-rule
       kind: Policy
       apiGroup: policy.open-cluster-management.io
 ---
 apiVersion: apps.open-cluster-management.io/v1
 kind: PlacementRule
 metadata:
-    name: my-policy-with-1-placement-rule
+    name: policy-with-1-placement-rule
     namespace: test
 spec:
     clusterConditions:

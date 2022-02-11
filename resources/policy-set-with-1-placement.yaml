@@ -1,23 +1,23 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicySet
 metadata:
-    name: my-policy-set-with-1-placement
+    name: policy-set-with-1-placement
     namespace: test
 spec:
     description: Policy set with a single Placement and PlacementBinding.
     policies:
-        name: my-policy-set-with-1-placement-policy-1
-        name: my-policy-set-with-1-placement-policy-2
+        - policy-set-with-1-placement-policy-1
+        - policy-set-with-1-placement-policy-2
 ---
 apiVersion: cluster.open-cluster-management.io/v1alpha1
 kind: Placement
 metadata:
-    name: my-policy-set-with-1-placement
+    name: policy-set-with-1-placement
     namespace: test
 spec:
     numberOfClusters: 1
     clusterSets:
-        - my-cluster-set
+        - cluster-set
     predicates:
         - requiredClusterSelector:
               labelSelector:
@@ -27,21 +27,21 @@ spec:
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
-    name: my-policy-set-with-1-placement
+    name: policy-set-with-1-placement
     namespace: test
 placementRef:
-    name: my-policy-set-with-1-placement
+    name: policy-set-with-1-placement
     kind: Placement
     apiGroup: cluster.open-cluster-management.io
 subjects:
-    - name: my-policy-set-with-1-placement
+    - name: policy-set-with-1-placement
       kind: PolicySet
       apiGroup: policy.open-cluster-management.io
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-    name: my-policy-set-with-1-placement-policy-1
+    name: policy-set-with-1-placement-policy-1
     namespace: test
     annotations:
         policy.open-cluster-management.io/standards: NIST-CSF
@@ -55,7 +55,7 @@ spec:
               apiVersion: policy.open-cluster-management.io/v1
               kind: ConfigurationPolicy
               metadata:
-                  name: my-policy-set-with-1-placement-policy-1
+                  name: policy-set-with-1-placement-policy-1
               spec:
                   remediationAction: inform
                   severity: low
@@ -75,7 +75,7 @@ spec:
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-    name: my-policy-set-with-1-placement-policy-2
+    name: policy-set-with-1-placement-policy-2
     namespace: test
     annotations:
         policy.open-cluster-management.io/standards: NIST-CSF
@@ -89,7 +89,7 @@ spec:
               apiVersion: policy.open-cluster-management.io/v1
               kind: ConfigurationPolicy
               metadata:
-                  name: my-policy-set-with-1-placement-policy-2
+                  name: policy-set-with-1-placement-policy-2
               spec:
                   remediationAction: inform
                   severity: low
