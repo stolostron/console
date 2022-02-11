@@ -16,7 +16,8 @@ import {
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource, PlacementKind, PlacementRuleKind, PolicySetKind, updateResources } from '../../../resources'
+import { IResource, updateResources } from '../../../resources'
+import { getPlacementBindingsForResource, getPlacementRulesForResource, getPlacementsForResource } from '../common/util'
 
 export function EditPolicySet() {
     const { t } = useTranslation()
@@ -39,30 +40,13 @@ export function EditPolicySet() {
             history.push(NavigationPath.policySets)
             return
         }
-        const policySetPlacementBindings = placementBindings
-            .filter((placementBinding) => placementBinding.metadata.namespace === policySet.metadata.namespace)
-            .filter((placementBinding) => placementBinding.subjects?.find((subject) => subject.kind === PolicySetKind))
-            .filter((placementBinding) =>
-                placementBinding.subjects?.find((subject) => subject.name === policySet.metadata.name)
-            )
-        const policySetPlacements = placements
-            .filter((placement) => placement.metadata.namespace === policySet.metadata.namespace)
-            .filter((placement) =>
-                policySetPlacementBindings.find(
-                    (placementBinding) =>
-                        placementBinding.placementRef.kind === PlacementKind &&
-                        placementBinding.placementRef.name === placement.metadata.name
-                )
-            )
-        const policySetPlacementRules = placementRules
-            .filter((placementRule) => placementRule.metadata.namespace === policySet.metadata.namespace)
-            .filter((placementRule) =>
-                policySetPlacementBindings.find(
-                    (placementBinding) =>
-                        placementBinding.placementRef.kind === PlacementRuleKind &&
-                        placementBinding.placementRef.name === placementRule.metadata.name
-                )
-            )
+        const policySetPlacementBindings = getPlacementBindingsForResource(policySet, placementBindings)
+        const policySetPlacements = getPlacementsForResource(policySet, policySetPlacementBindings, placements)
+        const policySetPlacementRules = getPlacementRulesForResource(
+            policySet,
+            policySetPlacementBindings,
+            placementRules
+        )
         setResources([policySet, ...policySetPlacements, ...policySetPlacementRules, ...policySetPlacementBindings])
     }, [])
 

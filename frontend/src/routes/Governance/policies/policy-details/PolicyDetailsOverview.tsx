@@ -7,155 +7,60 @@ import moment from 'moment'
 import { Fragment, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { placementRulesState } from '../../../../atoms'
+import { placementBindingsState, placementRulesState, placementsState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { PlacementRule, Policy } from '../../../../resources'
+import { Placement, PlacementBinding, PlacementRule, PlacementRuleStatus, Policy } from '../../../../resources'
+import { Metadata } from '../../../../resources/metadata'
+import { Selector } from '../../../../resources/selector'
+import {
+    getPlacementBindingsForResource,
+    getPlacementRulesForResource,
+    getPlacementsForResource,
+} from '../../common/util'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
 
-function getPlacementRule(placementRules: PlacementRule[], policy: Policy) {
-    const placements = _.get(policy, 'status.placement', [])
-    const map = new Map()
-    let placementPolicy: any | undefined = undefined
-    if (policy.metadata.namespace) {
-        const response = placementRules.filter(
-            (rule: PlacementRule) => rule.metadata.namespace === policy.metadata.namespace
-        )
-        if (response) {
-            response.forEach((item) => map.set(item.metadata.name, item))
-        }
-    } else {
-        console.debug('Policy does not contain a namespace to get placementRules from:', policy.metadata.name ?? '')
-    }
-    placements.forEach((placement: { placementBinding: string; placementRule: string }[]) => {
-        const rule = _.get(placement, 'placementRule', '')
-        const pp = map.get(rule)
-        if (pp) {
-            const spec = pp.spec || {}
-            placementPolicy = {
-                clusterLabels: spec.clusterSelector,
-                metadata: pp.metadata,
-                raw: pp,
-                status: pp.status,
-                policy,
-            }
-        }
-    })
-    return placementPolicy
+interface PlacementTableData {
+    clusterLabels: Selector
+    metadata: Metadata
+    raw: PlacementRule | Placement
+    status: PlacementRuleStatus
+    policy: Policy
 }
 
-export default function PolicyDetailsOverview(props: { policy: Policy }) {
-    const { policy } = props
+function renderPlacementTable(policy: Policy) {
     const { t } = useTranslation()
-    // const [placements] = useRecoilState(placementsState)
+    const [placements] = useRecoilState(placementsState)
+    const [placementBindings] = useRecoilState(placementBindingsState)
     const [placementRules] = useRecoilState(placementRulesState)
-    const placementPolicy: PlacementRule = useMemo(
-        () => getPlacementRule(placementRules, policy),
-        [placementRules, policy]
-    )
+    const placementRuleMatches: PlacementTableData[] = useMemo(() => {
+        const bindings: PlacementBinding[] = getPlacementBindingsForResource(policy, placementBindings)
+        const placementRuleMatches: PlacementRule[] = getPlacementRulesForResource(policy, bindings, placementRules)
+        return placementRuleMatches.map((rule: PlacementRule) => {
+            return {
+                clusterLabels: rule.spec.clusterSelector ?? {},
+                metadata: rule.metadata,
+                raw: rule,
+                status: rule.status ?? {},
+                policy,
+            }
+        })
+    }, [placementBindings, placementRules, policy])
 
-    const govData = useGovernanceData([policy])
-
-    const { leftItems, rightItems } = useMemo(() => {
-        const leftItems = [
-            {
-                key: 'Name',
-                value: policy.metadata.name ?? '-',
-            },
-            {
-                key: 'Namespace',
-                value: policy.metadata.namespace,
-            },
-            {
-                key: 'Status',
-                value: policy.spec.disabled ? 'Disabled' : 'Enabled' ?? '-',
-            },
-            {
-                key: 'Remediation',
-                value: policy.spec.remediationAction ?? '-',
-            },
-            {
-                key: 'Cluster violations',
-                value: <ClusterPolicyViolationIcons risks={govData.clusterRisks} />,
-            },
-        ]
-        const rightItems = [
-            {
-                key: 'Categories',
-                value:
-                    govData.categories.groups.map((group) => {
-                        const hasRisks =
-                            group.policyRisks.high +
-                                group.policyRisks.low +
-                                group.policyRisks.medium +
-                                group.policyRisks.synced +
-                                group.policyRisks.unknown >
-                            0
-                        if (!hasRisks) return <Fragment />
-                        return (
-                            <Split hasGutter>
-                                <SplitItem>
-                                    <Text>{group.name}</Text>
-                                </SplitItem>
-                            </Split>
-                        )
-                    }) ?? '-',
-            },
-            {
-                key: 'Controls',
-                value:
-                    govData.controls.groups.map((group) => {
-                        const hasRisks =
-                            group.policyRisks.high +
-                                group.policyRisks.low +
-                                group.policyRisks.medium +
-                                group.policyRisks.synced +
-                                group.policyRisks.unknown >
-                            0
-                        if (!hasRisks) return <Fragment />
-                        return (
-                            <Split hasGutter>
-                                <SplitItem>
-                                    <Text>{group.name}</Text>
-                                </SplitItem>
-                            </Split>
-                        )
-                    }) ?? '-',
-            },
-            {
-                key: 'Standards',
-                value:
-                    govData.standards.groups.map((group) => {
-                        const hasRisks =
-                            group.policyRisks.high +
-                                group.policyRisks.low +
-                                group.policyRisks.medium +
-                                group.policyRisks.synced +
-                                group.policyRisks.unknown >
-                            0
-                        if (!hasRisks) return <Fragment />
-                        return (
-                            <Split hasGutter>
-                                <SplitItem>
-                                    <Text>{group.name}</Text>
-                                </SplitItem>
-                            </Split>
-                        )
-                    }) ?? '-',
-            },
-            {
-                key: 'Created',
-                value: moment(policy.metadata.creationTimestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow(),
-            },
-            // TODO need to implement automation
-            // {
-            //     key: 'Automation',
-            //     value: '-', // react node (link)
-            // },
-        ]
-        return { leftItems, rightItems }
-    }, [policy])
+    const placementMatches: PlacementTableData[] = useMemo(() => {
+        const bindings: PlacementBinding[] = getPlacementBindingsForResource(policy, placementBindings)
+        const placementMatches: Placement[] = getPlacementsForResource(policy, bindings, placements)
+        return placementMatches.map((placement: Placement) => {
+            return {
+                clusterLabels: {}, // TODO
+                metadata: placement.metadata,
+                raw: placement,
+                status: {}, // TODO
+                policy,
+            }
+        })
+    }, [placementBindings, placements, policy])
 
     const placementCols = useMemo(
         () => [
@@ -288,6 +193,138 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
         []
     )
 
+    if (placementMatches.length > 0) {
+        return (
+            <AcmTable<PlacementTableData>
+                key="cluster-placement-list"
+                plural={'placements'}
+                items={placementMatches}
+                columns={placementCols}
+                keyFn={(item) => item.metadata.uid!.toString()}
+                autoHidePagination={true}
+            />
+        )
+    } else if (placementMatches.length === 0 && placementRuleMatches.length > 0) {
+        return (
+            <AcmTable<PlacementTableData>
+                key="cluster-placement-list"
+                plural={'placements'}
+                items={placementRuleMatches}
+                columns={placementCols}
+                keyFn={(item) => item.metadata.uid!.toString()}
+                autoHidePagination={true}
+            />
+        )
+    }
+    return <Alert title={t('No placement selectors found')} isInline />
+}
+
+export default function PolicyDetailsOverview(props: { policy: Policy }) {
+    const { policy } = props
+    const { t } = useTranslation()
+
+    const govData = useGovernanceData([policy])
+
+    const { leftItems, rightItems } = useMemo(() => {
+        const leftItems = [
+            {
+                key: 'Name',
+                value: policy.metadata.name ?? '-',
+            },
+            {
+                key: 'Namespace',
+                value: policy.metadata.namespace,
+            },
+            {
+                key: 'Status',
+                value: policy.spec.disabled ? 'Disabled' : 'Enabled' ?? '-',
+            },
+            {
+                key: 'Remediation',
+                value: policy.spec.remediationAction ?? '-',
+            },
+            {
+                key: 'Cluster violations',
+                value: <ClusterPolicyViolationIcons risks={govData.clusterRisks} />,
+            },
+        ]
+        const rightItems = [
+            {
+                key: 'Categories',
+                value:
+                    govData.categories.groups.map((group) => {
+                        const hasRisks =
+                            group.policyRisks.high +
+                                group.policyRisks.low +
+                                group.policyRisks.medium +
+                                group.policyRisks.synced +
+                                group.policyRisks.unknown >
+                            0
+                        if (!hasRisks) return <Fragment />
+                        return (
+                            <Split hasGutter>
+                                <SplitItem>
+                                    <Text>{group.name}</Text>
+                                </SplitItem>
+                            </Split>
+                        )
+                    }) ?? '-',
+            },
+            {
+                key: 'Controls',
+                value:
+                    govData.controls.groups.map((group) => {
+                        const hasRisks =
+                            group.policyRisks.high +
+                                group.policyRisks.low +
+                                group.policyRisks.medium +
+                                group.policyRisks.synced +
+                                group.policyRisks.unknown >
+                            0
+                        if (!hasRisks) return <Fragment />
+                        return (
+                            <Split hasGutter>
+                                <SplitItem>
+                                    <Text>{group.name}</Text>
+                                </SplitItem>
+                            </Split>
+                        )
+                    }) ?? '-',
+            },
+            {
+                key: 'Standards',
+                value:
+                    govData.standards.groups.map((group) => {
+                        const hasRisks =
+                            group.policyRisks.high +
+                                group.policyRisks.low +
+                                group.policyRisks.medium +
+                                group.policyRisks.synced +
+                                group.policyRisks.unknown >
+                            0
+                        if (!hasRisks) return <Fragment />
+                        return (
+                            <Split hasGutter>
+                                <SplitItem>
+                                    <Text>{group.name}</Text>
+                                </SplitItem>
+                            </Split>
+                        )
+                    }) ?? '-',
+            },
+            {
+                key: 'Created',
+                value: moment(policy.metadata.creationTimestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow(),
+            },
+            // TODO need to implement automation
+            // {
+            //     key: 'Automation',
+            //     value: '-', // react node (link)
+            // },
+        ]
+        return { leftItems, rightItems }
+    }, [policy])
+
     return (
         <PageSection>
             <Stack hasGutter>
@@ -303,18 +340,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                     >
                         {t('Placement')}
                     </Text>
-                    {/* TODO Need to find the matching placementRule OR the matching Placement resource */}
-                    {placementPolicy && (
-                        <AcmTable
-                            key="cluster-placement-list"
-                            plural={'placements'}
-                            items={[placementPolicy]}
-                            columns={placementCols}
-                            keyFn={(item) => item.metadata.uid!.toString()}
-                            autoHidePagination={true}
-                        />
-                    )}
-                    {!placementPolicy && <Alert title={t('No placement selectors found')} isInline />}
+                    {renderPlacementTable(policy)}
                 </div>
             </Stack>
         </PageSection>
