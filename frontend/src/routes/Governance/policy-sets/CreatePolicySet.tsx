@@ -3,7 +3,7 @@ import { PolicySetWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { managedClusterSetsState, namespacesState, policiesState } from '../../../atoms'
+import { managedClusterSetBindingsState, namespacesState, policiesState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { createResources, IResource } from '../../../resources'
@@ -14,13 +14,13 @@ export function CreatePolicySet() {
     const [namespaces] = useRecoilState(namespacesState)
     const [policies] = useRecoilState(policiesState)
     const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
-    const [clusterSets] = useRecoilState(managedClusterSetsState)
+    const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     return (
         <PolicySetWizard
             title={t('Create policy set')}
             namespaces={namespaceNames}
             policies={policies}
-            clusterSets={clusterSets}
+            clusterSetBindings={clusterSetBindings}
             onCancel={() => history.push(NavigationPath.policySets)}
             onSubmit={(resources) =>
                 createResources(resources as IResource[]).then(() => {
