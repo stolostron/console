@@ -39,9 +39,6 @@ import { getEditLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
 import { getURLSearchData } from './diagram-helpers-argo'
 
-const metadataName = 'specs.raw.metadata.name'
-const metadataNamespace = 'specs.raw.metadata.namespace'
-
 const specPulse = 'specs.pulse'
 const specShapeType = 'specs.shapeType'
 const showResourceYaml = 'show_resource_yaml'
@@ -207,7 +204,7 @@ const getPulseStatusForGenericNode = (node, t) => {
     if (pulse === 'red') {
         return pulse //no need to check anything else, return red
     }
-    const namespace = _.get(node, metadataNamespace) || _.get(node, 'namespace', '')
+    const namespace = _.get(node, 'namespace', '')
     const resourceMap = _.get(node, `specs.${node.type}Model`)
     const clusterNames = R.split(',', getClusterName(node.id, node, true))
     const onlineClusters = getOnlineClusters(node)
@@ -302,25 +299,15 @@ export const getPulseForNodeWithPodStatus = (node, t) => {
     const pulseArr = []
     const pulseValueArr = ['red', 'orange', 'yellow', 'green']
     const resourceMap = _.get(node, `specs.${node.type}Model`)
-    let desired = _.get(node, 'specs.raw.spec.replicas') || _.get(node, 'specs.raw.spec.desired', 'NA')
-
-    // special case, pod type can only deploy 1 pod
-    if (node.type === 'pod') {
-        desired = 1
-    }
-    //if desired info is missing use the desired value returned by search
-    if (
-        (desired === 'NA' || desired <= 0 || node.type === 'controllerrevision') &&
-        resourceMap &&
-        Object.keys(resourceMap).length > 0
-    ) {
+    let desired = 1
+    if (resourceMap && Object.keys(resourceMap).length > 0) {
         desired = resourceMap[Object.keys(resourceMap)[0]][0].desired
             ? resourceMap[Object.keys(resourceMap)[0]][0].desired
             : 'NA'
     }
 
-    const resourceName = _.get(node, metadataName, '')
-    const namespace = _.get(node, metadataNamespace) || _.get(node, 'namespace', '')
+    const resourceName = _.get(node, 'name', '')
+    const namespace = _.get(node, 'namespace', '')
     const clusterNames = R.split(',', getClusterName(node.id, node, true))
     const onlineClusters = getOnlineClusters(node)
 
@@ -875,11 +862,11 @@ export const checkAndObjects = (obj1, obj2) => {
 }
 
 //creates a map with all related kinds for this app, not only pod types
-export const addDiagramDetails = (searchRelated, resourceMap, isClusterGrouped, hasHelmReleases, topology) => {
-    if (checkNotOrObjects(searchRelated, resourceMap)) {
+export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGrouped, hasHelmReleases, topology) => {
+    if (checkNotOrObjects(resourceStatuses, resourceMap)) {
         return resourceMap
     }
-    const { related } = mapSingleApplication(_.cloneDeep(searchRelated.searchResult[0]))
+    const { related } = mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[0]))
     // store cluster objects and cluster names as returned by search; these are clusters related to the app
     const clustersObjects = getResourcesClustersForApp(
         R.find(R.propEq('kind', 'cluster'))(related) || {},
@@ -896,7 +883,7 @@ export const addDiagramDetails = (searchRelated, resourceMap, isClusterGrouped, 
 
         topology.nodes.forEach((node) => {
             const nodeId = _.get(node, 'id', '')
-            if (nodeId === 'member--clusters--') {
+            if (nodeId.startsWith('member--clusters--')) {
                 // only do this for Argo clusters
                 //cluster node, set search found clusters objects here
                 updateAppClustersMatchingSearch(node, clustersObjects)
@@ -1106,8 +1093,8 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
     }
     const nodeId = _.get(node, 'id', '')
     const nodeType = _.get(node, 'type', '')
-    const name = _.get(node, metadataName, '')
-    const namespace = _.get(node, metadataNamespace) || _.get(node, 'namespace', '')
+    const name = _.get(node, 'name', '')
+    const namespace = _.get(node, 'namespace', '')
 
     const isHookNode = _.get(node, 'specs.raw.hookType')
     const clusterNames = isHookNode ? ['local-cluster'] : R.split(',', getClusterName(nodeId, node, true))
@@ -1278,7 +1265,7 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
     // list of target namespaces per cluster
     const targetNamespaces = _.get(node, 'clusters.specs.targetNamespaces', {})
     const resourceName = _.get(node, 'name', '')
-    const resourceNamespace = _.get(node, metadataNamespace) || _.get(node, 'namespace', '')
+    const resourceNamespace = _.get(node, 'namespace', '')
     const resourceMap = _.get(node, `specs.${node.type}Model`, {})
 
     const clusterNames = R.split(',', getClusterName(node.id, node, true))
@@ -1723,7 +1710,7 @@ export const setApplicationDeployStatus = (node, details, t) => {
 
         //show error if no channel, meaning there is no linked subscription
         if (!isDeployableResource(node) && !_.get(node, 'specs.channels')) {
-            const appNS = _.get(node, metadataNamespace, 'NA')
+            const appNS = _.get(node, 'namespace', 'NA')
 
             details.push({
                 labelKey: t('Error'),
@@ -1907,7 +1894,7 @@ export const addNodeServiceLocation = (node, clusterName, targetNS, details) => 
 
 //generic function to write location info
 export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getDetailsFunction) => {
-    const resourceName = _.get(node, metadataName, '')
+    const resourceName = _.get(node, 'namespace', '')
     const resourceMap = _.get(node, `specs.${node.type}Model`, {})
 
     const locationDetails = []
