@@ -3,7 +3,6 @@
 import { makeStyles } from '@material-ui/styles'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { Text, TextContent, TextVariants, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
@@ -13,6 +12,7 @@ import { managedClustersState, policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { PolicySet, PolicySetResultCluster, PolicySetStatusResult } from '../../../../resources'
 import { usePolicySetClusterPolicyViolationsColumn } from '../../clusters/useClusterPolicyViolationsColumn'
+import { ClusterPolicyViolationIcons2 } from '../../components/ClusterPolicyViolations'
 import { useClusterViolationSummaryMap } from '../../overview/ClusterViolationSummary'
 
 const useStyles = makeStyles({
@@ -266,16 +266,10 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                             }
                         })
                         return (
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                {violationCount > 0 ? (
-                                    <ExclamationCircleIcon color="#C9190B" />
-                                ) : (
-                                    <CheckCircleIcon color="#3E8635" />
-                                )}
-                                <p
-                                    style={{ marginLeft: '.25rem' }}
-                                >{`${violationCount} of ${hasCompliance.length} in violation`}</p>
-                            </div>
+                            <ClusterPolicyViolationIcons2
+                                compliant={hasCompliance.length - violationCount}
+                                noncompliant={violationCount}
+                            />
                         )
                     }
                     return '-'
