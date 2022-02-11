@@ -1,43 +1,70 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicySet
 metadata:
-    name: policy-set-with-1-placement
+    name: my-policy-set-with-2-placements
     namespace: test
 spec:
-    description: Policy set with a single Placement and PlacementBinding.
+    description: Policy set with two Placements and PlacementBindings.
     policies:
-        - policy-set-with-1-placement-policy-1
-        - policy-set-with-1-placement-policy-2
+        name: my-policy-set-with-2-placements-policy-1
+        name: my-policy-set-with-2-placements-policy-2
 ---
 apiVersion: cluster.open-cluster-management.io/v1alpha1
 kind: Placement
 metadata:
-    name: policy-set-with-1-placement
+    name: my-policy-set-with-2-placements-1
     namespace: test
 spec:
     predicates:
-        - labelSelector:
-              matchLabels:
-                  local-cluster: 'true'
+        - requiredClusterSelector:
+              labelSelector:
+                  matchExpressions:
+                      - key: local-cluster
+                        operator: In
+                        values:
+                            - 'true'
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
-    name: policy-set-with-1-placement
+    name: my-policy-set-with-2-placements-1
     namespace: test
 placementRef:
-    name: policy-set-with-1-placement
+    name: my-policy-set-with-2-placements-1
     kind: Placement
     apiGroup: cluster.open-cluster-management.io
 subjects:
-    - name: policy-set-with-1-placement
+    - name: my-policy-set-with-2-placements
+      kind: PolicySet
+      apiGroup: policy.open-cluster-management.io
+---
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: Placement
+metadata:
+    name: my-policy-set-with-2-placements-2
+    namespace: test
+spec:
+    clusterSets:
+        - my-cluster-set
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+    name: my-policy-set-with-2-placements-2
+    namespace: test
+placementRef:
+    name: my-policy-set-with-2-placements-2
+    kind: Placement
+    apiGroup: cluster.open-cluster-management.io
+subjects:
+    - name: my-policy-set-with-2-placements
       kind: PolicySet
       apiGroup: policy.open-cluster-management.io
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-    name: policy-set-with-1-placement-policy-1
+    name: my-policy-set-with-2-placements-policy-1
     namespace: test
     annotations:
         policy.open-cluster-management.io/standards: NIST-CSF
@@ -51,7 +78,7 @@ spec:
               apiVersion: policy.open-cluster-management.io/v1
               kind: ConfigurationPolicy
               metadata:
-                  name: policy-set-with-1-placement-policy-1
+                  name: my-policy-set-with-2-placements-policy-1
               spec:
                   remediationAction: inform
                   severity: low
@@ -71,7 +98,7 @@ spec:
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-    name: policy-set-with-1-placement-policy-2
+    name: my-policy-set-with-2-placements-policy-2
     namespace: test
     annotations:
         policy.open-cluster-management.io/standards: NIST-CSF
@@ -85,7 +112,7 @@ spec:
               apiVersion: policy.open-cluster-management.io/v1
               kind: ConfigurationPolicy
               metadata:
-                  name: policy-set-with-1-placement-policy-2
+                  name: my-policy-set-with-2-placements-policy-2
               spec:
                   remediationAction: inform
                   severity: low

@@ -1,7 +1,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-    name: policy-with-2-placement-rules
+    name: my-policy-with-2-placement-rules
     namespace: test
     annotations:
         policy.open-cluster-management.io/standards: NIST-CSF
@@ -15,7 +15,7 @@ spec:
               apiVersion: policy.open-cluster-management.io/v1
               kind: ConfigurationPolicy
               metadata:
-                  name: policy-with-2-placement-rules
+                  name: my-policy-with-2-placement-rules
               spec:
                   remediationAction: inform
                   severity: low
@@ -35,21 +35,21 @@ spec:
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
-    name: policy-with-2-placement-rules-1
+    name: my-policy-with-2-placement-rules-1
     namespace: test
 placementRef:
-    name: policy-with-2-placement-rules-1
+    name: my-policy-with-2-placement-rules-1
     kind: PlacementRule
     apiGroup: apps.open-cluster-management.io
 subjects:
-    - name: policy-with-2-placement-rules
+    - name: my-policy-with-2-placement-rules
       kind: Policy
       apiGroup: policy.open-cluster-management.io
 ---
 apiVersion: apps.open-cluster-management.io/v1
 kind: PlacementRule
 metadata:
-    name: policy-with-2-placement-rules-1
+    name: my-policy-with-2-placement-rules-1
     namespace: test
 spec:
     clusterConditions:
@@ -65,21 +65,21 @@ spec:
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
-    name: policy-with-2-placement-rules-2
+    name: my-policy-with-2-placement-rules-2
     namespace: test
 placementRef:
-    name: policy-with-2-placement-rules-2
+    name: my-policy-with-2-placement-rules-2
     kind: PlacementRule
     apiGroup: apps.open-cluster-management.io
 subjects:
-    - name: policy-with-2-placement-rules
+    - name: my-policy-with-2-placement-rules
       kind: Policy
       apiGroup: policy.open-cluster-management.io
 ---
 apiVersion: apps.open-cluster-management.io/v1
 kind: PlacementRule
 metadata:
-    name: policy-with-2-placement-rules-2
+    name: my-policy-with-2-placement-rules-2
     namespace: test
 spec:
     clusterConditions:

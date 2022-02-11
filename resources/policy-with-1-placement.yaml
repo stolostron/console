@@ -1,7 +1,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-    name: policy-with-1-placement-rule
+    name: my-policy-with-1-placement
     namespace: test
     annotations:
         policy.open-cluster-management.io/standards: NIST-CSF
@@ -15,7 +15,7 @@ spec:
               apiVersion: policy.open-cluster-management.io/v1
               kind: ConfigurationPolicy
               metadata:
-                  name: policy-with-1-placement-rule
+                  name: my-policy-with-1-placement
               spec:
                   remediationAction: inform
                   severity: low
@@ -35,29 +35,28 @@ spec:
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
-    name: policy-with-1-placement-rule
+    name: my-policy-with-1-placement
     namespace: test
 placementRef:
-    name: policy-with-1-placement-rule
-    kind: PlacementRule
-    apiGroup: apps.open-cluster-management.io
+    name: my-policy-with-1-placement
+    kind: Placement
+    apiGroup: cluster.open-cluster-management.io
 subjects:
-    - name: policy-with-1-placement-rule
+    - name: my-policy-with-1-placement
       kind: Policy
       apiGroup: policy.open-cluster-management.io
 ---
-apiVersion: apps.open-cluster-management.io/v1
-kind: PlacementRule
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: Placement
 metadata:
-    name: policy-with-1-placement-rule
+    name: my-policy-with-1-placement
     namespace: test
 spec:
-    clusterConditions:
-        - status: 'True'
-          type: ManagedClusterConditionAvailable
-    clusterSelector:
-        matchExpressions:
-            - key: local-cluster
-              operator: In
-              values:
-                  - 'true'
+    numberOfClusters: 1
+    clusterSets:
+        - my-cluster-set
+    predicates:
+        - requiredClusterSelector:
+              labelSelector:
+                  matchLabels:
+                      abc: '123'
