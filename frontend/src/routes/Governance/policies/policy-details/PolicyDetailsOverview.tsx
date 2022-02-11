@@ -7,60 +7,61 @@ import moment from 'moment'
 import { Fragment, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { placementRulesState, placementsState } from '../../../../atoms'
+import { placementBindingsState, placementRulesState, placementsState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Placement, PlacementRule, Policy } from '../../../../resources'
+import { Placement, PlacementBinding, PlacementRule, PlacementRuleStatus, Policy } from '../../../../resources'
+import { Metadata } from '../../../../resources/metadata'
+import { Selector } from '../../../../resources/selector'
+import {
+    getPlacementBindingsForResource,
+    getPlacementRulesForResource,
+    getPlacementsForResource,
+} from '../../common/util'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
 
-function getPlacementMatch(placements: Placement[], policy: Policy) {
-    // TODO implement logic to find placement for policy...
-    const placement: any = undefined
-    console.debug(placements, policy)
-    return placement
-}
-
-function getPlacementRuleMatch(placementRules: PlacementRule[], policy: Policy) {
-    const placements = _.get(policy, 'status.placement', [])
-    const map = new Map()
-    let placementPolicy: any = undefined
-    if (policy.metadata.namespace) {
-        const response = placementRules.filter(
-            (rule: PlacementRule) => rule.metadata.namespace === policy.metadata.namespace
-        )
-        if (response) {
-            response.forEach((item) => map.set(item.metadata.name, item))
-        }
-    } else {
-        console.debug('Policy does not contain a namespace to get placementRules from:', policy.metadata.name ?? '')
-    }
-    placements.forEach((placement: { placementBinding: string; placementRule: string }[]) => {
-        const rule = _.get(placement, 'placementRule', '')
-        const pp = map.get(rule)
-        if (pp) {
-            const spec = pp.spec || {}
-            placementPolicy = {
-                clusterLabels: spec.clusterSelector,
-                metadata: pp.metadata,
-                raw: pp,
-                status: pp.status,
-                policy,
-            }
-        }
-    })
-    return placementPolicy
+interface PlacementTableData {
+    clusterLabels: Selector
+    metadata: Metadata
+    raw: PlacementRule | Placement
+    status: PlacementRuleStatus
+    policy: Policy
 }
 
 function renderPlacementTable(policy: Policy) {
     const { t } = useTranslation()
     const [placements] = useRecoilState(placementsState)
+    const [placementBindings] = useRecoilState(placementBindingsState)
     const [placementRules] = useRecoilState(placementRulesState)
-    const placementPolicy: PlacementRule = useMemo(
-        () => getPlacementRuleMatch(placementRules, policy),
-        [placementRules, policy]
-    )
-    const placement: Placement = useMemo(() => getPlacementMatch(placements, policy), [placementRules, policy])
+    const placementRuleMatches: PlacementTableData[] = useMemo(() => {
+        const bindings: PlacementBinding[] = getPlacementBindingsForResource(policy, placementBindings)
+        const placementRuleMatches: PlacementRule[] = getPlacementRulesForResource(policy, bindings, placementRules)
+        return placementRuleMatches.map((rule: PlacementRule) => {
+            return {
+                clusterLabels: rule.spec.clusterSelector ?? {},
+                metadata: rule.metadata,
+                raw: rule,
+                status: rule.status ?? {},
+                policy,
+            }
+        })
+    }, [placementBindings, placementRules, policy])
+
+    const placementMatches: PlacementTableData[] = useMemo(() => {
+        const bindings: PlacementBinding[] = getPlacementBindingsForResource(policy, placementBindings)
+        const placementMatches: Placement[] = getPlacementsForResource(policy, bindings, placements)
+        return placementMatches.map((placement: Placement) => {
+            return {
+                clusterLabels: {}, // TODO
+                metadata: placement.metadata,
+                raw: placement,
+                status: {}, // TODO
+                policy,
+            }
+        })
+    }, [placementBindings, placements, policy])
+
     const placementCols = useMemo(
         () => [
             {
@@ -192,23 +193,23 @@ function renderPlacementTable(policy: Policy) {
         []
     )
 
-    if (placement) {
+    if (placementMatches.length > 0) {
         return (
-            <AcmTable
+            <AcmTable<PlacementTableData>
                 key="cluster-placement-list"
                 plural={'placements'}
-                items={[placementPolicy]}
+                items={placementMatches}
                 columns={placementCols}
                 keyFn={(item) => item.metadata.uid!.toString()}
                 autoHidePagination={true}
             />
         )
-    } else if (!placement && placementPolicy) {
+    } else if (placementMatches.length === 0 && placementRuleMatches.length > 0) {
         return (
-            <AcmTable
+            <AcmTable<PlacementTableData>
                 key="cluster-placement-list"
                 plural={'placements'}
-                items={[placementPolicy]}
+                items={placementRuleMatches}
                 columns={placementCols}
                 keyFn={(item) => item.metadata.uid!.toString()}
                 autoHidePagination={true}

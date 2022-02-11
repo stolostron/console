@@ -7,13 +7,12 @@ import {
     PlacementRuleKind,
     Policy,
     PolicySet,
-    PolicySetKind,
 } from '../../../resources'
 
 export function getPlacementBindingsForResource(resource: Policy | PolicySet, placementBindings: PlacementBinding[]) {
     return placementBindings
         .filter((placementBinding) => placementBinding.metadata.namespace === resource.metadata.namespace)
-        .filter((placementBinding) => placementBinding.subjects?.find((subject) => subject.kind === PolicySetKind))
+        .filter((placementBinding) => placementBinding.subjects?.find((subject) => subject.kind === resource.kind))
         .filter((placementBinding) =>
             placementBinding.subjects?.find((subject) => subject.name === resource.metadata.name)
         )
