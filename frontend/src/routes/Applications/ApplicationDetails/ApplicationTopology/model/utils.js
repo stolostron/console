@@ -3,6 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 /* eslint no-param-reassign: "error" */
 import _ from 'lodash'
+import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
 
 const localClusterName = 'local-cluster'
 const metadataName = 'metadata.name'
@@ -107,4 +108,59 @@ export const addClusters = (
         specs: { isDesign: true },
     })
     return clusterId
+}
+
+export const getApplicationData = (nodes) => {
+    let subscriptionName = ''
+    let nbOfSubscriptions = 0
+    let resourceMustHavePods = false
+    const nodeTypes = []
+    const result = {}
+    let isArgoApp = false
+    const appNode = nodes.find((r) => r.type === 'application')
+    if (appNode) {
+        isArgoApp = _.get(appNode, ['specs', 'raw', 'apiVersion'], '').indexOf('argo') !== -1
+        result.isArgoApp = isArgoApp
+        //get argo app destination namespaces 'show_search':
+        if (isArgoApp) {
+            const applicationSetRef = _.get(appNode, ['specs', 'raw', 'metadata', 'ownerReferences'], []).find(
+                (owner) => owner.apiVersion.startsWith('argoproj.io/') && owner.kind === 'ApplicationSet'
+            )
+            if (applicationSetRef) {
+                result.applicationSet = applicationSetRef.name
+            }
+            let cluster = 'local-cluster'
+            const clusterNames = _.get(appNode, ['specs', 'cluster-names'], [])
+            if (clusterNames.length > 0) {
+                cluster = clusterNames[0]
+            }
+            result.cluster = cluster
+            result.source = _.get(appNode, ['specs', 'raw', 'spec', 'source'], {})
+        }
+    }
+    nodes.forEach((node) => {
+        const nodeType = _.get(node, 'type', '')
+        if (!(isArgoApp && _.includes(['application', 'cluster'], nodeType))) {
+            nodeTypes.push(nodeType) //ask for this related object type
+        }
+        if (nodeMustHavePods(node)) {
+            //request pods when asking for related resources, this resource can have pods
+            resourceMustHavePods = true
+        }
+        if (nodeType === 'subscription') {
+            subscriptionName = _.get(node, 'name', '')
+            nbOfSubscriptions = nbOfSubscriptions + 1
+        }
+    })
+
+    if (resourceMustHavePods) {
+        nodeTypes.push('pod')
+    }
+
+    //if only one subscription, ask for resources only related to that subscription
+    result.subscription = nbOfSubscriptions === 1 ? subscriptionName : null
+    //ask only for these type of resources since only those are displayed
+    result.relatedKinds = _.uniq(nodeTypes)
+
+    return result
 }
