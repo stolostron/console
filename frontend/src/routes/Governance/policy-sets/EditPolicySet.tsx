@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode } from '@patternfly-labs/react-form-wizard'
 import { PolicySetWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicySet/PolicySetWizard'
-import { useEffect, useMemo, useState } from 'react'
+import { AcmToastContext } from '@stolostron/ui-components'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -16,20 +17,22 @@ import {
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource, PlacementKind, PlacementRuleKind, PolicySetKind, updateResources } from '../../../resources'
+import { IResource, updateResources } from '../../../resources'
+import { getPlacementBindingsForResource, getPlacementRulesForResource, getPlacementsForResource } from '../common/util'
 
 export function EditPolicySet() {
     const { t } = useTranslation()
+    const toast = useContext(AcmToastContext)
+    const params: { namespace?: string; name?: string } = useParams()
     const history = useHistory()
+    const [policies] = useRecoilState(policiesState)
     const [policySets] = useRecoilState(policySetsState)
+    const [namespaces] = useRecoilState(namespacesState)
     const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [placementBindings] = useRecoilState(placementBindingsState)
-    const [namespaces] = useRecoilState(namespacesState)
-    const [policies] = useRecoilState(policiesState)
-    const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
-    const params: { namespace?: string; name?: string } = useParams()
+    const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
     const [resources, setResources] = useState<IResource[]>()
     useEffect(() => {
         const policySet = policySets.find(
@@ -39,30 +42,13 @@ export function EditPolicySet() {
             history.push(NavigationPath.policySets)
             return
         }
-        const policySetPlacementBindings = placementBindings
-            .filter((placementBinding) => placementBinding.metadata.namespace === policySet.metadata.namespace)
-            .filter((placementBinding) => placementBinding.subjects?.find((subject) => subject.kind === PolicySetKind))
-            .filter((placementBinding) =>
-                placementBinding.subjects?.find((subject) => subject.name === policySet.metadata.name)
-            )
-        const policySetPlacements = placements
-            .filter((placement) => placement.metadata.namespace === policySet.metadata.namespace)
-            .filter((placement) =>
-                policySetPlacementBindings.find(
-                    (placementBinding) =>
-                        placementBinding.placementRef.kind === PlacementKind &&
-                        placementBinding.placementRef.name === placement.metadata.name
-                )
-            )
-        const policySetPlacementRules = placementRules
-            .filter((placementRule) => placementRule.metadata.namespace === policySet.metadata.namespace)
-            .filter((placementRule) =>
-                policySetPlacementBindings.find(
-                    (placementBinding) =>
-                        placementBinding.placementRef.kind === PlacementRuleKind &&
-                        placementBinding.placementRef.name === placementRule.metadata.name
-                )
-            )
+        const policySetPlacementBindings = getPlacementBindingsForResource(policySet, placementBindings)
+        const policySetPlacements = getPlacementsForResource(policySet, policySetPlacementBindings, placements)
+        const policySetPlacementRules = getPlacementRulesForResource(
+            policySet,
+            policySetPlacementBindings,
+            placementRules
+        )
         setResources([policySet, ...policySetPlacements, ...policySetPlacementRules, ...policySetPlacementBindings])
     }, [])
 
@@ -73,17 +59,25 @@ export function EditPolicySet() {
     return (
         <PolicySetWizard
             title={t('Edit policy set')}
-            editMode={EditMode.Edit}
-            namespaces={namespaceNames}
             policies={policies}
+            namespaces={namespaceNames}
+            placements={placements}
+            placementRules={placementRules}
             clusterSetBindings={clusterSetBindings}
-            onCancel={() => history.push(NavigationPath.policySets)}
+            editMode={EditMode.Edit}
             resources={resources}
             onSubmit={(resources) =>
                 updateResources(resources as IResource[]).then(() => {
+                    toast.addAlert({
+                        title: t('Policy set updated'),
+                        message: t('{{name}} was successfully updated.', { name: 'TODO' }),
+                        type: 'success',
+                        autoClose: true,
+                    })
                     history.push(NavigationPath.policySets)
                 })
             }
+            onCancel={() => history.push(NavigationPath.policySets)}
         />
     )
 }

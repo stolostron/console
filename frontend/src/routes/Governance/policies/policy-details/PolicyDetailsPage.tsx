@@ -8,9 +8,9 @@ import { policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy } from '../../../../resources'
-import { getPolicyDetailSourceLabel } from '../util'
+import { getPolicyDetailSourceLabel } from '../../common/util'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
-import PolicyDetailsClusters from './PolicyDetailsResults'
+import PolicyDetailsResults from './PolicyDetailsResults'
 
 export default function PolicyDetailsPage() {
     const location = useLocation()
@@ -18,7 +18,7 @@ export default function PolicyDetailsPage() {
     const { t } = useTranslation()
     const [policies] = useRecoilState(policiesState)
 
-    // Comb the array to make formatting easier so we dont replace('/clusters') or replace('/templates') when policy name is clusters or templates
+    // Comb the array to make formatting easier for policy name & namespace identification
     const combedUrl = location.pathname.replace('/multicloud/governance/policies/', '')
     const urlArray = combedUrl.split('/')
 
@@ -32,7 +32,7 @@ export default function PolicyDetailsPage() {
     const detailsUrl = NavigationPath.policyDetails
         .replace(':namespace', policyNamespace as string)
         .replace(':name', policyName as string)
-    const clustersUrl = NavigationPath.policyDetailsResults
+    const resultsUrl = NavigationPath.policyDetailsResults
         .replace(':namespace', policyNamespace as string)
         .replace(':name', policyName as string)
 
@@ -62,11 +62,12 @@ export default function PolicyDetailsPage() {
                                 <Link to={detailsUrl}>{t('Details')}</Link>
                             </AcmSecondaryNavItem>
                             <AcmSecondaryNavItem isActive={isResultsTab}>
-                                <Link to={clustersUrl}>{t('Results')}</Link>
+                                <Link to={resultsUrl}>{t('Results')}</Link>
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
                     description={getPolicyDetailSourceLabel(selectedPolicy)}
+                    // TODO once edit policy wizard is done
                     // controls={
                     //     <Fragment>
                     //         <AcmButton
@@ -84,7 +85,7 @@ export default function PolicyDetailsPage() {
             <Suspense fallback={<Fragment />}>
                 <Switch>
                     <Route exact path={detailsUrl} render={() => <PolicyDetailsOverview policy={selectedPolicy} />} />
-                    <Route exact path={clustersUrl} render={() => <PolicyDetailsClusters policy={selectedPolicy} />} />
+                    <Route exact path={resultsUrl} render={() => <PolicyDetailsResults policy={selectedPolicy} />} />
                     {/* History page? */}
                     {/* <Route exact path={templatesUrl} render={() => <PolicyDetails />} /> */}
                 </Switch>
