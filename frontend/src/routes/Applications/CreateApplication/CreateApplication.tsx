@@ -1,17 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary } from '@stolostron/ui-components'
-import { PageSection } from '@patternfly/react-core'
-import { useHistory } from 'react-router'
-import { useMemo } from 'react'
-import { NavigationPath } from '../../../NavigationPath'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { useRecoilState } from 'recoil'
-import { isType } from '../../../lib/is-type'
-import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
-import { createResources, IResource, unpackProviderConnection } from '../../../resources'
-import moment from 'moment-timezone'
 import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
+import { PageSection } from '@patternfly/react-core'
+import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@stolostron/ui-components'
+import moment from 'moment-timezone'
+import { useMemo } from 'react'
+import { useHistory } from 'react-router'
+import { useRecoilState } from 'recoil'
+import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { isType } from '../../../lib/is-type'
+import { NavigationPath } from '../../../NavigationPath'
+import { createResources, IResource, unpackProviderConnection } from '../../../resources'
 const Portals = Object.freeze({
     editBtn: 'edit-button-portal-id',
     createBtn: 'create-button-portal-id',
@@ -86,15 +86,7 @@ export function CreateApplication() {
     const availableAnsibleCredentials = ansibleCredentials
         .map((ansibleCredential) => ansibleCredential.metadata.name)
         .filter(isType)
-    const availableGitChannels = gitChannels.map((gitChannel) => {
-        const { name, namespace } = gitChannel.metadata
-        const { pathname } = gitChannel.spec
-        return {
-            name: name || '',
-            namespace: namespace || '',
-            pathname: pathname || '',
-        }
-    })
+
     const currentTimeZone = moment.tz.guess(true)
     const timeZones = currentTimeZone
         ? [currentTimeZone, ...moment.tz.names().filter((e) => e !== currentTimeZone)]
@@ -116,7 +108,7 @@ export function CreateApplication() {
             }
             // gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
             // helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
-            subscriptionGitChannels={availableGitChannels}
+            channels={gitChannels as unknown as any}
             timeZones={timeZones}
         />
     )
