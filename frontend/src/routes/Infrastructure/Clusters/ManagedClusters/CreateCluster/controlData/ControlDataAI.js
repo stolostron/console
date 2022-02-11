@@ -80,7 +80,7 @@ export const controlDataCIM = [
         id: 'reviewFinish',
         type: 'review',
         title: 'Review and install',
-        nextButtonLabel: 'Save and install',
+        nextButtonLabel: 'Install cluster',
     },
 ]
 
