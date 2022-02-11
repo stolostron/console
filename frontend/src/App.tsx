@@ -42,7 +42,7 @@ import {
     Title,
 } from '@patternfly/react-core'
 import { CaretDownIcon, OpenshiftIcon, PlusCircleIcon, QuestionCircleIcon, RedhatIcon } from '@patternfly/react-icons'
-import logo from './assets/RHACM-Logo.svg?url'
+import logo from './assets/RHACM-Logo.svg'
 import { Fragment, lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
 import './App.css'
@@ -248,7 +248,7 @@ function UserDropdown() {
                         // location.assign(getBackendUrl() + '/login')
                         // location.assign('https://multicloud-console.apps.cs-aws-410-hr4pw.dev02.red-chesterfield.com/')
                         console.log('======Logout> ' + isAdmin + ' <=====')
-                        isAdmin ? (location.pathname = '/') : location.reload(true)
+                        isAdmin ? (location.pathname = '/') : location.reload()
                         // location.reload(true)
                         // location.assign(href)
                     }, delay)
