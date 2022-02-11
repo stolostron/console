@@ -28,7 +28,7 @@ import _ from 'lodash'
 import { REQUEST_STATUS } from './actions'
 import { Subscription } from '../../../../resources'
 import ResourceLabels from '../../components/ResourceLabels'
-import './ApplicationOverview.css'
+import '../../css/ApplicationOverview.css'
 import { TFunction } from 'i18next'
 import { getApplicationRepos, getAnnotation } from '../../Overview'
 

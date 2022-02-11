@@ -117,13 +117,13 @@
     color: #5a6872;
 }
 
-// Search resource link
+/* Search resource link */
 .details-item-link {
     color: #0066cc;
     text-decoration: none;
 }
 
-// Toggle subscriptions btn
+/* Toggle subscriptions btn */
 .toggle-subs-btn {
     width: 208px;
     height: 32px;
@@ -134,7 +134,7 @@
     font-weight: 600;
 }
 
-// Subscription cards
+/* Subscription cards */
 .sub-card-container {
     width: 100%;
     height: 6.75rem;
