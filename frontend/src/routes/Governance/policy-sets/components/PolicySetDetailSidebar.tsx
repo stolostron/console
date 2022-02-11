@@ -3,7 +3,6 @@
 import { makeStyles } from '@material-ui/styles'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import { Text, TextContent, TextVariants, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
@@ -12,6 +11,9 @@ import { useRecoilState } from 'recoil'
 import { managedClustersState, policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { PolicySet, PolicySetResultCluster, PolicySetStatusResult } from '../../../../resources'
+import { usePolicySetClusterPolicyViolationsColumn } from '../../clusters/useClusterPolicyViolationsColumn'
+import { ClusterPolicyViolationIcons2 } from '../../components/ClusterPolicyViolations'
+import { useClusterViolationSummaryMap } from '../../overview/ClusterViolationSummary'
 
 const useStyles = makeStyles({
     body: {
@@ -154,180 +156,141 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         return policies
     }, [policySet])
 
-    const clusterColumnDefs = [
-        {
-            header: t('Cluster name'),
-            search: (cluster: PolicySetResultCluster) => cluster.clusterName,
-            sort: (a: PolicySetResultCluster, b: PolicySetResultCluster) =>
-                /* istanbul ignore next */
-                compareStrings(a.clusterName, b.clusterName),
-            cell: (cluster: PolicySetResultCluster) => (
-                <a href={`/multicloud/infrastructure/clusters/details/${cluster.clusterName}/overview`}>
-                    {cluster.clusterName}
-                </a>
-            ),
-        },
-        {
-            header: t('Policy violation'),
-            sort: (a: PolicySetResultCluster, b: PolicySetResultCluster) => {
-                let violationCountA = 0
-                let violationCountB = 0
-                policySet.status?.results.forEach((result: PolicySetStatusResult) => {
-                    result?.clusters &&
-                        result.clusters.forEach((c: PolicySetResultCluster) => {
-                            if (c.clusterName === a.clusterName && a.compliant === 'NonCompliant') {
-                                violationCountA++
-                            } else if (c.clusterName === b.clusterName && b.compliant === 'NonCompliant') {
-                                violationCountB++
-                            }
-                        })
-                })
-                return compareNumbers(violationCountA, violationCountB)
-            },
-            cell: (cluster: PolicySetResultCluster) => {
-                let violationCount = 0
-                let totalPolicySetPoliciesOnCluster = 0
-                // Get total count of policy violations for a specific cluster
-                policySet.status?.results.forEach((result: PolicySetStatusResult) => {
-                    result?.clusters &&
-                        result.clusters.forEach((c: PolicySetResultCluster) => {
-                            if (c.clusterName === cluster.clusterName && c.compliant) {
-                                if (c.compliant === 'NonCompliant') {
-                                    violationCount++
-                                }
-                                totalPolicySetPoliciesOnCluster++
-                            }
-                        })
-                })
-                if (totalPolicySetPoliciesOnCluster === 0) {
-                    return '-'
-                }
-                return (
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        {violationCount > 0 ? (
-                            <ExclamationCircleIcon color="#C9190B" />
-                        ) : (
-                            <CheckCircleIcon color="#3E8635" />
-                        )}
-                        <p
-                            style={{ marginLeft: '.25rem' }}
-                        >{`${violationCount} of ${totalPolicySetPoliciesOnCluster} in violation`}</p>
-                    </div>
-                )
-            },
-        },
-        {
-            header: t('Labels'),
-            cell: (clusterInfo: PolicySetResultCluster) => {
-                const cluster = managedClusters.find((cluster) => cluster.metadata.name === clusterInfo.clusterName)
-                if (cluster && cluster.metadata.labels) {
-                    const labelKeys = Object.keys(cluster.metadata.labels)
-                    const collapse =
-                        [
-                            'clusterID',
-                            'installer.name',
-                            'installer.namespace',
-                            'name',
-                            'vendor',
-                            'managed-by',
-                            'local-cluster',
-                            'openshiftVersion',
-                        ].filter((label) => {
-                            return labelKeys.includes(label)
-                        }) ?? []
-                    /* istanbul ignore next */
-                    labelKeys.forEach((label) => {
-                        if (label.includes('open-cluster-management.io')) {
-                            collapse.push(label)
-                        }
-                    })
-                    return (
-                        <AcmLabels
-                            labels={cluster.metadata.labels}
-                            expandedText={t('show.less')}
-                            collapsedText={t('show.more', { number: collapse.length })}
-                            allCollapsedText={t('count.labels', { number: collapse.length })}
-                            collapse={collapse}
-                        />
-                    )
-                } else {
-                    /* istanbul ignore next */
-                    return '-'
-                }
-            },
-        },
-    ]
+    const clusterViolationSummaryMap = useClusterViolationSummaryMap(
+        policies.filter(
+            (policy) =>
+                policy.metadata.namespace === policySet.metadata.namespace &&
+                policySetPolicies.find((p) => p.policy === policy.metadata.name)
+        )
+    )
+    const clusterPolicyViolationsColumn = usePolicySetClusterPolicyViolationsColumn(clusterViolationSummaryMap)
 
-    const policyColumnDefs = [
-        {
-            header: t('Policy name'),
-            search: (policy: PolicySetStatusResult) => policy.policy,
-            sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) =>
-                /* istanbul ignore next */
-                compareStrings(a.policy, b.policy),
-            cell: (policy: PolicySetStatusResult) => {
-                // TODO after policydetails page is added
-                // <a href={`/multicloud/governance/policies/${policy.policy}`}>{policy.policy}</a>
-                return policy.policy
+    const clusterColumnDefs = useMemo(
+        () => [
+            {
+                header: t('Cluster name'),
+                search: (cluster: PolicySetResultCluster) => cluster.clusterName,
+                sort: (a: PolicySetResultCluster, b: PolicySetResultCluster) =>
+                    /* istanbul ignore next */
+                    compareStrings(a.clusterName, b.clusterName),
+                cell: (cluster: PolicySetResultCluster) => (
+                    <a href={`/multicloud/infrastructure/clusters/details/${cluster.clusterName}/overview`}>
+                        {cluster.clusterName}
+                    </a>
+                ),
             },
-        },
-        {
-            header: t('Cluster violation'),
-            sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) => {
-                let violationCountA = 0
-                let violationCountB = 0
-                a?.clusters?.forEach((c: PolicySetResultCluster) => {
-                    if (c.compliant === 'NonCompliant') {
-                        violationCountA++
+            clusterPolicyViolationsColumn,
+            {
+                header: t('Labels'),
+                cell: (clusterInfo: PolicySetResultCluster) => {
+                    const cluster = managedClusters.find((cluster) => cluster.metadata.name === clusterInfo.clusterName)
+                    if (cluster && cluster.metadata.labels) {
+                        const labelKeys = Object.keys(cluster.metadata.labels)
+                        const collapse =
+                            [
+                                'clusterID',
+                                'installer.name',
+                                'installer.namespace',
+                                'name',
+                                'vendor',
+                                'managed-by',
+                                'local-cluster',
+                                'openshiftVersion',
+                            ].filter((label) => {
+                                return labelKeys.includes(label)
+                            }) ?? []
+                        /* istanbul ignore next */
+                        labelKeys.forEach((label) => {
+                            if (label.includes('open-cluster-management.io')) {
+                                collapse.push(label)
+                            }
+                        })
+                        return (
+                            <AcmLabels
+                                labels={cluster.metadata.labels}
+                                expandedText={t('show.less')}
+                                collapsedText={t('show.more', { number: collapse.length })}
+                                allCollapsedText={t('count.labels', { number: collapse.length })}
+                                collapse={collapse}
+                            />
+                        )
+                    } else {
+                        /* istanbul ignore next */
+                        return '-'
                     }
-                })
-                b?.clusters?.forEach((c: PolicySetResultCluster) => {
-                    if (c.compliant === 'NonCompliant') {
-                        violationCountB++
-                    }
-                })
-                return compareNumbers(violationCountA, violationCountB)
+                },
             },
-            cell: (policy: PolicySetStatusResult) => {
-                let violationCount = 0
-                // Get total count of cluster violations for a specific policy
-                const hasCompliance = policy?.clusters?.filter((cluster) => cluster.compliant) ?? []
-                if (hasCompliance.length > 0) {
-                    hasCompliance.forEach((c: PolicySetResultCluster) => {
+        ],
+        [clusterPolicyViolationsColumn]
+    )
+
+    const policyColumnDefs = useMemo(
+        () => [
+            {
+                header: t('Policy name'),
+                search: (policy: PolicySetStatusResult) => policy.policy,
+                sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) =>
+                    /* istanbul ignore next */
+                    compareStrings(a.policy, b.policy),
+                cell: (policy: PolicySetStatusResult) => {
+                    // TODO after policydetails page is added
+                    // <a href={`/multicloud/governance/policies/${policy.policy}`}>{policy.policy}</a>
+                    return policy.policy
+                },
+            },
+            {
+                header: t('Cluster violation'),
+                sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) => {
+                    let violationCountA = 0
+                    let violationCountB = 0
+                    a?.clusters?.forEach((c: PolicySetResultCluster) => {
                         if (c.compliant === 'NonCompliant') {
-                            violationCount++
+                            violationCountA++
                         }
                     })
-                    return (
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            {violationCount > 0 ? (
-                                <ExclamationCircleIcon color="#C9190B" />
-                            ) : (
-                                <CheckCircleIcon color="#3E8635" />
-                            )}
-                            <p
-                                style={{ marginLeft: '.25rem' }}
-                            >{`${violationCount} of ${hasCompliance.length} in violation`}</p>
-                        </div>
-                    )
-                }
-                return '-'
+                    b?.clusters?.forEach((c: PolicySetResultCluster) => {
+                        if (c.compliant === 'NonCompliant') {
+                            violationCountB++
+                        }
+                    })
+                    return compareNumbers(violationCountA, violationCountB)
+                },
+                cell: (policy: PolicySetStatusResult) => {
+                    let violationCount = 0
+                    // Get total count of cluster violations for a specific policy
+                    const hasCompliance = policy?.clusters?.filter((cluster) => cluster.compliant) ?? []
+                    if (hasCompliance.length > 0) {
+                        hasCompliance.forEach((c: PolicySetResultCluster) => {
+                            if (c.compliant === 'NonCompliant') {
+                                violationCount++
+                            }
+                        })
+                        return (
+                            <ClusterPolicyViolationIcons2
+                                compliant={hasCompliance.length - violationCount}
+                                noncompliant={violationCount}
+                            />
+                        )
+                    }
+                    return '-'
+                },
             },
-        },
-        {
-            header: t('Remediation'),
-            sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) => {
-                const policyA = policies.find((p) => p.metadata.name === a.policy)
-                const policyB = policies.find((p) => p.metadata.name === b.policy)
-                /* istanbul ignore next */
-                return compareStrings(policyA?.spec.remediationAction, policyB?.spec.remediationAction)
+            {
+                header: t('Remediation'),
+                sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) => {
+                    const policyA = policies.find((p) => p.metadata.name === a.policy)
+                    const policyB = policies.find((p) => p.metadata.name === b.policy)
+                    /* istanbul ignore next */
+                    return compareStrings(policyA?.spec.remediationAction, policyB?.spec.remediationAction)
+                },
+                cell: (policyStatus: PolicySetStatusResult) => {
+                    const policy = policies.find((p) => p.metadata.name === policyStatus.policy)
+                    return policy?.spec.remediationAction ?? '-'
+                },
             },
-            cell: (policyStatus: PolicySetStatusResult) => {
-                const policy = policies.find((p) => p.metadata.name === policyStatus.policy)
-                return policy?.spec.remediationAction ?? '-'
-            },
-        },
-    ]
+        ],
+        []
+    )
 
     return (
         <div className={classes.body}>

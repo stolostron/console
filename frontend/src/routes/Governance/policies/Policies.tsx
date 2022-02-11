@@ -20,13 +20,13 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
 import { NavigationPath } from '../../../NavigationPath'
 import { patchResource, Policy, PolicyApiVersion, PolicyKind, PolicySet, ResourceErrorCode } from '../../../resources'
+import { PolicySetList } from '../common/util'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
 import {
     PolicyClusterViolationSummaryMap,
     usePolicyClusterViolationSummaryMap,
 } from '../overview/PolicyViolationSummary'
-import { PolicySetList } from './util'
 
 export default function PoliciesPage() {
     const [policiesSource] = useRecoilState(policiesState)
