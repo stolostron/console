@@ -81,7 +81,6 @@ export function ApplicationOverviewPageContent(props: { name: string; namespace:
         },
     })
     const creationTimestamp = getShortDateTime(_.get(selectedApplication[0], 'metadata.creationTimestamp'))
-    debugger
     const manualSyncTimestamp = getShortDateTime(
         getAnnotation(subsList[0] as Subscription, manualRefreshTimeAnnotationStr) as string
     )
