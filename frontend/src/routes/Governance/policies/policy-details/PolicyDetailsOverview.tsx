@@ -7,10 +7,17 @@ import moment from 'moment'
 import { Fragment, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { placementBindingsState, placementRulesState, placementsState } from '../../../../atoms'
+import { placementBindingsState, placementRulesState, placementsState, policySetsState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Placement, PlacementBinding, PlacementRule, PlacementRuleStatus, Policy } from '../../../../resources'
+import {
+    Placement,
+    PlacementBinding,
+    PlacementRule,
+    PlacementRuleStatus,
+    Policy,
+    PolicySet,
+} from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
 import { Selector } from '../../../../resources/selector'
 import {
@@ -32,10 +39,27 @@ interface PlacementTableData {
 function renderPlacementTable(policy: Policy) {
     const { t } = useTranslation()
     const [placements] = useRecoilState(placementsState)
+    const [policySets] = useRecoilState(policySetsState)
     const [placementBindings] = useRecoilState(placementBindingsState)
     const [placementRules] = useRecoilState(placementRulesState)
+
+    // Need to get bindings for all policysets a policy is included in
+    const associatedPolicySets = policySets.filter(
+        (set: PolicySet) =>
+            set.metadata.namespace === policy.metadata.namespace && set.spec.policies.includes(policy.metadata.name!)
+    )
+
     const placementRuleMatches: PlacementTableData[] = useMemo(() => {
-        const bindings: PlacementBinding[] = getPlacementBindingsForResource(policy, placementBindings)
+        let bindings: PlacementBinding[] = []
+        if (associatedPolicySets.length > 0) {
+            associatedPolicySets.forEach((ps: PolicySet) =>
+                getPlacementBindingsForResource(ps, placementBindings).forEach((binding: PlacementBinding) =>
+                    bindings.push(binding)
+                )
+            )
+        } else {
+            bindings = getPlacementBindingsForResource(policy, placementBindings)
+        }
         const placementRuleMatches: PlacementRule[] = getPlacementRulesForResource(policy, bindings, placementRules)
         return placementRuleMatches.map((rule: PlacementRule) => {
             return {
@@ -49,7 +73,16 @@ function renderPlacementTable(policy: Policy) {
     }, [placementBindings, placementRules, policy])
 
     const placementMatches: PlacementTableData[] = useMemo(() => {
-        const bindings: PlacementBinding[] = getPlacementBindingsForResource(policy, placementBindings)
+        let bindings: PlacementBinding[] = []
+        if (associatedPolicySets.length > 0) {
+            associatedPolicySets.forEach((ps: PolicySet) =>
+                getPlacementBindingsForResource(ps, placementBindings).forEach((binding: PlacementBinding) =>
+                    bindings.push(binding)
+                )
+            )
+        } else {
+            bindings = getPlacementBindingsForResource(policy, placementBindings)
+        }
         const placementMatches: Placement[] = getPlacementsForResource(policy, bindings, placements)
         return placementMatches.map((placement: Placement) => {
             return {
@@ -66,19 +99,19 @@ function renderPlacementTable(policy: Policy) {
         () => [
             {
                 header: 'Cluster selector',
-                cell: (item: any) => {
-                    const labels = _.get(item, 'clusterLabels')
+                cell: (item: PlacementTableData) => {
+                    const labels = item.clusterLabels
                     if (!labels || Object.keys(labels).length === 0) {
                         return '-'
                     }
-                    return _.map(labels, (_, key) => {
-                        return <p key={key}>{`${key}=${JSON.stringify(labels[key])}`}</p>
+                    return Object.keys(labels).map((key) => {
+                        return <p key={key}>{`${key}=${JSON.stringify(labels[key as keyof Selector])}`}</p>
                     })
                 },
             },
             {
                 header: 'Clusters',
-                cell: (item: any) => {
+                cell: (item: PlacementTableData) => {
                     const decisions = _.get(item, 'status.decisions', undefined)
                     if (decisions) {
                         return decisions.map(
@@ -90,7 +123,7 @@ function renderPlacementTable(policy: Policy) {
             },
             {
                 header: 'Compliance',
-                cell: (item: any) => {
+                cell: (item: PlacementTableData) => {
                     // Gather full cluster list from placementPolicy status
                     const fullClusterList = _.get(item, 'status.decisions', [])
                     // Gather status list from policy status
