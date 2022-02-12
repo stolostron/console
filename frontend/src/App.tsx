@@ -41,7 +41,16 @@ import {
     TextListItem,
     Title,
 } from '@patternfly/react-core'
-import { CaretDownIcon, OpenshiftIcon, PlusCircleIcon, QuestionCircleIcon, RedhatIcon } from '@patternfly/react-icons'
+import {
+    CaretDownIcon,
+    CodeIcon,
+    CogsIcon,
+    OpenshiftIcon,
+    PlusCircleIcon,
+    QuestionCircleIcon,
+    RedhatIcon,
+} from '@patternfly/react-icons'
+import ACMPerspectiveIcon from './assets/ACM-icon.svg'
 import logo from './assets/RHACM-Logo.svg'
 import { Fragment, lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
@@ -102,12 +111,17 @@ function apiNoJSON(url: string, headers?: Record<string, unknown>): Promise<unkn
     })
 }
 
-function launchToOCP(urlSuffix: string) {
+function launchToOCP(urlSuffix: string, newTab: boolean = true) {
     api<{ data: { consoleURL: string } }>(
         '/multicloud/api/v1/namespaces/openshift-config-managed/configmaps/console-public/'
     )
         .then(({ data }) => {
-            window.open(`${data.consoleURL}/${urlSuffix}`)
+            if (newTab) {
+                window.open(`${data.consoleURL}/${urlSuffix}`)
+            } else {
+                location.href = `${data.consoleURL}/${urlSuffix}`
+            }
+            // window.open(`${data.consoleURL}/${urlSuffix}`)
         })
         .catch((error) => {
             // eslint-disable-next-line no-console
@@ -213,7 +227,6 @@ function UserDropdown() {
     }
 
     function logout() {
-        console.log('***** starting logout function')
         // Get username so we know if user is kube:admin
         let admin = false
         const userResp = getUsername()
@@ -239,29 +252,17 @@ function UserDropdown() {
                 console.error(error)
             })
         const logoutUrl = getBackendUrl() + '/logout'
-        console.log(location.href)
-        console.log(location.origin)
+
         apiNoJSON(logoutUrl)
             .then(() => {
                 const onLogout = (delay = 0, isAdmin = false) => {
                     return setTimeout(() => {
-                        // location.assign(getBackendUrl() + '/login')
-                        // location.assign('https://multicloud-console.apps.cs-aws-410-hr4pw.dev02.red-chesterfield.com/')
-                        console.log('======Logout> ' + isAdmin + ' <=====')
                         isAdmin ? (location.pathname = '/') : location.reload()
-                        // location.reload(true)
-                        // location.assign(href)
                     }, delay)
                 }
-                console.log('****** admin flag=')
-                console.dir(admin)
-                console.log('****** end debug')
                 if (admin) {
                     // strip the oauthTokenEndpoint back to just the domain host to create the oauth logout endpoint
                     const adminLogoutPath = oauthTokenEndpoint.substring(0, oauthTokenEndpoint.length - 12) + '/logout'
-                    console.log('>****** kube:admin logout url')
-                    console.log(adminLogoutPath)
-                    console.log('<*******')
                     const form = document.createElement('form')
                     form.target = 'hidden-form'
                     form.method = 'POST'
@@ -271,12 +272,6 @@ function UserDropdown() {
                     iframe.name = 'hidden-form'
                     iframe.onload = () => onLogout(500, admin)
                     document.body.appendChild(iframe)
-
-                    // const input = document.createElement('input')
-                    // input.type = 'hidden'
-                    // input.name = 'then'
-                    // input.value = location.origin + '/'
-                    // form.appendChild(input)
                     document.body.appendChild(form)
                     form.submit()
                 } else {
@@ -355,6 +350,44 @@ function AboutContent() {
 const useStyles = makeStyles({
     about: {
         height: 'min-content',
+    },
+    perspective: {
+        'font-size': '$co-side-nav-font-size',
+        'justify-content': 'space-between',
+        width: '100%',
+
+        '& .pf-c-dropdown__toggle-icon': {
+            color: 'var(--pf-global--Color--light-100)',
+            'font-size': '$co-side-nav-section-font-size',
+            'margin-right': 'var(--pf-c-dropdown__toggle-icon--MarginRight)',
+            'margin-left': 'var(--pf-c-dropdown__toggle-icon--MarginLeft)',
+            'line-height': 'var(--pf-c-dropdown__toggle-icon--LineHeight)',
+        },
+
+        '& .pf-c-dropdown__menu-item': {
+            'padding-left': '7px',
+            '& h2': {
+                'font-size': '12px',
+                'padding-left': '7px',
+            },
+        },
+
+        '& .pf-c-title': {
+            color: 'var(--pf-global--Color--light-100)',
+            'font-family': 'var(--pf-global--FontFamily--sans-serif)',
+            '& .oc-nav-header__icon': {
+                'margin-right': 'var(--pf-global--spacer--sm)',
+                'vertical-align': '-0.125em',
+            },
+            '& h2': {
+                'font-size': '$co-side-nav-section-font-size',
+                'font-family': 'var(--pf-global--FontFamily--sans-serif)',
+            },
+        },
+
+        '&::before': {
+            border: 'none',
+        },
     },
 })
 
@@ -642,10 +675,17 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
     const { routes } = props
     const location = useLocation()
     const [open, setOpen] = useState(false)
+    const classes = useStyles()
     const dropdownItems = [
-        <DropdownItem key="cluster-management">Cluster Management</DropdownItem>,
-        <DropdownItem key="administrator">Administrator</DropdownItem>,
-        <DropdownItem key="developer">Developer</DropdownItem>,
+        <DropdownItem icon={<ACMPerspectiveIcon />} key="cluster-management">
+            Cluster Management
+        </DropdownItem>,
+        <DropdownItem icon={<CogsIcon />} key="administrator" onClick={() => launchToOCP('?perspective=admin', false)}>
+            Administrator
+        </DropdownItem>,
+        <DropdownItem icon={<CodeIcon />} key="developer" onClick={() => launchToOCP('?perspective=dev', false)}>
+            Developer
+        </DropdownItem>,
     ]
     const onToggle = useCallback(() => {
         setOpen((open) => !open)
@@ -662,11 +702,15 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                     </Nav>
                     <PageSection variant="dark" style={{ paddingLeft: 8, paddingRight: 8 }}>
                         <Dropdown
-                            isPlain
                             onSelect={onSelect}
                             toggle={
-                                <DropdownToggle id="toggle-id" onToggle={onToggle}>
-                                    Cluster Management
+                                <DropdownToggle id="toggle-id" onToggle={onToggle} className={classes.perspective}>
+                                    <Title headingLevel="h2" size="md">
+                                        <span style={{ fill: 'currentColor' }} className="oc-nav-header__icon">
+                                            <ACMPerspectiveIcon />
+                                        </span>
+                                        Cluster Management
+                                    </Title>
                                 </DropdownToggle>
                             }
                             isOpen={open}
