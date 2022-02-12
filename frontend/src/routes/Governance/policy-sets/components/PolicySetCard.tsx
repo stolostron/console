@@ -16,7 +16,7 @@ import { AcmDrawerContext } from '@stolostron/ui-components'
 import { useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ConfirmModal, IConfirmModalProps } from '../../../../components/ConfirmModal'
-import { useTranslation } from '../../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { deleteResource, PolicySet, ResourceErrorCode } from '../../../../resources'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
@@ -128,7 +128,12 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                                             })
                                         },
                                         confirmText: 'Delete',
-                                        message: t('Delete message'),
+                                        message:
+                                            <Trans
+                                                i18nKey={t('Are you sure you want to delete <emphasis>{{name}}</emphasis>  in namespace <emphasis>{{namespace}}</emphasis>?')}
+                                                components={{ emphasis: <em /> }}
+                                                values={{ name: policySet.metadata.name, namespace: policySet.metadata.namespace }}
+                                            />,
                                         isDanger: true,
                                         cancel: () => {
                                             setModalProps({
