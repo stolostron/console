@@ -128,12 +128,18 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                                             })
                                         },
                                         confirmText: 'Delete',
-                                        message:
+                                        message: (
                                             <Trans
-                                                i18nKey={t('Are you sure you want to delete <emphasis>{{name}}</emphasis>  in namespace <emphasis>{{namespace}}</emphasis>?')}
+                                                i18nKey={t(
+                                                    'Are you sure you want to delete <emphasis>{{name}}</emphasis>  in namespace <emphasis>{{namespace}}</emphasis>?'
+                                                )}
                                                 components={{ emphasis: <em /> }}
-                                                values={{ name: policySet.metadata.name, namespace: policySet.metadata.namespace }}
-                                            />,
+                                                values={{
+                                                    name: policySet.metadata.name,
+                                                    namespace: policySet.metadata.namespace,
+                                                }}
+                                            />
+                                        ),
                                         isDanger: true,
                                         cancel: () => {
                                             setModalProps({
