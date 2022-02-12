@@ -111,7 +111,7 @@ function apiNoJSON(url: string, headers?: Record<string, unknown>): Promise<unkn
     })
 }
 
-function launchToOCP(urlSuffix: string, newTab: boolean = true) {
+function launchToOCP(urlSuffix: string, newTab: boolean) {
     api<{ data: { consoleURL: string } }>(
         '/multicloud/api/v1/namespaces/openshift-config-managed/configmaps/console-public/'
     )
@@ -121,7 +121,6 @@ function launchToOCP(urlSuffix: string, newTab: boolean = true) {
             } else {
                 location.href = `${data.consoleURL}/${urlSuffix}`
             }
-            // window.open(`${data.consoleURL}/${urlSuffix}`)
         })
         .catch((error) => {
             // eslint-disable-next-line no-console
@@ -532,7 +531,7 @@ function AppHeader() {
                 isExternal
                 icon={<OpenshiftIcon style={{ color: '#EE0000' }} />}
                 component="button"
-                onClick={() => launchToOCP('')}
+                onClick={() => launchToOCP('', true)}
             >
                 Red Hat Openshift Container Platform
             </ApplicationLauncherItem>
@@ -625,7 +624,7 @@ function AppHeader() {
                     <AppSwitcherTopBar></AppSwitcherTopBar>
                     <Button
                         aria-label="create-button"
-                        onClick={() => launchToOCP('k8s/all-namespaces/import')}
+                        onClick={() => launchToOCP('k8s/all-namespaces/import', true)}
                         variant="link"
                         icon={<PlusCircleIcon style={{ color: '#EDEDED' }} />}
                     />
