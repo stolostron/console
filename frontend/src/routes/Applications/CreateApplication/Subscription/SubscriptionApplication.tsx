@@ -14,8 +14,9 @@ import { createCluster } from '../../../../lib/create-cluster'
 // Template Data
 import { controlData } from './controlData/ControlData'
 import createTemplate from './templates/template.hbs'
-// import gitTemplate from './templates/templateGit.hbs'
-// import helmTemplate from './templates/templateHelm.hbs'
+import gitTemplate from './templates/templateGit.hbs'
+import helmTemplate from './templates/templateHelm.hbs'
+import ObjTemplate from './templates/templateObjectStore.hbs'
 
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
@@ -114,15 +115,16 @@ export function CreateSubscriptionApplication() {
     const pauseCreate = () => {}
 
     // setup translation
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation()
     const i18n = (key: any, arg: any) => {
         return t(key, arg)
     }
 
     //compile template
     const template = Handlebars.compile(createTemplate)
-    // Handlebars.registerPartial('templateGit', Handlebars.compile(gitTemplate))
-    // Handlebars.registerPartial('templateHelm', Handlebars.compile(helmTemplate))
+    Handlebars.registerPartial('templateGit', Handlebars.compile(gitTemplate))
+    Handlebars.registerPartial('templateHelm', Handlebars.compile(helmTemplate))
+    Handlebars.registerPartial('templateObjectStore', Handlebars.compile(ObjTemplate))
 
     return (
         <TemplateEditor

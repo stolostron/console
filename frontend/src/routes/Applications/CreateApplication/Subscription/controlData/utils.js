@@ -13,9 +13,8 @@
 
 import React from 'react'
 // import msgs from '../../../../nls/platform.properties'
-// import { HCMAnsibleTower, HCMChannelList } from '../../../../lib/client/queries'
-// import apolloClient from '../../../../lib/client/apollo-client'
 import { RESOURCE_TYPES } from '../../../../lib/shared/constants'
+import { listChannels } from '../../../../../resources'
 // import SharedResourceWarning from '../components/SharedResourceWarning'
 
 import _ from 'lodash'
@@ -26,7 +25,9 @@ const localClusterCheckbox = 'local-cluster-checkbox'
 
 export const loadExistingChannels = (type) => {
     return {
-        query: HCMChannelList,
+        query: () => {
+            return listChannels().promise
+        },
         loadingDesc: 'creation.app.loading.channels',
         setAvailable: setAvailableChannelSpecs.bind(null, type),
     }
@@ -545,37 +546,68 @@ export const channelSimplified = (value, control) => {
 export const setAvailableChannelSpecs = (type, control, result) => {
     const { loading } = result
     const { data = {} } = result
-    const { items } = data
+    const channels = data
     control.available = []
     control.availableMap = {}
     control.isLoading = false
-    const error = items ? null : result.error
-    if (error) {
-        control.isFailed = true
-    } else if (items) {
-        const keyFn = (item) => {
-            return `${_.get(item, 'objectPath', '')} [${_.get(item, 'metadata.namespace', 'ns')}/${_.get(
-                item,
-                'metadata.name',
-                'name'
-            )}]`
-        }
-        control.availableData = _.keyBy(
-            items
-                .filter(({ type: p }) => {
-                    return p.toLowerCase().startsWith(type)
-                })
-                .filter(({ objectPath: path }) => {
-                    return !path.toLowerCase().includes('multiclusterhub-repo.open-cluster-management')
-                }),
-            keyFn
-        )
-        control.available = _.map(Object.values(control.availableData), keyFn).sort()
-    } else {
-        control.isLoading = loading
+    const error = channels ? null : result.error
+    if (!control.available) {
+        control.available = []
+        control.availableMap = {}
     }
-    return control
+    if (control.available.length === 0 && (error || channels)) {
+        if (error) {
+            control.isFailed = true
+        } else if (channels) {
+            control.isLoaded = true
+            const keyFn = (channel) => {
+                return `${_.get(channel, 'spec.pathname', '')} [${_.get(channel, 'metadata.namespace', 'ns')}/${_.get(
+                    channel,
+                    'metadata.name',
+                    'name'
+                )}]`
+            }
+            control.availableData = _.keyBy(
+                _.filter(channels, (channel) => {
+                    return channel.spec.type.toLowerCase().startsWith(type)
+                }),
+                keyFn
+            )
+            // TODO
+            control.available = _.map(Object.values(control.availableData), keyFn).sort()
+        } else {
+            control.isLoading = loading
+        }
+        return control
+    }
 }
+
+// export const setAvailableNSSpecs = (control, result) => {
+//     const { loading } = result
+//     const { data } = result
+//     const namespaces = data
+//     control.isLoading = false
+//     const error = namespaces ? null : result.error
+//     if (!control.available) {
+//         control.available = []
+//         control.availableMap = {}
+//     }
+//     if (control.available.length === 0 && (error || namespaces)) {
+//         if (error) {
+//             control.isFailed = true
+//         } else if (namespaces) {
+//             control.isLoaded = true
+//             namespaces.forEach((item) => {
+//                 const { metadata } = item
+//                 const name = metadata?.name
+//                 control.available.push(name)
+//             })
+//             control.available.sort()
+//         }
+//     } else {
+//         control.isLoading = loading
+//     }
+// }
 
 export const setAvailableSecrets = (control, result) => {
     const { loading } = result

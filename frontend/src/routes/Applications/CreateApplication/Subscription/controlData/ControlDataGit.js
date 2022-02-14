@@ -127,7 +127,7 @@ export const reverseSubReconcileRate = (control, templateObject) => {
     return control
 }
 
-const githubChannelData = async () => [
+const githubChannelData = [
     ///////////////////////  github  /////////////////////////////////////
     {
         id: 'channelNamespaceExists',
@@ -153,7 +153,7 @@ const githubChannelData = async () => [
         placeholder: 'app.enter.select.github.url',
         available: [],
         validation: VALIDATE_URL,
-        // fetchAvailable: loadExistingChannels('git'),
+        fetchAvailable: loadExistingChannels('git'),
         reverse: 'Channel[0].spec.pathname',
         onSelect: updateChannelControls,
         simplified: channelSimplified,

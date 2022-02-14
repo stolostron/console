@@ -14,9 +14,9 @@
 import { VALIDATE_URL } from 'temptifly'
 import { loadExistingChannels, updateChannelControls, channelSimplified } from './utils'
 
-import placementData from './ControlDataPlacement'
+// import placementData from './ControlDataPlacement'
 
-const helmReleaseChannelData = async () => [
+const helmReleaseChannelData = [
     ///////////////////////  HelmRelease  /////////////////////////////////////
     {
         id: 'channelNamespaceExists',
@@ -140,7 +140,7 @@ const helmReleaseChannelData = async () => [
         editing: { hidden: true }, // if editing existing app, hide this field initially
     },
 
-    ...(await placementData()),
+    // ...(await placementData()),
 ]
 
 export default helmReleaseChannelData

@@ -1,0 +1,67 @@
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ================== Placement ============================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+  placement:
+    placementRef:
+      kind: PlacementRule
+{{#if selectedRuleName}}
+      name: {{{selectedRuleName}}}
+{{else}}       
+      name: {{{@root.name}}}-placement-{{uniqueGroupID}}
+{{/if}}       
+{{#if timeWindow.mode}}
+  timewindow:
+    windowtype: {{{timeWindow.mode}}}
+    location: {{{timeWindow.timezone}}}
+    daysofweek: [{{{timeWindow.days}}}]
+    {{#if timeWindow.showTimeSection}}
+    hours:
+      {{#each timeWindow.timeList}}
+      {{#if validTime}}
+      - start: "{{{start}}}"
+        end: "{{{end}}}"
+      {{/if}}
+      {{/each}}
+    {{/if}}
+{{/if}}
+
+{{#unless existingrule-checkbox}} 
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  labels:
+    app: {{{@root.name}}}
+  name: {{{@root.name}}}-placement-{{uniqueGroupID}}
+  namespace: {{{@root.namespace}}}
+  {{#if selfLinks}}
+  selfLink: {{{selfLinks.PlacementRule}}}
+  {{/if}}
+{{#if clusterSelector.mode}}  
+spec:
+  clusterSelector:
+    matchLabels:
+      {{#each clusterSelector.clusterLabelsList}}
+      {{#if validValue}}
+      '{{{labelName}}}': '{{{labelValue}}}'
+      {{/if}}
+      {{/each}} 
+{{else}}
+  {{#if online-cluster-only-checkbox}}
+spec:
+  clusterConditions:
+    - type: ManagedClusterConditionAvailable
+      status: "True"
+  {{/if}}
+  {{#if local-cluster-checkbox}}
+spec:
+  clusterSelector:
+    matchLabels:
+      'local-cluster': 'true'
+  {{/if}}
+{{/if}}
+{{/unless}}
+
