@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Card } from '@patternfly/react-core'
 import { AcmDonutChart } from '@stolostron/ui-components'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -58,7 +59,7 @@ export function ViolationsCard(props: {
 }) {
     const history = useHistory()
     return (
-        <div
+        <Card isHoverable
             onClick={() => {
                 if (props.to) history.push(props.to)
             }}
@@ -85,7 +86,7 @@ export function ViolationsCard(props: {
                     'var(--pf-global--warning-color--100)',
                 ]}
             />
-        </div>
+        </Card>
     )
 }
 
