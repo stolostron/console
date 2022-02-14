@@ -15,7 +15,8 @@ import {
 import { AcmDrawerContext } from '@stolostron/ui-components'
 import { useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useTranslation } from '../../../../lib/acm-i18next'
+import { ConfirmModal, IConfirmModalProps } from '../../../../components/ConfirmModal'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { deleteResource, PolicySet } from '../../../../resources'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
@@ -31,6 +32,13 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
     const [cardOpenIdx, setCardOpenIdx] = useState<number>()
     const policySetSummary = usePolicySetSummary(policySet)
     const history = useHistory()
+    const [modalProps, setModalProps] = useState<IConfirmModalProps>({
+        open: false,
+        confirm: () => {},
+        cancel: () => {},
+        title: 'deleteModal',
+        message: '',
+    })
 
     function onCardToggle(cardIdx: number) {
         if (cardOpenIdx === cardIdx) {
@@ -68,6 +76,7 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
             key={`policyset-${cardIdx}`}
             style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
         >
+            <ConfirmModal {...modalProps} />
             <CardHeader isToggleRightAligned={true}>
                 <CardActions>
                     <Dropdown
@@ -105,12 +114,41 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                                 key="delete"
                                 onClick={() => {
                                     setCardOpenIdx(undefined)
-                                    deleteResource({
-                                        apiVersion: 'policy.open-cluster-management.io/v1',
-                                        kind: 'PolicySet',
-                                        metadata: {
-                                            name: policySet.metadata.name,
-                                            namespace: policySet.metadata.namespace,
+                                    setModalProps({
+                                        open: true,
+                                        title: t('Delete policy set'),
+                                        confirm: async () => {
+                                            deleteResource({
+                                                apiVersion: 'policy.open-cluster-management.io/v1',
+                                                kind: 'PolicySet',
+                                                metadata: {
+                                                    name: policySet.metadata.name,
+                                                    namespace: policySet.metadata.namespace,
+                                                },
+                                            })
+                                        },
+                                        confirmText: 'Delete',
+                                        message: (
+                                            <Trans
+                                                i18nKey={t(
+                                                    'Are you sure you want to delete <emphasis>{{name}}</emphasis>  in namespace <emphasis>{{namespace}}</emphasis>?'
+                                                )}
+                                                components={{ emphasis: <em /> }}
+                                                values={{
+                                                    name: policySet.metadata.name,
+                                                    namespace: policySet.metadata.namespace,
+                                                }}
+                                            />
+                                        ),
+                                        isDanger: true,
+                                        cancel: () => {
+                                            setModalProps({
+                                                open: false,
+                                                confirm: () => {},
+                                                cancel: () => {},
+                                                title: '',
+                                                message: '',
+                                            })
                                         },
                                     })
                                 }}
