@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "start": "nodemon --watch './**/*.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm/transpile-only' src/lib/main.ts | pino-zen -i time",
+        "start": "NODE_ENV=development nodemon --watch './**/*.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm/transpile-only' src/lib/main.ts",
         "postinstall": "[ ! -d ./certs ] && npm run generate-certs || true",
         "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt",
         "build": "tsc --sourceMap false --declaration false && npx rollup --format es --file backend.mjs -- build/lib/main.js",
@@ -50,7 +50,7 @@
         "jest": "^27.x.x",
         "nock": "^13.2.4",
         "nodemon": "^2.0.15",
-        "pino-zen": "^2.0.1",
+        "pino-zen": "^2.0.3",
         "prettier": "^2.5.1",
         "rollup": "^2.67.2",
         "ts-jest": "^27.x.x",

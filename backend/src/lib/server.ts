@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 import { readFileSync } from 'fs'
-import { STATUS_CODES } from 'http'
 import {
     constants,
     createSecureServer,
@@ -110,10 +109,9 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                             let msg: Record<string, string | number | undefined>
                             if (res.getHeader('content-type') !== 'text/event-stream')
                                 msg = {
-                                    msg: STATUS_CODES[res.statusCode],
-                                    status: res.statusCode,
-                                    method: req.method,
+                                    msg: req.method.toLowerCase(),
                                     path: req.url,
+                                    status: res.statusCode,
                                     ms: 0,
                                 }
 
@@ -124,7 +122,7 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
                             if (logTrace) {
                                 logger.trace(msg)
                             } else if (res.statusCode < 500) {
-                                logger.info(msg)
+                                logger.debug(msg)
                             } else {
                                 logger.error(msg)
                             }
