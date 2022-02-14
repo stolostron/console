@@ -210,7 +210,7 @@ export function CredentialsTable(props: {
                                 {
                                     id: 'editConnection',
                                     text: t('Edit credential'),
-                                    isDisabled: true,
+                                    isAriaDisabled: true,
                                     click: (secret: Secret) => {
                                         history.push(
                                             NavigationPath.editCredentials
@@ -223,7 +223,7 @@ export function CredentialsTable(props: {
                                 {
                                     id: 'deleteConnection',
                                     text: t('Delete credential'),
-                                    isDisabled: true,
+                                    isAriaDisabled: true,
                                     click: (secret: Secret) => {
                                         setModalProps({
                                             open: true,

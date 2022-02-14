@@ -309,7 +309,7 @@ export function BareMetalAssetsTable(props: {
                                 {
                                     id: 'editAsset',
                                     text: t('bareMetalAsset.rowAction.editAsset.title'),
-                                    isDisabled: true,
+                                    isAriaDisabled: true,
                                     click: (bareMetalAsset: BareMetalAsset) => {
                                         history.push(
                                             NavigationPath.editBareMetalAsset.replace(
@@ -323,7 +323,7 @@ export function BareMetalAssetsTable(props: {
                                 {
                                     id: 'deleteAsset',
                                     text: t('bareMetalAsset.rowAction.deleteAsset.title'),
-                                    isDisabled: true,
+                                    isAriaDisabled: true,
                                     click: (bareMetalAsset: BareMetalAsset) => {
                                         setModalProps({
                                             open: true,
