@@ -9,7 +9,7 @@ import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState, policiesState } from '../../../atoms'
-import { nockDelete, nockGet } from '../../../lib/nock-util'
+import { nockGet } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind, Policy } from '../../../resources'
 import { SearchResultCountDocument, SearchResultItemsDocument } from '../Search/search-sdk/search-sdk'
@@ -73,18 +73,6 @@ const getAddonResponse = {
                 type: 'Processing',
             },
         ],
-    },
-}
-
-const deleteMCVRequest = {
-    apiVersion: 'view.open-cluster-management.io/v1beta1',
-    kind: 'ManagedClusterView',
-    metadata: {
-        name: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
-        namespace: 'local-cluster',
-        labels: {
-            viewName: '46de65eb9b4a488e6744a0b264a076cc107fd55e',
-        },
     },
 }
 
@@ -249,7 +237,6 @@ const mockPolices: Policy[] = [
 
 it('should render overview page in loading state', async () => {
     const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
-    const deleteMCV = nockDelete(deleteMCVRequest)
 
     render(
         <RecoilRoot>
@@ -266,14 +253,10 @@ it('should render overview page in loading state', async () => {
 
     // Wait for delete resource requests to finish
     await waitForNocks([getAddonNock])
-
-    // Wait for deletion of MCV now that we got a successful response
-    await waitForNocks([deleteMCV])
 })
 
 it('should render overview page in error state', async () => {
     const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
-    const deleteMCV = nockDelete(deleteMCVRequest)
     const mocks = [
         {
             request: {
@@ -301,16 +284,12 @@ it('should render overview page in error state', async () => {
     // Wait for delete resource requests to finish
     await waitForNocks([getAddonNock])
 
-    // Wait for deletion of MCV now that we got a successful response
-    await waitForNocks([deleteMCV])
-
     // Test that the component has rendered correctly with an error
     await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
 })
 
 it('should render overview page with expected data', async () => {
     const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
-    const deleteMCV = nockDelete(deleteMCVRequest)
     const mocks = [
         {
             request: {
@@ -488,9 +467,6 @@ it('should render overview page with expected data', async () => {
 
     // This wait pauses till apollo query is returning data
     await wait()
-
-    // Wait for deletion of MCV now that we got a successful response
-    await waitForNocks([deleteMCV])
 
     // Test that the component has rendered correctly with an error
     await waitFor(() => expect(getAllByText('Amazon')).toHaveLength(1))
