@@ -7,18 +7,18 @@ import moment from 'moment-timezone'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router'
 import { useRecoilState } from 'recoil'
-import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { isType } from '../../../lib/is-type'
-import { NavigationPath } from '../../../NavigationPath'
-import { createResources, IResource, unpackProviderConnection } from '../../../resources'
+import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../../atoms'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { isType } from '../../../../lib/is-type'
+import { NavigationPath } from '../../../../NavigationPath'
+import { createResources, IResource, unpackProviderConnection } from '../../../../resources'
 const Portals = Object.freeze({
     editBtn: 'edit-button-portal-id',
     createBtn: 'create-button-portal-id',
     cancelBtn: 'cancel-button-portal-id',
 })
 
-export default function CreateApplicationPage() {
+export default function CreateArgoApplicationSetPage() {
     const { t } = useTranslation()
 
     // create portals for buttons in header
@@ -52,7 +52,7 @@ export default function CreateApplicationPage() {
             <AcmErrorBoundary>
                 <AcmPageContent id="create-application">
                     <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
-                        <CreateApplication />
+                        <CreateArgoApplicationSet />
                     </PageSection>
                 </AcmPageContent>
             </AcmErrorBoundary>
@@ -60,7 +60,7 @@ export default function CreateApplicationPage() {
     )
 }
 
-export function CreateApplication() {
+export function CreateArgoApplicationSet() {
     const history = useHistory()
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
