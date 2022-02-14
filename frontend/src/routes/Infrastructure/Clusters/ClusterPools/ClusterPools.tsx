@@ -342,7 +342,7 @@ export function ClusterPoolsTable(props: {
                                 {
                                     id: 'scaleClusterPool',
                                     text: t('clusterPool.scale'),
-                                    isDisabled: true,
+                                    isAriaDisabled: true,
                                     rbac: [rbacPatch(clusterPool)],
                                     click: (clusterPool: ClusterPool) => {
                                         setScaleClusterPoolModalProps({
@@ -354,7 +354,7 @@ export function ClusterPoolsTable(props: {
                                 {
                                     id: 'updateReleaseImage',
                                     text: t('clusterPool.updateReleaseImage'),
-                                    isDisabled: true,
+                                    isAriaDisabled: true,
                                     rbac: [rbacPatch(clusterPool)],
                                     click: (clusterPool: ClusterPool) => {
                                         return setUpdateReleaseImageModalProps({
@@ -366,7 +366,7 @@ export function ClusterPoolsTable(props: {
                                 {
                                     id: 'destroy',
                                     text: t('clusterPool.destroy'),
-                                    isDisabled: true,
+                                    isAriaDisabled: true,
                                     click: (clusterPool: ClusterPool) => {
                                         setModalProps({
                                             open: true,
