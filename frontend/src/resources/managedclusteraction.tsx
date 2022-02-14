@@ -142,18 +142,25 @@ export async function pollManagedClusterAction(actionName: string, clusterName: 
     const poll = async (resolve: any, reject: any) => {
         getManagedClusterAction({ namespace: clusterName, name: actionName })
             .promise.then((actionResponse) => {
-                const isComplete = _.get(actionResponse, 'status.conditions[0].type', '')
-                const isActionDone = _.get(actionResponse, 'status.conditions[0].reason', '')
-                const actionMessage = _.get(actionResponse, 'status.conditions[0].message', '')
-                if (isComplete === 'Completed' && isActionDone === 'ActionDone') {
-                    resolve({
-                        complete: isComplete,
-                        actionDone: isActionDone,
-                        message: actionMessage,
-                        result: actionResponse.status?.result,
-                    })
-                } else if (isComplete === 'Completed' && isActionDone !== 'ActionDone') {
-                    reject({ message: actionMessage })
+                const isComplete = _.get(actionResponse, 'status.conditions[0].type', undefined)
+                const isActionDone = _.get(actionResponse, 'status.conditions[0].reason', undefined)
+                const actionMessage = _.get(actionResponse, 'status.conditions[0].message', undefined)
+                if (isComplete && isActionDone) {
+                    if (isComplete === 'Completed' && isActionDone === 'ActionDone') {
+                        resolve({
+                            complete: isComplete,
+                            actionDone: isActionDone,
+                            message: actionMessage,
+                            result: actionResponse.status?.result,
+                        })
+                    } else if (isComplete === 'Completed' && isActionDone !== 'ActionDone') {
+                        reject({ message: actionMessage })
+                    }
+                } else {
+                    return {
+                        message:
+                            'There was an error while performing the managed cluster resource action. Make sure the managed cluster is online and helthy, and that the work manager pod in namespace open-cluster-management-agent-addon is healthy ',
+                    }
                 }
                 deleteManagedClusterAction({ name: actionName, namespace: clusterName })
             })

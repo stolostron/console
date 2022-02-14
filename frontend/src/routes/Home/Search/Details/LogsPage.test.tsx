@@ -2,6 +2,9 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { render, screen, waitFor } from '@testing-library/react'
+import { createBrowserHistory } from 'history'
+import { Router } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
 import { nockGetTextPlain, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import LogsPage from './LogsPage'
 
@@ -31,7 +34,13 @@ describe('LogsPage', () => {
             '/apis/proxy.open-cluster-management.io/v1beta1/namespaces/testCluster/clusterstatuses/testCluster/log/testNamespace/testName/testContainer?tailLines=1000'
         )
 
-        render(<Component />)
+        render(
+            <RecoilRoot>
+                <Router history={createBrowserHistory()}>
+                    <Component />
+                </Router>
+            </RecoilRoot>
+        )
 
         // Wait for request to finish and check logs are displayed correctly
         await waitFor(() => expect(logs.isDone()).toBeTruthy())

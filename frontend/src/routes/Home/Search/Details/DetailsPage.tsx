@@ -79,10 +79,10 @@ export default function DetailsPage() {
     useEffect(() => {
         fireManagedClusterView(cluster, kind, apiversion, name, namespace)
             .then((viewResponse) => {
-                if (viewResponse.message) {
+                if (viewResponse?.message) {
                     setResourceError(viewResponse.message)
                 } else {
-                    setResource(viewResponse.result)
+                    setResource(viewResponse?.result)
                 }
             })
             .catch((err) => {
