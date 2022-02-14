@@ -59,7 +59,8 @@ export function ViolationsCard(props: {
 }) {
     const history = useHistory()
     return (
-        <Card isHoverable
+        <Card
+            isHoverable
             onClick={() => {
                 if (props.to) history.push(props.to)
             }}
