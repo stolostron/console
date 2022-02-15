@@ -13,7 +13,7 @@
 
 import { VALIDATE_URL } from 'temptifly'
 import { loadExistingChannels, updateChannelControls, channelSimplified } from './utils'
-// import placementData from './ControlDataPlacement'
+import placementData from './ControlDataPlacement'
 
 const objectstoreChannelData = [
     ///////////////////////  Objectstore  /////////////////////////////////////
@@ -95,7 +95,7 @@ const objectstoreChannelData = [
         reverse: ['Subscription[0].metadata.annotations["apps.open-cluster-management.io/bucket-path"]'],
     },
 
-    // ...(await placementData()),
+    ...placementData,
 ]
 
 export default objectstoreChannelData

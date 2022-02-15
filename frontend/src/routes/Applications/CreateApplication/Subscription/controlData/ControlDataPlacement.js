@@ -15,12 +15,12 @@
 /* eslint-disable import/no-named-as-default */
 
 import React from 'react'
-import { HCMPlacementRuleList } from '../../../../lib/client/queries'
-import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../components/TimeWindow'
+// import { HCMPlacementRuleList } from '../../../../lib/client/queries'
+import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../common/TimeWindow'
 import ClusterSelector, {
     reverse as reverseClusterSelector,
     summarize as summarizeClusterSelector,
-} from '../../common/ClusterSelector'
+} from '../common/ClusterSelector'
 import {
     setAvailableRules,
     getExistingPRControlsSection,
@@ -29,9 +29,9 @@ import {
     getSharedSubscriptionWarning,
 } from './utils'
 import { getSourcePath } from 'temptifly'
-import apolloClient from '../../../../lib/client/apollo-client'
+// import apolloClient from '../../../../lib/client/apollo-client'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import _ from 'lodash'
-import msgs from '../../../../nls/platform.properties'
 
 const existingRuleCheckbox = 'existingrule-checkbox'
 const localClusterCheckbox = 'local-cluster-checkbox'
@@ -215,29 +215,29 @@ export const summarizeOnline = (control, globalControlData, summary) => {
     const clusterSelectorControl = control.groupControlData.find(({ id }) => id === 'clusterSelector')
 
     if (_.get(localClusterCheckboxControl, 'active', false) === true) {
-        msgs.get('edit.app.localCluster.summary')
+        ;('edit.app.localCluster.summary')
     } else if (_.get(onlineClusterCheckboxControl, 'active', false) === true) {
-        summary.push(msgs.get('edit.app.onlineClusters.summary'))
+        summary.push('edit.app.onlineClusters.summary')
     } else if (_.get(clusterSelectorControl, 'active.mode', false) === true) {
-        summary.push(msgs.get('edit.app.labelClusters.summary'))
+        summary.push('edit.app.labelClusters.summary')
     }
 }
 
-const getClusterStatus = (name) => {
-    return apolloClient
-        .getManagedClusterStatus({ clusterName: name })
-        .then((response) => {
-            return response && response.data && response.data.isManagedClusterConditionAvailable
-        })
-        .catch(() => {
-            // default to have the local-cluster managed
-            return true
-        })
-}
+// const getClusterStatus = (name) => {
+//     return apolloClient
+//         .getManagedClusterStatus({ clusterName: name })
+//         .then((response) => {
+//             return response && response.data && response.data.isManagedClusterConditionAvailable
+//         })
+//         .catch(() => {
+//             // default to have the local-cluster managed
+//             return true
+//         })
+// }
 
-const enableHubSelfManagement = getClusterStatus('local-cluster')
+// const enableHubSelfManagement = getClusterStatus('local-cluster')
 
-const placementData = async () => [
+const placementData = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  clusters  /////////////////////////////////////
     {
@@ -261,17 +261,6 @@ const placementData = async () => [
         validation: {},
     },
     {
-        name: 'creation.app.existingRuleCombo',
-        tooltip: 'tooltip.creation.app.existingRuleCombo',
-        id: 'placementrulecombo',
-        type: 'hidden',
-        placeholder: 'select.existing.placement.rule',
-        reverse: reverseExistingRule,
-        fetchAvailable: loadExistingPlacementRules(),
-        onSelect: updateNewRuleControls,
-        validation: {},
-    },
-    {
         id: 'selectedRuleName',
         type: 'hidden',
         reverse: reverseExistingRuleName,
@@ -288,12 +277,14 @@ const placementData = async () => [
     {
         id: onlineClusterCheckbox,
         type: 'checkbox',
-        name: (await enableHubSelfManagement)
-            ? 'creation.app.settings.onlineClusters'
-            : 'creation.app.settings.onlineClustersOnly',
-        tooltip: (await enableHubSelfManagement)
-            ? 'tooltip.creation.app.settings.onlineClusters'
-            : 'tooltip.creation.app.settings.onlineClustersOnly',
+        name: 'creation.app.settings.onlineClusters',
+        // name: (await enableHubSelfManagement)
+        //     ? 'creation.app.settings.onlineClusters'
+        //     : 'creation.app.settings.onlineClustersOnly',
+        tooltip: 'tooltip.creation.app.settings.onlineClusters',
+        // tooltip: (await enableHubSelfManagement)
+        //     ? 'tooltip.creation.app.settings.onlineClusters'
+        //     : 'tooltip.creation.app.settings.onlineClustersOnly',
         active: false,
         available: [],
         onSelect: updatePlacementControlsForAllOnline,
@@ -302,7 +293,8 @@ const placementData = async () => [
     },
     {
         id: localClusterCheckbox,
-        type: (await enableHubSelfManagement) ? 'checkbox' : 'hidden',
+        // type: (await enableHubSelfManagement) ? 'checkbox' : 'hidden',
+        type: 'checkbox',
         name: 'creation.app.settings.localClusters',
         tooltip: 'tooltip.creation.app.settings.localClusters',
         onSelect: updatePlacementControlsForLocal,
@@ -314,7 +306,7 @@ const placementData = async () => [
         ],
         summarize: (control, controlData, summary) => {
             if (control.active) {
-                summary.push(msgs.get('edit.app.localCluster.summary'))
+                summary.push('edit.app.localCluster.summary')
             }
         },
     },

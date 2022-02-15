@@ -17,6 +17,7 @@ import createTemplate from './templates/template.hbs'
 import gitTemplate from './templates/templateGit.hbs'
 import helmTemplate from './templates/templateHelm.hbs'
 import ObjTemplate from './templates/templateObjectStore.hbs'
+import placementTemplate from './templates/templatePlacement.hbs'
 
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
@@ -125,6 +126,7 @@ export function CreateSubscriptionApplication() {
     Handlebars.registerPartial('templateGit', Handlebars.compile(gitTemplate))
     Handlebars.registerPartial('templateHelm', Handlebars.compile(helmTemplate))
     Handlebars.registerPartial('templateObjectStore', Handlebars.compile(ObjTemplate))
+    Handlebars.registerPartial('templatePlacement', Handlebars.compile(placementTemplate))
 
     return (
         <TemplateEditor
