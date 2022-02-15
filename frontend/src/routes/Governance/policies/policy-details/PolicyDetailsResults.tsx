@@ -124,7 +124,6 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
             {
                 header: 'Message',
                 cell: (item: resultsTableData) => {
-                    console.log(item.message)
                     const policyName = item?.policyName
                     const policyNamespace = item?.policyNamespace
                     const cluster = item?.cluster
