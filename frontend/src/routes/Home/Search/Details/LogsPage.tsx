@@ -78,7 +78,7 @@ export default function LogsPage(props: {
                     setLogsError(err.message)
                 })
         }
-    }, [cluster, container, managedClusters])
+    }, [cluster, container, managedClusters, name, namespace])
 
     if (resourceError !== '') {
         return (
