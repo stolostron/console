@@ -6,13 +6,11 @@ import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search
 import _ from 'lodash'
 
 export async function getArgoResourceStatuses(application, appData, topology) {
-    const resourceStatuses = {}
-
     const argoSource = await getArgoSource(application, appData)
 
     // get resource statuses
     const { name, namespace } = application
-    resourceStatuses.resourceStatuses = await getResourceStatuses(name, namespace, appData, topology, argoSource)
+    const resourceStatuses = await getResourceStatuses(name, namespace, appData, topology, argoSource)
 
     const secret = await getArgoSecret(appData, resourceStatuses.resourceStatuses)
     if (secret) {
@@ -20,7 +18,7 @@ export async function getArgoResourceStatuses(application, appData, topology) {
         _.set(appData, 'argoSecrets', _.get(secretItems, 'items', []))
     }
 
-    return resourceStatuses
+    return { resourceStatuses }
 }
 
 async function getArgoSource(application, appData) {
