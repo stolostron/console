@@ -36,7 +36,8 @@ const prePostTasks = [
         active: '',
         placeholder: 'app.enter.select.ansibleSecretName',
         available: [],
-        fetchAvailable: loadExistingAnsibleProviders(),
+        // fetchAvailable: loadExistingAnsibleProviders(),
+        // This is not working
         reverse: 'Subscription[0].spec.hooksecretref.name',
         validation: {},
         prompts: {

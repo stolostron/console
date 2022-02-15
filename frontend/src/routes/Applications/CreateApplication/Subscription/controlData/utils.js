@@ -14,7 +14,7 @@
 import React from 'react'
 // import msgs from '../../../../nls/platform.properties'
 import { RESOURCE_TYPES } from '../../../../lib/shared/constants'
-import { listChannels } from '../../../../../resources'
+import { listChannels, listProviderConnections } from '../../../../../resources'
 // import SharedResourceWarning from '../components/SharedResourceWarning'
 
 import _ from 'lodash'
@@ -34,13 +34,10 @@ export const loadExistingChannels = (type) => {
 }
 
 export const loadExistingAnsibleProviders = () => {
-    const ansibleProviderQueryVariables = {
-        label: 'cluster.open-cluster-management.io/type',
-        value: 'ans',
-    }
     return {
-        query: HCMAnsibleTower,
-        variables: ansibleProviderQueryVariables,
+        query: () => {
+            listProviderConnections().promise
+        },
         loadingDesc: 'creation.app.loading.secrets',
         setAvailable: setAvailableSecrets.bind(null),
     }
@@ -615,25 +612,30 @@ export const setAvailableChannelSpecs = (type, control, result) => {
 export const setAvailableSecrets = (control, result) => {
     const { loading } = result
     const { data = {} } = result
-    const { secrets } = data
-    control.available = []
-    control.hasReplacements = true
+    // this is not working - I wonder if it's related to the fact that it uses a prompts
 
-    control.isLoading = false
-    const error = secrets ? null : result.error
-    if (error) {
-        control.isFailed = true
-    } else if (secrets) {
-        control.availableData = _.keyBy(secrets, 'ansibleSecretName')
-        control.available = Object.keys(control.availableData).sort()
-        control.availableMap = _.mapValues(control.availableData, (replacements) => {
-            return {
-                replacements,
-            }
-        })
-    } else {
-        control.isLoading = loading
-    }
+    debugger
+    // const { secrets } = data
+    // debugger
+    // control.available = []
+    // control.hasReplacements = true
+
+    // control.isLoading = false
+    // const error = secrets ? null : result.error
+    // if (error) {
+    //     control.isFailed = true
+    // } else if (secrets) {
+    //     control.availableData = _.keyBy(secrets, 'ansibleSecretName')
+    //     control.available = Object.keys(control.availableData).sort()
+    //     control.availableMap = _.mapValues(control.availableData, (replacements) => {
+    //         return {
+    //             replacements,
+    //         }
+    //     })
+    // }
+    // else {
+    //     control.isLoading = loading
+    // }
     return control
 }
 

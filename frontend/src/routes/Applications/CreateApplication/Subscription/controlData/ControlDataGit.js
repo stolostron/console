@@ -13,7 +13,7 @@
 
 import { VALID_REPOPATH, VALIDATE_URL, getSourcePath } from 'temptifly'
 import placementData from './ControlDataPlacement'
-// import prePostTasks from './ControlDataPrePostTasks'
+import prePostTasks from './ControlDataPrePostTasks'
 import {
     getGitBranches,
     loadExistingChannels,
@@ -275,7 +275,7 @@ const githubChannelData = [
         editing: { hidden: true }, // if editing existing app, hide this field initially
     },
 
-    // ...prePostTasks,
+    ...prePostTasks,
 
     ...placementData,
 ]
