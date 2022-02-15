@@ -455,18 +455,22 @@ export async function fetchRetry<T>(options: {
 
         if (response) {
             let responseData: T | string | undefined = undefined
-            // Use includes() to identify text/plain because the header can have more text (ex: charset=..)
-            if (!response.headers.get('content-type')?.includes('text/plain')) {
-                try {
-                    responseData = (await response.json()) as T
-                } catch {
-                    console.error('Error getting resource json response.')
-                }
-            } else {
+            if (
+                // Logs query sometimes loses response Content-Type header - so specifically looking for that url as well
+                response.headers.get('content-type')?.includes('text/plain') ||
+                (response.url.includes('/apis/proxy.open-cluster-management.io/v1beta1') &&
+                    response.url.endsWith('tailLines=1000'))
+            ) {
                 try {
                     responseData = await response.text()
                 } catch {
                     console.error('Error getting resource text response.')
+                }
+            } else {
+                try {
+                    responseData = (await response.json()) as T
+                } catch {
+                    console.error('Error getting resource json response.')
                 }
             }
 
