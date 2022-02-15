@@ -13,8 +13,7 @@
 
 import { VALIDATE_URL } from 'temptifly'
 import { loadExistingChannels, updateChannelControls, channelSimplified } from './utils'
-
-// import placementData from './ControlDataPlacement'
+import placementData from './ControlDataPlacement'
 
 const helmReleaseChannelData = [
     ///////////////////////  HelmRelease  /////////////////////////////////////
@@ -140,7 +139,7 @@ const helmReleaseChannelData = [
         editing: { hidden: true }, // if editing existing app, hide this field initially
     },
 
-    // ...(await placementData()),
+    ...placementData,
 ]
 
 export default helmReleaseChannelData

@@ -2,6 +2,7 @@
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 import { Selector } from './selector'
+import { listResources } from '.'
 
 export const PlacementRuleApiVersion = 'apps.open-cluster-management.io/v1'
 export type PlacementRuleApiVersionType = 'apps.open-cluster-management.io/v1'
@@ -36,4 +37,11 @@ export interface PlacementRuleStatus {
         clusterName: string
         clusterNamespace: string
     }[]
+}
+
+export function listPlacementRules() {
+    return listResources<PlacementRule>({
+        apiVersion: PlacementRuleApiVersion,
+        kind: PlacementRuleKind,
+    })
 }

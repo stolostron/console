@@ -360,32 +360,35 @@ export const getGitBranches = async (groupControlData, setLoadingState) => {
 
 export const setAvailableRules = (control, result) => {
     const { loading } = result
-    const { data = {} } = result
-    const { placementrules } = data
-    control.available = []
-    control.availableMap = {}
+    const { data } = result
+    const placementRules = data
     control.isLoading = false
-
-    const error = placementrules ? null : result.error
-
-    if (error) {
-        control.isFailed = true
-    } else if (placementrules) {
-        if (placementrules.length > 0) {
-            control.availableData = _.keyBy(placementrules, 'metadata.name')
-            control.available = Object.keys(control.availableData).sort()
-            //remove default placement rule name if this is not on the list of available placements
-            //in that case the name was set by the reverse function on control initialization
-            if (control.active && !control.available.includes(control.active)) {
-                control.active = null
-            }
-        } else {
-            control.availableData = []
+    const error = placementRules ? null : result.error
+    if (!control.available) {
+        control.available = []
+        control.availableMap = {}
+        control.availableData = []
+    }
+    if (control.available.length === 0 && (error || placementRules)) {
+        if (error) {
+            control.isFailed = true
+        } else if (placementRules) {
+            control.isLoaded = true
+            placementRules.forEach((item) => {
+                const { metadata } = item
+                const name = metadata?.name
+                control.available.push(name)
+                control.available.sort()
+                //remove default placement rule name if this is not on the list of available placements
+                //in that case the name was set by the reverse function on control initialization
+                if (control.active && !control.available.includes(control.active)) {
+                    control.active = null
+                }
+            })
         }
     } else {
         control.isLoading = loading
     }
-
     return control
 }
 

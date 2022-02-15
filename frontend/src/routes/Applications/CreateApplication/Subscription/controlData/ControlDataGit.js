@@ -12,7 +12,7 @@
 'use strict'
 
 import { VALID_REPOPATH, VALIDATE_URL, getSourcePath } from 'temptifly'
-// import placementData from './ControlDataPlacement'
+import placementData from './ControlDataPlacement'
 // import prePostTasks from './ControlDataPrePostTasks'
 import {
     getGitBranches,
@@ -277,7 +277,7 @@ const githubChannelData = [
 
     // ...prePostTasks,
 
-    // ...(await placementData()),
+    ...placementData,
 ]
 
 export default githubChannelData

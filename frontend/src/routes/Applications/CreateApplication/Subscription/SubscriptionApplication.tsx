@@ -130,8 +130,19 @@ export function CreateSubscriptionApplication() {
 
     function onControlInitialize(control: any) {
         switch (control.id) {
-            case 'clusterSelector':
-                control.t = t
+            case 'channelSection':
+                const { content } = control
+                if (content && content.length) {
+                    const { controlData } = content[0]
+                    const channelTypeData = _.find(controlData, { id: 'channelType' })
+                    channelTypeData.available.forEach((data: { change: { insertControlData: any } }) => {
+                        const { insertControlData } = data.change
+                        const clusterSelector = _.find(insertControlData, { id: 'clusterSelector' })
+                        if (clusterSelector) {
+                            _.set(clusterSelector, 't', t)
+                        }
+                    })
+                }
                 break
         }
     }

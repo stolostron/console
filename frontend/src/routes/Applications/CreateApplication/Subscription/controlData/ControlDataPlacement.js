@@ -15,7 +15,6 @@
 /* eslint-disable import/no-named-as-default */
 
 import React from 'react'
-// import { HCMPlacementRuleList } from '../../../../lib/client/queries'
 import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../common/TimeWindow'
 import ClusterSelector, {
     reverse as reverseClusterSelector,
@@ -29,8 +28,8 @@ import {
     getSharedSubscriptionWarning,
 } from './utils'
 import { getSourcePath } from 'temptifly'
-// import apolloClient from '../../../../lib/client/apollo-client'
 import { useTranslation } from '../../../../../lib/acm-i18next'
+import { listPlacementRules } from '../../../../../resources'
 import _ from 'lodash'
 
 const existingRuleCheckbox = 'existingrule-checkbox'
@@ -38,18 +37,10 @@ const localClusterCheckbox = 'local-cluster-checkbox'
 const onlineClusterCheckbox = 'online-cluster-only-checkbox'
 
 export const loadExistingPlacementRules = () => {
-    const getQueryVariables = (control, globalControl) => {
-        const nsControl = globalControl.find(({ id: idCtrl }) => idCtrl === 'namespace')
-        if (nsControl.active) {
-            delete control.exception
-            return { namespace: nsControl.active }
-        } else {
-            return { namespace: '_undefined_' }
-        }
-    }
     return {
-        query: HCMPlacementRuleList,
-        variables: getQueryVariables,
+        query: () => {
+            return listPlacementRules().promise
+        },
         loadingDesc: 'creation.app.loading.rules',
         setAvailable: setAvailableRules.bind(null),
     }
@@ -258,6 +249,17 @@ const placementData = [
         onSelect: updateDisplayForPlacementControls,
         active: false,
         available: [],
+        validation: {},
+    },
+    {
+        name: 'creation.app.existingRuleCombo',
+        tooltip: 'tooltip.creation.app.existingRuleCombo',
+        id: 'placementrulecombo',
+        type: 'hidden',
+        placeholder: 'select.existing.placement.rule',
+        reverse: reverseExistingRule,
+        fetchAvailable: loadExistingPlacementRules(),
+        onSelect: updateNewRuleControls,
         validation: {},
     },
     {
