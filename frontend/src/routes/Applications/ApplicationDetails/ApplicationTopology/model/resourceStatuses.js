@@ -1,13 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getArgoResourceStatuses } from './resourceStatusesArgo'
 import { getSubscriptionResourceStatuses } from './resourceStatusesSubscription'
+import { cloneDeep } from 'lodash'
 
 export async function getResourceStatuses(application, appData, topology, lastRefresh) {
-    let resourceStatuses
+    let results
+    const appDataWithStatuses = cloneDeep(appData)
     if (application.isArgoApp) {
-        resourceStatuses = await getArgoResourceStatuses(application, appData, topology)
+        results = await getArgoResourceStatuses(application, appDataWithStatuses, topology)
     } else {
-        resourceStatuses = await getSubscriptionResourceStatuses(application, appData, topology, lastRefresh)
+        results = await getSubscriptionResourceStatuses(application, appDataWithStatuses, topology, lastRefresh)
     }
-    return resourceStatuses
+    const { resourceStatuses, relatedResources } = results
+    return { resourceStatuses: cloneDeep(resourceStatuses), relatedResources, appDataWithStatuses }
 }
