@@ -140,7 +140,6 @@ export const fireManagedClusterAction = (
 export async function pollManagedClusterAction(actionName: string, clusterName: string): Promise<ManagedClusterAction> {
     let retries = process.env.NODE_ENV === 'test' ? 0 : 20
     const poll = async (resolve: any, reject: any) => {
-        console.debug('MCA poll - retries left: ', retries)
         const response = await getManagedClusterAction({ namespace: clusterName, name: actionName }).promise
         if (response?.status) {
             const isComplete = _.get(response, 'status.conditions[0].type', undefined)
@@ -164,6 +163,7 @@ export async function pollManagedClusterAction(actionName: string, clusterName: 
             deleteManagedClusterAction({ name: actionName, namespace: clusterName })
         } else {
             if (retries-- > 0) {
+                console.debug('MCA poll - retries left: ', retries)
                 setTimeout(poll, 100, resolve, reject)
             } else {
                 deleteManagedClusterAction({ name: actionName, namespace: clusterName })

@@ -167,7 +167,6 @@ export async function fireManagedClusterView(
 export async function pollManagedClusterView(viewName: string, clusterName: string): Promise<ManagedClusterView> {
     let retries = process.env.NODE_ENV === 'test' ? 0 : 20
     const poll = async (resolve: any, reject: any) => {
-        console.debug('MCV poll - retries left: ', retries)
         const response = await getManagedClusterView({ namespace: clusterName, name: viewName }).promise
         if (response?.status) {
             const isProcessing = _.get(response, 'status.conditions[0].type', undefined)
@@ -190,6 +189,7 @@ export async function pollManagedClusterView(viewName: string, clusterName: stri
             deleteManagedClusterView({ namespace: clusterName, name: viewName })
         } else {
             if (retries-- > 0) {
+                console.debug('MCV poll - retries left: ', retries)
                 setTimeout(poll, 100, resolve, reject)
             } else {
                 deleteManagedClusterView({ namespace: clusterName, name: viewName })
