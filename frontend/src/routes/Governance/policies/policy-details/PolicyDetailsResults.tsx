@@ -2,7 +2,6 @@
 import { PageSection, Title } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmTable, AcmTablePaginationContextProvider } from '@stolostron/ui-components'
-import _ from 'lodash'
 import moment from 'moment'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
@@ -10,53 +9,64 @@ import { useRecoilState } from 'recoil'
 import { policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Policy } from '../../../../resources'
+import { Policy, PolicyStatusDetails } from '../../../../resources'
+
+interface resultsTableData {
+    templateName: string
+    cluster: string
+    clusterNamespace: string
+    apiVersion: string
+    kind: string
+    status: string
+    message: string
+    timestamp: moment.MomentInput
+    policyName: string
+    policyNamespace: string
+}
 
 export default function PolicyDetailsResults(props: { policy: Policy }) {
     const { t } = useTranslation()
     const { policy } = props
     const [policies] = useRecoilState(policiesState)
 
-    const policiesDeployedOnCluster: any[] = useMemo(() => {
+    const policiesDeployedOnCluster: resultsTableData[] = useMemo(() => {
         const policyName = policy.metadata.name ?? ''
         const policyNamespace = policy.metadata.namespace ?? ''
         const policyResponses: Policy[] = policies.filter(
             (p: Policy) => p.metadata.name === `${policyNamespace}.${policyName}`
         )
-        const status: any = []
-        policyResponses.forEach((policyResponse) => {
-            const cluster = _.get(
-                policyResponse,
-                'metadata.labels["policy.open-cluster-management.io/cluster-name"]',
-                '-'
-            )
-            const clusterNamespace = _.get(
-                policyResponse,
-                'metadata.labels["policy.open-cluster-management.io/cluster-namespace"]',
-                '-'
-            )
-            const details = _.get(policyResponse, 'status.details', [])
-            details.forEach((detail: any) => {
-                const templates = _.get(policyResponse, 'spec.policy-templates', [])
-                const template = templates.find(
-                    (template: string) =>
-                        _.get(template, 'objectDefinition.metadata.name', 'a') === _.get(detail, 'templateMeta.name'),
-                    'b'
-                )
-                status.push({
-                    templateName: _.get(detail, 'templateMeta.name', '-'),
-                    cluster,
-                    clusterNamespace,
-                    apiVersion: _.get(template, 'objectDefinition.apiVersion', '-'),
-                    kind: _.get(template, 'objectDefinition.kind', '-'),
-                    status: _.get(detail, 'compliant', 'no-status'),
-                    message: _.get(detail, 'history[0].message', '-'),
-                    timestamp: _.get(detail, 'history[0].lastTimestamp'),
-                    policyName,
-                    policyNamespace,
+        const status: resultsTableData[] = []
+        policyResponses.length > 0 &&
+            policyResponses.forEach((policyResponse: Policy) => {
+                const cluster =
+                    (policyResponse?.metadata?.labels &&
+                        policyResponse.metadata.labels['policy.open-cluster-management.io/cluster-name']) ??
+                    '-'
+                const clusterNamespace =
+                    (policyResponse?.metadata?.labels &&
+                        policyResponse?.metadata?.labels['policy.open-cluster-management.io/cluster-namespace']) ??
+                    '-'
+                const details = policyResponse?.status?.details ?? []
+                details.forEach((detail: PolicyStatusDetails) => {
+                    const templates = policyResponse?.spec['policy-templates'] ?? []
+                    const template = templates.find(
+                        (template: any) =>
+                            template.objectDefinition.metadata.name ?? 'a' === detail.templateMeta.name ?? 'b'
+                    )
+                    status.push({
+                        templateName: detail.templateMeta.name ?? '-',
+                        cluster,
+                        clusterNamespace,
+                        apiVersion: template?.objectDefinition.apiVersion ?? '-',
+                        kind: template?.objectDefinition.kind ?? '-',
+                        status: detail.compliant ?? 'no-status',
+                        message: (detail?.history && detail.history[0]?.message) ?? '-',
+                        timestamp: detail?.history && detail?.history[0]?.lastTimestamp,
+                        policyName,
+                        policyNamespace,
+                    })
                 })
             })
-        })
         return status
     }, [policy, policies])
 
@@ -64,7 +74,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
         () => [
             {
                 header: 'Cluster',
-                cell: (item: any) => (
+                cell: (item: resultsTableData) => (
                     <Link
                         to={{
                             pathname: NavigationPath.clusterOverview.replace(':id', item.clusterNamespace),
@@ -73,26 +83,27 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                         {item.clusterNamespace}
                     </Link>
                 ),
-                search: (item: any) => item.clusterNamespace,
+                search: (item: resultsTableData) => item.clusterNamespace,
             },
             {
-                header: 'Compliance',
-                cell: (item: any) => {
-                    const message = _.get(item, 'message', '-')
+                header: 'Violations',
+                cell: (item: resultsTableData) => {
+                    const message = item.message ?? '-'
                     let compliant = message && typeof message === 'string' ? message.split(';')[0] : '-'
                     compliant = compliant ? compliant.trim().toLowerCase() : '-'
                     switch (compliant) {
                         case 'compliant':
                             return (
                                 <div>
-                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" /> {t('Compliant')}
+                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />{' '}
+                                    {t('Without Violations')}
                                 </div>
                             )
                         case 'noncompliant':
                             return (
                                 <div>
                                     <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
-                                    {t('Non compliant')}
+                                    {t('With violations')}
                                 </div>
                             )
                         default:
@@ -107,45 +118,55 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
             },
             {
                 header: 'Template',
-                cell: (item: any) => item.templateName,
-                search: (item: any) => item.templateName,
+                cell: (item: resultsTableData) => item.templateName,
+                search: (item: resultsTableData) => item.templateName,
             },
             {
                 header: 'Message',
-                cell: (item: any) => {
-                    const message = _.get(item, 'message')
-                    const policyName = _.get(item, 'policyName')
-                    const policyNamespace = _.get(item, 'policyNamespace')
-                    const cluster = _.get(item, 'cluster')
-                    const templateName = _.get(item, 'templateName')
-                    const apiVersion = _.get(item, 'apiVersion')
-                    const kind = _.get(item, 'kind')
-                    if (message && policyName && policyNamespace && cluster && templateName && apiVersion && kind) {
+                cell: (item: resultsTableData) => {
+                    console.log(item.message)
+                    const policyName = item?.policyName
+                    const policyNamespace = item?.policyNamespace
+                    const cluster = item?.cluster
+                    const templateName = item?.templateName
+                    const apiVersion = item?.apiVersion
+                    const kind = item?.kind
+                    const prunedMessage = item?.message.split(';').slice(1).join(';').trimStart()
+                    if (
+                        prunedMessage &&
+                        policyName &&
+                        policyNamespace &&
+                        cluster &&
+                        templateName &&
+                        apiVersion &&
+                        kind
+                    ) {
                         // TODO this link does nothing....
                         // const templateDetailURL = `/multicloud/policies/all/${policyNamespace}/${policyName}/template/${cluster}/${apiVersion}/${kind}/${templateName}`
                         return (
                             <div>
                                 {/* message may need to be limited to 300 chars? */}
-                                {message}{' '}
+                                {prunedMessage}{' '}
                                 {/* templateDetailURL && <Link to={templateDetailURL}>{t('View details')}</Link> */}
                             </div>
                         )
                     }
                     return '-'
                 },
-                search: (item: any) => item.message,
+                search: (item: resultsTableData) => item.message,
             },
             {
                 header: 'Last report',
-                cell: (item: any) => (item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-'),
+                cell: (item: resultsTableData) =>
+                    item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
             },
             {
                 header: 'History',
-                cell: (item: any) => {
-                    const policyName = _.get(item, 'policyName')
-                    const policyNamespace = _.get(item, 'policyNamespace')
-                    const cluster = _.get(item, 'cluster')
-                    const templateName = _.get(item, 'templateName')
+                cell: (item: resultsTableData) => {
+                    const policyName = item?.policyName
+                    const policyNamespace = item?.policyNamespace
+                    const cluster = item?.cluster
+                    const templateName = item?.templateName
                     if (policyName && policyNamespace && cluster && templateName) {
                         // TODO this link does nothing....
                         // const statusHistoryURL = `/multicloud/policies/all/${policyNamespace}/${policyName}/status/${cluster}/templates/${templateName}/history`

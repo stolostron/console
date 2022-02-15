@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Chip } from '@patternfly/react-core'
-import _ from 'lodash'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -64,8 +63,8 @@ export function getPlacementRulesForResource(
 
 export function resolveExternalStatus(policy: Policy) {
     const knownExternalManagers = ['multicluster-operators-subscription', 'argocd-application-controller']
-    const managedFields = _.get(policy, 'metadata.managedFields', [])
-    return _.some(managedFields, (mf) => _.includes(knownExternalManagers, _.get(mf, 'manager', 'none')))
+    const managedFields = policy.metadata.managedFields ?? []
+    return managedFields.some((mf) => knownExternalManagers.includes(mf.manager ?? 'none'))
 }
 
 function getHelmReleaseMap() {
@@ -95,15 +94,15 @@ function getChannelMap() {
 
 // This function may need some revision/testing
 export function resolveSource(policy: Policy) {
-    const getAnnotations = (item: any) => _.get(item, 'metadata.annotations', {})
+    const getAnnotations = (item: any) => item.metadata.annotations ?? {}
     const getHostingSubscription = (annotations: any) =>
-        _.get(annotations, 'apps.open-cluster-management.io/hosting-subscription')
+        annotations['apps.open-cluster-management.io/hosting-subscription']
     const parentAnnotations = getAnnotations(policy)
     let hostingSubscription = getHostingSubscription(parentAnnotations)
     if (!hostingSubscription) {
         // check if this policy was deployed by a Helm release
-        const releaseNamespace = _.get(parentAnnotations, 'meta.helm.sh/release-namespace')
-        const releaseName = _.get(parentAnnotations, 'meta.helm.sh/release-name')
+        const releaseNamespace = parentAnnotations['meta.helm.sh/release-namespace']
+        const releaseName = parentAnnotations['meta.helm.sh/release-name']
         if (releaseNamespace && releaseName) {
             const helmReleaseMap = getHelmReleaseMap()
             const helmRelease = helmReleaseMap.get(`${releaseNamespace}/${releaseName}`)
@@ -115,21 +114,21 @@ export function resolveSource(policy: Policy) {
         const subscriptionMap = getSubscriptionMap()
         const channelMap = getChannelMap()
         const subscription = subscriptionMap.get(hostingSubscription)
-        const channel = channelMap.get(_.get(subscription, 'spec.channel'))
+        const channel = channelMap.get(subscription.spec.channel ?? '')
         if (subscription && channel) {
             const subscriptionAnnotations = getAnnotations(subscription)
             const getGitAnnotation = (annotations: any, name: string) =>
-                _.get(annotations, `apps.open-cluster-management.io/git-${name}`) ||
-                _.get(annotations, `apps.open-cluster-management.io/github-${name}`)
+                annotations[`apps.open-cluster-management.io/git-${name}`] ||
+                annotations[`apps.open-cluster-management.io/github-${name}`]
             return {
-                bucketPath: _.get(subscriptionAnnotations, 'apps.open-cluster-management.io/bucket-path'),
+                bucketPath: subscriptionAnnotations['apps.open-cluster-management.io/bucket-path'],
                 gitPath: getGitAnnotation(subscriptionAnnotations, 'path'),
                 gitBranch: getGitAnnotation(subscriptionAnnotations, 'branch'),
                 gitCommit: getGitAnnotation(subscriptionAnnotations, 'commit'),
-                type: _.get(channel, 'spec.type'),
-                pathName: _.get(channel, 'spec.pathname'),
-                package: _.get(subscription, 'spec.name'),
-                packageFilterVersion: _.get(subscription, 'spec.packageFilter.version'),
+                type: channel.spec.type ?? '',
+                pathName: channel.spec.pathname ?? '',
+                package: subscription.spec.name ?? '',
+                packageFilterVersion: subscription.spec.packageFilter?.version ?? '',
             }
         }
     }

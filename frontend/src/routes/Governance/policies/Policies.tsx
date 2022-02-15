@@ -584,23 +584,23 @@ export default function PoliciesPage() {
     const filters = useMemo<ITableFilter<Policy>[]>(
         () => [
             {
-                id: 'compliance',
-                label: 'Compliance',
+                id: 'violations',
+                label: 'Violations',
                 options: [
                     {
-                        label: 'Compliant',
-                        value: 'Compliant',
+                        label: 'Without violations',
+                        value: 'Without violations',
                     },
                     {
-                        label: 'Noncompliant',
-                        value: 'NonCompliant',
+                        label: 'With violations',
+                        value: 'With violations',
                     },
                 ],
                 tableFilterFn: (selectedValues, policy) => {
-                    if (selectedValues.includes('NonCompliant')) {
+                    if (selectedValues.includes('With violations')) {
                         if (policy.status?.compliant === 'NonCompliant') return true
                     }
-                    if (selectedValues.includes('Compliant')) {
+                    if (selectedValues.includes('Without violations')) {
                         if (policy.status?.compliant === 'Compliant') return true
                     }
                     return false

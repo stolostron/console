@@ -473,9 +473,9 @@ it('should render overview page with expected data', async () => {
     await waitFor(() => expect(getAllByText('Microsoft')).toHaveLength(1))
 
     // Check Cluster compliance chart rendered
-    await waitFor(() => expect(getAllByText('Cluster compliance')).toHaveLength(2))
-    await waitFor(() => expect(getByText('1 Compliant')).toBeTruthy())
-    await waitFor(() => expect(getByText('1 Non-compliant')).toBeTruthy())
+    await waitFor(() => expect(getAllByText('Cluster violations')).toHaveLength(2))
+    await waitFor(() => expect(getByText('1 Without violations')).toBeTruthy())
+    await waitFor(() => expect(getByText('1 With violations')).toBeTruthy())
 
     // Check PolicyReport chart
     await waitFor(() => expect(getByText('2 Critical')).toBeTruthy())
