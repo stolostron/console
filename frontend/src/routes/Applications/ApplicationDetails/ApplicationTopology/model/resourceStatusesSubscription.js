@@ -7,20 +7,19 @@ import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search
 import { get, set, isEqual } from 'lodash'
 
 export async function getSubscriptionResourceStatuses(application, appData, topology, lastRefresh) {
-    const resourceStatuses = {}
-
     // get related resources -- only need to do if subscription report changes
     // with SubscriptionReport need to find out what service/replicaset goes with what route/deployment
+    let relatedResources
     if (application.reports && (!lastRefresh || !isEqual(application.reports, lastRefresh.application.reports))) {
-        resourceStatuses.relatedResources = await getRelatedResources(application.reports)
+        relatedResources = await getRelatedResources(application.reports)
     } else {
-        resourceStatuses.relatedResources = lastRefresh.resourceStatuses.relatedResources
+        relatedResources = lastRefresh.relatedResources
     }
 
     // get resource statuses
-    resourceStatuses.resourceStatuses = await getResourceStatuses(application, appData)
+    resourceStatuses = await getResourceStatuses(application, appData)
 
-    return resourceStatuses
+    return { resourceStatuses, relatedResources }
 }
 
 async function getResourceStatuses(application, appData) {
@@ -60,10 +59,11 @@ async function getRelatedResources(reports) {
         .forEach(({ results, resources }) => {
             let cluster
             // find first cluster this was successfully deployed to
-            results.find(({ source, result }) => {
+            // favor local-host
+            results.some(({ source, result }) => {
                 if (result === 'deployed') {
                     cluster = source
-                    return true
+                    return source === 'local-host'
                 }
                 return false
             })
