@@ -4,7 +4,7 @@ import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastConte
 import { PageSection } from '@patternfly/react-core'
 import { NavigationPath } from '../../../../NavigationPath'
 import Handlebars from 'handlebars'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import {
     useHistory,
     // useLocation
@@ -41,7 +41,7 @@ const Portals = Object.freeze({
 })
 
 export default function CreateSubscriptionApplicationPage() {
-    const { t } = useTranslation(['create'])
+    const { t } = useTranslation()
 
     // create portals for buttons in header
     const switches = (
@@ -128,6 +128,14 @@ export function CreateSubscriptionApplication() {
     Handlebars.registerPartial('templateObjectStore', Handlebars.compile(ObjTemplate))
     Handlebars.registerPartial('templatePlacement', Handlebars.compile(placementTemplate))
 
+    function onControlInitialize(control: any) {
+        switch (control.id) {
+            case 'clusterSelector':
+                control.t = t
+                break
+        }
+    }
+
     return (
         <TemplateEditor
             type={'application'}
@@ -145,6 +153,7 @@ export function CreateSubscriptionApplication() {
                 creationMsg: creationStatus?.messages,
             }}
             logging={process.env.NODE_ENV !== 'production'}
+            onControlInitialize={onControlInitialize}
             i18n={i18n}
         />
     )

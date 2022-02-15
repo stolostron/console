@@ -53,7 +53,6 @@ export class ClusterSelector extends React.Component {
         const isExistingRule = _.get(this.props, 'control.showData', []).length > 0
         const isReadOnly = isExistingRule || !modeSelected
         const showLabels = modeSelected && isExpanded
-        // const { t } = useTranslation()
 
         return (
             <React.Fragment>
