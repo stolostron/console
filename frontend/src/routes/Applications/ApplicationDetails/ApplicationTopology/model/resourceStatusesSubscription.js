@@ -17,7 +17,7 @@ export async function getSubscriptionResourceStatuses(application, appData, topo
     }
 
     // get resource statuses
-    resourceStatuses = await getResourceStatuses(application, appData)
+    const resourceStatuses = await getResourceStatuses(application, appData)
 
     return { resourceStatuses, relatedResources }
 }
