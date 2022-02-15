@@ -82,7 +82,6 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
             // add rules node
             if (subscription.rules) {
                 addSubscriptionRules(parentId, subscription, links, nodes)
-                delete subscription.rules
             }
 
             // if no cluster found by the placement, use a default empty cluster name so that the deployables are parsed and shown
@@ -119,7 +118,6 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
                     )
                 }
             })
-            delete subscription.report
         })
     }
 
