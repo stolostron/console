@@ -2,17 +2,45 @@
 
 import { AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 
+import {
+    applicationsState,
+    applicationSetsState,
+    argoApplicationsState,
+    ansibleJobState,
+    subscriptionsState,
+    channelsState,
+    placementsState,
+    placementRulesState,
+    subscriptionReportsState,
+    managedClustersState,
+} from '../../../atoms'
+
 import { AcmPage } from './AcmPage'
 
-import { createContext, Fragment, Suspense, useEffect, useContext, ElementType, ReactNode, useState } from 'react'
+import {
+    createContext,
+    Fragment,
+    Suspense,
+    useEffect,
+    useContext,
+    ElementType,
+    ReactNode,
+    useState,
+    useRef,
+} from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Link, Route, RouteComponentProps, Switch, Redirect, useLocation } from 'react-router-dom'
-import { atom,  useRecoilState } from 'recoil'
+import { useRecoilState, useRecoilCallback } from 'recoil'
 import { acmRouteState } from '../../../atoms'
 
 import { NavigationPath } from '../../../NavigationPath'
 import { ApplicationTopologyPageContent } from './ApplicationTopology/ApplicationTopology'
 import { ApplicationOverviewPageContent } from './ApplicationOverview/ApplicationOverview'
+
+import { getApplication } from './ApplicationTopology/model/application'
+import { getTopology } from './ApplicationTopology/model/topology'
+import { getApplicationData } from './ApplicationTopology/model/utils'
+import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
 
 export const ApplicationContext = createContext<{
     readonly actions: null | ReactNode
@@ -33,112 +61,107 @@ export const useApplicationPageContext = (ActionList: ElementType) => {
     return ActionList
 }
 
-export const applicationState = atom<any>({ key: 'application', default: '' as any })
+export type ApplicationDataType = {
+    activeChannel: string | undefined
+    allChannels: [string] | undefined
+    application: any
+    appData: any
+    topology: any
+    statuses?: any
+}
 
 export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ name: string; namespace: string }>) {
     const location = useLocation()
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
-    const [, setApplication] = useRecoilState(applicationState)
+    const [applications] = useRecoilState(applicationsState)
+    const [applicationSets] = useRecoilState(applicationSetsState)
+    const [argoApplications] = useRecoilState(argoApplicationsState)
+    const [ansibleJob] = useRecoilState(ansibleJobState)
+    const [channels] = useRecoilState(channelsState)
+    const [placements] = useRecoilState(placementsState)
+    const [placementRules] = useRecoilState(placementRulesState)
+    const [subscriptionReports] = useRecoilState(subscriptionReportsState)
+    const [managedClusters] = useRecoilState(managedClustersState)
+    const [activeChannel, setActiveChannel] = useState<string>()
+    const [applicationData, setApplicationData] = useState<ApplicationDataType>()
+    const lastRefreshRef = useRef<any>()
 
     useEffect(() => setRoute(AcmRoute.Applications), [setRoute])
 
+    // any recoil resources that constantly update because of a time stamp
+    const getSubscriptions = useRecoilCallback(
+        ({ snapshot }) =>
+            () =>
+                snapshot.getPromise(subscriptionsState),
+        []
+    )
+
     // refresh application the first time and then every n seconds
     useEffect(() => {
+        setApplicationData(undefined)
+        lastRefreshRef.current = undefined
         const interval = setInterval(
             (function refresh() {
-                // application is refreshed with recoil states and old statues (if any from last pass)
-                // if no old statuses, nodes are shown with waiting statuses
-                const { application, appData, topology } =
-                    refreshApplication(lastRefreshRef.current?.resourceStatuses) || {}
-                if (application && appData && topology) {
-                    // then application is refreshed with new statuses
+                ;(async () => {
+                    const subscriptions = await getSubscriptions()
+                    // get application object from recoil states
+                    const application = getApplication(match.params.namespace, match.params.name, activeChannel, {
+                        applications,
+                        applicationSets,
+                        argoApplications,
+                        ansibleJob,
+                        subscriptions,
+                        channels,
+                        subscriptionReports,
+                        placements,
+                        placementRules,
+                    })
+                    const topology = getTopology(
+                        application,
+                        managedClusters,
+                        lastRefreshRef?.current?.relatedResources
+                    )
+                    const appData = getApplicationData(topology.nodes)
+
+                    // when first opened, refresh topology with wait statuses
+                    if (!lastRefreshRef?.current?.resourceStatuses) {
+                        setApplicationData({
+                            activeChannel: application.activeChannel,
+                            allChannels: application.channels,
+                            application,
+                            topology,
+                            appData,
+                        })
+                    }
+
+                    // from then on, only refresh topology with new statuses
                     ;(async () => {
-                        const resourceStatuses = await getResourceStatuses(
+                        const { resourceStatuses, relatedResources, appDataWithStatuses } = await getResourceStatuses(
                             application,
                             appData,
                             topology,
                             lastRefreshRef.current
                         )
-                        refreshApplication(resourceStatuses)
-                        lastRefreshRef.current = { application, resourceStatuses }
-                        setCanUpdateStatuses(true)
+                        const topologyWithRelated = getTopology(application, managedClusters, relatedResources)
+                        setApplicationData({
+                            activeChannel: application.activeChannel,
+                            allChannels: application.channels,
+                            application,
+                            topology: topologyWithRelated,
+                            appData: appDataWithStatuses,
+                            statuses: resourceStatuses,
+                        })
+                        lastRefreshRef.current = { application, resourceStatuses, relatedResources }
                     })()
-                }
+                })()
                 return refresh
             })(),
             10000
         )
         return () => clearInterval(interval)
-    }, [])
-    
-    const refreshApplication = (resourceStatuses: any) => {
-        // use recoil states to get application
-        const application = getApplication(props.namespace, props.name, activeChannel, {
-            applications,
-            applicationSets,
-            argoApplications,
-            ansibleJob,
-            subscriptions,
-            channels,
-            subscriptionReports,
-            placements,
-            placementRules,
-        })
-        if (application) {
-            setActiveChannel(application.activeChannel)
-            setAllChannels(application.channels)
-            const topology = getTopology(application, managedClusters, resourceStatuses?.relatedResources)
-            const appData = getApplicationData(topology.nodes)
-
-            // create topology elements with statuses provided by searches
-            setElements(
-                getDiagramElements(appData, topology, resourceStatuses?.resourceStatuses, !!resourceStatuses, t)
-            )
-            return { application, appData, topology }
-        }
-    }
-
-
-
-
-    useEffect(() => {
-        const interval = setInterval(
-            (function refresh() {
-
-                const today = new Date();
-                const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-                const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-                const dateTime = date+' '+time;
-                setApplication(dateTime)
-
-                // // application is refreshed with recoil states and old statues (if any from last pass)
-                // // if no old statuses, nodes are shown with waiting statuses
-                // const { application, appData, topology } =
-                //     refreshApplication(lastRefreshRef.current?.resourceStatuses) || {}
-                // if (application && appData && topology) {
-                //     // then application is refreshed with new statuses
-                //     ;(async () => {
-                //         const resourceStatuses = await getResourceStatuses(
-                //             application,
-                //             appData,
-                //             topology,
-                //             lastRefreshRef.current
-                //         )
-                //         refreshApplication(resourceStatuses)
-                //         lastRefreshRef.current = { application, resourceStatuses }
-                //         setCanUpdateStatuses(true)
-                //     })()
-                // }
-                return refresh
-            })(),
-            10000
-        )
-        return () => clearInterval(interval)
-    }, [])
-
-
+    }, [activeChannel])
 
     return (
         <AcmPage
@@ -201,8 +224,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         </Route>
                         <Route exact path={NavigationPath.applicationTopology}>
                             <ApplicationTopologyPageContent
-                                name={match.params.name}
-                                namespace={match.params.namespace}
+                                applicationData={applicationData}
+                                setActiveChannel={setActiveChannel}
                             />
                         </Route>
                         <Route exact path={NavigationPath.applicationDetails}>
