@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import {
+    AcmButton,
+    AcmDropdown,
+    AcmEmptyState,
+    AcmTable,
+    IAcmRowAction,
+    IAcmTableColumn,
+} from '@stolostron/ui-components'
 import { ButtonVariant, PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
@@ -891,6 +898,50 @@ export default function ApplicationsOverview() {
         return () => canDeleteApplicationSetPromise.abort()
     }, [])
 
+    const appCreationButton = () => {
+        return (
+            <AcmDropdown
+                isDisabled={!canCreateApplication}
+                tooltip={
+                    'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                }
+                id={'application-create'}
+                onSelect={(id) => {
+                    id === 'create-argo'
+                        ? history.push(NavigationPath.createApplicationArgo)
+                        : history.push(NavigationPath.createApplicationSubscription)
+                }}
+                text={'Create application'}
+                dropdownItems={[
+                    {
+                        id: 'psuedo.group.label',
+                        isDisabled: true,
+                        text: <span style={{ fontSize: '14px' }}>Choose a type</span>,
+                    },
+                    {
+                        id: 'create-subscription',
+                        text: 'Subscription',
+                        isDisabled: false,
+                        component: 'button',
+                        path: NavigationPath.createApplicationSubscription,
+                    },
+                    {
+                        id: 'create-argo',
+                        text: 'Argo CD ApplicationSet',
+                        isDisabled: false,
+                        component: 'button',
+                        path: NavigationPath.createApplicationArgo,
+                    },
+                ]}
+                isKebab={false}
+                isPlain={true}
+                isPrimary={true}
+                // tooltipPosition={tableDropdown.tooltipPosition}
+                // dropdownPosition={DropdownPosition.left}
+            />
+        )
+    }
+
     return (
         <PageSection>
             <DeleteResourceModal {...modalProps} />
@@ -901,28 +952,13 @@ export default function ApplicationsOverview() {
                 keyFn={keyFn}
                 items={tableItems}
                 filters={filters}
-                tableActionButtons={[
-                    {
-                        id: 'createApplication',
-                        title: t('Create application'),
-                        click: () => history.push(NavigationPath.createApplication), // TODO add link to wizard
-                        isDisabled: !canCreateApplication,
-                        tooltip: t(
-                            'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
-                        ),
-                        variant: ButtonVariant.primary,
-                    },
-                ]}
+                customTableAction={appCreationButton()}
                 emptyState={
                     <AcmEmptyState
                         key="appOverviewEmptyState"
                         title={t('You don’t have any applications')}
                         message={getEmptyMessage(t)}
-                        action={
-                            <AcmButton component={Link} variant="primary" to={NavigationPath.createApplication}>
-                                {t('Create application')}
-                            </AcmButton>
-                        }
+                        action={appCreationButton()}
                     />
                 }
                 rowActionResolver={rowActionResolver}

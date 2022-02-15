@@ -63,7 +63,7 @@ export function getGitChannelBranches(channelPath: string, secretArgs?: { secret
 export function getGitChannelPaths(
     channelPath: string,
     branch: string,
-    secretArgs: { secretRef?: string; namespace?: string }
+    secretArgs?: { secretRef?: string; namespace?: string }
 ) {
     const gitInfo = getGitInformation(channelPath)
     return getGitConnection(secretArgs)
