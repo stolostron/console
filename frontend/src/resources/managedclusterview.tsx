@@ -183,10 +183,10 @@ export async function pollManagedClusterView(viewName: string, clusterName: stri
                         reject({ message: message })
                     }
                 } else {
-                    return {
+                    reject({
                         message:
                             'There was an error while getting the managed resource. Make sure the managed cluster is online and helthy, and that the work manager pod in namespace open-cluster-management-agent-addon is healthy ',
-                    }
+                    })
                 }
                 deleteManagedClusterView({ namespace: clusterName, name: viewName })
             })

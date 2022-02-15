@@ -13,6 +13,8 @@ import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
 import { ansibleTower } from './routes/ansibletower'
 import { authenticated } from './routes/authenticated'
+import { configure } from './routes/configure'
+import { consoleLinks } from './routes/consoleLinks'
 import { events, startWatching, stopWatching } from './routes/events'
 import { liveness } from './routes/liveness'
 import { login, loginCallback, logout } from './routes/oauth'
@@ -20,13 +22,11 @@ import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
 import { search } from './routes/search'
 import { serve } from './routes/serve'
-import { configure } from './routes/configure'
-import { consoleLinks } from './routes/consoleLinks'
 import { username } from './routes/username'
 
 // Router defaults to max param length of 100 - We need to override to 200 to handle resources with very long names
 // If the route exceeds 200 chars the route will not be found from this fn: router.find()
-export const router = Router<Router.HTTPVersion.V2>({ maxParamLength: 200 })
+export const router = Router<Router.HTTPVersion.V2>({ maxParamLength: 300 })
 router.get(`/readinessProbe`, readiness)
 router.get(`/livenessProbe`, liveness)
 router.get(`/ping`, respondOK)
