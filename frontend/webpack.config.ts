@@ -36,6 +36,10 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         module: {
             rules: [
                 { test: /\.(hbs|yaml)$/, type: 'asset/source' },
+                { 
+                    type: 'asset', 
+                    resourceQuery: /url/
+                },
                 { test: /\.(svg)$/, use: '@svgr/webpack' },
                 { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
@@ -117,6 +121,9 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 '/multicloud/version': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/login': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/logout': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/console-links': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/configure': { target: 'https://localhost:4000', secure: false},
+                '/multicloud/username': { target: 'https://localhost:4000', secure: false },
             },
             open: true,
             historyApiFallback: true,

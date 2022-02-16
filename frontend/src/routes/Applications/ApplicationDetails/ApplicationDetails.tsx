@@ -217,7 +217,10 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.applicationOverview}>
-                            <ApplicationOverviewPageContent />
+                            <ApplicationOverviewPageContent
+                                name={match.params.name}
+                                namespace={match.params.namespace}
+                            />
                         </Route>
                         <Route exact path={NavigationPath.applicationTopology}>
                             <ApplicationTopologyPageContent

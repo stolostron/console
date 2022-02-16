@@ -51,6 +51,9 @@ export const multiClusterHub: MultiClusterHub = {
         namespace: 'test-namespace',
     },
     spec: {},
+    status: {
+        currentVersion: '2.5.0',
+    },
 }
 
 export const mockCRHCredential: Secret = {

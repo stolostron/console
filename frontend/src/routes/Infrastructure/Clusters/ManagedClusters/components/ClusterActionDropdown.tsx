@@ -189,7 +189,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 id: 'edit-labels',
                 text: t('managed.editLabels'),
                 click: () => setShowEditLabels(true),
-                isDisabled: true,
+                isAriaDisabled: true,
                 rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
             },
             {
@@ -197,7 +197,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 text: t('managed.upgrade'),
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 click: (_cluster: Cluster) => setShowUpgradeModal(true),
-                isDisabled: true,
+                isAriaDisabled: true,
                 rbac: [
                     rbacPatch(ClusterCuratorDefinition, cluster.namespace),
                     rbacCreate(ClusterCuratorDefinition, cluster.namespace),
@@ -208,7 +208,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 text: t('managed.selectChannel'),
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 click: (_cluster: Cluster) => setShowChannelSelectModal(true),
-                isDisabled: true,
+                isAriaDisabled: true,
                 rbac: [
                     rbacPatch(ClusterCuratorDefinition, cluster.namespace),
                     rbacCreate(ClusterCuratorDefinition, cluster.namespace),
@@ -297,7 +297,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         },
                     })
                 },
-                isDisabled: true,
+                isAriaDisabled: true,
                 rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
             },
             {
@@ -331,7 +331,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         },
                     })
                 },
-                isDisabled: true,
+                isAriaDisabled: true,
                 rbac: [rbacPatch(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
             },
             {
@@ -357,7 +357,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                     })
                 },
-                isDisabled: true,
+                isAriaDisabled: true,
                 rbac: [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)],
             },
             {
@@ -383,7 +383,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                         isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                     })
                 },
-                isDisabled: true,
+                isAriaDisabled: true,
                 rbac: destroyRbac,
             },
             {
@@ -395,7 +395,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                             .replace(':namespace', cluster.namespace!)
                             .replace(':name', cluster.name!)
                     ),
-                isDisabled: cluster.status !== ClusterStatus.draft,
+                isAriaDisabled: cluster.status !== ClusterStatus.draft,
             },
             {
                 id: 'ai-scale-up',

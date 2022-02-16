@@ -15,10 +15,14 @@ metadata:
     name: policy-set-with-1-placement
     namespace: test
 spec:
+    numberOfClusters: 1
+    clusterSets:
+        - cluster-set
     predicates:
-        - labelSelector:
-              matchLabels:
-                  local-cluster: 'true'
+        - requiredClusterSelector:
+              labelSelector:
+                  matchLabels:
+                      local-cluster: 'true'
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
