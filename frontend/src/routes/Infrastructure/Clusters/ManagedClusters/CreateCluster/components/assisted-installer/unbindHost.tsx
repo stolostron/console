@@ -51,7 +51,7 @@ export const useCanUnbindAgent = (singleInfraEnv?: CIM.InfraEnvK8sResource) => {
             }
 
             if (agent) {
-                const [status] = getAgentStatus(agent)
+                const { status } = getAgentStatus(agent)
                 if (
                     [
                         'preparing-for-installation',
