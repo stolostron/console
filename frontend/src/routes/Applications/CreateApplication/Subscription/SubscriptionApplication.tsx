@@ -86,7 +86,6 @@ export function CreateSubscriptionApplication() {
             setControlData(controlData)
         })
     })
-    debugger
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -134,7 +133,7 @@ export function CreateSubscriptionApplication() {
 
     function onControlInitialize(control: any) {
         switch (control.id) {
-            case 'channelSection':
+            case 'channelSection': {
                 const { content } = control
                 if (content && content.length) {
                     const { controlData } = content[0]
@@ -148,6 +147,7 @@ export function CreateSubscriptionApplication() {
                     })
                 }
                 break
+            }
         }
     }
 

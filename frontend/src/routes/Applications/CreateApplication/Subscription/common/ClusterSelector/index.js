@@ -43,7 +43,7 @@ export class ClusterSelector extends React.Component {
     }
 
     render() {
-        const { isExpanded, t } = this.state
+        const { isExpanded } = this.state
         const onToggle = (toggleStatus) => {
             this.setState({ isExpanded: !toggleStatus })
         }
@@ -132,7 +132,7 @@ export class ClusterSelector extends React.Component {
     }
 
     validation(exceptions) {
-        const { control, locale, controlId } = this.props
+        const { control, controlId } = this.props
         if (_.get(control, 'active.mode', false)) {
             if (Object.keys(control.active.clusterLabelsList).length === 0) {
                 //no cluster labels set

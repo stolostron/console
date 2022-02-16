@@ -11,15 +11,14 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import React from 'react'
 import {
     listChannels,
-    listProviderConnections,
+    // listProviderConnections,
     getGitChannelBranches,
     getGitChannelPaths,
-    PlacementRuleKind,
+    // PlacementRuleKind,
 } from '../../../../../resources'
-import SharedResourceWarning from '../components/SharedResourceWarning'
+// import SharedResourceWarning from '../components/SharedResourceWarning'
 
 import _ from 'lodash'
 
@@ -37,15 +36,15 @@ export const loadExistingChannels = (type) => {
     }
 }
 
-export const loadExistingAnsibleProviders = () => {
-    return {
-        query: () => {
-            listProviderConnections().promise
-        },
-        loadingDesc: 'creation.app.loading.secrets',
-        setAvailable: setAvailableSecrets.bind(null),
-    }
-}
+// export const loadExistingAnsibleProviders = () => {
+//     return {
+//         query: () => {
+//             listProviderConnections().promise
+//         },
+//         loadingDesc: 'creation.app.loading.secrets',
+//         setAvailable: setAvailableSecrets.bind(null),
+//     }
+// }
 
 export const getUniqueChannelName = (channelPath, groupControlData) => {
     //create a unique name for a new channel, based on path and type
@@ -272,9 +271,6 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
         const gitControl = groupControlData.find(({ id }) => id === 'githubURL')
         const branchCtrl = groupControlData.find(({ id }) => id === 'githubBranch')
         const githubPathCtrl = groupControlData.find(({ id }) => id === 'githubPath')
-        const userCtrl = groupControlData.find(({ id }) => id === 'githubUser')
-
-        const tokenCtrl = groupControlData.find(({ id }) => id === 'githubAccessId')
 
         const selectedChannel = _.get(gitControl, 'availableData', {})[_.get(gitControl, 'active', '')]
         // get git repository path from channel object if this is an existing channel, use the combo value otherwise
@@ -570,33 +566,33 @@ export const setAvailableChannelSpecs = (type, control, result) => {
     }
 }
 
-export const setAvailableSecrets = (control, result) => {
-    const { loading } = result
-    const { data = {} } = result
-    // this is not working - I wonder if it's related to the fact that it uses a prompts
+// export const setAvailableSecrets = (control, result) => {
+//     const { loading } = result
+//     const { data = {} } = result
+// this is not working - I wonder if it's related to the fact that it uses a prompts
 
-    // const { secrets } = data
-    // control.available = []
-    // control.hasReplacements = true
+// const { secrets } = data
+// control.available = []
+// control.hasReplacements = true
 
-    // control.isLoading = false
-    // const error = secrets ? null : result.error
-    // if (error) {
-    //     control.isFailed = true
-    // } else if (secrets) {
-    //     control.availableData = _.keyBy(secrets, 'ansibleSecretName')
-    //     control.available = Object.keys(control.availableData).sort()
-    //     control.availableMap = _.mapValues(control.availableData, (replacements) => {
-    //         return {
-    //             replacements,
-    //         }
-    //     })
-    // }
-    // else {
-    //     control.isLoading = loading
-    // }
-    return control
-}
+// control.isLoading = false
+// const error = secrets ? null : result.error
+// if (error) {
+//     control.isFailed = true
+// } else if (secrets) {
+//     control.availableData = _.keyBy(secrets, 'ansibleSecretName')
+//     control.available = Object.keys(control.availableData).sort()
+//     control.availableMap = _.mapValues(control.availableData, (replacements) => {
+//         return {
+//             replacements,
+//         }
+//     })
+// }
+// else {
+//     control.isLoading = loading
+// }
+//     return control
+// }
 
 // Those are for edit issue#5904
 //TODO

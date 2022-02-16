@@ -12,7 +12,6 @@
 'use strict'
 
 // seems to be an issue with this rule and redux
-/* eslint-disable import/no-named-as-default */
 
 import React from 'react'
 import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../common/TimeWindow'
@@ -28,7 +27,6 @@ import {
     getSharedSubscriptionWarning,
 } from './utils'
 import { getSourcePath } from 'temptifly'
-import { useTranslation } from '../../../../../lib/acm-i18next'
 import { listPlacementRules, listManagedClusters } from '../../../../../resources'
 import _ from 'lodash'
 

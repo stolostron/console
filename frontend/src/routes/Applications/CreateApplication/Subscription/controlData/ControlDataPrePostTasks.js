@@ -11,7 +11,10 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { loadExistingAnsibleProviders, getSharedSubscriptionWarning } from './utils'
+import {
+    // loadExistingAnsibleProviders,
+    getSharedSubscriptionWarning,
+} from './utils'
 import React from 'react'
 import { AcmIcon, AcmIconVariant } from '@stolostron/ui-components'
 

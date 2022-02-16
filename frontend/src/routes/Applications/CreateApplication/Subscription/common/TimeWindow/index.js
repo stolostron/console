@@ -19,9 +19,8 @@ import {
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import { Tooltip, getSourcePath, removeVs } from 'temptifly'
+import moment from 'moment-timezone'
 import _ from 'lodash'
-
-const moment = require('moment-timezone')
 import './style.css'
 
 export class TimeWindow extends React.Component {
@@ -71,7 +70,7 @@ export class TimeWindow extends React.Component {
     }
 
     validation(exceptions) {
-        const { control, locale } = this.props
+        const { control } = this.props
         const timeWindowId = 'timeWindow-config'
         // Mode is active/blocked
         if (control.active.mode) {
@@ -312,7 +311,7 @@ export class TimeWindow extends React.Component {
     }
 
     renderTimes = (control, modeSelected) => {
-        const { locale, controlId } = this.props
+        const { controlId } = this.props
         return (
             control.active &&
             control.active.timeList.map((item) => {
