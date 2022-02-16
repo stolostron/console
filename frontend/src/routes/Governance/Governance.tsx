@@ -2,7 +2,7 @@
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
 import GovernancePage from './GovernancePage'
-import PolicyDetailsHistoryPage from './policies/policy-details/PolicyDetailsHistoryPage'
+import { PolicyDetailsHistoryPage } from './policies/policy-details/PolicyDetailsHistoryPage'
 import PolicyDetailsPage from './policies/policy-details/PolicyDetailsPage'
 import { PolicyWizardPage } from './policies/PolicyWizardPage'
 import { CreatePolicySet } from './policy-sets/CreatePolicySet'
