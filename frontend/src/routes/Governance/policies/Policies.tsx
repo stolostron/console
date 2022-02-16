@@ -539,8 +539,11 @@ export default function PoliciesPage() {
                     tooltip: 'Edit policy',
                     addSeparator: true,
                     click: (policy: Policy) => {
-                        // TODO - hook up nav to edit Policy
-                        console.log('Edit policy', policy)
+                        history.push(
+                            NavigationPath.editPolicy
+                                .replace(':namespace', policy.metadata.namespace)
+                                .replace(':name', policy.metadata.name)
+                        )
                     },
                 },
                 {

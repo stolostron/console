@@ -12,7 +12,7 @@ import { getPolicyDetailSourceLabel } from '../../common/util'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
 import PolicyDetailsResults from './PolicyDetailsResults'
 
-export default function PolicyDetailsPage() {
+export function PolicyDetailsPage() {
     const location = useLocation()
     // const history = useHistory()
     const { t } = useTranslation()

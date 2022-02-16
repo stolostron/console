@@ -15,7 +15,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { createResources, IResource } from '../../../resources'
 
-export function PolicyWizardPage() {
+export function CreatePolicy() {
     const { t } = useTranslation()
     const toast = useContext(AcmToastContext)
     const history = useHistory()
