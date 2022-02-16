@@ -140,37 +140,38 @@ export const fireManagedClusterAction = (
 export async function pollManagedClusterAction(actionName: string, clusterName: string): Promise<ManagedClusterAction> {
     let retries = process.env.NODE_ENV === 'test' ? 0 : 20
     const poll = async (resolve: any, reject: any) => {
-        getManagedClusterAction({ namespace: clusterName, name: actionName })
-            .promise.then((actionResponse) => {
-                const isComplete = _.get(actionResponse, 'status.conditions[0].type', undefined)
-                const isActionDone = _.get(actionResponse, 'status.conditions[0].reason', undefined)
-                const actionMessage = _.get(actionResponse, 'status.conditions[0].message', undefined)
-                if (isComplete && isActionDone) {
-                    if (isComplete === 'Completed' && isActionDone === 'ActionDone') {
-                        resolve({
-                            complete: isComplete,
-                            actionDone: isActionDone,
-                            message: actionMessage,
-                            result: actionResponse.status?.result,
-                        })
-                    } else if (isComplete === 'Completed' && isActionDone !== 'ActionDone') {
-                        reject({ message: actionMessage })
-                    }
-                } else {
-                    return {
-                        message:
-                            'There was an error while performing the managed cluster resource action. Make sure the managed cluster is online and helthy, and that the work manager pod in namespace open-cluster-management-agent-addon is healthy ',
-                    }
+        const response = await getManagedClusterAction({ namespace: clusterName, name: actionName }).promise
+        if (response?.status) {
+            const isComplete = _.get(response, 'status.conditions[0].type', undefined)
+            const isActionDone = _.get(response, 'status.conditions[0].reason', undefined)
+            const actionMessage = _.get(response, 'status.conditions[0].message', undefined)
+            if (isComplete === 'Completed' && isActionDone === 'ActionDone') {
+                resolve({
+                    complete: isComplete,
+                    actionDone: isActionDone,
+                    message: actionMessage,
+                    result: response.status?.result,
+                })
+            } else if (actionMessage && isComplete === 'Completed' && isActionDone !== 'ActionDone') {
+                reject({ message: actionMessage })
+            } else {
+                return {
+                    message:
+                        'There was an error while performing the managed cluster resource action. Make sure the managed cluster is online and helthy, and that the work manager pod in namespace open-cluster-management-agent-addon is healthy ',
                 }
+            }
+            deleteManagedClusterAction({ name: actionName, namespace: clusterName })
+        } else {
+            if (retries-- > 0) {
+                console.debug('MCA poll - retries left: ', retries)
+                setTimeout(poll, 100, resolve, reject)
+            } else {
                 deleteManagedClusterAction({ name: actionName, namespace: clusterName })
-            })
-            .catch((err) => {
-                if (retries-- > 0) {
-                    setTimeout(poll, 100, resolve, reject)
-                } else {
-                    reject(err)
-                }
-            })
+                return reject({
+                    message: `Request for ManagedClusterAction: ${actionName} on cluster: ${clusterName} failed due to too many requests. Make sure the work manager pod in namespace open-cluster-management-agent-addon is healthy.`,
+                })
+            }
+        }
     }
     return new Promise(poll)
 }
