@@ -167,10 +167,12 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                     const cluster = item?.cluster
                     const templateName = item?.templateName
                     if (policyName && policyNamespace && cluster && templateName) {
-                        // TODO this link does nothing....
-                        // const statusHistoryURL = `/multicloud/policies/all/${policyNamespace}/${policyName}/status/${cluster}/templates/${templateName}/history`
-                        // return <Link to={statusHistoryURL}>{t('View history')}</Link>
-                        return '-'
+                        const statusHistoryURL = NavigationPath.policyDetailsHistory
+                            .replace(':namespace', policyNamespace)
+                            .replace(':name', policyName)
+                            .replace(':clusterName', cluster)
+                            .replace(':templateName', templateName)
+                        return <Link to={statusHistoryURL}>{t('View history')}</Link>
                     }
                     return '-'
                 },
