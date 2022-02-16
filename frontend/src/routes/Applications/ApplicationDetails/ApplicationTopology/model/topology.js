@@ -5,20 +5,19 @@ import { computeNodeStatus } from '../helpers/diagram-helpers'
 import _ from 'lodash'
 import R from 'ramda'
 import { getArgoTopology } from './topologyArgo'
-//import { addArgoDiagramDetails } from './argo/details'
 import { getSubscriptionTopology } from './topologySubscription'
 
-export const getTopology = (application, managedClusters) => {
+export const getTopology = (application, managedClusters, relatedResources) => {
     let topology
     if (application.isArgoApp) {
         topology = getArgoTopology(application, managedClusters)
     } else {
-        topology = getSubscriptionTopology(application, managedClusters)
+        topology = getSubscriptionTopology(application, managedClusters, relatedResources)
     }
     return topology
 }
 
-export const getDiagramElements = (appData, topology, searchRelated, additionalRelated, canUpdateStatuses, t) => {
+export const getDiagramElements = (appData, topology, resourceStatuses, canUpdateStatuses, t) => {
     // topology from api will have raw k8 objects, pods status
     const { links, nodes } = getTopologyElements(topology)
     // create yaml and what row links to what node
@@ -54,15 +53,10 @@ export const getDiagramElements = (appData, topology, searchRelated, additionalR
         processNodeData(node, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
     })
 
-    if (searchRelated) {
-        if (appData.isArgoApp && additionalRelated) {
-            const secretItems = _.get(additionalRelated, 'searchResult', [{ items: [] }])[0]
-            _.set(appData, 'argoSecrets', _.get(secretItems, 'items', []))
-        }
-        addDiagramDetails(searchRelated, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
+    if (resourceStatuses) {
+        addDiagramDetails(resourceStatuses, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
         nodes.forEach((node) => {
             computeNodeStatus(node, canUpdateStatuses, t)
-            //_.set(node, 'specs.rnd', Math.random())
         })
     }
 

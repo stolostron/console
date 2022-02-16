@@ -2,7 +2,7 @@
 export const DiagramIcons = () => (
     <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="0" height="0">
         <symbol viewBox="0 0 16 16" id="diagramIcons_checkmark">
-            <circle cx="8" cy="8" r="8" fill="white" fill-opacity="1" />
+            <circle cx="8" cy="8" r="8" fill="white" fillOpacity="1" />
             <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zM6.7 11.5L3.4 8.1l1.4-1.4 1.9 1.9 4.1-4.1 1.4 1.4-5.5 5.6z" />
         </symbol>
         <symbol viewBox="0 0 12 12" id="diagramIcons_filter">
@@ -16,7 +16,7 @@ export const DiagramIcons = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 14 12" id="diagramIcons_sidecar">
-            <g id="Topology" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g id="Topology" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
                 <g id="App-Topology-6" transform="translate(-376.000000, -571.000000)" fill="#3D70B2">
                     <g id="Organization-/-File-/-notebook-/-16" transform="translate(375.000000, 569.000000)">
                         <path
@@ -28,15 +28,15 @@ export const DiagramIcons = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 12 8" id="diagramIcons_clusterCount">
-            <rect width="100%" height="100%" stroke="white" fill="black" stroke-width="1" />
+            <rect width="100%" height="100%" stroke="white" fill="black" strokeWidth="1" />
         </symbol>
         <symbol viewBox="0 0 16 16" id="diagramIcons_success">
-            <circle cx="8" cy="8" r="8" fill="white" fill-opacity="1" />
+            <circle cx="8" cy="8" r="8" fill="white" fillOpacity="1" />
             <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zM6.7 11.5L3.4 8.1l1.4-1.4 1.9 1.9 4.1-4.1 1.4 1.4-5.5 5.6z" />
         </symbol>
         <symbol viewBox="6 6 28 28" id="diagramIcons_warning">
             <g transform="scale(1.68)">
-                <g id="Topology" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g id="Topology" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
                     <g id="Artboard" transform="translate(-1474.000000, -1386.000000)">
                         <g id="DeployWarning" transform="translate(1474.000000, 1386.000000)">
                             <circle id="Oval" fill="#FFFFFF" cx="12" cy="12" r="9"></circle>
@@ -76,7 +76,7 @@ export const DiagramIcons = () => (
                 id="path2382"
                 d="m165.33 113.44a103.61 103.61 0 1 1 -207.22 0 103.61 103.61 0 1 1 207.22 0z"
                 transform="matrix(.93739 0 0 .93739 42.143 -6.3392)"
-                stroke-width="0"
+                strokeWidth="0"
                 fill="#F0AB00"
             />
             <g id="layer1">
@@ -93,7 +93,7 @@ export const DiagramIcons = () => (
         </symbol>
         <svg viewBox="0 0 1024 1024" id="diagramIcons_open-new-tab">
             <title>open-new-tab</title>
-            <g id="open-new-tab" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g id="open-new-tab" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
                 <path
                     d="M576,320 L896,320 L896,192 L576,192 L576,320 Z M128,320 L448,320 L448,192 L128,192 L128,320 Z M930,64 L896,64 L128,64 L94,64 C42.085,64 0,106.085 0,158 L0,192 L0,832 L0,866 C0,917.915 42.085,960 94,960 L128,960 L488,960 C501.255,960 512,949.255 512,936 L512,856 C512,842.745 501.255,832 488,832 L140,832 C133.373,832 128,826.627 128,820 L128,448 L896,448 L896,552 C896,565.255 906.745,576 920,576 L1000,576 C1013.255,576 1024,565.255 1024,552 L1024,158 C1024,106.085 981.915,64 930,64 L930,64 Z"
                     id="Fill-1"
