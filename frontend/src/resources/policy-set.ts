@@ -41,7 +41,7 @@ export interface PolicySetStatus {
 export interface PolicySetStatusPlacement {
     placement: string
     placementBinding: string
-    placementDecisions: string[]
+    placementDecisions?: string[]
 }
 
 export interface PolicySetStatusResult {
