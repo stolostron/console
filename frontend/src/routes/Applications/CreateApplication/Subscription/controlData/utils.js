@@ -12,15 +12,14 @@
 'use strict'
 
 import React from 'react'
-// import msgs from '../../../../nls/platform.properties'
-import { RESOURCE_TYPES } from '../../../../lib/shared/constants'
 import {
     listChannels,
     listProviderConnections,
     getGitChannelBranches,
     getGitChannelPaths,
+    PlacementRuleKind,
 } from '../../../../../resources'
-// import SharedResourceWarning from '../components/SharedResourceWarning'
+import SharedResourceWarning from '../components/SharedResourceWarning'
 
 import _ from 'lodash'
 
@@ -269,87 +268,70 @@ export const updateControlsForNS = (initiatingControl, nsControl, globalControl)
 }
 
 const retrieveGitDetails = async (branchName, groupControlData, setLoadingState) => {
-    // try {
-    const gitControl = groupControlData.find(({ id }) => id === 'githubURL')
-    const branchCtrl = groupControlData.find(({ id }) => id === 'githubBranch')
-    const githubPathCtrl = groupControlData.find(({ id }) => id === 'githubPath')
-    const userCtrl = groupControlData.find(({ id }) => id === 'githubUser')
+    try {
+        const gitControl = groupControlData.find(({ id }) => id === 'githubURL')
+        const branchCtrl = groupControlData.find(({ id }) => id === 'githubBranch')
+        const githubPathCtrl = groupControlData.find(({ id }) => id === 'githubPath')
+        const userCtrl = groupControlData.find(({ id }) => id === 'githubUser')
 
-    const tokenCtrl = groupControlData.find(({ id }) => id === 'githubAccessId')
+        const tokenCtrl = groupControlData.find(({ id }) => id === 'githubAccessId')
 
-    const selectedChannel = _.get(gitControl, 'availableData', {})[_.get(gitControl, 'active', '')]
-    // get git repository path from channel object if this is an existing channel, use the combo value otherwise
-    const gitUrl = selectedChannel ? _.get(selectedChannel, 'spec.pathname', '') : _.get(gitControl, 'active', '')
-    const namespace = _.get(selectedChannel, 'metadata.namespace', '')
-    const secretRef = _.get(selectedChannel, 'secretRef', '')
+        const selectedChannel = _.get(gitControl, 'availableData', {})[_.get(gitControl, 'active', '')]
+        // get git repository path from channel object if this is an existing channel, use the combo value otherwise
+        const gitUrl = selectedChannel ? _.get(selectedChannel, 'spec.pathname', '') : _.get(gitControl, 'active', '')
+        const namespace = _.get(selectedChannel, 'metadata.namespace', '')
+        const secretRef = _.get(selectedChannel, 'secretRef', '')
 
-    if (!gitUrl) {
-        branchCtrl.active = ''
-        branchCtrl.available = []
-        return
-    }
-
-    //check only github repos
-    const url = new URL(gitUrl)
-    if (url.host !== 'github.com') {
-        return
-    }
-
-    githubPathCtrl.active = ''
-    githubPathCtrl.available = []
-
-    if (branchName) {
-        //get folders for branch
-        setLoadingState(githubPathCtrl, true)
-        getGitChannelPaths(gitUrl, branchName, { secretRef, namespace }).then(
-            (result) => {
-                githubPathCtrl.available = result.sort()
-                setLoadingState(githubPathCtrl, false)
-            },
-            () => {
-                // on error
-                setLoadingState(githubPathCtrl, false)
-            }
-        )
-        // const pathQueryVariables = {
-        //     ...queryVariables,
-        //     branch: branchName,
-        // }
-        // apolloClient.getGitChannelPaths(pathQueryVariables).then(
-        //     (result) => {
-        //         const items = _.get(result, 'data.items', []) || []
-        //         items.forEach((path) => {
-        //             githubPathCtrl.available.push(path)
-        //         })
-        //         setLoadingState(githubPathCtrl, false)
-        //     },
-        //     () => {
-        //         //on error
-        //         setLoadingState(githubPathCtrl, false)
-        //     }
-        // )
-    } else {
-        //get branches
-        setLoadingState(branchCtrl, true)
-        const onError = () => {
-            branchCtrl.exception = 'The connection to the Git repository failed. Cannot get branches.'
-            setLoadingState(branchCtrl, false)
+        if (!gitUrl) {
+            branchCtrl.active = ''
+            branchCtrl.available = []
+            return
         }
 
-        getGitChannelBranches(gitUrl, { secretRef, namespace }).then((result) => {
-            if (_.get(result, 'errors')) {
-                onError()
-            } else {
-                branchCtrl.active = ''
-                branchCtrl.available = result.sort()
-                delete branchCtrl.exception
+        //check only github repos
+        const url = new URL(gitUrl)
+        if (url.host !== 'github.com') {
+            return
+        }
+
+        githubPathCtrl.active = ''
+        githubPathCtrl.available = []
+
+        if (branchName) {
+            //get folders for branch
+            setLoadingState(githubPathCtrl, true)
+            getGitChannelPaths(gitUrl, branchName, { secretRef, namespace }).then(
+                (result) => {
+                    githubPathCtrl.available = result.sort()
+                    setLoadingState(githubPathCtrl, false)
+                },
+                () => {
+                    // on error
+                    setLoadingState(githubPathCtrl, false)
+                }
+            )
+        } else {
+            //get branches
+            setLoadingState(branchCtrl, true)
+            const onError = () => {
+                branchCtrl.exception = 'The connection to the Git repository failed. Cannot get branches.'
                 setLoadingState(branchCtrl, false)
             }
-        })
+
+            getGitChannelBranches(gitUrl, { secretRef, namespace }).then((result) => {
+                if (_.get(result, 'errors')) {
+                    onError()
+                } else {
+                    branchCtrl.active = ''
+                    branchCtrl.available = result.sort()
+                    delete branchCtrl.exception
+                    setLoadingState(branchCtrl, false)
+                }
+            })
+        }
+    } catch (err) {
+        //return err
     }
-    // } catch (err) {
-    //     //return err
-    // }
 }
 
 export const updateGitBranchFolders = async (branchControl, globalControls, setLoadingState) => {
@@ -616,8 +598,10 @@ export const setAvailableSecrets = (control, result) => {
     return control
 }
 
+// Those are for edit issue#5904
+//TODO
 // export const getSharedPlacementRuleWarning = (control) => (
-//     <SharedResourceWarning resourceType={RESOURCE_TYPES.HCM_PLACEMENT_RULES} control={control} />
+//     <SharedResourceWarning resourceType={PlacementRuleKind} control={control} />
 // )
 
 // export const getSharedSubscriptionWarning = (control) => (

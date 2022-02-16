@@ -5,11 +5,9 @@ import { PageSection } from '@patternfly/react-core'
 import { NavigationPath } from '../../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import {
-    useHistory,
-    // useLocation
-} from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { ApplicationKind, createResources as createKubeResources, IResource } from '../../../../resources'
+import './style.css'
 
 // Template Data
 import { controlData } from './controlData/ControlData'

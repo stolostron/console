@@ -29,7 +29,7 @@ import {
 } from './utils'
 import { getSourcePath } from 'temptifly'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { listPlacementRules } from '../../../../../resources'
+import { listPlacementRules, listManagedClusters } from '../../../../../resources'
 import _ from 'lodash'
 
 const existingRuleCheckbox = 'existingrule-checkbox'
@@ -214,19 +214,27 @@ export const summarizeOnline = (control, globalControlData, summary) => {
     }
 }
 
-// const getClusterStatus = (name) => {
-//     return apolloClient
-//         .getManagedClusterStatus({ clusterName: name })
-//         .then((response) => {
-//             return response && response.data && response.data.isManagedClusterConditionAvailable
-//         })
-//         .catch(() => {
-//             // default to have the local-cluster managed
-//             return true
-//         })
-// }
+async function getClusterStatus(name) {
+    let successImportStatus = false
+    const managedClusters = await listManagedClusters().promise
+    const managedCluster = _.find(managedClusters, (managedCluster) => managedCluster.metadata.name === name)
+    if (managedCluster) {
+        const managedClusterCondition = _.get(managedCluster, 'status.conditions', {})
+        if (!_.isEmpty(managedClusterCondition)) {
+            // check cluster import condition
+            const managedClusterAvailable = _.find(
+                managedClusterCondition,
+                (condition) => condition.type === 'ManagedClusterConditionAvailable'
+            )
+            if (managedClusterAvailable && _.has(managedClusterAvailable, 'status')) {
+                successImportStatus = _.get(managedClusterAvailable, 'status') === 'True' ? true : successImportStatus
+            }
+        }
+    }
+    return successImportStatus
+}
 
-// const enableHubSelfManagement = getClusterStatus('local-cluster')
+const enableHubSelfManagement = getClusterStatus('local-cluster')
 
 const placementData = [
     ////////////////////////////////////////////////////////////////////////////////////

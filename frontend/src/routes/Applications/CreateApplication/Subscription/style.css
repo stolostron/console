@@ -1,0 +1,6 @@
+.portal-controls {
+    display: flex;
+}
+.portal-controls > div {
+    margin-left: 16px;
+}
