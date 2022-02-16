@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -10,7 +10,7 @@ import { ApplicationKind, createResources as createKubeResources, IResource } fr
 import './style.css'
 
 // Template Data
-import { controlData } from './controlData/ControlData'
+import { controlData as getControlData } from './controlData/ControlData'
 import createTemplate from './templates/template.hbs'
 import gitTemplate from './templates/templateGit.hbs'
 import helmTemplate from './templates/templateHelm.hbs'
@@ -80,6 +80,13 @@ export default function CreateSubscriptionApplicationPage() {
 export function CreateSubscriptionApplication() {
     const history = useHistory()
     const toastContext = useContext(AcmToastContext)
+    const [controlData, setControlData] = useState<any>('')
+    useEffect(() => {
+        getControlData().then((controlData) => {
+            setControlData(controlData)
+        })
+    })
+    debugger
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -145,24 +152,26 @@ export function CreateSubscriptionApplication() {
     }
 
     return (
-        <TemplateEditor
-            type={'application'}
-            title={t('application.create.yaml')}
-            monacoEditor={<MonacoEditor />}
-            controlData={controlData}
-            template={template}
-            portals={Portals}
-            // fetchControl={fetchControl}
-            createControl={{
-                createResource,
-                cancelCreate,
-                pauseCreate,
-                creationStatus: creationStatus?.status,
-                creationMsg: creationStatus?.messages,
-            }}
-            logging={process.env.NODE_ENV !== 'production'}
-            onControlInitialize={onControlInitialize}
-            i18n={i18n}
-        />
+        controlData && (
+            <TemplateEditor
+                type={'application'}
+                title={t('application.create.yaml')}
+                monacoEditor={<MonacoEditor />}
+                controlData={controlData}
+                template={template}
+                portals={Portals}
+                // fetchControl={fetchControl}
+                createControl={{
+                    createResource,
+                    cancelCreate,
+                    pauseCreate,
+                    creationStatus: creationStatus?.status,
+                    creationMsg: creationStatus?.messages,
+                }}
+                logging={process.env.NODE_ENV !== 'production'}
+                onControlInitialize={onControlInitialize}
+                i18n={i18n}
+            />
+        )
     )
 }

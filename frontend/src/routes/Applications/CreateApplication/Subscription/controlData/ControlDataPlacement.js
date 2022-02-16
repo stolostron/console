@@ -236,7 +236,7 @@ async function getClusterStatus(name) {
 
 const enableHubSelfManagement = getClusterStatus('local-cluster')
 
-const placementData = [
+const placementData = async () => [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  clusters  /////////////////////////////////////
     {
@@ -287,14 +287,12 @@ const placementData = [
     {
         id: onlineClusterCheckbox,
         type: 'checkbox',
-        name: 'creation.app.settings.onlineClusters',
-        // name: (await enableHubSelfManagement)
-        //     ? 'creation.app.settings.onlineClusters'
-        //     : 'creation.app.settings.onlineClustersOnly',
-        tooltip: 'tooltip.creation.app.settings.onlineClusters',
-        // tooltip: (await enableHubSelfManagement)
-        //     ? 'tooltip.creation.app.settings.onlineClusters'
-        //     : 'tooltip.creation.app.settings.onlineClustersOnly',
+        name: (await enableHubSelfManagement)
+            ? 'creation.app.settings.onlineClusters'
+            : 'creation.app.settings.onlineClustersOnly',
+        tooltip: (await enableHubSelfManagement)
+            ? 'tooltip.creation.app.settings.onlineClusters'
+            : 'tooltip.creation.app.settings.onlineClustersOnly',
         active: false,
         available: [],
         onSelect: updatePlacementControlsForAllOnline,
@@ -303,8 +301,7 @@ const placementData = [
     },
     {
         id: localClusterCheckbox,
-        // type: (await enableHubSelfManagement) ? 'checkbox' : 'hidden',
-        type: 'checkbox',
+        type: (await enableHubSelfManagement) ? 'checkbox' : 'hidden',
         name: 'creation.app.settings.localClusters',
         tooltip: 'tooltip.creation.app.settings.localClusters',
         onSelect: updatePlacementControlsForLocal,
