@@ -12,7 +12,7 @@ export async function getArgoResourceStatuses(application, appData, topology) {
     const { name, namespace } = application
     const resourceStatuses = await getResourceStatuses(name, namespace, appData, topology, argoSource)
 
-    const secret = await getArgoSecret(appData, resourceStatuses.resourceStatuses)
+    const secret = await getArgoSecret(appData, resourceStatuses)
     if (secret) {
         const secretItems = _.get(secret, 'data.searchResult', [{ items: [] }])[0]
         _.set(appData, 'argoSecrets', _.get(secretItems, 'items', []))
@@ -172,8 +172,8 @@ export const findMatchingCluster = (argoApp, argoMappingInfo) => {
     return serverApi
 }
 
-const getArgoSecret = (appData, resourceStatuses) => {
-    const { searchResult } = resourceStatuses.data
+const getArgoSecret = (appData, resourceStatuses = {}) => {
+    const searchResult = _.get(resourceStatuses, 'data.searchResult', [])
     if (searchResult.length > 0 && searchResult[0].items) {
         // For the no applicationSet case, make sure we don't include apps with applicationSet
         const allApps = _.get(searchResult[0], 'items', []).filter(
