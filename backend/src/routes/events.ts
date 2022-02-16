@@ -200,7 +200,14 @@ async function listKubernetesObjects(options: IWatchOptions) {
         if (!_continue) break
     }
 
-    logger.info({ msg: 'list', ...options, count: items.length })
+    logger.info({
+        msg: 'list',
+        kind: options.kind,
+        labels: options.labelSelector,
+        fields: options.fieldSelector,
+        apiVersion: options.apiVersion,
+        count: items.length,
+    })
 
     items = items.map((resource) => {
         resource.kind = options.kind
@@ -236,7 +243,13 @@ async function listKubernetesObjects(options: IWatchOptions) {
 async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: string) {
     const serviceAcccountToken = getServiceAcccountToken()
     while (!stopping) {
-        logger.debug({ msg: 'watch', ...options })
+        logger.debug({
+            msg: 'watch',
+            kind: options.kind,
+            labels: options.labelSelector,
+            fields: options.fieldSelector,
+            apiVersion: options.apiVersion,
+        })
         try {
             const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
             const request = got.stream(url, {
@@ -266,14 +279,32 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
 
                         switch (watchEvent.type) {
                             case 'ADDED':
-                            case 'MODIFIED':
-                            case 'DELETED':
                                 logger.debug({
-                                    msg: watchEvent.type.toLowerCase(),
+                                    msg: 'added',
                                     kind: watchEvent.object.kind,
-                                    apiVersion: watchEvent.object.apiVersion,
                                     name: watchEvent.object.metadata.name,
                                     namespace: watchEvent.object.metadata.namespace,
+                                    apiVersion: watchEvent.object.apiVersion,
+                                })
+                                resourceVersion = watchEvent.object.metadata.resourceVersion
+                                break
+                            case 'MODIFIED':
+                                logger.debug({
+                                    msg: 'modify',
+                                    kind: watchEvent.object.kind,
+                                    name: watchEvent.object.metadata.name,
+                                    namespace: watchEvent.object.metadata.namespace,
+                                    apiVersion: watchEvent.object.apiVersion,
+                                })
+                                resourceVersion = watchEvent.object.metadata.resourceVersion
+                                break
+                            case 'DELETED':
+                                logger.debug({
+                                    msg: 'delete',
+                                    kind: watchEvent.object.kind,
+                                    name: watchEvent.object.metadata.name,
+                                    namespace: watchEvent.object.metadata.namespace,
+                                    apiVersion: watchEvent.object.apiVersion,
                                 })
                                 resourceVersion = watchEvent.object.metadata.resourceVersion
                                 break
