@@ -80,8 +80,6 @@ export function PolicyDetailsPage() {
                 <Switch>
                     <Route exact path={detailsUrl} render={() => <PolicyDetailsOverview policy={selectedPolicy} />} />
                     <Route exact path={resultsUrl} render={() => <PolicyDetailsResults policy={selectedPolicy} />} />
-                    {/* History page? */}
-                    {/* <Route exact path={templatesUrl} render={() => <PolicyDetails />} /> */}
                 </Switch>
             </Suspense>
         </AcmPage>
