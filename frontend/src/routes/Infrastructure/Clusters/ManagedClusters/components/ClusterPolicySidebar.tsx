@@ -8,6 +8,7 @@ import {
     FlexItem,
     Grid,
     GridItem,
+    pluralize,
     Tab,
     Tabs,
     TabTitleText,
@@ -310,7 +311,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
         <div className={classes.body}>
             <TextContent className={classes.titleText}>
                 <Text component={TextVariants.h2}>
-                    {t('{0} identified issues').replace('{0}', policyReportViolations.length.toString())}
+                    {t(`${pluralize(policyReportViolations.length, 'identified issue')}`)}
                 </Text>
                 <Text component={TextVariants.p}>
                     {t(
