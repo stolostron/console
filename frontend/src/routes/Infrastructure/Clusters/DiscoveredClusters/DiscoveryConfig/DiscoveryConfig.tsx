@@ -214,7 +214,9 @@ export function DiscoveryConfigPageContent(props: {
                                 })
                                 resolve(deletecmd)
                                 toastContext.addAlert({
-                                    title: t('alert.deleted.header', { credentialName: getDiscoveryConfigCredential(discoveryConfig) }),
+                                    title: t('alert.deleted.header', {
+                                        credentialName: getDiscoveryConfigCredential(discoveryConfig),
+                                    }),
                                     message: t('alert.msg'),
                                     type: 'success',
                                     autoClose: true,
@@ -270,7 +272,9 @@ export function DiscoveryConfigPageContent(props: {
                     const importcmd = await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
                     toastContext.addAlert({
-                        title: t('alert.created.header', { credentialName: getDiscoveryConfigCredential(discoveryConfig) }),
+                        title: t('alert.created.header', {
+                            credentialName: getDiscoveryConfigCredential(discoveryConfig),
+                        }),
                         message: t('alert.msg'),
                         type: 'success',
                         autoClose: true,
@@ -280,7 +284,9 @@ export function DiscoveryConfigPageContent(props: {
                     const importcmd = await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
                     toastContext.addAlert({
-                        title: t('alert.updated.header', { credentialName: getDiscoveryConfigCredential(discoveryConfig) }),
+                        title: t('alert.updated.header', {
+                            credentialName: getDiscoveryConfigCredential(discoveryConfig),
+                        }),
                         message: t('alert.msg'),
                         type: 'success',
                         autoClose: true,
@@ -405,10 +411,7 @@ export function DiscoveryConfigPageContent(props: {
                 {credentials?.map((credential) => {
                     const credentialName = credential.metadata.namespace + '/' + credential.metadata.name
                     return (
-                        <SelectOption
-                            key={credentialName}
-                            value={credentialName}
-                        >
+                        <SelectOption key={credentialName} value={credentialName}>
                             {credentialName}
                         </SelectOption>
                     )
