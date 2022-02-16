@@ -2,6 +2,7 @@
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
 import GovernancePage from './GovernancePage'
+import PolicyDetailsHistoryPage from './policies/policy-details/PolicyDetailsHistoryPage'
 import PolicyDetailsPage from './policies/policy-details/PolicyDetailsPage'
 import { PolicyWizardPage } from './policies/PolicyWizardPage'
 import { CreatePolicySet } from './policy-sets/CreatePolicySet'
@@ -18,6 +19,8 @@ export default function Governance() {
             <Route exact path={NavigationPath.policies} component={GovernancePage} />
             <Route exact path={NavigationPath.policySets} component={GovernancePage} />
             <Route exact path={NavigationPath.governanceClusters} component={GovernancePage} />
+            {/* Policy detail pages must stay in this order to render properly. */}
+            <Route path={NavigationPath.policyDetailsHistory} component={PolicyDetailsHistoryPage} />
             <Route path={NavigationPath.policyDetails} component={PolicyDetailsPage} />
             <Route path="*">
                 <Redirect to={NavigationPath.governance} />
