@@ -312,14 +312,6 @@ export default function CreateClusterPage() {
                         if (templateEditorRef.current) {
                             const resourceJSON = (templateEditorRef.current as any)?.getResourceJSON()
                             if (resourceJSON) {
-                                const networkForm = controlData.find((r: any) => r.id === 'aiNetwork')
-                                if (networkForm) {
-                                    networkForm.resourceJSON = resourceJSON
-                                }
-                                const hostsForm = controlData.find((r: any) => r.id === 'aiHosts')
-                                if (hostsForm) {
-                                    hostsForm.resourceJSON = resourceJSON
-                                }
                                 const { createResources } = resourceJSON
                                 const map = keyBy(createResources, 'kind')
                                 const clusterName = get(map, 'ClusterDeployment.metadata.name')
