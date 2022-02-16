@@ -303,17 +303,15 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
     const [detailsView, setDetailsView] = useState<boolean>(false)
     const [selectedReport, setSelectedReport] = useState<PolicyReportResults>()
     const policyReportViolations = props.data?.results?.filter((violation) => violation.source === 'insights')
-    console.log('here',policyReportViolations.length)
     return detailsView ? (
         <DetailsView setDetailsView={setDetailsView} selectedReport={selectedReport} />
     ) : (
         <div className={classes.body}>
             <TextContent className={classes.titleText}>
                 <Text component={TextVariants.h2}>
-                    {policyReportViolations.length == 1 
+                    {policyReportViolations.length == 1
                         ? t('1 identified issue')
-                        : t('{0} identified issues').replace('{0}', policyReportViolations.length.toString())
-                    }
+                        : t('{0} identified issues').replace('{0}', policyReportViolations.length.toString())}
                 </Text>
                 <Text component={TextVariants.p}>
                     {t(
