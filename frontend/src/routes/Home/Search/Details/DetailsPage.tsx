@@ -92,7 +92,7 @@ export default function DetailsPage() {
     }, [cluster, kind, apiversion, name, namespace])
 
     useEffect(() => {
-        setContainers((resource && resource.spec?.containers.map((container: any) => container.name)) ?? [])
+        setContainers((resource && resource.spec?.containers?.map((container: any) => container.name)) ?? [])
     }, [resource])
 
     const location = useLocation()
