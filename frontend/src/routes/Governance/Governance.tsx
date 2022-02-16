@@ -13,7 +13,7 @@ export default function Governance() {
         <Switch>
             <Route exact path={NavigationPath.createPolicy} render={() => <CreatePolicy />} />
             <Route exact path={NavigationPath.editPolicy} render={() => <EditPolicy />} />
-            <Route exact path={NavigationPath.policyDetails} component={PolicyDetailsPage} />
+            <Route path={NavigationPath.policyDetails} component={PolicyDetailsPage} />
             <Route exact path={NavigationPath.createPolicySet} render={() => <CreatePolicySet />} />
             <Route exact path={NavigationPath.editPolicySet} render={() => <EditPolicySet />} />
             <Route path={NavigationPath.governance} component={GovernancePage} />

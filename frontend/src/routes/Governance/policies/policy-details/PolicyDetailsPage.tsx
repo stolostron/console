@@ -2,7 +2,7 @@
 
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 import { Fragment, Suspense, useMemo } from 'react'
-import { Link, Route, Switch, useLocation } from 'react-router-dom'
+import { Link, Route, Switch, useLocation, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -14,20 +14,14 @@ import PolicyDetailsResults from './PolicyDetailsResults'
 
 export function PolicyDetailsPage() {
     const location = useLocation()
-    // const history = useHistory()
     const { t } = useTranslation()
     const [policies] = useRecoilState(policiesState)
 
-    // Comb the array to make formatting easier for policy name & namespace identification
-    const combedUrl = location.pathname.replace('/multicloud/governance/policies/', '')
-    const urlArray = combedUrl.split('/')
+    const params = useParams<{ namespace: string; name: string }>()
+    const policyNamespace = params.namespace
+    const policyName = params.name
 
-    // Grab policy data from fixed array positions
-    const policyNamespace = urlArray[0]
-    const policyName = urlArray[1]
-
-    // Using fixed length url array after combing find which tab is active
-    const isResultsTab = urlArray.length === 3 && location.pathname.endsWith('/results')
+    const isResultsTab = location.pathname.endsWith('/results')
 
     const detailsUrl = NavigationPath.policyDetails
         .replace(':namespace', policyNamespace as string)
