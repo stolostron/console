@@ -463,12 +463,12 @@ export default function OverviewPage() {
             ? []
             : [
                   {
-                      key: 'Non-compliant',
+                      key: 'With violations',
                       value: nonCompliantClusters.size,
                       link: buildClusterComplianceLinks(Array.from(nonCompliantClusters)),
                   },
                   {
-                      key: 'Compliant',
+                      key: 'Without violations',
                       value: compliantClusters.length,
                       isPrimary: true,
                       link: buildClusterComplianceLinks(compliantClusters),
@@ -587,8 +587,8 @@ export default function OverviewPage() {
                                 <AcmDonutChart
                                     loading
                                     key="chart-loading-1"
-                                    title="Cluster compliance"
-                                    description={t('Overview of policy compliance status')}
+                                    title="Cluster violations"
+                                    description={t('Overview of policy violation status')}
                                     data={[]}
                                 />
                                 <AcmDonutChart
@@ -616,8 +616,8 @@ export default function OverviewPage() {
                         ) : (
                             <AcmChartGroup>
                                 <AcmDonutChart
-                                    title="Cluster compliance"
-                                    description={t('Overview of policy compliance status')}
+                                    title="Cluster violations"
+                                    description={t('Overview of policy violation status')}
                                     data={complianceData}
                                     colorScale={[
                                         'var(--pf-global--danger-color--100)',

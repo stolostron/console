@@ -584,23 +584,23 @@ export default function PoliciesPage() {
     const filters = useMemo<ITableFilter<Policy>[]>(
         () => [
             {
-                id: 'compliance',
-                label: 'Compliance',
+                id: 'violations',
+                label: 'Cluster violations',
                 options: [
                     {
-                        label: 'Compliant',
-                        value: 'Compliant',
+                        label: 'Without violations',
+                        value: 'Without violations',
                     },
                     {
-                        label: 'Noncompliant',
-                        value: 'NonCompliant',
+                        label: 'With violations',
+                        value: 'With violations',
                     },
                 ],
                 tableFilterFn: (selectedValues, policy) => {
-                    if (selectedValues.includes('NonCompliant')) {
+                    if (selectedValues.includes('With violations')) {
                         if (policy.status?.compliant === 'NonCompliant') return true
                     }
-                    if (selectedValues.includes('Compliant')) {
+                    if (selectedValues.includes('Without violations')) {
                         if (policy.status?.compliant === 'Compliant') return true
                     }
                     return false
@@ -758,11 +758,17 @@ function usePolicyViolationsColumn(
         cell: (policy) => {
             const clusterViolationSummary = policyClusterViolationSummaryMap[policy.metadata.uid ?? '']
             if (clusterViolationSummary) {
-                // TODO - add link to the policy details page clusters tab
+                // TODO - add url seearch params when ready to soort/filter by violation type
                 return (
                     <ClusterPolicyViolationIcons2
                         compliant={clusterViolationSummary.compliant}
+                        compliantHref={`${NavigationPath.policyDetailsResults
+                            .replace(':namespace', policy.metadata?.namespace ?? '')
+                            .replace(':name', policy.metadata?.name ?? '')}`}
                         noncompliant={clusterViolationSummary.noncompliant}
+                        violationHref={`${NavigationPath.policyDetailsResults
+                            .replace(':namespace', policy.metadata?.namespace ?? '')
+                            .replace(':name', policy.metadata?.name ?? '')}`}
                     />
                 )
             } else {

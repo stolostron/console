@@ -16,8 +16,8 @@ export function ClusterPolicyViolationIcons(props: {
             compliant={risks.synced}
             compliantTooltip={
                 risks.synced == 1
-                    ? '1 cluster in compliance'
-                    : '{0} clusters in compliance'.replace('{0}', risks.synced.toString())
+                    ? '1 cluster without violations'
+                    : '{0} clusters without violations'.replace('{0}', risks.synced.toString())
             }
             compliantHref={compliantHref}
             violations={violations}
@@ -49,8 +49,8 @@ export function ClusterPolicyViolationIcons2(props: {
             compliant={props.compliant}
             compliantTooltip={
                 props.compliant == 1
-                    ? '1 cluster in compliance'
-                    : '{0} clusters in compliance'.replace('{0}', props.compliant.toString())
+                    ? '1 cluster without violations'
+                    : '{0} clusters without violations'.replace('{0}', props.compliant.toString())
             }
             compliantHref={props.compliantHref}
             violations={props.noncompliant}

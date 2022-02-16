@@ -37,14 +37,14 @@ export function DownloadConfigurationDropdown(props: { canGetSecret: boolean }) 
         dropdownItems.push({
             id: 'install-config.yaml',
             text: 'install-config',
-            isDisabled: !props.canGetSecret,
+            isAriaDisabled: !props.canGetSecret,
             tooltip: !props.canGetSecret ? t('rbac.unauthorized') : undefined,
         })
     cluster?.hive.secrets?.kubeconfig &&
         dropdownItems.push({
             id: 'kubeconfig',
             text: 'kubeconfig',
-            isDisabled: !props.canGetSecret,
+            isAriaDisabled: !props.canGetSecret,
             tooltip: !props.canGetSecret ? t('rbac.unauthorized') : undefined,
         })
     return (

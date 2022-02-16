@@ -242,7 +242,7 @@ export function ClusterSetSubmarinerPageContent() {
                                             {
                                                 id: 'uninstall-submariner',
                                                 text: t('uninstall.add-on'),
-                                                isDisabled: true,
+                                                isAriaDisabled: true,
                                                 rbac: [rbacDelete(mca)],
                                                 click: (mca: ManagedClusterAddOn) => {
                                                     setModalProps({
@@ -277,7 +277,7 @@ export function ClusterSetSubmarinerPageContent() {
                                             actions.unshift({
                                                 id: 'edit-submariner-config',
                                                 text: t('submariner.config.edit'),
-                                                isDisabled: true,
+                                                isAriaDisabled: true,
                                                 rbac: [rbacPatch(submarinerConfig!)],
                                                 click: () => {
                                                     setEditSubmarinerConfigModalProps({

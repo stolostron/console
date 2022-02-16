@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 /** *****************************************************************************
  * Licensed Materials - Property of IBM
  * (c) Copyright IBM Corporation 2018, 2019. All Rights Reserved.
@@ -932,6 +933,9 @@ export const counterZoomLabels = (svg, currentZoom) => {
             let padding = 2
             if (s < 1) {
                 padding *= 1 / s
+            }
+            if (s > 1) {
+                padding *= s
             }
             let textRect
             shownLabel.each((d, k, txt) => {

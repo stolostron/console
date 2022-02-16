@@ -89,8 +89,8 @@ function renderDonutChart(clusters: PolicySetResultCluster[], t: TFunction) {
 
     return (
         <ChartDonut
-            ariaTitle={t('Policy cluster compliance')}
-            ariaDesc={t('Policy cluster compliance chart')}
+            ariaTitle={t('Policy cluster violations')}
+            ariaDesc={t('Policy cluster violations chart')}
             legendOrientation="vertical"
             legendPosition="right"
             constrainToVisibleArea={true}

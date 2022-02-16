@@ -110,7 +110,7 @@ export function MachinePoolsTable() {
                     {
                         id: 'scaleMachinePool',
                         text: t('machinePool.scale'),
-                        isDisabled: true,
+                        isAriaDisabled: true,
                         rbac: [rbacPatch(machinePool)],
                         click: (machinePool: MachinePool) =>
                             setScaleMachinePool({ machinePool, mode: 'edit-manualscale' }),
@@ -118,7 +118,7 @@ export function MachinePoolsTable() {
                     {
                         id: 'editAutoscale',
                         text: t('machinePool.editAutoscale'),
-                        isDisabled: true,
+                        isAriaDisabled: true,
                         rbac: [rbacPatch(machinePool)],
                         click: (machinePool: MachinePool) =>
                             setScaleMachinePool({ machinePool, mode: 'edit-autoscale' }),
@@ -126,7 +126,7 @@ export function MachinePoolsTable() {
                     {
                         id: 'enableAutoscale',
                         text: t('machinePool.enableAutoscale'),
-                        isDisabled: true,
+                        isAriaDisabled: true,
                         rbac: [rbacPatch(machinePool)],
                         click: (machinePool: MachinePool) =>
                             setScaleMachinePool({ machinePool, mode: 'enable-autoscale' }),
@@ -134,7 +134,7 @@ export function MachinePoolsTable() {
                     {
                         id: 'disableAutoscale',
                         text: t('machinePool.disableAutoscale'),
-                        isDisabled: true,
+                        isAriaDisabled: true,
                         rbac: [rbacPatch(machinePool)],
                         click: (machinePool: MachinePool) =>
                             setScaleMachinePool({ machinePool, mode: 'disable-autoscale' }),
@@ -142,7 +142,7 @@ export function MachinePoolsTable() {
                     {
                         id: 'deleteMachinePool',
                         text: t('machinePool.delete'),
-                        isDisabled: true,
+                        isAriaDisabled: true,
                         rbac: [rbacDelete(machinePool)],
                         click: (machinePool: MachinePool) => {
                             setModalProps({

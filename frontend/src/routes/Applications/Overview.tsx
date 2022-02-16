@@ -30,6 +30,7 @@ import {
     ApplicationSet,
     ApplicationDefinition,
     ApplicationSetDefinition,
+    Channel,
     SubscriptionKind,
     SubscriptionApiVersion,
     Subscription,
@@ -127,7 +128,7 @@ function getSubscriptionsFromAnnotation(app: IResource) {
     return subAnnotation !== undefined ? subAnnotation.split(',') : []
 }
 
-function getAnnotation(resource: IResource, annotationString: string) {
+export function getAnnotation(resource: IResource, annotationString: string) {
     return resource.metadata?.annotations !== undefined ? resource.metadata?.annotations[annotationString] : undefined
 }
 
@@ -143,6 +144,74 @@ function getAppNamespace(resource: IResource) {
     }
 
     return resource.metadata?.namespace
+}
+
+export const getApplicationRepos = (resource: IResource, subscriptions: Subscription[], channels: Channel[]) => {
+    let castType
+    if (resource.apiVersion === ApplicationApiVersion) {
+        if (resource.kind === ApplicationKind) {
+            const subAnnotations = getSubscriptionsFromAnnotation(resource)
+            const appRepos: any[] = []
+
+            for (let i = 0; i < subAnnotations.length; i++) {
+                if (
+                    _.endsWith(subAnnotations[i], localSubSuffixStr) &&
+                    _.indexOf(subAnnotations, _.trimEnd(subAnnotations[i], localSubSuffixStr)) !== -1
+                ) {
+                    // skip local sub
+                    continue
+                }
+                const subDetails = subAnnotations[i].split('/')
+
+                subscriptions.forEach((sub) => {
+                    if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
+                        const channelStr = sub.spec.channel
+
+                        if (channelStr) {
+                            const chnDetails = channelStr?.split('/')
+                            const channel = channels.find(
+                                (chn) => chn.metadata.name === chnDetails[1] && chn.metadata.namespace === chnDetails[0]
+                            )
+
+                            appRepos.push({
+                                type: channel?.spec.type,
+                                pathName: channel?.spec.pathname,
+                                gitBranch: getAnnotation(sub, gitBranchAnnotationStr),
+                                gitPath: getAnnotation(sub, gitPathAnnotationStr),
+                                package: sub.spec.name,
+                                packageFilterVersion: sub.spec.packageFilter?.version,
+                            })
+                        }
+                    }
+                })
+            }
+            return appRepos
+        }
+    } else if (resource.apiVersion === ArgoApplicationApiVersion) {
+        if (resource.kind === ArgoApplicationKind) {
+            castType = resource as ArgoApplication
+            return [
+                {
+                    type: castType.spec.source.path ? 'git' : 'helmrepo',
+                    pathName: castType.spec.source.repoURL,
+                    gitPath: castType.spec.source.path,
+                    chart: castType.spec.source.chart,
+                    targetRevision: castType.spec.source.targetRevision,
+                },
+            ]
+        } else if (resource.kind === ApplicationSetKind) {
+            castType = resource as ApplicationSet
+            return [
+                {
+                    type: castType.spec.template?.spec?.source.path ? 'git' : 'helmrepo',
+                    pathName: castType.spec.template?.spec?.source.repoURL,
+                    gitPath: castType.spec.template?.spec?.source.path,
+                    chart: castType.spec.template?.spec?.source.chart,
+                    targetRevision: castType.spec.template?.spec?.source.targetRevision,
+                },
+            ]
+        }
+    }
 }
 
 export default function ApplicationsOverview() {
@@ -253,7 +322,7 @@ export default function ApplicationsOverview() {
 
         // Resource column
         const resourceMap: { [key: string]: string } = {}
-        const appRepos = getApplicationRepos(tableItem)
+        const appRepos = getApplicationRepos(tableItem, subscriptions, channels)
         let resourceText = ''
         appRepos?.forEach((repo) => {
             if (!resourceMap[repo.type]) {
@@ -276,75 +345,6 @@ export default function ApplicationsOverview() {
 
         // Cannot add properties directly to objects in typescript
         return { ...tableItem, ...transformedObject }
-    }
-
-    const getApplicationRepos = (resource: IResource) => {
-        let castType
-        if (resource.apiVersion === ApplicationApiVersion) {
-            if (resource.kind === ApplicationKind) {
-                const subAnnotations = getSubscriptionsFromAnnotation(resource)
-                const appRepos: any[] = []
-
-                for (let i = 0; i < subAnnotations.length; i++) {
-                    if (
-                        _.endsWith(subAnnotations[i], localSubSuffixStr) &&
-                        _.indexOf(subAnnotations, _.trimEnd(subAnnotations[i], localSubSuffixStr)) !== -1
-                    ) {
-                        // skip local sub
-                        continue
-                    }
-                    const subDetails = subAnnotations[i].split('/')
-
-                    subscriptions.forEach((sub) => {
-                        if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
-                            const channelStr = sub.spec.channel
-
-                            if (channelStr) {
-                                const chnDetails = channelStr?.split('/')
-                                const channel = channels.find(
-                                    (chn) =>
-                                        chn.metadata.name === chnDetails[1] && chn.metadata.namespace === chnDetails[0]
-                                )
-
-                                appRepos.push({
-                                    type: channel?.spec.type,
-                                    pathName: channel?.spec.pathname,
-                                    gitBranch: getAnnotation(sub, gitBranchAnnotationStr),
-                                    gitPath: getAnnotation(sub, gitPathAnnotationStr),
-                                    package: sub.spec.name,
-                                    packageFilterVersion: sub.spec.packageFilter?.version,
-                                })
-                            }
-                        }
-                    })
-                }
-                return appRepos
-            }
-        } else if (resource.apiVersion === ArgoApplicationApiVersion) {
-            if (resource.kind === ArgoApplicationKind) {
-                castType = resource as ArgoApplication
-                return [
-                    {
-                        type: castType.spec.source.path ? 'git' : 'helmrepo',
-                        pathName: castType.spec.source.repoURL,
-                        gitPath: castType.spec.source.path,
-                        chart: castType.spec.source.chart,
-                        targetRevision: castType.spec.source.targetRevision,
-                    },
-                ]
-            } else if (resource.kind === ApplicationSetKind) {
-                castType = resource as ApplicationSet
-                return [
-                    {
-                        type: castType.spec.template?.spec?.source.path ? 'git' : 'helmrepo',
-                        pathName: castType.spec.template?.spec?.source.repoURL,
-                        gitPath: castType.spec.template?.spec?.source.path,
-                        chart: castType.spec.template?.spec?.source.chart,
-                        targetRevision: castType.spec.template?.spec?.source.targetRevision,
-                    },
-                ]
-            }
-        }
     }
 
     const getTimeWindow = (app: IResource) => {
@@ -537,7 +537,7 @@ export default function ApplicationsOverview() {
             {
                 header: t('Resource'),
                 cell: (resource) => {
-                    const appRepos = getApplicationRepos(resource)
+                    const appRepos = getApplicationRepos(resource, subscriptions, channels)
                     return (
                         <ResourceLabels
                             appRepos={appRepos!}

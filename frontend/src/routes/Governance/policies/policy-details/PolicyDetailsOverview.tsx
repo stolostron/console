@@ -2,7 +2,6 @@
 import { Alert, LabelGroup, PageSection, Split, SplitItem, Stack, Text, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmDescriptionList, AcmTable } from '@stolostron/ui-components'
-import _ from 'lodash'
 import moment from 'moment'
 import { Fragment, useMemo } from 'react'
 import { Link } from 'react-router-dom'
@@ -112,7 +111,7 @@ function renderPlacementTable(policy: Policy) {
             {
                 header: 'Clusters',
                 cell: (item: PlacementTableData) => {
-                    const decisions = _.get(item, 'status.decisions', undefined)
+                    const decisions = item.status.decisions ?? undefined
                     if (decisions) {
                         return decisions.map(
                             (decision: { clusterName: string; clusterNamespace: string }) => decision.clusterName
@@ -122,26 +121,32 @@ function renderPlacementTable(policy: Policy) {
                 },
             },
             {
-                header: 'Compliance',
+                header: 'Violations',
                 cell: (item: PlacementTableData) => {
                     // Gather full cluster list from placementPolicy status
-                    const fullClusterList = _.get(item, 'status.decisions', [])
+                    const fullClusterList = item.status.decisions ?? []
                     // Gather status list from policy status
-                    const rawStatusList = _.get(item, 'policy.status.status', [])
+                    const rawStatusList = item.policy.status?.status ?? []
                     // Build lists of clusters, organized by status keys
                     const clusterList: Record<string, Set<string>> = {}
-                    _.forEach(fullClusterList, (clusterObj) => {
-                        const cluster = clusterObj.clusterNamespace
-                        const statusObject = _.filter(rawStatusList, (status) => status.clusternamespace === cluster)
+                    fullClusterList.forEach((clusterObj) => {
+                        const statusObject = rawStatusList.filter(
+                            (status) => status.clusternamespace === clusterObj.clusterNamespace
+                        )
                         // Log error if more than one status is returned since each cluster name should be unique
                         if (statusObject.length > 1) {
                             console.error(`Expected one cluster but got ${statusObject.length}:`, statusObject)
-                            // Push a new cluster object if there is no status found
                         } else if (statusObject.length === 0) {
-                            statusObject.push({ clusternamespace: cluster })
+                            // Push a new cluster object if there is no status found
+                            statusObject.push({
+                                clusternamespace: clusterObj.clusterNamespace,
+                                clustername: clusterObj.clusterName,
+                                compliant: 'nostatus',
+                            })
                         }
-                        const compliant = _.get(statusObject[0], 'compliant', 'nostatus').toLowerCase()
-                        const clusterNamespace = _.get(statusObject[0], 'clusternamespace')
+                        let compliant = statusObject[0].compliant ?? 'nostatus'
+                        compliant = compliant.toLowerCase()
+                        const clusterNamespace = statusObject[0].clusternamespace
                         // Add cluster to its associated status list in the clusterList object
                         if (Object.prototype.hasOwnProperty.call(clusterList, compliant)) {
                             // Each cluster name should be unique, so if one is already present, log an error
@@ -163,11 +168,11 @@ function renderPlacementTable(policy: Policy) {
                         let icon = <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
                         switch (status) {
                             case 'noncompliant':
-                                statusMsg = ' NonCompliant: '
+                                statusMsg = ' With violations: '
                                 icon = <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
                                 break
                             case 'compliant':
-                                statusMsg = ' Compliant: '
+                                statusMsg = ' Without violations: '
                                 icon = <CheckCircleIcon color="var(--pf-global--success-color--100)" />
                                 break
                         }
@@ -361,7 +366,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     return (
         <PageSection>
             <Stack hasGutter>
-                <div id="compliance.details">
+                <div id="violation.details">
                     <AcmDescriptionList title={t('Policy details')} leftItems={leftItems} rightItems={rightItems} />
                 </div>
                 <div>
