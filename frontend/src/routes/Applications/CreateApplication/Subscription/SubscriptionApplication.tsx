@@ -9,7 +9,7 @@ import {
     useHistory,
     // useLocation
 } from 'react-router-dom'
-import { ApplicationKind, createKubeResources, IResource } from '../../../../resources'
+import { ApplicationKind, createResources as createKubeResources, IResource } from '../../../../resources'
 
 // Template Data
 import { controlData } from './controlData/ControlData'

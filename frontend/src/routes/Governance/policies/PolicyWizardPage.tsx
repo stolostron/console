@@ -13,7 +13,7 @@ import {
 } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { createKubeResources, IResource } from '../../../resources'
+import { createResources, IResource } from '../../../resources'
 
 export function PolicyWizardPage() {
     const { t } = useTranslation()
@@ -35,7 +35,7 @@ export function PolicyWizardPage() {
             clusterSetBindings={clusterSetBindings}
             onCancel={() => history.push(NavigationPath.policies)}
             onSubmit={(resources) =>
-                createKubeResources(resources as IResource[]).then((error) => {
+                createResources(resources as IResource[]).then((error) => {
                     toast.addAlert({
                         title: t('Policy set created'),
                         message: t('{{name}} was successfully created.', { name: 'TODO' }),
