@@ -11,7 +11,7 @@ import { channelsState, gitOpsClustersState, namespacesState, placementsState, s
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { isType } from '../../../../lib/is-type'
 import { NavigationPath } from '../../../../NavigationPath'
-import { createResources, IResource, unpackProviderConnection } from '../../../../resources'
+import { createKubeResources, IResource, unpackProviderConnection } from '../../../../resources'
 const Portals = Object.freeze({
     editBtn: 'edit-button-portal-id',
     createBtn: 'create-button-portal-id',
@@ -101,7 +101,7 @@ export function CreateArgoApplicationSet() {
             placements={availablePlacements}
             onCancel={() => history.push('.')}
             onSubmit={(resources) =>
-                createResources(resources as IResource[]).then((error) => {
+                createKubeResources(resources as IResource[]).then((error) => {
                     history.push(NavigationPath.applications)
                     return error
                 })

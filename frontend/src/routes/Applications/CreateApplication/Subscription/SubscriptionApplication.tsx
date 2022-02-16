@@ -9,7 +9,7 @@ import {
     useHistory,
     // useLocation
 } from 'react-router-dom'
-import { createCluster } from '../../../../lib/create-cluster'
+import { ApplicationKind, createKubeResources, IResource } from '../../../../resources'
 
 // Template Data
 import { controlData } from './controlData/ControlData'
@@ -90,20 +90,19 @@ export function CreateSubscriptionApplication() {
             const { createResources } = resourceJSON
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
             // change create cluster to create application
-            const { status, messages } = await createCluster(createResources)
-            setCreationStatus({ status, messages })
-            // redirect to created cluster
-            // disable creation for now
-            if (status === 'DONE') {
-                const name = createResources.find((resource) => resource.kind === 'ClusterPool')?.metadata.name
+            const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
+            createKubeResources(createResources as IResource[]).then((error) => {
                 toastContext.addAlert({
-                    title: t('clusterPool.creation.success.title'),
-                    message: t('clusterPool.creation.success.message', { name }),
+                    title: t('Application created'),
+                    message: t('{{name}} was successfully created.', {
+                        name: _.get(applicationResourceJSON, 'metadata.name', ''),
+                    }),
                     type: 'success',
                     autoClose: true,
                 })
                 history.push(NavigationPath.applications)
-            }
+                return error
+            })
         }
     }
 

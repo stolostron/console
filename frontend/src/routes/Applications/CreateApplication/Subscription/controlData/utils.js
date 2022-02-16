@@ -14,7 +14,12 @@
 import React from 'react'
 // import msgs from '../../../../nls/platform.properties'
 import { RESOURCE_TYPES } from '../../../../lib/shared/constants'
-import { listChannels, listProviderConnections } from '../../../../../resources'
+import {
+    listChannels,
+    listProviderConnections,
+    getGitChannelBranches,
+    getGitChannelPaths,
+} from '../../../../../resources'
 // import SharedResourceWarning from '../components/SharedResourceWarning'
 
 import _ from 'lodash'
@@ -197,9 +202,10 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
         ({ id }) => id === 'githubSecret' || id === 'helmSecret' || id === 'objectstoreSecret'
     )
     if (secretName) {
-        if (existingChannel && pathData && pathData.secretRef) {
+        const secretRef = _.get(pathData, 'spec.secretRef.name', '')
+        if (existingChannel && pathData && secretRef) {
             secretName.type = 'text'
-            secretName.active = pathData.secretRef
+            secretName.active = secretRef
         } else {
             secretName.type = 'hidden'
             secretName.active = ''
@@ -263,86 +269,87 @@ export const updateControlsForNS = (initiatingControl, nsControl, globalControl)
 }
 
 const retrieveGitDetails = async (branchName, groupControlData, setLoadingState) => {
-    try {
-        const gitControl = groupControlData.find(({ id }) => id === 'githubURL')
-        const branchCtrl = groupControlData.find(({ id }) => id === 'githubBranch')
-        const githubPathCtrl = groupControlData.find(({ id }) => id === 'githubPath')
-        const userCtrl = groupControlData.find(({ id }) => id === 'githubUser')
+    // try {
+    const gitControl = groupControlData.find(({ id }) => id === 'githubURL')
+    const branchCtrl = groupControlData.find(({ id }) => id === 'githubBranch')
+    const githubPathCtrl = groupControlData.find(({ id }) => id === 'githubPath')
+    const userCtrl = groupControlData.find(({ id }) => id === 'githubUser')
 
-        const tokenCtrl = groupControlData.find(({ id }) => id === 'githubAccessId')
+    const tokenCtrl = groupControlData.find(({ id }) => id === 'githubAccessId')
 
-        const selectedChannel = _.get(gitControl, 'availableData', {})[_.get(gitControl, 'active', '')]
-        // get git repository path from channel object if this is an existing channel, use the combo value otherwise
-        const gitUrl = selectedChannel ? _.get(selectedChannel, 'objectPath', '') : _.get(gitControl, 'active', '')
+    const selectedChannel = _.get(gitControl, 'availableData', {})[_.get(gitControl, 'active', '')]
+    // get git repository path from channel object if this is an existing channel, use the combo value otherwise
+    const gitUrl = selectedChannel ? _.get(selectedChannel, 'spec.pathname', '') : _.get(gitControl, 'active', '')
+    const namespace = _.get(selectedChannel, 'metadata.namespace', '')
+    const secretRef = _.get(selectedChannel, 'secretRef', '')
 
-        if (!gitUrl) {
-            branchCtrl.active = ''
-            branchCtrl.available = []
-            return
-        }
+    if (!gitUrl) {
+        branchCtrl.active = ''
+        branchCtrl.available = []
+        return
+    }
 
-        //check only github repos
-        const url = new URL(gitUrl)
-        if (url.host !== 'github.com') {
-            return
-        }
-        const queryVariables = {
-            gitUrl,
-            namespace: _.get(selectedChannel, 'metadata.namespace', ''),
-            secretRef: _.get(selectedChannel, 'secretRef', ''),
-            user: _.get(userCtrl, 'active'),
-            accessToken: _.get(tokenCtrl, 'active'),
-        }
+    //check only github repos
+    const url = new URL(gitUrl)
+    if (url.host !== 'github.com') {
+        return
+    }
 
-        githubPathCtrl.active = ''
-        githubPathCtrl.available = []
+    githubPathCtrl.active = ''
+    githubPathCtrl.available = []
 
-        if (branchName) {
-            //get folders for branch
-            setLoadingState(githubPathCtrl, true)
-            const pathQueryVariables = {
-                ...queryVariables,
-                branch: branchName,
+    if (branchName) {
+        //get folders for branch
+        setLoadingState(githubPathCtrl, true)
+        getGitChannelPaths(gitUrl, branchName, { secretRef, namespace }).then(
+            (result) => {
+                githubPathCtrl.available = result.sort()
+                setLoadingState(githubPathCtrl, false)
+            },
+            () => {
+                // on error
+                setLoadingState(githubPathCtrl, false)
             }
-            // apolloClient.getGitChannelPaths(pathQueryVariables).then(
-            //     (result) => {
-            //         const items = _.get(result, 'data.items', []) || []
-            //         items.forEach((path) => {
-            //             githubPathCtrl.available.push(path)
-            //         })
-            //         setLoadingState(githubPathCtrl, false)
-            //     },
-            //     () => {
-            //         //on error
-            //         setLoadingState(githubPathCtrl, false)
-            //     }
-            // )
-        } else {
-            //get branches
-            setLoadingState(branchCtrl, true)
-            const onError = () => {
-                branchCtrl.exception = 'The connection to the Git repository failed. Cannot get branches.'
+        )
+        // const pathQueryVariables = {
+        //     ...queryVariables,
+        //     branch: branchName,
+        // }
+        // apolloClient.getGitChannelPaths(pathQueryVariables).then(
+        //     (result) => {
+        //         const items = _.get(result, 'data.items', []) || []
+        //         items.forEach((path) => {
+        //             githubPathCtrl.available.push(path)
+        //         })
+        //         setLoadingState(githubPathCtrl, false)
+        //     },
+        //     () => {
+        //         //on error
+        //         setLoadingState(githubPathCtrl, false)
+        //     }
+        // )
+    } else {
+        //get branches
+        setLoadingState(branchCtrl, true)
+        const onError = () => {
+            branchCtrl.exception = 'The connection to the Git repository failed. Cannot get branches.'
+            setLoadingState(branchCtrl, false)
+        }
+
+        getGitChannelBranches(gitUrl, { secretRef, namespace }).then((result) => {
+            if (_.get(result, 'errors')) {
+                onError()
+            } else {
+                branchCtrl.active = ''
+                branchCtrl.available = result.sort()
+                delete branchCtrl.exception
                 setLoadingState(branchCtrl, false)
             }
-            // apolloClient.getGitChannelBranches(queryVariables).then((result) => {
-            //     if (_.get(result, 'errors')) {
-            //         onError()
-            //     } else {
-            //         branchCtrl.active = ''
-            //         branchCtrl.available = []
-
-            //         const items = _.get(result, 'data.items', []) || []
-            //         items.forEach((branch) => {
-            //             branchCtrl.available.push(branch)
-            //         })
-            //         delete branchCtrl.exception
-            //         setLoadingState(branchCtrl, false)
-            //     }
-            // }, onError)
-        }
-    } catch (err) {
-        //return err
+        })
     }
+    // } catch (err) {
+    //     //return err
+    // }
 }
 
 export const updateGitBranchFolders = async (branchControl, globalControls, setLoadingState) => {
@@ -573,7 +580,6 @@ export const setAvailableChannelSpecs = (type, control, result) => {
                 }),
                 keyFn
             )
-            // TODO
             control.available = _.map(Object.values(control.availableData), keyFn).sort()
         } else {
             control.isLoading = loading
@@ -582,41 +588,12 @@ export const setAvailableChannelSpecs = (type, control, result) => {
     }
 }
 
-// export const setAvailableNSSpecs = (control, result) => {
-//     const { loading } = result
-//     const { data } = result
-//     const namespaces = data
-//     control.isLoading = false
-//     const error = namespaces ? null : result.error
-//     if (!control.available) {
-//         control.available = []
-//         control.availableMap = {}
-//     }
-//     if (control.available.length === 0 && (error || namespaces)) {
-//         if (error) {
-//             control.isFailed = true
-//         } else if (namespaces) {
-//             control.isLoaded = true
-//             namespaces.forEach((item) => {
-//                 const { metadata } = item
-//                 const name = metadata?.name
-//                 control.available.push(name)
-//             })
-//             control.available.sort()
-//         }
-//     } else {
-//         control.isLoading = loading
-//     }
-// }
-
 export const setAvailableSecrets = (control, result) => {
     const { loading } = result
     const { data = {} } = result
     // this is not working - I wonder if it's related to the fact that it uses a prompts
 
-    debugger
     // const { secrets } = data
-    // debugger
     // control.available = []
     // control.hasReplacements = true
 

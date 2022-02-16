@@ -62,7 +62,7 @@ export function createResource<Resource extends IResource, ResultType = Resource
     return postRequest<Resource, ResultType>(url, resource)
 }
 
-export async function createResources(resources: IResource[]): Promise<void> {
+export async function createKubeResources(resources: IResource[]): Promise<void> {
     if (!Array.isArray(resources)) throw new Error('Error - resources are not an array')
     for (const resource of resources) {
         try {
