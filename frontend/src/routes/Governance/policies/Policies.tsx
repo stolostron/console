@@ -541,8 +541,8 @@ export default function PoliciesPage() {
                     click: (policy: Policy) => {
                         history.push(
                             NavigationPath.editPolicy
-                                .replace(':namespace', policy.metadata.namespace)
-                                .replace(':name', policy.metadata.name)
+                                .replace(':namespace', policy.metadata.namespace!)
+                                .replace(':name', policy.metadata.name!)
                         )
                     },
                 },
