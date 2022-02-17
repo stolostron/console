@@ -303,7 +303,7 @@ export default function AdvancedConfiguration() {
                                         namespace,
                                         kind: 'channel',
                                         apigroup,
-                                        apiversion
+                                        apiversion,
                                     },
                                 }
                                 const channelLink = getSearchLink(searchParams)
@@ -331,7 +331,7 @@ export default function AdvancedConfiguration() {
                                             namespace,
                                             kind: 'subscription',
                                             apigroup,
-                                            apiversion
+                                            apiversion,
                                         },
                                         showRelated: 'application',
                                     }
