@@ -18,7 +18,7 @@ import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
-import { useHistory } from 'react-router-dom'
+import { useHistory, Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } from '../../atoms'
 import {
@@ -296,17 +296,19 @@ export default function AdvancedConfiguration() {
                             const channel = _.get(resource, 'spec.channel')
                             if (channel) {
                                 const [namespace, name] = channel.split('/')
+                                const [apigroup, apiversion] = ChannelApiVersion.split('/')
                                 const searchParams: any = {
                                     properties: {
                                         name,
                                         namespace,
                                         kind: 'channel',
-                                        apiversion: ChannelApiVersion,
+                                        apigroup,
+                                        apiversion
                                     },
                                 }
                                 const channelLink = getSearchLink(searchParams)
 
-                                return <a href={channelLink}>{name}</a>
+                                return <Link to={channelLink}>{name}</Link>
                             }
                             return '-'
                         },
@@ -321,18 +323,20 @@ export default function AdvancedConfiguration() {
                             const appCount = _.get(resource, 'transformed.appCount')
                             if (resource.metadata) {
                                 const { name, namespace } = resource.metadata
+                                const [apigroup, apiversion] = SubscriptionApiVersion.split('/')
                                 if (appCount != 0) {
                                     const searchParams: any = {
                                         properties: {
                                             name,
                                             namespace,
                                             kind: 'subscription',
-                                            apigroup: SubscriptionApiVersion,
+                                            apigroup,
+                                            apiversion
                                         },
                                         showRelated: 'application',
                                     }
                                     const channelLink = getSearchLink(searchParams)
-                                    return <a href={channelLink}>{appCount}</a>
+                                    return <Link to={channelLink}>{appCount}</Link>
                                 }
                             }
                             return appCount
@@ -446,7 +450,7 @@ export default function AdvancedConfiguration() {
                                         },
                                         showRelated: 'subscription',
                                     })
-                                    return <a href={channelLink}>{subscriptionCount}</a>
+                                    return <Link to={channelLink}>{subscriptionCount}</Link>
                                 }
                             }
                             return subscriptionCount
@@ -704,9 +708,9 @@ export default function AdvancedConfiguration() {
                         showRelated: 'cluster',
                     })
                     return (
-                        <a style={{ color: '#0066cc' }} href={searchLink}>
+                        <Link style={{ color: '#0066cc' }} to={searchLink}>
                             {getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)}
-                        </a>
+                        </Link>
                     )
                 }
             }
@@ -728,7 +732,7 @@ export default function AdvancedConfiguration() {
                     },
                 }
                 const searchLink = getEditLink(searchParams)
-                return <a href={searchLink}>{name}</a>
+                return <Link to={searchLink}>{name}</Link>
             }
         }
     }
