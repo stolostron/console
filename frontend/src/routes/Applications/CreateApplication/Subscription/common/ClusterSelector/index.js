@@ -138,7 +138,7 @@ export class ClusterSelector extends React.Component {
                 //no cluster labels set
                 exceptions.push({
                     row: 1,
-                    text: 'creation.missing.clusterSelector.value',
+                    text: i18n('creation.missing.clusterSelector.value'),
                     type: 'error',
                     controlId: `clusterSelector-labels-section-${controlId}`,
                 })
@@ -154,7 +154,7 @@ export class ClusterSelector extends React.Component {
                 if (invalidLabel) {
                     exceptions.push({
                         row: 1,
-                        text: 'creation.missing.clusterSelector.label',
+                        text: i18n('creation.missing.clusterSelector.label'),
                         type: 'error',
                         controlId: `labelName-${id}`,
                     })
@@ -162,7 +162,7 @@ export class ClusterSelector extends React.Component {
                 if (invalidValue) {
                     exceptions.push({
                         row: 1,
-                        text: 'creation.missing.clusterSelector.value',
+                        text: i18n('creation.missing.clusterSelector.value'),
                         type: 'error',
                         controlId: `labelName-${id}`,
                     })
@@ -170,8 +170,7 @@ export class ClusterSelector extends React.Component {
                 if (labelNameSet.has(labelName)) {
                     exceptions.push({
                         row: 1,
-                        // text: msgs.get('creation.duplicate.clusterSelector.label', [labelName], locale),
-                        text: 'creation.duplicate.clusterSelector.label',
+                        text: i18n('creation.duplicate.clusterSelector.label').replace('{0}', labelName),
                         type: 'error',
                         controlId: `labelName-${id}`,
                     })
