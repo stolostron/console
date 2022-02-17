@@ -204,7 +204,8 @@ export const summarizeOnline = (control, globalControlData, summary) => {
     const clusterSelectorControl = control.groupControlData.find(({ id }) => id === 'clusterSelector')
 
     if (_.get(localClusterCheckboxControl, 'active', false) === true) {
-        ;('edit.app.localCluster.summary')
+        summary.push('edit.app.localCluster.summary')
+        // TODO - need to pass i18n/t to summarizeOnline
     } else if (_.get(onlineClusterCheckboxControl, 'active', false) === true) {
         summary.push('edit.app.onlineClusters.summary')
     } else if (_.get(clusterSelectorControl, 'active.mode', false) === true) {
