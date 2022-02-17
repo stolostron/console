@@ -13,7 +13,7 @@
 
 import {
     listChannels,
-    // listProviderConnections,
+    listProviderConnections,
     getGitChannelBranches,
     getGitChannelPaths,
     // PlacementRuleKind,
@@ -36,15 +36,15 @@ export const loadExistingChannels = (type) => {
     }
 }
 
-// export const loadExistingAnsibleProviders = () => {
-//     return {
-//         query: () => {
-//             listProviderConnections().promise
-//         },
-//         loadingDesc: 'creation.app.loading.secrets',
-//         setAvailable: setAvailableSecrets.bind(null),
-//     }
-// }
+export const loadExistingAnsibleProviders = () => {
+    return {
+        query: () => {
+            return listProviderConnections().promise
+        },
+        loadingDesc: 'creation.app.loading.secrets',
+        setAvailable: setAvailableSecrets.bind(null),
+    }
+}
 
 export const getUniqueChannelName = (channelPath, groupControlData) => {
     //create a unique name for a new channel, based on path and type
@@ -566,33 +566,35 @@ export const setAvailableChannelSpecs = (type, control, result) => {
     }
 }
 
-// export const setAvailableSecrets = (control, result) => {
-//     const { loading } = result
-//     const { data = {} } = result
-// this is not working - I wonder if it's related to the fact that it uses a prompts
+export const setAvailableSecrets = (control, result) => {
+    const { loading } = result
+    const { data = [] } = result
+    const secrets = data
+    control.available = []
 
-// const { secrets } = data
-// control.available = []
-// control.hasReplacements = true
-
-// control.isLoading = false
-// const error = secrets ? null : result.error
-// if (error) {
-//     control.isFailed = true
-// } else if (secrets) {
-//     control.availableData = _.keyBy(secrets, 'ansibleSecretName')
-//     control.available = Object.keys(control.availableData).sort()
-//     control.availableMap = _.mapValues(control.availableData, (replacements) => {
-//         return {
-//             replacements,
-//         }
-//     })
-// }
-// else {
-//     control.isLoading = loading
-// }
-//     return control
-// }
+    control.isLoading = false
+    const error = secrets ? null : result.error
+    if (!control.available) {
+        control.available = []
+        control.availableMap = {}
+        control.availableData = []
+    }
+    if (control.available.length === 0 && (error || secrets)) {
+        if (error) {
+            control.isFailed = true
+        } else if (secrets.length) {
+            control.isLoaded = true
+            const ansibleCredentials = secrets.filter(
+                (providerConnection) =>
+                    providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+            )
+            control.available = ansibleCredentials.map((secret) => secret.metadata.name).sort()
+            return control
+        }
+    } else {
+        control.isLoading = loading
+    }
+}
 
 // Those are for edit issue#5904
 //TODO

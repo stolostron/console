@@ -11,10 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import {
-    // loadExistingAnsibleProviders,
-    getSharedSubscriptionWarning,
-} from './utils'
+import { loadExistingAnsibleProviders, getSharedSubscriptionWarning } from './utils'
 import React from 'react'
 import { AcmIcon, AcmIconVariant } from '@stolostron/ui-components'
 
@@ -39,8 +36,7 @@ const prePostTasks = [
         active: '',
         placeholder: 'app.enter.select.ansibleSecretName',
         available: [],
-        // fetchAvailable: loadExistingAnsibleProviders(),
-        // This is not working
+        fetchAvailable: loadExistingAnsibleProviders(),
         reverse: 'Subscription[0].spec.hooksecretref.name',
         validation: {},
         prompts: {
