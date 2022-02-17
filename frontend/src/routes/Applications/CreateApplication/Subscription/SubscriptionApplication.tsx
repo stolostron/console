@@ -114,10 +114,7 @@ export function CreateSubscriptionApplication() {
     const cancelCreate = () => {
         history.push(NavigationPath.applications)
     }
-
-    // pause creation to create something else
-    const pauseCreate = () => {}
-
+    
     // setup translation
     const { t } = useTranslation()
     const i18n = (key: any, arg: any) => {
@@ -144,7 +141,7 @@ export function CreateSubscriptionApplication() {
                 createControl={{
                     createResource,
                     cancelCreate,
-                    pauseCreate,
+                    pauseCreate: () => {},
                     creationStatus: creationStatus?.status,
                     creationMsg: creationStatus?.messages,
                 }}
