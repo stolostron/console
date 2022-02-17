@@ -18,6 +18,7 @@ import { acmRouteState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources/managedclusterview'
+import { getResource } from '../../../../resources/utils/resource-request'
 import LogsPage from './LogsPage'
 import YAMLPage from './YAMLPage'
 
@@ -77,18 +78,34 @@ export default function DetailsPage() {
     const classes = useStyles()
 
     useEffect(() => {
-        fireManagedClusterView(cluster, kind, apiversion, name, namespace)
-            .then((viewResponse) => {
-                if (viewResponse?.message) {
-                    setResourceError(viewResponse.message)
-                } else {
-                    setResource(viewResponse?.result)
-                }
-            })
-            .catch((err) => {
-                console.error('Error getting resource: ', err)
-                setResourceError(err)
-            })
+        if (cluster === 'local-cluster') {
+            const resourceResult = getResource({
+                apiVersion: apiversion,
+                kind,
+                metadata: { namespace, name },
+            }).promise
+            resourceResult
+                .then((response) => {
+                    setResource(response)
+                })
+                .catch((err) => {
+                    console.error('Error getting resource: ', err)
+                    setResourceError(err.message)
+                })
+        } else {
+            fireManagedClusterView(cluster, kind, apiversion, name, namespace)
+                .then((viewResponse) => {
+                    if (viewResponse?.message) {
+                        setResourceError(viewResponse.message)
+                    } else {
+                        setResource(viewResponse?.result)
+                    }
+                })
+                .catch((err) => {
+                    console.error('Error getting resource: ', err)
+                    setResourceError(err)
+                })
+        }
     }, [cluster, kind, apiversion, name, namespace])
 
     useEffect(() => {

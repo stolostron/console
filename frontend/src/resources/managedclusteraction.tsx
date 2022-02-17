@@ -155,10 +155,10 @@ export async function pollManagedClusterAction(actionName: string, clusterName: 
             } else if (actionMessage && isComplete === 'Completed' && isActionDone !== 'ActionDone') {
                 reject({ message: actionMessage })
             } else {
-                return {
+                reject({
                     message:
                         'There was an error while performing the managed cluster resource action. Make sure the managed cluster is online and helthy, and that the work manager pod in namespace open-cluster-management-agent-addon is healthy ',
-                }
+                })
             }
             deleteManagedClusterAction({ name: actionName, namespace: clusterName })
         } else {
@@ -167,7 +167,7 @@ export async function pollManagedClusterAction(actionName: string, clusterName: 
                 setTimeout(poll, 100, resolve, reject)
             } else {
                 deleteManagedClusterAction({ name: actionName, namespace: clusterName })
-                return reject({
+                reject({
                     message: `Request for ManagedClusterAction: ${actionName} on cluster: ${clusterName} failed due to too many requests. Make sure the work manager pod in namespace open-cluster-management-agent-addon is healthy.`,
                 })
             }
