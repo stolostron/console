@@ -23,7 +23,7 @@ import {
     setAvailableRules,
     getExistingPRControlsSection,
     updateNewRuleControlsData,
-    getSharedPlacementRuleWarning,
+    // getSharedPlacementRuleWarning,
     getSharedSubscriptionWarning,
 } from './utils'
 import { getSourcePath } from 'temptifly'
@@ -216,7 +216,7 @@ export const summarizeOnline = (control, globalControlData, summary) => {
 async function getClusterStatus(name) {
     let successImportStatus = false
     const managedClusters = await listManagedClusters().promise
-    const managedCluster = _.find(managedClusters, (managedCluster) => managedCluster.metadata.name === name)
+    const managedCluster = _.find(managedClusters, (cluster) => cluster.metadata.name === name)
     if (managedCluster) {
         const managedClusterCondition = _.get(managedCluster, 'status.conditions', {})
         if (!_.isEmpty(managedClusterCondition)) {
@@ -245,7 +245,7 @@ const placementData = async () => [
         overline: true,
         collapsable: true,
         collapsed: false,
-        info: getSharedPlacementRuleWarning,
+        // info: getSharedPlacementRuleWarning,
         editing: { editMode: true },
     },
     {

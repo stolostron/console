@@ -121,6 +121,7 @@ export const findOriginalChannelControl = (globalControl, channelName, nameContr
             }
         }
     }
+    return null
 }
 
 export const updateChannelControls = (urlControl, globalControl, setLoadingState) => {
@@ -319,7 +320,8 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
                     onError()
                 } else {
                     branchCtrl.active = ''
-                    branchCtrl.available = result.sort()
+                    branchCtrl.available = [...result]
+                    branchCtrl.available.sort()
                     delete branchCtrl.exception
                     setLoadingState(branchCtrl, false)
                 }
@@ -421,7 +423,7 @@ export const getExistingPRControlsSection = (initiatingControl, control) => {
         const channelsControl = control.find(({ id }) => id === 'channels')
 
         if (channelsControl) {
-            ;(_.get(channelsControl, 'active') || []).forEach((channelControls) => {
+            (_.get(channelsControl, 'active') || []).forEach((channelControls) => {
                 const channelInfo = {}
                 channelControls.forEach((controlDataObject) => {
                     channelInfo[controlDataObject.id] = controlDataObject
@@ -595,13 +597,3 @@ export const setAvailableSecrets = (control, result) => {
         control.isLoading = loading
     }
 }
-
-// Those are for edit issue#5904
-//TODO
-// export const getSharedPlacementRuleWarning = (control) => (
-//     <SharedResourceWarning resourceType={PlacementRuleKind} control={control} />
-// )
-
-// export const getSharedSubscriptionWarning = (control) => (
-//     <SharedResourceWarning resourceType={RESOURCE_TYPES.HCM_SUBSCRIPTIONS} control={control} />
-// )

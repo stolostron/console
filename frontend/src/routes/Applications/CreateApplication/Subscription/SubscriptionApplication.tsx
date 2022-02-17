@@ -82,8 +82,8 @@ export function CreateSubscriptionApplication() {
     const toastContext = useContext(AcmToastContext)
     const [controlData, setControlData] = useState<any>('')
     useEffect(() => {
-        getControlData().then((controlData) => {
-            setControlData(controlData)
+        getControlData().then((cd) => {
+            setControlData(cd)
         })
     }, [])
 
@@ -131,26 +131,6 @@ export function CreateSubscriptionApplication() {
     Handlebars.registerPartial('templateObjectStore', Handlebars.compile(ObjTemplate))
     Handlebars.registerPartial('templatePlacement', Handlebars.compile(placementTemplate))
 
-    function onControlInitialize(control: any) {
-        switch (control.id) {
-            case 'channelSection': {
-                const { content } = control
-                if (content && content.length) {
-                    const { controlData } = content[0]
-                    const channelTypeData = _.find(controlData, { id: 'channelType' })
-                    channelTypeData.available.forEach((data: { change: { insertControlData: any } }) => {
-                        const { insertControlData } = data.change
-                        const clusterSelector = _.find(insertControlData, { id: 'clusterSelector' })
-                        if (clusterSelector) {
-                            _.set(clusterSelector, 't', t)
-                        }
-                    })
-                }
-                break
-            }
-        }
-    }
-
     return (
         controlData && (
             <TemplateEditor
@@ -169,7 +149,6 @@ export function CreateSubscriptionApplication() {
                     creationMsg: creationStatus?.messages,
                 }}
                 logging={process.env.NODE_ENV !== 'production'}
-                onControlInitialize={onControlInitialize}
                 i18n={i18n}
             />
         )

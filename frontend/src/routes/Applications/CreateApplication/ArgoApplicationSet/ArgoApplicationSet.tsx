@@ -5,7 +5,7 @@ import { PageSection } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@stolostron/ui-components'
 import moment from 'moment-timezone'
 import { useMemo } from 'react'
-import { useHistory } from 'react-router'
+import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -69,7 +69,6 @@ export function CreateArgoApplicationSet() {
         () => channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub'),
         [channels]
     )
-    // const helmChannels = useMemo(() => channels.filter((channel) => channel.spec.type === 'HelmRepo'), [channels])
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
@@ -106,8 +105,6 @@ export function CreateArgoApplicationSet() {
                     return error
                 })
             }
-            // gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
-            // helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
             channels={gitChannels as unknown as any}
             timeZones={timeZones}
         />
