@@ -17,8 +17,8 @@ export function PolicyViolationIcons(props: {
             compliant={risks.synced}
             compliantTooltip={
                 risks.synced == 1
-                    ? '1 compliannt policy'
-                    : '{0} compliannt policies'.replace('{0}', risks.synced.toString())
+                    ? '1 policy without violations'
+                    : '{0} policies without violations'.replace('{0}', risks.synced.toString())
             }
             compliantHref={compliantHref}
             violations={violations}

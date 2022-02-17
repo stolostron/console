@@ -202,7 +202,7 @@ function AnsibleJobTemplateTable() {
                                 {
                                     id: 'edit-template',
                                     text: t('template.edit'),
-                                    isDisabled: true,
+                                    isAriaDisabled: true,
                                     rbac: [rbacPatch(curator)],
                                     click: (curator: ClusterCurator) => {
                                         history.push(
@@ -215,7 +215,7 @@ function AnsibleJobTemplateTable() {
                                 {
                                     id: 'delete',
                                     text: t('template.delete'),
-                                    isDisabled: true,
+                                    isAriaDisabled: true,
                                     rbac: [rbacDelete(curator)],
                                     click: (curator: ClusterCurator) => {
                                         setBulkModalProps({

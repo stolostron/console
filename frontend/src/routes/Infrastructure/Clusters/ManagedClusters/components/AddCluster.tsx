@@ -67,13 +67,13 @@ export function AddCluster(props: { type: 'button' | 'dropdown'; buttonType?: 'p
                     {
                         id: 'create-cluster',
                         text: t('managed.createCluster'),
-                        isDisabled: !canCreateCluster,
+                        isAriaDisabled: !canCreateCluster,
                         tooltip: !canCreateCluster ? t('rbac.unauthorized') : '',
                     },
                     {
                         id: 'import-cluster',
                         text: t('managed.importCluster'),
-                        isDisabled: !canCreateCluster,
+                        isAriaDisabled: !canCreateCluster,
                         tooltip: !canCreateCluster ? t('rbac.unauthorized') : '',
                     },
                 ]}

@@ -70,7 +70,7 @@ export function EditPolicySet() {
                 updateResources(resources as IResource[]).then(() => {
                     toast.addAlert({
                         title: t('Policy set updated'),
-                        message: t('{{name}} was successfully updated.', { name: 'TODO' }),
+                        // message: t('{{name}} was successfully updated.', { name: 'TODO' }),
                         type: 'success',
                         autoClose: true,
                     })

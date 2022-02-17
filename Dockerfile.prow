@@ -9,7 +9,7 @@ FROM frontend-packages as frontend
 RUN npm run build
 
 FROM frontend-packages as dynamic-plugin
-RUN npm run plugin:build
+RUN npm run build:plugin:acm
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as backend
 WORKDIR /app/backend
@@ -28,6 +28,6 @@ ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules
 COPY --from=backend /app/backend/backend.mjs ./
 COPY --from=frontend /app/frontend/build ./public
-COPY --from=dynamic-plugin /app/frontend/dist ./public/plugin
+COPY --from=dynamic-plugin /app/frontend/plugins/acm/dist ./public/plugin
 USER 1001
 CMD ["node", "backend.mjs"]

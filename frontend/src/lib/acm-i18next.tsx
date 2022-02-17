@@ -3,7 +3,7 @@
 import { useTranslation as useReactI18NextTranslation, Trans as ReactTrans } from 'react-i18next'
 
 export function useTranslation() {
-    return useReactI18NextTranslation('plugin__acm-plugin')
+    return useReactI18NextTranslation(process.env.TRANSLATION_NAMESPACE)
 }
 
 export function Trans(props: any) {

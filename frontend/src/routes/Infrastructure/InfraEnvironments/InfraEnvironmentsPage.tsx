@@ -182,7 +182,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 {
                                     id: 'delete',
                                     text: t('infraEnv.rowAction.delete.title'),
-                                    isDisabled: true,
+                                    isAriaDisabled: true,
                                     click: (infraEnv: CIM.InfraEnvK8sResource) => {
                                         setModalProps({
                                             open: true,

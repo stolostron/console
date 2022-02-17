@@ -11,7 +11,6 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@stolostron/ui-components'
-import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { Link, Route, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -64,7 +63,8 @@ function getResourceData() {
 export default function DetailsPage() {
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
-    const [resource, setResource] = useState(undefined)
+    const [resource, setResource] = useState<any>(undefined)
+    const [containers, setContainers] = useState<string[]>()
     const [resourceError, setResourceError] = useState('')
     useEffect(() => setRoute(AcmRoute.Resources), [setRoute])
     const { cluster, kind, apiversion, namespace, name } = getResourceData()
@@ -79,10 +79,10 @@ export default function DetailsPage() {
     useEffect(() => {
         fireManagedClusterView(cluster, kind, apiversion, name, namespace)
             .then((viewResponse) => {
-                if (viewResponse.message) {
+                if (viewResponse?.message) {
                     setResourceError(viewResponse.message)
                 } else {
-                    setResource(viewResponse.result)
+                    setResource(viewResponse?.result)
                 }
             })
             .catch((err) => {
@@ -90,6 +90,10 @@ export default function DetailsPage() {
                 setResourceError(err)
             })
     }, [cluster, kind, apiversion, name, namespace])
+
+    useEffect(() => {
+        setContainers((resource && resource.spec?.containers?.map((container: any) => container.name)) ?? [])
+    }, [resource])
 
     const location = useLocation()
     const history = useHistory()
@@ -162,11 +166,11 @@ export default function DetailsPage() {
                         apiversion={apiversion}
                     />
                 </Route>
-                {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
+                {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && containers && (
                     <Route path={NavigationPath.resourceLogs}>
                         <LogsPage
                             resourceError={resourceError}
-                            containers={_.get(resource, 'spec.containers', []).map((container: any) => container.name)}
+                            containers={containers}
                             cluster={cluster}
                             namespace={namespace}
                             name={name}

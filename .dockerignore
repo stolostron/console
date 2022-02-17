@@ -26,6 +26,7 @@
 /.dockerignore
 /.gitignore
 /Dockerfile
+/Dockerfile.mce.prow
 /Dockerfile.prow
 /console.code-workspace
 /*.md

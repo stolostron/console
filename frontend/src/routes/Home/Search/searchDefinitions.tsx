@@ -2,8 +2,9 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { AcmLabels } from '@stolostron/ui-components'
 import { Label, LabelGroup } from '@patternfly/react-core'
+import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { AcmLabels } from '@stolostron/ui-components'
 import _ from 'lodash'
 import moment from 'moment'
 import queryString from 'query-string'
@@ -990,11 +991,27 @@ const searchDefinitions: any = {
                 cell: 'disabled',
             },
             {
-                header: 'Compliant',
+                header: 'Violations',
                 sort: 'compliant',
                 cell: (item: any) => {
-                    // TODO -Show a status icon based on compliance
-                    return item.compliant ? item.compliant : '-'
+                    switch (item.compliant) {
+                        case 'Compliant':
+                            return (
+                                <div>
+                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />{' '}
+                                    {'Without violations'}
+                                </div>
+                            )
+                        case 'NonCompliant':
+                            return (
+                                <div>
+                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
+                                    {'With violations'}
+                                </div>
+                            )
+                        default:
+                            return '-'
+                    }
                 },
             },
             {

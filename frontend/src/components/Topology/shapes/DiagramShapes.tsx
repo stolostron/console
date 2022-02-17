@@ -5,8 +5,8 @@ export const DiagramShapes = () => (
             <circle cx="20.8" cy="20.7" r="19.1" />
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_application">
-            <g id="Application" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Application" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g id="02_Software/App/App_outline" transform="matrix(1.6379 0 0 1.6379 7.9512 7.8634)" stroke="none">
                     <path
                         id="path-application"
@@ -17,9 +17,9 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_ansiblejob">
-            <g transform="translate(0)" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
-                <g transform="matrix(1.4248 0 0 1.4248 6.7502 6.7876)" fill-rule="nonzero" stroke="none">
+            <g transform="translate(0)" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
+                <g transform="matrix(1.4248 0 0 1.4248 6.7502 6.7876)" fillRule="nonzero" stroke="none">
                     <ellipse
                         id="Oval"
                         transform="rotate(-80.819 6.492 6.4945)"
@@ -38,20 +38,20 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_chart">
-            <g id="HelmChart" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="HelmChart" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <path
                     id="Combined-Shape"
                     d="m21.265 11.489c0.9315 1.0862 1.5327 2.464 1.6478 3.9777h0.55354c0.29455 0 0.53333 0.23878 0.53333 0.53333 0 0.29455-0.23878 0.53333-0.53333 0.53333h-0.55354c-0.11515 1.5137-0.71633 2.8915-1.6478 3.9777l0.39156 0.39156c0.20828 0.20828 0.20828 0.54597 0 0.75425-0.20828 0.20828-0.54597 0.20828-0.75425 0l-0.39156-0.39156c-1.0862 0.9315-2.464 1.5327-3.9777 1.6478v0.55354c0 0.29455-0.23878 0.53333-0.53333 0.53333-0.29455 0-0.53333-0.23878-0.53333-0.53333v-0.55354c-1.5137-0.11515-2.8915-0.71633-3.9777-1.6478l-0.39156 0.39156c-0.20828 0.20828-0.54597 0.20828-0.75425 0-0.20828-0.20828-0.20828-0.54597 0-0.75425l0.39156-0.39156c-0.9315-1.0862-1.5327-2.464-1.6478-3.9777h-0.55354c-0.29455 0-0.53333-0.23878-0.53333-0.53333 0-0.29455 0.23878-0.53333 0.53333-0.53333h0.55354c0.11515-1.5137 0.71633-2.8915 1.6478-3.9777l-0.39156-0.39156c-0.20828-0.20828-0.20828-0.54597 0-0.75425 0.20828-0.20828 0.54597-0.20828 0.75425 0l0.39156 0.39156c1.0862-0.9315 2.464-1.5327 3.9777-1.6478v-0.55354c0-0.29455 0.23878-0.53333 0.53333-0.53333 0.29455 0 0.53333 0.23878 0.53333 0.53333v0.55354c1.5137 0.11515 2.8915 0.71633 3.9777 1.6478l0.39156-0.39156c0.20828-0.20828 0.54597-0.20828 0.75425 0 0.20828 0.20828 0.20828 0.54597 0 0.75425zm-9.7737 8.2652 3.2208-3.2208h-4.5552c0.10991 1.2196 0.59305 2.3316 1.3343 3.2208zm0.75425 0.75425c0.88925 0.74129 2.0012 1.2244 3.2208 1.3343v-4.5552zm8.2626-8.2626-3.2208 3.2208h4.5552c-0.10991-1.2196-0.59305-2.3316-1.3343-3.2208zm-0.75425-0.75425c-0.88925-0.74129-2.0012-1.2244-3.2208-1.3343v4.5552zm-8.2626 0.75425c-0.74129 0.88925-1.2244 2.0012-1.3343 3.2208h4.5552zm0.75425-0.75425 3.2208 3.2208v-4.5552c-1.2196 0.10991-2.3316 0.59305-3.2208 1.3343zm8.2626 8.2626c0.74129-0.88925 1.2244-2.0012 1.3343-3.2208h-4.5552zm-0.75425 0.75425-3.2208-3.2208v4.5552c1.2196-0.10991 2.3316-0.59305 3.2208-1.3343zm-3.7542-3.4417c0.5891 0 1.0667-0.47756 1.0667-1.0667s-0.47756-1.0667-1.0667-1.0667-1.0667 0.47756-1.0667 1.0667 0.47756 1.0667 1.0667 1.0667zm0-0.53333c-0.29455 0-0.53333-0.23878-0.53333-0.53333 0-0.29455 0.23878-0.53333 0.53333-0.53333 0.29455 0 0.53333 0.23878 0.53333 0.53333 0 0.29455-0.23878 0.53333-0.53333 0.53333z"
                     fill="#171717"
-                    fill-rule="nonzero"
+                    fillRule="nonzero"
                     stroke="none"
                 />
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_cluster">
-            <g id="Cluster" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Cluster" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.8606 0 0 1.8606 6.8571 6.8572)" fill="#000000" stroke="none">
                     <path
                         id="Fill"
@@ -61,8 +61,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_configmap">
-            <g id="ConfigMap" fill="none" fill-rule="evenodd" stroke="none">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="ConfigMap" fill="none" fillRule="evenodd" stroke="none">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g
                     id="Organization-/-File-/-catalog-/-32"
                     transform="matrix(2.035002,0,0,2.035002,5.6582201,5.9193449)"
@@ -76,8 +76,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_container">
-            <g id="Container" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Container" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g
                     id="02_Software/Containerized-app/Containerized-app_outline"
                     transform="matrix(1.6604 0 0 1.6604 7.8713 6.5104)"
@@ -87,14 +87,14 @@ export const DiagramShapes = () => (
                         id="path-container"
                         d="m4.7222 0.33467c0.095139-0.053051 0.21097-0.053051 0.3061 0l4.514 2.6039c0.10126 0.050539 0.16695 0.15221 0.17142 0.26529v5.2119c-3.3e-4 0.10879-0.057634 0.20946-0.15101 0.26529l-4.514 2.6039c-0.045644 0.02719-0.097885 0.04131-0.15101 0.04083-0.054406 4.07e-4 -0.10794-0.01368-0.15509-0.04083l-4.5099-2.6039c-0.096184-0.053555-0.15561-0.1552-0.1551-0.26529v-5.2119c-5.1234e-4 -0.11009 0.058913-0.21174 0.1551-0.26529zm0.1755 0.62037-4.2283 2.4284v4.8528l4.2283 2.4284 4.1834-2.4203 0.020407-4.8609zm2.0407 2.6039c0.16814 0.0022 0.30391 0.13797 0.3061 0.3061v3.9141c0 0.16906-0.13705 0.3061-0.3061 0.3061h-3.963c-0.16906 0-0.3061-0.13705-0.3061-0.3061v-3.9141c0.0022-0.16814 0.13797-0.30391 0.3061-0.3061zm-0.3061 0.61221h-3.3508l-0.016326 3.3018h3.3672zm-1.8325 0.57956c0.11951-0.11936 0.31312-0.11936 0.43263 0 0.027793 0.029756 0.049923 0.064334 0.065302 0.10203 0.01584 0.036034 0.024172 0.074918 0.024488 0.11428 8.534e-4 0.081339-0.031587 0.15949-0.089791 0.21631-0.028143 0.028912-0.061342 0.052427-0.097953 0.069384-0.038231 0.012602-0.078117 0.019479-0.11836 0.020407-0.081157-7.15e-5 -0.15896-0.032368-0.21631-0.089791-0.028621-0.027523-0.050905-0.060948-0.065302-0.097954-0.016276-0.03733-0.024615-0.077636-0.02449-0.11836 3.18e-4 -0.039361 0.00865-0.078245 0.02449-0.11428 0.013865-0.038466 0.03618-0.073333 0.065302-0.10203zm0.81628 0c0.12206-0.11304 0.31057-0.11304 0.43263 0 0.027793 0.029756 0.049923 0.064334 0.065302 0.10203 0.01584 0.036034 0.024172 0.074918 0.02449 0.11428 1.254e-4 0.040724-0.00821 0.08103-0.02449 0.11836-0.015488 0.036427-0.037634 0.069646-0.065302 0.097954-0.11951 0.11936-0.31312 0.11936-0.43263 0-0.02905-0.027162-0.051403-0.060692-0.065302-0.097954-0.016276-0.03733-0.024615-0.077636-0.02449-0.11836 3.179e-4 -0.039361 0.00865-0.078245 0.02449-0.11428 0.013865-0.038466 0.03618-0.073333 0.065302-0.10203z"
                         fill="#000"
-                        fill-rule="evenodd"
+                        fillRule="evenodd"
                     />
                 </g>
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_customresource">
-            <g id="CustomResource" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="CustomResource" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.6446 0 0 1.6446 7.7571 7.9767)" stroke="none" fill="#000000">
                     <g id="Actions-/-Controls-/-settings-/-32-Copy">
                         <path
@@ -109,10 +109,10 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_daemonset">
-            <g id="DaemonSet" transform="translate(0)" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="DaemonSet" transform="translate(0)" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.7806 0 0 1.7806 8.625 8.625)">
-                    <g fill="#000" fill-rule="nonzero" stroke="none">
+                    <g fill="#000" fillRule="nonzero" stroke="none">
                         <g id="icon/file/template/32-copy" transform="translate(1.053,1.053)">
                             <polygon
                                 id="Polygon"
@@ -125,7 +125,7 @@ export const DiagramShapes = () => (
                         <rect x="3.159" width="1" height="3.159" />
                         <rect x="3.159" y="4.914" width="1" height="3.159" />
                     </g>
-                    <rect id="Rectangle" width="7.722" height="3.51" rx=".702" stroke="#000" stroke-width=".702" />
+                    <rect id="Rectangle" width="7.722" height="3.51" rx=".702" stroke="#000" strokeWidth=".702" />
                     <rect
                         id="Rectangle-Copy"
                         y="4.914"
@@ -133,18 +133,18 @@ export const DiagramShapes = () => (
                         height="3.51"
                         rx=".702"
                         stroke="#000"
-                        stroke-width=".702"
+                        strokeWidth=".702"
                     />
                 </g>
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_deployment">
-            <g id="Deployment" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Deployment" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g
                     id="Shape"
                     transform="matrix(1.7533 0 0 1.7533 10.619 7.4743)"
-                    fill-rule="nonzero"
+                    fillRule="nonzero"
                     stroke="none"
                     fill="#000000"
                 >
@@ -153,8 +153,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_deploymentconfig">
-            <g id="DeploymentConfig" transform="translate(0)" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="DeploymentConfig" transform="translate(0)" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.3031 0 0 1.3031 -4.7627 -4.5173)">
                     <circle
                         id="path-dc"
@@ -162,10 +162,10 @@ export const DiagramShapes = () => (
                         cy="15.97"
                         r="5.4405"
                         stroke="#000"
-                        stroke-dasharray="2.106, 2.808"
-                        stroke-width="1.404"
+                        strokeDasharray="2.106, 2.808"
+                        strokeWidth="1.404"
                     />
-                    <g fill="#000" fill-rule="nonzero" stroke="none">
+                    <g fill="#000" fillRule="nonzero" stroke="none">
                         <polygon
                             id="Shape-path"
                             points="14.742 14.284 15.041 14.589 15.802 13.815 15.802 16.447 16.226 16.447 16.226 13.815 16.988 14.589 17.287 14.284 16.014 12.987"
@@ -177,8 +177,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_host">
-            <g id="Host" transform="translate(0)" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Host" transform="translate(0)" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g
                     id="01_Hardware/Server-stack/Server-stack_outline"
                     transform="matrix(1.7941 0 0 1.7941 7.6339 7.0305)"
@@ -188,26 +188,26 @@ export const DiagramShapes = () => (
                         id="path-host"
                         d="m8.7876 6.916c0.17179 0 0.31105 0.14103 0.31105 0.315 0.00415 2.226 0.00415 2.226-0.09124 2.3226-0.058277 0.059091-0.13734 0.092326-0.21981 0.0924h-8.2946c-0.17179 0-0.31105-0.14103-0.31105-0.315v-2.1c0-0.17397 0.13926-0.315 0.31105-0.315zm-0.31105 0.63h-7.6725v1.47h7.6725zm-1.0256 0.48297c0.10107-0.042384 0.21772-0.019324 0.2951 0.058336 0.078044 0.078202 0.10137 0.19573 0.059124 0.29785-0.04225 0.10212-0.14177 0.16874-0.25221 0.16884-0.035181 1.48e-4 -0.069978-0.00731-0.10201-0.021878-0.034078-0.012904-0.065097-0.032771-0.091079-0.058336-0.10655-0.10676-0.10655-0.27972 0-0.38648 0.025982-0.025565 0.057-0.045433 0.091079-0.058337zm-4.8423-0.020971c0.16753 0 0.30333 0.12223 0.30333 0.273s-0.13581 0.273-0.30333 0.273h-1.2133c-0.16753 0-0.30333-0.12223-0.30333-0.273s0.13581-0.273 0.30333-0.273zm6.1802-4.368c0.17088 0.002262 0.30886 0.14198 0.31109 0.315v2.1c-0.002234 0.17302-0.14022 0.31274-0.31109 0.315h-8.2958c-0.17181 0-0.31109-0.14103-0.31109-0.315v-2.1c0-0.17397 0.13928-0.315 0.31109-0.315zm-0.31109 0.63h-7.6736v1.47h7.6736zm-1.1512 0.583c0.07264-0.10798 0.21134-0.14991 0.33171-0.10029 0.032587 0.013843 0.062304 0.033637 0.087627 0.058365 0.078214 0.078241 0.1016 0.19583 0.059253 0.298-0.042343 0.10217-0.14208 0.16883-0.25276 0.16893-0.035258 1.481e-4 -0.070131-0.0073181-0.10223-0.021889-0.034153-0.01291-0.065239-0.032788-0.091278-0.058365-0.091446-0.09262-0.10496-0.23677-0.032322-0.34475zm-4.7179-0.121c0.16753 0 0.30333 0.12223 0.30333 0.273s-0.13581 0.273-0.30333 0.273h-1.2133c-0.16753 0-0.30333-0.12223-0.30333-0.273s0.13581-0.273 0.30333-0.273zm6.1802-4.368c0.17088 0.002262 0.30886 0.14198 0.31109 0.315v2.1c-0.002234 0.17302-0.14022 0.31274-0.31109 0.315h-8.2958c-0.17181 0-0.31109-0.14103-0.31109-0.315v-2.1c0-0.17397 0.13928-0.315 0.31109-0.315zm-0.31109 0.63h-7.6736v1.47h7.6736zm-1.1195 0.53929c0.0801-0.079068 0.20199-0.099711 0.30421-0.051521 0.029845 0.01619 0.056423 0.037655 0.078409 0.063326 0.071513 0.065778 0.10095 0.16484 0.076764 0.25833-0.024187 0.093487-0.09814 0.16649-0.19285 0.19036s-0.19507-0.005183-0.2617-0.075775c-0.024161-0.024401-0.043499-0.053035-0.057024-0.084434-0.048819-0.1009-0.027906-0.22122 0.052194-0.30029zm-4.7496-0.07729c0.16753 0 0.30333 0.12223 0.30333 0.273s-0.13581 0.273-0.30333 0.273h-1.2133c-0.16753 0-0.30333-0.12223-0.30333-0.273s0.13581-0.273 0.30333-0.273z"
                         fill="#000"
-                        fill-rule="evenodd"
+                        fillRule="evenodd"
                     />
                 </g>
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_ingress">
-            <g id="Ingress" transform="translate(0)" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Ingress" transform="translate(0)" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.3371 0 0 1.3371 8.4693 10.969)" stroke="none">
                     <path
                         id="path-ingress"
                         d="m7.488 5.7868v1.0205c0 0.37596-0.30477 0.68073-0.68073 0.68073h-6.1265c-0.37596 0-0.68073-0.30477-0.68073-0.68073v-6.1265c0-0.37596 0.30477-0.68073 0.68073-0.68073h6.1265c0.37596 0 0.68073 0.30477 0.68073 0.68073v1.0236"
                         stroke="#000"
-                        stroke-width=".702"
+                        strokeWidth=".702"
                     />
                     <polygon
                         transform="matrix(0 1 1 0 5.3182 -5.3182)"
                         points="8.7218 6.2967 9.4025 6.2967 9.4025 2.4949 10.624 3.7134 11.104 3.2335 9.0622 1.1913 7.02 3.2335 7.4999 3.7134 8.7218 2.4949"
                         fill="#000"
-                        fill-rule="nonzero"
+                        fillRule="nonzero"
                     />
                     <path
                         id="Combined-Shape"
@@ -218,13 +218,13 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_namespace">
-            <g id="Topology" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g id="Topology" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
                 <g id="Artboard" transform="translate(-1245.000000, -1091.000000)">
                     <g id="Namespace" transform="translate(1245.000000, 1091.000000)">
                         <circle
                             id="Oval-Copy-38"
                             stroke="#82CFFF"
-                            stroke-width="1.404"
+                            strokeWidth="1.404"
                             fill="#FFFFFF"
                             cx="15.795"
                             cy="15.795"
@@ -246,8 +246,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_namespace">
-            <g id="Namespace" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Namespace" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.8606 0 0 1.8606 6.8571 6.7143)" stroke="none" fill="#000000">
                     <path
                         id="Fill"
@@ -257,8 +257,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_node">
-            <g id="Node" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Node" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.3709 -1.3709 1.3709 1.3709 2.5263 16)" stroke="none" fill="#000000">
                     <path
                         id="Fill"
@@ -268,8 +268,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_other">
-            <g id="Other" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Other" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.628 0 0 1.628 -9.7143 -9.8571)" stroke="none" fill="#000000">
                     <g transform="translate(10.881,11.583)">
                         <path
@@ -277,7 +277,7 @@ export const DiagramShapes = () => (
                             d="m9.126 0h-8.424c-0.3877 0-0.702 0.3143-0.702 0.702v7.02c0 0.3877 0.3143 0.702 0.702 0.702h8.424c0.3877 0 0.702-0.3143 0.702-0.702v-7.02c0-0.3877-0.3143-0.702-0.702-0.702zm0 0.702v7.02h-8.424v-7.02z"
                         />
                     </g>
-                    <g transform="translate(12.987,15.093)" fill-rule="nonzero">
+                    <g transform="translate(12.987,15.093)" fillRule="nonzero">
                         <circle id="Oval" cx="4.914" cy=".61425" r="1" />
                         <circle cx="2.7641" cy=".61425" r="1" />
                         <circle cx=".61425" cy=".61425" r="1" />
@@ -286,8 +286,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_placement">
-            <g id="Placement" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#3ddbd9" stroke-width="1.404" />
+            <g id="Placement" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#3ddbd9" strokeWidth="1.404" />
                 <g transform="matrix(1.8606 0 0 1.8606 6.8571 6.3571)" stroke="none" fill="#000000">
                     <path
                         id="Fill"
@@ -297,21 +297,21 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_pod">
-            <g id="Pod" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Pod" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <path
                     id="Combined-Shape"
                     stroke="none"
                     fill="#000000"
                     d="m22.403 12.142-6.0927-3.3884c-0.19161-0.10656-0.42854-0.10656-0.62015 0l-6.0927 3.3884 6.4027 3.3065zm0.36649 1.1452-6.1538 3.1779v6.8428l5.8485-3.2526c0.18906-0.10514 0.30531-0.29811 0.30531-0.50678zm-7.3846 10.021v-6.8428l-6.1538-3.1779v6.2614c0 0.20867 0.11626 0.40163 0.30531 0.50678zm1.5456-15.568 6.1538 3.4224c0.56717 0.31542 0.91593 0.89432 0.91593 1.5203v6.8658c0 0.626-0.34876 1.2049-0.91593 1.5203l-6.1538 3.4224c-0.57482 0.31968-1.2856 0.31968-1.8604 0l-6.1538-3.4224c-0.56717-0.31543-0.91593-0.89432-0.91593-1.5203v-6.8658c0-0.626 0.34876-1.2049 0.91593-1.5203l6.1538-3.4224c0.57482-0.31968 1.2856-0.31968 1.8604-1e-7z"
-                    fill-rule="nonzero"
-                    stroke-width="1.7532"
+                    fillRule="nonzero"
+                    strokeWidth="1.7532"
                 />
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_policy">
-            <g id="Policy" transform="translate(0)" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Policy" transform="translate(0)" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g
                     id="10_Objects/Shield/Shield_outline"
                     transform="matrix(1.6505 0 0 1.6505 9.3662 7.8192)"
@@ -322,14 +322,14 @@ export const DiagramShapes = () => (
                         id="path-policy"
                         d="m4.054 9.8034c2.0641-3.957e-4 3.7797-1.6066 3.9365-3.6855v-0.04914-4.7707c-9.03e-5 -0.14273-0.097512-0.26658-0.23513-0.29894l-3.6486-0.88042c-0.046511-0.012318-0.095381-0.012318-0.14189 0l-3.6486 0.88042c-0.13535 0.033286-0.23176 0.15417-0.23513 0.29484v4.7707c0.035485 0.58186 0.19891 1.1484 0.47838 1.6585v0.020475c0.70429 1.2805 2.0445 2.0704 3.4946 2.0598zm0-0.61424c-1.079-0.0017774-2.092-0.52553-2.7243-1.4087l6.0162-1.3391c-0.29881 1.5973-1.6826 2.7523-3.2919 2.7478zm-3.3284-7.6495 3.3284-0.819 3.3446 0.819v0.68386l-6.6811 1.4619zm0 2.7887 6.673-1.4619v2.9525l-6.3932 1.4046c-0.17074-0.36954-0.27114-0.76823-0.29595-1.1753z"
                         fill="#000"
-                        fill-rule="evenodd"
+                        fillRule="evenodd"
                     />
                 </g>
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_replicaset">
-            <g id="ReplicaSet" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="ReplicaSet" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.628 0 0 1.628 6.8573 6.8572)" stroke="none" fill="#000000">
                     <path
                         id="Fill"
@@ -339,8 +339,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_replicationcontroller">
-            <g id="ReplicationController" transform="translate(0)" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="ReplicationController" transform="translate(0)" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.3031 0 0 1.3031 -4.8148 -4.8065)">
                     <circle
                         id="path-rc"
@@ -348,8 +348,8 @@ export const DiagramShapes = () => (
                         cy="15.97"
                         r="5.4405"
                         stroke="#000"
-                        stroke-dasharray="2.106, 2.808"
-                        stroke-width="1.404"
+                        strokeDasharray="2.106, 2.808"
+                        strokeWidth="1.404"
                     />
                     <path
                         stroke="none"
@@ -361,8 +361,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_route">
-            <g transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.6422 0 0 1.6422 8 8.5)" stroke="none" fill="#000000">
                     <g transform="translate(0 .702)">
                         <path
@@ -383,10 +383,10 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_placements">
-            <g transform="translate(0)" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g transform="translate(0)" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.8993 0 0 1.8993 8.6667 8.6667)">
-                    <g stroke="none" fill="#000000" fill-rule="nonzero">
+                    <g stroke="none" fill="#000000" fillRule="nonzero">
                         <g id="icon/file/template/32-copy" transform="translate(.96525 .96525)">
                             <polygon
                                 id="Polygon"
@@ -418,20 +418,13 @@ export const DiagramShapes = () => (
                             <polygon points="0.086213 0.32175 0.6435 0 1.2008 0.32175 1.2008 0.96525 0.6435 1.287 0.086213 0.96525" />
                         </g>
                     </g>
-                    <rect
-                        id="Rectangle-Copy"
-                        width="7.722"
-                        height="7.722"
-                        rx=".702"
-                        stroke="#000"
-                        stroke-width=".702"
-                    />
+                    <rect id="Rectangle-Copy" width="7.722" height="7.722" rx=".702" stroke="#000" strokeWidth=".702" />
                 </g>
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_secret">
-            <g id="Secret" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="Secret" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.9509 0 0 1.9509 6.8587 6.8589)" stroke="none" fill="#000000">
                     <path
                         id="Fill"
@@ -441,9 +434,9 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_service">
-            <g id="Service" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
-                <g transform="matrix(1.924 0 0 1.924 8.5 8.5)" fill-rule="nonzero" stroke="none" fill="#000000">
+            <g id="Service" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
+                <g transform="matrix(1.924 0 0 1.924 8.5 8.5)" fillRule="nonzero" stroke="none" fill="#000000">
                     <circle cx="1.8715" cy="1.4524" r="1" />
                     <path
                         id="Combined-Shape"
@@ -453,12 +446,12 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_statefulset">
-            <g id="StatefulSet" transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="StatefulSet" transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g
                     id="Statefulset"
                     transform="matrix(1.6437 0 0 1.6437 9.8454 8)"
-                    fill-rule="nonzero"
+                    fillRule="nonzero"
                     stroke="none"
                     fill="#000000"
                 >
@@ -478,8 +471,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_storageclass">
-            <g id="StorageClass" transform="translate(0)" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="StorageClass" transform="translate(0)" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g
                     id="01_Hardware/Storage-stack/Storage-stack_outline"
                     transform="matrix(1.7145 0 0 1.7145 8.3077 7.3085)"
@@ -490,14 +483,14 @@ export const DiagramShapes = () => (
                         id="path-sc"
                         d="m4.4867 0.11168c-2.4542 0-4.3745 1.1302-4.3745 2.5687v4.4673c0 1.4385 1.9203 2.5687 4.3745 2.5687 2.4542 0 4.3745-1.1302 4.3745-2.5687v-4.4673c0-1.4385-1.9203-2.5687-4.3745-2.5687zm3.7015 4.8023c0 1.0275-1.696 1.8986-3.7015 1.8986-2.0056 0-3.7015-0.87112-3.7015-1.8986v-0.84878c0.76722 0.71476 2.1222 1.1838 3.7015 1.1838 1.5793 0 2.9343-0.46906 3.7015-1.1838zm-3.7015-4.1322c2.0056 0 3.7015 0.87112 3.7015 1.8986 0 1.0275-1.696 1.8986-3.7015 1.8986-2.0056 0-3.7015-0.87112-3.7015-1.8986 0-1.0275 1.696-1.8986 3.7015-1.8986zm0 8.2645c-2.0056 0-3.7015-0.87112-3.7015-1.8986v-0.84878c0.76722 0.71476 2.1222 1.1838 3.7015 1.1838 1.5793 0 2.9343-0.46906 3.7015-1.1838v0.84878c0 1.0275-1.696 1.8986-3.7015 1.8986z"
                         fill="#000"
-                        fill-rule="evenodd"
+                        fillRule="evenodd"
                     />
                 </g>
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_subscription">
-            <g transform="translate(0)" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g transform="translate(0)" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.7034 0 0 1.7034 7.3454 7.5036)">
                     <path
                         id="Fill"
@@ -512,8 +505,8 @@ export const DiagramShapes = () => (
             </g>
         </symbol>
         <symbol viewBox="0 0 32 32" id="diagramShapes_subscriptionblocked">
-            <g id="SubscriptionBlocked" transform="translate(0)" fill="none" fill-rule="evenodd">
-                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" stroke-width="1" />
+            <g id="SubscriptionBlocked" transform="translate(0)" fill="none" fillRule="evenodd">
+                <circle cx="15.795" cy="15.795" r="15.093" fill="#fff" stroke="#c7c7c7" strokeWidth="1" />
                 <g transform="matrix(1.4984 0 0 1.4984 -8.013 -6.858)" stroke="none">
                     <g transform="translate(11.713 11.713)" fill="#000">
                         <path
@@ -596,18 +589,18 @@ export const DiagramShapes = () => (
                     ></feColorMatrix>
                 </filter>
             </defs>
-            <g id="Topology" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g id="Topology" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
                 <g id="App-Topology--How-to-read-this-01.00" transform="translate(-924.000000, -1613.000000)">
                     <g id="Group-5" transform="translate(924.000000, 1616.000000)">
                         <g id="Group-13-Copy-2" transform="translate(149.000000, 0.000000)">
                             <g id="Oval-Copy-8">
-                                <use fill="black" fill-opacity="1" filter="url(#filter-2)" href="#path-1"></use>
-                                <use fill="#FFFFFF" fill-rule="evenodd" href="#path-1"></use>
+                                <use fill="black" fillOpacity="1" filter="url(#filter-2)" href="#path-1"></use>
+                                <use fill="#FFFFFF" fillRule="evenodd" href="#path-1"></use>
                             </g>
                             <circle
                                 id="Oval-Copy-9"
                                 stroke="#c7c7c7"
-                                stroke-width="4.1732212"
+                                strokeWidth="4.1732212"
                                 fill="#FFFFFF"
                                 cx="47.6343391"
                                 cy="46.9487385"
@@ -623,15 +616,15 @@ export const DiagramShapes = () => (
                                     id="Fill"
                                 ></path>
                             </g>
-                            <g id="Rectangle-Copy-2" fill-rule="nonzero">
-                                <use fill="black" fill-opacity="1" filter="url(#filter-4)" href="#path-3"></use>
-                                <use fill-opacity="0.9" fill="#FFFFFF" href="#path-3"></use>
+                            <g id="Rectangle-Copy-2" fillRule="nonzero">
+                                <use fill="black" fillOpacity="1" filter="url(#filter-4)" href="#path-3"></use>
+                                <use fillOpacity="0.9" fill="#FFFFFF" href="#path-3"></use>
                             </g>
                             <text
                                 id="Cluster-Possiblerept"
-                                font-family="RedHatText-Medium, Red Hat Text"
-                                font-size="11.3720278"
-                                font-weight="400"
+                                fontFamily="RedHatText-Medium, Red Hat Text"
+                                fontSize="11.3720278"
+                                fontWeight="400"
                                 fill="#152935"
                             >
                                 <tspan x="9.97101779" y="117.142818">
@@ -640,29 +633,29 @@ export const DiagramShapes = () => (
                                 <tspan
                                     x="48.8178646"
                                     y="117.142818"
-                                    font-family="RedHatText-Regular, Red Hat Text"
-                                    font-weight="normal"
+                                    fontFamily="RedHatText-Regular, Red Hat Text"
+                                    fontWeight="normal"
                                 ></tspan>
                                 <tspan
                                     x="9.97101779"
                                     y="132.142818"
-                                    font-family="RedHatText-Regular, Red Hat Text"
-                                    font-weight="normal"
+                                    fontFamily="RedHatText-Regular, Red Hat Text"
+                                    fontWeight="normal"
                                 >
                                     Possiblereptile
                                 </tspan>
                             </text>
                             <g id="Group-8-Copy" transform="translate(0.685601, 66.771539)">
                                 <g id="Oval">
-                                    <use fill="black" fill-opacity="1" filter="url(#filter-6)" href="#path-5"></use>
-                                    <use fill="#FFFFFF" fill-rule="evenodd" href="#path-5"></use>
+                                    <use fill="black" fillOpacity="1" filter="url(#filter-6)" href="#path-5"></use>
+                                    <use fill="#FFFFFF" fillRule="evenodd" href="#path-5"></use>
                                 </g>
                                 <g id="Icons-/-14px-/-check-circle" transform="translate(5.216526, 5.216526)">
                                     <path
                                         d="M14.6062742,7.3031371 C14.6062742,8.61848721 14.2774366,9.83567657 13.6197617,10.9547056 C12.9620869,12.0737347 12.0737347,12.9620869 10.9547056,13.6197617 C9.83567657,14.2774366 8.61848721,14.6062742 7.3031371,14.6062742 C5.98778699,14.6062742 4.77059762,14.2774366 3.65156855,13.6197617 C2.53253948,12.9620869 1.6441873,12.0737347 0.986512471,10.9547056 C0.32883764,9.83567657 0,8.61848721 0,7.3031371 C0,5.98778699 0.32883764,4.77059762 0.986512471,3.65156855 C1.6441873,2.53253948 2.53253948,1.6441873 3.65156855,0.986512471 C4.77059762,0.32883764 5.98778699,0 7.3031371,0 C8.61848721,0 9.83567657,0.32883764 10.9547056,0.986512471 C12.0737347,1.6441873 12.9620869,2.53253948 13.6197617,3.65156855 C14.2774366,4.77059762 14.6062742,5.98778699 14.6062742,7.3031371 Z"
                                         id="check-circle"
                                         stroke="#108926"
-                                        stroke-width="1.0433053"
+                                        strokeWidth="1.0433053"
                                     ></path>
                                     <path
                                         d="M6.44914123,11.1608426 L11.8675978,5.74238602 C11.9657581,5.66385752 12.0148385,5.55588133 12.0148385,5.41845656 C12.0148385,5.28103178 11.9657581,5.17305559 11.8675978,5.09452709 L11.2197388,4.41722002 C11.1215786,4.31905972 11.0086937,4.26997935 10.8810853,4.26997935 C10.7534769,4.26997935 10.6405921,4.31905972 10.5424318,4.41722002 L6.12521176,8.83444004 L4.06384242,6.77307069 C3.96568212,6.6749104 3.85279731,6.62583003 3.72518888,6.62583003 C3.59758045,6.62583003 3.48469564,6.6749104 3.38653535,6.77307069 L2.73867641,7.45037776 C2.64051612,7.52890627 2.59143574,7.63688246 2.59143574,7.77430723 C2.59143574,7.911732 2.64051612,8.01970819 2.73867641,8.0982367 L5.80128229,11.1608426 C5.8798108,11.2590029 5.98778699,11.3080832 6.12521176,11.3080832 C6.26263653,11.3080832 6.37061272,11.2590029 6.44914123,11.1608426 Z"
@@ -680,7 +673,7 @@ export const DiagramShapes = () => (
                                 y2="2.02790668"
                                 id="Line-Copy"
                                 stroke="#979797"
-                                stroke-linecap="square"
+                                strokeLinecap="square"
                             ></line>
                             <circle id="Oval-Copy-15" fill="#979797" cx="61.25" cy="2" r="2"></circle>
                         </g>
@@ -692,7 +685,7 @@ export const DiagramShapes = () => (
                                 y2="1.81980663"
                                 id="Line-Copy"
                                 stroke="#979797"
-                                stroke-linecap="square"
+                                strokeLinecap="square"
                             ></line>
                             <circle id="Oval-Copy-15" fill="#979797" cx="90.25" cy="2" r="2"></circle>
                         </g>
@@ -704,7 +697,7 @@ export const DiagramShapes = () => (
                                 y2="2.35932526"
                                 id="Line-Copy"
                                 stroke="#979797"
-                                stroke-linecap="square"
+                                strokeLinecap="square"
                             ></line>
                             <circle id="Oval-Copy-15" fill="#979797" cx="18" cy="2" r="2"></circle>
                         </g>
@@ -715,13 +708,13 @@ export const DiagramShapes = () => (
                             y2="113.363466"
                             id="Line-Copy-9"
                             stroke="#979797"
-                            stroke-linecap="square"
+                            strokeLinecap="square"
                         ></line>
                         <text
                             id="Resource-icon-Copy-2"
-                            font-family="RedHatText-Medium, Red Hat Text"
-                            font-size="12"
-                            font-weight="400"
+                            fontFamily="RedHatText-Medium, Red Hat Text"
+                            fontSize="12"
+                            fontWeight="400"
                             fill="#5A6872"
                         >
                             <tspan x="0" y="54">
@@ -730,9 +723,9 @@ export const DiagramShapes = () => (
                         </text>
                         <text
                             id="Cluster-deploy-statu-Copy-2"
-                            font-family="RedHatText-Medium, Red Hat Text"
-                            font-size="12"
-                            font-weight="400"
+                            fontFamily="RedHatText-Medium, Red Hat Text"
+                            fontSize="12"
+                            fontWeight="400"
                             fill="#5A6872"
                         >
                             <tspan x="0" y="83">
@@ -741,9 +734,9 @@ export const DiagramShapes = () => (
                         </text>
                         <text
                             id="Resource-type-Copy-2"
-                            font-family="RedHatText-Medium, Red Hat Text"
-                            font-size="12"
-                            font-weight="400"
+                            fontFamily="RedHatText-Medium, Red Hat Text"
+                            fontSize="12"
+                            fontWeight="400"
                             fill="#5A6872"
                         >
                             <tspan x="313" y="118">
@@ -752,9 +745,9 @@ export const DiagramShapes = () => (
                         </text>
                         <text
                             id="Resource-name-Copy-2"
-                            font-family="RedHatText-Medium, Red Hat Text"
-                            font-size="12"
-                            font-weight="400"
+                            fontFamily="RedHatText-Medium, Red Hat Text"
+                            fontSize="12"
+                            fontWeight="400"
                             fill="#5A6872"
                         >
                             <tspan x="0" y="131">

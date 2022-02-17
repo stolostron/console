@@ -42,14 +42,16 @@ export interface Policy {
     }
     status?: {
         compliant?: 'Compliant' | 'NonCompliant'
-        details?: {
-            compliant: string
-            history?: { eventName: string; lastTimestamp: string; message: string }[]
-            templateMeta: { creationTimestamp?: null; name: string }
-        }[]
-        placement?: { placementBinding: string; placementRule: string }[]
+        details?: PolicyStatusDetails[]
+        placement?: { placementBinding: string; placementRule?: string; placement?: string; policySet?: string }[]
         status?: { clustername: string; clusternamespace: string; compliant: string }[]
     }
+}
+
+export interface PolicyStatusDetails {
+    compliant: string
+    history?: { eventName: string; lastTimestamp: string; message: string }[]
+    templateMeta: { creationTimestamp?: null; name: string }
 }
 
 export enum PolicySeverity {
