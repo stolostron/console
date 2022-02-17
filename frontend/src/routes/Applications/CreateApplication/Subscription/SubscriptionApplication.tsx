@@ -85,7 +85,7 @@ export function CreateSubscriptionApplication() {
         getControlData().then((controlData) => {
             setControlData(controlData)
         })
-    })
+    }, [])
 
     // create button
     const [creationStatus, setCreationStatus] = useState<CreationStatus>()

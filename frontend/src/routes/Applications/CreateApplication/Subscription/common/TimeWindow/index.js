@@ -120,7 +120,7 @@ export class TimeWindow extends React.Component {
         const onToggle = (toggleStatus) => {
             this.setState({ isExpanded: !toggleStatus })
         }
-        const { controlId, locale, control } = this.props
+        const { controlId, locale, control, i18n } = this.props
         const { name, active, validation = {} } = control
         const modeSelected = active && active.mode ? true : false
         const { mode, days = [], timezone } = this.props.control.active
@@ -139,7 +139,7 @@ export class TimeWindow extends React.Component {
                             className="mode-btn"
                             name={`timeWindow-mode-container-${controlId}`}
                             id={`default-mode-${controlId}`}
-                            label="creation.app.settings.timeWindow.defaultMode"
+                            label={i18n('creation.app.settings.timeWindow.defaultMode')}
                             value=""
                             onChange={this.handleChange.bind(this)}
                             defaultChecked={!mode}
@@ -148,7 +148,7 @@ export class TimeWindow extends React.Component {
                             className="mode-btn"
                             name={`timeWindow-mode-container-${controlId}`}
                             id={`active-mode-${controlId}`}
-                            label="creation.app.settings.timeWindow.activeMode"
+                            label={i18n('creation.app.settings.timeWindow.activeMode')}
                             value='"active"'
                             onChange={this.handleChange.bind(this)}
                             defaultChecked={mode === 'active'}
@@ -157,7 +157,7 @@ export class TimeWindow extends React.Component {
                             className="mode-btn"
                             name={`timeWindow-mode-container-${controlId}`}
                             id={`blocked-mode-${controlId}`}
-                            label="creation.app.settings.timeWindow.blockedMode"
+                            label={i18n('creation.app.settings.timeWindow.blockedMode')}
                             value='"blocked"'
                             onChange={this.handleChange.bind(this)}
                             defaultChecked={mode === 'blocked'}
@@ -172,7 +172,7 @@ export class TimeWindow extends React.Component {
                                     isExpanded={isExpanded}
                                     id="time-window-header"
                                 >
-                                    'creation.app.settings.timeWindow.config'
+                                    {i18n('creation.app.settings.timeWindow.config')}
                                 </AccordionToggle>
                                 <AccordionContent isHidden={!isExpanded}>
                                     <div className="timeWindow-config-container" id="timeWindow-config">
@@ -181,15 +181,14 @@ export class TimeWindow extends React.Component {
                                                 className="config-title"
                                                 style={{ fontWeight: '600', fontSize: '14px', marginBottom: '10px' }}
                                             >
-                                                {/* {msgs.get('creation.app.settings.timeWindow.config.days.title', locale)}{' '} */}
-                                                'creation.app.settings.timeWindow.config.days.title'
+                                                {i18n('creation.app.settings.timeWindow.config.days.title')}{' '}
                                                 <div className="config-title-required">*</div>
                                             </div>
                                             <div
                                                 className="config-descr"
                                                 style={{ fontSize: '14px', marginBottom: '10px' }}
                                             >
-                                                'creation.app.settings.timeWindow.config.days.descr'
+                                                {i18n('creation.app.settings.timeWindow.config.days.descr')}
                                             </div>
                                             <div
                                                 className="config-days-selector"
@@ -220,7 +219,7 @@ export class TimeWindow extends React.Component {
 
                                         <div className="config-timezone-section" style={{ marginBottom: '20px' }}>
                                             <div className="config-title">
-                                                'creation.app.settings.timeWindow.config.timezone.title'
+                                                {i18n('Time zone')}
                                                 <div className="config-title-required">*</div>
                                             </div>
                                             <Select
@@ -229,7 +228,7 @@ export class TimeWindow extends React.Component {
                                                 aria-label="timezoneComboBox"
                                                 className="config-timezone-combo-box"
                                                 style={{ width: '290px', backgroundColor: '#f0f0f0' }}
-                                                placeholder="timeWindow.label.timezone.placeholder"
+                                                placeholder={i18n('Choose a location')}
                                                 selections={timezone || ''}
                                                 isDisabled={!modeSelected}
                                                 maxHeight={180}
@@ -274,7 +273,7 @@ export class TimeWindow extends React.Component {
                                                     className="add-time-btn-icon"
                                                 />
                                                 <div className="add-time-btn-text">
-                                                    'creation.app.settings.timeWindow.config.time.add'
+                                                    {i18n('Add another time range')}
                                                 </div>
                                             </div>
                                         </div>
@@ -311,7 +310,7 @@ export class TimeWindow extends React.Component {
     }
 
     renderTimes = (control, modeSelected) => {
-        const { controlId } = this.props
+        const { controlId, i18n } = this.props
         return (
             control.active &&
             control.active.timeList.map((item) => {
@@ -325,11 +324,11 @@ export class TimeWindow extends React.Component {
                             {id === 0 ? (
                                 <div className="time-picker-title" style={{ display: 'flex' }}>
                                     <div className="config-title">
-                                        'creation.app.settings.timeWindow.config.timezone.startTime'
+                                        {i18n('Start Time')}
                                         <div className="config-title-required">*</div>
                                     </div>
                                     <div className="config-title">
-                                        'creation.app.settings.timeWindow.config.timezone.endTime'
+                                        {i18n('End Time')}
                                         <div className="config-title-required">*</div>
                                     </div>
                                 </div>

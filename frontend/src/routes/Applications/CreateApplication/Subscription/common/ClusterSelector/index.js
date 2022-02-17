@@ -47,7 +47,7 @@ export class ClusterSelector extends React.Component {
         const onToggle = (toggleStatus) => {
             this.setState({ isExpanded: !toggleStatus })
         }
-        const { controlId, locale, control } = this.props
+        const { controlId, locale, control, i18n } = this.props
         const { name, active, validation = {} } = control
         const modeSelected = active && active.mode === true
         const isExistingRule = _.get(this.props, 'control.showData', []).length > 0
@@ -70,7 +70,7 @@ export class ClusterSelector extends React.Component {
                             isChecked={modeSelected}
                             isDisabled={isExistingRule}
                             id={`clusterSelector-checkbox-${controlId}`}
-                            label={'tooltip.creation.app.settings.clusterSelector'}
+                            label={i18n('tooltip.creation.app.settings.clusterSelector')}
                             onChange={this.handleMode}
                         />
 
@@ -83,7 +83,7 @@ export class ClusterSelector extends React.Component {
                                     isExpanded={showLabels}
                                     id="labels-header"
                                 >
-                                    {'edit.app.labelClusters.summary'}
+                                    {i18n('edit.app.labelClusters.summary')}
                                 </AccordionToggle>
                                 <AccordionContent isHidden={!showLabels}>
                                     <div className="clusterSelector-labels-section">
@@ -91,7 +91,7 @@ export class ClusterSelector extends React.Component {
                                             className="labels-descr"
                                             style={{ fontSize: '14px', marginBottom: '30px' }}
                                         >
-                                            'creation.app.settings.selectorClusters.config'
+                                            {i18n('creation.app.settings.selectorClusters.config')}
                                         </div>
 
                                         <div
@@ -99,7 +99,7 @@ export class ClusterSelector extends React.Component {
                                             style={{ display: 'block' }}
                                             id={`clusterSelector-labels-section-${controlId}`}
                                         >
-                                            {this.renderClusterLabels(control, isReadOnly, controlId)}
+                                            {this.renderClusterLabels(control, isReadOnly, controlId, i18n)}
                                             <div
                                                 className={`add-label-btn ${isReadOnly ? 'btn-disabled' : ''}`}
                                                 tabIndex="0"
@@ -117,7 +117,7 @@ export class ClusterSelector extends React.Component {
                                                     className="add-label-btn-text"
                                                     style={{ fontWeight: '700', fontSize: '14px', color: '#06c' }}
                                                 >
-                                                    'creation.app.settings.selectorClusters.prop.add'
+                                                    {i18n('creation.app.settings.selectorClusters.prop.add')}
                                                 </div>
                                             </div>
                                         </div>
@@ -132,7 +132,7 @@ export class ClusterSelector extends React.Component {
     }
 
     validation(exceptions) {
-        const { control, controlId } = this.props
+        const { control, controlId, i18n } = this.props
         if (_.get(control, 'active.mode', false)) {
             if (Object.keys(control.active.clusterLabelsList).length === 0) {
                 //no cluster labels set
@@ -181,7 +181,7 @@ export class ClusterSelector extends React.Component {
         }
     }
 
-    renderClusterLabels = (control, isReadOnly, controlId) => {
+    renderClusterLabels = (control, isReadOnly, controlId, i18n) => {
         if (!_.get(control, 'active.clusterLabelsList')) {
             return ''
         }
@@ -205,9 +205,9 @@ export class ClusterSelector extends React.Component {
                                         id={`labelName-${id}-${controlId}`}
                                         className="text-input"
                                         style={{ backgroundColor: '#f0f0f0' }}
-                                        label={id === 0 ? 'clusterSelector.label.field.ui' : ''}
+                                        label={id === 0 ? i18n('clusterSelector.label.field.ui') : ''}
                                         value={labelName === '' ? '' : labelName}
-                                        placeholder="clusterSelector.label.placeholder.field"
+                                        placeholder={i18n('clusterSelector.label.placeholder.field')}
                                         isDisabled={isReadOnly}
                                         onChange={(value) => this.handleChange(value, 'labelName', id)}
                                         isRequired
@@ -217,9 +217,9 @@ export class ClusterSelector extends React.Component {
                                     <AcmTextInput
                                         id={`labelValue-${id}-${controlId}`}
                                         className="text-input"
-                                        label={id === 0 ? 'clusterSelector.value.field.ui' : ''}
+                                        label={id === 0 ? i18n('clusterSelector.value.field.ui') : ''}
                                         value={labelValue === '' ? '' : labelValue}
-                                        placeholder="clusterSelector.value.placeholder.field"
+                                        placeholder={i18n('clusterSelector.value.placeholder.field')}
                                         isDisabled={isReadOnly}
                                         onChange={(value) => this.handleChange(value, 'labelValue', id)}
                                         isRequired
