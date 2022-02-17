@@ -12,6 +12,8 @@ import { Tooltip, getSourcePath, removeVs } from 'temptifly'
 import _ from 'lodash'
 import './style.css'
 
+const activeModeStr = 'active.mode'
+
 export class ClusterSelector extends React.Component {
     static propTypes = {
         control: PropTypes.object,
@@ -133,7 +135,7 @@ export class ClusterSelector extends React.Component {
 
     validation(exceptions) {
         const { control, controlId, i18n } = this.props
-        if (_.get(control, 'active.mode', false)) {
+        if (_.get(control, activeModeStr, false)) {
             if (Object.keys(control.active.clusterLabelsList).length === 0) {
                 //no cluster labels set
                 exceptions.push({
@@ -321,7 +323,7 @@ export default ClusterSelector
 
 export const summarize = (control, controlData, summary) => {
     const { clusterLabelsList } = control.active || {}
-    if (clusterLabelsList && _.get(control, 'type', '') !== 'hidden' && _.get(control, 'active.mode')) {
+    if (clusterLabelsList && _.get(control, 'type', '') !== 'hidden' && _.get(control, activeModeStr)) {
         clusterLabelsList.forEach(({ labelName, labelValue }) => {
             if (labelName && labelValue) {
                 summary.push(`${labelName}=${labelValue}`)
@@ -332,7 +334,7 @@ export const summarize = (control, controlData, summary) => {
 
 export const summary = (control) => {
     const { clusterLabelsList } = control.active || {}
-    if (clusterLabelsList && _.get(control, 'type', '') !== 'hidden' && _.get(control, 'active.mode')) {
+    if (clusterLabelsList && _.get(control, 'type', '') !== 'hidden' && _.get(control, activeModeStr)) {
         const labels = []
         clusterLabelsList.forEach(({ labelName, labelValue }) => {
             if (labelName && labelValue) {
