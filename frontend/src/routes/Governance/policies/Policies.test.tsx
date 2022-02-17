@@ -187,7 +187,7 @@ describe('Policies Page', () => {
             // need to use index [1] because the name column is also an "a" element
             expect(container.querySelectorAll('a')[2]).toHaveAttribute(
                 'href',
-                '/multicloud/governance/policies/test/policy-set-with-1-placement-policy-1/results'
+                '/multicloud/governance/policies/details/test/policy-set-with-1-placement-policy-1/results'
             )
         )
     })
