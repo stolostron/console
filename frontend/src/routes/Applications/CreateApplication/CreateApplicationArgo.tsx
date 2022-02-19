@@ -13,7 +13,6 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
 import { createResources, IResource, unpackProviderConnection } from '../../../resources'
-import { useLocation } from 'react-router-dom'
 
 const Portals = Object.freeze({
     editBtn: 'edit-button-portal-id',
@@ -55,7 +54,7 @@ export default function CreateApplicationPage() {
             <AcmErrorBoundary>
                 <AcmPageContent id="create-application">
                     <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
-                        <CreateApplication />
+                        <CreateApplicationArgo />
                     </PageSection>
                 </AcmPageContent>
             </AcmErrorBoundary>
@@ -63,8 +62,7 @@ export default function CreateApplicationPage() {
     )
 }
 
-export function CreateApplication() {
-    const location = useLocation().pathname.split('/').at(-1)
+export function CreateApplicationArgo() {
     const history = useHistory()
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
@@ -96,48 +94,43 @@ export function CreateApplication() {
         ? [currentTimeZone, ...moment.tz.names().filter((e) => e !== currentTimeZone)]
         : moment.tz.names()
 
-    if (location === 'subscription')
-        return (
-            <ApplicationWizard
-                addClusterSets={NavigationPath.clusterSets}
-                ansibleCredentials={availableAnsibleCredentials}
-                argoServers={availableArgoNS}
-                namespaces={availableNamespace}
-                placements={availablePlacements}
-                onCancel={() => history.push('.')}
-                onSubmit={(resources) =>
-                    createResources(resources as IResource[]).then((error) => {
-                        history.push(NavigationPath.applications)
-                        return error
-                    })
-                }
-                // gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
-                // helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
-                channels={gitChannels as unknown as any}
-                timeZones={timeZones}
-            />
-        )
-    // placeholder for ArgoWizard
-    else
-        return (
-            <></>
-            // <ArgoWizard
-            //     addClusterSets={NavigationPath.clusterSets}
-            //     ansibleCredentials={availableAnsibleCredentials}
-            //     argoServers={availableArgoNS}
-            //     namespaces={availableNamespace}
-            //     placements={availablePlacements}
-            //     onCancel={() => history.push('.')}
-            //     onSubmit={(resources) =>
-            //         createResources(resources as IResource[]).then((error) => {
-            //             history.push(NavigationPath.applications)
-            //             return error
-            //         })
-            //     }
-            //     // gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
-            //     // helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
-            //     // channels={gitChannels as unknown as any}
-            //     timeZones={timeZones}
-            // />
-        )
+    return (
+        <ApplicationWizard
+            addClusterSets={NavigationPath.clusterSets}
+            ansibleCredentials={availableAnsibleCredentials}
+            argoServers={availableArgoNS}
+            namespaces={availableNamespace}
+            placements={availablePlacements}
+            onCancel={() => history.push('.')}
+            onSubmit={(resources) =>
+                createResources(resources as IResource[]).then((error) => {
+                    history.push(NavigationPath.applications)
+                    return error
+                })
+            }
+            // gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
+            // helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
+            channels={gitChannels as unknown as any}
+            timeZones={timeZones}
+        />
+
+        // <ArgoWizard
+        //     addClusterSets={NavigationPath.clusterSets}
+        //     ansibleCredentials={availableAnsibleCredentials}
+        //     argoServers={availableArgoNS}
+        //     namespaces={availableNamespace}
+        //     placements={availablePlacements}
+        //     onCancel={() => history.push('.')}
+        //     onSubmit={(resources) =>
+        //         createResources(resources as IResource[]).then((error) => {
+        //             history.push(NavigationPath.applications)
+        //             return error
+        //         })
+        //     }
+        //     // gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
+        //     // helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
+        //     // channels={gitChannels as unknown as any}
+        //     timeZones={timeZones}
+        // />
+    )
 }

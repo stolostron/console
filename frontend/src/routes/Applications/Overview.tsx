@@ -921,16 +921,16 @@ export default function ApplicationsOverview() {
                         text: <span style={{ fontSize: '14px' }}>Choose a type</span>,
                     },
                     {
-                        id: 'create-subscription',
-                        text: 'Subscription',
-                        isDisabled: false,
-                        path: NavigationPath.createApplicationSubscription,
-                    },
-                    {
                         id: 'create-argo',
                         text: 'Argo CD ApplicationSet',
                         isDisabled: false,
                         path: NavigationPath.createApplicationArgo,
+                    },
+                    {
+                        id: 'create-subscription',
+                        text: 'Subscription',
+                        isDisabled: false,
+                        path: NavigationPath.createApplicationSubscription,
                     },
                 ]}
                 isKebab={false}
