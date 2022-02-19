@@ -1,14 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    AcmButton,
-    AcmDropdown,
-    AcmEmptyState,
-    AcmTable,
-    IAcmRowAction,
-    IAcmTableColumn,
-} from '@stolostron/ui-components'
-import { ButtonVariant, PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
