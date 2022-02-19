@@ -6,6 +6,11 @@
         "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children",
         "build": "TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
         "tsc": "tsc --noEmit",
+        "build:plugins": "concurrently npm:build:plugin:* -c green,blue,cyan,magenta",
+        "build:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack -c ../../webpack.plugin.ts --env plugin=$PLUGIN --mode production",
+        "build:plugin:acm": "PLUGIN=acm npm run build:plugin",
+        "build:plugin:mce": "PLUGIN=mce npm run build:plugin",
+        "tsc:noEmit": "tsc --noEmit",
         "clean": "rm -rf coverage build",
         "test": "concurrently --kill-others-on-fail npm:jest npm:eslint npm:prettier npm:tsc -c green,blue,cyan,magenta",
         "jest:coverage": "JEST_JUNIT_OUTPUT_DIR=coverage jest test --all --watchAll=true --ci --coverage --reporters=default --coverageReporters=lcov --coverageReporters=html --coverageReporters=text --coverageReporters=text-summary --verbose",
@@ -17,10 +22,14 @@
         "prettier:fix": "prettier --write src public",
         "i18n": "i18next",
         "update": "npx npm-check-updates -x @testing-library/user-event,monaco-editor,eslint,react-router-dom --doctor --upgrade && npm audit fix && npm dedup",
-        "plugin:build": "CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode production",
-        "plugin:build:dev": "CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode development",
-        "plugin:watch": "CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.plugin.ts --mode production --watch",
-        "plugin:serve": "npx http-server ./dist -p 3000 -c-1 --cors",
+        "watch:plugins": "concurrently npm:watch:plugin:* -c green,blue,cyan,magenta",
+        "watch:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack -c ../../webpack.plugin.ts --env plugin=$PLUGIN --mode production --watch",
+        "watch:plugin:acm": "PLUGIN=acm npm run watch:plugin",
+        "watch:plugin:mce": "PLUGIN=mce npm run watch:plugin",
+        "serve:plugins": "concurrently npm:serve:plugin:* -c green,blue,cyan,magenta",
+        "serve:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && npx http-server ./dist -p $PORT -c-1 --cors",
+        "serve:plugin:acm": "PLUGIN=acm PORT=3002 npm run serve:plugin",
+        "serve:plugin:mce": "PLUGIN=mce PORT=3001 npm run serve:plugin",
         "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup"
     },
     "dependencies": {
@@ -28,14 +37,14 @@
         "@kubernetes/client-node": "^0.16.3",
         "@octokit/rest": "^18.12.0",
         "@octokit/types": "^6.34.0",
-        "@patternfly-labs/react-form-wizard": "^1.6.1",
+        "@patternfly-labs/react-form-wizard": "^1.6.3",
         "@patternfly/react-code-editor": "^4.37.0",
         "@patternfly/react-core": "^4.196.0",
         "@patternfly/react-icons": "^4.47.0",
         "@patternfly/react-table": "^4.65.0",
         "@redhat-cloud-services/rule-components": "^3.2.4",
         "@reduxjs/toolkit": "1.7.x",
-        "@stolostron/ui-components": "^1.35.0",
+        "@stolostron/ui-components": "^1.37.0",
         "ajv": "^8.10.0",
         "axios": "^0.26.0",
         "cytoscape": "3.21.0",
@@ -242,27 +251,5 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
-    },
-    "consolePlugin": {
-        "name": "acm-plugin",
-        "version": "0.0.0",
-        "displayName": "ACM Plugin",
-        "description": "Cluster management",
-        "exposedModules": {
-            "perspective": "./src/perspective",
-            "welcome": "./src/routes/Home/Welcome/Welcome.tsx",
-            "overview": "./src/routes/Home/Overview/OverviewPlugin.tsx",
-            "search": "./src/routes/Home/Search/SearchPlugin.tsx",
-            "clusters": "./src/routes/Infrastructure/Clusters/ClustersPlugin.tsx",
-            "baremetalassets": "./src/routes/Infrastructure/BareMetalAssets/BareMetalAssetsPlugin.tsx",
-            "automations": "./src/routes/Infrastructure/Automations/AutomationsPlugin.tsx",
-            "environments": "./src/routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPlugin.tsx",
-            "applications": "./src/routes/Applications/ApplicationsPlugin.tsx",
-            "governance": "./src/routes/Governance/GovernancePlugin.tsx",
-            "credentials": "./src/routes/Credentials/CredentialsPlugin.tsx"
-        },
-        "dependencies": {
-            "@console/pluginAPI": "*"
-        }
     }
 }

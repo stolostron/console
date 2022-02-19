@@ -83,11 +83,13 @@ export enum NavigationPath {
     // Governance
     governance = '/multicloud/governance',
     policies = '/multicloud/governance/policies',
-    policyDetails = '/multicloud/governance/policies/:namespace/:name',
-    policyDetailsResults = '/multicloud/governance/policies/:namespace/:name/results',
     policySets = '/multicloud/governance/policy-sets',
     governanceClusters = '/multicloud/governance/clusters',
     createPolicy = '/multicloud/governance/policies/create',
+    editPolicy = '/multicloud/governance/policies/edit/:namespace/:name',
+    policyDetails = '/multicloud/governance/policies/details/:namespace/:name',
+    policyDetailsResults = '/multicloud/governance/policies/details/:namespace/:name/results',
+    policyDetailsHistory = '/multicloud/governance/policies/details/:namespace/:name/status/:clusterName/templates/:templateName/history',
     createPolicySet = '/multicloud/governance/policy-sets/create',
     editPolicySet = '/multicloud/governance/policy-sets/edit/:namespace/:name',
 

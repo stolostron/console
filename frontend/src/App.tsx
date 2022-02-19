@@ -59,6 +59,7 @@ import { LoadData } from './atoms'
 import { LoadingPage } from './components/LoadingPage'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
+import { DOC_HOME } from './lib/doc-util'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -179,11 +180,7 @@ function AboutDropdown(props: AboutDropdownProps) {
     const [aboutDDIsOpen, aboutDDSetOpen] = useState<boolean>(false)
 
     function DocsButton() {
-        return (
-            <ApplicationLauncherItem href="https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.4/">
-                Documentation
-            </ApplicationLauncherItem>
-        )
+        return <ApplicationLauncherItem href={DOC_HOME}>Documentation</ApplicationLauncherItem>
     }
     function AboutButton() {
         return (

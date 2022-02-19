@@ -126,6 +126,13 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                                                     namespace: policySet.metadata.namespace,
                                                 },
                                             })
+                                            setModalProps({
+                                                open: false,
+                                                confirm: () => {},
+                                                cancel: () => {},
+                                                title: '',
+                                                message: '',
+                                            })
                                         },
                                         confirmText: 'Delete',
                                         message: (

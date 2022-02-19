@@ -51,7 +51,7 @@ export default function LogsPage(props: {
                     const managedCluster = managedClusters.find((mc: ManagedCluster) => mc.metadata?.name === cluster)
                     const labels = managedCluster?.metadata?.labels ?? {}
                     const vendor = labels['vendor'] ?? ''
-                    if (err.code === 400 && vendor !== 'Openshift') {
+                    if (err.code === 400 && vendor.toLowerCase() !== 'openshift') {
                         setLogsError(
                             `Non-OpenShift Container Platform clusters require LoadBalancer to be enabled to retrieve logs. Follow the steps here to complete LoadBalancer setup: ${DOC_BASE_PATH}/release_notes/red-hat-advanced-cluster-management-for-kubernetes-release-notes#non-ocp-logs`
                         )
@@ -78,7 +78,7 @@ export default function LogsPage(props: {
                     setLogsError(err.message)
                 })
         }
-    }, [cluster, container, managedClusters])
+    }, [cluster, container, managedClusters, name, namespace])
 
     if (resourceError !== '') {
         return (

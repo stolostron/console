@@ -10,7 +10,7 @@ module.exports = {
     createOldCatalogs: false,
     // Save the \_old files
 
-    defaultNamespace: 'plugin__acm-plugin',
+    defaultNamespace: 'translation',
     // Default namespace used in your i18next config
 
     defaultValue: '',
@@ -55,7 +55,7 @@ module.exports = {
     // Namespace separator used in your translation keys
     // If you want to use plain english keys, separators such as `.` and `:` will conflict. You might want to set `keySeparator: false` and `namespaceSeparator: false`. That way, `t('Status: Loading...')` will not think that there are a namespace and three separator dots for instance.
 
-    output: 'public/locales/$LOCALE/$NAMESPACE.json',
+    output: 'public/locales/$LOCALE/translation.json',
     // Supports $LOCALE and $NAMESPACE injection
     // Supports JSON (.json) and YAML (.yml) file formats
     // Where to write the locale files relative to process.cwd()
@@ -64,7 +64,7 @@ module.exports = {
     // Plural separator used in your translation keys
     // If you want to use plain english keys, separators such as `_` might conflict. You might want to set `pluralSeparator` to a different string that does not occur in your keys.
 
-    input: ['./src/**/*.tsx', './src/**/*.ts', './src/**/*.js', './console-extensions.json'],
+    input: ['./src/**/*.tsx', './src/**/*.ts', './src/**/*.js', './plugins/**/console-extensions.json'],
     // An array of globs that describe where to look for source files
     // relative to the location of the configuration file
 

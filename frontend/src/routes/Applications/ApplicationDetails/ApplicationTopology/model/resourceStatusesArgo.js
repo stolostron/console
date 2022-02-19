@@ -1,56 +1,69 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
-import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
+import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { convertStringToQuery } from '../helpers/search-helper'
+import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import _ from 'lodash'
 
-export const getApplicationQuery = (application, appData) => {
+export async function getArgoResourceStatuses(application, appData, topology) {
+    const argoSource = await getArgoSource(application, appData)
+
+    // get resource statuses
     const { name, namespace } = application
-    if (appData.isArgoApp) {
-        return getArgoApplicationQuery(name, namespace, appData)
+    const resourceStatuses = await getResourceStatuses(name, namespace, appData, topology, argoSource)
+
+    const secret = await getArgoSecret(appData, resourceStatuses)
+    if (secret) {
+        const secretItems = _.get(secret, 'data.searchResult', [{ items: [] }])[0]
+        _.set(appData, 'argoSecrets', _.get(secretItems, 'items', []))
     }
+
+    return { resourceStatuses }
 }
 
-export const getRelatedQuery = (application, appData, topology, applicationRelated) => {
-    const { name, namespace } = application
-    if (appData.isArgoApp) {
-        return getArgoRelatedQuery(name, namespace, appData, topology, applicationRelated)
+async function getArgoSource(application, appData) {
+    //get all argo apps with the same source repo as this one
+    const { namespace } = application
+    const query = convertStringToQuery('kind:application apigroup:argoproj.io')
+    if (appData.applicationSet) {
+        // ApplicationSet name is only unique within cluster and namespace
+        ;['applicationSet', 'cluster'].forEach((property) => {
+            query.filters.push({ property, values: [appData[property]] })
+        })
+        query.filters.push({ property: 'namespace', values: [namespace] })
     } else {
-        return getSubscriptionRelatedQuery(name, namespace, appData)
-    }
-}
+        let targetRevisionFound = false
+        const searchProperties = _.pick(appData.source, ['repoURL', 'path', 'chart', 'targetRevision'])
+        for (const [property, value] of Object.entries(searchProperties)) {
+            // add argo app source filters
+            let propValue = value
+            if (property === 'targetRevision') {
+                targetRevisionFound = true
+                if (propValue.length === 0) {
+                    propValue = 'HEAD'
+                }
+            }
 
-export const getAdditionalQuery = (appData, searchRelated) => {
-    if (searchRelated) {
-        if (appData.isArgoApp) {
-            return getArgoAdditionalQuery(appData, searchRelated)
+            query.filters.push({ property, values: [propValue] })
+        }
+
+        if (!targetRevisionFound) {
+            query.filters.push({ property: 'targetRevision', values: ['HEAD'] })
         }
     }
+    return searchClient.query({
+        query: SearchResultRelatedItemsDocument,
+        variables: {
+            input: [{ ...query }],
+            limit: 10000,
+        },
+        fetchPolicy: 'cache-first',
+    })
 }
 
-const getSubscriptionRelatedQuery = (name, namespace, appData) => {
-    let query = getQueryStringForResource('Application', name, namespace)
-    if (appData) {
-        //query asking for a subset of related kinds and possibly for one subscription only
-        if (appData.subscription) {
-            //get related resources only for the selected subscription
-            query = getQueryStringForResource('Subscription', appData.subscription, namespace)
-            //ask only for these type of resources
-            query.relatedKinds = appData.relatedKinds
-        } else {
-            //filter out any argo app with the same name and ns, we are looking here for acm apps
-            query.filters.push({ property: 'apigroup', values: ['!argoproj.io'] })
-
-            //get related resources for the application, but only this subset
-            query.relatedKinds = appData.relatedKinds
-        }
-    }
-    return query
-}
-
-const getArgoRelatedQuery = (name, namespace, appData, topology, applicationRelated) => {
-    if (applicationRelated) {
-        const { searchResult } = applicationRelated
+async function getResourceStatuses(name, namespace, appData, topology, argoSource) {
+    if (argoSource) {
+        const { searchResult } = argoSource.data
         const allApps = _.get(searchResult[0], 'items', []).filter(
             (app) => app.applicationSet === appData.applicationSet
         )
@@ -116,7 +129,14 @@ const getArgoRelatedQuery = (name, namespace, appData, topology, applicationRela
         // we'll get them if any are linked to the objects returned above
         query.relatedKinds.push('cluster', 'pod', 'replicaset', 'replicationcontroller')
     }
-    return query
+    return searchClient.query({
+        query: SearchResultRelatedItemsDocument,
+        variables: {
+            input: [{ ...query }],
+            limit: 10000,
+        },
+        fetchPolicy: 'cache-first',
+    })
 }
 
 //try to find the name of the remote clusters using the server path
@@ -152,39 +172,8 @@ export const findMatchingCluster = (argoApp, argoMappingInfo) => {
     return serverApi
 }
 
-const getArgoApplicationQuery = (name, namespace, appData) => {
-    //get all argo apps with the same source repo as this one
-    const query = convertStringToQuery('kind:application apigroup:argoproj.io')
-    if (appData.applicationSet) {
-        // ApplicationSet name is only unique within cluster and namespace
-        ;['applicationSet', 'cluster'].forEach((property) => {
-            query.filters.push({ property, values: [appData[property]] })
-        })
-        query.filters.push({ property: 'namespace', values: [namespace] })
-    } else {
-        let targetRevisionFound = false
-        const searchProperties = _.pick(appData.source, ['repoURL', 'path', 'chart', 'targetRevision'])
-        for (const [property, value] of Object.entries(searchProperties)) {
-            // add argo app source filters
-            let propValue = value
-            if (property === 'targetRevision') {
-                targetRevisionFound = true
-                if (propValue.length === 0) {
-                    propValue = 'HEAD'
-                }
-            }
-
-            query.filters.push({ property, values: [propValue] })
-        }
-
-        if (!targetRevisionFound) {
-            query.filters.push({ property: 'targetRevision', values: ['HEAD'] })
-        }
-    }
-    return query
-}
-
-const getArgoAdditionalQuery = (appData, { searchResult }) => {
+const getArgoSecret = (appData, resourceStatuses = {}) => {
+    const searchResult = _.get(resourceStatuses, 'data.searchResult', [])
     if (searchResult.length > 0 && searchResult[0].items) {
         // For the no applicationSet case, make sure we don't include apps with applicationSet
         const allApps = _.get(searchResult[0], 'items', []).filter(
@@ -193,12 +182,20 @@ const getArgoAdditionalQuery = (appData, { searchResult }) => {
         // find argo server mapping
         const argoAppNS = _.uniqBy(_.map(allApps, 'namespace'))
         if (argoAppNS.length > 0) {
-            const queryString = convertStringToQuery(
+            const query = convertStringToQuery(
                 `kind:secret namespace:${argoAppNS.join()} label:apps.open-cluster-management.io/acm-cluster='true'`
             )
-            return queryString
+            return searchClient.query({
+                query: SearchResultRelatedItemsDocument,
+                variables: {
+                    input: [{ ...query }],
+                    limit: 10000,
+                },
+                fetchPolicy: 'cache-first',
+            })
         }
     }
+    return Promise.resolve()
 }
 
 const getQueryStringForResource = (resourcename, name, namespace) => {
@@ -218,59 +215,4 @@ const getQueryStringForResource = (resourcename, name, namespace) => {
         }
     }
     return convertStringToQuery(`${resource} ${nameForQuery} ${namespaceForQuery}`)
-}
-
-export const getApplicationData = (nodes) => {
-    let subscriptionName = ''
-    let nbOfSubscriptions = 0
-    let resourceMustHavePods = false
-    const nodeTypes = []
-    const result = {}
-    let isArgoApp = false
-    const appNode = nodes.find((r) => r.type === 'application')
-    if (appNode) {
-        isArgoApp = _.get(appNode, ['specs', 'raw', 'apiVersion'], '').indexOf('argo') !== -1
-        result.isArgoApp = isArgoApp
-        //get argo app destination namespaces 'show_search':
-        if (isArgoApp) {
-            const applicationSetRef = _.get(appNode, ['specs', 'raw', 'metadata', 'ownerReferences'], []).find(
-                (owner) => owner.apiVersion.startsWith('argoproj.io/') && owner.kind === 'ApplicationSet'
-            )
-            if (applicationSetRef) {
-                result.applicationSet = applicationSetRef.name
-            }
-            let cluster = 'local-cluster'
-            const clusterNames = _.get(appNode, ['specs', 'cluster-names'], [])
-            if (clusterNames.length > 0) {
-                cluster = clusterNames[0]
-            }
-            result.cluster = cluster
-            result.source = _.get(appNode, ['specs', 'raw', 'spec', 'source'], {})
-        }
-    }
-    nodes.forEach((node) => {
-        const nodeType = _.get(node, 'type', '')
-        if (!(isArgoApp && _.includes(['application', 'cluster'], nodeType))) {
-            nodeTypes.push(nodeType) //ask for this related object type
-        }
-        if (nodeMustHavePods(node)) {
-            //request pods when asking for related resources, this resource can have pods
-            resourceMustHavePods = true
-        }
-        if (nodeType === 'subscription') {
-            subscriptionName = _.get(node, 'name', '')
-            nbOfSubscriptions = nbOfSubscriptions + 1
-        }
-    })
-
-    if (resourceMustHavePods) {
-        nodeTypes.push('pod')
-    }
-
-    //if only one subscription, ask for resources only related to that subscription
-    result.subscription = nbOfSubscriptions === 1 ? subscriptionName : null
-    //ask only for these type of resources since only those are displayed
-    result.relatedKinds = _.uniq(nodeTypes)
-
-    return result
 }

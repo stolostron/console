@@ -903,7 +903,9 @@ export default function ApplicationsOverview() {
             <AcmDropdown
                 isDisabled={!canCreateApplication}
                 tooltip={
-                    'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                    !canCreateApplication
+                        ? 'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                        : ''
                 }
                 id={'application-create'}
                 onSelect={(id) => {
@@ -922,14 +924,12 @@ export default function ApplicationsOverview() {
                         id: 'create-subscription',
                         text: 'Subscription',
                         isDisabled: false,
-                        component: 'button',
                         path: NavigationPath.createApplicationSubscription,
                     },
                     {
                         id: 'create-argo',
                         text: 'Argo CD ApplicationSet',
                         isDisabled: false,
-                        component: 'button',
                         path: NavigationPath.createApplicationArgo,
                     },
                 ]}

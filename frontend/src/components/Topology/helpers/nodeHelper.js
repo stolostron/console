@@ -934,6 +934,9 @@ export const counterZoomLabels = (svg, currentZoom) => {
             if (s < 1) {
                 padding *= 1 / s
             }
+            if (s > 1) {
+                padding *= s
+            }
             let textRect
             shownLabel.each((d, k, txt) => {
                 textRect = txt[k].getBBox()
