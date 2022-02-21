@@ -14,7 +14,7 @@ import {
     infraEnvironmentsState,
 } from '../../../../../../atoms'
 import { clickByText, waitForTestId, waitForText, waitForNocks } from '../../../../../../lib/test-util'
-import { nockList } from '../../../../../../lib/nock-util'
+import { nockList, nockPatch } from '../../../../../../lib/nock-util'
 
 import EditAICluster from './EditAICluster'
 import {
@@ -33,11 +33,11 @@ const Component = () => {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(clusterImageSetsState, [mockClusterImageSet])
+                snapshot.set(agentsState, mockAgents)
+                snapshot.set(configMapsState, [mockConfigMapAI])
                 snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAI])
                 snapshot.set(agentClusterInstallsState, [mockAgentClusterInstall])
-                snapshot.set(agentsState, mockAgents)
                 snapshot.set(infraEnvironmentsState, [mockInfraEnv1])
-                snapshot.set(configMapsState, [mockConfigMapAI])
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.editCluster]}>
@@ -57,7 +57,12 @@ const Component = () => {
 
 describe('Edit AI Cluster', () => {
     test('can be rendered', async () => {
-        const nocks = [nockList(mockNMStateConfig, mockNMStateConfig, ['agent-install.openshift.io/bmh'])]
+        const nocks = [
+            nockList(mockNMStateConfig, mockNMStateConfig, ['agent-install.openshift.io/bmh']),
+            nockPatch(mockAgentClusterInstall, [
+                { op: 'replace', path: '/spec/imageSetRef/name', value: 'ocp-release48' },
+            ]),
+        ]
         render(<Component />)
         await new Promise((resolve) => setTimeout(resolve, 500))
 
