@@ -281,7 +281,7 @@ export function PolicyTemplateDetailsPage() {
                         path={templateDetailsUrl}
                         render={() => (
                             <div>
-                                <PageSection>
+                                <PageSection style={{ paddingBottom: '0' }}>
                                     <Grid hasGutter>
                                         <GridItem span={6}>
                                             <AcmDescriptionList
