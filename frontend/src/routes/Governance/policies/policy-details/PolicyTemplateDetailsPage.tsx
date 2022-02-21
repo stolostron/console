@@ -197,11 +197,15 @@ export function PolicyTemplateDetailsPage() {
                 header: '',
                 cell: (item: any) => {
                     let {
+                        // eslint-disable-next-line prefer-const
                         cluster,
+                        // eslint-disable-next-line prefer-const
                         reason,
                         object: {
+                            // eslint-disable-next-line prefer-const
                             apiVersion,
                             kind,
+                            // eslint-disable-next-line prefer-const
                             metadata: { name, namespace = '' },
                         },
                     } = item
