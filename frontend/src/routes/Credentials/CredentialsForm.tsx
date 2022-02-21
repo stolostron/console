@@ -41,6 +41,7 @@ import {
     validateWebURL,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
+import schema from './schema.json'
 import {
     createResource,
     getSecret,
@@ -1363,7 +1364,26 @@ export function CredentialsForm(props: {
     return (
         <AcmDataFormPage
             formData={formData}
+            editorTitle={t('Credentials YAML')}
+            schema={schema}
             mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
+            secrets={[
+                'Secret[0].stringData.pullSecret',
+                'Secret[0].stringData.aws_secret_access_key',
+                'Secret[0].stringData.ssh-privatekey',
+                'Secret[0].stringData.ssh-publickey',
+                'Secret[0].stringData.password',
+                'Secret[0].stringData.token',
+                'Secret[0].stringData.ocmAPIToken',
+                'Secret[0].stringData.additionalTrustBundle',
+                ['Secret', '0', 'stringData', 'osServicePrincipal.json'],
+                ['Secret', '0', 'stringData', 'osServiceAccount.json'],
+            ]}
+            immutables={[
+                'Secret[0].metadata.name',
+                'Secret[0].metadata.namespace',
+                ['Secret', '0', 'metadata', 'labels', 'cluster.open-cluster-management.io/type'],
+            ]}
             edit={() => {
                 if (providerConnection) {
                     history.push(
