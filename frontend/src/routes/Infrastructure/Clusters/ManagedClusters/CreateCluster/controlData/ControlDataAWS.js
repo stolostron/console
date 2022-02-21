@@ -86,10 +86,12 @@ const setAWSZones = (control, controlData) => {
     const setZones = (poolKey, zoneKey) => {
         const region = control.active
         const pool = controlData.find(({ id }) => id === poolKey)
-        const typeZones = pool.active[0].find(({ id }) => id === zoneKey)
-        const zones = awsRegions[region]
-        typeZones.available = zones || []
-        typeZones.active = []
+        pool.active.forEach((worker) => {
+            const typeZones = worker.find(({ id }) => id === zoneKey)
+            const zones = awsRegions[region]
+            typeZones.available = zones || []
+            typeZones.active = []
+        })
     }
 
     setZones('masterPool', 'masterZones')
