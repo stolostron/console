@@ -2,18 +2,18 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { makeStyles } from '@material-ui/styles'
-import { AcmAlert, AcmButton, AcmLoadingPage } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
+import { AcmAlert, AcmButton, AcmLoadingPage } from '@stolostron/ui-components'
 import jsYaml from 'js-yaml'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { useEffect, useState } from 'react'
-import MonacoEditor, { monaco } from 'react-monaco-editor'
+import { monaco } from 'react-monaco-editor'
+import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
-import './YAMLEditor.css'
 
 monaco.editor.defineTheme('console', {
     base: 'vs-dark',
@@ -181,7 +181,7 @@ export default function YAMLPage(props: {
                 <div className={classes.spacer} />
                 {/* No translation - this is a kube resource */}
                 <p className={classes.textTitle}>{'Namespace:'}</p>
-                <p className={classes.textContent}>{namespace}</p>
+                <p className={classes.textContent}>{namespace.length > 0 ? namespace : 'Resource is not namespaced'}</p>
                 <div className={classes.editButtonContainer}>
                     <p className={classes.editButtonLabel}>{editMode ? t('Editing mode') : t('Read only mode')}</p>
                     <AcmButton
@@ -209,32 +209,7 @@ export default function YAMLPage(props: {
                     )}
                 </div>
             </div>
-            <MonacoEditor
-                theme={'console'}
-                width={'100%'}
-                height={'90%'}
-                value={editedResourceYaml !== '' ? editedResourceYaml : jsYaml.dump(resource, { indent: 2 })}
-                onChange={(value) => {
-                    setEditedResourceYaml(value)
-                }}
-                language={'yaml'}
-                options={{
-                    colorDecorators: true,
-                    readOnly: !editMode,
-                    fontSize: 12,
-                    wordWrap: 'wordWrapColumn',
-                    wordWrapColumn: 132,
-                    scrollBeyondLastLine: false,
-                    smoothScrolling: true,
-                    glyphMargin: true,
-                    tabSize: 2,
-                    // renderIndentGuides: false,
-                    scrollbar: {
-                        verticalScrollbarSize: 17,
-                        horizontalScrollbarSize: 17,
-                    },
-                }}
-            />
+            <YamlEditor resource={resource} editMode={editMode} width={'100%'} height={'90%'} />
         </PageSection>
     )
 }

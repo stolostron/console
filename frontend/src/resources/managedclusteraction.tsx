@@ -2,6 +2,7 @@
 import crypto from 'crypto'
 import _ from 'lodash'
 import { createResource, deleteResource, getResource } from './utils/resource-request'
+import { getGroupFromApiVersion } from './utils/utils'
 
 export const ManagedClusterActionApiVersion = 'action.open-cluster-management.io/v1beta1'
 export type ManagedClusterActionApiVersionType = 'action.open-cluster-management.io/v1beta1'
@@ -59,13 +60,6 @@ export interface ManagedClusterAction {
         }>
         result?: Record<string, unknown>
     }
-}
-
-function getGroupFromApiVersion(apiVersion: string) {
-    if (apiVersion.indexOf('/') >= 0) {
-        return { apiGroup: apiVersion.split('/')[0], version: apiVersion.split('/')[1] }
-    }
-    return { apiGroup: '', version: apiVersion }
 }
 
 export function getManagedClusterAction(metadata: { name: string; namespace: string }) {

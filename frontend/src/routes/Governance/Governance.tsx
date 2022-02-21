@@ -6,6 +6,7 @@ import { CreatePolicy } from './policies/CreatePolicy'
 import { EditPolicy } from './policies/EditPolicy'
 import { PolicyDetailsHistoryPage } from './policies/policy-details/PolicyDetailsHistoryPage'
 import { PolicyDetailsPage } from './policies/policy-details/PolicyDetailsPage'
+import { PolicyTemplateDetailsPage } from './policies/policy-details/PolicyTemplateDetailsPage'
 import { CreatePolicySet } from './policy-sets/CreatePolicySet'
 import { EditPolicySet } from './policy-sets/EditPolicySet'
 
@@ -14,6 +15,7 @@ export default function Governance() {
         <Switch>
             <Route exact path={NavigationPath.createPolicy} render={() => <CreatePolicy />} />
             <Route exact path={NavigationPath.editPolicy} render={() => <EditPolicy />} />
+            <Route path={NavigationPath.policyTemplateDetails} component={PolicyTemplateDetailsPage} />
             <Route path={NavigationPath.policyDetailsHistory} component={PolicyDetailsHistoryPage} />
             <Route path={NavigationPath.policyDetails} component={PolicyDetailsPage} />
             <Route exact path={NavigationPath.createPolicySet} render={() => <CreatePolicySet />} />
