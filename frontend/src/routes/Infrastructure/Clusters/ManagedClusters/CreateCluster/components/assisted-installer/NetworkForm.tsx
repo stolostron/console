@@ -7,7 +7,7 @@ import { debounce, get, isEqual } from 'lodash'
 import { patchResource } from '../../../../../../../resources'
 import { agentClusterInstallsState, agentsState, clusterDeploymentsState } from '../../../../../../../atoms'
 import EditAgentModal from '../../../components/cim/EditAgentModal'
-import { useClusterImages } from './utils'
+import { useClusterImages, useAIConfigMap } from './utils'
 
 const { ACMClusterDeploymentNetworkingStep, getAgentsHostsNames, ACMFeatureSupportLevelProvider, LoadingState } = CIM
 
@@ -64,6 +64,8 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
     )
 
     const clusterImages = useClusterImages()
+    const aiConfigMap = useAIConfigMap()
+
     const { resourceJSON = {} } = control
     const { createResources = [] } = resourceJSON
     const cdName = createResources.find((r: { kind: string }) => r.kind === 'ClusterDeployment').metadata.name
@@ -137,6 +139,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange }) => {
                 agentClusterInstall={agentClusterInstall}
                 agents={matchingAgents}
                 hostActions={hostActions}
+                aiConfigMap={aiConfigMap}
             />
             <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
         </ACMFeatureSupportLevelProvider>

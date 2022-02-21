@@ -3,10 +3,10 @@ import { Card, CardBody, CardTitle, Grid, GridItem, Split, SplitItem, Stack, Sta
 import { CIM } from 'openshift-assisted-ui-lib'
 import { useCallback, useMemo } from 'react'
 import { useRecoilState } from 'recoil'
-import { infraEnvironmentsState, infrastructuresState } from '../../../atoms'
+import { infraEnvironmentsState } from '../../../atoms'
 import MainIcon from '../../../logos/OnPremiseBannerIcon.svg'
+
 import './InfraEnvForm.css'
-import { isBMPlatform } from './utils'
 
 const { InfraEnvFormPage, getLabels } = CIM
 
@@ -35,7 +35,6 @@ type InfraEnvFormProps = {
 
 const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) => {
     const [infraEnvironments] = useRecoilState(infraEnvironmentsState)
-    const [infrastructures] = useRecoilState(infrastructuresState)
 
     const onValuesChanged = useCallback((values: CIM.EnvironmentStepFormValues) => {
         control.active = values
@@ -65,11 +64,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
     return (
         <Grid hasGutter className="infra-env-form">
             <GridItem span={8}>
-                <InfraEnvFormPage
-                    onValuesChanged={onValuesChanged}
-                    usedNames={infraEnvNames}
-                    isBMPlatform={isBMPlatform(infrastructures[0])}
-                />
+                <InfraEnvFormPage onValuesChanged={onValuesChanged} usedNames={infraEnvNames} />
             </GridItem>
             <GridItem span={8}>
                 <Card>
