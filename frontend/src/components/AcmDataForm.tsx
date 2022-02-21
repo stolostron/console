@@ -89,9 +89,15 @@ import {
     SectionGroup,
     SelectOptionInput,
 } from './AcmFormData'
+import { SyncEditor } from './SyncEditor/SyncEditor'
+import { SyncDiff, SyncDiffType } from './SyncEditor/SyncDiff'
 
 export interface AcmDataFormProps {
     formData: FormData
+    editorTitle?: string
+    secrets?: (string | string[])[]
+    immutables?: (string | string[])[]
+    schema?: any
     mode?: 'form' | 'wizard' | 'details'
     isHorizontal?: boolean
     edit?: () => void
@@ -111,7 +117,8 @@ const defaultPanelSize = 600
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
 
-    const { formData } = props
+    const { editorTitle, schema, secrets, immutables, formData } = props
+    const [editorChanges, setEditorChanges] = useState<any | undefined>([])
     const [showFormErrors, setShowFormErrors] = useState(false)
     const mode = props.mode ?? 'form'
     const isHorizontal = props.isHorizontal ?? false
@@ -125,7 +132,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     useResizeObserver(pageRef, (entry) => {
         const inline = entry.contentRect.width > minWizardSize + defaultPanelSize
         setDrawerInline(inline)
-        setDrawerMaxSize(inline ? `${entry.contentRect.width - minWizardSize}px` : undefined)
+        setDrawerMaxSize(inline ? `${Math.round((entry.contentRect.width * 2) / 3)}px` : undefined)
     })
 
     return (
@@ -187,42 +194,67 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                 minSize="400px"
                                 colorVariant={DrawerColorVariant.light200}
                             >
-                                <CodeBlock
-                                    actions={
-                                        <CodeBlockAction>
-                                            <ClipboardCopyButton
-                                                id="copy-button"
-                                                textId="code-content"
-                                                aria-label="Copy to clipboard"
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(
-                                                        YAML.stringify(formData.stateToData())
-                                                    )
-                                                    setCopyHint(
-                                                        <span style={{ wordBreak: 'keep-all' }}>
-                                                            Successfully copied to clipboard!
-                                                        </span>
-                                                    )
-                                                    setTimeout(() => {
+                                {editorTitle ? (
+                                    <SyncEditor
+                                        variant="toolbar"
+                                        id="code-content"
+                                        editorTitle={editorTitle}
+                                        readonly={mode === 'details'}
+                                        resources={formData.stateToData()}
+                                        schema={schema}
+                                        immutables={
+                                            mode === 'form' && props.edit !== undefined ? immutables : undefined
+                                        }
+                                        secrets={secrets}
+                                        onClose={(): void => {
+                                            setDrawerExpanded(false)
+                                        }}
+                                        onEditorChange={(editorChanges: {
+                                            resources: any[]
+                                            errors: any[]
+                                            changes: any[]
+                                        }): void => {
+                                            setEditorChanges(editorChanges)
+                                        }}
+                                    />
+                                ) : (
+                                    <CodeBlock
+                                        actions={
+                                            <CodeBlockAction>
+                                                <ClipboardCopyButton
+                                                    id="copy-button"
+                                                    textId="code-content"
+                                                    aria-label="Copy to clipboard"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(
+                                                            YAML.stringify(formData.stateToData())
+                                                        )
                                                         setCopyHint(
                                                             <span style={{ wordBreak: 'keep-all' }}>
-                                                                Copy to clipboard
+                                                                Successfully copied to clipboard!
                                                             </span>
                                                         )
-                                                    }, 800)
-                                                }}
-                                                exitDelay={600}
-                                                variant="plain"
-                                            >
-                                                {copyHint}
-                                            </ClipboardCopyButton>
-                                        </CodeBlockAction>
-                                    }
-                                >
-                                    <CodeBlockCode id="code-content" style={{ fontSize: 'small' }}>
-                                        {YAML.stringify(formData.stateToData())}
-                                    </CodeBlockCode>
-                                </CodeBlock>
+                                                        setTimeout(() => {
+                                                            setCopyHint(
+                                                                <span style={{ wordBreak: 'keep-all' }}>
+                                                                    Copy to clipboard
+                                                                </span>
+                                                            )
+                                                        }, 800)
+                                                    }}
+                                                    exitDelay={600}
+                                                    variant="plain"
+                                                >
+                                                    {copyHint}
+                                                </ClipboardCopyButton>
+                                            </CodeBlockAction>
+                                        }
+                                    >
+                                        <CodeBlockCode id="code-content" style={{ fontSize: 'small' }}>
+                                            {YAML.stringify(formData.stateToData())}
+                                        </CodeBlockCode>
+                                    </CodeBlock>
+                                )}
                             </DrawerPanelContent>
                         }
                     >
@@ -231,6 +263,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                 <PageSection variant="light" isFilled type="wizard" style={{ height: '100%' }}>
                                     <AcmDataForm
                                         {...props}
+                                        editorChanges={editorChanges}
                                         mode={mode}
                                         showFormErrors={showFormErrors}
                                         setShowFormErrors={setShowFormErrors}
@@ -241,6 +274,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                 <PageSection variant="light" isFilled>
                                     <AcmDataForm
                                         {...props}
+                                        editorChanges={editorChanges}
                                         mode={mode}
                                         showFormErrors={showFormErrors}
                                         setShowFormErrors={setShowFormErrors}
@@ -258,16 +292,18 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 
 export function AcmDataForm(
     props: AcmDataFormProps & {
+        editorChanges: SyncDiffType
         showFormErrors: boolean
         setShowFormErrors: (showFormErrors: boolean) => void
     }
 ): JSX.Element {
-    const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
+    const { formData, editorChanges, isHorizontal, showFormErrors, setShowFormErrors } = props
     switch (props.mode) {
         case 'wizard':
             return (
                 <AcmDataFormWizard
                     formData={formData}
+                    editorChanges={editorChanges}
                     isHorizontal={isHorizontal ?? false}
                     showFormErrors={showFormErrors}
                     setShowFormErrors={setShowFormErrors}
@@ -285,6 +321,7 @@ export function AcmDataForm(
             return (
                 <AcmDataFormDefault
                     formData={formData}
+                    editorChanges={editorChanges}
                     isHorizontal={isHorizontal}
                     showFormErrors={showFormErrors}
                     setShowFormErrors={setShowFormErrors}
@@ -295,11 +332,12 @@ export function AcmDataForm(
 
 export function AcmDataFormDefault(props: {
     formData: FormData
+    editorChanges: SyncDiffType
     isHorizontal?: boolean
     showFormErrors: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
-    const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
+    const { formData, editorChanges, isHorizontal, showFormErrors, setShowFormErrors } = props
     const [submitText, setSubmitText] = useState(formData.submitText)
     const [submitError, setSubmitError] = useState('')
     const isSubmitting = submitText !== formData.submitText
@@ -345,6 +383,12 @@ export function AcmDataFormDefault(props: {
                     </FormSection>
                 )
             })}
+
+            {editorChanges?.changes?.length > 0 && (
+                <FormGroup fieldId="diffs" label="Editor changes">
+                    <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
+                </FormGroup>
+            )}
 
             <Stack>
                 {submitError && <Alert isInline variant="danger" title={submitError} />}
@@ -392,11 +436,12 @@ export function AcmDataFormDefault(props: {
 
 export function AcmDataFormWizard(props: {
     formData: FormData
+    editorChanges: SyncDiffType
     isHorizontal: boolean
     showFormErrors: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
-    const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
+    const { formData, editorChanges, isHorizontal, showFormErrors, setShowFormErrors } = props
     const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
     const [submitText, setSubmitText] = useState(formData.submitText)
     const [submitError, setSubmitError] = useState('')
@@ -468,6 +513,11 @@ export function AcmDataFormWizard(props: {
                     </AlertGroup>
                 )}
                 <AcmDataFormDetails formData={formData} wizardSummary={true} />
+                {editorChanges?.changes?.length > 0 && (
+                    <FormGroup fieldId="diffs" label="Editor changes">
+                        <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
+                    </FormGroup>
+                )}
             </Form>
         ),
         canJumpTo: !isSubmitting,

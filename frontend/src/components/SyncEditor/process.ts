@@ -42,7 +42,7 @@ export interface ErrorMessageType {
 export const processForm = (
     monacoRef: any,
     code: string | undefined,
-    resourceArr?: any[] | undefined,
+    resourceArr: unknown,
     changeStack?: {
         baseResources: any[]
         customResources: any[]
@@ -58,7 +58,9 @@ export const processForm = (
         if (!Array.isArray(resourceArr)) {
             resourceArr = [resourceArr]
         }
-        yaml = stringify(resourceArr)
+        if (Array.isArray(resourceArr)) {
+            yaml = stringify(resourceArr)
+        }
     }
     let documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
     let errors = getErrors(documents)

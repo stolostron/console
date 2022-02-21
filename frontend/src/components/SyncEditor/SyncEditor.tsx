@@ -17,7 +17,7 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     variant?: string
     editorTitle?: string
     code?: string
-    resources?: any[]
+    resources: unknown
     schema?: any
     secrets?: (string | string[])[]
     immutables?: (string | string[])[]
@@ -310,7 +310,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         }
         setHasRedo(false)
         setHasUndo(false)
-    }, [resources, code, showSecrets])
+    }, [JSON.stringify(resources), code, showSecrets, immutables])
 
     // react to changes from editing yaml
     const onChange = useCallback(
