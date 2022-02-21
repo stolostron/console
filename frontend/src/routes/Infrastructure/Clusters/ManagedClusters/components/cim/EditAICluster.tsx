@@ -159,11 +159,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 },
             ]).promise
 
-            history.push(
-                NavigationPath.clusterCreateProgress
-                    .replace(':namespace', agentClusterInstall.metadata.namespace)
-                    .replace(':name', agentClusterInstall.metadata.name)
-            )
+            history.push(NavigationPath.clusterDetails.replace(':id', agentClusterInstall.metadata.name))
         }
         doItAsync()
     }
