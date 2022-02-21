@@ -28,10 +28,10 @@ export function PolicyDetailsHistoryPage() {
     const templateName = urlParams.templateName
 
     const historyUrl = NavigationPath.policyDetailsHistory
-        .replace(':namespace', policyNamespace as string)
-        .replace(':name', policyName as string)
-        .replace(':clusterName', clusterName as string)
-        .replace(':templateName', templateName as string)
+        .replace(':namespace', policyNamespace)
+        .replace(':name', policyName)
+        .replace(':clusterName', clusterName)
+        .replace(':templateName', templateName)
 
     const statusItems: HistoryTableData[] = useMemo(() => {
         if (!(policyName && policyNamespace && clusterName && templateName)) {
@@ -113,7 +113,6 @@ export function PolicyDetailsHistoryPage() {
 
     return (
         <AcmPage
-            hasDrawer
             header={
                 <AcmPageHeader
                     title={t('History')}

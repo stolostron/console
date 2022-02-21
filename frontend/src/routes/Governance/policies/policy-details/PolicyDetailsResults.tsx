@@ -9,7 +9,7 @@ import { useRecoilState } from 'recoil'
 import { policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Policy, PolicyStatusDetails } from '../../../../resources'
+import { getGroupFromApiVersion, Policy, PolicyStatusDetails } from '../../../../resources'
 
 interface resultsTableData {
     templateName: string
@@ -140,13 +140,20 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                         apiVersion &&
                         kind
                     ) {
-                        // TODO this link does nothing....
-                        // const templateDetailURL = `/multicloud/policies/all/${policyNamespace}/${policyName}/template/${cluster}/${apiVersion}/${kind}/${templateName}`
+                        const { apiGroup, version } = getGroupFromApiVersion(apiVersion)
+                        const templateDetailURL = NavigationPath.policyTemplateDetails
+                            .replace(':namespace', policyNamespace)
+                            .replace(':name', policyName)
+                            .replace(':clusterName', cluster)
+                            .replace(':apiGroup/', apiGroup ? `${apiGroup}/` : '')
+                            .replace(':apiVersion', version)
+                            .replace(':kind', kind)
+                            .replace(':templateName', templateName)
                         return (
                             <div>
                                 {/* message may need to be limited to 300 chars? */}
                                 {prunedMessage}{' '}
-                                {/* templateDetailURL && <Link to={templateDetailURL}>{t('View details')}</Link> */}
+                                {templateDetailURL && <Link to={templateDetailURL}>{t('View details')}</Link>}
                             </div>
                         )
                     }
