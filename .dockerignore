@@ -18,7 +18,7 @@
 /frontend/.vscode/
 /frontend/build/
 /frontend/node_modules/
-/frontend/coverage/
+/frontend/src/coverage/
 /frontend/*.md
 
 /.git/
