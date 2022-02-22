@@ -423,7 +423,8 @@ export const getExistingPRControlsSection = (initiatingControl, control) => {
         const channelsControl = control.find(({ id }) => id === 'channels')
 
         if (channelsControl) {
-            (_.get(channelsControl, 'active') || []).forEach((channelControls) => {
+            const channelsControlArr = _.get(channelsControl, 'active') || []
+            channelsControlArr.forEach((channelControls) => {
                 const channelInfo = {}
                 channelControls.forEach((controlDataObject) => {
                     channelInfo[controlDataObject.id] = controlDataObject

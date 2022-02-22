@@ -114,7 +114,7 @@ export function CreateSubscriptionApplication() {
     const cancelCreate = () => {
         history.push(NavigationPath.applications)
     }
-    
+
     // setup translation
     const { t } = useTranslation()
     const i18n = (key: any, arg: any) => {
