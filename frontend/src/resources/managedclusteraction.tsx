@@ -2,6 +2,7 @@
 import crypto from 'crypto'
 import _ from 'lodash'
 import { createResource, deleteResource, getResource } from './utils/resource-request'
+import { getGroupFromApiVersion } from './utils/utils'
 
 export const ManagedClusterActionApiVersion = 'action.open-cluster-management.io/v1beta1'
 export type ManagedClusterActionApiVersionType = 'action.open-cluster-management.io/v1beta1'
@@ -59,13 +60,6 @@ export interface ManagedClusterAction {
         }>
         result?: Record<string, unknown>
     }
-}
-
-function getGroupFromApiVersion(apiVersion: string) {
-    if (apiVersion.indexOf('/') >= 0) {
-        return { apiGroup: apiVersion.split('/')[0], version: apiVersion.split('/')[1] }
-    }
-    return { apiGroup: '', version: apiVersion }
 }
 
 export function getManagedClusterAction(metadata: { name: string; namespace: string }) {
@@ -155,10 +149,10 @@ export async function pollManagedClusterAction(actionName: string, clusterName: 
             } else if (actionMessage && isComplete === 'Completed' && isActionDone !== 'ActionDone') {
                 reject({ message: actionMessage })
             } else {
-                return {
+                reject({
                     message:
                         'There was an error while performing the managed cluster resource action. Make sure the managed cluster is online and helthy, and that the work manager pod in namespace open-cluster-management-agent-addon is healthy ',
-                }
+                })
             }
             deleteManagedClusterAction({ name: actionName, namespace: clusterName })
         } else {
@@ -167,7 +161,7 @@ export async function pollManagedClusterAction(actionName: string, clusterName: 
                 setTimeout(poll, 100, resolve, reject)
             } else {
                 deleteManagedClusterAction({ name: actionName, namespace: clusterName })
-                return reject({
+                reject({
                     message: `Request for ManagedClusterAction: ${actionName} on cluster: ${clusterName} failed due to too many requests. Make sure the work manager pod in namespace open-cluster-management-agent-addon is healthy.`,
                 })
             }

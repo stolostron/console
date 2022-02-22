@@ -74,8 +74,8 @@ export enum NavigationPath {
     // Applications
     advancedConfiguration = '/multicloud/applications/advanced',
     applications = '/multicloud/applications',
-    createApplication = '/multicloud/applications/create/subscription',
-    createArgoApplicationSet = '/multicloud/applications/create/argo',
+    createApplicationArgo = '/multicloud/applications/create/argo',
+    createApplicationSubscription = '/multicloud/applications/create/subscription',
     applicationDetails = '/multicloud/applications/details/:namespace/:name',
     applicationOverview = '/multicloud/applications/details/:namespace/:name/overview',
     applicationTopology = '/multicloud/applications/details/:namespace/:name/topology',
@@ -90,6 +90,7 @@ export enum NavigationPath {
     policyDetails = '/multicloud/governance/policies/details/:namespace/:name',
     policyDetailsResults = '/multicloud/governance/policies/details/:namespace/:name/results',
     policyDetailsHistory = '/multicloud/governance/policies/details/:namespace/:name/status/:clusterName/templates/:templateName/history',
+    policyTemplateDetails = '/multicloud/governance/policies/details/:namespace/:name/template/:clusterName/:apiGroup/:apiVersion/:kind/:templateName',
     createPolicySet = '/multicloud/governance/policy-sets/create',
     editPolicySet = '/multicloud/governance/policy-sets/edit/:namespace/:name',
 

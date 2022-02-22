@@ -22,16 +22,18 @@ import {
     useOnUnbindHost,
     useCanUnbindAgent,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/unbindHost'
+import { DOC_VERSION } from '../../../../lib/doc-util'
 
-const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames } = CIM
+const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames, AgentAlerts } = CIM
 
 type HostsTabProps = {
     infraEnv: CIM.InfraEnvK8sResource
     infraAgents: CIM.AgentK8sResource[]
     bareMetalHosts: CIM.BareMetalHostK8sResource[]
+    aiConfigMap: CIM.ConfigMapK8sResource
 }
 
-const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts }) => {
+const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts, aiConfigMap }) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
@@ -49,6 +51,12 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
             <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
             <AcmPageContent id="hosts">
                 <PageSection>
+                    <AgentAlerts
+                        infraEnv={infraEnv}
+                        bareMetalHosts={bareMetalHosts}
+                        docVersion={DOC_VERSION}
+                        aiConfigMap={aiConfigMap}
+                    />
                     <Card>
                         <CardBody>
                             <InfraEnvAgentTable

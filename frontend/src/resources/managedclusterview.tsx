@@ -2,6 +2,7 @@
 import crypto from 'crypto'
 import _ from 'lodash'
 import { createResource, deleteResource, getResource } from './utils/resource-request'
+import { getGroupFromApiVersion } from './utils/utils'
 
 export const ManagedClusterViewApiVersion = 'view.open-cluster-management.io/v1beta1'
 export type ManagedClusterViewApiVersionType = 'view.open-cluster-management.io/v1beta1'
@@ -51,13 +52,6 @@ export interface ManagedClusterView {
     }
 }
 
-function getGroupFromApiVersion(apiVersion: string) {
-    if (apiVersion.indexOf('/') >= 0) {
-        return { apiGroup: apiVersion.split('/')[0], version: apiVersion.split('/')[1] }
-    }
-    return { apiGroup: '', version: apiVersion }
-}
-
 function getManagedClusterView(metadata: { name: string; namespace: string }) {
     return getResource<ManagedClusterView>({
         apiVersion: ManagedClusterViewApiVersion,
@@ -81,19 +75,13 @@ export async function fireManagedClusterView(
     resourceName: string,
     resourceNamespace?: string
 ) {
-    if (
-        clusterName !== 'local-cluster' &&
-        (resourceKind.toLowerCase() === 'secret' || resourceKind.toLowerCase() === 'secrets')
-    ) {
+    if (resourceKind.toLowerCase() === 'secret' || resourceKind.toLowerCase() === 'secrets') {
         // We do not allow users to view secrets as this could allow lesser permissioned users to get around RBAC.
-        return [
-            {
-                message:
-                    'Viewing managed cluster secrets is not allowed for security reasons. To view this secret, you must access it from the specific managed cluster.',
-            },
-        ]
+        return {
+            message:
+                'Viewing Secrets is not allowed for security reasons. To view this secret, you must access it from the cluster directly.',
+        }
     }
-
     const viewName = crypto
         .createHash('sha1')
         .update(`${clusterName}-${resourceName}-${resourceKind}`)
@@ -193,7 +181,7 @@ export async function pollManagedClusterView(viewName: string, clusterName: stri
                 setTimeout(poll, 100, resolve, reject)
             } else {
                 deleteManagedClusterView({ namespace: clusterName, name: viewName })
-                return reject({
+                reject({
                     message: `Request for ManagedClusterView: ${viewName} on cluster: ${clusterName} failed due to too many requests. Make sure the work manager pod in namespace open-cluster-management-agent-addon is healthy.`,
                 })
             }
