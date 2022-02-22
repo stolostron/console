@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { CodeEditor, Language } from '@patternfly/react-code-editor'
-import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
+import { global_BackgroundColor_dark_100 } from '@patternfly/react-tokens'
 import useResizeObserver from '@react-hook/resize-observer'
 import { debounce } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
@@ -10,7 +10,7 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { useCallback, useRef } from 'react'
 import './YAMLEditor.css'
 
-export default function YAMLPage(props: {
+export default function YAMLEditor(props: {
     resourceYAML: any
     editMode: boolean
     width: string
@@ -41,7 +41,7 @@ export default function YAMLPage(props: {
                 { token: 'keyword', foreground: 'cbc0ff' },
             ],
             colors: {
-                'editor.background': editorBackground.value,
+                'editor.background': global_BackgroundColor_dark_100.value,
                 'editorGutter.background': '#292e34', // no pf token defined
                 'editorLineNumber.activeForeground': '#fff',
                 'editorLineNumber.foreground': '#f0f0f0',

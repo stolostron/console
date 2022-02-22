@@ -37,6 +37,7 @@ export function PolicyTemplateDetails(props: {
     const [template, setTemplate] = useState<any>()
     const [relatedObjects, setRelatedObjects] = useState<any>()
     const [templateError, setTemplateError] = useState<string>()
+    const [isExpanded, setIsExpanded] = useState<boolean>(true)
 
     function getRelatedObjects(resource: any) {
         return resource?.status?.relatedObjects.map((obj: any) => {
@@ -241,8 +242,8 @@ export function PolicyTemplateDetails(props: {
                         <AcmDescriptionList title={t('Template details')} leftItems={descriptionItems} />
                     </GridItem>
                     <GridItem span={6}>
-                        <Card isExpanded={true}>
-                            <CardHeader onExpand={() => {}}>
+                        <Card isExpanded={isExpanded}>
+                            <CardHeader onExpand={() => setIsExpanded(!isExpanded)}>
                                 <CardTitle id="titleId">{t('Template yaml')}</CardTitle>
                             </CardHeader>
                             <CardExpandableContent>

@@ -46,8 +46,8 @@ export function PolicyTemplateDetailsPage() {
                         {
                             text: policyName,
                             to: NavigationPath.policyDetailsResults
-                                .replace(':namespace', policyNamespace as string)
-                                .replace(':name', policyName as string),
+                                .replace(':namespace', policyNamespace)
+                                .replace(':name', policyName),
                         },
                         { text: templateName, to: '' },
                     ]}
