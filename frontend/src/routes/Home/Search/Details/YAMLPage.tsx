@@ -83,7 +83,9 @@ export default function YAMLPage(props: {
     const [userCanEdit, setUserCanEdit] = useState<boolean | undefined>(undefined)
     const [editedResourceYaml, setEditedResourceYaml] = useState<string>('')
     const [updateResourceError, setUpdateResourceError] = useState(undefined)
+    const [editorHeight, setEditorHeight] = useState('500px')
     const classes = useStyles()
+
     useEffect(() => {
         if (resource) {
             setEditedResourceYaml(jsYaml.dump(resource, { indent: 2 }))
@@ -91,7 +93,16 @@ export default function YAMLPage(props: {
     }, [resource])
 
     useEffect(() => {
-        if (!resource) {
+        function handleResize() {
+            setEditorHeight(`${(window.innerHeight - 275) * 0.95}px`)
+        }
+        handleResize()
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [window.innerHeight])
+
+    useEffect(() => {
+        if (!editedResourceYaml) {
             return
         }
         const canUpdateResource = canUser(
@@ -112,7 +123,7 @@ export default function YAMLPage(props: {
             .then((result) => setUserCanEdit(result.status?.allowed!))
             .catch((err) => console.error(err))
         return () => canUpdateResource.abort()
-    }, [cluster, resource])
+    }, [cluster, editedResourceYaml])
 
     function fireUpdateResource() {
         fireManagedClusterAction(
@@ -188,10 +199,6 @@ export default function YAMLPage(props: {
                         variant={'primary'}
                         isDisabled={!userCanEdit}
                         onClick={() => {
-                            if (editMode) {
-                                // Reset YAML on cancel click
-                                setEditedResourceYaml(editedResourceYaml)
-                            }
                             setEditMode(!editMode)
                         }}
                         tooltip={tooltipMessage}
@@ -209,7 +216,13 @@ export default function YAMLPage(props: {
                     )}
                 </div>
             </div>
-            <YamlEditor resource={resource} editMode={editMode} width={'100%'} height={'90%'} />
+            <YamlEditor
+                resourceYAML={editedResourceYaml}
+                editMode={editMode}
+                setEditedResourceYaml={setEditedResourceYaml}
+                width={'100%'}
+                height={editorHeight}
+            />
         </PageSection>
     )
 }

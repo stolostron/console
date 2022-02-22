@@ -96,7 +96,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                             return (
                                 <div>
                                     <CheckCircleIcon color="var(--pf-global--success-color--100)" />{' '}
-                                    {t('Without Violations')}
+                                    {t('Without violations')}
                                 </div>
                             )
                         case 'noncompliant':
