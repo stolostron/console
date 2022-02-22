@@ -24,6 +24,7 @@ import LinkHelper, { defineLinkMarkers } from '../../../../../components/Topolog
 import NodeHelper, { showMatches, setSelections } from '../../../../../components/Topology/helpers/nodeHelper'
 import * as c from '../../../../../components/Topology/constants.js'
 import _ from 'lodash'
+import './DiagramViewer.css'
 
 class DiagramViewer extends React.Component {
     static propTypes = {
@@ -271,7 +272,10 @@ class DiagramViewer extends React.Component {
             if (selectedResourceType) {
                 this.props.setDrawerContent(
                     t('Details'),
-                    true,
+                    true,   // inline
+                    true,   // resizable
+                    true,   // no drawerhead
+                    true,   // no padding for drawerpanelbody
                     <DetailsView
                         options={options}
                         getLayoutNodes={this.getLayoutNodes}

@@ -2,7 +2,7 @@
 
 import { AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 
-import { AcmPage } from './AcmPage'
+import { AcmPage } from '@stolostron/ui-components'
 
 import { createContext, Fragment, Suspense, useEffect, useContext, ElementType, ReactNode, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'

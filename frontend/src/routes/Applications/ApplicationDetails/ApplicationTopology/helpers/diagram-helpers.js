@@ -35,7 +35,7 @@ import {
     allClustersAreOnline,
     findParentForOwnerID,
 } from './diagram-helpers-utils'
-import { getEditLink } from './resource-helper'
+import { getEditLink, getSearchLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
 import { getURLSearchData } from './diagram-helpers-argo'
 
@@ -715,6 +715,19 @@ export const createResourceSearchLink = (node, t) => {
         }
     }
     return result
+}
+
+export const createResourceURL = (node, t, isLogURL = false) => {
+    const cluster = _.get(node, 'cluster', '')
+    const type = _.get(node, 'type', '')
+    const apiVersion = _.get(node, 'specs.raw.apiVersion', '')
+    const namespace = _.get(node, 'namespace', '')
+    const name = _.get(node, 'name', '')
+
+    if (!isLogURL) {
+        return '/multicloud/home/search/resources?' + encodeURIComponent(`cluster=${cluster}&kind=${type}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`)
+    }
+    return '/multicloud/home/search/resources/logs?' + encodeURIComponent(`cluster=${cluster}&kind=${type}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`)
 }
 
 export const removeReleaseGeneratedSuffix = (name) => {
@@ -1615,19 +1628,6 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                             status: warningStatus,
                         })
                     }
-
-                    details.push({
-                        type: 'link',
-                        value: {
-                            label: t('View resource YAML'),
-                            data: {
-                                action: showResourceYaml,
-                                cluster: subscription.cluster,
-                                editLink: createEditLink(subscription),
-                            },
-                        },
-                        indent: true,
-                    })
                 }
             }
 
