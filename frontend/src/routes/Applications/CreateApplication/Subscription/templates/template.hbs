@@ -1,0 +1,191 @@
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Application ============================ }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{#if userDefinedNamespace}}
+apiVersion: v1                    
+kind: Namespace
+metadata:
+  name: {{{namespace}}}                             
+---
+{{/if}}
+apiVersion: app.k8s.io/v1beta1
+kind: Application
+metadata:
+  name: {{{name}}}
+  namespace: {{{namespace}}}
+  {{#if selfLink}}
+  selfLink: {{{selfLink}}}
+  {{/if}}
+spec:
+  componentKinds:
+  - group: apps.open-cluster-management.io
+    kind: Subscription
+  descriptor: {}
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: 
+          - {{{name}}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Channel(s) ============================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+
+{{#each channels}}
+
+{{#switch channelType}}
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Github channel ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{#case 'github'}}
+
+{{>templateGit 
+  channelName=../../channelName
+  channelNamespace=../../channelNamespace
+  channelNamespaceExists=../../channelNamespaceExists
+  githubURL=../../githubURL
+  githubUser=../../githubUser
+  githubAccessId=../../githubAccessId
+  githubBranch=../../githubBranch
+  githubPath=../../githubPath
+  gitDesiredCommit=../../gitDesiredCommit
+  gitTag=../../gitTag
+  gitReconcileOption=../../gitReconcileOption
+  gitReconcileRate=../../gitReconcileRate
+  gitSubReconcileRate=../../gitSubReconcileRate
+  gitInsecureSkipVerify=../../gitInsecureSkipVerify
+  ansibleSecretName=../../ansibleSecretName
+  selfLinks=../../selfLinks
+  uniqueGroupID=../../uniqueGroupID
+}}
+
+{{>templatePlacement 
+  timeWindow=../../timeWindow
+  selectedRuleName=../../selectedRuleName
+  existingrule-checkbox=../../existingrule-checkbox
+  local-cluster-checkbox=../../local-cluster-checkbox
+  clusterSelector=../../clusterSelector
+  online-cluster-only-checkbox=../../online-cluster-only-checkbox
+  selfLinks=../../selfLinks
+  uniqueGroupID=../../uniqueGroupID
+}}
+
+{{/case}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Helmrepo channel ==================== }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{#case 'helmrepo'}}
+
+{{>templateHelm
+  channelName=../../channelName
+  channelNamespace=../../channelNamespace
+  channelNamespaceExists=../../channelNamespaceExists
+  helmURL=../../helmURL
+  helmUser=../../helmUser
+  helmPassword=../../helmPassword
+  helmChartName=../../helmChartName
+  helmPackageAlias=../../helmPackageAlias
+  helmPackageVersion=../../helmPackageVersion
+  helmInsecureSkipVerify=../../helmInsecureSkipVerify
+  helmReconcileRate=../../helmReconcileRate
+  helmSubReconcileRate=../../helmSubReconcileRate
+  ansibleSecretName=../../ansibleSecretName
+  selfLinks=../../selfLinks
+  uniqueGroupID=../../uniqueGroupID
+}}
+
+
+{{>templatePlacement 
+  timeWindow=../../timeWindow
+  selectedRuleName=../../selectedRuleName
+  existingrule-checkbox=../../existingrule-checkbox
+  local-cluster-checkbox=../../local-cluster-checkbox
+  clusterSelector=../../clusterSelector
+  online-cluster-only-checkbox=../../online-cluster-only-checkbox
+  selfLinks=../../selfLinks
+  uniqueGroupID=../../uniqueGroupID
+}}
+
+{{/case}}
+
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Objectstore channel ==================== }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{#case 'objectstore'}}
+
+{{>templateObjectStore
+  channelName=../../channelName
+  channelNamespace=../../channelNamespace
+  channelNamespaceExists=../../channelNamespaceExists
+  objectstoreURL=../../objectstoreURL
+  accessKey=../../accessKey
+  secretKey=../../secretKey
+  region=../../region
+  subfolder=../../subfolder
+  ansibleSecretName=../../ansibleSecretName
+  selfLinks=../../selfLinks
+  uniqueGroupID=../../uniqueGroupID
+}}
+
+{{>templatePlacement 
+  timeWindow=../../timeWindow
+  selectedRuleName=../../selectedRuleName
+  existingrule-checkbox=../../existingrule-checkbox
+  local-cluster-checkbox=../../local-cluster-checkbox
+  clusterSelector=../../clusterSelector
+  online-cluster-only-checkbox=../../online-cluster-only-checkbox
+  selfLinks=../../selfLinks
+  uniqueGroupID=../../uniqueGroupID
+}}
+
+{{/case}}
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==========================Other channel ================== }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{#case 'other'}}
+
+{{>templateOther
+  channelName=../../channelName
+  channelNamespace=../../channelNamespace
+  channelNamespaceExists=../../channelNamespaceExists
+  namespaceChannelName=../../namespaceChannelName
+  selfLinks=../../selfLinks
+  uniqueGroupID=../../uniqueGroupID
+}}
+
+{{>templatePlacement 
+  timeWindow=../../timeWindow
+  selectedRuleName=../../selectedRuleName
+  existingrule-checkbox=../../existingrule-checkbox
+  local-cluster-checkbox=../../local-cluster-checkbox
+  clusterSelector=../../clusterSelector
+  online-cluster-only-checkbox=../../online-cluster-only-checkbox
+  selfLinks=../../selfLinks
+  uniqueGroupID=../../uniqueGroupID
+}}
+
+{{/case}}
+
+
+{{/switch}}
+{{/each}}

@@ -8,12 +8,11 @@ import moment from 'moment-timezone'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { isType } from '../../../lib/is-type'
-import { NavigationPath } from '../../../NavigationPath'
-import { createResources, IResource, unpackProviderConnection } from '../../../resources'
-
+import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../../atoms'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { isType } from '../../../../lib/is-type'
+import { NavigationPath } from '../../../../NavigationPath'
+import { createResources, IResource, unpackProviderConnection } from '../../../../resources'
 const Portals = Object.freeze({
     editBtn: 'edit-button-portal-id',
     createBtn: 'create-button-portal-id',
