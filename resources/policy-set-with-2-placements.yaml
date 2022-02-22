@@ -1,0 +1,130 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicySet
+metadata:
+    name: policy-set-with-2-placements
+    namespace: test
+spec:
+    description: Policy set with two Placements and PlacementBindings.
+    policies:
+        - policy-set-with-2-placements-policy-1
+        - policy-set-with-2-placements-policy-2
+---
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: Placement
+metadata:
+    name: policy-set-with-2-placements-1
+    namespace: test
+spec:
+    predicates:
+        - requiredClusterSelector:
+              labelSelector:
+                  matchExpressions:
+                      - key: local-cluster
+                        operator: In
+                        values:
+                            - 'true'
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+    name: policy-set-with-2-placements-1
+    namespace: test
+placementRef:
+    name: policy-set-with-2-placements-1
+    kind: Placement
+    apiGroup: cluster.open-cluster-management.io
+subjects:
+    - name: policy-set-with-2-placements
+      kind: PolicySet
+      apiGroup: policy.open-cluster-management.io
+---
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: Placement
+metadata:
+    name: policy-set-with-2-placements-2
+    namespace: test
+spec:
+    clusterSets:
+        - cluster-set
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+    name: policy-set-with-2-placements-2
+    namespace: test
+placementRef:
+    name: policy-set-with-2-placements-2
+    kind: Placement
+    apiGroup: cluster.open-cluster-management.io
+subjects:
+    - name: policy-set-with-2-placements
+      kind: PolicySet
+      apiGroup: policy.open-cluster-management.io
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+    name: policy-set-with-2-placements-policy-1
+    namespace: test
+    annotations:
+        policy.open-cluster-management.io/standards: NIST-CSF
+        policy.open-cluster-management.io/categories: PR.IP Information Protection Processes and Procedures
+        policy.open-cluster-management.io/controls: PR.IP-1 Baseline Configuration
+spec:
+    remediationAction: inform
+    disabled: false
+    policy-templates:
+        - objectDefinition:
+              apiVersion: policy.open-cluster-management.io/v1
+              kind: ConfigurationPolicy
+              metadata:
+                  name: policy-set-with-2-placements-policy-1
+              spec:
+                  remediationAction: inform
+                  severity: low
+                  namespaceSelector:
+                      exclude:
+                          - kube-*
+                      include:
+                          - default
+                  object-templates:
+                      - complianceType: musthave
+                        objectDefinition:
+                            kind: Namespace
+                            apiVersion: v1
+                            metadata:
+                                name: test
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+    name: policy-set-with-2-placements-policy-2
+    namespace: test
+    annotations:
+        policy.open-cluster-management.io/standards: NIST-CSF
+        policy.open-cluster-management.io/categories: PR.IP Information Protection Processes and Procedures
+        policy.open-cluster-management.io/controls: PR.IP-1 Baseline Configuration
+spec:
+    remediationAction: inform
+    disabled: false
+    policy-templates:
+        - objectDefinition:
+              apiVersion: policy.open-cluster-management.io/v1
+              kind: ConfigurationPolicy
+              metadata:
+                  name: policy-set-with-2-placements-policy-2
+              spec:
+                  remediationAction: inform
+                  severity: low
+                  namespaceSelector:
+                      exclude:
+                          - kube-*
+                      include:
+                          - default
+                  object-templates:
+                      - complianceType: musthave
+                        objectDefinition:
+                            kind: Namespace
+                            apiVersion: v1
+                            metadata:
+                                name: test

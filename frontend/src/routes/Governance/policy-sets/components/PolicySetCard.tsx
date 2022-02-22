@@ -14,7 +14,10 @@ import {
 } from '@patternfly/react-core'
 import { AcmDrawerContext } from '@stolostron/ui-components'
 import { useContext, useState } from 'react'
-import { useTranslation } from '../../../../lib/acm-i18next'
+import { useHistory } from 'react-router-dom'
+import { ConfirmModal, IConfirmModalProps } from '../../../../components/ConfirmModal'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
+import { NavigationPath } from '../../../../NavigationPath'
 import { deleteResource, PolicySet } from '../../../../resources'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { PolicyViolationIcons } from '../../components/PolicyViolations'
@@ -28,6 +31,14 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const [cardOpenIdx, setCardOpenIdx] = useState<number>()
     const policySetSummary = usePolicySetSummary(policySet)
+    const history = useHistory()
+    const [modalProps, setModalProps] = useState<IConfirmModalProps>({
+        open: false,
+        confirm: () => {},
+        cancel: () => {},
+        title: 'deleteModal',
+        message: '',
+    })
 
     function onCardToggle(cardIdx: number) {
         if (cardOpenIdx === cardIdx) {
@@ -60,12 +71,12 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
     return (
         <Card
             isRounded
-            isLarge
             isHoverable
             isFullHeight
             key={`policyset-${cardIdx}`}
             style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
         >
+            <ConfirmModal {...modalProps} />
             <CardHeader isToggleRightAligned={true}>
                 <CardActions>
                     <Dropdown
@@ -86,19 +97,65 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                             >
                                 {t('View details')}
                             </DropdownItem>,
-                            <DropdownItem key="edit" isDisabled>
+                            <DropdownItem
+                                key="edit"
+                                onClick={() => {
+                                    history.push(
+                                        NavigationPath.editPolicySet
+                                            .replace(':namespace', policySet.metadata.namespace)
+                                            .replace(':name', policySet.metadata.name)
+                                    )
+                                }}
+                            >
                                 {t('Edit')}
                             </DropdownItem>,
                             <DropdownSeparator key="separator" />,
                             <DropdownItem
                                 key="delete"
                                 onClick={() => {
-                                    deleteResource({
-                                        apiVersion: 'policy.open-cluster-management.io/v1',
-                                        kind: 'PolicySet',
-                                        metadata: {
-                                            name: policySet.metadata.name,
-                                            namespace: policySet.metadata.namespace,
+                                    setCardOpenIdx(undefined)
+                                    setModalProps({
+                                        open: true,
+                                        title: t('Delete policy set'),
+                                        confirm: async () => {
+                                            deleteResource({
+                                                apiVersion: 'policy.open-cluster-management.io/v1',
+                                                kind: 'PolicySet',
+                                                metadata: {
+                                                    name: policySet.metadata.name,
+                                                    namespace: policySet.metadata.namespace,
+                                                },
+                                            })
+                                            setModalProps({
+                                                open: false,
+                                                confirm: () => {},
+                                                cancel: () => {},
+                                                title: '',
+                                                message: '',
+                                            })
+                                        },
+                                        confirmText: 'Delete',
+                                        message: (
+                                            <Trans
+                                                i18nKey={t(
+                                                    'Are you sure you want to delete <emphasis>{{name}}</emphasis>  in namespace <emphasis>{{namespace}}</emphasis>?'
+                                                )}
+                                                components={{ emphasis: <em /> }}
+                                                values={{
+                                                    name: policySet.metadata.name,
+                                                    namespace: policySet.metadata.namespace,
+                                                }}
+                                            />
+                                        ),
+                                        isDanger: true,
+                                        cancel: () => {
+                                            setModalProps({
+                                                open: false,
+                                                confirm: () => {},
+                                                cancel: () => {},
+                                                title: '',
+                                                message: '',
+                                            })
                                         },
                                     })
                                 }}
@@ -112,7 +169,7 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                 <CardTitle>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         {policySet.metadata.name}
-                        <div style={{ fontSize: 'small', opacity: 0.6 }}>
+                        <div style={{ fontSize: 'small', opacity: 0.6, fontWeight: 'normal' }}>
                             {`Namespace: ${policySet.metadata.namespace}`}
                         </div>
                     </div>
@@ -122,7 +179,7 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                 <Stack hasGutter>
                     {policySet.spec.description && <div>{policySet.spec.description ?? ''}</div>}
                     {totalClusterCount > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             <span>
                                 <strong>{totalClusterCount}</strong> clusters
                             </span>
@@ -132,7 +189,7 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                         </div>
                     )}
                     {totalPolicyCount > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             <span>
                                 <strong>{totalPolicyCount}</strong> policies
                             </span>

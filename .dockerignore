@@ -18,7 +18,7 @@
 /frontend/.vscode/
 /frontend/build/
 /frontend/node_modules/
-/frontend/coverage/
+/frontend/src/coverage/
 /frontend/*.md
 
 /.git/
@@ -26,6 +26,7 @@
 /.dockerignore
 /.gitignore
 /Dockerfile
+/Dockerfile.mce.prow
 /Dockerfile.prow
 /console.code-workspace
 /*.md

@@ -214,7 +214,9 @@ export function DiscoveryConfigPageContent(props: {
                                 })
                                 resolve(deletecmd)
                                 toastContext.addAlert({
-                                    title: t('alert.deleted.header'),
+                                    title: t('alert.deleted.header', {
+                                        credentialName: getDiscoveryConfigCredential(discoveryConfig),
+                                    }),
                                     message: t('alert.msg'),
                                     type: 'success',
                                     autoClose: true,
@@ -270,7 +272,9 @@ export function DiscoveryConfigPageContent(props: {
                     const importcmd = await createDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
                     toastContext.addAlert({
-                        title: t('alert.created.header'),
+                        title: t('alert.created.header', {
+                            credentialName: getDiscoveryConfigCredential(discoveryConfig),
+                        }),
                         message: t('alert.msg'),
                         type: 'success',
                         autoClose: true,
@@ -280,7 +284,9 @@ export function DiscoveryConfigPageContent(props: {
                     const importcmd = await replaceDiscoveryConfig(discoveryConfig as DiscoveryConfig).promise
                     resolve(importcmd)
                     toastContext.addAlert({
-                        title: t('alert.updated.header'),
+                        title: t('alert.updated.header', {
+                            credentialName: getDiscoveryConfigCredential(discoveryConfig),
+                        }),
                         message: t('alert.msg'),
                         type: 'success',
                         autoClose: true,
@@ -402,14 +408,14 @@ export function DiscoveryConfigPageContent(props: {
                 isDisabled={editing && !discoveryConfig.metadata.namespace}
                 isRequired
             >
-                {credentials?.map((credential) => (
-                    <SelectOption
-                        key={credential.metadata.namespace + '/' + credential.metadata.name}
-                        value={credential.metadata.namespace + '/' + credential.metadata.name}
-                    >
-                        {credential.metadata.namespace + '/' + credential.metadata.name}
-                    </SelectOption>
-                ))}
+                {credentials?.map((credential) => {
+                    const credentialName = credential.metadata.namespace + '/' + credential.metadata.name
+                    return (
+                        <SelectOption key={credentialName} value={credentialName}>
+                            {credentialName}
+                        </SelectOption>
+                    )
+                })}
             </AcmSelect>
             <Flex style={{ marginTop: '0px' }}>
                 <FlexItem align={{ default: 'alignRight' }}>

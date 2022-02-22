@@ -249,9 +249,6 @@ export default function CreateClusterPage() {
         history.push(NavigationPath.clusters)
     }
 
-    // pause creation to create something else
-    const pauseCreate = () => {}
-
     // setup translation
     const { t } = useTranslation()
     const i18n = (key: string, arg: any) => {
@@ -477,7 +474,7 @@ export default function CreateClusterPage() {
                                 createControl={{
                                     createResource,
                                     cancelCreate,
-                                    pauseCreate,
+                                    pauseCreate: () => {},
                                     creationStatus: creationStatus?.status,
                                     creationMsg: creationStatus?.messages,
                                     resetStatus: () => {

@@ -1,0 +1,13 @@
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: ManagedClusterSet
+metadata:
+    name: cluster-set
+spec: {}
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: ManagedClusterSetBinding
+metadata:
+    name: cluster-set
+    namespace: test
+spec:
+    clusterSet: cluster-set

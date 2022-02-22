@@ -24,7 +24,7 @@ export interface PolicySet {
         ownerReferences?: any[]
     }
     spec: PolicySetSpec
-    status: PolicySetStatus
+    status?: PolicySetStatus
 }
 
 export interface PolicySetSpec {
@@ -41,7 +41,7 @@ export interface PolicySetStatus {
 export interface PolicySetStatusPlacement {
     placement: string
     placementBinding: string
-    placementDecisions: string[]
+    placementDecisions?: string[]
 }
 
 export interface PolicySetStatusResult {

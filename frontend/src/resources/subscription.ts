@@ -31,7 +31,13 @@ export interface Subscription extends IResource {
             version: string
         }
         secondaryChannel?: string
-        timewindow?: any[]
+        timewindow?: {
+            windowtype: string
+            daysofweek: string[]
+            location: string
+            hours: string[]
+            missingData?: any
+        }
     }
     status?: {
         message?: string

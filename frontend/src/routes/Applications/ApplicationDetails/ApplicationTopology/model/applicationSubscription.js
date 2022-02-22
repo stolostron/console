@@ -1,62 +1,63 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, chunk, isEmpty } from 'lodash'
+import { get, isEmpty, includes, cloneDeep } from 'lodash'
 
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
-const EVERYTHING_CHANNEL = '__ALL__/__ALL__//__ALL__/__ALL__'
 const NAMESPACE = 'metadata.namespace'
 
 export const getSubscriptionApplication = (model, app, selectedChannel, recoilStates) => {
     // get subscriptions to channels (pipelines)
     let subscriptionNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/subscriptions"]')
-    let deployableNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/deployables"]')
     if (subscriptionNames && subscriptionNames.length > 0) {
         // filter local hub subscription
-        const filteredSubscriptions = subscriptionNames.split(',')
-        // .filter((subscriptionName) => {
-        //     return !includes(subscriptionName, '-local')
-        // })
-        const allSubscriptions = getResources(filteredSubscriptions, recoilStates.subscriptions)
-
-        // get deployables from the subscription annotation
-        const { subscriptions, allowAllChannel } = getSubscriptionsDeployables(allSubscriptions)
+        const filteredSubscriptions = subscriptionNames.split(',').filter((subscriptionName) => {
+            return !includes(subscriptionName, '-local')
+        })
+        const subscriptions = cloneDeep(getResources(filteredSubscriptions, recoilStates.subscriptions))
 
         // what subscriptions does user want to see
         model.channels = []
         model.subscriptions = []
-        model.allSubscriptions = allSubscriptions
+        model.allSubscriptions = subscriptions
         model.allChannels = []
         model.allClusters = []
+        model.reports = []
 
         // get all the channels and find selected subscription from selected channel
-        const subscr = getAllChannels(subscriptions, model.channels, selectedChannel, allowAllChannel)
+        let selectedSubscriptions = getAllChannels(subscriptions, model.channels, selectedChannel)
+
         // pick subscription based on channel requested by ui or 1st by default
-        model.activeChannel = selectedChannel ? selectedChannel : getChannelName(subscr[0])
+        model.activeChannel = selectedChannel ? selectedChannel : getChannelName(selectedSubscriptions[0])
 
         // get all requested subscriptions
-        const selectedSubscription = evaluateTernaryExpression(
-            selectedChannel === ALL_SUBSCRIPTIONS,
-            allSubscriptions,
-            subscr
-        )
-        const { deployableMap, rulesMap, preHooksMap, postHooksMap } = buildDeployablesMap(
-            evaluateSingleOr(selectedSubscription, subscriptions),
+        selectedSubscriptions = selectedChannel === ALL_SUBSCRIPTIONS ? subscriptions : selectedSubscriptions
+
+        // get reports, hooks and rules
+        const { rulesMap, preHooksMap, postHooksMap } = buildSubscriptionMaps(
+            selectedSubscriptions,
             model.subscriptions
         )
-        // now fetch them
-        getAppDeployables(deployableMap, recoilStates.deployables)
+        selectedSubscriptions.forEach((subscription) => {
+            const report = recoilStates.subscriptionReports.find((report) => {
+                return (
+                    get(report, 'metadata.namespace') === get(subscription, 'metadata.namespace') &&
+                    get(report, 'metadata.name') === get(subscription, 'metadata.name')
+                )
+            })
+            if (report) {
+                subscription.report = report
+                model.reports.push(subscription.report)
+            }
+        })
         getAppHooks(preHooksMap, true)
         getAppHooks(postHooksMap, false)
         getAppRules(rulesMap, model.allClusters, recoilStates.placementRules)
+
         // get all channels
-        getAllAppChannels(model.allChannels, allSubscriptions, recoilStates.channels)
+        getAllAppChannels(model.allChannels, subscriptions, recoilStates.channels)
         // if (includeChannels) {
         //     this.getAppChannels(channelsMap)
         // }
-    } else if (deployableNames && deployableNames.length > 0) {
-        deployableNames = deployableNames.split(',')
-        model.deployables = getResources(deployableNames, 'deployables', 'Deployable')
-        this.getPlacementRules(model.deployables)
     }
     return model
 }
@@ -68,75 +69,22 @@ const getResources = (names, resources) => {
     })
 }
 
-// get deployables from the subscription annotation
-const getSubscriptionsDeployables = (allSubscriptions) => {
-    // if a subscription has lots and lots of deployables, break into smaller subscriptions
-    let allowAllChannel = true
-    const subscriptions = []
-    let allDeployablePaths = 0
-    allSubscriptions.forEach((subscription) => {
-        const deployablePaths = get(
-            subscription,
-            'metadata.annotations["apps.open-cluster-management.io/deployables"]',
-            ''
-        )
-            .split(',')
-            .sort()
-        allDeployablePaths += deployablePaths.length
-
-        if (deployablePaths.length > 20) {
-            const chunks = chunk(deployablePaths, 16)
-            // if last chunk is just one, append to 2nd to last chunk
-            const len = chunks.length - 1
-            if (chunks[len].length === 1) {
-                chunks[len - 1].push(chunks[len][0])
-                chunks.pop()
-            }
-            chunks.forEach((chuck) => {
-                subscriptions.push({ ...subscription, deployablePaths: chuck, isChucked: true })
-            })
-        } else {
-            subscriptions.push({ ...subscription, deployablePaths })
-        }
-    })
-    // hide all subscription option
-    if (allDeployablePaths > 100 || allSubscriptions.length <= 1) {
-        allowAllChannel = false
-    }
-    subscriptions.sort((a, b) => {
-        return get(a, 'metadata.name', '').localeCompare(get(b, 'metadata.name'))
-    })
-    return { subscriptions, allowAllChannel }
-}
-
-const getAllChannels = (subscriptions, channels, selectedChannel, allowAllChannel) => {
-    let selectedSubscription = null
+const getAllChannels = (subscriptions, channels, selectedChannel) => {
+    let selectedSubscriptions = subscriptions.length > 0 ? [subscriptions[0]] : []
     subscriptions.forEach((subscription) => {
         if (get(subscription, 'spec.channel')) {
             const subscriptionChannel = getChannelName(subscription)
             channels.push(subscriptionChannel)
             if (selectedChannel === subscriptionChannel) {
-                selectedSubscription = [subscription]
+                selectedSubscriptions = [subscription]
             }
         }
     })
-    // add an ALL channel?
-    if (allowAllChannel) {
-        if (channels.length > 1) {
-            channels.unshift(EVERYTHING_CHANNEL)
-            // set default selectedSubscription when topology first render
-            if (!selectedSubscription) {
-                selectedSubscription = subscriptions.length > 0 ? [subscriptions[0]] : null
-            }
-        }
-    } else if (!selectedSubscription) {
-        selectedSubscription = subscriptions.length > 0 ? [subscriptions[0]] : null
-    }
     // renders all subscriptions when selected all subscriptions
-    if (allowAllChannel && selectedChannel === '__ALL__/__ALL__//__ALL__/__ALL__') {
-        selectedSubscription = subscriptions
+    if (selectedChannel === '__ALL__/__ALL__//__ALL__/__ALL__') {
+        selectedSubscriptions = subscriptions
     }
-    return selectedSubscription
+    return selectedSubscriptions
 }
 
 const getChannelName = (subscription) => {
@@ -174,9 +122,8 @@ export const getSubChannelName = (paths, isChucked) => {
     return ''
 }
 
-const buildDeployablesMap = (subscriptions, modelSubscriptions) => {
+const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
     const rulesMap = {}
-    const deployableMap = {}
     const channelsMap = {}
     const postHooksMap = {}
     const preHooksMap = {}
@@ -184,22 +131,6 @@ const buildDeployablesMap = (subscriptions, modelSubscriptions) => {
 
     subscriptions.forEach((subscription) => {
         modelSubscriptions.push(subscription)
-        // build up map of what deployables to get for a bulk fetch
-        if (subscription.deployablePaths) {
-            subscription.deployablePaths.forEach((deployablePath) => {
-                if (deployablePath && deployablePath.split('/').length > 0) {
-                    const [deployableNamespace, deployableName] = deployablePath.split('/')
-                    arr = deployableMap[deployableNamespace]
-                    if (!arr) {
-                        deployableMap[deployableNamespace] = []
-                        arr = deployableMap[deployableNamespace]
-                    }
-                    arr.push({ deployableName, subscription })
-                    subscription.deployables = []
-                }
-            })
-            delete subscription.deployablePaths
-        }
 
         // get post hooks
         const postHooks = get(subscription, 'status.ansiblejobs.posthookjobshistory', [])
@@ -258,7 +189,6 @@ const buildDeployablesMap = (subscriptions, modelSubscriptions) => {
             })
     })
     return {
-        deployableMap,
         channelsMap,
         rulesMap,
         preHooksMap,
@@ -311,23 +241,6 @@ const getAllAppChannels = (appAllChannels, allSubscriptions, channels) => {
             })
             .forEach((channel) => {
                 appAllChannels.push(channel)
-            })
-    })
-}
-
-const getAppDeployables = (deployableMap, deployables) => {
-    Object.entries(deployableMap).map(([namespace, values]) => {
-        deployables
-            .filter((deployable) => {
-                return get(deployable, 'metadata.namespace') === namespace
-            })
-            .forEach((deployable) => {
-                const name = get(deployable, 'metadata.name')
-                values.forEach(({ deployableName, subscription }) => {
-                    if (name === deployableName) {
-                        subscription.deployables.push(deployable)
-                    }
-                })
             })
     })
 }
@@ -720,19 +633,3 @@ const longestCommonSubstring = (str1, str2) => {
 //   const transport = _.get(route, 'spec.tls') ? 'https' : 'http';
 //   return `${transport}://${hostName}`;
 // }
-
-const evaluateSingleOr = (operand1, operand2) => operand1 || operand2
-
-const evaluateTernaryExpression = (condition, returnVal1, returnVal2) => {
-    if (condition) {
-        return returnVal1
-    }
-    return returnVal2
-}
-
-// export const filterByName = (names, items) => items.filter((item) => names.find((name) => name === item.metadata.name));
-
-// export const filterByNameNamespace = (names, items) => items.filter(({ metadata }) => names.find((name) => {
-//   const path = name.split('/');
-//   return metadata && path.length === 2 && path[1] === metadata.name && path[0] === metadata.namespace;
-// }));

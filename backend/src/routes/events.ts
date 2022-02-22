@@ -51,16 +51,17 @@ const resourceCache: {
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
 
 const definitions: IWatchOptions[] = [
-    { kind: 'ClusterManagementAddon', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
-    { kind: 'ManagedClusterAddon', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
+    { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
+    { kind: 'ManagedClusterAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
     { kind: 'Agent', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'InfraEnv', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'Application', apiVersion: 'app.k8s.io/v1beta1' },
     { kind: 'Channel', apiVersion: 'apps.open-cluster-management.io/v1' },
-    { kind: 'Deployable', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'GitOpsCluster', apiVersion: 'apps.open-cluster-management.io/v1beta1' },
+    { kind: 'HelmRelease', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'PlacementRule', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'Subscription', apiVersion: 'apps.open-cluster-management.io/v1' },
+    { kind: 'SubscriptionReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
     { kind: 'AppProject', apiVersion: 'argoproj.io/v1alpha1' },
     { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1' },
     { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1' },
@@ -199,7 +200,14 @@ async function listKubernetesObjects(options: IWatchOptions) {
         if (!_continue) break
     }
 
-    logger.info({ msg: 'list', ...options, count: items.length })
+    logger.info({
+        msg: 'list',
+        kind: options.kind,
+        labels: options.labelSelector,
+        fields: options.fieldSelector,
+        apiVersion: options.apiVersion,
+        count: items.length,
+    })
 
     items = items.map((resource) => {
         resource.kind = options.kind
@@ -235,7 +243,13 @@ async function listKubernetesObjects(options: IWatchOptions) {
 async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: string) {
     const serviceAcccountToken = getServiceAcccountToken()
     while (!stopping) {
-        logger.debug({ msg: 'watch', ...options })
+        logger.debug({
+            msg: 'watch',
+            kind: options.kind,
+            labels: options.labelSelector,
+            fields: options.fieldSelector,
+            apiVersion: options.apiVersion,
+        })
         try {
             const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
             const request = got.stream(url, {
@@ -265,14 +279,32 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
 
                         switch (watchEvent.type) {
                             case 'ADDED':
-                            case 'MODIFIED':
-                            case 'DELETED':
                                 logger.debug({
-                                    msg: watchEvent.type.toLowerCase(),
+                                    msg: 'added',
                                     kind: watchEvent.object.kind,
-                                    apiVersion: watchEvent.object.apiVersion,
                                     name: watchEvent.object.metadata.name,
                                     namespace: watchEvent.object.metadata.namespace,
+                                    apiVersion: watchEvent.object.apiVersion,
+                                })
+                                resourceVersion = watchEvent.object.metadata.resourceVersion
+                                break
+                            case 'MODIFIED':
+                                logger.debug({
+                                    msg: 'modify',
+                                    kind: watchEvent.object.kind,
+                                    name: watchEvent.object.metadata.name,
+                                    namespace: watchEvent.object.metadata.namespace,
+                                    apiVersion: watchEvent.object.apiVersion,
+                                })
+                                resourceVersion = watchEvent.object.metadata.resourceVersion
+                                break
+                            case 'DELETED':
+                                logger.debug({
+                                    msg: 'delete',
+                                    kind: watchEvent.object.kind,
+                                    name: watchEvent.object.metadata.name,
+                                    namespace: watchEvent.object.metadata.namespace,
+                                    apiVersion: watchEvent.object.apiVersion,
                                 })
                                 resourceVersion = watchEvent.object.metadata.resourceVersion
                                 break
@@ -291,7 +323,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                                     msg: 'watch error',
                                     kind: options.kind,
                                     apiVersion: options.apiVersion,
-                                    error: (watchEvent as unknown as { message: string }).message,
+                                    event: watchEvent,
                                 })
                                 break
                         }
@@ -533,5 +565,10 @@ export function stopWatching(): void {
 }
 
 function pruneResource(resource: IResource) {
-    delete resource.metadata.managedFields
+    switch (resource.kind) {
+        case 'Policy':
+            break
+        default:
+            delete resource.metadata.managedFields
+    }
 }

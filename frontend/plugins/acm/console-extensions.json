@@ -1,0 +1,96 @@
+[
+    {
+        "type": "console.navigation/section",
+        "properties": {
+            "perspective": "acm",
+            "id": "acm-home",
+            "name": "%plugin__acm~Home%",
+            "insertBefore": "mce-infrastructure"
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-home",
+            "id": "acm-welcome",
+            "name": "%plugin__acm~Welcome%",
+            "href": "/multicloud/home/welcome"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/home/welcome",
+            "component": { "$codeRef": "welcome.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-home",
+            "id": "acm-overview",
+            "name": "%plugin__acm~Overview%",
+            "href": "/multicloud/home/overview"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/home/overview",
+            "component": { "$codeRef": "overview.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "section": "acm-home",
+            "id": "acm-search",
+            "name": "%plugin__acm~Search%",
+            "href": "/multicloud/home/search"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/home/search",
+            "component": { "$codeRef": "search.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "id": "acm-applications",
+            "name": "%plugin__acm~Applications%",
+            "href": "/multicloud/applications",
+            "insertBefore": "mce-credentials"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/applications",
+            "component": { "$codeRef": "applications.default" }
+        }
+    },
+    {
+        "type": "console.navigation/href",
+        "properties": {
+            "perspective": "acm",
+            "id": "acm-governance",
+            "name": "%plugin__acm~Governance%",
+            "href": "/multicloud/governance",
+            "insertBefore": "mce-credentials"
+        }
+    },
+    {
+        "type": "console.page/route",
+        "properties": {
+            "path": "/multicloud/governance",
+            "component": { "$codeRef": "governance.default" }
+        }
+    }
+]

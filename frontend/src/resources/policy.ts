@@ -41,15 +41,17 @@ export interface Policy {
         remediationAction: string
     }
     status?: {
-        compliant?: string
-        details?: {
-            compliant: string
-            history?: { eventName: string; lastTimestamp: string; message: string }[]
-            templateMeta: { creationTimestamp?: null; name: string }
-        }[]
-        placement?: { placementBinding: string; placementRule: string }[]
+        compliant?: 'Compliant' | 'NonCompliant'
+        details?: PolicyStatusDetails[]
+        placement?: { placementBinding: string; placementRule?: string; placement?: string; policySet?: string }[]
         status?: { clustername: string; clusternamespace: string; compliant: string }[]
     }
+}
+
+export interface PolicyStatusDetails {
+    compliant: string
+    history?: { eventName: string; lastTimestamp: string; message: string }[]
+    templateMeta: { creationTimestamp?: null; name: string }
 }
 
 export enum PolicySeverity {

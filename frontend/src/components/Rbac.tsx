@@ -20,7 +20,7 @@ type RbacDropdownProps<T = unknown> = {
 type Actions<T = unknown> = {
     id: string
     text: string
-    isDisabled?: boolean
+    isAriaDisabled?: boolean
     tooltip?: string
     click: (item: T) => void
     rbac?: ResourceAttributes[]
@@ -53,11 +53,11 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
                                     return await createSubjectAccessReview(rbac).promise
                                 })
                             )
-                            const isDisabled = !results.every((result) => result?.status?.allowed)
+                            const isAriaDisabled = !results.every((result) => result?.status?.allowed)
                             return {
                                 ...action,
-                                isDisabled,
-                                tooltip: isDisabled ? t('rbac.unauthorized') : '',
+                                isAriaDisabled: isAriaDisabled,
+                                tooltip: isAriaDisabled ? t('rbac.unauthorized') : '',
                             }
                         } else {
                             return action
@@ -81,7 +81,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
             text={props.text}
             onToggle={onToggle}
             isDisabled={props.isDisabled}
-            tooltip={props.tooltip}
+            tooltip={props.isDisabled ? props.tooltip : undefined}
         />
     )
 }

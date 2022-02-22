@@ -15,7 +15,7 @@ export default function Topology(props: {
         isReloading: boolean | undefined
     }
     channelControl: {
-        allChannels: [] | undefined
+        allChannels: [string] | undefined
         activeChannel: string | undefined
         changeTheChannel: (fetchChannel: string) => void
     }

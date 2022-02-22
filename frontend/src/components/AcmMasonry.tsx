@@ -3,7 +3,7 @@ import { Stack, StackItem } from '@patternfly/react-core'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Children, ReactNode, useMemo, useRef, useState } from 'react'
 
-export function AcmMasonry(props: { children: ReactNode; minSize?: number }) {
+export function AcmMasonry(props: { children: ReactNode; minSize?: number; maxColumns?: number }) {
     const minSize = props.minSize ?? 700
     const ref = useRef(null)
     const [columnCount, setColumnCount] = useState(1)
@@ -13,15 +13,16 @@ export function AcmMasonry(props: { children: ReactNode; minSize?: number }) {
         while ((columns + 1) * minSize + columns * 16 < entry.contentRect.width) {
             columns++
         }
+        if (props.maxColumns && columns > props.maxColumns) columns = props.maxColumns
         setColumnCount(columns)
     })
 
     const columns = useMemo(() => {
+        if (columnCount === 0) return []
         const columns: ReactNode[][] = new Array(columnCount).fill([]).map(() => [])
         Children.forEach(props.children, (child, index) => {
             columns[index % columnCount].push(child)
         })
-        console.log(columns)
         return columns
     }, [columnCount, props.children])
 

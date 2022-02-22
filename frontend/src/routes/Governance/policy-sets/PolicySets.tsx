@@ -23,6 +23,7 @@ import CardViewToolbarSearch from './components/CardViewToolbarSearch'
 import PolicySetCard from './components/PolicySetCard'
 
 function clusterViolationFilterFn(policySet: PolicySet) {
+    if (!policySet.status) return false
     return (
         policySet.status.results.filter(
             (result) => result.clusters && result.clusters?.some((cluster) => cluster.compliant === 'NonCompliant')
@@ -30,19 +31,23 @@ function clusterViolationFilterFn(policySet: PolicySet) {
     )
 }
 function clusterNonViolationFilterFn(policySet: PolicySet) {
+    if (!policySet.status) return false
     return policySet.status.results.every((result) => {
         return (result.clusters && result.clusters.every((cluster) => cluster.compliant !== 'NonCompliant')) ?? false
     })
 }
 function policyViolationFilterFn(policySet: PolicySet) {
+    if (!policySet.status) return false
     return policySet.status.results.filter((result) => result.compliant === 'NonCompliant').length > 0
 }
 function policyNonViolationFilterFn(policySet: PolicySet) {
+    if (!policySet.status) return false
     return policySet.status.results.every((result) => {
         return (result && result.compliant && result.compliant !== 'NonCompliant') ?? false
     })
 }
 function policyUnknownFilterFn(policySet: PolicySet) {
+    if (!policySet.status) return false
     return policySet.status.results.filter((result) => !result.compliant).length > 0
 }
 
@@ -153,7 +158,18 @@ export default function PolicySetsPage() {
             }
             return true
         })
-        setFilteredPolicySets(filteredBySearch)
+        setFilteredPolicySets(
+            // Always keep the Policysets sorted alphabetically
+            filteredBySearch.sort((a, b) => {
+                if (a.metadata.name < b.metadata.name) {
+                    return -1
+                }
+                if (a.metadata.name > b.metadata.name) {
+                    return 1
+                }
+                return 0
+            })
+        )
     }, [searchFilter, violationFilters, policySets])
 
     const actualPage = useMemo<number>(() => {
@@ -233,7 +249,7 @@ export default function PolicySetsPage() {
                 {filteredPolicySets.length === 0 ? (
                     <AcmEmptyState title={t('No resources match the current filter')} showIcon={true} />
                 ) : (
-                    <PageSection isFilled>
+                    <PageSection isFilled isWidthLimited>
                         <AcmMasonry minSize={400}>
                             {/* Need to compute all cards here then slice. The PolicySet card render uses usePolicySetSummary which includes a react hook.
                         So paging to a page with less cards than the previous causes a react hook error if rendered in time. */}

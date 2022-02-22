@@ -8,7 +8,7 @@ import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 import webpack from 'webpack'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 
-module.exports = function (_env: any, argv: { hot?: boolean; mode: string | undefined }) {
+module.exports = function (env: any, argv: { hot?: boolean; mode: string | undefined }) {
     const isProduction = argv.mode === 'production' || argv.mode === undefined
     const isDevelopment = !isProduction
 
@@ -62,7 +62,8 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 'process.env.NODE_ENV': JSON.stringify('production'),
                 'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
                 'process.env.MODE': JSON.stringify('plugin'),
-                'process.env.PLUGIN_PROXY_PATH': JSON.stringify('/api/proxy/plugin/acm-plugin/console'),
+                'process.env.PLUGIN_PROXY_PATH': JSON.stringify(`/api/proxy/plugin/${env.plugin}/console`),
+                'process.env.TRANSLATION_NAMESPACE': JSON.stringify(`plugin__${env.plugin}`)
             }) as unknown as webpack.WebpackPluginInstance,
             new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
             new MonacoWebpackPlugin({ languages: ['yaml'] }),
@@ -74,17 +75,21 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
             new CopyPlugin({
                 patterns: [
                     {
-                        from: './public/locales/*/plugin__acm-plugin.json',
+                        from: `../../public/locales/*/translation.json`,
                         to: ({ absoluteFilename }) => {
-                            const {
-                                groups: { locale },
-                            } = absoluteFilename.match(/locales\/(?<locale>.+)\/plugin__acm-plugin.json/)
-                            return `locales/${locale}/plugin__acm-plugin.json`
+                            const { groups: { locale } } = absoluteFilename.match(/locales\/(?<locale>.+)\/translation.json/)
+                            return `locales/${locale}/plugin__${env.plugin}.json`
                         },
                     },
                 ],
             }),
         ].filter(Boolean) as webpack.WebpackPluginInstance[],
+        output: {
+            assetModuleFilename: 'assets/[name].[contenthash:8][ext][query]',
+            filename: '[name].[contenthash:8].js',
+            chunkFilename: '[name].[contenthash:8].js',
+            clean: true
+        },
         optimization: {
             minimizer: [
                 `...`,

@@ -9,11 +9,13 @@
 .pnp.js
 
 # testing
-/coverage
+/src/coverage
 test-report.xml
 
 # production
 /build
+/dist
+/plugins/**/package.json
 
 # misc
 .DS_Store
@@ -25,5 +27,3 @@ test-report.xml
 yalc.lock
 
 npm-debug.log*
-
-/dist

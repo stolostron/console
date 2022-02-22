@@ -62,16 +62,18 @@ export function createResource<Resource extends IResource, ResultType = Resource
     return postRequest<Resource, ResultType>(url, resource)
 }
 
-export async function createResources(resources: IResource[]): Promise<string | undefined> {
-    if (!Array.isArray(resources)) return 'Error - resources are not an array'
+export async function createResources(resources: IResource[]): Promise<void> {
+    if (!Array.isArray(resources)) throw new Error('Error - resources are not an array')
     for (const resource of resources) {
         try {
             const existingResource = await getResource(resource).promise
             if (existingResource)
-                return 'Resource of kind {kind} with name {name} in namespace {namespace} already exists.'
-                    .replace('{kind}', resource.kind)
-                    .replace('{name}', resource.metadata?.name ?? '')
-                    .replace('{namespace}', resource.metadata?.namespace ?? '')
+                throw new Error(
+                    'Resource of kind {kind} with name {name} in namespace {namespace} already exists.'
+                        .replace('{kind}', resource.kind)
+                        .replace('{name}', resource.metadata?.name ?? '')
+                        .replace('{namespace}', resource.metadata?.namespace ?? '')
+                )
         } catch (err) {
             // no nothing
         }
@@ -86,43 +88,13 @@ export async function createResources(resources: IResource[]): Promise<string | 
         for (const createdResource of createdResources) {
             deleteResource(createdResource).promise.catch(noop)
         }
-        if (err instanceof Error) {
-            return err.message
-        } else {
-            return 'unknown error'
-        }
+        throw err
     }
 }
 
-export async function createOrUpdateResources(resources: IResource[]): Promise<string | undefined> {
-    if (!Array.isArray(resources)) return 'Error - resources are not an array'
-    const createdResources: IResource[] = []
-    try {
-        for (const resource of resources) {
-            let isExisting: boolean
-            try {
-                await getResource(resource).promise
-                isExisting = true
-            } catch (err) {
-                isExisting = false
-            }
-
-            if (isExisting) {
-                await replaceResource(resource).promise
-            } else {
-                const createdResource = await createResource(resource).promise
-                createdResources.push(createdResource)
-            }
-        }
-    } catch (err) {
-        for (const createdResource of createdResources) {
-            deleteResource(createdResource).promise.catch(noop)
-        }
-        if (err instanceof Error) {
-            return err.message
-        } else {
-            return 'unknown error'
-        }
+export async function updateResources(resources: IResource[]): Promise<void> {
+    for (const resource of resources) {
+        await replaceResource(resource).promise
     }
 }
 
@@ -483,18 +455,22 @@ export async function fetchRetry<T>(options: {
 
         if (response) {
             let responseData: T | string | undefined = undefined
-            // Use includes() to identify text/plain because the header can have more text (ex: charset=..)
-            if (!response.headers.get('content-type')?.includes('text/plain')) {
-                try {
-                    responseData = (await response.json()) as T
-                } catch {
-                    console.error('Error getting resource json response.')
-                }
-            } else {
+            if (
+                // Logs query sometimes loses response Content-Type header - so specifically looking for that url as well
+                response.headers.get('content-type')?.includes('text/plain') ||
+                (response.url.includes('/apis/proxy.open-cluster-management.io/v1beta1') &&
+                    response.url.endsWith('tailLines=1000'))
+            ) {
                 try {
                     responseData = await response.text()
                 } catch {
                     console.error('Error getting resource text response.')
+                }
+            } else {
+                try {
+                    responseData = (await response.json()) as T
+                } catch {
+                    console.error('Error getting resource json response.')
                 }
             }
 
@@ -537,7 +513,7 @@ export async function fetchRetry<T>(options: {
                     }
                     throw new ResourceError('Unauthorized', ResourceErrorCode.Unauthorized)
                 case 404:
-                    throw new ResourceError('Unauthorized', ResourceErrorCode.NotFound)
+                    throw new ResourceError('Not found', ResourceErrorCode.NotFound)
                 case 408: // Request Timeout
                 case 429: // Too Many Requests
                 case 500: // Internal Server Error

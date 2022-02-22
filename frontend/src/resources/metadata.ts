@@ -12,4 +12,5 @@ export interface Metadata {
     selfLink?: string
     finalizers?: string[]
     ownerReferences?: any[]
+    managedFields?: any[]
 }

@@ -4,14 +4,14 @@ import { AcmPage, AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem 
 import { Fragment, ReactNode, Suspense, useEffect, useState } from 'react'
 import { Link, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState, policiesState } from '../../atoms'
+import { acmRouteState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { PageContext } from '../Infrastructure/Clusters/ClustersPage'
+import GovernanceClustersPage from './clusters/GovernanceClustersPage'
 import GovernanceOverview from './overview/Overview'
 import PoliciesPage from './policies/Policies'
 import PolicySetsPage from './policy-sets/PolicySets'
-import { useGovernanceData } from './useGovernanceData'
 
 export default function GovernancePage() {
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
@@ -20,13 +20,6 @@ export default function GovernancePage() {
 
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Governance), [setRoute])
-
-    const [policies] = useRecoilState(policiesState)
-    const governanceData = useGovernanceData(
-        policies.filter(
-            (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
-        )
-    )
 
     const isOverview = location.pathname == NavigationPath.governance
 
@@ -46,8 +39,6 @@ export default function GovernancePage() {
                             <AcmSecondaryNavItem isActive={isOverview}>
                                 <Link to={NavigationPath.governance}>{t('Overview')}</Link>
                             </AcmSecondaryNavItem>
-                            {/* {policies.length > 0 || policysets.length > 0 ? (
-                                <> */}
                             <AcmSecondaryNavItem
                                 isActive={!isOverview && location.pathname.startsWith(NavigationPath.policySets)}
                             >
@@ -58,8 +49,13 @@ export default function GovernancePage() {
                             >
                                 <Link to={NavigationPath.policies}>{t('Policies')}</Link>
                             </AcmSecondaryNavItem>
-                            {/* </>
-                            ) : null} */}
+                            <AcmSecondaryNavItem
+                                isActive={
+                                    !isOverview && location.pathname.startsWith(NavigationPath.governanceClusters)
+                                }
+                            >
+                                <Link to={NavigationPath.governanceClusters}>{t('Clusters')}</Link>
+                            </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
                     actions={actions}
@@ -69,16 +65,13 @@ export default function GovernancePage() {
             <PageContext.Provider value={{ actions, setActions }}>
                 <Suspense fallback={<Fragment />}>
                     <Switch>
-                        <Route
-                            exact
-                            path={NavigationPath.governance}
-                            render={() => <GovernanceOverview governanceData={governanceData} />}
-                        />
+                        <Route exact path={NavigationPath.governance} render={() => <GovernanceOverview />} />
                         <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
+                        <Route exact path={NavigationPath.policies} render={() => <PoliciesPage />} />
                         <Route
                             exact
-                            path={NavigationPath.policies}
-                            render={() => <PoliciesPage governanceData={governanceData} />}
+                            path={NavigationPath.governanceClusters}
+                            render={() => <GovernanceClustersPage />}
                         />
                     </Switch>
                 </Suspense>

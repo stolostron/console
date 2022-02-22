@@ -142,9 +142,6 @@ export function CreateClusterPool() {
         history.push(NavigationPath.clusterPools)
     }
 
-    // pause creation to create something else
-    const pauseCreate = () => {}
-
     // setup translation
     const { t } = useTranslation()
     const i18n = (key: any, arg: any) => {
@@ -219,7 +216,7 @@ export function CreateClusterPool() {
             createControl={{
                 createResource,
                 cancelCreate,
-                pauseCreate,
+                pauseCreate: () => {},
                 creationStatus: creationStatus?.status,
                 creationMsg: creationStatus?.messages,
             }}

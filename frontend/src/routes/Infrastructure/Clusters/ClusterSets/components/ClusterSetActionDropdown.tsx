@@ -50,7 +50,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
             id: 'edit-bindings',
             text: t('set.edit-bindings'),
             click: () => setShowManagedClusterSetBindingModal(true),
-            isDisabled: true,
+            isAriaDisabled: true,
             rbac: [rbacCreate(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name, 'bind')],
         },
         {
@@ -59,7 +59,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
             click: (managedClusterSet: ManagedClusterSet) => {
                 history.push(NavigationPath.clusterSetManage.replace(':id', managedClusterSet.metadata.name!))
             },
-            isDisabled: true,
+            isAriaDisabled: true,
             rbac: [rbacCreate(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name, 'join')],
         },
         {
@@ -85,7 +85,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
                     isValidError: errorIsNot([ResourceErrorCode.NotFound]),
                 })
             },
-            isDisabled: true,
+            isAriaDisabled: true,
             rbac: [rbacDelete(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name)],
         },
     ]

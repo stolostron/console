@@ -61,7 +61,7 @@ export default function CardViewToolbarFilter(props: {
                 isChecked={selectedFilters.indexOf('cluster-violation') > -1}
             >
                 <div className={classes.filterOption}>
-                    {'Violation'}
+                    {'With violation'}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
                         {
                             policySets.filter((policySet: PolicySet) => {
@@ -85,7 +85,7 @@ export default function CardViewToolbarFilter(props: {
                 isChecked={selectedFilters.indexOf('cluster-no-violation') > -1}
             >
                 <div className={classes.filterOption}>
-                    {'No violation'}
+                    {'Without violation'}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
                         {
                             policySets.filter((policySet: PolicySet) => {
@@ -116,7 +116,7 @@ export default function CardViewToolbarFilter(props: {
                 isChecked={selectedFilters.indexOf('policy-violation') > -1}
             >
                 <div className={classes.filterOption}>
-                    {'Violation'}
+                    {'With violation'}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
                         {
                             policySets.filter((policySet: PolicySet) => {
@@ -139,7 +139,7 @@ export default function CardViewToolbarFilter(props: {
                 isChecked={selectedFilters.indexOf('policy-no-violation') > -1}
             >
                 <div className={classes.filterOption}>
-                    {'No violation'}
+                    {'Without violation'}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
                         {
                             policySets.filter((policySet: PolicySet) => {

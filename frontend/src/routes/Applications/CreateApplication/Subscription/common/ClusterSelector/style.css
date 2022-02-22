@@ -1,0 +1,10 @@
+.add-label-btn {
+    width: 190px;
+    height: 40px;
+    padding: 5px;
+    text-align: center;
+    cursor: pointer;
+}
+.btn-disabled {
+    cursor: not-allowed !important;
+}
