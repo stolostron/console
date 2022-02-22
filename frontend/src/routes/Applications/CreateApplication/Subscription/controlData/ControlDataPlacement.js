@@ -198,18 +198,17 @@ export const reverseOnline = (control, templateObject) => {
     }
 }
 
-export const summarizeOnline = (control, globalControlData, summary) => {
+export const summarizeOnline = (control, globalControlData, summary, i18n) => {
     const localClusterCheckboxControl = control.groupControlData.find(({ id }) => id === localClusterCheckbox)
     const onlineClusterCheckboxControl = control.groupControlData.find(({ id }) => id === onlineClusterCheckbox)
     const clusterSelectorControl = control.groupControlData.find(({ id }) => id === 'clusterSelector')
 
     if (_.get(localClusterCheckboxControl, 'active', false) === true) {
-        summary.push('edit.app.localCluster.summary')
-        // TODO - need to pass i18n/t to summarizeOnline
+        summary.push(i18n('edit.app.localCluster.summary'))
     } else if (_.get(onlineClusterCheckboxControl, 'active', false) === true) {
-        summary.push('edit.app.onlineClusters.summary')
+        summary.push(i18n('edit.app.onlineClusters.summary'))
     } else if (_.get(clusterSelectorControl, 'active.mode', false) === true) {
-        summary.push('edit.app.labelClusters.summary')
+        summary.push(i18n('edit.app.labelClusters.summary'))
     }
 }
 
@@ -310,9 +309,9 @@ const placementData = async () => [
             'Subscription[0].spec.placement.local',
             'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
         ],
-        summarize: (control, controlData, summary) => {
+        summarize: (control, controlData, summary, i18n) => {
             if (control.active) {
-                summary.push('edit.app.localCluster.summary')
+                summary.push(i18n('edit.app.localCluster.summary'))
             }
         },
     },
