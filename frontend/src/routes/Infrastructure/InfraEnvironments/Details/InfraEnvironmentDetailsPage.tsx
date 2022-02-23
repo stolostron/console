@@ -13,13 +13,8 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import {
-    acmRouteState,
-    agentsState,
-    bareMetalHostsState,
-    configMapsState,
-    infraEnvironmentsState,
-} from '../../../../atoms'
+
+import { acmRouteState, agentsState, bareMetalHostsState, configMapsState, infraEnvironmentsState, infrastructuresState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -31,6 +26,7 @@ import {
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
+import { isBMPlatform } from '../utils'
 
 const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY, getAgentsHostsNames } = CIM
 
@@ -44,8 +40,8 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
     const [isoModalOpen, setISOModalOpen] = useState(false)
 
-    const [infraEnvironments, agents, bareMetalHosts, configMaps] = useRecoilValue(
-        waitForAll([infraEnvironmentsState, agentsState, bareMetalHostsState, configMapsState])
+    const [infraEnvironments, agents, bareMetalHosts, configMaps, infrastructures] = useRecoilValue(
+        waitForAll([infraEnvironmentsState, agentsState, bareMetalHostsState, configMapsState, infrastructuresState])
     )
 
     const infraEnv = infraEnvironments.find(
@@ -170,6 +166,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 onCreateBMH={getOnCreateBMH(infraEnv)}
                 onSaveISOParams={getOnSaveISOParams(infraEnv)}
                 usedHostnames={usedHostnames}
+                isBMPlatform={isBMPlatform(infrastructures[0])}
             />
         </>
     )

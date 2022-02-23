@@ -4,6 +4,9 @@ import { useEffect, useState, useMemo } from 'react'
 import { RouteComponentProps, StaticContext, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { ClusterDeploymentWizardStepsType } from 'openshift-assisted-ui-lib/cim'
+import { PageSection } from '@patternfly/react-core'
+import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolostron/ui-components'
 
 import { patchResource } from '../../../../../../resources'
 import { agentsState, clusterImageSetsState, configMapsState } from '../../../../../../atoms'
@@ -29,14 +32,11 @@ import {
     useNMStatesOfNamespace,
     fetchInfraEnv,
 } from '../../CreateCluster/components/assisted-installer/utils'
-
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { ClusterDeploymentWizardStepsType } from 'openshift-assisted-ui-lib/cim'
-import { PageSection } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolostron/ui-components'
+import { isBMPlatform } from '../../../../InfraEnvironments/utils'
 
 const {
     ClusterDeploymentWizard,
@@ -234,6 +234,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                 infraEnv={infraEnv}
                                 initialStep={locationState?.initialStep}
                                 fetchInfraEnv={fetchInfraEnv}
+                                isBMPlatform={isBMPlatform(infraEnv)}
                             />
                             <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
                         </FeatureGateContextProvider>
