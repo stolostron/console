@@ -3,7 +3,7 @@ import { Redirect, Route, Switch } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
 import ApplicationsPage from './ApplicationsPage'
 import { CreateApplicationArgo } from './CreateApplication/CreateApplicationArgo'
-import CreateSubscriptionApplicationPage from './CreateApplication/Subscription/SubscriptionApplication'
+import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 import ApplicationsDetailsPage from './ApplicationDetails/ApplicationDetails'
 
 export default function Applications() {

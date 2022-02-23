@@ -1,21 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useState, useContext, useEffect } from 'react'
-import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '@stolostron/ui-components'
+import {
+    AcmPage,
+    AcmPageContent,
+    AcmPageHeader,
+    //  AcmErrorBoundary,
+    AcmToastContext,
+} from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { NavigationPath } from '../../../../NavigationPath'
+import { NavigationPath } from '../../NavigationPath'
 import Handlebars from 'handlebars'
-import { useTranslation } from '../../../../lib/acm-i18next'
+import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
-import { ApplicationKind, createResources as createKubeResources, IResource } from '../../../../resources'
-import './style.css'
+import { ApplicationKind, createResources as createKubeResources, IResource } from '../../resources'
 
 // Template Data
-import { controlData as getControlData } from './controlData/ControlData'
-import createTemplate from './templates/template.hbs'
-import gitTemplate from './templates/templateGit.hbs'
-import helmTemplate from './templates/templateHelm.hbs'
-import ObjTemplate from './templates/templateObjectStore.hbs'
-import placementTemplate from './templates/templatePlacement.hbs'
+import { controlData as getControlData } from './CreateApplication/Subscription/controlData/ControlData'
+import createTemplate from './CreateApplication/Subscription/templates/template.hbs'
+import gitTemplate from './CreateApplication/Subscription/templates/templateGit.hbs'
+import helmTemplate from './CreateApplication/Subscription/templates/templateHelm.hbs'
+import ObjTemplate from './CreateApplication/Subscription/templates/templateObjectStore.hbs'
+import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
 
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
@@ -49,9 +54,9 @@ export default function CreateSubscriptionApplicationPage() {
     )
 
     const portals = (
-        <div className="portal-controls">
-            <div id={Portals.cancelBtn} />
-            <div id={Portals.createBtn} />
+        <div className="portal-controls" style={{ display: 'flex' }}>
+            <div style={{ marginLeft: '16px' }} id={Portals.cancelBtn} />
+            <div style={{ marginLeft: '16px' }} id={Portals.createBtn} />
         </div>
     )
 
@@ -66,13 +71,13 @@ export default function CreateSubscriptionApplicationPage() {
                 />
             }
         >
-            <AcmErrorBoundary>
-                <AcmPageContent id="create-cluster-pool">
-                    <PageSection className="pf-c-content" variant="light">
-                        <CreateSubscriptionApplication />
-                    </PageSection>
-                </AcmPageContent>
-            </AcmErrorBoundary>
+            {/* <AcmErrorBoundary> */}
+            <AcmPageContent id="create-cluster-pool">
+                <PageSection className="pf-c-content" variant="light">
+                    <CreateSubscriptionApplication />
+                </PageSection>
+            </AcmPageContent>
+            {/* </AcmErrorBoundary> */}
         </AcmPage>
     )
 }

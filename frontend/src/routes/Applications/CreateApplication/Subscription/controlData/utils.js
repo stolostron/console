@@ -379,23 +379,18 @@ export const setAvailableRules = (control, result) => {
 export const setAvailableNSSpecs = (control, result) => {
     const { loading } = result
     const { data } = result
-    const namespaces = data
     control.isLoading = false
-    const error = namespaces ? null : result.error
+    const error = data ? null : result.error
     if (!control.available) {
         control.available = []
         control.availableMap = {}
     }
-    if (control.available.length === 0 && (error || namespaces)) {
+    if (control.available.length === 0 && (error || data)) {
         if (error) {
             control.isFailed = true
-        } else if (namespaces) {
+        } else if (data) {
             control.isLoaded = true
-            namespaces.forEach((item) => {
-                const { metadata } = item
-                const name = metadata?.name
-                control.available.push(name)
-            })
+            control.available = data
             control.available.sort()
         }
     } else {

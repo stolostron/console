@@ -9,12 +9,14 @@
 // Copyright (c) 2020 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
+import React from 'react'
 import gitChannelData from './ControlDataGit'
 import helmReleaseChannelData from './ControlDataHelm'
 import objectstoreChannelData from './ControlDataObjectStore'
 // import otherChannelData from './ControlDataOther'
 import { setAvailableNSSpecs, updateControlsForNS, getSharedSubscriptionWarning } from './utils'
-
+import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'
+import { NamespaceDefinition } from '../../../../../resources'
 import { discoverGroupsFromSource, shiftTemplateObject } from '../transformers/transform-resources-to-controls'
 import { listNamespaces } from '../../../../../resources'
 import { VALID_DNS_LABEL } from 'temptifly'
@@ -25,7 +27,14 @@ import ObjectStore from '../../logos/ObjectStore.svg'
 export const loadExistingNamespaces = () => {
     return {
         query: () => {
-            return listNamespaces().promise
+            return new Promise(async (resolve, reject) => {
+                const namespaces = await listNamespaces().promise
+                const authorizedNamespaces = await getAuthorizedNamespaces(
+                    [rbacCreate(NamespaceDefinition)],
+                    namespaces
+                )
+                resolve(authorizedNamespaces)
+            })
         },
         loadingDesc: 'Loading namespaces...',
         setAvailable: setAvailableNSSpecs.bind(null),
