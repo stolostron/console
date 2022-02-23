@@ -9,7 +9,7 @@
 .pnp.js
 
 # testing
-/src/coverage
+/coverage
 test-report.xml
 
 # production
