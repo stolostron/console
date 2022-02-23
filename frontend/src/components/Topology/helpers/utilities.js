@@ -40,7 +40,11 @@ function stylesFunction(selection, map) {
 }
 
 function stylesObject(selection, map, priority) {
-    for (const name in map) selection.style(name, map[name], priority)
+    for (const name in map) {
+        if (Object.prototype.hasOwnProperty.call(map, name)) {
+            selection.style(name, map[name], priority)
+        }
+    }
     return selection
 }
 
