@@ -3,36 +3,13 @@
 // Copyright Contributors to the Open Cluster Management project
 import { makeStyles } from '@material-ui/styles'
 import { PageSection } from '@patternfly/react-core'
-import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
 import { AcmAlert, AcmButton, AcmLoadingPage } from '@stolostron/ui-components'
 import jsYaml from 'js-yaml'
-import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { useEffect, useState } from 'react'
-import { monaco } from 'react-monaco-editor'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
-
-monaco.editor.defineTheme('console', {
-    base: 'vs-dark',
-    inherit: true,
-    rules: [
-        // avoid pf tokens for `rules` since tokens are opaque strings that might not be hex values
-        { token: 'number', foreground: 'ace12e' },
-        { token: 'type', foreground: '73bcf7' },
-        { token: 'string', foreground: 'f0ab00' },
-        { token: 'keyword', foreground: 'cbc0ff' },
-    ],
-    colors: {
-        'editor.background': editorBackground.value,
-        'editorGutter.background': '#292e34', // no pf token defined
-        'editorLineNumber.activeForeground': '#fff',
-        'editorLineNumber.foreground': '#f0f0f0',
-    },
-})
-monaco.editor.setTheme('console')
 
 const useStyles = makeStyles({
     headerContainer: {

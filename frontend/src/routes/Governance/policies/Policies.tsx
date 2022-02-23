@@ -1,21 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    Alert,
+    Button,
     ButtonVariant,
     Checkbox,
     DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
     DescriptionListTerm,
+    Modal,
+    ModalVariant,
     PageSection,
+    Stack,
+    StackItem,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmTable, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
-import { Fragment, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { namespacesState, policiesState, policySetsState } from '../../../atoms'
-import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import {
+    namespacesState,
+    placementBindingsState,
+    placementRulesState,
+    placementsState,
+    policiesState,
+    policySetsState,
+} from '../../../atoms'
+import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
 import { NavigationPath } from '../../../NavigationPath'
@@ -135,34 +148,6 @@ export default function PoliciesPage() {
         ],
         [policyClusterViolationsColumn]
     )
-
-    let pbcheck = false
-    let prcheck = false
-
-    const renderRelatedResourceCheckbox = (placementBindingChecked: boolean, placementRuleChecked: boolean) => {
-        const handlePlacementBindingChecked = () => {
-            return (pbcheck = !placementBindingChecked)
-        }
-        const handlePlacementRuleChecked = () => {
-            return (prcheck = !placementRuleChecked)
-        }
-        return (
-            <Fragment>
-                <Checkbox
-                    id={'remove-placementBinding'}
-                    isChecked={placementBindingChecked}
-                    onClick={() => handlePlacementBindingChecked()}
-                    label={t('policy.modal.delete.associatedResources.placementBinding')}
-                />
-                <Checkbox
-                    id={'remove-placementRule'}
-                    isChecked={placementRuleChecked}
-                    onClick={() => handlePlacementRuleChecked()}
-                    label={t('policy.modal.delete.associatedResources.placementRule')}
-                />
-            </Fragment>
-        )
-    }
 
     const bulkModalStatusColumns = [
         {
@@ -556,29 +541,8 @@ export default function PoliciesPage() {
                     title: t('Delete'),
                     // tooltip: 'Delete policy',
                     addSeparator: true,
-                    click: (item: PolicyTableItem) => {
-                        setModalProps({
-                            open: true,
-                            title: t('policy.modal.title.delete'),
-                            action: t('delete'),
-                            processing: t('deleting'),
-                            resources: [item],
-                            description: t(
-                                `Removing ${item.policy.metadata.name} is irreversible.  Select any associated resources that need to be deleted in addition to ${item.policy.metadata.name}.`
-                            ),
-                            keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-                            actionFn: (item) => deletePolicy(item.policy, pbcheck, prcheck),
-                            close: () => {
-                                setModalProps({ open: false })
-                                pbcheck = false
-                                prcheck = false
-                            },
-                            checkBox: renderRelatedResourceCheckbox(placementRuleChecked, placementBindingChecked),
-                            isDanger: true,
-                            icon: 'warning',
-                            confirmText: 'confirm',
-                            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                        })
+                    click: (policy: Policy) => {
+                        setModal(<DeletePolicyModal policy={policy} onClose={() => setModal(undefined)} />)
                     },
                 },
             ]
@@ -700,12 +664,15 @@ export default function PoliciesPage() {
         })
     }
 
+    const [modal, setModal] = useState<ReactNode | undefined>()
+
     if (policies.length === 0) {
         return <GovernanceCreatePolicyEmptyState />
     }
 
     return (
         <PageSection isWidthLimited>
+            {modal !== undefined && modal}
             <BulkActionModel<PolicyTableItem> {...modalProps} />
             <AcmTable<PolicyTableItem>
                 plural={t('Policies')}
@@ -796,4 +763,82 @@ function usePolicyViolationsColumn(
             return 0
         },
     }
+}
+
+function DeletePolicyModal(props: { policy: Policy; onClose: () => void }) {
+    const { t } = useTranslation()
+    const [deletePlacements, setDeletePlacements] = useState(true)
+    const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
+    const [placements] = useRecoilState(placementsState)
+    const [placementRules] = useRecoilState(placementRulesState)
+    const [placementBindings] = useRecoilState(placementBindingsState)
+    const [isDeleting, setIsDeleting] = useState(false)
+    const [error, setError] = useState('')
+    const onConfirm = useCallback(async () => {
+        setIsDeleting(true)
+        try {
+            setError('')
+            await deletePolicy(
+                props.policy,
+                placements,
+                placementRules,
+                placementBindings,
+                deletePlacements,
+                deletePlacementBindings
+            ).promise
+            props.onClose()
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message)
+            } else {
+                setError(t('Unknown error occured'))
+            }
+            setIsDeleting(false)
+        }
+    }, [props.onClose, placements, placementRules, placementBindings, deletePlacements, deletePlacementBindings])
+    return (
+        <Modal
+            title={t('policy.modal.title.delete')}
+            titleIconVariant={'danger'}
+            isOpen
+            onClose={props.onClose}
+            actions={[
+                <Button key="confirm" variant="primary" onClick={onConfirm} isLoading={isDeleting}>
+                    {isDeleting ? t('deleting') : t('delete')}
+                </Button>,
+                <Button key="cancel" variant="link" onClick={props.onClose}>
+                    {t('Cancel')}
+                </Button>,
+            ]}
+            variant={ModalVariant.small}
+        >
+            <Stack hasGutter>
+                <StackItem>
+                    {t(`Removing ${props.policy.metadata.name} is irreversible. Select any associated resources that need to be
+            deleted in addition to ${props.policy.metadata.name}.`)}
+                </StackItem>
+                <StackItem>
+                    <Checkbox
+                        id="delete-placement-bindings"
+                        isChecked={deletePlacementBindings}
+                        onChange={setDeletePlacementBindings}
+                        label={t('policy.modal.delete.associatedResources.placementBinding')}
+                    />
+                </StackItem>
+                <StackItem>
+                    <Checkbox
+                        id="delete-placements"
+                        isChecked={deletePlacements}
+                        onChange={setDeletePlacements}
+                        label={t('policy.modal.delete.associatedResources.placementRule')}
+                    />
+                </StackItem>
+                {error && (
+                    <StackItem>
+                        <Alert variant="danger" title={error} isInline />
+                    </StackItem>
+                )}
+            </Stack>
+        </Modal>
+    )
 }

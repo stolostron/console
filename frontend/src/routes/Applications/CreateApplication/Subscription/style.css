@@ -1,3 +1,17 @@
+.pf-c-content .temptifly.showEditor,
+.temptifly.showWizard {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.pf-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
+.pf-c-content .temptifly.showWizard .creation-view-controls-container {
+    padding: 0;
+    margin: 20px 0 0 20px;
+    height: 100%;
+}
+
 .portal-controls {
     display: flex;
 }
