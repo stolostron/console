@@ -31,6 +31,7 @@ import {
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
+import { isBMPlatform } from '../../../../InfraEnvironments/utils'
 
 const {
     ClusterDeploymentWizard,
@@ -201,6 +202,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onFinish={onFinish}
                 aiConfigMap={aiConfigMap}
                 infraEnv={infraEnv}
+                isBMPlatform={isBMPlatform(infraEnv)}
             />
             <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
         </FeatureGateContextProvider>

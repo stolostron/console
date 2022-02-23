@@ -15,7 +15,7 @@ import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { isMatch } from 'lodash'
 
-import { acmRouteState, configMapsState, infraEnvironmentsState } from '../../../../atoms'
+import { acmRouteState, configMapsState, infraEnvironmentsState, infrastructuresState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError } from '../../../../resources'
@@ -27,6 +27,7 @@ import {
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
 import { getAIConfigMap } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
+import { isBMPlatform } from '../utils'
 
 const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY, getAgentsHostsNames } = CIM
 
@@ -40,8 +41,8 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
     const [isoModalOpen, setISOModalOpen] = useState(false)
 
-    const [infraEnvironments, agents, bareMetalHosts, configMaps] = useRecoilValue(
-        waitForAll([infraEnvironmentsState, agentsState, bareMetalHostsState, configMapsState])
+    const [infraEnvironments, agents, bareMetalHosts, configMaps, infrastructures] = useRecoilValue(
+        waitForAll([infraEnvironmentsState, agentsState, bareMetalHostsState, configMapsState, infrastructuresState])
     )
 
     const infraEnv = infraEnvironments.find(
@@ -166,6 +167,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 onCreateBMH={getOnCreateBMH(infraEnv)}
                 onSaveISOParams={getOnSaveISOParams(infraEnv)}
                 usedHostnames={usedHostnames}
+                isBMPlatform={isBMPlatform(infrastructures[0])}
             />
         </>
     )
