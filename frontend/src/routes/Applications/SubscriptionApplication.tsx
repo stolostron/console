@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useState, useContext, useEffect } from 'react'
-import {
-    AcmPage,
-    AcmPageContent,
-    AcmPageHeader,
-    //  AcmErrorBoundary,
-    AcmToastContext,
-} from '@stolostron/ui-components'
+import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { NavigationPath } from '../../NavigationPath'
 import Handlebars from 'handlebars'
@@ -71,13 +65,13 @@ export default function CreateSubscriptionApplicationPage() {
                 />
             }
         >
-            {/* <AcmErrorBoundary> */}
-            <AcmPageContent id="create-cluster-pool">
-                <PageSection className="pf-c-content" variant="light">
-                    <CreateSubscriptionApplication />
-                </PageSection>
-            </AcmPageContent>
-            {/* </AcmErrorBoundary> */}
+            <AcmErrorBoundary>
+                <AcmPageContent id="create-cluster-pool">
+                    <PageSection className="pf-c-content" variant="light">
+                        <CreateSubscriptionApplication />
+                    </PageSection>
+                </AcmPageContent>
+            </AcmErrorBoundary>
         </AcmPage>
     )
 }
