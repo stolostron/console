@@ -16,7 +16,7 @@ function attrsFunction(selection, map) {
 }
 
 function attrsObject(selection, map) {
-    for (var name in map) {
+    for (const name in map) {
         if (Object.prototype.hasOwnProperty.call(map, name)) {
             selection.attr(name, map[name])
         }
@@ -30,8 +30,8 @@ export function attrs(selection, map, s) {
 
 function stylesFunction(selection, map) {
     return selection.each(function (d, i, ns) {
-        var x = map.apply(selection, arguments)
-        for (var name in x) {
+        const x = map.apply(selection, arguments)
+        for (const name in x) {
             if (Object.prototype.hasOwnProperty.call(x, name)) {
                 ns[i].style[name] = x[name]
             }
@@ -40,7 +40,7 @@ function stylesFunction(selection, map) {
 }
 
 function stylesObject(selection, map, priority) {
-    for (var name in map) selection.style(name, map[name], priority)
+    for (const name in map) selection.style(name, map[name], priority)
     return selection
 }
 
