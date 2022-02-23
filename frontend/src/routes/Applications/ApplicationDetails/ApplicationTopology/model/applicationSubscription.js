@@ -199,7 +199,7 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
 const getAppRules = (rulesMap, allClusters, placementRules) => {
     Object.entries(rulesMap).map(([namespace, values]) => {
         // stuff rules into subscriptions that use them
-        placementRules
+        return placementRules
             .filter((rule) => {
                 return get(rule, 'metadata.namespace') === namespace
             })
@@ -235,7 +235,7 @@ const getAllAppChannels = (appAllChannels, allSubscriptions, channels) => {
         }
     })
     Object.entries(channelsMap).map(([channelNS, channelName]) => {
-        channels
+        return channels
             .filter((channel) => {
                 return get(channel, 'metadata.namespace') === channelNS && get(channel, 'metadata.name') === channelName
             })
@@ -245,8 +245,8 @@ const getAllAppChannels = (appAllChannels, allSubscriptions, channels) => {
     })
 }
 
-const getAppHooks = (hooks) => {
-    //}, isPreHooks) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getAppHooks = (hooks, isPreHooks) => {
     if (!isEmpty(hooks)) {
     }
     return //czcz
