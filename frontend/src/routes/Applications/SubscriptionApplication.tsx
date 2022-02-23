@@ -7,6 +7,7 @@ import Handlebars from 'handlebars'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { ApplicationKind, createResources as createKubeResources, IResource } from '../../resources'
+import '../Applications/CreateApplication/Subscription/style.css'
 
 // Template Data
 import { controlData as getControlData } from './CreateApplication/Subscription/controlData/ControlData'
@@ -48,9 +49,9 @@ export default function CreateSubscriptionApplicationPage() {
     )
 
     const portals = (
-        <div className="portal-controls" style={{ display: 'flex' }}>
-            <div style={{ marginLeft: '16px' }} id={Portals.cancelBtn} />
-            <div style={{ marginLeft: '16px' }} id={Portals.createBtn} />
+        <div className="portal-controls">
+            <div id={Portals.cancelBtn} />
+            <div id={Portals.createBtn} />
         </div>
     )
 
