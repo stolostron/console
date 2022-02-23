@@ -7,12 +7,20 @@ import ReactDOMServer from 'react-dom/server'
 function attrsFunction(selection, map) {
     return selection.each(function (d, i, ns) {
         var x = map.apply(selection, arguments)
-        for (var name in x) ns[i].setAttribute(name, x[name])
+        for (var name in x) {
+            if (Object.prototype.hasOwnProperty.call(x, name)) {
+                ns[i].setAttribute(name, x[name])
+            }
+        }
     })
 }
 
 function attrsObject(selection, map) {
-    for (var name in map) selection.attr(name, map[name])
+    for (var name in map) {
+        if (Object.prototype.hasOwnProperty.call(map, name)) {
+            selection.attr(name, map[name])
+        }
+    }
     return selection
 }
 
@@ -23,7 +31,11 @@ export function attrs(selection, map, s) {
 function stylesFunction(selection, map) {
     return selection.each(function (d, i, ns) {
         var x = map.apply(selection, arguments)
-        for (var name in x) ns[i].style[name] = x[name]
+        for (var name in x) {
+            if (Object.prototype.hasOwnProperty.call(x, name)) {
+                ns[i].style[name] = x[name]
+            }
+        }
     })
 }
 
