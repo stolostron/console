@@ -22,6 +22,7 @@ export interface MappingType {
     $r: number //what line is it on in the yaml
     $l: number // how many lines does it use in the yaml
     $v: any // what's its value
+    $s: boolean // is a secret
     $gk: any // the start/stop of the key in the yaml
     $gv: any // what's the start/stop of the value in yaml
 }
@@ -153,6 +154,7 @@ const process = (
             const value = get(mappings, getPathArray(secret))
             if (value && value.$v) {
                 protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
+                value.$s = true
             }
         })
     }

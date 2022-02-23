@@ -120,7 +120,7 @@ const addChangeDecorations = (
                     description: 'resource-editor',
                 },
             })
-            if ($f !== undefined) {
+            if ($f !== undefined && !obj.$s) {
                 decorations.push({
                     range: new monacoRef.current.Range(obj.$r, 0, obj.$r, 132),
                     options: {

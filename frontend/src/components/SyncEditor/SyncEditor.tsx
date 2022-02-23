@@ -215,12 +215,10 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
     const onReportChange = (
         changes: any[],
-        changeWithSecrets: {
-            yaml: string
+        changeWithoutSecrets: {
             mappings: { [name: string]: any[] }
             parsed: { [name: string]: any[] }
             resources: any[]
-            hiddenSecretsValues: any[]
         },
         errors: any[]
     ) => {
@@ -228,10 +226,10 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             const editor = editorRef?.current
             const monaco = monacoRef?.current
             setEditorChanges({
-                resources: changeWithSecrets.resources,
+                resources: changeWithoutSecrets.resources,
                 warnings: formatErrors(errors, true),
                 errors: formatErrors(errors),
-                changes: formatChanges(editor, monaco, changes, changeWithSecrets),
+                changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
             })
         } else {
             setEditorChanges(undefined)
@@ -263,6 +261,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             userEdits,
             validationRef.current
         )
+        let timeoutID: NodeJS.Timeout
         setLastUserEdits(userEdits)
         if (yaml.length) {
             setProhibited(protectedRanges)
@@ -287,9 +286,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             )
 
             // report to form
-            onReportChange(edits, changeWithSecrets, errors)
+            onReportChange(edits, change, errors)
 
-            setTimeout(() => {
+            timeoutID = setTimeout(() => {
                 // decorate errors, changes
                 const squigglyTooltips = decorate(
                     false,
@@ -310,6 +309,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         }
         setHasRedo(false)
         setHasUndo(false)
+        return () => clearInterval(timeoutID)
     }, [JSON.stringify(resources), code, showSecrets, immutables])
 
     // react to changes from editing yaml
@@ -347,7 +347,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 )
 
                 // report to form
-                onReportChange(changes, changeWithSecrets, errors)
+                onReportChange(changes, change, errors)
 
                 // decorate errors, changes
                 const squigglyTooltips = decorate(
