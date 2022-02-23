@@ -254,8 +254,8 @@ export default function PolicySetsPage() {
                             {/* Need to compute all cards here then slice. The PolicySet card render uses usePolicySetSummary which includes a react hook.
                         So paging to a page with less cards than the previous causes a react hook error if rendered in time. */}
                             {filteredPolicySets
-                                .map((policyset: PolicySet, cardIdx: number) => {
-                                    return <PolicySetCard policySet={policyset} cardIdx={cardIdx} />
+                                .map((policyset: PolicySet) => {
+                                    return <PolicySetCard policySet={policyset} />
                                 })
                                 .slice((actualPage - 1) * perPage, (actualPage - 1) * perPage + perPage)}
                         </AcmMasonry>
