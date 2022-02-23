@@ -385,9 +385,12 @@ export function AcmDataFormDefault(props: {
             })}
 
             {editorChanges?.changes?.length > 0 && (
-                <FormGroup fieldId="diffs" label="Editor changes">
-                    <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
-                </FormGroup>
+                <FormSection key={'Editor changes'}>
+                    <Title headingLevel="h2">{'Editor changes'}</Title>
+                    <FormGroup fieldId="diffs">
+                        <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
+                    </FormGroup>
+                </FormSection>
             )}
 
             <Stack>
@@ -514,9 +517,12 @@ export function AcmDataFormWizard(props: {
                 )}
                 <AcmDataFormDetails formData={formData} wizardSummary={true} />
                 {editorChanges?.changes?.length > 0 && (
-                    <FormGroup fieldId="diffs" label="Editor changes">
-                        <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
-                    </FormGroup>
+                    <FormSection key={'Editor changes'}>
+                        <Title headingLevel="h2">{'Editor changes'}</Title>
+                        <FormGroup fieldId="diffs">
+                            <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
+                        </FormGroup>
+                    </FormSection>
                 )}
             </Form>
         ),
