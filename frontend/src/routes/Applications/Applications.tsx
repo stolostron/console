@@ -15,6 +15,7 @@ export default function Applications() {
                 path={NavigationPath.createApplicationSubscription}
                 component={CreateSubscriptionApplicationPage}
             />
+            <Route path={NavigationPath.editApplicationSubscription} component={CreateSubscriptionApplicationPage} />
             <Route path={NavigationPath.applicationDetails} component={ApplicationsDetailsPage} />
             <Route path={NavigationPath.applications} component={ApplicationsPage} />
             <Route path="*">

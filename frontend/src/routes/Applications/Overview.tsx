@@ -814,7 +814,13 @@ export default function ApplicationsOverview() {
             actions.push({
                 id: 'editApplication',
                 title: t('Edit application'),
-                click: () => {},
+                click: () => {
+                    history.push(
+                        NavigationPath.editApplicationSubscription
+                            .replace(':namespace', item.metadata?.namespace as string)
+                            .replace(':name', item.metadata?.name as string)
+                    )
+                },
             })
         }
 

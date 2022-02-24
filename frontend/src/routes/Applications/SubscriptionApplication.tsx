@@ -5,7 +5,7 @@ import { PageSection } from '@patternfly/react-core'
 import { NavigationPath } from '../../NavigationPath'
 import Handlebars from 'handlebars'
 import { useTranslation } from '../../lib/acm-i18next'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { ApplicationKind, createResources as createKubeResources, IResource } from '../../resources'
 import '../Applications/CreateApplication/Subscription/style.css'
 
@@ -25,6 +25,11 @@ import MonacoEditor from 'react-monaco-editor'
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import _ from 'lodash'
+import { useRecoilState } from 'recoil'
+import { ansibleJobState, applicationsState, channelsState, placementRulesState, subscriptionsState } from '../../atoms'
+
+import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
+import { getApplication } from './ApplicationDetails/ApplicationTopology/model/application'
 
 interface CreationStatus {
     status: string
@@ -121,12 +126,54 @@ export function CreateSubscriptionApplication() {
         return t(key, arg)
     }
 
+    function getEditApplication() {
+        const location = useLocation()
+        const pathname = location.pathname
+        if (pathname.includes('/edit')) {
+            const params = pathname.replace(/(.*)edit\//, '')
+            const [namespace, name] = params.split('/')
+            if (name && namespace) {
+                return {
+                    selectedAppName: name,
+                    selectedAppNamespace: namespace,
+                }
+            }
+        }
+        return null
+    }
+
     //compile template
     const template = Handlebars.compile(createTemplate)
     Handlebars.registerPartial('templateGit', Handlebars.compile(gitTemplate))
     Handlebars.registerPartial('templateHelm', Handlebars.compile(helmTemplate))
     Handlebars.registerPartial('templateObjectStore', Handlebars.compile(ObjTemplate))
     Handlebars.registerPartial('templatePlacement', Handlebars.compile(placementTemplate))
+    const [fetchControl, setFetchControl] = useState('')
+
+    const editApplication = getEditApplication()
+    if (editApplication) {
+        // if editing an existing app, grab it first
+        const { selectedAppName, selectedAppNamespace } = editApplication
+        const [applications] = useRecoilState(applicationsState)
+        const [ansibleJob] = useRecoilState(ansibleJobState)
+        const [subscriptions] = useRecoilState(subscriptionsState)
+        const [channels] = useRecoilState(channelsState)
+        const [placementRules] = useRecoilState(placementRulesState)
+        // get application object from recoil states
+        const application = getApplication(selectedAppNamespace, selectedAppName, '', {
+            applications,
+            ansibleJob,
+            subscriptions,
+            channels,
+            placementRules,
+        })
+        useEffect(() => {
+            setFetchControl({
+                resources: getApplicationResources(application),
+                isLoaded: true,
+            })
+        }, [])
+    }
 
     return (
         controlData && (
@@ -137,7 +184,7 @@ export function CreateSubscriptionApplication() {
                 controlData={controlData}
                 template={template}
                 portals={Portals}
-                // fetchControl={fetchControl}
+                fetchControl={fetchControl}
                 createControl={{
                     createResource,
                     cancelCreate,
