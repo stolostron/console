@@ -136,7 +136,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
         setDrawerMaxSize(inline ? `${Math.round((entry.contentRect.width * 2) / 3)}px` : undefined)
     })
 
-    const readOnly = mode === 'form' && props.edit !== undefined
+    const readOnly = mode === 'form' && props.edit !== undefined ? immutables : undefined
     return (
         <div ref={pageRef} style={{ height: '100%' }}>
             <Page
@@ -204,7 +204,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                         readonly={mode === 'details'}
                                         resources={formData.stateToData()}
                                         schema={schema}
-                                        immutables={readOnly ? immutables : undefined}
+                                        immutables={readOnly}
                                         secrets={secrets}
                                         onClose={(): void => {
                                             setDrawerExpanded(false)
