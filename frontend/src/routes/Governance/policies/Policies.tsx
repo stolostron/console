@@ -43,7 +43,7 @@ import {
 
 interface PolicyTableItem {
     policy: Policy
-    source: ReactNode| undefined
+    source: ReactNode | undefined
 }
 
 export default function PoliciesPage() {
@@ -541,8 +541,8 @@ export default function PoliciesPage() {
                     title: t('Delete'),
                     // tooltip: 'Delete policy',
                     addSeparator: true,
-                    click: (policy: Policy) => {
-                        setModal(<DeletePolicyModal policy={policy} onClose={() => setModal(undefined)} />)
+                    click: (item: PolicyTableItem) => {
+                        setModal(<DeletePolicyModal policy={item.policy} onClose={() => setModal(undefined)} />)
                     },
                 },
             ]
