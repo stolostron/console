@@ -192,16 +192,7 @@ const processReport = (report, clusterId, links, nodes, clusterNames, namespace,
     })
 
     // process route and service first
-    const serviceMap = processServiceOwner(
-        clusterId,
-        serviceOwners,
-        links,
-        nodes,
-        clusterNames,
-        namespace,
-        subscription,
-        relatedResources
-    )
+    const serviceMap = processServiceOwner(clusterId, serviceOwners, links, nodes, relatedResources)
 
     const services = filter(report.resources, (obj) => {
         const kind = get(obj, 'kind', '')
@@ -209,7 +200,7 @@ const processReport = (report, clusterId, links, nodes, clusterNames, namespace,
     })
 
     // then service
-    processServices(clusterId, services, links, nodes, clusterNames, namespace, serviceMap, subscription)
+    processServices(clusterId, services, links, nodes, serviceMap, subscription)
 
     // then the rest
     const other = filter(report.resources, (obj) => {
@@ -223,16 +214,7 @@ const processReport = (report, clusterId, links, nodes, clusterNames, namespace,
 }
 
 // Route, Ingress, StatefulSet
-const processServiceOwner = (
-    clusterId,
-    serviceOwners,
-    links,
-    nodes,
-    clusterNames,
-    namespace,
-    subscription,
-    relatedResources
-) => {
+const processServiceOwner = (clusterId, serviceOwners, links, nodes, relatedResources) => {
     const servicesMap = {}
     serviceOwners.forEach((serviceOwner, inx) => {
         const node = addSubscriptionDeployedResource(clusterId, serviceOwner, links, nodes)
@@ -275,7 +257,7 @@ const processServiceOwner = (
     return servicesMap
 }
 
-const processServices = (clusterId, services, links, nodes, clusterNames, namespace, servicesMap) => {
+const processServices = (clusterId, services, links, nodes, servicesMap) => {
     services.forEach((service, inx) => {
         const serviceName = service.name
         let parentId = servicesMap[serviceName]
