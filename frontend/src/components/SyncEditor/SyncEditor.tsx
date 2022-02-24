@@ -215,6 +215,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
     const onReportChange = (
         changes: any[],
+        changeWithSecrets: {
+            yaml: string
+            mappings: { [name: string]: any[] }
+            parsed: { [name: string]: any[] }
+            resources: any[]
+            hiddenSecretsValues: any[]
+        },
         changeWithoutSecrets: {
             mappings: { [name: string]: any[] }
             parsed: { [name: string]: any[] }
@@ -226,7 +233,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             const editor = editorRef?.current
             const monaco = monacoRef?.current
             setEditorChanges({
-                resources: changeWithoutSecrets.resources,
+                resources: changeWithSecrets.resources,
                 warnings: formatErrors(errors, true),
                 errors: formatErrors(errors),
                 changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
@@ -286,7 +293,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             )
 
             // report to form
-            onReportChange(edits, change, errors)
+            onReportChange(edits, changeWithSecrets, change, errors)
 
             timeoutID = setTimeout(() => {
                 // decorate errors, changes
@@ -347,7 +354,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 )
 
                 // report to form
-                onReportChange(changes, change, errors)
+                onReportChange(changes, changeWithSecrets, change, errors)
 
                 // decorate errors, changes
                 const squigglyTooltips = decorate(

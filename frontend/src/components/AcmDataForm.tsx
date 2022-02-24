@@ -113,6 +113,7 @@ function requiredValidationMessage() {
 
 const minWizardSize = 1000
 const defaultPanelSize = 600
+const EDITOR_CHANGES = 'Editor changes'
 
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
@@ -135,6 +136,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
         setDrawerMaxSize(inline ? `${Math.round((entry.contentRect.width * 2) / 3)}px` : undefined)
     })
 
+    const readOnly = mode === 'form' && props.edit !== undefined
     return (
         <div ref={pageRef} style={{ height: '100%' }}>
             <Page
@@ -202,19 +204,18 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                         readonly={mode === 'details'}
                                         resources={formData.stateToData()}
                                         schema={schema}
-                                        immutables={
-                                            mode === 'form' && props.edit !== undefined ? immutables : undefined
-                                        }
+                                        immutables={readOnly ? immutables : undefined}
                                         secrets={secrets}
                                         onClose={(): void => {
                                             setDrawerExpanded(false)
                                         }}
-                                        onEditorChange={(editorChanges: {
+                                        onEditorChange={(changes: {
                                             resources: any[]
                                             errors: any[]
                                             changes: any[]
                                         }): void => {
-                                            setEditorChanges(editorChanges)
+                                            formData.customData = changes?.resources
+                                            setEditorChanges(changes)
                                         }}
                                     />
                                 ) : (
@@ -385,8 +386,8 @@ export function AcmDataFormDefault(props: {
             })}
 
             {editorChanges?.changes?.length > 0 && (
-                <FormSection key={'Editor changes'}>
-                    <Title headingLevel="h2">{'Editor changes'}</Title>
+                <FormSection key={EDITOR_CHANGES}>
+                    <Title headingLevel="h2">{EDITOR_CHANGES}</Title>
                     <FormGroup fieldId="diffs">
                         <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
                     </FormGroup>
@@ -517,8 +518,8 @@ export function AcmDataFormWizard(props: {
                 )}
                 <AcmDataFormDetails formData={formData} wizardSummary={true} />
                 {editorChanges?.changes?.length > 0 && (
-                    <FormSection key={'Editor changes'}>
-                        <Title headingLevel="h2">{'Editor changes'}</Title>
+                    <FormSection key={EDITOR_CHANGES}>
+                        <Title headingLevel="h2">{EDITOR_CHANGES}</Title>
                         <FormGroup fieldId="diffs">
                             <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
                         </FormGroup>
