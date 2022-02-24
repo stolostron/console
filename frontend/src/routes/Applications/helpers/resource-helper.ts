@@ -78,7 +78,9 @@ export const getSearchLink = (params: any) => {
     if (showRelated) {
         queryParams.showrelated = showRelated
     }
-    return `/multicloud/home/search?${queryString.stringify(queryParams)}`
+    const query = queryString.stringify(queryParams)
+    const search = query ? `?${query}` : ''
+    return `/multicloud/home/search${search}`
 }
 
 export const getEditLink = (params: {
