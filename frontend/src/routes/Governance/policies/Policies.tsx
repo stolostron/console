@@ -32,7 +32,7 @@ import { BulkActionModel, IBulkActionModelProps } from '../../../components/Bulk
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
 import { NavigationPath } from '../../../NavigationPath'
-import { patchResource, Policy, PolicyApiVersion, PolicyKind, PolicySet, ResourceErrorCode } from '../../../resources'
+import { patchResource, Policy, PolicyApiVersion, PolicyKind, PolicySet } from '../../../resources'
 import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
