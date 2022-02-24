@@ -65,7 +65,7 @@ export const getAge = (item: IResource, locale: string, timestampKey: string) =>
 
 export const getSearchLink = (params: any) => {
     const { properties, showRelated } = params
-    const queryParams : {filters?: string, showrelated?: string}= {}
+    const queryParams: { filters?: string; showrelated?: string } = {}
     let textSearch = ''
 
     _.entries(properties).forEach(([key, value]) => {
