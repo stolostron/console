@@ -57,16 +57,18 @@ async function getRelatedResources(reports) {
     reports
         .filter((report) => !!report.resources)
         .forEach(({ results, resources }) => {
-            let cluster
+            let cluster = 'local-host'
             // find first cluster this was successfully deployed to
             // favor local-host
-            results.some(({ source, result }) => {
-                if (result === 'deployed') {
-                    cluster = source
-                    return source === 'local-host'
-                }
-                return false
-            })
+            if (results) {
+                results.some(({ source, result }) => {
+                    if (result === 'deployed') {
+                        cluster = source
+                        return source === 'local-host'
+                    }
+                    return false
+                })
+            }
             resources.forEach((resource) => {
                 const { kind, name, namespace } = resource
                 const query = {

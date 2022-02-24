@@ -218,7 +218,7 @@ const processReport = (report, clusterId, links, nodes, clusterNames, namespace,
     })
 
     other.forEach((resource) => {
-        addSubscriptionDeployedResource(clusterId, resource, links, nodes, clusterNames, namespace, subscription)
+        addSubscriptionDeployedResource(clusterId, resource, links, nodes)
     })
 }
 
@@ -235,15 +235,7 @@ const processServiceOwner = (
 ) => {
     const servicesMap = {}
     serviceOwners.forEach((serviceOwner, inx) => {
-        const node = addSubscriptionDeployedResource(
-            clusterId,
-            serviceOwner,
-            links,
-            nodes,
-            clusterNames,
-            namespace,
-            subscription
-        )
+        const node = addSubscriptionDeployedResource(clusterId, serviceOwner, links, nodes)
 
         if (relatedResources) {
             // get service info and map it to the object id
@@ -283,7 +275,7 @@ const processServiceOwner = (
     return servicesMap
 }
 
-const processServices = (clusterId, services, links, nodes, clusterNames, namespace, servicesMap, subscription) => {
+const processServices = (clusterId, services, links, nodes, clusterNames, namespace, servicesMap) => {
     services.forEach((service, inx) => {
         const serviceName = service.name
         let parentId = servicesMap[serviceName]
@@ -294,7 +286,7 @@ const processServices = (clusterId, services, links, nodes, clusterNames, namesp
             parentId = clusterId
         }
 
-        addSubscriptionDeployedResource(parentId, service, links, nodes, clusterNames, namespace, subscription)
+        addSubscriptionDeployedResource(parentId, service, links, nodes)
     })
 }
 
