@@ -1321,8 +1321,12 @@ export function CredentialsForm(props: {
             },
         ],
         submit: () => {
+            let credentialData = formData?.customData ?? stateToData()
+            if (Array.isArray(credentialData)) {
+                credentialData = credentialData[0]
+            }
             if (isEditing) {
-                const secret = stateToData() as Secret
+                const secret = credentialData as Secret
                 const patch: { op: 'replace'; path: string; value: unknown }[] = []
                 if (secret.stringData) {
                     patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
@@ -1340,7 +1344,7 @@ export function CredentialsForm(props: {
                     history.push(NavigationPath.credentials)
                 })
             } else {
-                return createResource(stateToData() as IResource).promise.then(() => {
+                return createResource(credentialData as IResource).promise.then(() => {
                     toastContext.addAlert({
                         title: t('Credentials created'),
                         message: t('credentialsForm.created.message', { name }),

@@ -18,6 +18,7 @@ export interface FormData {
     cancelLabel: string
     nextLabel: string
     backLabel: string
+    customData?: unknown
     stateToData: () => unknown
 }
 
