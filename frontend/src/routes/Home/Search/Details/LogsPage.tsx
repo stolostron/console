@@ -1,14 +1,36 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { PageSection } from '@patternfly/react-core'
-import { AcmAlert, AcmLoadingPage, AcmLogWindow } from '@stolostron/ui-components'
-import { useEffect, useState } from 'react'
+import { makeStyles } from '@material-ui/styles'
+import { Button, PageSection, SelectOption } from '@patternfly/react-core'
+import { LogViewer } from '@patternfly/react-log-viewer'
+import { AcmAlert, AcmLoadingPage, AcmSelect } from '@stolostron/ui-components'
+import { useEffect, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { managedClustersState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_BASE_PATH } from '../../../../lib/doc-util'
 import { fetchRetry, getBackendUrl, ManagedCluster } from '../../../../resources'
+
+const useStyles = makeStyles({
+    logWindowHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        marginTop: '1rem',
+        color: '#f5f5f5',
+        backgroundColor: '#030303',
+    },
+    logWindowHeaderItem: {
+        display: 'flex',
+        alignItems: 'center',
+        height: '36px',
+        padding: '8px 10px 5px 10px',
+        borderRight: '1px solid #4f5255',
+    },
+    logWindowHeaderItemLabel: {
+        paddingRight: '.5rem',
+    },
+})
 
 export default function LogsPage(props: {
     resourceError: string
@@ -18,7 +40,9 @@ export default function LogsPage(props: {
     name: string
 }) {
     const { resourceError, containers, cluster, namespace, name } = props
+    const logViewerRef = useRef<any>()
     const { t } = useTranslation()
+    const classes = useStyles(props)
     const [logs, setLogs] = useState<string>('')
     const [logsError, setLogsError] = useState<string>()
     const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) || '')
@@ -80,6 +104,13 @@ export default function LogsPage(props: {
         }
     }, [cluster, container, managedClusters, name, namespace])
 
+    function FooterButton() {
+        function handleClick() {
+            logViewerRef.current?.scrollToBottom()
+        }
+        return <Button onClick={handleClick}>{t('Jump to the bottom')}</Button>
+    }
+
     if (resourceError !== '') {
         return (
             <PageSection>
@@ -115,17 +146,44 @@ export default function LogsPage(props: {
 
     return (
         <PageSection>
-            <AcmLogWindow
-                id={'pod-logs-viewer'}
-                cluster={cluster}
-                namespace={namespace}
-                initialContainer={container}
-                onSwitchContainer={(newContainer: string | undefined) => {
-                    setContainer(newContainer || container)
-                    sessionStorage.setItem(`${name}-${cluster}-container`, newContainer || container)
-                }}
-                containers={containers}
-                logs={logs || ''}
+            <div style={{ width: '300px' }}>
+                <AcmSelect
+                    id={'container-select'}
+                    label={''}
+                    value={container}
+                    onChange={(value) => {
+                        setContainer(value ?? container)
+                        sessionStorage.setItem(`${name}-${cluster}-container`, value || container)
+                    }}
+                >
+                    {containers.map((container) => {
+                        return (
+                            <SelectOption key={container} value={container}>
+                                {container}
+                            </SelectOption>
+                        )
+                    })}
+                </AcmSelect>
+            </div>
+            <LogViewer
+                ref={logViewerRef}
+                height={500}
+                data={logs ?? ''}
+                theme="dark"
+                isTextWrapped={false}
+                header={
+                    <div className={classes.logWindowHeader}>
+                        <div className={classes.logWindowHeaderItem}>
+                            <p className={classes.logWindowHeaderItemLabel}>{'Cluster:'}</p>
+                            {cluster}
+                        </div>
+                        <div className={classes.logWindowHeaderItem}>
+                            <p className={classes.logWindowHeaderItemLabel}>{'Namespace:'}</p>
+                            {namespace}
+                        </div>
+                    </div>
+                }
+                footer={<FooterButton />}
             />
         </PageSection>
     )
