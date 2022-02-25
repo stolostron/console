@@ -23,7 +23,9 @@ export interface Channel extends IResource {
     spec: {
         pathname: string
         type: string
-        secretRef?: string
+        secretRef?: {
+            name: string
+        }
     }
 }
 
@@ -35,15 +37,21 @@ export function listChannels() {
 }
 
 async function getChannelSecret(secretArgs?: { secretRef?: string; namespace?: string }) {
+    let channelSecret = { user: '', accessToken: '' }
     if (secretArgs && secretArgs.secretRef && secretArgs.namespace) {
         const { secretRef, namespace } = secretArgs
-        return getSecret({ name: secretRef, namespace: namespace })
+        await getSecret({ name: secretRef, namespace: namespace })
             .promise.then((response) => ({
                 user: window.atob(_.get(response, 'data.user', '')),
                 accessToken: window.atob(_.get(response, 'data.accessToken', '')),
             }))
+            .then((data) => {
+                if (data.user) channelSecret.user = data.user
+                if (data.accessToken) channelSecret.accessToken = data.accessToken
+            })
             .catch(handleGitError)
-    } else return { user: '', accessToken: '' }
+    }
+    return channelSecret
 }
 
 function getGitConnection(secretArgs?: { secretRef?: string; namespace?: string }) {
@@ -110,5 +118,5 @@ function getGitInformation(path: string) {
 }
 
 const handleGitError = (err: any) => {
-    throw Error(err)
+    console.log(Error(err))
 }
