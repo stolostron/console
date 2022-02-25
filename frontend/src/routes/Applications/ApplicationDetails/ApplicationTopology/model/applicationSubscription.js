@@ -197,9 +197,9 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
 }
 
 const getAppRules = (rulesMap, allClusters, placementRules) => {
-    Object.entries(rulesMap).map(([namespace, values]) => {
+    Object.entries(rulesMap).forEach(([namespace, values]) => {
         // stuff rules into subscriptions that use them
-        return placementRules
+        placementRules
             .filter((rule) => {
                 return get(rule, 'metadata.namespace') === namespace
             })
@@ -234,8 +234,8 @@ const getAllAppChannels = (appAllChannels, allSubscriptions, channels) => {
             channelsMap[chnlData[0]] = chnlData[1]
         }
     })
-    Object.entries(channelsMap).map(([channelNS, channelName]) => {
-        return channels
+    Object.entries(channelsMap).forEach(([channelNS, channelName]) => {
+        channels
             .filter((channel) => {
                 return get(channel, 'metadata.namespace') === channelNS && get(channel, 'metadata.name') === channelName
             })
