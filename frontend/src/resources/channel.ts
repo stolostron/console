@@ -23,7 +23,9 @@ export interface Channel extends IResource {
     spec: {
         pathname: string
         type: string
-        secretRef?: string
+        secretRef?: {
+            name: string
+        }
     }
 }
 
