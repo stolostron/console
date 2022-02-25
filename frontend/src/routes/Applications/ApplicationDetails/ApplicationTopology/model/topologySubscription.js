@@ -106,16 +106,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
 
                 // add deployed resource nodes using subscription report
                 if (subscription.report) {
-                    processReport(
-                        subscription.report,
-                        clusterId,
-                        links,
-                        nodes,
-                        clusterNames,
-                        namespace,
-                        subscription,
-                        relatedResources
-                    )
+                    processReport(subscription.report, clusterId, links, nodes, relatedResources)
                 }
             })
         })
@@ -176,7 +167,7 @@ const addSubscriptionRules = (parentId, subscription, links, nodes) => {
     })
 }
 
-const processReport = (report, clusterId, links, nodes, clusterNames, namespace, subscription, relatedResources) => {
+const processReport = (report, clusterId, links, nodes, relatedResources) => {
     // for each resource, add what it's related to
     report = cloneDeep(report)
     if (relatedResources) {
@@ -200,7 +191,7 @@ const processReport = (report, clusterId, links, nodes, clusterNames, namespace,
     })
 
     // then service
-    processServices(clusterId, services, links, nodes, serviceMap, subscription)
+    processServices(clusterId, services, links, nodes, serviceMap)
 
     // then the rest
     const other = filter(report.resources, (obj) => {
