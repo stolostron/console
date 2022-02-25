@@ -322,10 +322,14 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                                 resourceVersion = watchEvent.object.metadata.resourceVersion
                                 break
                             case 'ERROR':
-                                if ((watchEvent.object as any).message.startsWith('too old resource version')) {
+                                if (
+                                    (watchEvent.object as unknown as { message?: string }).message.startsWith(
+                                        'too old resource version'
+                                    )
+                                ) {
                                     logger.warn({
                                         msg: 'watch',
-                                        warning: (watchEvent.object as any).message,
+                                        warning: (watchEvent.object as unknown as { message?: string }).message,
                                         action: 'retrying watch',
                                         kind: options.kind,
                                         apiVersion: options.apiVersion,
