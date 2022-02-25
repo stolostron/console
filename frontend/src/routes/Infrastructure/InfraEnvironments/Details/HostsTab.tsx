@@ -71,7 +71,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                                 canDelete={(agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) =>
                                     !!nmStates && (!!agent || !!bmh)
                                 }
-                                onDeleteHost={onDeleteHost}
+                                onDeleteHost={onDeleteHost as any}
                                 onEditBMH={setEditBMH}
                                 canUnbindHost={canUnbindAgent}
                                 onUnbindHost={onUnbindHost}

@@ -205,7 +205,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                     onHostsNext({ values, clusterDeployment, agents, agentClusterInstall })
                                 }
                                 onApproveAgent={onApproveAgent}
-                                onDeleteHost={onDeleteHost}
+                                onDeleteHost={onDeleteHost as any}
                                 canDeleteAgent={(agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) =>
                                     !!nmStates && (!!agent || !!bmh)
                                 }

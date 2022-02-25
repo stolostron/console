@@ -1340,10 +1340,10 @@ describe('CreateCluster', () => {
 
             // check integration of AI in the left-side navigation
             await waitForText('Cluster details', true)
-            await waitForText('Review and Save')
+            await waitForText('Review and save')
             await waitForText('Cluster hosts')
             await waitForText('Cluster network')
-            await waitForText('Review and install')
+            await waitForText('Review')
 
             // fill-in Cluster details
             await typeByTestId('form-input-name-field', clusterName)

@@ -38,7 +38,10 @@ import { ProviderConnection, unpackProviderConnection } from '../../../../../res
 import { Secret } from '../../../../../resources'
 import { createResource as createResourceTool } from '../../../../../resources'
 import { WarningContext, WarningContextType, Warning } from './Warning'
-import { isAIFlowInfraEnv } from 'openshift-assisted-ui-lib/cim'
+import { CIM } from 'openshift-assisted-ui-lib'
+
+
+const { isAIFlowInfraEnv } = CIM
 
 interface CreationStatus {
     status: string
@@ -304,7 +307,7 @@ export default function CreateClusterPage() {
                 }
                 break
             case 'reviewSave':
-                control.mutation = (controlData: any[]) => {
+                control.mutation = () => {
                     return new Promise((resolve) => {
                         if (templateEditorRef.current) {
                             const resourceJSON = (templateEditorRef.current as any)?.getResourceJSON()

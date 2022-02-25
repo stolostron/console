@@ -670,16 +670,18 @@ export const getOnSaveISOParams =
 
         await patchResource(infraEnv, patches).promise
 
-        // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
-        // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
-        // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.
-        let polledInfraEnv: CIM.InfraEnvK8sResource = await refetchInfraEnv(infraEnv)
-        let maxPollingCounter = 10
-        while (polledInfraEnv.status?.createdTime === oldIsoCreatedTimestamp && --maxPollingCounter) {
-            await sleep(5 * 1000)
-            polledInfraEnv = await refetchInfraEnv(infraEnv)
+        if (patches.length) {
+            // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
+            // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
+            // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.
+            let polledInfraEnv: CIM.InfraEnvK8sResource = await refetchInfraEnv(infraEnv)
+            let maxPollingCounter = 10
+            while (polledInfraEnv.status?.createdTime === oldIsoCreatedTimestamp && --maxPollingCounter) {
+                await sleep(5 * 1000)
+                polledInfraEnv = await refetchInfraEnv(infraEnv)
+            }
+            // quit anyway ...
         }
-        // quit anyway ...
     }
 
 export const saveSSHKey = async (values: any, infraEnv: CIM.InfraEnvK8sResource) => {
@@ -739,7 +741,7 @@ export const onEditNtpSources = (values: any, infraEnv: CIM.InfraEnvK8sResource)
 }
 
 export const onMassDeleteHost = (agent: CIM.AgentK8sResource, bmh: CIM.BareMetalHostK8sResource) => {
-    const toDelete = [];
+    const toDelete = []
     if (agent) {
         toDelete.push(agent)
     }
