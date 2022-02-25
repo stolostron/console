@@ -91,6 +91,7 @@ import {
 } from './AcmFormData'
 import { SyncEditor } from './SyncEditor/SyncEditor'
 import { SyncDiff, SyncDiffType } from './SyncEditor/SyncDiff'
+import { useTranslation } from '../lib/acm-i18next'
 
 export interface AcmDataFormProps {
     formData: FormData
@@ -124,15 +125,13 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const mode = props.mode ?? 'form'
     const isHorizontal = props.isHorizontal ?? false
     const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
-    const [drawerInline, setDrawerInline] = useState(true)
-    const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>('800px')
+    const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>()
     const [copyHint, setCopyHint] = useState<ReactNode>(
         <span style={{ wordBreak: 'keep-all' }}>Copy to clipboard</span>
     )
 
     useResizeObserver(pageRef, (entry) => {
-        const inline = entry.contentRect.width > minWizardSize + defaultPanelSize
-        setDrawerInline(inline)
+        const inline = drawerExpanded && entry.contentRect.width > minWizardSize + defaultPanelSize
         setDrawerMaxSize(inline ? `${Math.round((entry.contentRect.width * 2) / 3)}px` : undefined)
     })
 
@@ -186,7 +185,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 }
                 groupProps={{ sticky: 'top' }}
             >
-                <Drawer isExpanded={drawerExpanded} isInline={drawerInline}>
+                <Drawer isExpanded={drawerExpanded} isInline={true}>
                     <DrawerContent
                         panelContent={
                             <DrawerPanelContent
@@ -338,6 +337,7 @@ export function AcmDataFormDefault(props: {
     showFormErrors: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
+    const { t } = useTranslation()
     const { formData, editorChanges, isHorizontal, showFormErrors, setShowFormErrors } = props
     const [submitText, setSubmitText] = useState(formData.submitText)
     const [submitError, setSubmitError] = useState('')
@@ -387,7 +387,7 @@ export function AcmDataFormDefault(props: {
 
             {editorChanges?.changes?.length > 0 && (
                 <FormSection key={EDITOR_CHANGES}>
-                    <Title headingLevel="h2">{EDITOR_CHANGES}</Title>
+                    <Title headingLevel="h2">{t(EDITOR_CHANGES)}</Title>
                     <FormGroup fieldId="diffs">
                         <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
                     </FormGroup>
@@ -445,6 +445,7 @@ export function AcmDataFormWizard(props: {
     showFormErrors: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
+    const { t } = useTranslation()
     const { formData, editorChanges, isHorizontal, showFormErrors, setShowFormErrors } = props
     const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
     const [submitText, setSubmitText] = useState(formData.submitText)
@@ -519,7 +520,7 @@ export function AcmDataFormWizard(props: {
                 <AcmDataFormDetails formData={formData} wizardSummary={true} />
                 {editorChanges?.changes?.length > 0 && (
                     <FormSection key={EDITOR_CHANGES}>
-                        <Title headingLevel="h2">{EDITOR_CHANGES}</Title>
+                        <Title headingLevel="h2">{t(EDITOR_CHANGES)}</Title>
                         <FormGroup fieldId="diffs">
                             <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
                         </FormGroup>
