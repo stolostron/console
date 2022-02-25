@@ -106,16 +106,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
 
                 // add deployed resource nodes using subscription report
                 if (subscription.report) {
-                    processReport(
-                        subscription.report,
-                        clusterId,
-                        links,
-                        nodes,
-                        clusterNames,
-                        namespace,
-                        subscription,
-                        relatedResources
-                    )
+                    processReport(subscription.report, clusterId, links, nodes, relatedResources)
                 }
             })
         })
@@ -176,7 +167,7 @@ const addSubscriptionRules = (parentId, subscription, links, nodes) => {
     })
 }
 
-const processReport = (report, clusterId, links, nodes, clusterNames, namespace, subscription, relatedResources) => {
+const processReport = (report, clusterId, links, nodes, relatedResources) => {
     // for each resource, add what it's related to
     report = cloneDeep(report)
     if (relatedResources) {
@@ -192,16 +183,7 @@ const processReport = (report, clusterId, links, nodes, clusterNames, namespace,
     })
 
     // process route and service first
-    const serviceMap = processServiceOwner(
-        clusterId,
-        serviceOwners,
-        links,
-        nodes,
-        clusterNames,
-        namespace,
-        subscription,
-        relatedResources
-    )
+    const serviceMap = processServiceOwner(clusterId, serviceOwners, links, nodes, relatedResources)
 
     const services = filter(report.resources, (obj) => {
         const kind = get(obj, 'kind', '')
@@ -209,7 +191,7 @@ const processReport = (report, clusterId, links, nodes, clusterNames, namespace,
     })
 
     // then service
-    processServices(clusterId, services, links, nodes, clusterNames, namespace, serviceMap, subscription)
+    processServices(clusterId, services, links, nodes, serviceMap)
 
     // then the rest
     const other = filter(report.resources, (obj) => {
@@ -218,32 +200,15 @@ const processReport = (report, clusterId, links, nodes, clusterNames, namespace,
     })
 
     other.forEach((resource) => {
-        addSubscriptionDeployedResource(clusterId, resource, links, nodes, clusterNames, namespace, subscription)
+        addSubscriptionDeployedResource(clusterId, resource, links, nodes)
     })
 }
 
 // Route, Ingress, StatefulSet
-const processServiceOwner = (
-    clusterId,
-    serviceOwners,
-    links,
-    nodes,
-    clusterNames,
-    namespace,
-    subscription,
-    relatedResources
-) => {
+const processServiceOwner = (clusterId, serviceOwners, links, nodes, relatedResources) => {
     const servicesMap = {}
     serviceOwners.forEach((serviceOwner, inx) => {
-        const node = addSubscriptionDeployedResource(
-            clusterId,
-            serviceOwner,
-            links,
-            nodes,
-            clusterNames,
-            namespace,
-            subscription
-        )
+        const node = addSubscriptionDeployedResource(clusterId, serviceOwner, links, nodes)
 
         if (relatedResources) {
             // get service info and map it to the object id
@@ -283,7 +248,7 @@ const processServiceOwner = (
     return servicesMap
 }
 
-const processServices = (clusterId, services, links, nodes, clusterNames, namespace, servicesMap, subscription) => {
+const processServices = (clusterId, services, links, nodes, servicesMap) => {
     services.forEach((service, inx) => {
         const serviceName = service.name
         let parentId = servicesMap[serviceName]
@@ -294,7 +259,7 @@ const processServices = (clusterId, services, links, nodes, clusterNames, namesp
             parentId = clusterId
         }
 
-        addSubscriptionDeployedResource(parentId, service, links, nodes, clusterNames, namespace, subscription)
+        addSubscriptionDeployedResource(parentId, service, links, nodes)
     })
 }
 

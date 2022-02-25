@@ -54,7 +54,7 @@ function policyUnknownFilterFn(policySet: PolicySet) {
 function getPresetURIFilters() {
     let presetNames: string[] = [],
         presetNs: string[] = []
-    const urlParams = decodeURIComponent(window.location.search).replace('?', '').split('&')
+    const urlParams = decodeURIComponent(window.location.search)?.replace('?', '')?.split('&') ?? []
     urlParams.forEach((param) => {
         const paramKey = param.split('=')[0]
         const paramValue = param.split('=')[1]
@@ -74,7 +74,6 @@ export default function PolicySetsPage() {
     const { t } = useTranslation()
     const { presetNames, presetNs } = getPresetURIFilters()
     const [policySets] = useRecoilState(policySetsState)
-    // const [placement] = useRecoilState(placementsState) to be used for getting cluster selector
     const [searchFilter, setSearchFilter] = useState<Record<string, string[]>>({
         Name: presetNames,
         Namespace: presetNs,
@@ -254,8 +253,8 @@ export default function PolicySetsPage() {
                             {/* Need to compute all cards here then slice. The PolicySet card render uses usePolicySetSummary which includes a react hook.
                         So paging to a page with less cards than the previous causes a react hook error if rendered in time. */}
                             {filteredPolicySets
-                                .map((policyset: PolicySet, cardIdx: number) => {
-                                    return <PolicySetCard policySet={policyset} cardIdx={cardIdx} />
+                                .map((policyset: PolicySet) => {
+                                    return <PolicySetCard policySet={policyset} />
                                 })
                                 .slice((actualPage - 1) * perPage, (actualPage - 1) * perPage + perPage)}
                         </AcmMasonry>

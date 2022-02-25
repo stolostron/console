@@ -250,10 +250,11 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
 export const updateControlsForNS = (initiatingControl, nsControl, globalControl) => {
     const controlList = getExistingPRControlsSection(initiatingControl, globalControl)
     controlList.forEach((control) => {
-        const existingRuleControl = _.get(control, 'placementrulecombo')
-        const existingruleCheckbox = _.get(control, existingRuleCheckbox)
+        const existingRuleControl = _.get(control, 'placementrulecombo.active')
+        const existingruleCheckbox = _.get(control, `${existingRuleCheckbox}.active`)
         const selectedRuleNameControl = _.get(control, 'selectedRuleName')
-        //update placement rule controls
+        // if user has selected an existing rule in a namespace, but they changed the
+        // namespace, need to unset existing rule choice
         if (existingRuleControl && existingruleCheckbox) {
             _.set(existingruleCheckbox, 'active', false)
             _.set(existingRuleControl, 'active', '')

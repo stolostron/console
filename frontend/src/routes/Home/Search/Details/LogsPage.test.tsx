@@ -6,7 +6,27 @@ import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { nockGetTextPlain, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { wait } from '../../../../lib/test-util'
 import LogsPage from './LogsPage'
+
+jest.mock('@patternfly/react-log-viewer', () => ({
+    __esModule: true,
+    LogViewer: () => {
+        return (
+            <div>
+                <div>
+                    <p>{'Cluster:'}</p>
+                    {'testCluster'}
+                </div>
+                <div>
+                    <p>{'Namespace:'}</p>
+                    {'testNamespace'}
+                </div>
+                <div>{'testLogs'}</div>
+            </div>
+        )
+    },
+}))
 
 beforeEach(() => {
     sessionStorage.clear()
@@ -42,8 +62,12 @@ describe('LogsPage', () => {
             </RecoilRoot>
         )
 
+        await wait(1000)
+
         // Wait for request to finish and check logs are displayed correctly
         await waitFor(() => expect(logs.isDone()).toBeTruthy())
+        await waitFor(() => expect(screen.getByText('testCluster')).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByText('testNamespace')).toBeInTheDocument())
         await waitFor(() => expect(screen.getByText('testLogs')).toBeInTheDocument())
     })
 })
