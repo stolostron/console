@@ -309,9 +309,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
         <div className={classes.body}>
             <TextContent className={classes.titleText}>
                 <Text component={TextVariants.h2}>
-                    {policyReportViolations.length == 1
-                        ? t('1 identified issue')
-                        : t('{0} identified issues').replace('{0}', policyReportViolations.length.toString())}
+                    {t('policy.identified.issues', { count: policyReportViolations.length })}
                 </Text>
                 <Text component={TextVariants.p}>
                     {t(
