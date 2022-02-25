@@ -1,0 +1,77 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicySet
+metadata:
+    name: policy-set-with-placement-aws-gcp
+    namespace: test
+spec:
+    description: |
+        As a customer I want to place policies on my Amazon and Google clusters in my-cluster-set in regions east and west but not on my production clusters.
+    policies: []
+---
+apiVersion: cluster.open-cluster-management.io/v1alpha1
+kind: Placement
+metadata:
+    name: policy-set-with-placement-aws-gcp-1
+    namespace: test
+spec:
+    clusterSets:
+        - cluster-set
+    predicates:
+        - requiredClusterSelector:
+            labelSelector:
+                matchExpressions:
+                    - key: cloud
+                      operator: In
+                      values:
+                        - Amazon
+                    - key: vendor
+                      operator: In
+                      values:
+                        - OpenShift
+                    - key: region
+                      operator: In
+                      values:
+                        - us-east-1
+                        - us-east-2
+                        - us-west-1
+                        - us-west-2
+                    - key: environment
+                      operator: NotIn
+                      values:
+                        - Production
+        - requiredClusterSelector:
+            labelSelector:
+                matchExpressions:
+                    - key: cloud
+                      operator: In
+                      values:
+                        - Google
+                    - key: vendor
+                      operator: In
+                      values:
+                        - OpenShift
+                    - key: region
+                      operator: In
+                      values:
+                        - us-east1
+                        - us-east4
+                        - us-west1
+                        - us-west2
+                    - key: environment
+                      operator: NotIn
+                      values:
+                        - Production                      
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+    name: policy-set-with-placement-aws-gcp-1
+    namespace: test
+placementRef:
+    name: policy-set-with-placement-aws-gcp-1
+    kind: Placement
+    apiGroup: cluster.open-cluster-management.io
+subjects:
+    - name: policy-set-with-placement-aws-gcp
+      kind: PolicySet
+      apiGroup: policy.open-cluster-management.io
