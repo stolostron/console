@@ -53,7 +53,9 @@ export function transformBrowserUrlToFilterPresets(urlSearch: string) {
                     initialPageSize = Number.parseInt(value || '10')
                     break
                 default:
-                    initialFilters[key] = parsedQuery[key] as string[]
+                    typeof parsedQuery[key] === 'string'
+                        ? (initialFilters[key] = [parsedQuery[key]] as string[])
+                        : (initialFilters[key] = parsedQuery[key] as string[])
             }
         })
     }
