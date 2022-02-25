@@ -23,6 +23,7 @@ export interface ClusterProvision {
             name: string
         }
         installLog: string
+        thing: string
     }
     status?: {
         conditions: {
