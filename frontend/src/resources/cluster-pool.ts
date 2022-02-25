@@ -48,11 +48,13 @@ export interface ClusterPool extends IResource {
             name: string
         }
         size: number
+        runningCount?: number
         skipMachinePools?: boolean
     }
     status?: {
         conditions: V1CustomResourceDefinitionCondition[]
         ready?: number
+        standby?: number
         size?: number
     }
 }

@@ -277,10 +277,13 @@ export function ClusterPoolsTable(props: {
                     {
                         header: t('table.available'),
                         cell: (clusterPool: ClusterPool) => {
+                            const ready = clusterPool?.status?.ready === undefined ? 0 : clusterPool?.status?.ready
+                            const standby =
+                                clusterPool?.status?.standby === undefined ? 0 : clusterPool?.status?.standby
                             return (
                                 <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
                                     {t('outOf', {
-                                        firstNumber: clusterPool?.status?.ready,
+                                        firstNumber: ready + standby,
                                         secondNumber: clusterPool.spec!.size,
                                     })}
                                 </span>
@@ -313,7 +316,10 @@ export function ClusterPoolsTable(props: {
                         header: '',
                         cellTransforms: [fitContent],
                         cell: (clusterPool: ClusterPool) => {
-                            if (clusterPool?.status?.ready !== 0) {
+                            const ready = clusterPool?.status?.ready === undefined ? 0 : clusterPool?.status?.ready
+                            const standby =
+                                clusterPool?.status?.standby === undefined ? 0 : clusterPool?.status?.standby
+                            if (ready + standby > 0) {
                                 return (
                                     <RbacButton
                                         onClick={() => {

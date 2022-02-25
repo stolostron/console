@@ -152,6 +152,7 @@ const mockClusterPool: ClusterPool = {
     },
     spec: {
         size: 1,
+        runningCount: 0,
         baseDomain: providerConnection.stringData?.baseDomain!,
         installConfigSecretTemplateRef: {
             name: mockInstallConfigSecret.metadata.name!,
