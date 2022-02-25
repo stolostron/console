@@ -167,9 +167,8 @@ export default function LogsPage(props: {
             </div>
             <LogViewer
                 ref={logViewerRef}
-                hasLineNumbers={true}
                 height={500}
-                data={logs || ''}
+                data={logs ?? ''}
                 theme="dark"
                 isTextWrapped={false}
                 header={
