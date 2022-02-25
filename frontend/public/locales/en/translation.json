@@ -1412,6 +1412,7 @@
     "no": "No",
     "No labels": "No labels",
     "No placement selectors found": "No placement selectors found",
+    "No pods found": "No pods found",
     "No PolicySets found": "No PolicySets found",
     "No PolicySets match the current search filter": "No PolicySets match the current search filter",
     "No Proxy": "No Proxy",

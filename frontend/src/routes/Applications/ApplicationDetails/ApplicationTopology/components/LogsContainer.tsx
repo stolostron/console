@@ -3,8 +3,8 @@
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { fetchRetry, getBackendUrl } from '../../../../../resources'
-import { PageSection, SelectOption, SelectVariant, Select } from '@patternfly/react-core'
-import { AcmAlert, AcmLoadingPage, AcmLogWindow } from '@stolostron/ui-components'
+import { PageSection, SelectOption } from '@patternfly/react-core'
+import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
 import './LogsContainer.css'
 import { createResourceURL } from '../helpers/diagram-helpers'
@@ -16,6 +16,7 @@ export interface ILogsContainerProps {
 }
 
 export function LogsContainer(props: ILogsContainerProps) {
+    let resourceError = ''
     const t = props.t
     const podModel = _.get(props.node, 'specs.podModel')
     const pods = podModel
@@ -25,7 +26,7 @@ export function LogsContainer(props: ILogsContainerProps) {
         : []
 
     if (pods.length === 0) {
-        // set error
+        resourceError = t('No pods found')
     }
 
     let initialPod = ''
@@ -61,8 +62,6 @@ export function LogsContainer(props: ILogsContainerProps) {
         )
     }
     const [selectedPod, setSelectedPod] = useState<string | ''>(initialPod)
-    const [podSelectOpen, setPodSelectOpen] = useState<boolean>(false)
-    const resourceError = ''
     const [logs, setLogs] = useState<string>('')
     const [logsError, setLogsError] = useState<string>()
     const [container, setContainer] = useState<string>(initialContainer)
@@ -158,21 +157,17 @@ export function LogsContainer(props: ILogsContainerProps) {
                 true
             )}
             <span className="pod-dropdown label sectionLabel">{t('Select pod')}</span>
-            <Select
+            <AcmSelect
+                id={'container-select'}
+                label={''}
                 className="custom-select-class"
-                variant={SelectVariant.single}
-                aria-label={t('Select pod')}
-                isOpen={podSelectOpen}
-                onToggle={() => {
-                    setPodSelectOpen(!podSelectOpen)
-                }}
-                selections={selectedPod}
-                onSelect={(_event, value) => {
+                value={selectedPod}
+                isRequired={true}
+                onChange={(value) => {
                     setSelectedPod(value as string)
-                    setPodSelectOpen(false)
                     const selectedPodData = pods.find((item: any) => {
                         return item.name === value
-                    })
+                    }) || {}
                     const selectedPodContainers = selectedPodData.container
                         ? selectedPodData.container.split(';').map((item: string) => {
                               return item.trim()
@@ -207,7 +202,7 @@ export function LogsContainer(props: ILogsContainerProps) {
                         </SelectOption>
                     )
                 })}
-            </Select>
+            </AcmSelect>
             <span className="container-dropdown label sectionLabel">{t('Select container')}</span>
             <AcmLogWindow
                 id={'pod-logs-viewer'}
