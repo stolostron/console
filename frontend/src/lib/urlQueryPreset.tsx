@@ -16,7 +16,8 @@ import queryString from 'query-string'
  *
  * initialSearch - A string to use in the table searchbar.
  *
- * initialSort - Name of the column to sort on, prefixed with an '-' or '' to denote ascending or descending sorting.
+ * TODO update to use the column name instead of the index to support column management
+ * initialSort - Index of the column to sort on, prefixed with an '-' or '' to denote ascending or descending sorting.
  *
  * initialPage - the current page number.
  *
@@ -28,7 +29,7 @@ import queryString from 'query-string'
 export function transformBrowserUrlToFilterPresets(urlSearch: string) {
     const initialFilters: { [key: string]: string[] } = {}
     let initialSearch = ''
-    let initialSort: { colName: string; direction: 'asc' | 'desc' } = { colName: '', direction: 'asc' }
+    let initialSort: { index: string; direction: 'asc' | 'desc' } = { index: '', direction: 'asc' }
     let initialPage = 1
     let initialPageSize = 10
     const parsedQuery = queryString.parse(urlSearch)
@@ -42,7 +43,7 @@ export function transformBrowserUrlToFilterPresets(urlSearch: string) {
                     break
                 case 'sort':
                     initialSort = {
-                        colName: value.startsWith('-') ? value.replace('-', '') : value,
+                        index: value.startsWith('-') ? value.replace('-', '') : value,
                         direction: value.startsWith('-') ? 'asc' : 'desc',
                     }
                     break
