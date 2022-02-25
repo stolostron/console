@@ -9,11 +9,7 @@ import {
     ResourceError,
     ResourceErrorCode,
 } from '../resources'
-import {
-    getPlacementBindingsForResource,
-    getPlacementRulesForResource,
-    getPlacementsForResource,
-} from '../routes/Governance/common/util'
+import { getPlacementBindingsForResource, getPlacementsForResource } from '../routes/Governance/common/util'
 import { deleteResources } from './delete-resources'
 
 export function deletePolicy(
@@ -34,7 +30,7 @@ export function deletePolicy(
 
     if (deletePlacements) {
         resources = [...resources, ...getPlacementsForResource(policy, bindings, placements)]
-        resources = [...resources, ...getPlacementRulesForResource(policy, bindings, placementRules)]
+        resources = [...resources, ...getPlacementsForResource(policy, bindings, placementRules)]
     }
 
     const deleteResourcesResult = deleteResources(resources)
