@@ -10,7 +10,9 @@ import queryString from 'query-string'
 /**
  * transformBrowserUrlToFilterPresets returns preset filters, search text, sorting, current page number and items per page defined in the window.location.search.
  *
- * initialFilters - An arry of { filterID, options[] } objects
+ * initialFilters - An object of { [key: string]: string[] } entries
+ * Where key matches the filter category id (should be a lowercase string)
+ * Where string[] contains strings of the selected category option values
  *
  * initialSearch - A string to use in the table searchbar.
  *
@@ -21,13 +23,10 @@ import queryString from 'query-string'
  * initialPageSize - How many items to display per page.
  *
  * Example usage: ?region=us-east&region=us-south&status=online&status=offline&search=some text goes here&sort=-name&page=5&pageSize=10
- * Example response: {"initialFilters":[{"id":"region","options":["us-east","us-south"]},{"id":"status","options":["online","offline"]}],"initialSearch":"some text goes here","initialSort":{"colName":"name","direction":"asc"},"initialPage":5,"initialPageSize":10}
+ * Example response: {"initialFilters":{"id":"region","options":["us-east","us-south"]},{"id":"status","options":["online","offline"]},"initialSearch":"some text goes here","initialSort":{"colName":"name","direction":"asc"},"initialPage":5,"initialPageSize":10}
  * */
 export function transformBrowserUrlToFilterPresets(urlSearch: string) {
-    const initialFilters: {
-        id: string
-        options: string[]
-    }[] = []
+    const initialFilters: { [key: string]: string[] } = {}
     let initialSearch = ''
     let initialSort: { colName: string; direction: 'asc' | 'desc' } = { colName: '', direction: 'asc' }
     let initialPage = 1
@@ -54,7 +53,7 @@ export function transformBrowserUrlToFilterPresets(urlSearch: string) {
                     initialPageSize = Number.parseInt(value || '10')
                     break
                 default:
-                    initialFilters.push({ id: key, options: parsedQuery[key] as string[] })
+                    initialFilters[key] = parsedQuery[key] as string[]
             }
         })
     }
