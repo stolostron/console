@@ -168,7 +168,9 @@ describe('getSearchLink', () => {
                 properties: { name: 'testing' },
                 showRelated: 'subscriptions',
             })
-        ).toEqual('/multicloud/home/search?filters=%7B%22textsearch%22%3A%22name%3Atesting%22%7D&showrelated=subscriptions')
+        ).toEqual(
+            '/multicloud/home/search?filters=%7B%22textsearch%22%3A%22name%3Atesting%22%7D&showrelated=subscriptions'
+        )
     })
 
     it('should work with array properties', () => {
