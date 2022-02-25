@@ -30,6 +30,7 @@ i18n
         defaultNS: 'translation', // the default file for strings when using useTranslation, etc
         nsSeparator: '~',
         supportedLngs: ['en'], // only languages from this array will attempt to be loaded
+        simplifyPluralSuffix: true
     })
 
 export default i18n

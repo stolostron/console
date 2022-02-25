@@ -38,7 +38,7 @@ export function PolicyViolationIcons2(props: {
     return (
         <StatusIcons
             compliant={props.compliant}
-            compliantTooltip={t('policy.noviolations', { count: props.compliant })}
+            compliantTooltip={t('policies.noviolations', { count: props.compliant })}
             compliantHref={props.compliantHref}
             violations={props.noncompliant}
             violationsTooltip={t('policy.violations', { count: props.noncompliant })}
