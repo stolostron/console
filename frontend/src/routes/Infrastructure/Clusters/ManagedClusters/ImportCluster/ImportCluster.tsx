@@ -61,16 +61,17 @@ import schema from './schema.json'
 
 const minWizardSize = 1000
 const defaultPanelSize = 600
-const EDITOR_CHANGES = 'Editor changes'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation()
     const pageRef = useRef(null)
     const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('import-cluster-yaml') === 'true')
+    const [drawerInline, setDrawerInline] = useState(true)
     const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>('1400px')
 
     useResizeObserver(pageRef, (entry) => {
-        const inline = drawerExpanded && entry.contentRect.width > minWizardSize + defaultPanelSize
+        const inline = entry.contentRect.width > minWizardSize + defaultPanelSize
+        setDrawerInline(inline)
         setDrawerMaxSize(inline ? `${Math.round((entry.contentRect.width * 2) / 3)}px` : undefined)
     })
 
@@ -122,7 +123,7 @@ export default function ImportClusterPage() {
                 }
                 groupProps={{ sticky: 'top' }}
             >
-                <Drawer isExpanded={drawerExpanded} isInline={true}>
+                <Drawer isExpanded={drawerExpanded} isInline={drawerInline}>
                     <DrawerContent
                         panelContent={
                             <DrawerPanelContent
@@ -385,7 +386,7 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                     isRequired
                 />
                 {editorChanges?.changes?.length > 0 && (
-                    <FormGroup fieldId="diffs" label={t(EDITOR_CHANGES)}>
+                    <FormGroup fieldId="diffs" label="Editor changes">
                         <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
                     </FormGroup>
                 )}
