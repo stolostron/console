@@ -40,6 +40,8 @@ DetailsViewDecorator.propTypes = {
     shape: PropTypes.string,
 }
 
+const resourcesWithPods = new Set(['pod', 'replicaset', 'replicationcontroller', 'statefulset', 'daemonset'])
+
 class DetailsView extends React.Component {
     constructor(props) {
         super(props)
@@ -49,7 +51,7 @@ class DetailsView extends React.Component {
         this.state = {
             isLoading: false,
             linkID: '',
-            activeTabKey: 0,
+            activeTabKey: this.props.activeTabKey,
         }
     }
 
@@ -79,14 +81,22 @@ class DetailsView extends React.Component {
 
     handleTabClick(event, tabIndex) {
         this.setState({
-            activeTabKey: tabIndex
+            activeTabKey: tabIndex,
         })
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.selectedNodeId !== this.props.selectedNodeId) {
+            this.setState({
+                activeTabKey: 0,
+            })
+        }
     }
 
     renderResourceURLLink = (resource, t, isLogURL = false) => {
         return (
             <div>
-                <div className='spacer' />
+                <div className="spacer" />
                 <span
                     className="link sectionLabel"
                     id="linkForNodeAction"
@@ -102,7 +112,7 @@ class DetailsView extends React.Component {
                         <use href="#diagramIcons_carbonLaunch" className="label-icon" />
                     </svg>
                 </span>
-                <div className='spacer' />
+                <div className="spacer" />
             </div>
         )
     }
@@ -118,12 +128,13 @@ class DetailsView extends React.Component {
         const details = getNodeDetails(currentNode, currentUpdatedNode, activeFilters, t)
         const name = currentNode.type === 'cluster' ? '' : currentNode.name
         const legend = getLegendTitle(resourceType, t)
-        const { activeTabKey } = this.state
         const searchLink = createResourceSearchLink(currentNode, t)
         const yamlURL = createResourceURL(currentNode, t)
-        const podLogURL = currentNode.type === 'pod' ? createResourceURL(currentNode, t, true) : {}
-        const { namespace, type} = currentNode
+        const { namespace, type } = currentNode
+        const isLogTabHidden = !resourcesWithPods.has(currentNode.type)
+        const { activeTabKey } = this.state
 
+        // Only YAML tab has a key so it will get recreated when switching between nodes
         return (
             <div className="topologyDetails">
                 <div className="detailsHeader">
@@ -142,13 +153,19 @@ class DetailsView extends React.Component {
                     <Tab eventKey={0} title={<TabTitleText>{t('Details')}</TabTitleText>} isHidden={false}>
                         {details.map((detail) => this.renderDetail(detail, t))}
                     </Tab>
-                    <Tab eventKey={1} title={<TabTitleText>{t('Logs')}</TabTitleText>} isHidden={currentNode.type === 'pod'}>
-                        {this.renderResourceURLLink({data: {action: 'open_link', targetLink: podLogURL, name, namespace, kind: type}}, t, true)}
-                        <LogsContainer node={currentNode} t={t} />
+                    <Tab eventKey={1} title={<TabTitleText>{t('Logs')}</TabTitleText>} isHidden={isLogTabHidden}>
+                        <LogsContainer node={currentNode} t={t} renderResourceURLLink={this.renderResourceURLLink} />
                     </Tab>
-                    <Tab eventKey={2} title={<TabTitleText>{t('YAML')}</TabTitleText>} isHidden={false}>
-                        {this.renderResourceURLLink({data: {action: 'open_link', targetLink: yamlURL, name, namespace, kind: type}}, t)}
-                        <YAMLContainer node={currentNode} t={t} />
+                    <Tab
+                        eventKey={2}
+                        title={<TabTitleText>{t('YAML')}</TabTitleText>}
+                        isHidden={currentNode.type === 'cluster'}
+                    >
+                        {this.renderResourceURLLink(
+                            { data: { action: 'open_link', targetLink: yamlURL, name, namespace, kind: type } },
+                            t
+                        )}
+                        <YAMLContainer key={selectedNodeId} node={currentNode} t={t} />
                     </Tab>
                 </Tabs>
             </div>
@@ -338,6 +355,7 @@ DetailsView.propTypes = {
     processActionLink: PropTypes.func,
     selectedNodeId: PropTypes.string,
     options: PropTypes.object,
+    activeTabKey: PropTypes.number,
 }
 
 export default DetailsView

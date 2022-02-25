@@ -16,7 +16,6 @@ import _ from 'lodash'
 import {
     getNodePropery,
     addPropertyToList,
-    createDeployableYamlLink,
     setResourceDeployStatus,
     setPodDeployStatus,
     setSubscriptionDeployStatus,
@@ -26,12 +25,9 @@ import {
     addNodeOCPRouteLocationForCluster,
     addIngressNodeInfo,
     setClusterStatus,
-    createEditLink,
 } from '../helpers/diagram-helpers'
 import { kubeNaming } from '../../../../../components/Topology/helpers/utilities'
 import { showArgoApplicationSetLink } from '../helpers/diagram-helpers-argo'
-
-import { isSearchAvailable } from '../helpers/search-helper'
 
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'

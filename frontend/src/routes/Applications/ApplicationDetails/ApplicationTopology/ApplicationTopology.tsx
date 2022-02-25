@@ -65,7 +65,8 @@ export function ApplicationTopologyPageContent(props: {
         isResizable: boolean,
         disableDrawerHead: boolean,
         drawerPanelBodyHasNoPadding: boolean,
-        panelContent: React.ReactNode | React.ReactNode[]) => {
+        panelContent: React.ReactNode | React.ReactNode[]
+    ) => {
         setDrawerContext({
             isExpanded: true,
             onCloseClick: () => setDrawerContext(undefined),
@@ -88,13 +89,16 @@ export function ApplicationTopologyPageContent(props: {
                             <span
                                 className="how-to-read-text"
                                 tabIndex={0}
-                                onClick={() => setDrawerContent(
-                                    t('How to read topology'),
-                                    true,
-                                    false,
-                                    false,
-                                    false,
-                                    <LegendView t={t} />)}
+                                onClick={() =>
+                                    setDrawerContent(
+                                        t('How to read topology'),
+                                        true,
+                                        false,
+                                        false,
+                                        false,
+                                        <LegendView t={t} />
+                                    )
+                                }
                                 onKeyPress={() => {
                                     // noop function
                                 }}

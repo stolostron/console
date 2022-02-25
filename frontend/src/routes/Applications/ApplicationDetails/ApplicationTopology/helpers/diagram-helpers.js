@@ -36,7 +36,7 @@ import {
     allClustersAreOnline,
     findParentForOwnerID,
 } from './diagram-helpers-utils'
-import { getEditLink, getSearchLink } from './resource-helper'
+import { getEditLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
 import { getURLSearchData } from './diagram-helpers-argo'
 
@@ -713,9 +713,19 @@ export const createResourceURL = (node, t, isLogURL = false) => {
     const name = _.get(node, 'name', '')
 
     if (!isLogURL) {
-        return '/multicloud/home/search/resources?' + encodeURIComponent(`cluster=${cluster}&kind=${type}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`)
+        return (
+            '/multicloud/home/search/resources?' +
+            encodeURIComponent(
+                `cluster=${cluster}&kind=${type}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`
+            )
+        )
     }
-    return '/multicloud/home/search/resources/logs?' + encodeURIComponent(`cluster=${cluster}&kind=${type}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`)
+    return (
+        '/multicloud/home/search/resources/logs?' +
+        encodeURIComponent(
+            `cluster=${cluster}&kind=${type}&apiversion=${apiVersion}&namespace=${namespace}&name=${name}`
+        )
+    )
 }
 
 export const removeReleaseGeneratedSuffix = (name) => {

@@ -3,36 +3,71 @@
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { fetchRetry, getBackendUrl } from '../../../../../resources'
-import { PageSection } from '@patternfly/react-core'
+import { PageSection, SelectOption, SelectVariant, Select } from '@patternfly/react-core'
 import { AcmAlert, AcmLoadingPage, AcmLogWindow } from '@stolostron/ui-components'
-import { TFunction } from 'react-i18next'
+import { TFunction } from 'i18next'
+import './LogsContainer.css'
+import { createResourceURL } from '../helpers/diagram-helpers'
 
 export interface ILogsContainerProps {
     node: any[]
     t: TFunction
+    renderResourceURLLink: (data: any, t: TFunction, isPod: boolean) => void
 }
 
 export function LogsContainer(props: ILogsContainerProps) {
-    // const name = _.get(props.node, 'name', '')
-    // const cluster = _.get(props.node, 'cluster', '')
-    // const namespace = _.get(props.node, 'namespace', '')
-    // const containers = _.get(props.node, 'spec.containers', [])
-    const name = 'helloworld-app-deploy-7998d94b96-s2thh'
-    const cluster = 'local-cluster'
-    const namespace = 'feng'
-    const containers = ['helloworld-app-container']
-    const resourceError = ''
     const t = props.t
+    const podModel = _.get(props.node, 'specs.podModel')
+    const pods = podModel
+        ? Object.keys(podModel).map((key) => {
+              return podModel[key][0]
+          })
+        : []
+
+    if (pods.length === 0) {
+        // set error
+    }
+
+    let initialPod = ''
+    let initialContainers: string[] = []
+    let initialContainer = ''
+    let namespace = ''
+    let cluster = ''
+    let initialPodURL = ''
+    if (pods.length > 0) {
+        initialPod = pods[0].name
+        initialContainers = pods[0].container
+            ? pods[0].container.split(';').map((item: string) => {
+                  return item.trim()
+              })
+            : []
+        initialContainer = initialContainers.length > 0 ? initialContainers[0] : ''
+        namespace = pods[0].namespace
+        cluster = pods[0].cluster
+        initialPodURL = createResourceURL(
+            {
+                cluster,
+                type: pods[0].kind,
+                namespace,
+                name: initialPod,
+                specs: {
+                    raw: {
+                        apiVersion: pods[0].apiversion,
+                    },
+                },
+            },
+            t,
+            true
+        )
+    }
+    const [selectedPod, setSelectedPod] = useState<string | ''>(initialPod)
+    const [podSelectOpen, setPodSelectOpen] = useState<boolean>(false)
+    const resourceError = ''
     const [logs, setLogs] = useState<string>('')
     const [logsError, setLogsError] = useState<string>()
-    const [container, setContainer] = useState<string>(sessionStorage.getItem(`${name}-${cluster}-container`) || '')
-
-    useEffect(() => {
-        if (containers.length > 0 && sessionStorage.getItem(`${name}-${cluster}-container`) === null) {
-            sessionStorage.setItem(`${name}-${cluster}-container`, containers[0])
-            setContainer(containers[0])
-        }
-    }, [containers, cluster, name])
+    const [container, setContainer] = useState<string>(initialContainer)
+    const [currentContainers, setCurrentContainers] = useState<string[]>(initialContainers)
+    const [currentPodURL, setCurrentPodURL] = useState<string>(initialPodURL)
 
     useEffect(() => {
         if (cluster !== 'local-cluster' && container !== '') {
@@ -41,7 +76,7 @@ export function LogsContainer(props: ILogsContainerProps) {
                 method: 'GET',
                 url:
                     getBackendUrl() +
-                    `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${namespace}/${name}/${container}?tailLines=1000`,
+                    `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${namespace}/${selectedPod}/${container}?tailLines=1000`,
                 signal: abortController.signal,
                 retries: process.env.NODE_ENV === 'production' ? 2 : 0,
                 headers: { Accept: '*/*' },
@@ -59,7 +94,7 @@ export function LogsContainer(props: ILogsContainerProps) {
                 method: 'GET',
                 url:
                     getBackendUrl() +
-                    `/api/v1/namespaces/${namespace}/pods/${name}/log?container=${container}&tailLines=1000`,
+                    `/api/v1/namespaces/${namespace}/pods/${selectedPod}/log?container=${container}&tailLines=1000`,
                 signal: abortController.signal,
                 retries: process.env.NODE_ENV === 'production' ? 2 : 0,
                 headers: { Accept: '*/*' },
@@ -72,7 +107,7 @@ export function LogsContainer(props: ILogsContainerProps) {
                     setLogsError(err.message)
                 })
         }
-    }, [cluster, container])
+    }, [cluster, container, selectedPod])
 
     if (resourceError !== '') {
         return (
@@ -81,7 +116,7 @@ export function LogsContainer(props: ILogsContainerProps) {
                     noClose={true}
                     variant={'danger'}
                     isInline={true}
-                    title={`${t('Error querying resource logs:')} ${name}`}
+                    title={`${t('Error querying resource logs:')} ${selectedPod}`}
                     subtitle={resourceError}
                 />
             </PageSection>
@@ -100,7 +135,7 @@ export function LogsContainer(props: ILogsContainerProps) {
                     noClose={true}
                     variant={'danger'}
                     isInline={true}
-                    title={`${t('Error querying resource logs:')} ${name}`}
+                    title={`${t('Error querying resource logs:')} ${selectedPod}`}
                     subtitle={logsError}
                 />
             </PageSection>
@@ -108,17 +143,83 @@ export function LogsContainer(props: ILogsContainerProps) {
     }
 
     return (
-        <AcmLogWindow
-            id={'pod-logs-viewer'}
-            cluster={cluster}
-            namespace={namespace}
-            initialContainer={container}
-            onSwitchContainer={(newContainer: string | undefined) => {
-                setContainer(newContainer || container)
-                sessionStorage.setItem(`${name}-${cluster}-container`, newContainer || container)
-            }}
-            containers={containers}
-            logs={logs || ''}
-        />
+        <div>
+            {props.renderResourceURLLink(
+                {
+                    data: {
+                        action: 'open_link',
+                        targetLink: currentPodURL,
+                        name: selectedPod,
+                        namespace,
+                        kind: 'pod',
+                    },
+                },
+                t,
+                true
+            )}
+            <span className="pod-dropdown label sectionLabel">{t('Select pod')}</span>
+            <Select
+                className="custom-select-class"
+                variant={SelectVariant.single}
+                aria-label={t('Select pod')}
+                isOpen={podSelectOpen}
+                onToggle={() => {
+                    setPodSelectOpen(!podSelectOpen)
+                }}
+                selections={selectedPod}
+                onSelect={(_event, value) => {
+                    setSelectedPod(value as string)
+                    setPodSelectOpen(false)
+                    const selectedPodData = pods.find((item: any) => {
+                        return item.name === value
+                    })
+                    const selectedPodContainers = selectedPodData.container
+                        ? selectedPodData.container.split(';').map((item: string) => {
+                              return item.trim()
+                          })
+                        : []
+                    setCurrentContainers(selectedPodContainers)
+                    const selectedPodInitialContainer = selectedPodContainers.length > 0 ? selectedPodContainers[0] : ''
+                    setContainer(selectedPodInitialContainer)
+                    setCurrentPodURL(
+                        createResourceURL(
+                            {
+                                cluster: selectedPodData.cluster,
+                                type: 'pod',
+                                namespace: selectedPodData.namespace,
+                                name: value,
+                                specs: {
+                                    raw: {
+                                        apiVersion: selectedPodData.apiversion,
+                                    },
+                                },
+                            },
+                            t,
+                            true
+                        )
+                    )
+                }}
+            >
+                {pods.map((pod: any) => {
+                    return (
+                        <SelectOption key={pod.name} value={pod.name}>
+                            {pod.name}
+                        </SelectOption>
+                    )
+                })}
+            </Select>
+            <span className="container-dropdown label sectionLabel">{t('Select container')}</span>
+            <AcmLogWindow
+                id={'pod-logs-viewer'}
+                cluster={cluster}
+                namespace={namespace}
+                initialContainer={container}
+                onSwitchContainer={(newContainer: string | undefined) => {
+                    setContainer(newContainer || container)
+                }}
+                containers={currentContainers}
+                logs={logs || ''}
+            />
+        </div>
     )
 }

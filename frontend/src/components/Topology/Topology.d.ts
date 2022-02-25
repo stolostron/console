@@ -27,6 +27,13 @@ export default function Topology(props: {
     canUpdateStatuses?: boolean
     processActionLink?: (resource: any, toggleLoading: boolean) => void
     searchUrl?: string
-    setDrawerContent?: (title: string, isInline: boolean, isResizable: boolean, disableDrawerHead: boolean, drawerPanelBodyHasNoPadding: boolean, panelContent: React.ReactNode | React.ReactNode[]) => void
+    setDrawerContent?: (
+        title: string,
+        isInline: boolean,
+        isResizable: boolean,
+        disableDrawerHead: boolean,
+        drawerPanelBodyHasNoPadding: boolean,
+        panelContent: React.ReactNode | React.ReactNode[]
+    ) => void
     t: (key: any) => string
 }): JSX.Element

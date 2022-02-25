@@ -1697,6 +1697,8 @@
     "Select a cluster to view details": "Select a cluster to view details",
     "Select a namespace for the credential": "Select a namespace for the credential",
     "Select an active cloud name for the credential.": "Select an active cloud name for the credential.",
+    "Select container": "Select container",
+    "Select pod": "Select pod",
     "Select the credentials type": "Select the credentials type",
     "Service account JSON key": "Service account JSON key",
     "Service Name": "Service Name",
