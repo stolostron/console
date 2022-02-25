@@ -1,0 +1,39 @@
+/* Copyright Contributors to the Open Cluster Management project */
+import { render } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { waitForText } from '../../../../lib/test-util'
+import { PolicyTemplateDetailsPage } from './PolicyTemplateDetailsPage'
+
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
+    useParams: () => ({
+        namespace: 'test',
+        name: 'policy-set-with-1-placement-policy',
+        clusterName: 'local-cluster',
+        apiGroup: 'policy.open-cluster-management.io',
+        apiVersion: 'v1',
+        kind: 'ConfigurationPolicy',
+        templateName: 'policy-set-with-1-placement-policy-1',
+    }),
+    useRouteMatch: () => ({
+        url: '/multicloud/governance/policies/details/test/policy-set-with-1-placement-policy-1/template/local-cluster/policy.open-cluster-management.io/v1/ConfigurationPolicy/policy-set-with-1-placement-policy-1',
+    }),
+}))
+
+describe('Policy Template Details Page', () => {
+    test('Should render Policy Template Details Page', async () => {
+        render(
+            <RecoilRoot>
+                <MemoryRouter>
+                    <PolicyTemplateDetailsPage />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+
+        // wait for page load - looking for breadcrumb items
+        await waitForText('Policies')
+        await waitForText('policy-set-with-1-placement-policy')
+        await waitForText('policy-set-with-1-placement-policy-1', true) // policy-set-with-1-placement-policy-1 is in breadcurmb and also the page header - so set multipleAllowed prop to true
+    })
+})

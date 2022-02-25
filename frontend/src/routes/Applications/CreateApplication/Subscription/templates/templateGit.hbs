@@ -1,0 +1,83 @@
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Github channel ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{#unless channelNamespace}}
+{{#unless channelNamespaceExists}}
+---
+apiVersion: v1                      
+kind: Namespace
+metadata:
+  name: {{{channelName}}}-ns
+{{/unless}}
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: Channel
+metadata:
+  annotations:
+    apps.open-cluster-management.io/reconcile-rate: {{{gitReconcileRate}}}
+  name: {{{channelName}}}
+  namespace: {{{channelName}}}-ns
+  {{#if selfLinks}}
+  selfLink: {{{selfLinks.Channel}}}
+  {{/if}}
+spec:
+  type: Git
+{{#if githubURL}}
+  pathname: '{{{githubURL}}}'
+{{/if}}
+{{#if gitInsecureSkipVerify}}
+  insecureSkipVerify: true
+{{/if}}
+{{#if githubUser}}
+  secretRef:
+    name: {{{channelName}}}-auth
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{{channelName}}}-auth
+  namespace: {{{channelName}}}-ns
+data:
+  user: {{{githubUser}}}
+  accessToken: {{{githubAccessId}}}
+{{/if}}
+{{/unless}}      
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: Subscription
+metadata:
+  annotations:
+    apps.open-cluster-management.io/git-branch: {{{githubBranch}}}
+    apps.open-cluster-management.io/git-path: {{{githubPath}}}
+    {{#if gitDesiredCommit}}
+    apps.open-cluster-management.io/git-desired-commit: {{{gitDesiredCommit}}}
+    {{/if}}
+    {{#if gitTag}}
+    apps.open-cluster-management.io/git-tag: {{{gitTag}}}
+    {{/if}}
+    {{#if gitReconcileOption}}
+    apps.open-cluster-management.io/reconcile-option: {{{gitReconcileOption}}}
+    {{/if}}
+    {{#if gitSubReconcileRate}}
+    apps.open-cluster-management.io/reconcile-rate: off
+    {{/if}}
+  labels:
+    app: {{{@root.name}}}
+  name: {{{@root.name}}}-subscription-{{uniqueGroupID}}
+  namespace: {{{@root.namespace}}}
+  {{#if selfLinks}}
+  selfLink: {{{selfLinks.Subscription}}}
+  {{/if}}
+spec:
+{{#if ansibleSecretName}} 
+  hooksecretref: 
+    name: {{{ansibleSecretName}}}
+{{/if}}
+{{#if channelNamespace}}
+  channel: {{{channelNamespace}}}/{{{channelName}}}
+{{else}}
+  channel: {{{channelName}}}-ns/{{{channelName}}}
+{{/if}}

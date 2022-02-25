@@ -2,12 +2,9 @@
 import { AcmPageContent } from '@stolostron/ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { useRecoilValue } from 'recoil'
-import { configMapsState } from '../../../../atoms'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 import {
     fetchSecret,
-    getAIConfigMap,
     savePullSecret,
     saveSSHKey,
     onEditNtpSources,
@@ -21,30 +18,25 @@ type DetailsTabProps = {
     bareMetalHosts: CIM.BareMetalHostK8sResource[]
 }
 
-const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts }) => {
-    const configMaps = useRecoilValue(configMapsState)
-    const aiConfigMap = getAIConfigMap(configMaps)
-    return (
-        <AcmPageContent id="overview">
-            <PageSection>
-                <EnvironmentErrors infraEnv={infraEnv} docVersion={DOC_VERSION} />
-                <Card>
-                    <CardBody>
-                        <EnvironmentDetails
-                            infraEnv={infraEnv}
-                            aiConfigMap={aiConfigMap}
-                            fetchSecret={fetchSecret}
-                            onEditPullSecret={savePullSecret}
-                            onEditSSHKey={saveSSHKey}
-                            onEditNtpSources={onEditNtpSources}
-                            hasAgents={!!infraAgents.length}
-                            hasBMHs={!!bareMetalHosts.length}
-                        />
-                    </CardBody>
-                </Card>
-            </PageSection>
-        </AcmPageContent>
-    )
-}
+const DetailsTab: React.FC<DetailsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts }) => (
+    <AcmPageContent id="overview">
+        <PageSection>
+            <EnvironmentErrors infraEnv={infraEnv} docVersion={DOC_VERSION} />
+            <Card>
+                <CardBody>
+                    <EnvironmentDetails
+                        infraEnv={infraEnv}
+                        fetchSecret={fetchSecret}
+                        onEditPullSecret={savePullSecret}
+                        onEditSSHKey={saveSSHKey}
+                        onEditNtpSources={onEditNtpSources}
+                        hasAgents={!!infraAgents.length}
+                        hasBMHs={!!bareMetalHosts.length}
+                    />
+                </CardBody>
+            </Card>
+        </PageSection>
+    </AcmPageContent>
+)
 
 export default DetailsTab

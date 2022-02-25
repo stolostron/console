@@ -30,7 +30,6 @@ import {
 
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { isBMPlatform } from '../../../../InfraEnvironments/utils'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 
 const {
@@ -186,10 +185,6 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onSaveBMH={onSaveBMH}
                 onCreateBMH={getOnCreateBMH(infraEnv) /* AI Flow specific. Not called for CIM. */}
                 onSaveISOParams={getOnSaveISOParams(infraEnv) /* AI Flow specific. Not called for CIM. */}
-                isBMPlatform={
-                    /* So far AI Flow specific - used in Add host modal only. Fix in case CIM ever needs it. Not called for CIM. */
-                    isBMPlatform(infraEnv)
-                }
                 // onFormSaveError={setErrorHandler}
                 onSaveHostsDiscovery={(values) =>
                     onDiscoveryHostsNext({

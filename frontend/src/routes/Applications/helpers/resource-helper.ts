@@ -65,7 +65,7 @@ export const getAge = (item: IResource, locale: string, timestampKey: string) =>
 
 export const getSearchLink = (params: any) => {
     const { properties, showRelated } = params
-    const queryParams = []
+    const queryParams: { filters?: string; showrelated?: string } = {}
     let textSearch = ''
 
     _.entries(properties).forEach(([key, value]) => {
@@ -73,12 +73,14 @@ export const getSearchLink = (params: any) => {
     })
 
     if (textSearch) {
-        queryParams.push(`filters={"textsearch":"${encodeURIComponent(textSearch)}"}`)
+        queryParams.filters = `{"textsearch":"${textSearch}"}`
     }
     if (showRelated) {
-        queryParams.push(`showrelated=${showRelated}`)
+        queryParams.showrelated = showRelated
     }
-    return `/multicloud/home/search${queryParams.length ? '?' : ''}${queryParams.join('&')}`
+    const query = queryString.stringify(queryParams)
+    const search = query ? `?${query}` : ''
+    return `/multicloud/home/search${search}`
 }
 
 export const getEditLink = (params: {

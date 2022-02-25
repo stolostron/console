@@ -12,8 +12,8 @@ import {
     KebabToggle,
     Stack,
 } from '@patternfly/react-core'
-import { AcmDrawerContext } from '@stolostron/ui-components'
-import { useContext, useState } from 'react'
+import { AcmAlert, AcmDrawerContext } from '@stolostron/ui-components'
+import { useContext, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { ConfirmModal, IConfirmModalProps } from '../../../../components/ConfirmModal'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
@@ -23,14 +23,43 @@ import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViola
 import { PolicyViolationIcons } from '../../components/PolicyViolations'
 import { IPolicyRisks } from '../../useGovernanceData'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
-import { usePolicySetSummary } from '../usePolicySetSummary'
+import { IPolicySetSummary, usePolicySetSummary } from '../usePolicySetSummary'
 
-export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: number }) {
-    const { policySet, cardIdx } = props
+const deletePolicySetMessage =
+    'Are you sure you want to delete <emphasis>{{name}}</emphasis>  in namespace <emphasis>{{namespace}}</emphasis>?'
+
+function getClusterRisks(policySetSummary: IPolicySetSummary) {
+    const clusterViolationCount = policySetSummary.clusterViolations
+    const clusterNonViolationCount = policySetSummary.clusterCount - clusterViolationCount
+    const clusterRisks: IPolicyRisks = {
+        synced: clusterNonViolationCount,
+        high: clusterViolationCount,
+        medium: 0,
+        low: 0,
+        unknown: 0,
+    }
+    return clusterRisks
+}
+
+function getPolicyRisks(policySetSummary: IPolicySetSummary) {
+    const policyViolationCount = policySetSummary.policyViolations
+    const policyUnknownCount = policySetSummary.policyUnknownStatusCount
+    const policyNonViolationCount = policySetSummary.policyCount - policyViolationCount - policyUnknownCount
+    const policyRisks: IPolicyRisks = {
+        synced: policyNonViolationCount,
+        high: policyViolationCount,
+        medium: 0,
+        low: 0,
+        unknown: policyUnknownCount,
+    }
+    return policyRisks
+}
+
+export default function PolicySetCard(props: { policySet: PolicySet }) {
+    const { policySet } = props
     const { t } = useTranslation()
     const { setDrawerContext } = useContext(AcmDrawerContext)
-    const [cardOpenIdx, setCardOpenIdx] = useState<number>()
-    const policySetSummary = usePolicySetSummary(policySet)
+    const [isKebabOpen, setIsKebabOpen] = useState<boolean>(false)
     const history = useHistory()
     const [modalProps, setModalProps] = useState<IConfirmModalProps>({
         open: false,
@@ -39,33 +68,39 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
         title: 'deleteModal',
         message: '',
     })
+    const policySetSummary = usePolicySetSummary(policySet)
 
-    function onCardToggle(cardIdx: number) {
-        if (cardOpenIdx === cardIdx) {
-            setCardOpenIdx(undefined)
-        } else setCardOpenIdx(cardIdx)
+    const { clusterRisks, policyRisks } = useMemo(() => {
+        const clusterRisks = getClusterRisks(policySetSummary)
+        const policyRisks = getPolicyRisks(policySetSummary)
+        return { policySetSummary, clusterRisks, policyRisks }
+    }, [policySetSummary])
+
+    function onClick(event: React.MouseEvent) {
+        if (!event.currentTarget.contains(event.target as Node)) {
+            return
+        }
+        setDrawerContext({
+            isExpanded: true,
+            onCloseClick: () => setDrawerContext(undefined),
+            panelContent: <PolicySetDetailSidebar policySet={policySet} />,
+            panelContentProps: { defaultSize: '40%' },
+            isInline: true,
+            isResizable: true,
+        })
     }
 
-    const clusterViolationCount = policySetSummary.clusterViolations
-    const clusterNonViolationCount = policySetSummary.clusterCount - clusterViolationCount
-    const totalClusterCount = policySetSummary.clusterCount
-    const clusterRisks: IPolicyRisks = {
-        synced: clusterNonViolationCount,
-        high: clusterViolationCount,
-        medium: 0,
-        low: 0,
-        unknown: 0,
+    function onToggle(
+        isOpen: boolean,
+        event: MouseEvent | KeyboardEvent | React.KeyboardEvent<any> | React.MouseEvent<HTMLButtonElement>
+    ) {
+        event.stopPropagation()
+        setIsKebabOpen(isOpen)
     }
-    const policyViolationCount = policySetSummary.policyViolations
-    const policyUnknownCount = policySetSummary.policyUnknownStatusCount
-    const policyNonViolationCount = policySetSummary.policyCount - policyViolationCount - policyUnknownCount
-    const totalPolicyCount = policySetSummary.policyCount
-    const policyRisks: IPolicyRisks = {
-        synced: policyNonViolationCount,
-        high: policyViolationCount,
-        medium: 0,
-        low: 0,
-        unknown: policyUnknownCount,
+
+    function onSelectOverflow(event?: React.SyntheticEvent<HTMLDivElement>) {
+        event?.stopPropagation()
+        setIsKebabOpen(false)
     }
 
     return (
@@ -73,15 +108,18 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
             isRounded
             isHoverable
             isFullHeight
-            key={`policyset-${cardIdx}`}
+            id={`policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`}
+            key={`policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`}
             style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
+            onClick={onClick}
         >
             <ConfirmModal {...modalProps} />
             <CardHeader isToggleRightAligned={true}>
                 <CardActions>
                     <Dropdown
-                        toggle={<KebabToggle onToggle={() => onCardToggle(cardIdx)} />}
-                        isOpen={cardOpenIdx === cardIdx}
+                        onSelect={onSelectOverflow}
+                        toggle={<KebabToggle onToggle={onToggle} />}
+                        isOpen={isKebabOpen}
                         isPlain
                         dropdownItems={[
                             <DropdownItem
@@ -91,7 +129,9 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                                         isExpanded: true,
                                         onCloseClick: () => setDrawerContext(undefined),
                                         panelContent: <PolicySetDetailSidebar policySet={policySet} />,
-                                        panelContentProps: { minSize: '50%' },
+                                        panelContentProps: { defaultSize: '40%' },
+                                        isInline: true,
+                                        isResizable: true,
                                     })
                                 }}
                             >
@@ -113,7 +153,7 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                             <DropdownItem
                                 key="delete"
                                 onClick={() => {
-                                    setCardOpenIdx(undefined)
+                                    setIsKebabOpen(false)
                                     setModalProps({
                                         open: true,
                                         title: t('Delete policy set'),
@@ -126,26 +166,54 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
                                                     namespace: policySet.metadata.namespace,
                                                 },
                                             })
-                                            setModalProps({
-                                                open: false,
-                                                confirm: () => {},
-                                                cancel: () => {},
-                                                title: '',
-                                                message: '',
-                                            })
+                                                .promise.then(() => {
+                                                    setModalProps({
+                                                        open: false,
+                                                        confirm: () => {},
+                                                        cancel: () => {},
+                                                        title: '',
+                                                        message: '',
+                                                    })
+                                                    setDrawerContext(undefined)
+                                                })
+                                                .catch((err) => {
+                                                    setModalProps((currentModalProps) => {
+                                                        const copy = { ...currentModalProps }
+                                                        copy.message = (
+                                                            <div>
+                                                                <Trans
+                                                                    i18nKey={t(deletePolicySetMessage)}
+                                                                    components={{ emphasis: <em /> }}
+                                                                    values={{
+                                                                        name: policySet.metadata.name,
+                                                                        namespace: policySet.metadata.namespace,
+                                                                    }}
+                                                                />
+                                                                <AcmAlert
+                                                                    isInline
+                                                                    noClose
+                                                                    variant="danger"
+                                                                    title={t('Error ocurred while deleting PolicySet')}
+                                                                    message={err.message}
+                                                                />
+                                                            </div>
+                                                        )
+                                                        return copy
+                                                    })
+                                                })
                                         },
                                         confirmText: 'Delete',
                                         message: (
-                                            <Trans
-                                                i18nKey={t(
-                                                    'Are you sure you want to delete <emphasis>{{name}}</emphasis>  in namespace <emphasis>{{namespace}}</emphasis>?'
-                                                )}
-                                                components={{ emphasis: <em /> }}
-                                                values={{
-                                                    name: policySet.metadata.name,
-                                                    namespace: policySet.metadata.namespace,
-                                                }}
-                                            />
+                                            <div>
+                                                <Trans
+                                                    i18nKey={t(deletePolicySetMessage)}
+                                                    components={{ emphasis: <em /> }}
+                                                    values={{
+                                                        name: policySet.metadata.name,
+                                                        namespace: policySet.metadata.namespace,
+                                                    }}
+                                                />
+                                            </div>
                                         ),
                                         isDanger: true,
                                         cancel: () => {
@@ -178,20 +246,20 @@ export default function PolicySetCard(props: { policySet: PolicySet; cardIdx: nu
             <CardBody>
                 <Stack hasGutter>
                     {policySet.spec.description && <div>{policySet.spec.description ?? ''}</div>}
-                    {totalClusterCount > 0 && (
+                    {policySetSummary.clusterCount > 0 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             <span>
-                                <strong>{totalClusterCount}</strong> clusters
+                                <strong>{policySetSummary.clusterCount}</strong> clusters
                             </span>
                             <div style={{ paddingLeft: 16 }}>
                                 <ClusterPolicyViolationIcons risks={clusterRisks} />
                             </div>
                         </div>
                     )}
-                    {totalPolicyCount > 0 && (
+                    {policySetSummary.policyCount > 0 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             <span>
-                                <strong>{totalPolicyCount}</strong> policies
+                                <strong>{policySetSummary.policyCount}</strong> policies
                             </span>
                             <div style={{ paddingLeft: 16 }}>
                                 <PolicyViolationIcons risks={policyRisks} />

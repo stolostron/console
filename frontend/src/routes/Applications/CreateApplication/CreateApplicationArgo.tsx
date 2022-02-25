@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// import { ArgoWizard } from '/Users/rbrunopi/go/src/github.com/main/react-form-wizard/wizards/Argo/ArgoWizard' // import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
+
+import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
 import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
 import { PageSection } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@stolostron/ui-components'
 import moment from 'moment-timezone'
 import { useMemo } from 'react'
-import { useHistory } from 'react-router'
+import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -25,7 +26,7 @@ const Portals = Object.freeze({
     cancelBtn: 'cancel-button-portal-id',
 })
 
-export default function CreateApplicationPage() {
+export default function CreateArgoApplicationSetPage() {
     const { t } = useTranslation()
 
     // create portals for buttons in header
@@ -72,7 +73,10 @@ export function CreateApplicationArgo() {
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
     const [channels] = useRecoilState(channelsState)
-    // const helmChannels = useMemo(() => channels.filter((channel) => channel.spec.type === 'HelmRepo'), [channels])
+    const gitChannels = useMemo(
+        () => channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub'),
+        [channels]
+    )
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
@@ -114,5 +118,24 @@ export function CreateApplicationArgo() {
             }
             timeZones={timeZones}
         />
+
+        // <ArgoWizard
+        //     addClusterSets={NavigationPath.clusterSets}
+        //     ansibleCredentials={availableAnsibleCredentials}
+        //     argoServers={availableArgoNS}
+        //     namespaces={availableNamespace}
+        //     placements={availablePlacements}
+        //     onCancel={() => history.push('.')}
+        //     onSubmit={(resources) =>
+        //         createResources(resources as IResource[]).then((error) => {
+        //             history.push(NavigationPath.applications)
+        //             return error
+        //         })
+        //     }
+        //     // gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
+        //     // helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
+        //     // channels={gitChannels as unknown as any}
+        //     timeZones={timeZones}
+        // />
     )
 }

@@ -29,10 +29,18 @@ export const createDownloadFile = (filename: string, content: string, type?: str
 }
 
 export function getCookie(name: string) {
+    if (!document?.cookie) return undefined
     const value = `; ${document.cookie}`
     const parts = value.split(`; ${name}=`)
     if (parts.length === 2) {
-        const cookie = parts.pop()
+        const cookie = parts[parts.length - 1]
         if (cookie) return cookie.split(';').shift()
     }
+}
+
+export function getGroupFromApiVersion(apiVersion: string) {
+    if (apiVersion.indexOf('/') >= 0) {
+        return { apiGroup: apiVersion.split('/')[0], version: apiVersion.split('/')[1] }
+    }
+    return { apiGroup: '', version: apiVersion }
 }
