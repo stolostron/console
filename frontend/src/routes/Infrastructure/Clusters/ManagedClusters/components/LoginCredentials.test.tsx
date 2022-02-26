@@ -79,21 +79,21 @@ describe('LoginCredentials', () => {
                 <LoginCredentials canGetSecret={true} />
             </ClusterContext.Provider>
         )
-        await waitFor(() => screen.getByText('credentials.show'))
+        await waitFor(() => screen.getByText('Reveal credentials'))
 
         expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
         userEvent.click(screen.getByTestId('login-credentials'))
 
-        await waitFor(() => screen.getByText('credentials.loading'))
-        await waitForNotText('credentials.loading')
+        await waitFor(() => screen.getByText('Loading credentials'))
+        await waitForNotText('Loading credentials')
 
         await waitForNock(nock)
-        await waitFor(() => screen.getByText('credentials.hide'))
+        await waitFor(() => screen.getByText('Hide credentials'))
 
         expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
         userEvent.click(screen.getByTestId('login-credentials'))
 
-        await waitFor(() => screen.getByText('credentials.show'))
+        await waitFor(() => screen.getByText('Reveal credentials'))
     })
     test('renders disabled toggle', async () => {
         nockGet(mockKubeadminSecret)
@@ -103,9 +103,9 @@ describe('LoginCredentials', () => {
             </ClusterContext.Provider>
         )
         expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
-        await waitFor(() => screen.getByText('credentials.show'))
+        await waitFor(() => screen.getByText('Reveal credentials'))
         userEvent.click(screen.getByTestId('login-credentials'))
-        expect(screen.getByText('credentials.show')).toBeInTheDocument()
+        expect(screen.getByText('Reveal credentials')).toBeInTheDocument()
     })
     test('renders as a hyphen when secret name is not set', () => {
         render(
@@ -124,10 +124,10 @@ describe('LoginCredentials', () => {
             </ClusterContext.Provider>
         )
         expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
-        await waitFor(() => screen.getByText('credentials.show'))
+        await waitFor(() => screen.getByText('Reveal credentials'))
         userEvent.click(screen.getByTestId('login-credentials'))
-        await waitFor(() => screen.getByText('credentials.loading'))
+        await waitFor(() => screen.getByText('Loading credentials'))
         await waitForNocks([nock])
-        await waitFor(() => screen.getByText('credentials.failed'))
+        await waitFor(() => screen.getByText('Failed'))
     })
 })

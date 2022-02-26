@@ -73,8 +73,8 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
     const renderConfirmCheckbox = () => {
         const isAppKind = props.appKind === ApplicationKind
         const appTypeMsg = isAppKind
-            ? 'Remove application related resources'
-            : 'Remove applicationset related resources'
+            ? props.t('Remove Application related resources')
+            : props.t('Remove ApplicationSet related resources')
 
         return (
             <React.Fragment>
@@ -83,7 +83,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                         dangerouslySetInnerHTML={{
                             __html: `
                     ${props.t('Select {{appType} to delete {{name}} and all related resources.', {
-                        appType: getItalicSpan(props.t(appTypeMsg)),
+                        appType: getItalicSpan(appTypeMsg),
                         name: props.resource.metadata?.name!,
                     })}
                     `,
@@ -95,7 +95,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                         id={'remove-app-resources'}
                         isChecked={isAppKind ? removeAppResources : removeAppSetResource}
                         onChange={isAppKind ? toggleRemoveAppRsources : toggleRemoveAppSetResources}
-                        label={props.t(appTypeMsg)}
+                        label={appTypeMsg}
                     />
                 </div>
             </React.Fragment>
@@ -228,7 +228,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                             <p
                                 dangerouslySetInnerHTML={{
                                     __html: `${props.t(
-                                        'The following Argo application(s) deployed by the applicationset will also be deleted:'
+                                        'The following Argo application(s) deployed by the application set will also be deleted:'
                                     )}`,
                                 }}
                             />
@@ -253,9 +253,9 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
             return props.t('Are you sure that you want to continue?')
         }
     }
-    const modalTitle = props.t('Permanently delete {{name}} {{type}}?', {
+    const modalTitle = props.t('Permanently delete {{type}} {{name}}?', {
         name: props.resource.metadata?.name!,
-        type: props.appKind.toLowerCase(),
+        type: props.appKind,
     })
     return (
         <AcmModal

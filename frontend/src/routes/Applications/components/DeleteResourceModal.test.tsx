@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import { useTranslation } from '../../../lib/acm-i18next'
+import i18n from 'i18next'
 import {
     ApplicationApiVersion,
     ApplicationKind,
@@ -12,7 +12,8 @@ import {
 import { DeleteResourceModal } from './DeleteResourceModal'
 import userEvent from '@testing-library/user-event'
 
-const { t } = useTranslation()
+
+const t = i18n.t
 
 describe('DeleteResourceModal', () => {
     it('should render delete ACM app no related resources', () => {
@@ -44,7 +45,7 @@ describe('DeleteResourceModal', () => {
             />
         )
 
-        expect(getByText('Permanently delete acmapp application?')).toBeTruthy()
+        expect(getByText('Permanently delete Application acmapp?')).toBeTruthy()
     })
 
     it('should render delete ACM app with some related resources', () => {
@@ -96,7 +97,7 @@ describe('DeleteResourceModal', () => {
             />
         )
 
-        expect(getByText('Permanently delete acmapp2 application?')).toBeTruthy()
+        expect(getByText('Permanently delete Application acmapp2?')).toBeTruthy()
         userEvent.click(screen.getAllByRole('checkbox')[0])
         expect(screen.getAllByRole('checkbox')[0]).toBeChecked()
         expect(getByText('feng-mortgagers-subscription [Subscription]')).toBeTruthy()
@@ -257,7 +258,7 @@ describe('DeleteResourceModal', () => {
             />
         )
 
-        expect(getByText('Permanently delete appset1 applicationset?')).toBeTruthy()
+        expect(getByText('Permanently delete ApplicationSet appset1?')).toBeTruthy()
     })
 
     it('should render delete appset with placement', () => {
@@ -291,9 +292,9 @@ describe('DeleteResourceModal', () => {
             />
         )
 
-        expect(getByText('Permanently delete appset2 applicationset?')).toBeTruthy()
+        expect(getByText('Permanently delete ApplicationSet appset2?')).toBeTruthy()
         expect(
-            getByText('The following Argo application(s) deployed by the applicationset will also be deleted:')
+            getByText('The following Argo application(s) deployed by the application set will also be deleted:')
         ).toBeTruthy()
         expect(getByText('appset2-local-cluster')).toBeTruthy()
         userEvent.click(screen.getAllByRole('checkbox')[0])
@@ -335,7 +336,7 @@ describe('DeleteResourceModal', () => {
 
         expect(
             getByText(
-                'This applicationset uses placement "appset3-placement", which is not removable. This placement is shared by the following applicationset(s):'
+                'This application set uses placement "appset3-placement", which is not removable. This placement is shared by the following application set:'
             )
         ).toBeTruthy()
         expect(getByText('appset4')).toBeTruthy()

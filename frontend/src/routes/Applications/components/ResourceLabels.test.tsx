@@ -2,10 +2,10 @@
 
 import { Matcher, render, screen, SelectorMatcherOptions, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useTranslation } from '../../../lib/acm-i18next'
+import i18next from 'i18next'
 import { ResourceLabels } from './ResourceLabels'
 
-const { t } = useTranslation()
+const t = i18next.t
 
 // Custom matcher function for text that are separated in multiple elements
 function getByTextMultiElement(

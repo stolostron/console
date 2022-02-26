@@ -60,22 +60,22 @@ describe('ClusterMachinePools', () => {
     it('should be able to manually scale a machine pool', async () => {
         await waitForText(mockMachinePoolManual.metadata.name!)
         await clickByLabel('Actions', 1)
-        await clickByText('machinePool.scale')
-        await waitForText('machinePool.modal.scale.edit-manualscale.title')
+        await clickByText('Scale machine pool')
+        await waitForText('Scale machine pool')
         await clickByLabel('Plus')
         const patchNocks: Scope[] = [
             nockPatch(mockMachinePoolManual, [
                 { op: 'replace', path: '/spec/replicas', value: mockMachinePoolManual.spec!.replicas! + 1 },
             ]),
         ]
-        await clickByText('scale')
+        await clickByText('Scale')
         await waitForNocks(patchNocks)
     })
     it('should be able to enable autoscaling for a machine pool', async () => {
         await waitForText(mockMachinePoolManual.metadata.name!)
         await clickByLabel('Actions', 1)
-        await clickByText('machinePool.enableAutoscale')
-        await waitForText('machinePool.modal.scale.enable-autoscale.title')
+        await clickByText('Enable autoscale')
+        await waitForText('Enable autoscale')
         await clickByLabel('Plus', 1)
         const patchNocks: Scope[] = [
             nockPatch(mockMachinePoolManual, [
@@ -90,14 +90,14 @@ describe('ClusterMachinePools', () => {
                 },
             ]),
         ]
-        await clickByText('scale')
+        await clickByText('Scale')
         await waitForNocks(patchNocks)
     })
     it('should be able to edit autoscaling for a machine pool', async () => {
         await waitForText(mockMachinePoolAuto.metadata.name!)
         await clickByLabel('Actions', 0)
-        await clickByText('machinePool.editAutoscale')
-        await waitForText('machinePool.modal.scale.edit-autoscale.title')
+        await clickByText('Edit autoscale')
+        await waitForText('Edit autoscale')
         await clickByLabel('Plus', 1)
         const patchNocks: Scope[] = [
             nockPatch(mockMachinePoolAuto, [
@@ -111,14 +111,14 @@ describe('ClusterMachinePools', () => {
                 },
             ]),
         ]
-        await clickByText('scale')
+        await clickByText('Scale')
         await waitForNocks(patchNocks)
     })
     it('should be able to disable autoscaling for a machine pool', async () => {
         await waitForText(mockMachinePoolAuto.metadata.name!)
         await clickByLabel('Actions', 0)
-        await clickByText('machinePool.disableAutoscale')
-        await waitForText('machinePool.modal.scale.disable-autoscale.title')
+        await clickByText('Disable autoscale')
+        await waitForText('Disable autoscale')
         const patchNocks: Scope[] = [
             nockPatch(mockMachinePoolAuto, [
                 { op: 'remove', path: '/spec/autoscaling' },
@@ -129,18 +129,18 @@ describe('ClusterMachinePools', () => {
                 },
             ]),
         ]
-        await clickByText('scale')
+        await clickByText('Scale')
         await waitForNocks(patchNocks)
     })
     it('should be able to delete machine pools', async () => {
         await waitForText(mockMachinePoolAuto.metadata.name!)
         await waitForText(mockMachinePoolManual.metadata.name!)
         await clickByLabel('Actions', 0)
-        await clickByText('machinePool.delete')
-        await waitForText('bulk.title.deleteMachinePool')
-        await typeByText('type.to.confirm', mockMachinePoolAuto.metadata.name!)
+        await clickByText('Delete machine pool')
+        await waitForText('Permanently delete machine pools?')
+        await typeByText(`Confirm by typing "${mockMachinePoolAuto.metadata.name!}" below:`, mockMachinePoolAuto.metadata.name!)
         const deleteNocks: Scope[] = [nockDelete(mockMachinePoolAuto)]
-        await clickByText('delete')
+        await clickByText('Delete')
         await waitForNocks(deleteNocks)
     })
 })
