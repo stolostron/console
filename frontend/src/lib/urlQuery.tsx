@@ -21,13 +21,13 @@
  *
  * initialPerPage - How many items to display per page.
  *
- * Example usage: ?region=us-east&region=us-south&status=online&status=offline&search=some text goes here&sort=-name&page=5&perPage=10
+ * Example usage: ?region=us-east&region=us-south&status=online&status=offline&search=some text goes here&sort=-0&page=5&perPage=10
  * Example response: {"initialFilters":{"id":"region","options":["us-east","us-south"]},{"id":"status","options":["online","offline"]},"initialSearch":"some text goes here","initialSort":{"index":0,"direction":"asc"},"initialPage":5,"initialPerPage":10}
  * */
 export function transformBrowserUrlToFilterPresets(urlSearch: string) {
     const initialFilters: { [key: string]: string[] } = {}
     let initialSearch = ''
-    let initialSort: { index: string; direction: 'asc' | 'desc' } = { index: '', direction: 'asc' }
+    let initialSort: { index: number; direction: 'asc' | 'desc' } = { index: 0, direction: 'asc' }
     let initialPage = 1
     let initialPerPage = 10
     const urlparams = new URLSearchParams(urlSearch)
@@ -42,7 +42,7 @@ export function transformBrowserUrlToFilterPresets(urlSearch: string) {
                 break
             case 'sort':
                 initialSort = {
-                    index: value.startsWith('-') ? value.replace('-', '') : value,
+                    index: Number.isInteger(Number(value)) ? Math.abs(Number(value)) : 0,
                     direction: value.startsWith('-') ? 'asc' : 'desc',
                 }
                 break
