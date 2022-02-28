@@ -124,38 +124,38 @@ describe('ClusterPools page', () => {
     })
     test('should be able to destroy a cluster pool using a row action', async () => {
         await waitForText(mockClusterPool.metadata.name!)
-        await clickRowAction(1, 'clusterPool.destroy')
-        await typeByText('type.to.confirm', mockClusterPool.metadata.name!)
+        await clickRowAction(1, 'Destroy cluster pool')
+        await typeByText(`Confirm by typing "${mockClusterPool.metadata.name!}" below:`, mockClusterPool.metadata.name!)
         const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
-        await clickByText('destroy')
+        await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
     test('should be able to destroy cluster pools using bulk actions', async () => {
         await selectTableRow(1)
-        await clickBulkAction('bulk.destroy.clusterPools')
-        await typeByText('type.to.confirm', 'confirm')
+        await clickBulkAction('Destroy cluster pools')
+        await typeByText('Confirm by typing "confirm" below:', 'confirm')
         const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
-        await clickByText('destroy')
+        await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
 
     test('should be able to scale a cluster pool', async () => {
         await waitForText(mockClusterPool.metadata.name!)
         await clickByLabel('Actions', 0)
-        await clickByText('clusterPool.scale')
-        await waitForText('clusterPool.modal.scale.title')
+        await clickByText('Scale cluster pool')
+        await waitForText('Scale cluster pool')
         await clickByLabel('Plus')
         const patchNocks: Scope[] = [nockPatch(mockClusterPool, [{ op: 'replace', path: '/spec/size', value: 3 }])]
-        await clickByText('scale')
+        await clickByText('Scale')
         await waitForNocks(patchNocks)
     })
 
     test('should be able to change the release image for a cluster pool', async () => {
         await waitForText(mockClusterPool.metadata.name!)
         await clickByLabel('Actions', 0)
-        await clickByText('clusterPool.updateReleaseImage')
-        await waitForText('bulk.title.updateReleaseImage')
-        await clickByText('clusterPool.selectReleaseImage')
+        await clickByText('Update release image')
+        await waitForText('Update release images')
+        await clickByText('Select release image')
         await clickByText(mockClusterImageSet.spec!.releaseImage)
         const patchNocks: Scope[] = [
             nockPatch(mockClusterPool, [
@@ -166,17 +166,17 @@ describe('ClusterPools page', () => {
                 },
             ]),
         ]
-        await clickByText('update')
+        await clickByText('Update')
         await waitForNocks(patchNocks)
     })
 
     test('should be able to claim a cluster', async () => {
         await waitForText(mockClusterPool.metadata.name!)
-        await clickByText('clusterPool.claim')
-        await waitForText('clusterClaim.create.title')
+        await clickByText('Claim cluster')
+        await waitForText('Cluster claim name')
         await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
         const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaim)]
-        await clickByText('claim')
+        await clickByText('Claim')
         await waitForNocks(createNocks)
     })
 })

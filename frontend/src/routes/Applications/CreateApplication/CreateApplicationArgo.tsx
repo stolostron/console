@@ -1,18 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ApplicationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Application/ApplicationWizard'
-// import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
+import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
 import { PageSection } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@stolostron/ui-components'
 import moment from 'moment-timezone'
-import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
-import { createResources, IResource, unpackProviderConnection } from '../../../resources'
+import {
+    createResources,
+    getGitChannelBranches,
+    getGitChannelPaths,
+    IResource,
+    unpackProviderConnection,
+} from '../../../resources'
 
 const Portals = Object.freeze({
     editBtn: 'edit-button-portal-id',
@@ -67,10 +71,6 @@ export function CreateApplicationArgo() {
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
     const [channels] = useRecoilState(channelsState)
-    const gitChannels = useMemo(
-        () => channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub'),
-        [channels]
-    )
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const providerConnections = secrets.map(unpackProviderConnection)
@@ -78,7 +78,6 @@ export function CreateApplicationArgo() {
     const availableArgoNS = gitOpsClusters
         .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
         .filter(isType)
-    const availablePlacements = placements.map((placement) => placement.metadata.name).filter(isType)
     const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
     const ansibleCredentials = providerConnections.filter(
         (providerConnection) =>
@@ -94,40 +93,23 @@ export function CreateApplicationArgo() {
         : moment.tz.names()
 
     return (
-        <ApplicationWizard
+        <ArgoWizard
             addClusterSets={NavigationPath.clusterSets}
             ansibleCredentials={availableAnsibleCredentials}
             argoServers={availableArgoNS}
             namespaces={availableNamespace}
-            placements={availablePlacements}
+            placements={placements}
             onCancel={() => history.push('.')}
+            channels={channels}
+            getGitRevisions={getGitChannelBranches}
+            getGitPaths={getGitChannelPaths}
             onSubmit={(resources) =>
                 createResources(resources as IResource[]).then((error) => {
                     history.push(NavigationPath.applications)
                     return error
                 })
             }
-            channels={gitChannels as unknown as any}
             timeZones={timeZones}
         />
-
-        // <ArgoWizard
-        //     addClusterSets={NavigationPath.clusterSets}
-        //     ansibleCredentials={availableAnsibleCredentials}
-        //     argoServers={availableArgoNS}
-        //     namespaces={availableNamespace}
-        //     placements={availablePlacements}
-        //     onCancel={() => history.push('.')}
-        //     onSubmit={(resources) =>
-        //         createResources(resources as IResource[]).then((error) => {
-        //             history.push(NavigationPath.applications)
-        //             return error
-        //         })
-        //     }
-        //     // gitChannels={gitChannels.map((channel) => channel.spec.pathname)}
-        //     // helmChannels={helmChannels.map((channel) => channel.spec.pathname)}
-        //     // channels={gitChannels as unknown as any}
-        //     timeZones={timeZones}
-        // />
     )
 }

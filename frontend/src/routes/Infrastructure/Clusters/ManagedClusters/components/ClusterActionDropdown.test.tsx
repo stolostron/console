@@ -149,9 +149,9 @@ describe('ClusterActionDropdown', () => {
         render(<Component cluster={mockDetachedCluster} />)
 
         await clickByLabel('Actions')
-        await clickByText('managed.import')
-        await waitForText('bulk.title.import')
-        await clickByText('import')
+        await clickByText('Import cluster')
+        await waitForText('Import clusters')
+        await clickByText('Import')
         await waitForNocks([createMcNock, createKacNock])
     })
 
@@ -160,8 +160,8 @@ describe('ClusterActionDropdown', () => {
         const cluster = JSON.parse(JSON.stringify(mockCluster))
         render(<Component cluster={cluster} />)
         await clickByLabel('Actions')
-        await clickByText('managed.hibernate')
-        await clickByText('hibernate')
+        await clickByText('Hibernate cluster')
+        await clickByText('Hibernate')
         await waitForNock(nockPatch)
     })
 
@@ -171,8 +171,8 @@ describe('ClusterActionDropdown', () => {
         cluster.status = ClusterStatus.hibernating
         render(<Component cluster={cluster} />)
         await clickByLabel('Actions')
-        await clickByText('managed.resume')
-        await clickByText('resume')
+        await clickByText('Resume cluster')
+        await clickByText('Resume')
         await waitForNock(nockPatch)
     })
 })

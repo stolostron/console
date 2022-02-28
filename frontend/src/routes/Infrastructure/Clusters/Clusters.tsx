@@ -6,7 +6,6 @@ import ClusterSetDetailsPage from './ClusterSets/ClusterSetDetails/ClusterSetDet
 import { ClustersPage } from './ClustersPage'
 import DiscoveryConfigPage from './DiscoveredClusters/DiscoveryConfig/DiscoveryConfig'
 import ClusterDetailsPage from './ManagedClusters/ClusterDetails/ClusterDetails'
-import ClusterCreateProgress from './ManagedClusters/components/cim/ClusterCreateProgress'
 import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
 import CreateClusterPage from './ManagedClusters/CreateCluster/CreateCluster'
 import ImportClusterPage from './ManagedClusters/ImportCluster/ImportCluster'
@@ -15,7 +14,6 @@ export default function Clusters() {
     return (
         <Switch>
             <Route exact path={NavigationPath.createCluster} component={CreateClusterPage} />
-            <Route exact path={NavigationPath.clusterCreateProgress} component={ClusterCreateProgress} />
             <Route exact path={NavigationPath.importCluster} component={ImportClusterPage} />
             <Route path={NavigationPath.clusterDetails} component={ClusterDetailsPage} />
             <Route path={NavigationPath.clusterSetDetails} component={ClusterSetDetailsPage} />

@@ -175,16 +175,6 @@ const mockClusterPool: ClusterPool = {
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
-jest.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key: string) => key,
-    }),
-    withTranslation: () => (Component: any) => {
-        Component.defaultProps = { ...Component.defaultProps, t: () => '' }
-        return Component
-    },
-}))
-
 describe('CreateClusterPool', () => {
     const Component = () => {
         return (
@@ -237,13 +227,13 @@ describe('CreateClusterPool', () => {
         const { container } = render(<Component />)
 
         // step 1 -- the infrastructure
-        await clickByTestId('cluster.create.aws.subtitle')
+        await clickByTestId('amazon-web-services')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
         // connection
-        await clickByPlaceholderText('creation.ocp.cloud.select.connection')
+        await clickByPlaceholderText('Select a credential')
         await clickByText(providerConnection.metadata.name!)
         await clickByText('Next')
 
@@ -270,7 +260,7 @@ describe('CreateClusterPool', () => {
         // await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
         // container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
 
-        // await clickByPlaceholderText('creation.ocp.cloud.select.connection')
+        // await clickByPlaceholderText('Select a credential')
         // await clickByText(providerConnection.metadata.name!)
 
         await clickByText('Review')
@@ -290,7 +280,7 @@ describe('CreateClusterPool', () => {
         await clickByText('Create')
 
         expect(consoleInfos).hasNoConsoleLogs()
-        await waitForText('success.create.creating')
+        await waitForText('Creating ClusterPool ...')
 
         // make sure creating
         await waitForNocks(createNocks)

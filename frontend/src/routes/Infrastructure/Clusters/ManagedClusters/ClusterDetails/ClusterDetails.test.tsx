@@ -723,14 +723,14 @@ describe('ClusterDetails', () => {
 
     test('overview page renders', async () => {
         await waitForText(clusterName, true)
-        await waitForText('tab.overview')
-        await waitForText('table.details')
+        await waitForText('Overview')
+        await waitForText('Details')
     })
 
     test('overview page opens logs', async () => {
         const nocks: Scope[] = [nockListHiveProvisionJobs()]
         window.open = jest.fn()
-        await clickByText('status.link.logs')
+        await clickByText('View logs')
         await waitForNocks(nocks)
         await waitForCalled(window.open as jest.Mock)
     })
@@ -738,64 +738,64 @@ describe('ClusterDetails', () => {
     test('overview page opens edit labels', async () => {
         await waitForText(clusterName, true)
 
-        await clickByLabel('labels.edit.title')
-        await waitForText('labels.description')
+        await clickByLabel('Edit labels')
+        await waitForText('Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.')
 
-        await clickByText('cancel')
-        await waitForNotText('labels.description')
+        await clickByText('Cancel')
+        await waitForNotText('Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.')
     })
 
     test('overview page handles channel select', async () => {
         await waitForText(clusterName, true)
         await waitForText(clusterName, true)
 
-        await clickByLabel('bulk.title.selectChannel')
-        await waitForText('bulk.message.selectChannel')
+        await clickByLabel('Select channels')
+        await waitForText('Select channels for the clusters. Only the selected clusters that have available channels are listed.')
 
-        await clickByText('cancel')
-        await waitForNotText('bulk.message.selectChannel')
+        await clickByText('Cancel')
+        await waitForNotText('Select channels for the clusters. Only the selected clusters that have available channels are listed.')
     })
 
     test('nodes page renders', async () => {
-        await clickByText('tab.nodes')
+        await clickByText('Nodes')
         await waitForText(mockManagedClusterInfo.status?.nodeList?.[0].name!)
 
-        await clickByText('table.role')
+        await clickByText('Role')
         await waitForText(mockManagedClusterInfo.status?.nodeList?.[0].name!)
 
-        await clickByText('table.region')
+        await clickByText('Region')
         await waitForText(mockManagedClusterInfo.status?.nodeList?.[0].name!)
     })
 
     test('machine pools page renders', async () => {
-        await clickByText('tab.machinepools')
+        await clickByText('Machine pools')
         await waitForText(mockMachinePoolManual.metadata.name!)
         await waitForText(mockMachinePoolAuto.metadata.name!)
     })
 
     test('settings page renders', async () => {
-        await clickByText('tab.addons')
+        await clickByText('Add-ons')
         await waitForText(mockManagedClusterAddOns[0].metadata.name!)
     })
 
     test('overview page handles detach', async () => {
-        await clickByText('actions')
+        await clickByText('Actions')
 
-        await clickByText('managed.detach')
-        await typeByText('type.to.confirm', mockManagedCluster.metadata.name!)
+        await clickByText('Detach cluster')
+        await typeByText(`Confirm by typing "${mockManagedCluster.metadata.name!}" below:`, mockManagedCluster.metadata.name!)
 
         const deleteNock = nockDelete(mockManagedCluster)
-        await clickByText('detach')
+        await clickByText('Detach')
         await waitForNock(deleteNock)
     })
 
     test('overview page handles destroy', async () => {
-        await clickByText('actions')
-        await clickByText('managed.destroy')
-        await typeByText('type.to.confirm', mockManagedCluster.metadata.name!)
+        await clickByText('Actions')
+        await clickByText('Destroy cluster')
+        await typeByText(`Confirm by typing "${mockManagedCluster.metadata.name!}" below:`, mockManagedCluster.metadata.name!)
 
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster), nockDelete(mockClusterDeployment)]
-        await clickByText('destroy')
+        await clickByText('Destroy')
         await waitForNocks(deleteNocks)
     })
 })
@@ -841,8 +841,8 @@ describe('ClusterDetails for On Premise', () => {
         await waitForNocks(nocks)
 
         await waitForText(clusterName, true)
-        await waitForText('tab.overview')
-        await waitForText('table.details')
+        await waitForText('Overview')
+        await waitForText('Details')
 
         await waitForText('Cluster hosts')
         await waitForTestId('col-header-hostname', true) // Multiple === true since the Empty state reuses the column

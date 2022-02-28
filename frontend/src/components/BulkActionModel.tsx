@@ -130,7 +130,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                         </div>
                         {props.confirmText !== undefined && (
                             <AcmTextInput
-                                label={t(`type.to.confirm`).replace('{0}', props.confirmText)}
+                                label={t(`type.to.confirm`, { confirm: props.confirmText })}
                                 id="confirm"
                                 value={confirm}
                                 onChange={setConfirm}

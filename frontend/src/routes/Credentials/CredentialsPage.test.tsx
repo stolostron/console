@@ -181,8 +181,8 @@ describe('provider connections page', () => {
         await waitForText(mockProviderConnection1.metadata!.name!)
         await clickByLabel('Actions', 0) // Click the action button on the first table row
         await clickByText('Delete credential')
-        await clickByText('cancel')
-        await waitForNotText('cancel')
+        await clickByText('Cancel')
+        await waitForNotText('Cancel')
     })
 
     test('should be able to bulk delete provider connections', async () => {
@@ -200,8 +200,8 @@ describe('provider connections page', () => {
         await waitForText(mockProviderConnection1.metadata!.name!)
         await selectTableRow(1)
         await clickBulkAction('Delete credentials')
-        await clickByText('cancel')
-        await waitForNotText('cancel')
+        await clickByText('Cancel')
+        await waitForNotText('Cancel')
     })
 
     test('If cloud.redhat.com credential and no discoveryconfig configured, show action available', async () => {

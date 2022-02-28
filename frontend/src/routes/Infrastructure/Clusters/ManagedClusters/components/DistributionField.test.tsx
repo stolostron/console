@@ -55,6 +55,7 @@ const mockDistributionInfoUpgrading: DistributionInfo = {
         isReadySelectChannels: false,
         availableUpdates: ['1.2.4', '1.2.5'],
         currentVersion: '1.2.3',
+        desiredVersion: '1.2.4',
         latestJob: {},
     },
     k8sVersion: '1.11',
@@ -373,31 +374,31 @@ describe('DistributionField', () => {
 
     it('should not show upgrade button when no available upgrades', async () => {
         const { queryAllByText } = await renderDistributionInfoField(mockDistributionInfoWithoutUpgrades, true)
-        expect(queryAllByText('upgrade.available').length).toBe(0)
+        expect(queryAllByText('Upgrade available').length).toBe(0)
     })
 
     it('should disable the upgrade button when the user lacks permissions', async () => {
         const { queryByText } = await renderDistributionInfoField(mockDistributionInfo, false, true)
-        expect(queryByText('upgrade.available')).toHaveAttribute('aria-disabled', 'true')
+        expect(queryByText('Upgrade available')).toHaveAttribute('aria-disabled', 'true')
     })
 
     it('should show upgrade button when not upgrading and has available upgrades, and should show modal when click', async () => {
         await renderDistributionInfoField(mockDistributionInfo, true, true)
-        await clickByText('upgrade.available', 0)
-        await waitForText('upgrade.table.name')
-        await clickByText('cancel', 0)
-        await waitForNotText('upgrade.table.name')
+        await clickByText('Upgrade available', 0)
+        await waitForText('Name')
+        await clickByText('Cancel', 0)
+        await waitForNotText('Name')
     })
 
     it('should show upgrading with loader when upgrading', async () => {
         const { getAllByText, queryByRole } = await renderDistributionInfoField(mockDistributionInfoUpgrading, true)
-        expect(getAllByText('upgrade.upgrading.version')).toBeTruthy()
+        expect(getAllByText('Upgrading to 1.2.4')).toBeTruthy()
         expect(queryByRole('progressbar')).toBeTruthy()
     })
 
     it('should show failed when failed upgrade', async () => {
         const { getAllByText } = await renderDistributionInfoField(mockDistributionInfoFailedUpgrade, true)
-        expect(getAllByText('upgrade.upgradefailed')).toBeTruthy()
+        expect(getAllByText('Upgrade failing')).toBeTruthy()
     })
 
     it('should not show failed when there is no upgrade running', async () => {
@@ -406,18 +407,18 @@ describe('DistributionField', () => {
             true,
             true
         )
-        await waitFor(() => expect(getAllByText('upgrade.available')).toBeTruthy())
-        expect(queryAllByText('upgrade.upgradefailed').length).toBe(0)
+        await waitFor(() => expect(getAllByText('Upgrade available')).toBeTruthy())
+        expect(queryAllByText('Upgrade failing').length).toBe(0)
     })
 
     it('should not show upgrade button for managed OpenShift', async () => {
         const { queryAllByText } = await renderDistributionInfoField(mockManagedOpenShiftDistributionInfo, true)
-        expect(queryAllByText('upgrade.available').length).toBe(0)
+        expect(queryAllByText('Upgrade available').length).toBe(0)
     })
 
     it('should display ansible hook status', async () => {
         await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgrade)
-        await waitForText('upgrade.ansible.prehookjob.title')
+        await waitForText('Upgrade prehook')
     })
 
     it('should display ansible failed hook status', async () => {
@@ -427,17 +428,17 @@ describe('DistributionField', () => {
             false,
             clusterCuratorUpgradeFailed
         )
-        await waitForText('upgrade.ansible.prehookjob.title')
-        await clickByText('upgrade.ansible.prehookjob.title')
-        await waitForText('upgrade.ansible.prehook.failure')
+        await waitForText('Upgrade prehook')
+        await clickByText('Upgrade prehook')
+        await waitForText('Upgrade prehook jobs have failed:')
     })
 
     it('should open to ansible logs', async () => {
         await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgrade)
         window.open = jest.fn()
-        await waitForText('upgrade.ansible.prehookjob.title')
-        await clickByText('upgrade.ansible.prehookjob.title')
-        await clickByText('view.logs')
+        await waitForText('Upgrade prehook')
+        await clickByText('Upgrade prehook')
+        await clickByText('View logs')
         await waitForCalled(window.open as jest.Mock)
     })
 })

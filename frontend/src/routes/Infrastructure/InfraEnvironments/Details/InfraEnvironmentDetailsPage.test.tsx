@@ -93,7 +93,7 @@ describe('Infrastructure Environment Details page', () => {
             // nockList(mockNMStateConfig, mockNMStateConfig),
             nockList(mockNMStateConfigInfraEnv, mockNMStateConfigInfraEnv, ['agent-install.openshift.io/bmh']),
         ]
-        await clickByText('tab.hosts')
+        await clickByText('Hosts')
         await waitForText('Hosts may take a few minutes to appear here after booting.')
 
         await waitForNocks(nocks)

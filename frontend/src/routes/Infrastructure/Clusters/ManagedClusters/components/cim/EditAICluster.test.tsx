@@ -66,9 +66,10 @@ describe('Edit AI Cluster', () => {
         render(<Component />)
         await new Promise((resolve) => setTimeout(resolve, 500))
 
+        await waitForText('Installation type')
         await waitForText('Cluster details', true)
         await waitForText('Cluster hosts')
-        await waitForText('Installation details')
+        await waitForText('Cluster network')
 
         await waitForTestId('form-static-openshiftVersion-field')
         await waitForText('OpenShift ocp-release48')
