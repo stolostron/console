@@ -73,7 +73,7 @@ const definitions: IWatchOptions[] = [
         labelSelector: { 'open-cluster-management.io/cluster-name': '' },
     },
     { kind: 'ManagedCluster', apiVersion: 'cluster.open-cluster-management.io/v1' },
-    { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1alpha1' },
+    { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ManagedClusterSetBinding', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ManagedClusterSet', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ClusterCurator', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
