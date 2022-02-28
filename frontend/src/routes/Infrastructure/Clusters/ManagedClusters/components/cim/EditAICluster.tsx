@@ -32,11 +32,10 @@ import {
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
-import { AcmPage, AcmPageHeader } from '../../../../../Applications/ApplicationDetails/AcmPage'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { ClusterDeploymentWizardStepsType } from 'openshift-assisted-ui-lib/cim'
 import { PageSection } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPageContent } from '@stolostron/ui-components'
+import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolostron/ui-components'
 
 const {
     ClusterDeploymentWizard,
