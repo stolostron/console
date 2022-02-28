@@ -16,12 +16,14 @@ import R from 'ramda'
 import React from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
-import { Spinner } from '@patternfly/react-core'
+import { Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'
 import jsYaml from 'js-yaml'
-import { createResourceSearchLink } from '../helpers/diagram-helpers'
+import { createResourceSearchLink, createResourceURL } from '../helpers/diagram-helpers'
 import { getLegendTitle } from '../options/titles'
 import ClusterDetailsContainer from './ClusterDetailsContainer'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
+import { LogsContainer } from './LogsContainer'
+import { YAMLContainer } from './YAMLContainer'
 
 const DetailsViewDecorator = ({ shape, className }) => {
     return (
@@ -38,14 +40,18 @@ DetailsViewDecorator.propTypes = {
     shape: PropTypes.string,
 }
 
+const resourcesWithPods = new Set(['pod', 'replicaset', 'replicationcontroller', 'statefulset', 'daemonset'])
+
 class DetailsView extends React.Component {
     constructor(props) {
         super(props)
         this.toggleLinkLoading = this.toggleLinkLoading.bind(this)
+        this.handleTabClick = this.handleTabClick.bind(this)
 
         this.state = {
             isLoading: false,
             linkID: '',
+            activeTabKey: this.props.activeTabKey,
         }
     }
 
@@ -73,6 +79,44 @@ class DetailsView extends React.Component {
         processActionLink(data, this.toggleLinkLoading)
     }
 
+    handleTabClick(event, tabIndex) {
+        this.setState({
+            activeTabKey: tabIndex,
+        })
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.selectedNodeId !== this.props.selectedNodeId) {
+            this.setState({
+                activeTabKey: 0,
+            })
+        }
+    }
+
+    renderResourceURLLink = (resource, t, isLogURL = false) => {
+        return (
+            <div>
+                <div className="spacer" />
+                <span
+                    className="link sectionLabel"
+                    id="linkForNodeAction"
+                    tabIndex="0"
+                    role="button"
+                    onClick={this.processActionLink.bind(this, resource)}
+                    onKeyDown={this.handleKeyPress.bind(this, resource)}
+                    style={{ padding: '10px' }}
+                >
+                    {isLogURL && t('View logs in Search details')}
+                    {!isLogURL && t('View YAML in Search details')}
+                    <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
+                        <use href="#diagramIcons_carbonLaunch" className="label-icon" />
+                    </svg>
+                </span>
+                <div className="spacer" />
+            </div>
+        )
+    }
+
     render() {
         const { getLayoutNodes, options, selectedNodeId, nodes, activeFilters, t } = this.props
         const { typeToShapeMap, getNodeDetails } = options
@@ -84,8 +128,13 @@ class DetailsView extends React.Component {
         const details = getNodeDetails(currentNode, currentUpdatedNode, activeFilters, t)
         const name = currentNode.type === 'cluster' ? '' : currentNode.name
         const legend = getLegendTitle(resourceType, t)
-
         const searchLink = createResourceSearchLink(currentNode, t)
+        const yamlURL = createResourceURL(currentNode, t)
+        const { namespace, type } = currentNode
+        const isLogTabHidden = !resourcesWithPods.has(currentNode.type)
+        const { activeTabKey } = this.state
+
+        // Only YAML tab has a key so it will get recreated when switching between nodes
         return (
             <div className="topologyDetails">
                 <div className="detailsHeader">
@@ -100,8 +149,25 @@ class DetailsView extends React.Component {
                         <div className="openSearchLink">{this.renderLink(searchLink, t)}</div>
                     </div>
                 </div>
-                <hr />
-                {details.map((detail) => this.renderDetail(detail, t))}
+                <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick} mountOnEnter={true} unmountOnExit={true}>
+                    <Tab eventKey={0} title={<TabTitleText>{t('Details')}</TabTitleText>} isHidden={false}>
+                        {details.map((detail) => this.renderDetail(detail, t))}
+                    </Tab>
+                    <Tab eventKey={1} title={<TabTitleText>{t('Logs')}</TabTitleText>} isHidden={isLogTabHidden}>
+                        <LogsContainer node={currentNode} t={t} renderResourceURLLink={this.renderResourceURLLink} />
+                    </Tab>
+                    <Tab
+                        eventKey={2}
+                        title={<TabTitleText>{t('YAML')}</TabTitleText>}
+                        isHidden={currentNode.type === 'cluster'}
+                    >
+                        {this.renderResourceURLLink(
+                            { data: { action: 'open_link', targetLink: yamlURL, name, namespace, kind: type } },
+                            t
+                        )}
+                        <YAMLContainer key={selectedNodeId} node={currentNode} t={t} />
+                    </Tab>
+                </Tabs>
             </div>
         )
     }
@@ -289,6 +355,7 @@ DetailsView.propTypes = {
     processActionLink: PropTypes.func,
     selectedNodeId: PropTypes.string,
     options: PropTypes.object,
+    activeTabKey: PropTypes.number,
 }
 
 export default DetailsView
