@@ -431,25 +431,6 @@ function getAppChannels(channelsMap, allChannels) {
             })
         })
     })
-    // const requests = Object.entries(channelsMap).map(async ([namespace, values]) => {
-    //     // get all rules in this namespace
-    //     const response =
-    //         (await this.kubeConnector.getResources(
-    //             (ns) => `/apis/apps.open-cluster-management.io/v1/namespaces/${ns}/channels`,
-    //             { kind: 'Channel', namespaces: [namespace] }
-    //         )) || []
-
-    //     // stuff responses into subscriptions that requested them
-    //     response.forEach((channel) => {
-    //         const name = _.get(channel, 'metadata.name')
-    //         values.forEach(({ chnName, subscription }) => {
-    //             if (name === chnName) {
-    //                 subscription.channels.push(channel)
-    //             }
-    //         })
-    //     })
-    // })
-    // return Promise.all(requests)
 }
 
 // async getPlacementRules(resources) {
