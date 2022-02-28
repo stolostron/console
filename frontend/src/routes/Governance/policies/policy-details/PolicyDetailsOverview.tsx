@@ -55,8 +55,7 @@ function renderPlacementTable(policy: Policy) {
         } else {
             bindings = getPlacementBindingsForResource(policy, placementBindings)
         }
-        const placementRuleMatches: PlacementRule[] = getPlacementsForResource(policy, bindings, placementRules)
-        return placementRuleMatches.map((rule: PlacementRule) => {
+        return getPlacementsForResource(policy, bindings, placementRules).map((rule: PlacementRule) => {
             return {
                 clusterLabels: rule.spec.clusterSelector ?? {},
                 metadata: rule.metadata,
@@ -78,8 +77,7 @@ function renderPlacementTable(policy: Policy) {
         } else {
             bindings = getPlacementBindingsForResource(policy, placementBindings)
         }
-        const placementMatches = getPlacementsForResource(policy, bindings, placements)
-        return placementMatches.map((placement: Placement) => {
+        return getPlacementsForResource(policy, bindings, placements).map((placement: Placement) => {
             return {
                 clusterLabels: {}, // TODO
                 metadata: placement.metadata,
