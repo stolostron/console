@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import queryString from 'query-string'
-
 // This function updates url query string based on page filter selections
 // export function updateBrowserUrlFilterPresets(filters, search, sort) {
 //     // TODO
@@ -21,45 +19,53 @@ import queryString from 'query-string'
  *
  * initialPage - the current page number.
  *
- * initialPageSize - How many items to display per page.
+ * initialPerPage - How many items to display per page.
  *
- * Example usage: ?region=us-east&region=us-south&status=online&status=offline&search=some text goes here&sort=-name&page=5&pageSize=10
- * Example response: {"initialFilters":{"id":"region","options":["us-east","us-south"]},{"id":"status","options":["online","offline"]},"initialSearch":"some text goes here","initialSort":{"colName":"name","direction":"asc"},"initialPage":5,"initialPageSize":10}
+ * Example usage: ?region=us-east&region=us-south&status=online&status=offline&search=some text goes here&sort=-name&page=5&perPage=10
+ * Example response: {"initialFilters":{"id":"region","options":["us-east","us-south"]},{"id":"status","options":["online","offline"]},"initialSearch":"some text goes here","initialSort":{"index":0,"direction":"asc"},"initialPage":5,"initialPerPage":10}
  * */
 export function transformBrowserUrlToFilterPresets(urlSearch: string) {
     const initialFilters: { [key: string]: string[] } = {}
     let initialSearch = ''
     let initialSort: { index: string; direction: 'asc' | 'desc' } = { index: '', direction: 'asc' }
     let initialPage = 1
-    let initialPageSize = 10
-    const parsedQuery = queryString.parse(urlSearch)
-    const queryKeys = Object.keys(parsedQuery)
-    if (queryKeys.length > 0) {
-        queryKeys.forEach((key: string) => {
-            const value = parsedQuery[key] as string
-            switch (key) {
-                case 'search':
-                    initialSearch = value
-                    break
-                case 'sort':
-                    initialSort = {
-                        index: value.startsWith('-') ? value.replace('-', '') : value,
-                        direction: value.startsWith('-') ? 'asc' : 'desc',
-                    }
-                    break
-                case 'page':
-                    initialPage = Number.parseInt(value || '1')
-                    break
-                case 'pageSize':
-                    initialPageSize = Number.parseInt(value || '10')
-                    break
-                default:
-                    typeof parsedQuery[key] === 'string'
-                        ? (initialFilters[key] = [parsedQuery[key]] as string[])
-                        : (initialFilters[key] = parsedQuery[key] as string[])
-            }
-        })
+    let initialPerPage = 10
+    const urlparams = new URLSearchParams(urlSearch)
+    const entries = urlparams.entries()
+    let entry = entries.next()
+    while (!entry.done) {
+        const key = entry.value[0]
+        const value = entry.value[1]
+        switch (key) {
+            case 'search':
+                initialSearch = value
+                break
+            case 'sort':
+                initialSort = {
+                    index: value.startsWith('-') ? value.replace('-', '') : value,
+                    direction: value.startsWith('-') ? 'asc' : 'desc',
+                }
+                break
+            case 'page':
+                if (Number.isInteger(Number(value))) {
+                    initialPage = Number(value)
+                }
+                break
+            case 'perPage':
+                if (Number.isInteger(Number(value))) {
+                    initialPerPage = Number(value)
+                }
+                break
+            default:
+                // If the key doesn't match one of the above we assume it is a filter key
+                if (!initialFilters[key]) {
+                    initialFilters[key] = [value]
+                } else {
+                    initialFilters[key].push(value)
+                }
+        }
+        entry = entries.next()
     }
 
-    return { initialFilters, initialSearch, initialSort, initialPage, initialPageSize }
+    return { initialFilters, initialSearch, initialSort, initialPage, initialPerPage }
 }
