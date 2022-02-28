@@ -18,7 +18,7 @@ const t = i18next.t
 jest.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string) => i18next.t(key),
-    })
+    }),
 }))
 
 describe('normalizeRepoType', () => {
@@ -221,14 +221,14 @@ describe('getShortDateTime', () => {
     const futureYear = '2021-12-13T23:21:04Z'
 
     it('omits date and year for timestamps today', () => {
-        expect(getShortDateTime(sampleDate, moment(sameDay))).toEqual('9:21 am')
+        expect(getShortDateTime(sampleDate, moment(sameDay))).toEqual('1:21 pm')
     })
 
     it('omits year for timestamps from this year', () => {
-        expect(getShortDateTime(sampleDate, moment(sameYear))).toEqual('Aug 26, 9:21 am')
+        expect(getShortDateTime(sampleDate, moment(sameYear))).toEqual('Aug 26, 1:21 pm')
     })
 
     it('includes all elements for timestamps from a different year', () => {
-        expect(getShortDateTime(sampleDate, moment(futureYear))).toEqual('Aug 26 2020, 1:21 pm')
+        expect(getShortDateTime(sampleDate, moment(futureYear))).toEqual('Aug 26 2020, 9:21 am')
     })
 })
