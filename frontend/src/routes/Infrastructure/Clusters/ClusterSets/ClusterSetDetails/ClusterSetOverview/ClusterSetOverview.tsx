@@ -17,9 +17,11 @@ import { clusterDangerStatuses } from '../../../../../../resources'
 import { MultiClusterNetworkStatus } from '../../components/MultiClusterNetworkStatus'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetSubmariner/ClusterSetSubmariner'
+import { PluginContext } from '../../../../../../lib/PluginContext'
 
 export function ClusterSetOverviewPageContent() {
     const { t } = useTranslation()
+    const { isSubmarinerAvailable } = useContext(PluginContext)
     const { push } = useHistory()
     const { clusterSet, clusters, clusterPools, submarinerAddons, clusterSetBindings } = useContext(ClusterSetContext)
 
@@ -37,10 +39,10 @@ export function ClusterSetOverviewPageContent() {
                             key: t('table.name'),
                             value: clusterSet?.metadata.name,
                         },
-                        {
+                        ...(isSubmarinerAvailable ? [{
                             key: t('table.networkStatus'),
                             value: <MultiClusterNetworkStatus clusterSet={clusterSet!} />,
-                        },
+                        }] : []),
                     ]}
                     rightItems={[
                         {
@@ -72,7 +74,7 @@ export function ClusterSetOverviewPageContent() {
                         id="summary-status"
                         title={t('summary.status')}
                         cards={[
-                            {
+                            ...(isSubmarinerAvailable ? [{
                                 id: 'submariners',
                                 count: submarinerAddons!.length,
                                 title: t('submariner.addons'),
@@ -86,7 +88,7 @@ export function ClusterSetOverviewPageContent() {
                                         NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)
                                     ),
                                 isDanger: unhealthySubmariners.length > 0,
-                            },
+                            }] : []),
                             {
                                 id: 'clusters',
                                 count: clusters!.length,

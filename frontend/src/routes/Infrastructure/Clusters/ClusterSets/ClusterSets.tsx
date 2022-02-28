@@ -58,9 +58,11 @@ import { ClusterSetActionDropdown } from './components/ClusterSetActionDropdown'
 import { ClusterStatuses } from './components/ClusterStatuses'
 import { MultiClusterNetworkStatus } from './components/MultiClusterNetworkStatus'
 import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
+import { PluginContext } from '../../../../lib/PluginContext'
 
 export default function ClusterSetsPage() {
     const { t } = useTranslation()
+    const { isSubmarinerAvailable } = useContext(PluginContext)
     const alertContext = useContext(AcmAlertContext)
     useEffect(() => alertContext.clearAlerts, [])
 
@@ -124,7 +126,7 @@ export default function ClusterSetsPage() {
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
-                            <Flex>
+                            {isSubmarinerAvailable && (<Flex>
                                 <FlexItem>
                                     <TextContent>
                                         <Text component={TextVariants.h4}>{t('submariner')}</Text>
@@ -142,8 +144,9 @@ export default function ClusterSetsPage() {
                                         {t('view.documentation')}
                                     </AcmButton>
                                 </FlexItem>
-                            </Flex>
+                            </Flex>)}
                         </Flex>
+
                     </AcmExpandableCard>
                     <Stack>
                         <ClusterSetsTable clusters={clusters} managedClusterSets={managedClusterSets} />
@@ -173,6 +176,7 @@ const PageActions = () => {
 
 export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSets?: ManagedClusterSet[] }) {
     const { t } = useTranslation()
+    const { isSubmarinerAvailable } = useContext(PluginContext)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterSet> | { open: false }>({
         open: false,
     })
@@ -199,12 +203,16 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 ),
                 sort: 'name',
             },
-            {
-                header: t('table.networkStatus'),
-                cell: (managedClusterSet: ManagedClusterSet) => {
-                    return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
-                },
-            },
+            ...(isSubmarinerAvailable
+                ? [
+                    {
+                        header: t('table.networkStatus'),
+                        cell: (managedClusterSet: ManagedClusterSet) => {
+                            return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
+                        },
+                    },
+                ]
+                : []),
             {
                 header: t('table.clusters'),
                 sort: 'status',
@@ -226,7 +234,7 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                 },
             },
         ],
-        [t, clusterPools]
+        [t, clusterPools, isSubmarinerAvailable]
     )
 
     function mckeyFn(managedClusterSet: ManagedClusterSet) {
@@ -261,12 +269,15 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                             </span>
                         ),
                     },
+                    ...(isSubmarinerAvailable ?
+                        [
                     {
                         header: t('table.networkStatus'),
                         cell: (managedClusterSet: ManagedClusterSet) => {
                             return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
                         },
-                    },
+                            }
+                        ] : []),
                     {
                         header: t('table.clusters'),
                         cell: (managedClusterSet: ManagedClusterSet) => {

@@ -10,7 +10,7 @@ import {
     AcmSecondaryNavItem,
 } from '@stolostron/ui-components'
 import { Page } from '@patternfly/react-core'
-import { createContext, Fragment, Suspense, useEffect } from 'react'
+import { createContext, Fragment, Suspense, useContext, useEffect } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
@@ -44,6 +44,7 @@ import { InstallSubmarinerFormPage } from './ClusterSetInstallSubmariner/Install
 import { ClusterSetManageResourcesPage } from './ClusterSetManageResources/ClusterSetManageResources'
 import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
 import { ClusterSetSubmarinerPageContent } from './ClusterSetSubmariner/ClusterSetSubmariner'
+import { PluginContext } from '../../../../../lib/PluginContext'
 
 export const ClusterSetContext = createContext<{
     readonly clusterSet: ManagedClusterSet | undefined
@@ -65,6 +66,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation()
+    const { isSubmarinerAvailable } = useContext(PluginContext)
     const [, setRoute] = useRecoilState(acmRouteState)
     useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
@@ -161,9 +163,9 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                     <Route exact path={NavigationPath.clusterSetManage.replace(':id', match.params.id)}>
                         <ClusterSetManageResourcesPage />
                     </Route>
-                    <Route exact path={NavigationPath.clusterSetSubmarinerInstall.replace(':id', match.params.id)}>
+                    {isSubmarinerAvailable && (<Route exact path={NavigationPath.clusterSetSubmarinerInstall.replace(':id', match.params.id)}>
                         <InstallSubmarinerFormPage />
-                    </Route>
+                    </Route>)}
                     <AcmPage
                         hasDrawer
                         header={
@@ -188,7 +190,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                                 {t('tab.overview')}
                                             </Link>
                                         </AcmSecondaryNavItem>
-                                        <AcmSecondaryNavItem
+                                        {isSubmarinerAvailable && (<AcmSecondaryNavItem
                                             isActive={
                                                 location.pathname ===
                                                 NavigationPath.clusterSetSubmariner.replace(':id', match.params.id)
@@ -199,7 +201,7 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                             >
                                                 {t('tab.submariner')}
                                             </Link>
-                                        </AcmSecondaryNavItem>
+                                        </AcmSecondaryNavItem>)}
                                         <AcmSecondaryNavItem
                                             isActive={
                                                 location.pathname ===
@@ -245,9 +247,9 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                         <Route exact path={NavigationPath.clusterSetOverview}>
                             <ClusterSetOverviewPageContent />
                         </Route>
-                        <Route exact path={NavigationPath.clusterSetSubmariner}>
+                        {isSubmarinerAvailable && (<Route exact path={NavigationPath.clusterSetSubmariner}>
                             <ClusterSetSubmarinerPageContent />
-                        </Route>
+                        </Route>)}
                         <Route exact path={NavigationPath.clusterSetClusters}>
                             <ClusterSetClustersPageContent />
                         </Route>
@@ -256,6 +258,9 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                         </Route>
                         <Route exact path={NavigationPath.clusterSetAccess}>
                             <ClusterSetAccessManagement />
+                        </Route>
+                        <Route path="*">
+                            <Redirect to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)} />
                         </Route>
                     </AcmPage>
                 </Switch>
