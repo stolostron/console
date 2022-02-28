@@ -30,7 +30,6 @@ export const getSubscriptionApplication = (model, app, selectedChannel, recoilSt
         model.activeChannel = selectedChannel ? selectedChannel : getChannelName(selectedSubscriptions[0])
         // get all requested subscriptions
         selectedSubscriptions = selectedChannel === ALL_SUBSCRIPTIONS ? subscriptions : selectedSubscriptions
-        // debugger
 
         // get reports, hooks and rules
         const { channelsMap, rulesMap, preHooksMap, postHooksMap } = buildSubscriptionMaps(

@@ -229,6 +229,6 @@ describe('getShortDateTime', () => {
     })
 
     it('includes all elements for timestamps from a different year', () => {
-        expect(getShortDateTime(sampleDate, moment(futureYear))).toEqual('Aug 26 2020, 9:21 am')
+        expect(getShortDateTime(sampleDate, moment(futureYear))).toEqual('Aug 26 2020, 1:21 pm')
     })
 })
