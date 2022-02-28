@@ -19,11 +19,7 @@ import {
 } from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
 import { Selector } from '../../../../resources/selector'
-import {
-    getPlacementBindingsForResource,
-    getPlacementRulesForResource,
-    getPlacementsForResource,
-} from '../../common/util'
+import { getPlacementBindingsForResource, getPlacementsForResource } from '../../common/util'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
 
@@ -59,8 +55,7 @@ function renderPlacementTable(policy: Policy) {
         } else {
             bindings = getPlacementBindingsForResource(policy, placementBindings)
         }
-        const placementRuleMatches: PlacementRule[] = getPlacementRulesForResource(policy, bindings, placementRules)
-        return placementRuleMatches.map((rule: PlacementRule) => {
+        return getPlacementsForResource(policy, bindings, placementRules).map((rule: PlacementRule) => {
             return {
                 clusterLabels: rule.spec.clusterSelector ?? {},
                 metadata: rule.metadata,
@@ -82,8 +77,7 @@ function renderPlacementTable(policy: Policy) {
         } else {
             bindings = getPlacementBindingsForResource(policy, placementBindings)
         }
-        const placementMatches: Placement[] = getPlacementsForResource(policy, bindings, placements)
-        return placementMatches.map((placement: Placement) => {
+        return getPlacementsForResource(policy, bindings, placements).map((placement: Placement) => {
             return {
                 clusterLabels: {}, // TODO
                 metadata: placement.metadata,

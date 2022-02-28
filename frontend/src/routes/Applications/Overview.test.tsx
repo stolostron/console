@@ -6,13 +6,13 @@ import moment from 'moment'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
-    applicationsState,
-    subscriptionsState,
-    channelsState,
-    placementRulesState,
-    managedClustersState,
     applicationSetsState,
+    applicationsState,
     argoApplicationsState,
+    channelsState,
+    managedClustersState,
+    placementRulesState,
+    subscriptionsState,
 } from '../../atoms'
 import { nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { waitForText } from '../../lib/test-util'

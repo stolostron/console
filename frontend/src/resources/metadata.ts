@@ -11,6 +11,15 @@ export interface Metadata {
     deletionTimestamp?: string
     selfLink?: string
     finalizers?: string[]
-    ownerReferences?: any[]
+    ownerReferences?: OwnerReference[]
     managedFields?: any[]
+}
+
+interface OwnerReference {
+    apiVersion: string
+    blockOwnerDeletion?: boolean
+    controller?: boolean
+    kind: string
+    name: string
+    uid?: string
 }
