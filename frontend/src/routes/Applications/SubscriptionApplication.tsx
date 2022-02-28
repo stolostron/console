@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect, SetStateAction, Dispatch } from 'react'
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { NavigationPath } from '../../NavigationPath'
@@ -30,6 +30,7 @@ import { ansibleJobState, applicationsState, channelsState, placementRulesState,
 
 import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
 import { getApplication } from './ApplicationDetails/ApplicationTopology/model/application'
+import { getErrorInfo } from '../../components/ErrorPage'
 
 interface CreationStatus {
     status: string
@@ -45,6 +46,7 @@ const Portals = Object.freeze({
 
 export default function CreateSubscriptionApplicationPage() {
     const { t } = useTranslation()
+    const [title, setTitle] = useState<string>(t('Create Application'))
 
     // create portals for buttons in header
     const switches = (
@@ -64,7 +66,7 @@ export default function CreateSubscriptionApplicationPage() {
         <AcmPage
             header={
                 <AcmPageHeader
-                    title={t('Create Application')}
+                    title={title}
                     breadcrumb={[{ text: t('Applications'), to: NavigationPath.applications }]}
                     switches={switches}
                     actions={portals}
@@ -74,7 +76,7 @@ export default function CreateSubscriptionApplicationPage() {
             <AcmErrorBoundary>
                 <AcmPageContent id="create-cluster-pool">
                     <PageSection className="pf-c-content" variant="light" type="wizard">
-                        <CreateSubscriptionApplication />
+                        {CreateSubscriptionApplication(setTitle)}
                     </PageSection>
                 </AcmPageContent>
             </AcmErrorBoundary>
@@ -82,14 +84,18 @@ export default function CreateSubscriptionApplicationPage() {
     )
 }
 
-export function CreateSubscriptionApplication() {
+export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<string>>) {
     const history = useHistory()
     const toastContext = useContext(AcmToastContext)
     const [controlData, setControlData] = useState<any>('')
     useEffect(() => {
-        getControlData().then((cd) => {
-            setControlData(cd)
-        })
+        getControlData()
+            .then((cd) => {
+                setControlData(cd)
+            })
+            .catch((err) => {
+                return err
+            })
     }, [])
 
     // create button
@@ -100,18 +106,26 @@ export function CreateSubscriptionApplication() {
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
             // change create cluster to create application
             const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
-            createKubeResources(createResources as IResource[]).then((error) => {
-                toastContext.addAlert({
-                    title: t('Application created'),
-                    message: t('{{name}} was successfully created.', {
-                        name: _.get(applicationResourceJSON, 'metadata.name', ''),
-                    }),
-                    type: 'success',
-                    autoClose: true,
+            createKubeResources(createResources as IResource[])
+                .then(() => {
+                    toastContext.addAlert({
+                        title: t('Application created'),
+                        message: t('{{name}} was successfully created.', {
+                            name: _.get(applicationResourceJSON, 'metadata.name', ''),
+                        }),
+                        type: 'success',
+                        autoClose: true,
+                    })
+                    history.push(NavigationPath.applications)
                 })
-                history.push(NavigationPath.applications)
-                return error
-            })
+                .catch((err) => {
+                    const errorInfo = getErrorInfo(err)
+                    toastContext.addAlert({
+                        type: 'danger',
+                        title: errorInfo.title,
+                        message: errorInfo.message,
+                    })
+                })
         }
     }
     function handleCreate(resourceJSON: { createResources: IResource[] }) {
@@ -139,20 +153,36 @@ export function CreateSubscriptionApplication() {
                     }
                 })
 
-                updateResources(createResources).then(() => {
-                    const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
-                    toastContext.addAlert({
-                        title: t('Application updated'),
-                        message: t('{{name}} was successfully updated.', {
-                            name: _.get(applicationResourceJSON, 'metadata.name', ''),
-                        }),
-                        type: 'success',
-                        autoClose: true,
+                updateResources(createResources)
+                    .then(() => {
+                        const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
+                        toastContext.addAlert({
+                            title: t('Application updated'),
+                            message: t('{{name}} was successfully updated.', {
+                                name: _.get(applicationResourceJSON, 'metadata.name', ''),
+                            }),
+                            type: 'success',
+                            autoClose: true,
+                        })
+                        history.push(NavigationPath.applications)
                     })
-                    history.push(NavigationPath.applications)
-                })
+                    .catch((err) => {
+                        const errorInfo = getErrorInfo(err)
+                        toastContext.addAlert({
+                            type: 'danger',
+                            title: errorInfo.title,
+                            message: errorInfo.message,
+                        })
+                    })
             } else {
-                createResource(resourceJSON)
+                createResource(resourceJSON).catch((err) => {
+                    const errorInfo = getErrorInfo(err)
+                    toastContext.addAlert({
+                        type: 'danger',
+                        title: errorInfo.title,
+                        message: errorInfo.message,
+                    })
+                })
             }
         }
     }
@@ -221,6 +251,9 @@ export function CreateSubscriptionApplication() {
                 resources: getApplicationResources(application),
                 isLoaded: true,
             })
+        }, [])
+        useEffect(() => {
+            setTitle(selectedAppName)
         }, [])
     }
 

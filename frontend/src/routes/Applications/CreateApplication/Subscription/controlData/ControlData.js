@@ -28,12 +28,16 @@ export const loadExistingNamespaces = () => {
     return {
         query: () => {
             return new Promise(async (resolve, reject) => {
-                const namespaces = await listNamespaces().promise
-                const authorizedNamespaces = await getAuthorizedNamespaces(
-                    [rbacCreate(NamespaceDefinition)],
-                    namespaces
-                )
-                resolve(authorizedNamespaces)
+                try {
+                    const namespaces = await listNamespaces().promise
+                    const authorizedNamespaces = await getAuthorizedNamespaces(
+                        [rbacCreate(NamespaceDefinition)],
+                        namespaces
+                    )
+                    resolve(authorizedNamespaces)
+                } catch (err) {
+                    reject(err)
+                }
             })
         },
         loadingDesc: 'Loading namespaces...',
