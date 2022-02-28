@@ -32,19 +32,16 @@ import {
     settingsState,
 } from '../../../../../atoms'
 import { makeStyles } from '@material-ui/styles'
-import {
-    ClusterCurator,
-    filterForTemplatedCurators,
-    createClusterCurator,
-    patchResource,
-} from '../../../../../resources'
+import { ClusterCurator, filterForTemplatedCurators, createClusterCurator } from '../../../../../resources'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { ProviderConnection, unpackProviderConnection } from '../../../../../resources'
 import { Secret } from '../../../../../resources'
 import { createResource as createResourceTool } from '../../../../../resources'
-import { getNetworkingPatches } from './components/assisted-installer/utils'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { WarningContext, WarningContextType, Warning } from './Warning'
+import { CIM } from 'openshift-assisted-ui-lib'
+
+
+const { isAIFlowInfraEnv } = CIM
 
 interface CreationStatus {
     status: string
@@ -310,26 +307,34 @@ export default function CreateClusterPage() {
                 }
                 break
             case 'reviewSave':
-                control.mutation = (controlData: any[]) => {
+                control.mutation = () => {
                     return new Promise((resolve) => {
                         if (templateEditorRef.current) {
                             const resourceJSON = (templateEditorRef.current as any)?.getResourceJSON()
                             if (resourceJSON) {
-                                const networkForm = controlData.find((r: any) => r.id === 'aiNetwork')
-                                if (networkForm) {
-                                    networkForm.resourceJSON = resourceJSON
-                                }
-                                const hostsForm = controlData.find((r: any) => r.id === 'aiHosts')
-                                if (hostsForm) {
-                                    hostsForm.resourceJSON = resourceJSON
-                                }
-                                createResource(resourceJSON, true, 'Saving draft...', 'Draft saved').then((status) => {
+                                const { createResources } = resourceJSON
+                                const map = keyBy(createResources, 'kind')
+                                const clusterName = get(map, 'ClusterDeployment.metadata.name')
+                                const clusterNamespace = get(map, 'ClusterDeployment.metadata.namespace')
+                                const isAssistedFlow = isAIFlowInfraEnv(map.InfraEnv)
+                                createResource(
+                                    resourceJSON,
+                                    true,
+                                    'Saving cluster draft...',
+                                    'Cluster draft saved'
+                                ).then((status) => {
                                     if (status === 'ERROR') {
                                         resolve(status)
                                     } else {
                                         setTimeout(() => {
                                             resolve(status)
                                             setCreationStatus(undefined)
+                                            history.push(
+                                                NavigationPath.editCluster
+                                                    .replace(':namespace', clusterNamespace as string)
+                                                    .replace(':name', clusterName as string),
+                                                { initialStep: isAssistedFlow ? 'hosts-discovery' : 'hosts-selection' }
+                                            )
                                         }, 250)
                                     }
                                 })
@@ -339,32 +344,6 @@ export default function CreateClusterPage() {
                         resolve('ERROR')
                     })
                 }
-                break
-            case 'reviewFinish':
-                control.mutation = async (controlData: any[]) => {
-                    return new Promise((resolve) => {
-                        const networkForm = controlData.find((r: any) => r.id === 'aiNetwork')
-                        const clusterName = get(networkForm, 'agentClusterInstall.spec.clusterDeploymentRef.name')
-                        const clusterNamespace = get(networkForm, 'agentClusterInstall.metadata.namespace')
-                        patchNetwork(networkForm.agentClusterInstall, networkForm.active).then((status) => {
-                            resolve(status)
-                            if (status !== 'ERROR') {
-                                setCreationStatus({
-                                    status,
-                                    messages: ['Configured cluster network. Redirecting to cluster details...'],
-                                })
-                                setTimeout(() => {
-                                    history.push(
-                                        NavigationPath.clusterCreateProgress
-                                            .replace(':namespace', clusterNamespace as string)
-                                            .replace(':name', clusterName as string)
-                                    )
-                                }, 2000)
-                            }
-                        })
-                    })
-                }
-
                 break
         }
     }
@@ -383,30 +362,6 @@ export default function CreateClusterPage() {
                 setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
                 break
         }
-    }
-
-    const patchNetwork = async (
-        agentClusterInstall: CIM.AgentClusterInstallK8sResource,
-        values: CIM.NetworkConfigurationValues
-    ) => {
-        const patches = getNetworkingPatches(agentClusterInstall, values)
-        const patch = async () => {
-            let status = 'DONE'
-            let messages = ['Configured the cluster network']
-            try {
-                if (patches.length > 0) {
-                    await patchResource(agentClusterInstall, patches).promise
-                }
-            } catch (e) {
-                status = 'ERROR'
-                const msg = e instanceof Error ? e.message : ''
-                messages = [`Failed to configure the cluster network: ${msg}`]
-            }
-            setCreationStatus({ status, messages })
-            return status
-        }
-        setCreationStatus({ status: 'IN_PROGRESS', messages: ['Configuring the cluster network'] })
-        return patch()
     }
 
     const onControlSelect = (control: any) => {

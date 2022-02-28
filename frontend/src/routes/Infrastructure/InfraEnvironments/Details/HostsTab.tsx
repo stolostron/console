@@ -14,6 +14,7 @@ import {
     useNMStatesOfNamespace,
     onSaveAgent,
     onChangeBMHHostname,
+    onMassDeleteHost,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
@@ -70,12 +71,13 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                                 canDelete={(agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) =>
                                     !!nmStates && (!!agent || !!bmh)
                                 }
-                                onDeleteHost={onDeleteHost}
+                                onDeleteHost={onDeleteHost as any}
                                 onEditBMH={setEditBMH}
                                 canUnbindHost={canUnbindAgent}
                                 onUnbindHost={onUnbindHost}
                                 onChangeHostname={onSaveAgent}
                                 onChangeBMHHostname={onChangeBMHHostname}
+                                onMassDeleteHost={onMassDeleteHost}
                             />
                             <EditBMHModal
                                 infraEnv={infraEnv}

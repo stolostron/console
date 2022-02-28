@@ -1329,6 +1329,8 @@
     "Managed externally": "Managed externally",
     "managed.addCluster": "Add cluster",
     "managed.addSet": "Add to cluster set",
+    "managed.ai.editCluster.configurationBreadcrumb": "configuration",
+    "managed.ai.editCluster.title": "Configure cluster",
     "managed.ai.scaleUp": "Add hosts",
     "managed.cluster.machinePools.emptyStateButton": "This cluster doesn't have any machine pools.",
     "managed.cluster.machinePools.emptyStateHeader": "No machine pools found.",
