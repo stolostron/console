@@ -2,6 +2,7 @@
 
 import { AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 
+import { AcmPage } from '@stolostron/ui-components'
 import {
     applicationsState,
     applicationSetsState,
@@ -14,8 +15,6 @@ import {
     subscriptionReportsState,
     managedClustersState,
 } from '../../../atoms'
-
-import { AcmPage } from './AcmPage'
 
 import {
     createContext,

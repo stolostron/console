@@ -2,9 +2,6 @@
 import React from 'react'
 import _ from 'lodash'
 import DetailsForm from '../components/assisted-installer/DetailsForm'
-import CIMHostsForm from '../components/assisted-installer/CIMHostsForm'
-import AIHostsForm from '../components/assisted-installer/AIHostsForm'
-import NetworkForm from '../components/assisted-installer/NetworkForm'
 import { automationControlData, CREATE_CLOUD_CONNECTION } from './ControlDataHelpers'
 
 export const controlDataCIM = [
@@ -45,7 +42,7 @@ export const controlDataCIM = [
     {
         id: 'reviewSave',
         type: 'review',
-        title: 'Review and Save',
+        title: 'Review and save',
         nextButtonLabel: 'Save',
         comment:
             'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.',
@@ -56,41 +53,17 @@ export const controlDataCIM = [
         id: 'aiHostsStep',
         type: 'step',
         title: 'Cluster hosts',
-    },
-    {
-        id: 'aiHosts',
-        type: 'custom',
-        component: null, // will be defined later
-        providerId: 'aiHosts',
-        mustValidate: true,
+        disabled: true,
     },
     {
         id: 'aiNetworkStep',
         type: 'step',
         title: 'Cluster network',
-    },
-    {
-        id: 'aiNetwork',
-        type: 'custom',
-        component: <NetworkForm />,
-        providerId: 'aiNetwork',
-        mustValidate: true,
-    },
-    {
-        id: 'reviewFinish',
-        type: 'review',
-        title: 'Review and install',
-        nextButtonLabel: 'Install cluster',
+        disabled: true,
     },
 ]
 
 export const controlDataAI = _.cloneDeep(controlDataCIM)
-
-const aiHostsStep = controlDataAI.find((data) => data.id === 'aiHosts')
-aiHostsStep.component = <AIHostsForm />
-
-const cimHostsStep = controlDataCIM.find((data) => data.id === 'aiHosts')
-cimHostsStep.component = <CIMHostsForm />
 
 const aiStep = controlDataAI.find((data) => data.id === 'ai')
 aiStep.additionalProps.promptSshPublicKey = true

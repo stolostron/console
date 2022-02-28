@@ -613,8 +613,9 @@ export default function ApplicationsOverview() {
         if (hostingSubAnnotation) {
             const subName = hostingSubAnnotation.split('/')[1]
             modalWarnings = t(
-                'This application is deployed by the subscription {0}. The delete action might be reverted when resources are reconciled with the resource repository.'
-            ).replace('{0}', subName)
+                'This application is deployed by the subscription {{subName}}. The delete action might be reverted when resources are reconciled with the resource repository.',
+                { subName }
+            )
             return [[], []]
         }
 

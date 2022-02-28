@@ -144,7 +144,7 @@ describe('SearchPage', () => {
         // This wait pauses till apollo query is returning data
         await wait()
         // Test that the component has rendered correctly with data
-        await waitFor(() => expect(screen.queryByText('search.filter.errors.title')).toBeTruthy())
+        await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
         // Test that UI shows the error message received from API.
         await waitFor(() => expect(screen.queryByText('Error getting search schema data')).toBeTruthy())
         // Validate message when managed clusters are disabled.

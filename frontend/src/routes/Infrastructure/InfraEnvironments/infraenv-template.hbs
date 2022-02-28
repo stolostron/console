@@ -21,6 +21,18 @@ spec:
     - {{this}}
   {{/each}}
   {{/if}}
+  {{#if ai.enableProxy}}
+  proxy:
+    {{#if ai.httpProxy}}
+    httpProxy: {{{ ai.httpProxy }}}
+    {{/if}}
+    {{#if ai.httpsProxy}}
+    httpsProxy: {{{ ai.httpsProxy }}}
+    {{/if}}
+    {{#if ai.noProxy}}
+    noProxy: {{{ ai.noProxy }}}
+    {{/if}}
+  {{/if}}
 status:
   agentLabelSelector:
     matchLabels:

@@ -214,7 +214,7 @@ const AIClusterDetails: React.FC = () => {
                                 !isClusterInstallationRunning && isAIFlow && !!agent
                             }
                             onUnbindHost={onUnbindHost}
-                            onDeleteHost={onDeleteHost}
+                            onDeleteHost={onDeleteHost as any}
                         />
                     </>
                 </AcmExpandableCard>

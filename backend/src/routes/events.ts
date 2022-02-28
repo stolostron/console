@@ -126,7 +126,7 @@ export function startWatching(): void {
     ServerSideEvents.eventFilter = eventFilter
 
     for (const definition of definitions) {
-        void watch(definition)
+        void listAndWatch(definition)
     }
 }
 
@@ -138,13 +138,17 @@ interface IWatchOptions {
 }
 
 // https://kubernetes.io/docs/reference/using-api/api-concepts/
-async function watch(options: IWatchOptions) {
+async function listAndWatch(options: IWatchOptions) {
     while (!stopping) {
         try {
             const resourceVersion = await listKubernetesObjects(options)
             await watchKubernetesObjects(options, resourceVersion)
         } catch (err: unknown) {
-            if (err instanceof HTTPError) {
+            if (err instanceof SyntaxError) {
+                // Happens when the response body is not JSON
+                // Such as the case when the resource version if too old
+                // fall through to rerun the list function
+            } else if (err instanceof HTTPError) {
                 switch (err.response.statusCode) {
                     case 404:
                         logger.trace({ msg: 'watch', ...options, status: 'Not found' })
@@ -157,13 +161,11 @@ async function watch(options: IWatchOptions) {
                 if (err.message === 'Premature close') {
                     // Do nothing
                 } else {
-                    logger.warn({ msg: 'watch', error: err.message, name: err.name, ...options })
                     await new Promise((resolve) =>
                         setTimeout(resolve, 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
                     )
                 }
             } else {
-                logger.warn({ msg: 'watch', err, ...options })
                 await new Promise((resolve) =>
                     setTimeout(resolve, 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
                 )
@@ -250,6 +252,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
             fields: options.fieldSelector,
             apiVersion: options.apiVersion,
         })
+
         try {
             const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
             const request = got.stream(url, {
@@ -319,12 +322,27 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                                 resourceVersion = watchEvent.object.metadata.resourceVersion
                                 break
                             case 'ERROR':
-                                logger.error({
-                                    msg: 'watch error',
-                                    kind: options.kind,
-                                    apiVersion: options.apiVersion,
-                                    event: watchEvent,
-                                })
+                                if (
+                                    (watchEvent.object as unknown as { message?: string }).message.startsWith(
+                                        'too old resource version'
+                                    )
+                                ) {
+                                    logger.warn({
+                                        msg: 'watch',
+                                        warning: (watchEvent.object as unknown as { message?: string }).message,
+                                        action: 'retrying watch',
+                                        kind: options.kind,
+                                        apiVersion: options.apiVersion,
+                                    })
+                                } else {
+                                    logger.warn({
+                                        msg: 'watch',
+                                        action: 'retrying watch',
+                                        kind: options.kind,
+                                        apiVersion: options.apiVersion,
+                                        event: watchEvent,
+                                    })
+                                }
                                 break
                         }
                     })
@@ -334,21 +352,50 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
             }
         } catch (err: unknown) {
             if (err instanceof TimeoutError) {
-                logger.debug({ msg: 'retry', ...options })
+                // Timeout when we have not recieved an event in 5 min
+                // Do nothing - retry the watch
             } else if (err instanceof CancelError) {
-                // Do Nothing
+                // Aborting the list/watch causes a CancelError
+                // Do nothing - fall through to allow exit
             } else if (err instanceof SyntaxError) {
-                logger.debug({ msg: 'retry', ...options })
+                // Happens when the response body is not JSON
+                // Such as the case when the resource version if too old
+                // Need to throw error to cause a list function to rerun
+                logger.trace({ msg: 'SyntaxError', ...options })
+                throw err
             } else if (err instanceof HTTPError) {
                 switch (err.response.statusCode) {
                     case 410:
-                        logger.debug({ msg: 'retry', ...options })
-                        break
+                        // https://kubernetes.io/docs/reference/using-api/api-concepts/
+                        // A given Kubernetes server will only preserve a historical record of changes for a limited time.
+                        // Clusters using etcd 3 preserve changes in the last 5 minutes by default.
+                        // When the requested watch operations fail because the historical version of that resource is not available,
+                        // clients must handle the case by recognizing the status code 410 Gone, clearing their local cache,
+                        // performing a new get or list operation, and starting the watch from the resourceVersion that was returned.
+                        //
+                        // Throw error fall through to perform a list and reconcile
+                        throw err
                     default:
+                        logger.warn({
+                            msg: 'watch',
+                            warning: (err as Error)?.message,
+                            ...options,
+                            errorName: (err as Error)?.name,
+                        })
                         throw err
                 }
             } else {
-                throw err
+                if ((err as Error)?.message === 'Premature close') {
+                    // Do nothing
+                } else {
+                    logger.warn({
+                        msg: 'watch',
+                        warning: (err as Error)?.message,
+                        ...options,
+                        errorName: (err as Error)?.name,
+                    })
+                    throw err
+                }
             }
         }
     }

@@ -12,7 +12,7 @@ import DiagramViewer from './components/DiagramViewer'
 import LegendView from './components/LegendView'
 import { getOptions } from './options'
 import { useApplicationPageContext, ApplicationDataType } from '../ApplicationDetails'
-import { AcmDrawerContext } from '../AcmDrawer'
+import { AcmDrawerContext } from '@stolostron/ui-components'
 import { processResourceActionLink } from './helpers/diagram-helpers'
 
 import { cloneDeep } from 'lodash'
@@ -59,7 +59,14 @@ export function ApplicationTopologyPageContent(props: {
         //show toast message in parent container
     }
 
-    const setDrawerContent = (title: string, isInline: boolean, panelContent: React.ReactNode | React.ReactNode[]) => {
+    const setDrawerContent = (
+        title: string,
+        isInline: boolean,
+        isResizable: boolean,
+        disableDrawerHead: boolean,
+        drawerPanelBodyHasNoPadding: boolean,
+        panelContent: React.ReactNode | React.ReactNode[]
+    ) => {
         setDrawerContext({
             isExpanded: true,
             onCloseClick: () => setDrawerContext(undefined),
@@ -67,6 +74,9 @@ export function ApplicationTopologyPageContent(props: {
             panelContent,
             isInline,
             panelContentProps: { minSize: '20%' },
+            isResizable,
+            disableDrawerHead,
+            drawerPanelBodyHasNoPadding,
         })
     }
 
@@ -79,7 +89,16 @@ export function ApplicationTopologyPageContent(props: {
                             <span
                                 className="how-to-read-text"
                                 tabIndex={0}
-                                onClick={() => setDrawerContent(t('How to read topology'), true, <LegendView t={t} />)}
+                                onClick={() =>
+                                    setDrawerContent(
+                                        t('How to read topology'),
+                                        true,
+                                        false,
+                                        false,
+                                        false,
+                                        <LegendView t={t} />
+                                    )
+                                }
                                 onKeyPress={() => {
                                     // noop function
                                 }}

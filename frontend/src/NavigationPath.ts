@@ -23,7 +23,6 @@ export enum NavigationPath {
     managedClusters = '/multicloud/infrastructure/clusters/managed',
     createCluster = '/multicloud/infrastructure/clusters/create',
     editCluster = '/multicloud/infrastructure/clusters/edit/:namespace/:name',
-    clusterCreateProgress = '/multicloud/infrastructure/clusters/create/:namespace/:name/progress',
     clusterDetails = '/multicloud/infrastructure/clusters/details/:id',
     clusterOverview = '/multicloud/infrastructure/clusters/details/:id/overview',
     clusterSettings = '/multicloud/infrastructure/clusters/details/:id/settings',

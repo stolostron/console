@@ -61,9 +61,9 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('emptystate.defaultState.title')
-        await waitForText('emptystate.defaultState.msg')
-        await waitForText('emptystate.addCredential')
+        await waitForText('No discovered clusters found')
+        await waitForText('Red Hat OpenShift Cluster Manager')
+        await waitForText('Add credential')
     })
 
     test('CRH credentials exist, but no discoveryconfig (Empty State 2)', async () => {
@@ -86,10 +86,10 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('emptystate.credentials.title')
-        await waitForText('emptystate.credentials.msg')
-        await waitForText('discovery.addDiscovery')
-        await clickByText('discovery.addDiscovery')
+        await waitForText('No discovered clusters found')
+        await waitForText('Configure Discovery')
+        await waitForText('Create discovery settings')
+        await clickByText('Create discovery settings')
 
         await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
         await clickByText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
@@ -115,9 +115,9 @@ describe('DiscoveredClusters', () => {
             </RecoilRoot>
         )
 
-        await waitForText('emptystate.discoveryEnabled.title')
-        await waitForText('emptystate.discoveryEnabled.msg')
-        await waitForText('discovery.configureDiscovery')
-        await waitForText('discovery.addDiscovery')
+        await waitForText('No discovered clusters found')
+        await waitForText('view documentation')
+        await waitForText('Configure discovery settings')
+        await waitForText('Create discovery settings')
     })
 })

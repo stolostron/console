@@ -1,32 +1,37 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import { Policy, PolicyApiVersion, PolicyKind, IResource, ResourceError, ResourceErrorCode } from '../resources'
-import { PlacementBindingApiVersion, PlacementBindingKind } from '../resources/placement-binding'
-import { PlacementRuleApiVersion, PlacementRuleKind } from '../resources/placement-rule'
-
+import {
+    IResource,
+    Placement,
+    PlacementBinding,
+    PlacementRule,
+    Policy,
+    ResourceError,
+    ResourceErrorCode,
+} from '../resources'
+import { getPlacementBindingsForResource, getPlacementsForResource } from '../routes/Governance/common/util'
 import { deleteResources } from './delete-resources'
 
-export function deletePolicy(policy: Policy, placementBindingChecked?: Boolean, placementRuleChecked?: Boolean) {
-    const resources: IResource[] = [
-        {
-            apiVersion: PolicyApiVersion,
-            kind: PolicyKind,
-            metadata: { name: policy.metadata.name!, namespace: policy.metadata.namespace! },
-        },
-    ]
-    placementBindingChecked &&
-        resources.push({
-            apiVersion: PlacementBindingApiVersion,
-            kind: PlacementBindingKind,
-            metadata: { name: `binding-${policy.metadata.name}`, namespace: policy.metadata.namespace! },
-        })
+export function deletePolicy(
+    policy: Policy,
+    placements: Placement[],
+    placementRules: PlacementRule[],
+    placementBindings: PlacementBinding[],
+    deletePlacements?: Boolean,
+    deletePlacementBindings?: Boolean
+) {
+    let resources: IResource[] = [policy]
 
-    placementRuleChecked &&
-        resources.push({
-            apiVersion: PlacementRuleApiVersion,
-            kind: PlacementRuleKind,
-            metadata: { name: `placement-${policy.metadata.name}`, namespace: policy.metadata.namespace! },
-        })
+    const bindings = getPlacementBindingsForResource(policy, placementBindings)
+
+    if (deletePlacementBindings) {
+        resources = [...resources, ...bindings]
+    }
+
+    if (deletePlacements) {
+        resources = [...resources, ...getPlacementsForResource(policy, bindings, placements)]
+        resources = [...resources, ...getPlacementsForResource(policy, bindings, placementRules)]
+    }
 
     const deleteResourcesResult = deleteResources(resources)
 

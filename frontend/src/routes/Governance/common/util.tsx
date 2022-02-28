@@ -11,54 +11,134 @@ import {
     HelmRelease,
     Placement,
     PlacementBinding,
-    PlacementKind,
     PlacementRule,
-    PlacementRuleKind,
     Policy,
     PolicySet,
     Subscription,
 } from '../../../resources'
+import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
 
 export function getPlacementBindingsForResource(resource: Policy | PolicySet, placementBindings: PlacementBinding[]) {
-    return placementBindings
-        .filter((placementBinding) => placementBinding.metadata.namespace === resource.metadata.namespace)
-        .filter((placementBinding) => placementBinding.subjects?.find((subject) => subject.kind === resource.kind))
-        .filter((placementBinding) =>
-            placementBinding.subjects?.find((subject) => subject.name === resource.metadata.name)
-        )
+    return placementBindings.filter(
+        (placementBinding) =>
+            placementBinding.metadata.namespace === resource.metadata.namespace &&
+            placementBinding.subjects?.find(
+                (subject) => subject.kind === resource.kind && subject.name === resource.metadata.name
+            )
+    )
 }
 
-export function getPlacementsForResource(
+export function getPlacementsForResource<T extends Placement | PlacementRule>(
     resource: Policy | PolicySet,
-    resourceBindings: PlacementBinding[],
-    placements: Placement[]
+    placementBindings: PlacementBinding[],
+    placements: T[]
 ) {
+    const resourcePlacementBindings = getPlacementBindingsForResource(resource, placementBindings)
     return placements
         .filter((placement) => placement.metadata.namespace === resource.metadata.namespace)
         .filter((placement) =>
-            resourceBindings.find(
+            resourcePlacementBindings.find(
                 (placementBinding: PlacementBinding) =>
-                    placementBinding.placementRef.kind === PlacementKind &&
+                    placementBinding.placementRef.kind === placement.kind &&
                     placementBinding.placementRef.name === placement.metadata.name
             )
         )
 }
 
-export function getPlacementRulesForResource(
-    resource: Policy | PolicySet,
-    resourceBindings: PlacementBinding[],
-    placementRules: PlacementRule[]
+export function getPlacementDecisionsForPlacements(
+    placementDecisions: PlacementDecision[],
+    placements: (Placement | PlacementRule)[]
 ) {
-    return placementRules
-        .filter((placementRule) => placementRule.metadata.namespace === resource.metadata.namespace)
-        .filter((placementRule) =>
-            resourceBindings.find(
-                (placementBinding: PlacementBinding) =>
-                    placementBinding.placementRef.kind === PlacementRuleKind &&
-                    placementBinding.placementRef.name === placementRule.metadata.name
-            )
+    return placementDecisions.filter((placementDecision) =>
+        placementDecision.metadata.ownerReferences?.find((ownerReference) =>
+            placements.find((placement) => placement.metadata.uid === ownerReference.uid)
         )
+    )
+}
+
+export function getPlacementDecisionsForResource(
+    resource: Policy | PolicySet,
+    placementDecisions: PlacementDecision[],
+    resourceBindings: PlacementBinding[],
+    placements: (Placement | PlacementRule)[]
+) {
+    const resourcePlacements = getPlacementsForResource(resource, resourceBindings, placements)
+    return getPlacementDecisionsForPlacements(placementDecisions, resourcePlacements)
+}
+
+export function getPoliciesForPolicySet(policySet: PolicySet, policies: Policy[]) {
+    return policies.filter(
+        (policy) =>
+            policy.metadata.namespace === policySet.metadata.namespace &&
+            policySet.spec.policies.includes(policy.metadata.name ?? '')
+    )
+}
+
+export function getClustersComplianceForPolicySet(
+    policySet: PolicySet,
+    policies: Policy[],
+    placementDecisions: PlacementDecision[],
+    resourceBindings: PlacementBinding[],
+    placements: (Placement | PlacementRule)[]
+) {
+    const policySetPlacementDecisions = getPlacementDecisionsForResource(
+        policySet,
+        placementDecisions,
+        resourceBindings,
+        placements
+    )
+    const policySetPolicies = getPoliciesForPolicySet(policySet, policies)
+
+    const clustersCompliance: Record<string, 'Compliant' | 'NonCompliant'> = {}
+    for (const placementDecision of policySetPlacementDecisions) {
+        for (const decision of placementDecision.status.decisions) {
+            if (clustersCompliance[decision.clusterName] === 'NonCompliant') {
+                continue
+            }
+            for (const policy of policySetPolicies) {
+                const policyClusterStatus = policy.status?.status?.find(
+                    (clusterStatus) => clusterStatus.clustername === decision.clusterName
+                )
+                if (policyClusterStatus?.compliant === 'NonCompliant') {
+                    clustersCompliance[decision.clusterName] = 'NonCompliant'
+                } else if (policyClusterStatus?.compliant === 'Compliant') {
+                    clustersCompliance[decision.clusterName] = 'Compliant'
+                }
+            }
+        }
+    }
+    return clustersCompliance
+}
+
+export function getClustersSummaryForPolicySet(
+    policySet: PolicySet,
+    policies: Policy[],
+    placementDecisions: PlacementDecision[],
+    resourceBindings: PlacementBinding[],
+    placements: (Placement | PlacementRule)[]
+) {
+    const clustersCompliance = getClustersComplianceForPolicySet(
+        policySet,
+        policies,
+        placementDecisions,
+        resourceBindings,
+        placements
+    )
+    const compliant: string[] = []
+    const nonCompliant: string[] = []
+    for (const clusterName in clustersCompliance) {
+        switch (clustersCompliance[clusterName]) {
+            case 'Compliant':
+                compliant.push(clusterName)
+                break
+            case 'NonCompliant':
+                nonCompliant.push(clusterName)
+                break
+        }
+    }
+
+    return { compliant, nonCompliant }
 }
 
 export function resolveExternalStatus(policy: Policy) {

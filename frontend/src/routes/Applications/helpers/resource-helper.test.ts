@@ -11,10 +11,15 @@ import {
     getShortDateTime,
     getEditLink,
 } from './resource-helper'
-import { useTranslation } from '../../../lib/acm-i18next'
+import i18next from 'i18next'
 import moment from 'moment'
 
-const { t } = useTranslation()
+const t = i18next.t
+jest.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key: string) => i18next.t(key),
+    })
+}))
 
 describe('normalizeRepoType', () => {
     it('should work with github', () => {
@@ -159,7 +164,7 @@ describe('getSearchLink', () => {
 
     it('should work with multiple props', () => {
         expect(getSearchLink({ properties: { name: 'testing', kind: 'resource' } })).toEqual(
-            '/multicloud/home/search?filters={"textsearch":"name%3Atesting%20kind%3Aresource"}'
+            '/multicloud/home/search?filters=%7B%22textsearch%22%3A%22name%3Atesting%20kind%3Aresource%22%7D'
         )
     })
 
@@ -169,7 +174,9 @@ describe('getSearchLink', () => {
                 properties: { name: 'testing' },
                 showRelated: 'subscriptions',
             })
-        ).toEqual('/multicloud/home/search?filters={"textsearch":"name%3Atesting"}&showrelated=subscriptions')
+        ).toEqual(
+            '/multicloud/home/search?filters=%7B%22textsearch%22%3A%22name%3Atesting%22%7D&showrelated=subscriptions'
+        )
     })
 
     it('should work with array properties', () => {
@@ -184,7 +191,7 @@ describe('getSearchLink', () => {
                 showRelated: 'cluster',
             })
         ).toEqual(
-            '/multicloud/home/search?filters={"textsearch":"name%3Ahelloworld-local%2Chelloworld-remote%20namespace%3Aargocd%2Copenshift-gitops%20kind%3Aapplication%20apigroup%3Aargoproj.io"}&showrelated=cluster'
+            '/multicloud/home/search?filters=%7B%22textsearch%22%3A%22name%3Ahelloworld-local%2Chelloworld-remote%20namespace%3Aargocd%2Copenshift-gitops%20kind%3Aapplication%20apigroup%3Aargoproj.io%22%7D&showrelated=cluster'
         )
     })
 })

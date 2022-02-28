@@ -214,7 +214,9 @@ function UserDropdown() {
         const resp = configure()
         resp.promise
             .then((payload) => {
-                payload && payload.token_endpoint ? window.open(`${payload.token_endpoint}/request`, '_blank') : ''
+                if (payload && payload.token_endpoint) {
+                    window.open(`${payload.token_endpoint}/request`, '_blank')
+                }
             })
             .catch((error) => {
                 // eslint-disable-next-line no-console
@@ -241,7 +243,9 @@ function UserDropdown() {
         const configResp = configure()
         configResp.promise
             .then((payload) => {
-                payload && payload.token_endpoint ? (oauthTokenEndpoint = payload.token_endpoint) : ''
+                if (payload && payload.token_endpoint) {
+                    oauthTokenEndpoint = payload.token_endpoint
+                }
             })
             .catch((error) => {
                 // eslint-disable-next-line no-console

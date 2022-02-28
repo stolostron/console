@@ -9,7 +9,6 @@ const EditAgentModal: React.FC<{
     setAgent: (a: CIM.AgentK8sResource | undefined) => void
     usedHostnames: string[]
 }> = ({ agent, setAgent, usedHostnames }) => (
-    // TODO(mlibra): Props should be properly set here, see AIHostsForm.tsx for an example
     <AIEditAgentModal
         isOpen={!!agent}
         agent={agent}

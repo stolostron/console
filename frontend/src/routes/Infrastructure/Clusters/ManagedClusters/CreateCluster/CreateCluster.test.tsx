@@ -929,16 +929,6 @@ const mockKlusterletAddonSecretAws = {
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
-jest.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key: string) => key,
-    }),
-    withTranslation: () => (Component: any) => {
-        Component.defaultProps = { ...Component.defaultProps, t: () => '' }
-        return Component
-    },
-}))
-
 describe('CreateCluster', () => {
     const Component = () => {
         return (
@@ -1006,13 +996,13 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('cluster.create.baremetal.subtitle')
+        await clickByTestId('bare-metal')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
         // connection
-        await clickByPlaceholderText('creation.ocp.cloud.select.connection')
+        await clickByPlaceholderText('Select a credential')
         await clickByText(providerConnection.metadata.name!)
         await clickByText('Next')
 
@@ -1079,7 +1069,7 @@ describe('CreateCluster', () => {
         await clickByText('Create')
 
         expect(consoleInfos).hasNoConsoleLogs()
-        await waitForText('success.create.creating')
+        await waitForText('Creating cluster ...')
 
         // make sure creating
         await waitForNocks(createNocks)
@@ -1099,13 +1089,13 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('cluster.create.baremetal.subtitle')
+        await clickByTestId('bare-metal')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
         // connection
-        await clickByPlaceholderText('creation.ocp.cloud.select.connection')
+        await clickByPlaceholderText('Select a credential')
         await clickByText(providerConnection.metadata.name!)
         await new Promise((resolve) => setTimeout(resolve, 500))
         await clickByText('Next')
@@ -1129,7 +1119,7 @@ describe('CreateCluster', () => {
         await clickByText('Next')
 
         // ansible template
-        await clickByPlaceholderText('template.clusterCreate.select.placeholder')
+        await clickByPlaceholderText('Select an Ansible job template')
         await clickByText(mockClusterCurators[0].metadata.name!)
         await clickByText('Next')
 
@@ -1174,7 +1164,7 @@ describe('CreateCluster', () => {
         await clickByText('Create')
 
         // expect(consoleInfos).hasNoConsoleLogs()
-        await waitForText('success.create.creating')
+        await waitForText('Creating cluster ...')
 
         // make sure creating
         await waitForNocks(createNocks)
@@ -1191,13 +1181,13 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('cluster.create.aws.subtitle')
+        await clickByTestId('amazon-web-services')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
         // connection
-        await clickByPlaceholderText('creation.ocp.cloud.select.connection')
+        await clickByPlaceholderText('Select a credential')
         //screen.debug(debug(), 2000000)
         await clickByText(providerConnectionAws.metadata.name!)
         await clickByText('Next')
@@ -1243,7 +1233,7 @@ describe('CreateCluster', () => {
         await clickByText('Create')
 
         // expect(consoleInfos).hasNoConsoleLogs()
-        await waitForText('success.create.creating')
+        await waitForText('Creating cluster ...')
 
         // make sure creating
         await waitForNocks(createNocks)
@@ -1260,13 +1250,13 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('cluster.create.aws.subtitle')
+        await clickByTestId('amazon-web-services')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
 
         // connection
-        await clickByPlaceholderText('creation.ocp.cloud.select.connection')
+        await clickByPlaceholderText('Select a credential')
         //screen.debug(debug(), 2000000)
         await clickByText(providerConnectionAws.metadata.name!)
         await clickByText('Next')
@@ -1286,12 +1276,12 @@ describe('CreateCluster', () => {
         // private configuration
         await clickByText('Next')
         await typeByText('Hosted Zone', 'aws-hosted-zone.com')
-        await typeByPlaceholderText('creation.aws.ami.placeholder', 'ami-0876eacb38191e91f')
-        await clickByText('creation.aws.subnet.subtitle')
-        await typeByPlaceholderText('creation.aws.subnetID.placeholder', 'subnet-02216dd4dae7c45d0')
-        await clickByText('creation.aws.serviceEndpoint.subtitle')
-        await typeByPlaceholderText('creation.aws.serviceEndpointName.placeholder', 'endpoint-1')
-        await typeByPlaceholderText('creation.aws.serviceEndpointUrl.placeholder', 'aws.endpoint-1.com')
+        await typeByPlaceholderText('Enter amiID', 'ami-0876eacb38191e91f')
+        await clickByText('Subnets')
+        await typeByPlaceholderText('Enter one or more subnet IDs', 'subnet-02216dd4dae7c45d0')
+        await clickByText('Service Endpoints')
+        await typeByPlaceholderText('Enter AWS service endpoint name', 'endpoint-1')
+        await typeByPlaceholderText('Enter AWS service endpoint url', 'aws.endpoint-1.com')
         await clickByText('Next')
 
         // skipping proxy
@@ -1318,7 +1308,7 @@ describe('CreateCluster', () => {
         // click create button
         await clickByText('Create')
 
-        await waitForText('success.create.creating')
+        await waitForText('Creating cluster ...')
 
         // make sure creating
         await waitForNocks(createNocks)
@@ -1332,7 +1322,7 @@ describe('CreateCluster', () => {
 
             // Create On Premise cluster
             // TODO(mlibra) Add specific test case for the ai flow (start by clicking cluster.create.ai.subtitle hear instead)
-            await clickByTestId('cluster.create.cim.subtitle')
+            await clickByTestId('use-existing-discovered-hosts')
             await clickByText('Next')
 
             // wait for tables/combos to fill in
@@ -1340,10 +1330,10 @@ describe('CreateCluster', () => {
 
             // check integration of AI in the left-side navigation
             await waitForText('Cluster details', true)
-            await waitForText('Review and Save')
+            await waitForText('Review and save')
             await waitForText('Cluster hosts')
             await waitForText('Cluster network')
-            await waitForText('Review and install')
+            await waitForText('Review')
 
             // fill-in Cluster details
             await typeByTestId('form-input-name-field', clusterName)
@@ -1364,11 +1354,11 @@ describe('CreateCluster', () => {
             await clickByText('Next')
             // The test is flaky here
             await new Promise((resolve) => setTimeout(resolve, 500))
-            await waitForText('template.clusterCreate.name')
+            await waitForText('Ansible Automation Template')
 
             // skip Automation to the Review and Save step
             await clickByText('Next')
-            await waitForText('creation.ocp.cloud.connection')
+            await waitForText('Infrastructure provider credential')
 
             await waitForText(
                 'Ensure these settings are correct. The saved cluster draft will be used to determine the available network resources. Therefore after you press Save you will not be able to change these cluster settings.'

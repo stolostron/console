@@ -16,7 +16,6 @@ import _ from 'lodash'
 import {
     getNodePropery,
     addPropertyToList,
-    createDeployableYamlLink,
     setResourceDeployStatus,
     setPodDeployStatus,
     setSubscriptionDeployStatus,
@@ -26,12 +25,9 @@ import {
     addNodeOCPRouteLocationForCluster,
     addIngressNodeInfo,
     setClusterStatus,
-    createEditLink,
 } from '../helpers/diagram-helpers'
 import { kubeNaming } from '../../../../../components/Topology/helpers/utilities'
 import { showArgoApplicationSetLink } from '../helpers/diagram-helpers-argo'
-
-import { isSearchAvailable } from '../helpers/search-helper'
 
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'
@@ -44,39 +40,10 @@ export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
         // for argo apps with application sets
         showArgoApplicationSetLink(node, details, t)
 
-        //if resource has a row number add deployable yaml
-        createDeployableYamlLink(node, details, t)
-
         details.push({
             type: 'spacer',
         })
-        if (type !== 'cluster') {
-            if (type === 'placement') {
-                const showLocalYaml = t('View resource YAML')
-                const showResourceYaml = 'show_resource_yaml'
-                const editLink = createEditLink(node)
-                editLink &&
-                    isSearchAvailable() &&
-                    details.push({
-                        type: 'link',
-                        value: {
-                            label: t(showLocalYaml),
-                            data: {
-                                action: showResourceYaml,
-                                cluster: 'local-cluster',
-                                editLink: editLink,
-                            },
-                        },
-                    })
-                details.push({
-                    type: 'spacer',
-                })
-            }
-            details.push({
-                type: 'label',
-                labelKey: t('Details'),
-            })
-        } else {
+        if (type === 'cluster') {
             details.push({
                 type: 'label',
                 labelKey: t('Select a cluster to view details'),

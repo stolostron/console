@@ -17,7 +17,7 @@ import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, updateResources } from '../../../resources'
-import { getPlacementBindingsForResource, getPlacementRulesForResource, getPlacementsForResource } from '../common/util'
+import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 
 export function EditPolicy() {
     const { t } = useTranslation()
@@ -42,7 +42,7 @@ export function EditPolicy() {
         }
         const policyPlacementBindings = getPlacementBindingsForResource(policy, placementBindings)
         const policyPlacements = getPlacementsForResource(policy, policyPlacementBindings, placements)
-        const policyPlacementRules = getPlacementRulesForResource(policy, policyPlacementBindings, placementRules)
+        const policyPlacementRules = getPlacementsForResource(policy, policyPlacementBindings, placementRules)
         setResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
     }, [])
 
