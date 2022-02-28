@@ -81,12 +81,12 @@ describe('discovery config page', () => {
 
         // Submit form
         const createDiscoveryConfigNock = nockCreate(minDiscoveryConfig, minDiscoveryConfig)
-        await clickByText('discoveryConfig.add')
+        await clickByText('Create')
         await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('alert.created.header')
-        await waitForText('alert.msg')
+        await waitForText('ocm/ocm-api-token discovery setting was created successfully')
+        await waitForText('You can configure settings in Clusters > Discovered clusters')
     })
 
     it('Create DiscoveryConfig', async () => {
@@ -119,12 +119,12 @@ describe('discovery config page', () => {
 
         // Submit form
         const createDiscoveryConfigNock = nockCreate(discoveryConfig, discoveryConfig)
-        await clickByText('discoveryConfig.add')
+        await clickByText('Create')
         await waitFor(() => expect(createDiscoveryConfigNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('alert.created.header')
-        await waitForText('alert.msg')
+        await waitForText('ocm/ocm-api-token discovery setting was created successfully')
+        await waitForText('You can configure settings in Clusters > Discovered clusters')
     })
 
     it('Edit DiscoveryConfig', async () => {
@@ -157,12 +157,12 @@ describe('discovery config page', () => {
         await clickByText('4.8')
 
         const replaceNock = nockReplace(discoveryConfigUpdated)
-        await clickByText('discoveryConfig.edit')
+        await clickByText('Save')
         await waitFor(() => expect(replaceNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('alert.updated.header')
-        await waitForText('alert.msg')
+        await waitForText('ocm/ocm-api-token discovery setting was updated successfully')
+        await waitForText('You can configure settings in Clusters > Discovered clusters')
     })
 
     it('Delete DiscoveryConfig', async () => {
@@ -182,13 +182,13 @@ describe('discovery config page', () => {
         await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name!)
 
         const deleteNock = nockDelete(discoveryConfigUpdated)
-        await clickByText('discoveryConfig.delete')
-        await waitForText('disable.title')
-        await clickByText('discoveryConfig.delete.btn')
+        await clickByText('Delete')
+        await waitForText('Delete discovery settings')
+        await clickByText('Delete', 1)
         await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
 
         // Wait For Notification on DiscoveredClusters page
-        await waitForText('alert.deleted.header')
-        await waitForText('alert.msg')
+        await waitForText('ocm/ocm-api-token discovery setting was removed successfully')
+        await waitForText('You can configure settings in Clusters > Discovered clusters')
     })
 })

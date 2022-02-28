@@ -70,10 +70,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                                     {violation.compliant ? (
                                         <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                                             <Tooltip
-                                                content={t('{0} policies with no violations.').replace(
-                                                    '{0}',
-                                                    violation.compliant.toString()
-                                                )}
+                                                content={t('policies.noviolations', { count: violation.compliant })}
                                             >
                                                 <Fragment>
                                                     {violation.compliant} &nbsp;
@@ -88,12 +85,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                                         </span>
                                     )}
                                     {violation.noncompliant ? (
-                                        <Tooltip
-                                            content={t('{0} policies violations.').replace(
-                                                '{0}',
-                                                violation.compliant.toString()
-                                            )}
-                                        >
+                                        <Tooltip content={t('policy.violations', { count: violation.compliant })}>
                                             <Fragment>
                                                 <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                                                     {violation.noncompliant} &nbsp;

@@ -73,8 +73,8 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
     const renderConfirmCheckbox = () => {
         const isAppKind = props.appKind === ApplicationKind
         const appTypeMsg = isAppKind
-            ? 'Remove application related resources'
-            : 'Remove applicationset related resources'
+            ? props.t('Remove Application related resources')
+            : props.t('Remove ApplicationSet related resources')
 
         return (
             <React.Fragment>
@@ -82,10 +82,10 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                     <p
                         dangerouslySetInnerHTML={{
                             __html: `
-                    ${props
-                        .t('Select {0} to delete {1} and all related resources.')
-                        .replace('{0}', getItalicSpan(props.t(appTypeMsg)))
-                        .replace('{1}', props.resource.metadata?.name!)}
+                    ${props.t('Select {{appType} to delete {{name}} and all related resources.', {
+                        appType: getItalicSpan(appTypeMsg),
+                        name: props.resource.metadata?.name!,
+                    })}
                     `,
                         }}
                     />
@@ -95,7 +95,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                         id={'remove-app-resources'}
                         isChecked={isAppKind ? removeAppResources : removeAppSetResource}
                         onChange={isAppKind ? toggleRemoveAppRsources : toggleRemoveAppSetResources}
-                        label={props.t(appTypeMsg)}
+                        label={appTypeMsg}
                     />
                 </div>
             </React.Fragment>
@@ -150,11 +150,10 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                 </div>
                 <div>
                     <p>
-                        {props
-                            .t(
-                                'This applicationset uses placement "{0}", which is not removable. This placement is shared by the following applicationset(s):'
-                            )
-                            .replace('{0}', props.appSetPlacement)}
+                        {props.t(
+                            'This application set uses placement "{{placement}}", which is not removable. This placement is shared by the following application set:',
+                            { placement: props.appSetPlacement, count: props.appSetsSharingPlacement.length }
+                        )}
                     </p>
                     <div>
                         <ul>
@@ -229,7 +228,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                             <p
                                 dangerouslySetInnerHTML={{
                                     __html: `${props.t(
-                                        'The following Argo application(s) deployed by the applicationset will also be deleted:'
+                                        'The following Argo application(s) deployed by the application set will also be deleted:'
                                     )}`,
                                 }}
                             />
@@ -254,9 +253,10 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
             return props.t('Are you sure that you want to continue?')
         }
     }
-    const modalTitle = props
-        .t(`Permanently delete {0} ${props.appKind.toLowerCase()}?`)
-        .replace('{0}', props.resource.metadata?.name!)
+    const modalTitle = props.t('Permanently delete {{type}} {{name}}?', {
+        name: props.resource.metadata?.name!,
+        type: props.appKind,
+    })
     return (
         <AcmModal
             id="remove-resource-modal"

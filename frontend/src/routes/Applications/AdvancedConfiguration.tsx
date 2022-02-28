@@ -619,7 +619,7 @@ export default function AdvancedConfiguration() {
                     <TerminologyCard
                         title={t('Placements')}
                         description={t(
-                            'Placements define the target clusters that must subscribe to a ClusterSet where subscriptions and applicationSets are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
+                            'Placements define the target clusters that must subscribe to a ClusterSet where subscriptions and application sets are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
                         )}
                     />
                     <TerminologyCard

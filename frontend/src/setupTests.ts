@@ -4,9 +4,11 @@
 import { configure } from '@testing-library/dom'
 import '@testing-library/jest-dom'
 import JestFetchMock from 'jest-fetch-mock'
-import { noop } from 'lodash'
 import nock from 'nock'
 import 'regenerator-runtime/runtime'
+import i18n from 'i18next'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { initReactI18next } from 'react-i18next'
 
 require('react')
 
@@ -135,24 +137,25 @@ afterEach(setupAfterEach)
 afterEach(setupAfterEachNock)
 afterAll(setupAfterAll)
 
-jest.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key: string) => key,
-    }),
-    withTranslation: () => (Component: any) => {
-        Component.defaultProps = { ...Component.defaultProps, t: () => '' }
-        return Component
-    },
-    Trans: (props: { i18nKey: string }) => props.i18nKey,
-}))
-
-jest.mock('i18next', () => ({
-    t: (key: string) => key,
-    createInstance: () => ({
-        use: () => ({
-            use: () => ({
-                init: noop,
-            }),
-        }),
-    }),
-}))
+i18n
+    // pass the i18n instance to react-i18next
+    .use(initReactI18next)
+    // init i18next
+    .init({
+        keySeparator: false, // this repo will use single level json
+        interpolation: {
+            escapeValue: false, // react handles this already
+        },
+        defaultNS: 'translation', // the default file for strings when using useTranslation, etc
+        nsSeparator: '~',
+        supportedLngs: ['en'], // only languages from this array will attempt to be loaded
+        simplifyPluralSuffix: true,
+        lng: "en",
+        fallbackLng: "en",
+        ns: "translation",
+        resources: {
+            en: {
+              translation: require('../public/locales/en/translation.json')
+            },
+          },
+    })

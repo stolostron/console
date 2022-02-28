@@ -222,12 +222,12 @@ describe('BatchChannelSelectModal', () => {
         )
         const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'), undefined, 404)
         const mockNockUpgrade2backup = nockCreate({ ...clusterCuratorReady2, ...getPatchUpdate('stable-2.3') })
-        expect(getByText('upgrade.selectChannel.submit')).toBeTruthy()
-        userEvent.click(getByText('upgrade.selectChannel.submit'))
+        expect(getByText('Save')).toBeTruthy()
+        userEvent.click(getByText('Save'))
         await act(async () => {
             await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
             await waitFor(() => expect(mockNockUpgrade2backup.isDone()).toBeTruthy())
-            await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeFalsy())
+            await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
             await waitFor(() => expect(isClosed).toBe(true))
         })
 
@@ -245,14 +245,14 @@ describe('BatchChannelSelectModal', () => {
             />
         )
         const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'))
-        expect(getByText('upgrade.selectChannel.submit')).toBeTruthy()
-        userEvent.click(getByText('upgrade.selectChannel.submit'))
+        expect(getByText('Save')).toBeTruthy()
+        userEvent.click(getByText('Save'))
         await act(async () => {
-            await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeTruthy())
-            userEvent.click(getByText('upgrade.selectChannel.submit.processing')) // do additional click. make sure not calling upgrade again
-            userEvent.click(getByText('upgrade.selectChannel.submit.processing'))
+            await waitFor(() => expect(queryByText('Saving')).toBeTruthy())
+            userEvent.click(getByText('Saving')) // do additional click. make sure not calling upgrade again
+            userEvent.click(getByText('Saving'))
             await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-            await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeFalsy(), {
+            await waitFor(() => expect(queryByText('Saving')).toBeFalsy(), {
                 timeout: 5000,
             })
             await waitFor(() => expect(isClosed).toBe(true))
@@ -270,7 +270,7 @@ describe('BatchChannelSelectModal', () => {
                 }}
             />
         )
-        userEvent.click(getByText('cancel'))
+        userEvent.click(getByText('Cancel'))
         expect(isClosed).toBe(true)
     })
     it('should show alert when failed; keep failed rows in table with error messages', async () => {
@@ -281,14 +281,14 @@ describe('BatchChannelSelectModal', () => {
         const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'), undefined, 400)
         expect(queryByText('cluster-1-ready1')).toBeTruthy()
         expect(queryByText('cluster-2-ready2')).toBeTruthy()
-        expect(getByText('upgrade.selectChannel.submit')).toBeTruthy()
-        userEvent.click(getByText('upgrade.selectChannel.submit'))
-        await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeTruthy())
+        expect(getByText('Save')).toBeTruthy()
+        userEvent.click(getByText('Save'))
+        await waitFor(() => expect(queryByText('Saving')).toBeTruthy())
         await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-        await waitFor(() => expect(queryByText('upgrade.selectChannel.submit.processing')).toBeFalsy())
-        await waitFor(() => expect(queryByText('there.were.errors')).toBeTruthy())
+        await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
+        await waitFor(() => expect(queryByText('There were errors processing the requests')).toBeTruthy())
         expect(queryByText('cluster-2-ready2')).toBeTruthy()
-        expect(queryByText('error')).toBeTruthy()
+        expect(queryByText('Error')).toBeTruthy()
         expect(queryByText('cluster-1-ready1')).toBeFalsy()
     })
 })

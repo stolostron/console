@@ -88,12 +88,12 @@ describe('Infrastructure Environments page', () => {
     test('can render', async () => {
         render(<Component />)
 
-        await waitForText('infraenvs', true)
+        await waitForText('Infrastructure environments', true)
 
         // the top-level hint
-        await waitForText('cim.infra.banner.body')
-        await clickByText('cim.banner.dismiss')
-        await waitForNotText('cim.infra.banner.body')
+        await waitForText('Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.')
+        await clickByText('Dismiss')
+        await waitForNotText('Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.')
 
         await waitForTestId('createInfraEnv')
 

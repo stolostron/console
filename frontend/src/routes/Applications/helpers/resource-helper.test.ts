@@ -10,10 +10,15 @@ import {
     getSearchLink,
     getEditLink,
 } from './resource-helper'
-import { useTranslation } from '../../../lib/acm-i18next'
+import i18next from 'i18next'
 import moment from 'moment'
 
-const { t } = useTranslation()
+const t = i18next.t
+jest.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key: string) => i18next.t(key),
+    })
+}))
 
 describe('normalizeRepoType', () => {
     it('should work with github', () => {
