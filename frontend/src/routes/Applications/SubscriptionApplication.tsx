@@ -6,7 +6,7 @@ import { NavigationPath } from '../../NavigationPath'
 import Handlebars from 'handlebars'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { ApplicationKind, createResources as createKubeResources, IResource } from '../../resources'
+import { ApplicationKind, createResources as createKubeResources, IResource, updateResources } from '../../resources'
 import '../Applications/CreateApplication/Subscription/style.css'
 
 // Template Data
@@ -114,6 +114,56 @@ export function CreateSubscriptionApplication() {
             })
         }
     }
+    function handleCreate(resourceJSON: { createResources: IResource[] }) {
+        if (resourceJSON) {
+            if (editApplication) {
+                const { createResources } = resourceJSON
+                // set resourceVersion
+                createResources.forEach((resource) => {
+                    const name = resource.metadata?.name
+                    const namespace = resource.metadata?.namespace
+                    let resourceVersion
+                    if (name && namespace) {
+                        switch (resource.kind) {
+                            case 'Application':
+                                resourceVersion = getResourceVersion(applications, name, namespace)
+                                break
+                            case 'Subscription':
+                                resourceVersion = getResourceVersion(subscriptions, name, namespace)
+                                break
+                            case 'PlacementRule':
+                                resourceVersion = getResourceVersion(placementRules, name, namespace)
+                                break
+                        }
+                        _.set(resource, 'metadata.resourceVersion', resourceVersion)
+                    }
+                })
+
+                updateResources(createResources).then(() => {
+                    const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
+                    toastContext.addAlert({
+                        title: t('Application updated'),
+                        message: t('{{name}} was successfully updated.', {
+                            name: _.get(applicationResourceJSON, 'metadata.name', ''),
+                        }),
+                        type: 'success',
+                        autoClose: true,
+                    })
+                    history.push(NavigationPath.applications)
+                })
+            } else {
+                createResource(resourceJSON)
+            }
+        }
+    }
+
+    function getResourceVersion(resources: IResource[], name: string, namespace: string) {
+        const selectedResource = resources.find((resource: IResource) => {
+            return resource?.metadata?.name === name && resource?.metadata?.namespace === namespace
+        })
+        const resourceVersion = _.get(selectedResource, 'metadata.resourceVersion')
+        return resourceVersion
+    }
 
     // cancel button
     const cancelCreate = () => {
@@ -148,17 +198,16 @@ export function CreateSubscriptionApplication() {
     Handlebars.registerPartial('templateHelm', Handlebars.compile(helmTemplate))
     Handlebars.registerPartial('templateObjectStore', Handlebars.compile(ObjTemplate))
     Handlebars.registerPartial('templatePlacement', Handlebars.compile(placementTemplate))
-    const [fetchControl, setFetchControl] = useState('')
-
+    const [fetchControl, setFetchControl] = useState<any>(null)
+    const [applications] = useRecoilState(applicationsState)
+    const [ansibleJob] = useRecoilState(ansibleJobState)
+    const [subscriptions] = useRecoilState(subscriptionsState)
+    const [channels] = useRecoilState(channelsState)
+    const [placementRules] = useRecoilState(placementRulesState)
     const editApplication = getEditApplication()
     if (editApplication) {
         // if editing an existing app, grab it first
         const { selectedAppName, selectedAppNamespace } = editApplication
-        const [applications] = useRecoilState(applicationsState)
-        const [ansibleJob] = useRecoilState(ansibleJobState)
-        const [subscriptions] = useRecoilState(subscriptionsState)
-        const [channels] = useRecoilState(channelsState)
-        const [placementRules] = useRecoilState(placementRulesState)
         // get application object from recoil states
         const application = getApplication(selectedAppNamespace, selectedAppName, '', {
             applications,
@@ -175,6 +224,14 @@ export function CreateSubscriptionApplication() {
         }, [])
     }
 
+    const createControl = {
+        createResource: handleCreate,
+        cancelCreate,
+        pauseCreate: () => {},
+        creationStatus: creationStatus?.status,
+        creationMsg: creationStatus?.messages,
+    }
+
     return (
         controlData && (
             <TemplateEditor
@@ -185,13 +242,7 @@ export function CreateSubscriptionApplication() {
                 template={template}
                 portals={Portals}
                 fetchControl={fetchControl}
-                createControl={{
-                    createResource,
-                    cancelCreate,
-                    pauseCreate: () => {},
-                    creationStatus: creationStatus?.status,
-                    creationMsg: creationStatus?.messages,
-                }}
+                createControl={createControl}
                 logging={process.env.NODE_ENV !== 'production'}
                 i18n={i18n}
             />

@@ -3,13 +3,9 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../lib/nock-util'
-import { typeByTestId } from '../../lib/test-util'
-// import { typeByTestId } from '../../lib/test-util'
+import { waitForTestId } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
-// import {controlData} from '../Applications/CreateApplication/Subscription/controlData/ControlData'
-
-///////////////////////////////// FILL FORM //////////////////////////////////////////////////
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
@@ -24,11 +20,8 @@ jest.mock('react-i18next', () => ({
 }))
 
 describe('Create Subscription Application page', () => {
-    beforeEach(() => {
-        nockIgnoreRBAC()
-    })
-    test('can render subscription application page', async () => {
-        render(
+    const Component = () => {
+        return (
             <RecoilRoot>
                 <MemoryRouter initialEntries={[NavigationPath.createApplicationSubscription]}>
                     <Route
@@ -38,11 +31,34 @@ describe('Create Subscription Application page', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
+    }
+    let consoleInfos: string[]
+    const originalConsoleInfo = console.info
+    const originalConsoleGroup = console.group
+    const originalConsoleGroupCollapsed = console.groupCollapsed
 
-        // await waitFor(() => expect(getByTestId('cancel-button-portal-id')))
-        // await waitFor(() => expect(getByTestId('create-button-portal-id')))
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        consoleInfos = []
+        console.info =
+            console.groupCollapsed =
+            console.group =
+                (message?: any, ...optionalParams: any[]) => {
+                    if (message) {
+                        consoleInfos = [...consoleInfos, message, ...optionalParams]
+                    }
+                }
+    })
 
-        // await waitForTestId('eman')
-        await typeByTestId('eman', 'test'!)
+    afterEach(() => {
+        console.info = originalConsoleInfo
+        console.group = originalConsoleGroup
+        console.groupCollapsed = originalConsoleGroupCollapsed
+    })
+    test('can render CreateSubscriptionApplicationPage', async () => {
+        window.scrollBy = () => {}
+        render(<Component />)
+        await waitForTestId('cancel-button-portal-id')
+        await waitForTestId('create-button-portal-id')
     })
 })

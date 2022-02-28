@@ -63,6 +63,7 @@ const filterDeep = (obj, parentKey) => {
 export const getApplicationResources = (application) => {
     if (application) {
         const { app, subscriptions } = _.cloneDeep(application)
+
         const resources = []
 
         // application
