@@ -3,7 +3,7 @@ import { Redirect, Route, Switch } from 'react-router-dom'
 import { NavigationPath } from '../../NavigationPath'
 import ApplicationsPage from './ApplicationsPage'
 import { CreateApplicationArgo } from './CreateApplication/CreateApplicationArgo'
-import CreateSubscriptionApplicationPage from './CreateApplication/Subscription/SubscriptionApplication'
+import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 import ApplicationsDetailsPage from './ApplicationDetails/ApplicationDetails'
 
 export default function Applications() {
@@ -15,6 +15,7 @@ export default function Applications() {
                 path={NavigationPath.createApplicationSubscription}
                 component={CreateSubscriptionApplicationPage}
             />
+            <Route path={NavigationPath.editApplicationSubscription} component={CreateSubscriptionApplicationPage} />
             <Route path={NavigationPath.applicationDetails} component={ApplicationsDetailsPage} />
             <Route path={NavigationPath.applications} component={ApplicationsPage} />
             <Route path="*">
