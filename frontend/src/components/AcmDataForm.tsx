@@ -114,6 +114,7 @@ function requiredValidationMessage() {
 
 const minWizardSize = 1000
 const defaultPanelSize = 600
+
 const EDITOR_CHANGES = 'Editor changes'
 
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
