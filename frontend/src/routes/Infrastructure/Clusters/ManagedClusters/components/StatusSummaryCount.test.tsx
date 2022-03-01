@@ -10,7 +10,13 @@ import { Cluster, ClusterStatus, PolicyReport } from '../../../../../resources'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { StatusSummaryCount } from './StatusSummaryCount'
 
-window.open = jest.fn()
+const push = jest.fn()
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
+    useHistory: () => ({
+        push
+    }),
+}))
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -222,16 +228,20 @@ describe('StatusSummaryCount', () => {
             await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
             await clickByText('4')
-            expect(window.open).toHaveBeenCalled()
+            expect(push).toHaveBeenCalledTimes(1)
+            expect(push.mock.calls[0][0]).toBe('/multicloud/home/search?filters={"textsearch":"cluster:test-cluster%20kind:subscription"}&showrelated=application')
 
             await clickByText('Go to Applications')
-            expect(window.open).toHaveBeenCalled()
+            expect(push).toHaveBeenCalledTimes(2)
+            expect(push.mock.calls[1][0]).toBe('/multicloud/applications')
 
             await clickByText('1')
-            expect(window.open).toHaveBeenCalled()
+            expect(push).toHaveBeenCalledTimes(3)
+            expect(push.mock.calls[2][0]).toBe('/multicloud/home/search?filters={"textsearch":"cluster:local-cluster%20kind:policy%20namespace:test-cluster%20compliant:!Compliant"}')
 
             await clickByText('Go to Policies')
-            expect(window.open).toHaveBeenCalled()
+            expect(push).toHaveBeenCalledTimes(4)
+            expect(push.mock.calls[3][0]).toBe('/multicloud/governance/policies')
 
             await clickByText('6')
 

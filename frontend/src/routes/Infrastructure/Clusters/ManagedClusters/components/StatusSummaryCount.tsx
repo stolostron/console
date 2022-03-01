@@ -26,7 +26,7 @@ export function StatusSummaryCount() {
     const { cluster } = useContext(ClusterContext)
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation()
-    const { isSearchAvailable, isGovernanceAvailable } = useContext(PluginContext)
+    const { isSearchAvailable, isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
     const { push } = useHistory()
     /* istanbul ignore next */
     const { data, loading, startPolling } = useQuery(() => queryStatusCount(cluster?.name!))
@@ -81,35 +81,29 @@ export function StatusSummaryCount() {
                         ),
                         isDanger: cluster?.nodes?.unhealthy! + cluster?.nodes?.unknown! > 0,
                     },
-                    {
+                    ...(isSearchAvailable && isApplicationsAvailable ? [{
                         id: 'applications',
                         count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[0]?.related?.[0]?.count ?? 0,
-                        countClick: () =>
-                            window.open(
-                                buildSearchLink({ cluster: cluster?.name!, kind: 'subscription' }, 'application'),
-                                '_self'
-                            ),
+                        countClick: () => push(buildSearchLink({ cluster: cluster?.name!, kind: 'subscription' }, 'application')),
                         title: t('summary.applications'),
                         linkText: t('summary.applications.launch'),
-                        onLinkClick: () => window.open('/multicloud/applications', '_self'),
-                    },
+                        onLinkClick: () => push(NavigationPath.applications),
+                    }] : []),
                     ...(isSearchAvailable && isGovernanceAvailable ? [{
                         id: 'violations',
                         count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[1]?.count ?? 0 ?? 0,
                         // TODO the link clicks here should both rooute to Policies table with new query url to filter by the cluster
-                        countClick: () =>
-                            window.open(
+                        countClick: () => push(
                                 buildSearchLink({
                                     cluster: 'local-cluster',
                                     kind: 'policy',
                                     namespace: cluster?.namespace!,
                                     compliant: '!Compliant',
-                                }),
-                                '_self'
+                                })
                             ),
                         title: t('summary.violations'),
                         linkText: t('summary.violations.launch'),
-                        onLinkClick: () => window.open('/multicloud/governance/policies', '_self'),
+                        onLinkClick: () => push(NavigationPath.policies),
                         isDanger: true,
                     }] : []),
                     {
