@@ -197,8 +197,11 @@ const SharedResourceWarning = ({ resourceType, control, locale }) => {
                         <p
                             dangerouslySetInnerHTML={{
                                 __html: `
-              ${getWarningSpan('editing.app.caution')}
-              ${('editing.app.sharedResourceWarning', [getCodeSpan(getResourceKind(resourceType))], locale)}
+              ${getWarningSpan(t('Caution:'))}
+              ${t(
+                  'This application uses a shared {{0}} resource. Changes to these settings will also affect the following applications:',
+                  [getCodeSpan(getResourceKind(resourceType))]
+              )}
               `,
                             }}
                         />
@@ -210,8 +213,10 @@ const SharedResourceWarning = ({ resourceType, control, locale }) => {
                         <p
                             dangerouslySetInnerHTML={{
                                 __html: `
-              ${getWarningSpan('editing.app.caution')}
-              ${('editing.app.childResourceWarning', locale)}
+              ${getWarningSpan(t('Caution:'))}
+              ${t(
+                  'Changes to these settings might also affect other applications or subscriptions. This subscription deploys the following resources:'
+              )}
               `,
                             }}
                         />
