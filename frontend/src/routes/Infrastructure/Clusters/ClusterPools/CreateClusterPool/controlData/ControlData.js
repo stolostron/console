@@ -68,6 +68,16 @@ const fixupControlsForClusterPool = (controlData) => {
                 required: true,
             },
             // cacheUserValueKey: 'create.cluster.compute.node.count',
+        },
+        {
+            name: 'clusterPool.creation.ocp.runningCount',
+            tooltip: 'clusterPool.tooltip.creation.ocp.runningCount',
+            id: 'runningCount',
+            type: 'number',
+            initial: '0',
+            validation: {
+                required: false,
+            }
         }
     )
 

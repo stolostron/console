@@ -73,6 +73,7 @@ const mockClusterPool: ClusterPool = {
             name: 'test-pool-pull-secret',
         },
         size: 2,
+        runningCount: 2,
     },
     status: {
         conditions: [
@@ -94,6 +95,56 @@ const mockClusterPool: ClusterPool = {
     },
 }
 
+const mockClusterPoolStandbyOnly: ClusterPool = {
+    apiVersion: ClusterPoolApiVersion,
+    kind: ClusterPoolKind,
+    metadata: {
+        name: 'test-pool-standby',
+        namespace: 'test-pool-namespace',
+        uid: 'xyz',
+        finalizers: ['hive.openshift.io/clusters'],
+    },
+    spec: {
+        baseDomain: 'dev.test-pool.com',
+        imageSetRef: {
+            name: 'img4.7.4-x86-64',
+        },
+        installConfigSecretTemplateRef: {
+            name: 'test-pool-install-config',
+        },
+        platform: {
+            aws: {
+                credentialsSecretRef: {
+                    name: 'test-pool-aws-creds',
+                },
+                region: 'us-east-1',
+            },
+        },
+        pullSecretRef: {
+            name: 'test-pool-pull-secret',
+        },
+        size: 2,
+    },
+    status: {
+        conditions: [
+            {
+                message: 'There is capacity to add more clusters to the pool.',
+                reason: 'Available',
+                status: 'True',
+                type: 'CapacityAvailable',
+            },
+            {
+                message: 'Dependencies verified',
+                reason: 'Verified',
+                status: 'False',
+                type: 'MissingDependencies',
+            },
+        ],
+        standby: 2,
+        size: 2,
+    },
+}
+
 const mockClusterClaim: ClusterClaim = {
     apiVersion: ClusterClaimApiVersion,
     kind: ClusterClaimKind,
@@ -106,13 +157,25 @@ const mockClusterClaim: ClusterClaim = {
     },
 }
 
+const mockClusterClaimStandbyOnly: ClusterClaim = {
+    apiVersion: ClusterClaimApiVersion,
+    kind: ClusterClaimKind,
+    metadata: {
+        name: 'mycluster',
+        namespace: mockClusterPoolStandbyOnly.metadata.namespace!,
+    },
+    spec: {
+        clusterPoolName: mockClusterPoolStandbyOnly.metadata.name!,
+    },
+}
+
 describe('ClusterPools page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
-                    snapshot.set(clusterPoolsState, [mockClusterPool])
+                    snapshot.set(clusterPoolsState, [mockClusterPool, mockClusterPoolStandbyOnly])
                     snapshot.set(clusterImageSetsState, [mockClusterImageSet])
                 }}
             >
@@ -172,10 +235,20 @@ describe('ClusterPools page', () => {
 
     test('should be able to claim a cluster', async () => {
         await waitForText(mockClusterPool.metadata.name!)
-        await clickByText('Claim cluster')
+        await clickByText('Claim cluster', 0)
         await waitForText('Cluster claim name')
         await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
         const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaim)]
+        await clickByText('Claim')
+        await waitForNocks(createNocks)
+    })
+
+    test('should be able to claim a cluster with only standby clusters', async () => {
+        await waitForText(mockClusterPoolStandbyOnly.metadata.name!)
+        await clickByText('Claim cluster', 1)
+        await waitForText('Cluster claim name')
+        await typeByTestId('clusterClaimName', mockClusterClaimStandbyOnly.metadata.name!)
+        const createNocks: Scope[] = [nockCreate(mockClusterClaimStandbyOnly), nockGet(mockClusterClaimStandbyOnly)]
         await clickByText('Claim')
         await waitForNocks(createNocks)
     })
