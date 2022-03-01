@@ -115,6 +115,9 @@ const process = (
     immutables?: (string | string[])[],
     validators?: any
 ) => {
+    // if parse errors, use previous hidden secrets
+    const hiddenSecretsValues: any[] = errors.length === 0 ? [] : secretsValues ?? []
+
     // restore hidden secret values
     let { mappings, parsed, resources } = getMappings(documents)
     secretsValues?.forEach(({ path, value }) => {
@@ -122,7 +125,6 @@ const process = (
             set(parsed, path, value)
         }
     })
-    const hiddenSecretsValues: any[] = []
     let changeWithSecrets = { yaml, mappings, parsed, resources, hiddenSecretsValues }
 
     // hide and remember secret values
@@ -162,9 +164,21 @@ const process = (
     // prevent typing on immutables
     if (immutables) {
         immutables.forEach((immutable) => {
+            let allFlag = false
+            if (Array.isArray(immutable)) {
+                allFlag = immutable[immutable.length - 1] === '*'
+                if (allFlag) {
+                    immutable.pop()
+                }
+            } else {
+                allFlag = immutable.endsWith('*')
+                if (allFlag) {
+                    immutable = immutable.slice(0, -2)
+                }
+            }
             const value = get(mappings, getPathArray(immutable))
             if (value && value.$v) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
+                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + (allFlag ? value.$l : 1), 0))
             }
         })
     }

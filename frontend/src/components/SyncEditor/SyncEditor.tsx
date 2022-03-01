@@ -153,7 +153,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         model.onDidChangeContent(() => {
             model?.forceTokenization(model?.getLineCount())
         })
-    })
+    }, [])
 
     // clear any form change decorations if user clicks on editor
     const onMouseDown = useCallback(
@@ -199,17 +199,35 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         if (keyDownHandle) {
             keyDownHandle.dispose()
         }
-        const handle = editorRef.current.onKeyDown((e: { stopPropagation: () => void; preventDefault: () => void }) => {
-            const selections = editorRef.current.getSelections()
-            if (
-                !prohibited.every((prohibit: { intersectRanges: (arg: any) => any }) => {
-                    return selections.findIndex((range: any) => prohibit.intersectRanges(range)) === -1
-                })
-            ) {
-                e.stopPropagation()
-                e.preventDefault()
+        const handle = editorRef.current.onKeyDown(
+            (e: { code: string; stopPropagation: () => void; preventDefault: () => void }) => {
+                const selections = editorRef.current.getSelections()
+
+                if (e.code === 'Enter') {
+                    const editor = editorRef.current
+                    const model = editor.getModel()
+                    const pos = editor.getPosition()
+                    const thisLine = model.getLineContent(pos.lineNumber)
+                    const nextLine = model.getLineContent(pos.lineNumber + 1)
+                    const times = Math.max(thisLine.search(/\S/), nextLine.search(/\S/))
+                    const random = `${Math.floor(Math.random() * 1000)}`.padStart(4, '0')
+                    const newLine = `${' '.repeat(times)}key${random}:  \n`
+                    let range = new monacoRef.current.Range(pos.lineNumber + 1, 0, pos.lineNumber + 1, 0)
+                    editor.executeEdits('new-key', [{ identifier: 'new-key', range, text: newLine }])
+                    range = new monacoRef.current.Range(pos.lineNumber + 1, times + 1, pos.lineNumber + 1, times + 8)
+                    editor.setSelection(range)
+                    e.stopPropagation()
+                    e.preventDefault()
+                } else if (
+                    !prohibited.every((prohibit: { intersectRanges: (arg: any) => any }) => {
+                        return selections.findIndex((range: any) => prohibit.intersectRanges(range)) === -1
+                    })
+                ) {
+                    e.stopPropagation()
+                    e.preventDefault()
+                }
             }
-        })
+        )
         setKeyDownHandle(handle)
     }, [prohibited])
 
