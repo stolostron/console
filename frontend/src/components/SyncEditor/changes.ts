@@ -183,7 +183,7 @@ const getChanges = (
                             // convert A's and E's into 'N's
                             switch (kind) {
                                 case 'E': {
-                                    if (obj.$l > 1 && rhs) {
+                                    if (obj.$l > 1 && !lhs && rhs) {
                                         // convert edit to new if multiple lines were added
                                         kind = 'N'
                                         obj = { $r: obj.$r + 1, $l: obj.$l - 1 }
