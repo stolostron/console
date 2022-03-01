@@ -6,6 +6,7 @@ import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
+import { PluginContext } from '../../../../../lib/PluginContext'
 import { queryStatusCount } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -25,6 +26,7 @@ export function StatusSummaryCount() {
     const { cluster } = useContext(ClusterContext)
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const { t } = useTranslation()
+    const { isSearchAvailable, isGovernanceAvailable } = useContext(PluginContext)
     const { push } = useHistory()
     /* istanbul ignore next */
     const { data, loading, startPolling } = useQuery(() => queryStatusCount(cluster?.name!))
@@ -91,7 +93,7 @@ export function StatusSummaryCount() {
                         linkText: t('summary.applications.launch'),
                         onLinkClick: () => window.open('/multicloud/applications', '_self'),
                     },
-                    {
+                    ...(isSearchAvailable && isGovernanceAvailable ? [{
                         id: 'violations',
                         count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[1]?.count ?? 0 ?? 0,
                         // TODO the link clicks here should both rooute to Policies table with new query url to filter by the cluster
@@ -109,7 +111,7 @@ export function StatusSummaryCount() {
                         linkText: t('summary.violations.launch'),
                         onLinkClick: () => window.open('/multicloud/governance/policies', '_self'),
                         isDanger: true,
-                    },
+                    }] : []),
                     {
                         id: 'clusterIssues',
                         count: policyReportViolationsCount,
