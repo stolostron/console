@@ -9,7 +9,7 @@ spec:
         - policy-set-with-1-placement-policy-1
         - policy-set-with-1-placement-policy-2
 ---
-apiVersion: cluster.open-cluster-management.io/v1alpha1
+apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
 metadata:
     name: policy-set-with-1-placement
