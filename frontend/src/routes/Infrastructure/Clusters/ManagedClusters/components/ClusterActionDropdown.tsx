@@ -2,7 +2,7 @@
 
 import { AcmInlineProvider, Provider } from '@stolostron/ui-components'
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
@@ -26,6 +26,7 @@ import { BatchUpgradeModal } from './BatchUpgradeModal'
 import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
+import { PluginContext } from '../../../../../lib/PluginContext'
 
 /**
  * Function to return cluster actions available to a cluster
@@ -132,6 +133,7 @@ export function getClusterActions(cluster: Cluster) {
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
     const { t } = useTranslation()
     const history = useHistory()
+    const { isSearchAvailable } = useContext(PluginContext)
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
@@ -214,14 +216,14 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     rbacCreate(ClusterCuratorDefinition, cluster.namespace),
                 ],
             },
-            {
+            ...(isSearchAvailable ? [{
                 id: 'search-cluster',
                 text: t('managed.search'),
                 click: (cluster: Cluster) =>
                     window.location.assign(
                         `/multicloud/home/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
                     ),
-            },
+            }] : []),
             {
                 id: 'import-cluster',
                 text: t('managed.import'),
