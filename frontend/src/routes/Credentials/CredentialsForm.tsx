@@ -14,7 +14,7 @@ import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { useRecoilState } from 'recoil'
+import { useRecoilCallback } from 'recoil'
 import { namespacesState } from '../../atoms'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
@@ -102,15 +102,27 @@ export default function CredentialsFormPage() {
 
     const [error, setError] = useState<Error>()
 
-    const [namespaces] = useRecoilState(namespacesState)
+    // any recoil resources that constantly update because of a time stamp
+    const getNamespaces = useRecoilCallback(
+        ({ snapshot }) =>
+            () =>
+                snapshot.getPromise(namespacesState),
+        []
+    )
+
     const [projects, setProjects] = useState<string[]>()
     useEffect(() => {
-        if (!isEditing && !isViewing)
-            getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
-                .then((namespaces: string[]) => setProjects(namespaces.sort()))
+        if (!isEditing && !isViewing) {
+            getNamespaces()
+                .then((namespaces) => {
+                    getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
+                        .then((namespaces: string[]) => setProjects(namespaces.sort()))
+                        .catch(setError)
+                })
                 .catch(setError)
+        }
         return undefined
-    }, [namespaces, isEditing, isViewing])
+    }, [isEditing, isViewing])
 
     const [providerConnection, setProviderConnection] = useState<ProviderConnection | undefined>()
     useEffect(() => {
@@ -1384,9 +1396,11 @@ export function CredentialsForm(props: {
                 ['Secret', '0', 'stringData', 'osServiceAccount.json'],
             ]}
             immutables={[
-                'Secret[0].metadata.name',
-                'Secret[0].metadata.namespace',
-                ['Secret', '0', 'metadata', 'labels', 'cluster.open-cluster-management.io/type'],
+                'Secret[0].apiVersion',
+                'Secret[0].kind',
+                'Secret[0].type',
+                'Secret[0].metadata.*',
+                'Secret[0].stringData',
             ]}
             edit={() => {
                 if (providerConnection) {
