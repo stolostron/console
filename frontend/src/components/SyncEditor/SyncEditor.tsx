@@ -36,6 +36,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Successfully copied to clipboard!</span>
     const [copyHint, setCopyHint] = useState<ReactNode>(defaultCopy)
     const [prohibited, setProhibited] = useState<any>([])
+    const [newKeyCount, setNewKeyCount] = useState<number>(1)
     const [showsFormChanges, setShowsFormChanges] = useState<boolean>(false)
     const [userEdits, setUserEdits] = useState<any>([])
     const [editorChanges, setEditorChanges] = useState<SyncDiffType>()
@@ -203,6 +204,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             (e: { code: string; stopPropagation: () => void; preventDefault: () => void }) => {
                 const selections = editorRef.current.getSelections()
 
+                // if user presses enter, add new key: below this line
                 if (e.code === 'Enter') {
                     const editor = editorRef.current
                     const model = editor.getModel()
@@ -210,15 +212,17 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     const thisLine = model.getLineContent(pos.lineNumber)
                     const nextLine = model.getLineContent(pos.lineNumber + 1)
                     const times = Math.max(thisLine.search(/\S/), nextLine.search(/\S/))
-                    const random = `${Math.floor(Math.random() * 1000)}`.padStart(4, '0')
-                    const newLine = `${' '.repeat(times)}key${random}:  \n`
+                    const count = `${newKeyCount}`.padStart(4, '0')
+                    const newLine = `${' '.repeat(times)}key${count}:  \n`
                     let range = new monacoRef.current.Range(pos.lineNumber + 1, 0, pos.lineNumber + 1, 0)
                     editor.executeEdits('new-key', [{ identifier: 'new-key', range, text: newLine }])
                     range = new monacoRef.current.Range(pos.lineNumber + 1, times + 1, pos.lineNumber + 1, times + 8)
                     editor.setSelection(range)
+                    setNewKeyCount(newKeyCount + 1)
                     e.stopPropagation()
                     e.preventDefault()
                 } else if (
+                    // if user clicks on readonly area, ignore
                     !prohibited.every((prohibit: { intersectRanges: (arg: any) => any }) => {
                         return selections.findIndex((range: any) => prohibit.intersectRanges(range)) === -1
                     })
