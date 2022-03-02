@@ -9,7 +9,6 @@ import {
     createResource,
     IResource,
     listNamespaceSecrets,
-    ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
     ManagedClusterAddOnKind,
     ManagedClusterSetDefinition,
@@ -635,7 +634,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         submit: () => {
             return new Promise(async (resolve, reject) => {
                 const resources = formData?.customData ?? stateToData()
-                const calls: any[] = resources.map((resource: IResource)=>{
+                const calls: any[] = resources.map((resource: IResource) => {
                     return createResource(resource)
                 })
                 const requests = resultsSettled(calls)
