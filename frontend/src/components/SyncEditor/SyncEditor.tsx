@@ -290,7 +290,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             userEdits,
             validationRef.current
         )
-        let timeoutID: NodeJS.Timeout
         setLastUserEdits(userEdits)
         //        if (yaml.length) {
         setProhibited(protectedRanges)
@@ -317,7 +316,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         // report to form
         onReportChange(edits, changeWithSecrets, change, errors)
 
-        timeoutID = setTimeout(() => {
+        const timeoutID = setTimeout(() => {
             // decorate errors, changes
             const squigglyTooltips = decorate(
                 false,
