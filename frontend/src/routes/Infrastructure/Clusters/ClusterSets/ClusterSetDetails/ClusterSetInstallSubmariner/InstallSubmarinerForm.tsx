@@ -7,6 +7,7 @@ import {
     CableDriver,
     Cluster,
     createResource,
+    IResource,
     listNamespaceSecrets,
     ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
@@ -633,101 +634,10 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         ],
         submit: () => {
             return new Promise(async (resolve, reject) => {
-                const calls: any[] = []
-                selectedClusters?.forEach((selected) => {
-                    const cluster: Cluster = availableClusters.find((c) => c.displayName === selected)!
-                    // ManagedClusterAddOn resource
-                    calls.push(
-                        createResource<ManagedClusterAddOn>({
-                            apiVersion: ManagedClusterAddOnApiVersion,
-                            kind: ManagedClusterAddOnKind,
-                            metadata: {
-                                name: 'submariner',
-                                namespace: cluster?.namespace!,
-                            },
-                            spec: {
-                                installNamespace: 'submariner-operator',
-                            },
-                        })
-                    )
-
-                    if (submarinerConfigProviders.includes(cluster.provider!)) {
-                        if (
-                            cluster.provider !== Provider.vmware &&
-                            providerSecretMap[cluster.displayName!] === undefined
-                        ) {
-                            return
-                        }
-
-                        // Create credential secret if one doesn't exist
-                        const secret: Secret = {
-                            apiVersion: SecretApiVersion,
-                            kind: SecretKind,
-                            metadata: {
-                                name: `${cluster.name}-${cluster.provider}-creds`,
-                                namespace: cluster.namespace,
-                            },
-                            stringData: {},
-                            type: 'Opaque',
-                        }
-
-                        // configure secret if one doesn't exist
-                        if (cluster.provider !== Provider.vmware && providerSecretMap[cluster.displayName!] === null) {
-                            if (cluster.provider === Provider.aws) {
-                                secret.stringData!['aws_access_key_id'] = awsAccessKeyIDs[cluster.displayName!]!
-                                secret.stringData!['aws_secret_access_key'] =
-                                    awsSecretAccessKeyIDs[cluster.displayName!]!
-                            } else if (cluster.provider === Provider.gcp) {
-                                secret.stringData!['osServiceAccount.json'] =
-                                    gcServiceAccountKeys[cluster.displayName!]!
-                            }
-
-                            calls.push(createResource<Secret>(secret))
-                        }
-
-                        const submarinerConfig: SubmarinerConfig = {
-                            apiVersion: SubmarinerConfigApiVersion,
-                            kind: SubmarinerConfigKind,
-                            metadata: {
-                                name: 'submariner',
-                                namespace: cluster?.namespace!,
-                            },
-                            spec: {
-                                gatewayConfig: {
-                                    gateways: gateways[cluster.displayName!] || submarinerConfigDefault.gateways,
-                                },
-                                IPSecNATTPort: nattPorts[cluster.displayName!] ?? submarinerConfigDefault.nattPort,
-                                NATTEnable: nattEnables[cluster.displayName!] ?? submarinerConfigDefault.nattEnable,
-                                cableDriver: cableDrivers[cluster.displayName!] ?? submarinerConfigDefault.cableDriver,
-                            },
-                        }
-
-                        if (cluster.provider !== Provider.vmware) {
-                            // use existing secret name
-                            if (providerSecretMap[cluster.displayName!]) {
-                                submarinerConfig.spec.credentialsSecret = {
-                                    name: providerSecretMap[cluster.displayName!]!,
-                                }
-                            } else {
-                                // use secret name that will be created
-                                submarinerConfig.spec.credentialsSecret = {
-                                    name: secret.metadata.name!,
-                                }
-                            }
-                        }
-
-                        // configure instance type if AWS
-                        if (cluster.provider === Provider.aws) {
-                            submarinerConfig.spec.gatewayConfig!.aws = {
-                                instanceType:
-                                    awsInstanceTypes[cluster.displayName!] ?? submarinerConfigDefault.awsInstanceType,
-                            }
-                        }
-
-                        calls.push(createResource<SubmarinerConfig>(submarinerConfig))
-                    }
+                const resources = formData?.customData ?? stateToData()
+                const calls: any[] = resources.map((resource: IResource)=>{
+                    return createResource(resource)
                 })
-
                 const requests = resultsSettled(calls)
                 const results = await requests.promise
                 const errors: string[] = []
