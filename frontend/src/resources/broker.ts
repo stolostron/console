@@ -8,7 +8,7 @@ export type BrokerApiVersionType = 'submariner.io/v1alpha1'
 export const BrokerKind = 'Broker'
 export type BrokerKindType = 'Broker'
 
-export const ClusterClaimDefinition: IResourceDefinition = {
+export const BrokerDefinition: IResourceDefinition = {
     apiVersion: BrokerApiVersion,
     kind: BrokerKind,
 }
