@@ -166,93 +166,93 @@ const getChanges = (
     lastComparison: { [name: string]: any[] }
 ) => {
     const changes: any[] = []
-    if (!isEmpty(lastChange.parsed)) {
-        const ignorePaths: any = []
-        normalize(lastComparison, comparison)
-        const diffs = diff(lastComparison, comparison)
-        if (diffs) {
-            diffs.forEach((diff: any) => {
-                const { path, index, item, lhs, rhs } = diff
-                let { kind } = diff
-                if (path && path.length) {
-                    let pathArr = getPathArray(path)
-                    const synced = (kind === 'D' || kind === 'E') && lhs && !rhs ? lastChange.mappings : change.mappings
-                    let obj: any = get(synced, pathArr)
-                    if (obj) {
-                        if (obj.$v || obj.$v === false) {
-                            // convert A's and E's into 'N's
-                            switch (kind) {
-                                case 'E': {
-                                    if (obj.$l > 1 && !lhs && rhs) {
-                                        // convert edit to new if multiple lines were added
-                                        kind = 'N'
-                                        obj = { $r: obj.$r + 1, $l: obj.$l - 1 }
-                                    }
-                                    break
-                                }
-                                case 'A': {
-                                    switch (item.kind) {
-                                        case 'N':
-                                            // convert new array item to new range
-                                            kind = 'N'
-                                            obj = obj.$v[index].$r ? obj.$v[index] : obj
-                                            break
-                                        case 'D':
-                                            // if array delete, ignore any other edits within array
-                                            // edits are just the comparison of other array items
-                                            ignorePaths.push(path.join('/'))
-                                            break
-                                    }
-                                    break
-                                }
-                            }
-                        } else if (obj.$l > 1 && path.length > 0 && kind !== 'D') {
-                            kind = 'N'
-                            path.pop()
-                            pathArr = getPathArray(path)
-                            obj = get(change.mappings, pathArr)
-                        }
-
-                        // if array delete, ignore any other edits within array
-                        // edits are just the comparison of other array items
-                        if (ignorePaths.length > 0) {
-                            const tp = path.join('/')
-                            if (
-                                ignorePaths.some((p: any) => {
-                                    return tp.startsWith(p)
-                                })
-                            ) {
-                                // ignore any edits within an array that had an item deleted
-                                kind = 'D'
-                            }
-                        }
-
-                        let chng: ChangeType
+    //    if (!isEmpty(lastChange.parsed)) {
+    const ignorePaths: any = []
+    normalize(lastComparison, comparison)
+    const diffs = diff(lastComparison, comparison)
+    if (diffs) {
+        diffs.forEach((diff: any) => {
+            const { path, index, item, lhs, rhs } = diff
+            let { kind } = diff
+            if (path && path.length) {
+                let pathArr = getPathArray(path)
+                const synced = (kind === 'D' || kind === 'E') && lhs && !rhs ? lastChange.mappings : change.mappings
+                let obj: any = get(synced, pathArr)
+                if (obj) {
+                    if (obj.$v || obj.$v === false) {
+                        // convert A's and E's into 'N's
                         switch (kind) {
                             case 'E': {
-                                // edited
-                                if ((obj.$v || obj.$v === false) && rhs !== undefined) {
-                                    chng = { $t: 'E', $a: pathArr, $p: path }
-                                    if (isCustomEdit) {
-                                        chng.$f = lhs
-                                    }
-                                    changes.push(chng)
+                                if (obj.$l > 1 && !lhs && rhs) {
+                                    // convert edit to new if multiple lines were added
+                                    kind = 'N'
+                                    obj = { $r: obj.$r + 1, $l: obj.$l - 1 }
                                 }
                                 break
                             }
-                            case 'N': // new
-                                chng = { $t: 'N', $a: pathArr, $p: path }
-                                if (isCustomEdit) {
-                                    chng.$f = 'new'
+                            case 'A': {
+                                switch (item.kind) {
+                                    case 'N':
+                                        // convert new array item to new range
+                                        kind = 'N'
+                                        obj = obj.$v[index].$r ? obj.$v[index] : obj
+                                        break
+                                    case 'D':
+                                        // if array delete, ignore any other edits within array
+                                        // edits are just the comparison of other array items
+                                        ignorePaths.push(path.join('/'))
+                                        break
                                 }
-                                changes.push(chng)
                                 break
+                            }
+                        }
+                    } else if (obj.$l > 1 && path.length > 0 && kind !== 'D') {
+                        kind = 'N'
+                        path.pop()
+                        pathArr = getPathArray(path)
+                        obj = get(change.mappings, pathArr)
+                    }
+
+                    // if array delete, ignore any other edits within array
+                    // edits are just the comparison of other array items
+                    if (ignorePaths.length > 0) {
+                        const tp = path.join('/')
+                        if (
+                            ignorePaths.some((p: any) => {
+                                return tp.startsWith(p)
+                            })
+                        ) {
+                            // ignore any edits within an array that had an item deleted
+                            kind = 'D'
                         }
                     }
+
+                    let chng: ChangeType
+                    switch (kind) {
+                        case 'E': {
+                            // edited
+                            if ((obj.$v || obj.$v === false) && rhs !== undefined) {
+                                chng = { $t: 'E', $a: pathArr, $p: path }
+                                if (isCustomEdit) {
+                                    chng.$f = lhs
+                                }
+                                changes.push(chng)
+                            }
+                            break
+                        }
+                        case 'N': // new
+                            chng = { $t: 'N', $a: pathArr, $p: path }
+                            if (isCustomEdit) {
+                                chng.$f = 'new'
+                            }
+                            changes.push(chng)
+                            break
+                    }
                 }
-            })
-        }
+            }
+        })
     }
+    //    }
     return changes
 }
 
