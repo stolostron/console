@@ -5,7 +5,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
 import { nockSearch } from '../../../../../lib/nock-util'
-import { clickByText, waitForText } from '../../../../../lib/test-util'
+import { PluginContext } from '../../../../../lib/PluginContext'
+import { clickByText, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus, PolicyReport } from '../../../../../resources'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { StatusSummaryCount } from './StatusSummaryCount'
@@ -242,6 +243,44 @@ describe('StatusSummaryCount', () => {
             await clickByText('Go to Policies')
             expect(push).toHaveBeenCalledTimes(4)
             expect(push.mock.calls[3][0]).toBe('/multicloud/governance/policies')
+
+            await clickByText('6')
+
+            await waitForText('Identified issues')
+            await waitForText('0 Critical, 1 Important, 0 Moderate, 1 Low')
+        })
+    })
+    test('renders without search', async () => {
+        const search = nockSearch(mockSearchQuery, mockSearchResponse)
+        render(<PluginContext.Provider value={{ isSearchAvailable: false }}><Component /></PluginContext.Provider>)
+        await act(async () => {
+            await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
+            await waitFor(() => expect(search.isDone()).toBeTruthy())
+            await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
+            await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
+
+            await waitForNotText('Go to Applications')
+
+            await waitForNotText('Go to Policies')
+
+            await clickByText('6')
+
+            await waitForText('Identified issues')
+            await waitForText('0 Critical, 1 Important, 0 Moderate, 1 Low')
+        })
+    })
+    test('renders without applications and governance', async () => {
+        const search = nockSearch(mockSearchQuery, mockSearchResponse)
+        render(<PluginContext.Provider value={{ isApplicationsAvailable: false, isGovernanceAvailable: false }}><Component /></PluginContext.Provider>)
+        await act(async () => {
+            await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
+            await waitFor(() => expect(search.isDone()).toBeTruthy())
+            await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
+            await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
+
+            await waitForNotText('Go to Applications')
+
+            await waitForNotText('Go to Policies')
 
             await clickByText('6')
 

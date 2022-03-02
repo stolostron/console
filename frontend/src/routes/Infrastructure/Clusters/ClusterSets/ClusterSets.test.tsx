@@ -11,6 +11,7 @@ import {
     managedClustersState,
 } from '../../../../atoms'
 import { nockCreate, nockDelete, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { PluginContext } from '../../../../lib/PluginContext'
 import { mockManagedClusterSet } from '../../../../lib/test-metadata'
 import {
     clickBulkAction,
@@ -19,6 +20,7 @@ import {
     typeByText,
     waitForNock,
     waitForText,
+    waitForNotText,
     typeByTestId,
 } from '../../../../lib/test-util'
 import {
@@ -49,8 +51,10 @@ describe('ClusterSets page', () => {
         nockIgnoreRBAC()
         render(<Component />)
     })
-    test('renders', () => {
-        waitForText(mockManagedClusterSet.metadata.name!)
+    test('renders', async () => {
+        await waitForText(mockManagedClusterSet.metadata.name!)
+        await waitForText('Submariner')
+        await waitForText('Multi-cluster network status')
     })
     test('can create a managed cluster set', async () => {
         await clickByText('Create cluster set')
@@ -68,5 +72,17 @@ describe('ClusterSets page', () => {
         await typeByText('Confirm by typing "confirm" below:', 'confirm')
         await clickByText('Delete')
         await waitForNock(nock)
+    })
+})
+
+describe('ClusterSets page without Submariner', () => {
+    beforeEach(() => {
+        nockIgnoreRBAC()
+        render(<PluginContext.Provider value={{ isSubmarinerAvailable: false }}><Component /></PluginContext.Provider>)
+    })
+    test('renders', async () => {
+        await waitForText(mockManagedClusterSet.metadata.name!)
+        await waitForNotText('Submariner')
+        await waitForNotText('Multi-cluster network status')
     })
 })

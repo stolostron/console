@@ -6,9 +6,8 @@ import { useResolvedExtensions, isHrefNavItem } from '@openshift-console/dynamic
 
 export function PluginContextProvider(props: { children?: ReactNode; }) {
   const [hrefs] = useResolvedExtensions(isHrefNavItem);
-  const hrefAvailable = (id: String) => hrefs.findIndex(e => {
-    const props = e.properties
-    return props.perspective === 'acm' && props.id === id
+  const hrefAvailable = (id: string) => hrefs.findIndex(e => {
+    return e.properties.perspective === 'acm' && e.properties.id === id
   }) >= 0
 
   const isOverviewAvailable = useMemo(() => hrefAvailable('acm-overview'), [hrefs])

@@ -21,6 +21,7 @@ import {
     nockNamespacedList,
     nockPatch,
 } from '../../../../../lib/nock-util'
+import { PluginContext } from '../../../../../lib/PluginContext'
 import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
     clickByLabel,
@@ -29,6 +30,7 @@ import {
     typeByTestId,
     waitForNocks,
     waitForNotTestId,
+    waitForNotText,
     waitForTestId,
     waitForText,
 } from '../../../../../lib/test-util'
@@ -617,5 +619,20 @@ describe('ClusterSetDetails deletion', () => {
     test('renders deletion page when the cluster set has a deletionTimestamp', async () => {
         render(<Component />)
         await waitForText('test-cluster-set is being deleted.')
+    })
+})
+
+describe('ClusterSetDetails page without Submariner', () => {
+    beforeEach(async () => {
+        const getNocks = [nockClusterList(mockUser, [mockUser]), nockClusterList(mockGroup, [mockGroup])]
+        nockIgnoreRBAC()
+        render(<PluginContext.Provider value={{ isSubmarinerAvailable: false }}><Component /></PluginContext.Provider>)
+        await waitForNocks(getNocks)
+    })
+    test('does not render Submariner add-ons tab', async () => {
+        await waitForText(mockManagedClusterSet.metadata.name!, true)
+        await waitForText('Details')
+
+        await waitForNotText('Submariner add-ons')
     })
 })
