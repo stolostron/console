@@ -24,6 +24,7 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     readonly?: boolean
     onClose: () => void
     onEditorChange?: (editorResources: any) => void
+    hideCloseButton?: boolean
 }
 
 export function SyncEditor(props: SyncEditorProps): JSX.Element {
