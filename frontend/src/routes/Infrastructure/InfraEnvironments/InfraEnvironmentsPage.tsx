@@ -210,7 +210,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                                 setModalProps({ open: false })
                                             },
                                             isDanger: true,
-                                            icon: 'warning',                                            
+                                            icon: 'warning',
                                         })
                                     },
                                     rbac: [rbacDelete(infraEnv)],
