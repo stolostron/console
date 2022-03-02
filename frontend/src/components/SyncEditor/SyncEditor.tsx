@@ -17,7 +17,7 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     variant?: string
     editorTitle?: string
     code?: string
-    resources?: any[]
+    resources: unknown
     schema?: any
     secrets?: (string | string[])[]
     immutables?: (string | string[])[]
@@ -48,6 +48,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Successfully copied to clipboard!</span>
     const [copyHint, setCopyHint] = useState<ReactNode>(defaultCopy)
     const [prohibited, setProhibited] = useState<any>([])
+    const [newKeyCount, setNewKeyCount] = useState<number>(1)
     const [showsFormChanges, setShowsFormChanges] = useState<boolean>(false)
     const [userEdits, setUserEdits] = useState<any>([])
     const [editorChanges, setEditorChanges] = useState<SyncDiffType>()
@@ -165,7 +166,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         model.onDidChangeContent(() => {
             model?.forceTokenization(model?.getLineCount())
         })
-    })
+    }, [])
 
     // clear any form change decorations if user clicks on editor
     const onMouseDown = useCallback(
@@ -211,17 +212,38 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         if (keyDownHandle) {
             keyDownHandle.dispose()
         }
-        const handle = editorRef.current.onKeyDown((e: { stopPropagation: () => void; preventDefault: () => void }) => {
-            const selections = editorRef.current.getSelections()
-            if (
-                !prohibited.every((prohibit: { intersectRanges: (arg: any) => any }) => {
-                    return selections.findIndex((range: any) => prohibit.intersectRanges(range)) === -1
-                })
-            ) {
-                e.stopPropagation()
-                e.preventDefault()
+        const handle = editorRef.current.onKeyDown(
+            (e: { code: string; stopPropagation: () => void; preventDefault: () => void }) => {
+                const selections = editorRef.current.getSelections()
+
+                // if user presses enter, add new key: below this line
+                if (e.code === 'Enter') {
+                    const editor = editorRef.current
+                    const model = editor.getModel()
+                    const pos = editor.getPosition()
+                    const thisLine = model.getLineContent(pos.lineNumber)
+                    const nextLine = model.getLineContent(pos.lineNumber + 1)
+                    const times = Math.max(thisLine.search(/\S/), nextLine.search(/\S/))
+                    const count = `${newKeyCount}`.padStart(4, '0')
+                    const newLine = `${' '.repeat(times)}key${count}:  \n`
+                    let range = new monacoRef.current.Range(pos.lineNumber + 1, 0, pos.lineNumber + 1, 0)
+                    editor.executeEdits('new-key', [{ identifier: 'new-key', range, text: newLine }])
+                    range = new monacoRef.current.Range(pos.lineNumber + 1, times + 1, pos.lineNumber + 1, times + 8)
+                    editor.setSelection(range)
+                    setNewKeyCount(newKeyCount + 1)
+                    e.stopPropagation()
+                    e.preventDefault()
+                } else if (
+                    // if user clicks on readonly area, ignore
+                    !prohibited.every((prohibit: { intersectRanges: (arg: any) => any }) => {
+                        return selections.findIndex((range: any) => prohibit.intersectRanges(range)) === -1
+                    })
+                ) {
+                    e.stopPropagation()
+                    e.preventDefault()
+                }
             }
-        })
+        )
         setKeyDownHandle(handle)
     }, [prohibited])
 
@@ -234,6 +256,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             resources: any[]
             hiddenSecretsValues: any[]
         },
+        changeWithoutSecrets: {
+            mappings: { [name: string]: any[] }
+            parsed: { [name: string]: any[] }
+            resources: any[]
+        },
         errors: any[]
     ) => {
         if (changes.length || errors.length) {
@@ -243,7 +270,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 resources: changeWithSecrets.resources,
                 warnings: formatErrors(errors, true),
                 errors: formatErrors(errors),
-                changes: formatChanges(editor, monaco, changes, changeWithSecrets),
+                changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
             })
         } else {
             setEditorChanges(undefined)
@@ -275,6 +302,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             userEdits,
             validationRef.current
         )
+        let timeoutID: NodeJS.Timeout
         setLastUserEdits(userEdits)
         if (yaml.length) {
             setProhibited(protectedRanges)
@@ -299,9 +327,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             )
 
             // report to form
-            onReportChange(edits, changeWithSecrets, errors)
+            onReportChange(edits, changeWithSecrets, change, errors)
 
-            setTimeout(() => {
+            timeoutID = setTimeout(() => {
                 // decorate errors, changes
                 const squigglyTooltips = decorate(
                     false,
@@ -322,7 +350,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         }
         setHasRedo(false)
         setHasUndo(false)
-    }, [resources, code, showSecrets])
+        return () => clearInterval(timeoutID)
+    }, [JSON.stringify(resources), code, showSecrets, immutables])
 
     // react to changes from editing yaml
     const onChange = useCallback(
@@ -359,7 +388,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 )
 
                 // report to form
-                onReportChange(changes, changeWithSecrets, errors)
+                onReportChange(changes, changeWithSecrets, change, errors)
 
                 // decorate errors, changes
                 const squigglyTooltips = decorate(
