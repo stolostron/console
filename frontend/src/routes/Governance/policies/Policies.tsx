@@ -243,8 +243,6 @@ export default function PoliciesPage() {
                     {
                         variant: 'bulk-action',
                         id: 'enable',
-                        // TODO RBAC
-                        // isDisabled: (...item),
                         title: t('policy.table.actions.enable'),
                         click: (item) => {
                             setModalProps({

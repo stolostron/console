@@ -169,9 +169,8 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                         <div style={{ minHeight: '24px' }} />
                     </Fragment>
                 )}
-                <Stack>
-                    {/* externalResourceCount > 1 ? multi : single */}
-                    {props.hasExternalResources && (
+                {props.hasExternalResources && (
+                    <Stack>
                         <StackItem>
                             <AcmAlert
                                 variant="info"
@@ -182,8 +181,8 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                 isInline
                             />
                         </StackItem>
-                    )}
-                </Stack>
+                    </Stack>
+                )}
                 <ActionGroup>
                     {errors
                         ? [
