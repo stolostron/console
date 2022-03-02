@@ -2,8 +2,8 @@
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
-export const BrokerApiVersion = 'v1alpha1'
-export type BrokerApiVersionType = 'v1alpha1'
+export const BrokerApiVersion = 'submariner.io/v1alpha1'
+export type BrokerApiVersionType = 'submariner.io/v1alpha1'
 
 export const BrokerKind = 'Broker'
 export type BrokerKindType = 'Broker'
