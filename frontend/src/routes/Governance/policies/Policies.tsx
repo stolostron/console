@@ -16,7 +16,7 @@ import {
     StackItem,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { AcmTable, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
+import { AcmAlert, AcmTable, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -59,7 +59,10 @@ export default function PoliciesPage() {
     const tableItems: PolicyTableItem[] = policies.map((policy) => {
         const isExternal = resolveExternalStatus(policy)
         const policySource = resolveSource(policy)
-        const source = policySource ? getSource(policySource, isExternal) : 'Managed Externally'
+        let source: string | JSX.Element = 'Local'
+        if (isExternal) {
+            source = policySource ? getSource(policySource, isExternal) : 'Managed Externally'
+        }
         return {
             policy,
             source,
@@ -102,14 +105,14 @@ export default function PoliciesPage() {
                         </Link>
                     )
                 },
-                sort: 'metadata.name',
-                search: 'metadata.name',
+                sort: 'policy.metadata.name',
+                search: 'policy.metadata.name',
             },
             {
                 header: t('Namespace'),
-                cell: 'metadata.namespace',
-                sort: 'metadata.namespace',
-                search: 'metadata.namespace',
+                cell: 'policy.metadata.namespace',
+                sort: 'policy.metadata.namespace',
+                search: 'policy.metadata.namespace',
             },
             {
                 header: t('Status'),
@@ -119,8 +122,8 @@ export default function PoliciesPage() {
             },
             {
                 header: t('Remediation'),
-                cell: 'spec.remediationAction',
-                sort: 'spec.remediationAction',
+                cell: 'policy.spec.remediationAction',
+                sort: 'policy.spec.remediationAction',
             },
             {
                 header: t('Policy set'),
@@ -242,7 +245,6 @@ export default function PoliciesPage() {
                         id: 'enable',
                         title: t('policy.table.actions.enable'),
                         click: (item) => {
-                            console.log('item', item)
                             setModalProps({
                                 open: true,
                                 title: t('policy.modal.title.enable'),
@@ -268,6 +270,10 @@ export default function PoliciesPage() {
                                 close: () => {
                                     setModalProps({ open: false })
                                 },
+                                hasExternalResources:
+                                    [...item].filter((item) => {
+                                        return item.source !== 'Local'
+                                    }).length > 0,
                             })
                         },
                     },
@@ -301,6 +307,10 @@ export default function PoliciesPage() {
                                 close: () => {
                                     setModalProps({ open: false })
                                 },
+                                hasExternalResources:
+                                    [...item].filter((item) => {
+                                        return item.source !== 'Local'
+                                    }).length > 0,
                             })
                         },
                     },
@@ -345,6 +355,10 @@ export default function PoliciesPage() {
                                 close: () => {
                                     setModalProps({ open: false })
                                 },
+                                hasExternalResources:
+                                    [...item].filter((item) => {
+                                        return item.source !== 'Local'
+                                    }).length > 0,
                             })
                         },
                     },
@@ -352,13 +366,13 @@ export default function PoliciesPage() {
                         variant: 'bulk-action',
                         id: 'enforce',
                         title: t('policy.table.actions.enforce'),
-                        click: (policies) => {
+                        click: (item) => {
                             setModalProps({
                                 open: true,
                                 title: t('policy.modal.title.enforce'),
                                 action: t('policy.table.actions.enforce'),
                                 processing: t('policy.table.actions.enforcing'),
-                                resources: [...policies],
+                                resources: [...item],
                                 description: t('policy.modal.message.enforce'),
                                 columns: bulkModalRemediationColumns,
                                 keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
@@ -378,6 +392,10 @@ export default function PoliciesPage() {
                                 close: () => {
                                     setModalProps({ open: false })
                                 },
+                                hasExternalResources:
+                                    [...item].filter((item) => {
+                                        return item.source !== 'Local'
+                                    }).length > 0,
                             })
                         },
                     },
@@ -420,6 +438,7 @@ export default function PoliciesPage() {
                             close: () => {
                                 setModalProps({ open: false })
                             },
+                            hasExternalResources: item.source !== 'Local',
                         })
                     },
                 },
@@ -453,6 +472,7 @@ export default function PoliciesPage() {
                             close: () => {
                                 setModalProps({ open: false })
                             },
+                            hasExternalResources: item.source !== 'Local',
                         })
                     },
                 },
@@ -487,6 +507,7 @@ export default function PoliciesPage() {
                             close: () => {
                                 setModalProps({ open: false })
                             },
+                            hasExternalResources: item.source !== 'Local',
                         })
                     },
                 },
@@ -520,6 +541,7 @@ export default function PoliciesPage() {
                             close: () => {
                                 setModalProps({ open: false })
                             },
+                            hasExternalResources: item.source !== 'Local',
                         })
                     },
                 },
@@ -541,8 +563,8 @@ export default function PoliciesPage() {
                     title: t('Delete'),
                     // tooltip: 'Delete policy',
                     addSeparator: true,
-                    click: (item: PolicyTableItem) => {
-                        setModal(<DeletePolicyModal policy={item.policy} onClose={() => setModal(undefined)} />)
+                    click: (policy: PolicyTableItem) => {
+                        setModal(<DeletePolicyModal item={policy} onClose={() => setModal(undefined)} />)
                     },
                 },
             ]
@@ -765,7 +787,7 @@ function usePolicyViolationsColumn(
     }
 }
 
-function DeletePolicyModal(props: { policy: Policy; onClose: () => void }) {
+function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () => void }) {
     const { t } = useTranslation()
     const [deletePlacements, setDeletePlacements] = useState(true)
     const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
@@ -779,7 +801,7 @@ function DeletePolicyModal(props: { policy: Policy; onClose: () => void }) {
         try {
             setError('')
             await deletePolicy(
-                props.policy,
+                props.item.policy,
                 placements,
                 placementRules,
                 placementBindings,
@@ -814,8 +836,8 @@ function DeletePolicyModal(props: { policy: Policy; onClose: () => void }) {
         >
             <Stack hasGutter>
                 <StackItem>
-                    {t(`Removing ${props.policy.metadata.name} is irreversible. Select any associated resources that need to be
-            deleted in addition to ${props.policy.metadata.name}.`)}
+                    {t(`Removing ${props.item.policy.metadata.name} is irreversible. Select any associated resources that need to be
+            deleted in addition to ${props.item.policy.metadata.name}.`)}
                 </StackItem>
                 <StackItem>
                     <Checkbox
@@ -833,6 +855,18 @@ function DeletePolicyModal(props: { policy: Policy; onClose: () => void }) {
                         label={t('policy.modal.delete.associatedResources.placementRule')}
                     />
                 </StackItem>
+                {props.item.source !== 'Local' ? (
+                    <StackItem>
+                        <AcmAlert
+                            variant="info"
+                            title={t('Some selected resources are managed externally')}
+                            message={t(
+                                'Any changes made here may be overridden by the content of an upstream repository.'
+                            )}
+                            isInline
+                        />
+                    </StackItem>
+                ) : null}
                 {error && (
                     <StackItem>
                         <Alert variant="danger" title={error} isInline />
