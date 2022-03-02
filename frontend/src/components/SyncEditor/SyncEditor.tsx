@@ -27,8 +27,19 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
 }
 
 export function SyncEditor(props: SyncEditorProps): JSX.Element {
-    const { variant, editorTitle, resources, schema, secrets, immutables, code, readonly, onEditorChange, onClose } =
-        props
+    const {
+        variant,
+        editorTitle,
+        resources,
+        schema,
+        secrets,
+        immutables,
+        code,
+        readonly,
+        onEditorChange,
+        onClose,
+        hideCloseButton,
+    } = props
     const pageRef = useRef(null)
     const editorRef = useRef<any | null>(null)
     const monacoRef = useRef<any | null>(null)
@@ -479,9 +490,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     {copyHint}
                 </ClipboardCopyButton>
             </div>
-            <div>
-                <CodeEditorControl icon={<CloseIcon />} aria-label="Close" toolTipText="Close" onClick={onClose} />
-            </div>
+            {!hideCloseButton && (
+                <div>
+                    <CodeEditorControl icon={<CloseIcon />} aria-label="Close" toolTipText="Close" onClick={onClose} />
+                </div>
+            )}
         </>
     )
 
