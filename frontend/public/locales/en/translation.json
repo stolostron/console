@@ -719,6 +719,7 @@
     "Credentials": "Credentials",
     "Credentials created": "Credentials created",
     "Credentials updated": "Credentials updated",
+    "Credentials YAML": "Credentials YAML",
     "credentials.additionalActions.editClusterDiscovery": "Configure cluster discovery",
     "credentials.additionalActions.enableClusterDiscovery": "Create cluster discovery",
     "credentials.failed": "Failed",
