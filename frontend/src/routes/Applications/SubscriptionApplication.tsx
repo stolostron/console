@@ -6,7 +6,7 @@ import { NavigationPath } from '../../NavigationPath'
 import Handlebars from 'handlebars'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { ApplicationKind, createResources as createKubeResources, IResource, updateResources } from '../../resources'
+import { ApplicationKind, createResources as createKubeResources, IResource, updateAppResources } from '../../resources'
 import '../Applications/CreateApplication/Subscription/style.css'
 
 // Template Data
@@ -154,7 +154,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                     }
                 })
 
-                updateResources(createResources)
+                updateAppResources(createResources)
                     .then(() => {
                         const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
                         toastContext.addAlert({

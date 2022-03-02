@@ -2,9 +2,11 @@
 
 import { noop } from 'lodash'
 import { getCookie } from '.'
+import { ApplicationKind, SubscriptionApiVersion, SubscriptionKind } from '..'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
+import { subAnnotationStr } from '../../routes/Applications/Overview'
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -95,6 +97,50 @@ export async function createResources(resources: IResource[]): Promise<void> {
 export async function updateResources(resources: IResource[]): Promise<void> {
     for (const resource of resources) {
         await replaceResource(resource).promise
+    }
+}
+
+export async function updateAppResources(resources: IResource[]): Promise<void> {
+    const subscriptionResources = resources.filter((resource) => resource.kind === SubscriptionKind)
+    let subscriptions: any[] = []
+    for (const resource of resources) {
+        try {
+            const existingResource = await getResource(resource).promise
+            if (existingResource.kind === ApplicationKind) {
+                const exisitngSubscriptions =
+                    existingResource.metadata?.annotations && existingResource.metadata?.annotations[subAnnotationStr]
+                subscriptions = exisitngSubscriptions
+                    ?.split(',')
+                    .filter((subscription) => !subscription.endsWith('-local')) as string[]
+            }
+            if (existingResource) {
+                await replaceResource(resource).promise
+            }
+        } catch (err) {
+            // if the resource does not exist, create the resource
+            await createResource(resource).promise
+        }
+    }
+    if (subscriptionResources.length < subscriptions.length) {
+        const subNames: string[] = []
+        subscriptionResources.forEach((sub) => {
+            const subName = sub.metadata?.namespace + '/' + sub.metadata?.name
+            subNames.push(subName)
+        })
+        // delete any removed subscription resources
+        subscriptions.forEach((sub) => {
+            if (!subNames.includes(sub)) {
+                const [namespace, name] = sub.split('/')
+                deleteResource({
+                    apiVersion: SubscriptionApiVersion,
+                    kind: SubscriptionKind,
+                    metadata: {
+                        name,
+                        namespace,
+                    },
+                })
+            }
+        })
     }
 }
 
