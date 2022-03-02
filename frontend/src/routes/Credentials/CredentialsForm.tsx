@@ -1392,8 +1392,10 @@ export function CredentialsForm(props: {
                 'Secret[0].stringData.token',
                 'Secret[0].stringData.ocmAPIToken',
                 'Secret[0].stringData.additionalTrustBundle',
+                'Secret[0].stringData.ovirt_password',
                 ['Secret', '0', 'stringData', 'osServicePrincipal.json'],
                 ['Secret', '0', 'stringData', 'osServiceAccount.json'],
+                ['Secret', '0', 'stringData', 'clouds.yaml'],
             ]}
             immutables={[
                 'Secret[0].apiVersion',
