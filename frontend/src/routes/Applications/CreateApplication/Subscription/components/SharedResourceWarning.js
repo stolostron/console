@@ -6,16 +6,20 @@ import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import apolloClient from '../../../../lib/client/apollo-client'
-import { SEARCH_QUERY_RELATED } from '../../../apollo-client/queries/SearchQueries'
-import { RESOURCE_TYPES } from '../../../../lib/shared/constants'
-import resources from '../../../../lib/shared/resources'
-import msgs from '../../../../nls/platform.properties'
-import { withLocale } from '../../../providers/LocaleProvider'
+import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
+import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
+import { useTranslation } from '../../../../../lib/acm-i18next'
+import './style.css'
 
-resources(() => {
-    require('./style.scss')
-})
+export const RESOURCE_TYPES = {
+    HCM_APPLICATIONS: { name: 'HCMApplication', list: 'HCMApplicationList' },
+    HCM_CHANNELS: { name: 'HCMChannel', list: 'HCMChannelList' },
+    HCM_SUBSCRIPTIONS: { name: 'HCMSubscription', list: 'HCMSubscriptionList' },
+    HCM_PLACEMENT_RULES: {
+        name: 'HCMPlacementRule',
+        list: 'HCMPlacementRuleList',
+    },
+}
 
 const CHILD_RESOURCE_TYPES = ['Application', 'Subscription', 'PlacementRule', 'Channel']
 
@@ -75,7 +79,7 @@ const getQuery = (resourceType, name, namespace) => {
 }
 
 const getWarningSpan = (key) => {
-    return `<span class="warning-font">${msgs.get(key)} </span>`
+    return `<span class="warning-font">${key} </span>`
 }
 
 const getCodeSpan = (text) => {
@@ -93,13 +97,18 @@ const SharedResourceWarning = ({ resourceType, control, locale }) => {
     )
     const [prNamespace, prName] = getResourceNameAndNamespace(RESOURCE_TYPES.HCM_PLACEMENT_RULES, selfLinks)
     const [resourceNamespace, resourceName] = getResourceNameAndNamespace(resourceType, selfLinks)
-
+    const { t } = useTranslation()
     useEffect(() => {
         if (control.editMode && resourceName && resourceNamespace) {
             const query = getQuery(resourceType, resourceName, resourceNamespace)
-            apolloClient
-                .search(SEARCH_QUERY_RELATED, {
-                    input: [query],
+            searchClient
+                .query({
+                    query: SearchResultRelatedItemsDocument,
+                    variables: {
+                        input: [{ ...query }],
+                        limit: 10000,
+                    },
+                    fetchPolicy: 'cache-first',
                 })
                 .then((response) => {
                     const hostingSubscription = _.get(response, 'data.searchResult[0].items[0]._hostingSubscription')
@@ -173,11 +182,10 @@ const SharedResourceWarning = ({ resourceType, control, locale }) => {
                         <p
                             dangerouslySetInnerHTML={{
                                 __html: `
-              ${getWarningSpan('editing.app.warning')}
-              ${msgs.get(
-                  'editing.app.deployedResourceWarning',
-                  [getCodeSpan(getResourceKind(resourceType)), getCodeSpan(deployingSubscription)],
-                  locale
+              ${getWarningSpan(t('Warning:'))}
+              ${t(
+                  'This application uses a {{0}} resource that is deployed by the subscription {{1}}. Changes to these settings might be reverted when resources are reconciled with the resource repository.',
+                  [getCodeSpan(getResourceKind(resourceType)), getCodeSpan(deployingSubscription)]
               )}
               `,
                             }}
@@ -189,8 +197,11 @@ const SharedResourceWarning = ({ resourceType, control, locale }) => {
                         <p
                             dangerouslySetInnerHTML={{
                                 __html: `
-              ${getWarningSpan('editing.app.caution')}
-              ${msgs.get('editing.app.sharedResourceWarning', [getCodeSpan(getResourceKind(resourceType))], locale)}
+              ${getWarningSpan(t('Caution:'))}
+              ${t(
+                  'This application uses a shared {{0}} resource. Changes to these settings will also affect the following applications:',
+                  [getCodeSpan(getResourceKind(resourceType))]
+              )}
               `,
                             }}
                         />
@@ -202,8 +213,10 @@ const SharedResourceWarning = ({ resourceType, control, locale }) => {
                         <p
                             dangerouslySetInnerHTML={{
                                 __html: `
-              ${getWarningSpan('editing.app.caution')}
-              ${msgs.get('editing.app.childResourceWarning', locale)}
+              ${getWarningSpan(t('Caution:'))}
+              ${t(
+                  'Changes to these settings might also affect other applications or subscriptions. This subscription deploys the following resources:'
+              )}
               `,
                             }}
                         />
@@ -221,4 +234,4 @@ SharedResourceWarning.propTypes = {
     resourceType: PropTypes.object,
 }
 
-export default withLocale(SharedResourceWarning)
+export default SharedResourceWarning
