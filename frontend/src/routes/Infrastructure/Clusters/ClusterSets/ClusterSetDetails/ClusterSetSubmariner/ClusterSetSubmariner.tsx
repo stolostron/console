@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ManagedClusterAddOn, ManagedClusterSetDefinition, ResourceErrorCode, SubmarinerConfigDefinition } from '../../../../../../resources'
+import { BrokerDefinition, ManagedClusterAddOn, ManagedClusterSetDefinition, ResourceErrorCode } from '../../../../../../resources'
 import {
     AcmButton,
     AcmEmptyState,
@@ -399,7 +399,7 @@ export function ClusterSetSubmarinerPageContent() {
                                                 variant="primary"
                                                 rbac={[
                                                     rbacCreate(
-                                                        SubmarinerConfigDefinition,
+                                                        BrokerDefinition,
                                                         undefined,
                                                         clusterSet!.metadata.name,
                                                         'join'

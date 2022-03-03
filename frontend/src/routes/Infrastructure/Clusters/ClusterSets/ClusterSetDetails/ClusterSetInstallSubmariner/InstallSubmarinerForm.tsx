@@ -174,7 +174,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     const [fetchSecrets, setFetchSecrets] = useState<boolean>(true)
 
     const [globalnetEnabled, setGlobalnetEnabled] = useState<boolean>(false)
-    const [isGlobalnetDisabled, setGlobalnetDisabled] = useState<boolean>(true)
+    const [isGlobalnetAlreadyConfigured, setIsGlobalnetAlreadyConfigured] = useState<boolean>(true)
     const [isGlobalnetHidden, setGlobalnetHidden] = useState<boolean>(false)
 
     const [awsAccessKeyIDs, setAwsAccessKeyIDs] = useState<Record<string, string | undefined>>({})
@@ -231,10 +231,10 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         if (namespace) {
             getBroker({ name, namespace }).promise.then(broker=>{
                 setGlobalnetEnabled(broker?.spec?.globalnetEnabled ?? false)
-                setGlobalnetDisabled(true)
+                setIsGlobalnetAlreadyConfigured(true)
             })
             .catch(() => {
-                setGlobalnetDisabled(false)
+                setIsGlobalnetAlreadyConfigured(false)
             })
         } else {
             setGlobalnetHidden(true)
@@ -329,7 +329,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         })
 
         // if globalnet support create
-        if (globalnetEnabled && !isGlobalnetDisabled) {
+        if (globalnetEnabled && !isGlobalnetAlreadyConfigured) {
             const broker: Broker = {
                 apiVersion: BrokerApiVersion,
                 kind: BrokerKind,
@@ -473,9 +473,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         title: t('Globalnet Settings'),
                         label: t('Enable Globalnet'),
                         value: globalnetEnabled,
-                        isDisabled: isGlobalnetDisabled,
+                        isDisabled: isGlobalnetAlreadyConfigured,
                         isHidden: isGlobalnetHidden,
-                        helperText: isGlobalnetDisabled ? t('Already enabled globally') : '',
+                        helperText: isGlobalnetAlreadyConfigured ? t('Already enabled globally') : '',
                         onChange: (value: boolean) => {
                             setGlobalnetEnabled(value)
                         },
