@@ -90,6 +90,7 @@ describe('Infrastructure Environments page', () => {
 
         await waitForText('Infrastructure environments', true)
 
+<<<<<<< HEAD
         // the top-level hint
         await waitForText(
             'Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.'
@@ -99,11 +100,12 @@ describe('Infrastructure Environments page', () => {
             'Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.'
         )
 
+=======
+>>>>>>> 8c4511e3 (Tweak the infra env empty list design)
         await waitForTestId('createInfraEnv')
 
         // is the infraEnv listed?
         await waitForText(infraEnvName, true)
 
-        // screen.debug(undefined, -1)
     })
 })
