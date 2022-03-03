@@ -46,6 +46,7 @@ import { rbacCreate } from '../../../../../../lib/rbac-util'
 import { validateJSON } from '../../../../../../lib/validation'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { ClusterSetContext } from '../ClusterSetDetails'
+import schema from './schema.json'
 
 export function InstallSubmarinerFormPage() {
     const { t } = useTranslation()
@@ -278,9 +279,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 if (cluster.provider !== Provider.vmware && providerSecretMap[cluster.displayName!] === null) {
                     if (cluster.provider === Provider.aws) {
                         secret.stringData!['aws_access_key_id'] = awsAccessKeyIDs[cluster.displayName!]! || ''
-                        secret.stringData!['aws_secret_access_key'] = awsSecretAccessKeyIDs[cluster.displayName!]!
+                        secret.stringData!['aws_secret_access_key'] = awsSecretAccessKeyIDs[cluster.displayName!]! || ''
                     } else if (cluster.provider === Provider.gcp) {
-                        secret.stringData!['osServiceAccount.json'] = gcServiceAccountKeys[cluster.displayName!]!
+                        secret.stringData!['osServiceAccount.json'] = gcServiceAccountKeys[cluster.displayName!]! || ''
                     }
 
                     resources.push(secret)
@@ -678,12 +679,12 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         },
     }
 
-    // schema={schema}
     return (
         <AcmDataFormPage
             formData={formData}
             mode="wizard"
             editorTitle={t('Submariner YAML')}
+            schema={schema}
             secrets={[
                 'Secret[*].stringData.aws_secret_access_key',
                 ['Secret', '*', 'stringData', 'osServiceAccount.json'],
