@@ -50,6 +50,7 @@ export interface InputBase<T> {
 
     label: string
     placeholder?: string
+    title?: string
 
     value: T
     onChange: (value: T) => void

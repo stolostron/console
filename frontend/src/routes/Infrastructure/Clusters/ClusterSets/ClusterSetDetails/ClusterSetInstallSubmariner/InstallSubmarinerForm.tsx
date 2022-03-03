@@ -470,6 +470,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     {
                         id: 'globalist-enable',
                         type: 'Checkbox',
+                        title: t('Globalnet Settings'),
                         label: t('Enable Globalnet'),
                         value: globalnetEnabled,
                         isDisabled: isGlobalnetDisabled,

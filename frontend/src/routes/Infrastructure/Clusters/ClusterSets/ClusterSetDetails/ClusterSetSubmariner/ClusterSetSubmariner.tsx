@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ManagedClusterAddOn, ManagedClusterSetDefinition, ResourceErrorCode } from '../../../../../../resources'
+import { ManagedClusterAddOn, ManagedClusterSetDefinition, ResourceErrorCode, SubmarinerConfigDefinition } from '../../../../../../resources'
 import {
     AcmButton,
     AcmEmptyState,
@@ -389,20 +389,25 @@ export function ClusterSetSubmarinerPageContent() {
                                                 {t('managed.clusterSets.clusters.emptyStateButton')}
                                             </RbacButton>
                                         ) : (
-                                            <AcmButton
+                                            <RbacButton
                                                 id="install-submariner"
+                                                component={Link}
+                                                to={NavigationPath.clusterSetSubmarinerInstall.replace(
+                                                    ':id',
+                                                    clusterSet?.metadata.name!
+                                                )}
                                                 variant="primary"
-                                                onClick={() =>
-                                                    history.push(
-                                                        NavigationPath.clusterSetSubmarinerInstall.replace(
-                                                            ':id',
-                                                            clusterSet?.metadata.name!
-                                                        )
-                                                    )
-                                                }
+                                                rbac={[
+                                                    rbacCreate(
+                                                        SubmarinerConfigDefinition,
+                                                        undefined,
+                                                        clusterSet!.metadata.name,
+                                                        'join'
+                                                    ),
+                                                ]}
                                             >
                                                 {t('managed.clusterSets.submariner.addons.install')}
-                                            </AcmButton>
+                                            </RbacButton>
                                         )
                                     }
                                 />
