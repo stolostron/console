@@ -6,7 +6,7 @@ import { ApplicationKind, SubscriptionApiVersion, SubscriptionKind } from '..'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
-import { subAnnotationStr } from '../../routes/Applications/Overview'
+import { subAnnotationStr } from '../../routes/Applications/helpers/resource-helper'
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
