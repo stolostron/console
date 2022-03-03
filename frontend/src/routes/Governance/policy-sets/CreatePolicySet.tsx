@@ -13,7 +13,7 @@ import {
 } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { createResources, IResource } from '../../../resources'
+import { IResource, PolicySetKind, reconcileResources } from '../../../resources'
 
 export function CreatePolicySet() {
     const { t } = useTranslation()
@@ -33,17 +33,21 @@ export function CreatePolicySet() {
             placements={placements}
             placementRules={placementRules}
             clusterSetBindings={clusterSetBindings}
-            onSubmit={(resources) =>
-                createResources(resources as IResource[]).then(() => {
-                    toast.addAlert({
-                        title: t('Policy created'),
-                        message: t('{{name}} was successfully created.', { name: 'TODO' }),
-                        type: 'success',
-                        autoClose: true,
-                    })
+            onSubmit={(data) => {
+                const resources = data as IResource[]
+                return reconcileResources(resources, []).then(() => {
+                    const policySet = resources.find((resource) => resource.kind === PolicySetKind)
+                    if (policySet) {
+                        toast.addAlert({
+                            title: t('Policy set created'),
+                            message: t('{{name}} was successfully created.', { name: policySet.metadata?.name }),
+                            type: 'success',
+                            autoClose: true,
+                        })
+                    }
                     history.push(NavigationPath.policySets)
                 })
-            }
+            }}
             onCancel={() => history.push(NavigationPath.policySets)}
         />
     )

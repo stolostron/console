@@ -16,7 +16,7 @@ import {
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource, updateResources } from '../../../resources'
+import { IResource, PolicyKind, reconcileResources } from '../../../resources'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 
 export function EditPolicy() {
@@ -31,7 +31,7 @@ export function EditPolicy() {
     const [placementBindings] = useRecoilState(placementBindingsState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
-    const [resources, setResources] = useState<IResource[]>()
+    const [existingResources, setExistingResources] = useState<IResource[]>()
     useEffect(() => {
         const policy = policies.find(
             (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
@@ -43,10 +43,10 @@ export function EditPolicy() {
         const policyPlacementBindings = getPlacementBindingsForResource(policy, placementBindings)
         const policyPlacements = getPlacementsForResource(policy, policyPlacementBindings, placements)
         const policyPlacementRules = getPlacementsForResource(policy, policyPlacementBindings, placementRules)
-        setResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
+        setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
     }, [])
 
-    if (resources === undefined) {
+    if (existingResources === undefined) {
         return <LoadingPage />
     }
 
@@ -59,18 +59,22 @@ export function EditPolicy() {
             placementRules={placementRules}
             clusterSetBindings={clusterSetBindings}
             editMode={EditMode.Edit}
-            resources={resources}
-            onSubmit={(resources) =>
-                updateResources(resources as IResource[]).then(() => {
-                    toast.addAlert({
-                        title: t('Policy updated'),
-                        // message: t('{{name}} was successfully updated.', { name: 'TODO' }),
-                        type: 'success',
-                        autoClose: true,
-                    })
-                    history.push(NavigationPath.policies)
+            resources={existingResources}
+            onSubmit={(data) => {
+                const resources = data as IResource[]
+                return reconcileResources(resources, existingResources).then(() => {
+                    const policy = resources.find((resource) => resource.kind === PolicyKind)
+                    if (policy) {
+                        toast.addAlert({
+                            title: t('Policy updated'),
+                            message: t('{{name}} was successfully updated.', { name: policy.metadata?.name }),
+                            type: 'success',
+                            autoClose: true,
+                        })
+                    }
+                    history.push(NavigationPath.policySets)
                 })
-            }
+            }}
             onCancel={() => history.push(NavigationPath.policies)}
         />
     )
