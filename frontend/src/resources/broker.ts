@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { getResource } from '.'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
@@ -22,4 +23,12 @@ export interface Broker extends IResource {
         globalnetCIDRRange?: string
         globalnetEnabled?: boolean
     }
+}
+
+export function getBroker(metadata: { name: string; namespace: string }) {
+    return getResource<Broker>({
+        apiVersion: BrokerApiVersion,
+        kind: BrokerKind,
+        metadata,
+    })
 }
