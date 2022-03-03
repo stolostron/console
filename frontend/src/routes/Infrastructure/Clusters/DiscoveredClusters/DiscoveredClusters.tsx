@@ -45,7 +45,6 @@ function EmptyStateNoCRHCredentials() {
             message={<Trans i18nKey={'emptystate.defaultState.msg'} components={{ bold: <strong /> }} />}
             key="dcEmptyState"
             showIcon={true}
-            image={AcmEmptyStateImage.folder}
             action={
                 <AcmButton component={Link} to={NavigationPath.addCredentials}>
                     {t('emptystate.addCredential')}
