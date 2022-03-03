@@ -3,7 +3,7 @@
 export interface Selector {
     matchExpressions?: {
         key: string
-        operator: string
+        operator: 'In' | 'NotIn' | 'Exists' | 'DoesNotExist' | undefined
         values?: string[]
     }[]
     matchLabels?: Record<string, string>

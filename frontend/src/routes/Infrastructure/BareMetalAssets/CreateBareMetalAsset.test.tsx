@@ -248,6 +248,12 @@ describe('CreateBareMetalAsset', () => {
 
         await waitFor(() => expect(rbacNock.isDone()).toBeTruthy())
         await waitFor(() => expect(rbacNockii.isDone()).toBeTruthy())
-        await waitFor(() => expect(getByText('You are not authorized to complete this action. There is currently no namespace that allows you to create this resource. See your cluster administrator for role-based access control information.')).toBeInTheDocument())
+        await waitFor(() =>
+            expect(
+                getByText(
+                    'You are not authorized to complete this action. There is currently no namespace that allows you to create this resource. See your cluster administrator for role-based access control information.'
+                )
+            ).toBeInTheDocument()
+        )
     })
 })
