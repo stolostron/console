@@ -91,9 +91,13 @@ describe('Infrastructure Environments page', () => {
         await waitForText('Infrastructure environments', true)
 
         // the top-level hint
-        await waitForText('Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.')
+        await waitForText(
+            'Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.'
+        )
         await clickByText('Dismiss')
-        await waitForNotText('Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.')
+        await waitForNotText(
+            'Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.'
+        )
 
         await waitForTestId('createInfraEnv')
 

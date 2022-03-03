@@ -2,13 +2,13 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import React, { useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
+import PropTypes from 'prop-types'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
-import { useTranslation } from '../../../../../lib/acm-i18next'
 import './style.css'
 
 export const RESOURCE_TYPES = {
@@ -86,7 +86,7 @@ const getCodeSpan = (text) => {
     return `<span class="code-font">${text}</span>`
 }
 
-const SharedResourceWarning = ({ resourceType, control, locale }) => {
+const SharedResourceWarning = ({ resourceType, control }) => {
     const [siblingApplications, setSiblingApplications] = useState([])
     const [childResources, setChildResources] = useState([])
     const [deployingSubscription, setDeployingSubscription] = useState()

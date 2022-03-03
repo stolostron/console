@@ -138,7 +138,10 @@ describe('ClusterMachinePools', () => {
         await clickByLabel('Actions', 0)
         await clickByText('Delete machine pool')
         await waitForText('Permanently delete machine pools?')
-        await typeByText(`Confirm by typing "${mockMachinePoolAuto.metadata.name!}" below:`, mockMachinePoolAuto.metadata.name!)
+        await typeByText(
+            `Confirm by typing "${mockMachinePoolAuto.metadata.name!}" below:`,
+            mockMachinePoolAuto.metadata.name!
+        )
         const deleteNocks: Scope[] = [nockDelete(mockMachinePoolAuto)]
         await clickByText('Delete')
         await waitForNocks(deleteNocks)

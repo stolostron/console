@@ -173,7 +173,9 @@ describe('ansible job page', () => {
         await waitForText(clusterCurator1.metadata!.name!)
         await selectTableRow(1)
         await clickBulkAction('Delete templates')
-        await waitForText('This action will delete Ansible job templates and will unlink any associated Ansible credential. Are you sure that you want to continue?')
+        await waitForText(
+            'This action will delete Ansible job templates and will unlink any associated Ansible credential. Are you sure that you want to continue?'
+        )
         await clickByText('Delete')
         await waitForNock(deleteNock1)
         await waitForNock(deleteNock2)

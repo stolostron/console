@@ -497,7 +497,9 @@ describe('ClusterSetDetails page', () => {
         await clickByText('Access management')
         await waitForNocks([nock])
         await clickByText('Add user or group')
-        await waitForText('Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.')
+        await waitForText(
+            'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
+        )
         await clickByPlaceholderText('Select user')
         await clickByText(mockUser.metadata.name!)
         await clickByText('Select role', 1)
@@ -532,7 +534,9 @@ describe('ClusterSetDetails page', () => {
         await clickByText('Access management')
         await waitForNocks([nock])
         await clickByText('Add user or group')
-        await waitForText('Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.')
+        await waitForText(
+            'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
+        )
         await clickByText('Groups')
         await clickByPlaceholderText('Select group')
         await clickByText(mockGroup.metadata.name!)
