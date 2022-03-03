@@ -2,6 +2,7 @@
 
 import { noop } from 'lodash'
 import { getCookie } from '.'
+import { NamespaceKind } from '..'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
@@ -55,61 +56,179 @@ export function getBackendUrl() {
     return process.env.REACT_APP_BACKEND_PATH
 }
 
-export function createResource<Resource extends IResource, ResultType = Resource>(
-    resource: Resource
-): IRequestResult<ResultType> {
-    const url = getBackendUrl() + getResourceApiPath(resource)
-    return postRequest<Resource, ResultType>(url, resource)
-}
+export async function reconcileResources(
+    desiredResources: IResource[],
+    existingResources: IResource[],
+    options?: { abortController?: AbortController }
+) {
+    const abortController = options?.abortController
 
-export async function createResources(resources: IResource[]): Promise<void> {
-    if (!Array.isArray(resources)) throw new Error('Error - resources are not an array')
-    for (const resource of resources) {
-        try {
-            const existingResource = await getResource(resource).promise
-            if (existingResource)
-                throw new Error(
-                    'Resource of kind {kind} with name {name} in namespace {namespace} already exists.'
-                        .replace('{kind}', resource.kind)
-                        .replace('{name}', resource.metadata?.name ?? '')
-                        .replace('{namespace}', resource.metadata?.namespace ?? '')
-                )
-        } catch (err) {
-            // no nothing
-        }
-    }
-    const createdResources: IResource[] = []
+    const namespaceResources = desiredResources
+        .filter((desired) => !existingResources.find((existing) => existing.metadata?.uid === desired.metadata?.uid))
+        .filter((resource) => resource.kind === NamespaceKind)
+
+    const addedResources = desiredResources
+        .filter((desired) => !existingResources.find((existing) => existing.metadata?.uid === desired.metadata?.uid))
+        .filter((resource) => resource.kind !== NamespaceKind)
+
+    const modifiedResources = desiredResources
+        .filter((desired) => existingResources.find((existing) => existing.metadata?.uid === desired.metadata?.uid))
+        .filter((resource) => resource.kind !== NamespaceKind)
+
+    const deletedResources = existingResources.filter(
+        (existing) => !desiredResources.find((desired) => desired.metadata?.uid === existing.metadata?.uid)
+    )
+
+    let namespaceCreated = false
     try {
-        for (const resource of resources) {
-            const createdResource = await createResource(resource).promise
-            createdResources.push(createdResource)
+        try {
+            await createResources(namespaceResources)
+            namespaceCreated = true
+        } catch (err) {
+            if (err instanceof ResourceError) {
+                switch (err.code) {
+                    case 409: // Conflict - already exists
+                        // continue on as the namespace already exists
+                        break
+                    default:
+                        throw err
+                }
+            } else {
+                throw err
+            }
         }
+
+        // Dry Run - Added Resources
+        await createResources(addedResources, { dryRun: true, abortController })
+
+        // Dry Run - Modified Resources
+        await updateResources(modifiedResources, { dryRun: true, abortController })
+
+        // Dry Run - Deleted Resources
+        await deleteResources(deletedResources, { dryRun: true, abortController })
+
+        // Create Resources
+        await createResources(addedResources, { deleteCreatedOnError: true, abortController })
+
+        // Update Resources
+        try {
+            await updateResources(modifiedResources, { abortController })
+        } catch (err) {
+            // modifications failed, delete the previously created
+            void deleteResources(addedResources).catch(noop)
+            throw err
+        }
+
+        // Delete Resources
+        await deleteResources(deletedResources, { abortController })
     } catch (err) {
-        for (const createdResource of createdResources) {
-            deleteResource(createdResource).promise.catch(noop)
+        if (namespaceCreated) {
+            // Delete created namespaces as we have an error
+            void deleteResources(namespaceResources).catch(noop)
         }
         throw err
     }
 }
 
-export async function updateResources(resources: IResource[]): Promise<void> {
-    for (const resource of resources) {
-        await replaceResource(resource).promise
+export async function createResources(
+    resources: IResource[],
+    options?: {
+        dryRun?: boolean
+        abortController?: AbortController
+        deleteCreatedOnError?: boolean
+    }
+): Promise<void> {
+    const abortController = options?.abortController
+    const createdResources: IResource[] = []
+    try {
+        for (const resource of resources) {
+            const requestResult = createResource(resource, options)
+            abortController?.signal.addEventListener('abort', requestResult.abort)
+            try {
+                await requestResult.promise
+            } finally {
+                abortController?.signal.removeEventListener('abort', requestResult.abort)
+            }
+        }
+    } catch (err) {
+        if (options?.dryRun !== true) {
+            if (options?.deleteCreatedOnError) {
+                for (const createdResource of createdResources) {
+                    try {
+                        deleteResource(createdResource).promise.catch(noop)
+                    } catch (err) {
+                        // Do nothing
+                    }
+                }
+            }
+        }
+        throw err
     }
 }
 
-export function replaceResource<Resource extends IResource, ResultType = Resource>(
-    resource: Resource
+export async function updateResources(
+    resources: IResource[],
+    options?: {
+        dryRun?: boolean
+        abortController?: AbortController
+    }
+): Promise<void> {
+    const abortController = options?.abortController
+    for (const resource of resources) {
+        const requestResult = replaceResource(resource, options)
+        abortController?.signal.addEventListener('abort', requestResult.abort)
+        try {
+            await requestResult.promise
+        } finally {
+            abortController?.signal.removeEventListener('abort', requestResult.abort)
+        }
+    }
+}
+
+export async function deleteResources(
+    resources: IResource[],
+    options?: {
+        dryRun?: boolean
+        abortController?: AbortController
+    }
+): Promise<void> {
+    const abortController = options?.abortController
+    for (const resource of resources) {
+        const requestResult = deleteResource(resource, options)
+        abortController?.signal.addEventListener('abort', requestResult.abort)
+        try {
+            await requestResult.promise
+        } finally {
+            abortController?.signal.removeEventListener('abort', requestResult.abort)
+        }
+    }
+}
+
+export function createResource<Resource extends IResource, ResultType = Resource>(
+    resource: Resource,
+    options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
-    const url = getBackendUrl() + getResourceNameApiPath(resource)
+    let url = getBackendUrl() + getResourceApiPath(resource)
+    if (options?.dryRun) url += '?dryRun=All'
+    return postRequest<Resource, ResultType>(url, resource)
+}
+
+export function replaceResource<Resource extends IResource, ResultType = Resource>(
+    resource: Resource,
+    options?: { dryRun?: boolean }
+): IRequestResult<ResultType> {
+    let url = getBackendUrl() + getResourceNameApiPath(resource)
+    if (options?.dryRun) url += '?dryRun=All'
     return putRequest<Resource, ResultType>(url, resource)
 }
 
 export function patchResource<Resource extends IResource, ResultType = Resource>(
     resource: Resource,
-    data: unknown
+    data: unknown,
+    options?: { dryRun?: boolean }
 ): IRequestResult<ResultType> {
-    const url = getBackendUrl() + getResourceNameApiPath(resource)
+    let url = getBackendUrl() + getResourceNameApiPath(resource)
+    if (options?.dryRun) url += '?dryRun=All'
     const headers: Record<string, string> = {}
     if (Array.isArray(data)) {
         headers['Content-Type'] = 'application/json-patch+json'
@@ -119,10 +238,14 @@ export function patchResource<Resource extends IResource, ResultType = Resource>
     return patchRequest<unknown, ResultType>(url, data, headers)
 }
 
-export function deleteResource<Resource extends IResource>(resource: Resource): IRequestResult {
+export function deleteResource<Resource extends IResource>(
+    resource: Resource,
+    options?: { dryRun?: boolean }
+): IRequestResult {
     if (getResourceName(resource) === undefined)
         throw new ResourceError('Resource name is required.', ResourceErrorCode.BadRequest)
-    const url = getBackendUrl() + getResourceNameApiPath(resource)
+    let url = getBackendUrl() + getResourceNameApiPath(resource)
+    if (options?.dryRun) url += '?dryRun=All'
     return deleteRequest(url)
 }
 
