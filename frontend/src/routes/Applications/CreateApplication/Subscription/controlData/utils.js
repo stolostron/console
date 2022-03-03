@@ -16,10 +16,8 @@ import {
     listProviderConnections,
     getGitChannelBranches,
     getGitChannelPaths,
-    // PlacementRuleKind,
 } from '../../../../../resources'
-// import SharedResourceWarning from '../components/SharedResourceWarning'
-
+import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
 import _ from 'lodash'
 
 const onlineClustersCheckbox = 'online-cluster-only-checkbox'
@@ -380,23 +378,18 @@ export const setAvailableRules = (control, result) => {
 export const setAvailableNSSpecs = (control, result) => {
     const { loading } = result
     const { data } = result
-    const namespaces = data
     control.isLoading = false
-    const error = namespaces ? null : result.error
+    const error = data ? null : result.error
     if (!control.available) {
         control.available = []
         control.availableMap = {}
     }
-    if (control.available.length === 0 && (error || namespaces)) {
+    if (control.available.length === 0 && (error || data)) {
         if (error) {
             control.isFailed = true
-        } else if (namespaces) {
+        } else if (data) {
             control.isLoaded = true
-            namespaces.forEach((item) => {
-                const { metadata } = item
-                const name = metadata?.name
-                control.available.push(name)
-            })
+            control.available = data
             control.available.sort()
         }
     } else {
@@ -599,3 +592,11 @@ export const setAvailableSecrets = (control, result) => {
         control.isLoading = loading
     }
 }
+
+export const getSharedPlacementRuleWarning = (control) => (
+    <SharedResourceWarning resourceType={RESOURCE_TYPES.HCM_PLACEMENT_RULES} control={control} />
+)
+
+export const getSharedSubscriptionWarning = (control) => (
+    <SharedResourceWarning resourceType={RESOURCE_TYPES.HCM_SUBSCRIPTIONS} control={control} />
+)

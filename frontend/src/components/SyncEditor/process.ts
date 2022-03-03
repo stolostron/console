@@ -22,6 +22,7 @@ export interface MappingType {
     $r: number //what line is it on in the yaml
     $l: number // how many lines does it use in the yaml
     $v: any // what's its value
+    $s: boolean // is a secret
     $gk: any // the start/stop of the key in the yaml
     $gv: any // what's the start/stop of the value in yaml
 }
@@ -42,7 +43,7 @@ export interface ErrorMessageType {
 export const processForm = (
     monacoRef: any,
     code: string | undefined,
-    resourceArr?: any[] | undefined,
+    resourceArr: unknown,
     changeStack?: {
         baseResources: any[]
         customResources: any[]
@@ -58,7 +59,9 @@ export const processForm = (
         if (!Array.isArray(resourceArr)) {
             resourceArr = [resourceArr]
         }
-        yaml = stringify(resourceArr)
+        if (Array.isArray(resourceArr)) {
+            yaml = stringify(resourceArr)
+        }
     }
     let documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
     let errors = getErrors(documents)
@@ -112,6 +115,9 @@ const process = (
     immutables?: (string | string[])[],
     validators?: any
 ) => {
+    // if parse errors, use previous hidden secrets
+    const hiddenSecretsValues: any[] = errors.length === 0 ? [] : secretsValues ?? []
+
     // restore hidden secret values
     let { mappings, parsed, resources } = getMappings(documents)
     secretsValues?.forEach(({ path, value }) => {
@@ -119,7 +125,6 @@ const process = (
             set(parsed, path, value)
         }
     })
-    const hiddenSecretsValues: any[] = []
     let changeWithSecrets = { yaml, mappings, parsed, resources, hiddenSecretsValues }
 
     // hide and remember secret values
@@ -151,6 +156,7 @@ const process = (
             const value = get(mappings, getPathArray(secret))
             if (value && value.$v) {
                 protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
+                value.$s = true
             }
         })
     }
@@ -158,9 +164,21 @@ const process = (
     // prevent typing on immutables
     if (immutables) {
         immutables.forEach((immutable) => {
+            let allFlag = false
+            if (Array.isArray(immutable)) {
+                allFlag = immutable[immutable.length - 1] === '*'
+                if (allFlag) {
+                    immutable.pop()
+                }
+            } else {
+                allFlag = immutable.endsWith('*')
+                if (allFlag) {
+                    immutable = immutable.slice(0, -2)
+                }
+            }
             const value = get(mappings, getPathArray(immutable))
             if (value && value.$v) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
+                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + (allFlag ? value.$l : 1), 0))
             }
         })
     }

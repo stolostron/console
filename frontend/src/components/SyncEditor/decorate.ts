@@ -46,8 +46,9 @@ export const decorate = (
 const addProtectedDecorations = (monacoRef: any, protectedRanges: any[], decorations: any[]) => {
     protectedRanges?.forEach((range) => {
         const start = range.startLineNumber
+        const end = range.endLineNumber - 1
         decorations.push({
-            range: new monacoRef.current.Range(start, 1, start, 132),
+            range: new monacoRef.current.Range(start, 1, end, 132),
             options: {
                 inlineClassName: 'protectedDecoration',
                 description: 'resource-editor',
@@ -120,7 +121,7 @@ const addChangeDecorations = (
                     description: 'resource-editor',
                 },
             })
-            if ($f !== undefined) {
+            if ($f !== undefined && $f.length < 32 && !obj.$s) {
                 decorations.push({
                     range: new monacoRef.current.Range(obj.$r, 0, obj.$r, 132),
                     options: {

@@ -28,6 +28,7 @@
 
 .sync-diff__container .diff-value {
     width: 50%;
+    max-width: 400px;
     text-align: left;
     padding: 4px;
 }

@@ -268,6 +268,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                 },
                                 isDanger: true,
                                 icon: 'warning',
+                                confirmText: t('confirm').toLowerCase(),
                             })
                         },
                         variant: 'bulk-action',

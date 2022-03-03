@@ -23,7 +23,7 @@ import {
     setAvailableRules,
     getExistingPRControlsSection,
     updateNewRuleControlsData,
-    // getSharedPlacementRuleWarning,
+    getSharedPlacementRuleWarning,
     getSharedSubscriptionWarning,
 } from './utils'
 import { getSourcePath } from 'temptifly'
@@ -244,7 +244,7 @@ const placementData = async () => [
         overline: true,
         collapsable: true,
         collapsed: false,
-        // info: getSharedPlacementRuleWarning,
+        info: getSharedPlacementRuleWarning,
         editing: { editMode: true },
     },
     {
