@@ -1,5 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardBody, CardTitle, Gallery, GalleryItem, Page, PageSection, Stack, Text, Title } from '@patternfly/react-core'
+import {
+    Card,
+    CardBody,
+    CardTitle,
+    Gallery,
+    GalleryItem,
+    Page,
+    PageSection,
+    Stack,
+    Text,
+    Title,
+} from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
@@ -193,11 +204,11 @@ export default function WelcomePage() {
                 <Stack hasGutter>
                     <Title headingLevel="h2">Converse and connect.</Title>
                     <Gallery
-                    hasGutter
-                    minWidths={{
-                        default: '400px',
-                    }}
-                >
+                        hasGutter
+                        minWidths={{
+                            default: '400px',
+                        }}
+                    >
                         {connections.map((card) => (
                             <GalleryItem>
                                 <a href={card.link} target="_blank" style={{ color: 'black', textDecoration: 'none' }}>
