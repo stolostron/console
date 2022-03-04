@@ -15,7 +15,7 @@ import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { isMatch } from 'lodash'
 
-import { acmRouteState, configMapsState, infraEnvironmentsState } from '../../../../atoms'
+import { acmRouteState, configMapsState } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError } from '../../../../resources'
@@ -23,6 +23,7 @@ import { agentsState, bareMetalHostsState } from '../../../../atoms'
 import {
     getOnCreateBMH,
     getOnSaveISOParams,
+    useInfraEnv,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
@@ -40,27 +41,34 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
     const [isoModalOpen, setISOModalOpen] = useState(false)
 
-    const [infraEnvironments, agents, bareMetalHosts, configMaps] = useRecoilValue(
-        waitForAll([infraEnvironmentsState, agentsState, bareMetalHostsState, configMapsState])
+    const [agents, bareMetalHosts, configMaps] = useRecoilValue(
+        waitForAll([agentsState, bareMetalHostsState, configMapsState])
     )
 
-    const infraEnv = infraEnvironments.find(
-        (i) => i.metadata.name === match.params.name && i.metadata.namespace === match.params.namespace
-    )
-    const infraAgents = agents.filter(
-        (a) =>
-            a.metadata.namespace === infraEnv?.metadata?.namespace &&
-            isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+    const infraEnv = useInfraEnv({ name: match.params.name, namespace: match.params.namespace })
+
+    const infraAgents = useMemo(
+        () =>
+            agents.filter(
+                (a) =>
+                    a.metadata.namespace === infraEnv?.metadata?.namespace &&
+                    isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+            ),
+        [agents, infraEnv]
     )
 
-    const infraBMHs = bareMetalHosts.filter(
-        (bmh) =>
-            bmh.metadata.namespace === infraEnv?.metadata?.namespace &&
-            bmh.metadata.labels?.[INFRAENV_AGENTINSTALL_LABEL_KEY] === infraEnv?.metadata?.name
+    const infraBMHs = useMemo(
+        () =>
+            bareMetalHosts.filter(
+                (bmh) =>
+                    bmh.metadata.namespace === infraEnv?.metadata?.namespace &&
+                    bmh.metadata.labels?.[INFRAENV_AGENTINSTALL_LABEL_KEY] === infraEnv?.metadata?.name
+            ),
+        [bareMetalHosts, infraEnv?.metadata?.namespace, infraEnv?.metadata?.name]
     )
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, infraBMHs), [infraAgents])
-    const aiConfigMap = getAIConfigMap(configMaps)
+    const aiConfigMap = useMemo(() => getAIConfigMap(configMaps), [configMaps])
 
     if (!infraEnv) {
         return (

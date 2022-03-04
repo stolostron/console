@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { AcmPageContent } from '@stolostron/ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
@@ -27,6 +27,8 @@ import { DOC_VERSION } from '../../../../lib/doc-util'
 
 const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames, AgentAlerts } = CIM
 
+const canEditHost = (agent: CIM.AgentK8sResource) => !!agent
+
 type HostsTabProps = {
     infraEnv: CIM.InfraEnvK8sResource
     infraAgents: CIM.AgentK8sResource[]
@@ -47,6 +49,11 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, bareMetalHosts), [infraAgents])
 
+    const canDelete = useCallback(
+        (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => !!nmStates && (!!agent || !!bmh),
+        []
+    )
+
     return (
         <>
             <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
@@ -66,11 +73,9 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                                 infraEnv={infraEnv}
                                 getClusterDeploymentLink={getClusterDeploymentLink}
                                 onEditHost={setEditAgent}
-                                canEditHost={(agent) => !!agent}
+                                canEditHost={canEditHost}
                                 onApprove={onApproveAgent}
-                                canDelete={(agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) =>
-                                    !!nmStates && (!!agent || !!bmh)
-                                }
+                                canDelete={canDelete}
                                 onDeleteHost={onDeleteHost as any}
                                 onEditBMH={setEditBMH}
                                 canUnbindHost={canUnbindAgent}

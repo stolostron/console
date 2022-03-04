@@ -164,7 +164,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         doItAsync()
     }
 
-    return patchingHoldInstallation ? (
+    return patchingHoldInstallation || !clusterDeployment || !agentClusterInstall ? (
         <LoadingState />
     ) : (
         <AcmPage
