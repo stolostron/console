@@ -1652,6 +1652,7 @@
     "Search guide": "Search guide",
     "Search is disabled on some clusters.": "Search is disabled on some clusters.",
     "Search name (50 character limit)": "Search name (50 character limit)",
+    "Search resource": "Search resource",
     "search.filter.errors.description": "The search service is unavailable.",
     "search.filter.errors.title": "An unexpected error occurred.",
     "search.filter.info.title": "Configuration alert",

@@ -253,7 +253,7 @@ export function ApplicationOverviewPageContent(props: { name: string; namespace:
                                     icon={<OutlinedWindowRestoreIcon />}
                                     iconPosition="right"
                                 >
-                                    Search resource
+                                    {t('Search resource')}
                                 </AcmButton>
                             </CardBody>
                         </Card>
