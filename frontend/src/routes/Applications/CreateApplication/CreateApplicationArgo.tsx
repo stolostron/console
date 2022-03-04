@@ -6,7 +6,15 @@ import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@stolo
 import moment from 'moment-timezone'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { channelsState, gitOpsClustersState, namespacesState, placementsState, secretsState } from '../../../atoms'
+import {
+    channelsState,
+    gitOpsClustersState,
+    managedClusterSetBindingsState,
+    managedClustersState,
+    namespacesState,
+    placementsState,
+    secretsState,
+} from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
@@ -73,6 +81,8 @@ export function CreateApplicationArgo() {
     const [channels] = useRecoilState(channelsState)
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
+    const [managedClusters] = useRecoilState(managedClustersState)
+    const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const providerConnections = secrets.map(unpackProviderConnection)
 
     const availableArgoNS = gitOpsClusters
@@ -99,6 +109,8 @@ export function CreateApplicationArgo() {
             argoServers={availableArgoNS}
             namespaces={availableNamespace}
             placements={placements}
+            clusters={managedClusters}
+            clusterSetBindings={managedClusterSetBindings}
             onCancel={() => history.push('.')}
             channels={channels}
             getGitRevisions={getGitChannelBranches}
