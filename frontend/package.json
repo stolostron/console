@@ -22,7 +22,7 @@
         "i18n": "i18next",
         "update": "npx npm-check-updates -x @testing-library/user-event,monaco-editor,eslint,react-router-dom --doctor --upgrade && npm audit fix && npm dedup",
         "serve:plugins": "concurrently npm:serve:plugin:* -c green,blue,cyan,magenta",
-        "serve:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack serve -c ../../webpack.plugin.ts --env plugin=$PLUGIN --env port=$PORT --mode development",
+        "serve:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack serve -c ../../webpack.plugin.ts --env plugin=$PLUGIN --env port=$PORT --mode development",
         "serve:plugin:acm": "PLUGIN=acm PORT=3002 npm run serve:plugin",
         "serve:plugin:mce": "PLUGIN=mce PORT=3001 npm run serve:plugin",
         "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup"
