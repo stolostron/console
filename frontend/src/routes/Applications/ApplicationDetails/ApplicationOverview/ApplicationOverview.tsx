@@ -2,7 +2,7 @@
 
 import { AcmAlert, AcmButton, AcmDescriptionList, AcmModal, AcmPageContent, ListItems } from '@stolostron/ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { Button, ButtonVariant PageSection, Skeleton, Spinner, Tooltip } from '@patternfly/react-core'
+import { Button, ButtonVariant, PageSection, Skeleton, Spinner, Tooltip } from '@patternfly/react-core'
 import {
     FolderIcon,
     GripHorizontalIcon,
@@ -24,7 +24,14 @@ import { TimeWindowLabels } from '../../components/TimeWindowLabels'
 import { getSearchLink } from '../../helpers/resource-helper'
 import _ from 'lodash'
 import { REQUEST_STATUS } from './actions'
-import { Application, ApplicationApiVersion, ApplicationKind, Channel, Subscription } from '../../../../resources'
+import {
+    Application,
+    ApplicationApiVersion,
+    ApplicationKind,
+    Channel,
+    IResource,
+    Subscription,
+} from '../../../../resources'
 import ResourceLabels from '../../components/ResourceLabels'
 import '../../css/ApplicationOverview.css'
 import { TFunction } from 'i18next'
@@ -36,8 +43,7 @@ import { ISyncResourceModalProps, SyncResourceModal } from '../../components/Syn
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
 
-function createSyncButton(namespace: string, name: string, setModalProps: any, t: TFunction) {
-    // const { mutateStatus } = this.props //TODO: Need to implement openSyncModal
+function createSyncButton(resources: IResource[], setModalProps: any, t: TFunction) {
     const mutateStatus = ''
     const syncInProgress = mutateStatus === REQUEST_STATUS.IN_PROGRESS
     return (
@@ -57,6 +63,7 @@ function createSyncButton(namespace: string, name: string, setModalProps: any, t
                         close: () => {
                             setModalProps({ open: false })
                         },
+                        resources,
                         t,
                     })
                 }}
@@ -296,7 +303,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                             {renderData(
                                 t(getShortDateTime(lastSynced)),
                                 hasSyncPermission ? (
-                                    createSyncButton(namespace, name, setModalProps, t)
+                                    createSyncButton(applicationData.application.allSubscriptions, setModalProps, t)
                                 ) : (
                                     <Tooltip
                                         content={t(
@@ -305,7 +312,11 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                                         isContentLeftAligned
                                         position="right"
                                     >
-                                        {createSyncButton(namespace, name, setModalProps, t)}
+                                        {createSyncButton(
+                                            applicationData.application.allSubscriptions,
+                                            setModalProps,
+                                            t
+                                        )}
                                     </Tooltip>
                                 )
                             )}

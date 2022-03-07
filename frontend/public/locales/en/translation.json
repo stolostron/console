@@ -1889,6 +1889,7 @@
     "Subscription": "Subscription",
     "Subscription deployed on local cluster": "Subscription deployed on local cluster",
     "Subscription ID": "Subscription ID",
+    "Subscription updated": "Subscription updated",
     "subscription.page.count.info": "subscription.page.count.info",
     "Subscriptions": "Subscriptions",
     "Subscriptions identify Kubernetes resources within channels (source repositories). Then, the subscription places the Kubernetes resources on the target clusters.": "Subscriptions identify Kubernetes resources within channels (source repositories). Then, the subscription places the Kubernetes resources on the target clusters.",

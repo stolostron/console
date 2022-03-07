@@ -1,11 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmModal } from '@stolostron/ui-components'
+import { AcmModal, AcmToastContext } from '@stolostron/ui-components'
 import { Button, ModalVariant } from '@patternfly/react-core'
 import { TFunction } from 'i18next'
+import { IResource, reconcileResources } from '../../../resources'
+import _ from 'lodash'
+import { useContext } from 'react'
 export interface ISyncResourceModalProps {
     close: () => void
     open: boolean
+    resources: IResource[]
     t: TFunction
 }
 
@@ -14,9 +18,26 @@ export function SyncResourceModal(props: ISyncResourceModalProps | { open: false
         return <></>
     }
     const { t } = props
+    const toastContext = useContext(AcmToastContext)
 
     const handleSubmit = () => {
         props.close()
+        const existingResources = props.resources
+        let subNames: (string | undefined)[] = []
+        props.resources.forEach((sub) => {
+            subNames.push(sub.metadata?.name)
+            const annotations = _.get(sub, 'metadata.annotations', {})
+            annotations['apps.open-cluster-management.io/manual-refresh-time'] = new Date()
+        })
+
+        reconcileResources(props.resources, existingResources).then(() => {
+            toastContext.addAlert({
+                title: t('Subscription updated'),
+                message: t(`${subNames.join(', ')} were successfully synced.`),
+                type: 'success',
+                autoClose: true,
+            })
+        })
     }
 
     const modalTitle = t('Sync application')

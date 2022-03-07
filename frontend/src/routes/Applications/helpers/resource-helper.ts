@@ -186,7 +186,10 @@ export const getResourceLabel = (type: string, count: number) => {
 }
 
 export const getMoment = (timestamp: string, locale = '') => {
-    const momentObj = moment(timestamp, timestamp.includes('T') ? 'YYYY-MM-DDTHH:mm:ssZ' : 'YYYY-MM-DD HH:mm:ss')
+    const momentObj = moment(
+        timestamp,
+        timestamp.toString().includes('T') ? 'YYYY-MM-DDTHH:mm:ssZ' : 'YYYY-MM-DD HH:mm:ss'
+    )
     momentObj.locale(locale.toLowerCase())
     return momentObj
 }
