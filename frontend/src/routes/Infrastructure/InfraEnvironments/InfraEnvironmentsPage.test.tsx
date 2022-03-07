@@ -94,6 +94,5 @@ describe('Infrastructure Environments page', () => {
 
         // is the infraEnv listed?
         await waitForText(infraEnvName, true)
-
     })
 })

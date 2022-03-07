@@ -52,8 +52,8 @@ const InfraEnvironmentsPage: React.FC = () => {
 
     return (
         <AcmPage hasDrawer header={<AcmPageHeader title={t('infraenvs')} />}>
-            <AcmPageContent id="infra-environments">             
-               <PageSection>
+            <AcmPageContent id="infra-environments">
+                <PageSection>
                     <InfraEnvsTable infraEnvs={infraEnvs} agents={agents} />
                 </PageSection>
             </AcmPageContent>
