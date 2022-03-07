@@ -9,23 +9,36 @@
 // Copyright (c) 2020 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
+import React from 'react'
 import gitChannelData from './ControlDataGit'
 import helmReleaseChannelData from './ControlDataHelm'
 import objectstoreChannelData from './ControlDataObjectStore'
-// import otherChannelData from './ControlDataOther'
+import otherChannelData from './ControlDataOther'
 import { setAvailableNSSpecs, updateControlsForNS, getSharedSubscriptionWarning } from './utils'
-
+import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'
+import { NamespaceDefinition } from '../../../../../resources'
 import { discoverGroupsFromSource, shiftTemplateObject } from '../transformers/transform-resources-to-controls'
 import { listNamespaces } from '../../../../../resources'
 import { VALID_DNS_LABEL } from 'temptifly'
-import { GitAltIcon } from '@patternfly/react-icons'
+import { GitAltIcon, UnknownIcon } from '@patternfly/react-icons'
 import HelmIcom from '../../logos/HelmIcon.svg'
 import ObjectStore from '../../logos/ObjectStore.svg'
 
 export const loadExistingNamespaces = () => {
     return {
         query: () => {
-            return listNamespaces().promise
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const namespaces = await listNamespaces().promise
+                    const authorizedNamespaces = await getAuthorizedNamespaces(
+                        [rbacCreate(NamespaceDefinition)],
+                        namespaces
+                    )
+                    resolve(authorizedNamespaces)
+                } catch (err) {
+                    reject(err)
+                }
+            })
         },
         loadingDesc: 'Loading namespaces...',
         setAvailable: setAvailableNSSpecs.bind(null),
@@ -165,17 +178,16 @@ export const controlData = async () => [
                             insertControlData: await objectstoreChannelData(),
                         },
                     },
-                    // for edit
-                    // {
-                    //     id: 'other',
-                    //     logo: `${config.contextPath}/graphics/resource-deployable-icon.svg`,
-                    //     title: 'channel.type.other',
-                    //     tooltip: 'tooltip.channel.type.other',
-                    //     hidden: true, // only show this if editing existing app
-                    //     change: {
-                    //         insertControlData: await otherChannelData(),
-                    //     },
-                    // },
+                    {
+                        id: 'other',
+                        logo: <UnknownIcon />,
+                        title: 'channel.type.other',
+                        tooltip: 'tooltip.channel.type.other',
+                        hidden: true, // only show this if editing existing app
+                        change: {
+                            insertControlData: await otherChannelData(),
+                        },
+                    },
                 ],
                 active: '',
                 validation: {},

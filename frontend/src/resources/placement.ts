@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
+import { IResource, IResourceDefinition } from './resource'
 import { Selector } from './selector'
 
-import { IResource, IResourceDefinition } from './resource'
 export const PlacementApiVersion = 'cluster.open-cluster-management.io/v1alpha1'
 export type PlacementApiVersionType = 'cluster.open-cluster-management.io/v1alpha1'
 
@@ -19,22 +19,32 @@ export interface Placement extends IResource {
     kind: PlacementKindType
     metadata: Metadata
     spec: {
-        predicates?: Array<{
-            requiredClusterSelector: {
-                labelSelector?: Selector
-            }
-        }>
+        numberOfClusters?: number
+        clusterSets?: Array<string>
+        predicates?: PlacementPredicates[]
 
         clusterSelector?: Selector | null
     }
-    status?: {
-        conditions: Array<{
-            lastTransitionTime: Date
-            message: string
-            reason: string
-            status: string
-            type: string
-        }>
-        numberOfSelectedClusters?: number
-    }
+    status?: PlacementStatus
+}
+
+export interface PlacementPredicates {
+    requiredClusterSelector: PlacementRequiredClusterSelector
+    clusterName?: string
+}
+
+export interface PlacementRequiredClusterSelector {
+    labelSelector?: Selector
+    claimSelector?: Selector
+}
+
+export interface PlacementStatus {
+    conditions: Array<{
+        lastTransitionTime: Date
+        message: string
+        reason: string
+        status: string
+        type: string
+    }>
+    numberOfSelectedClusters?: number
 }

@@ -51,7 +51,7 @@ import { DOC_LINKS } from '../../lib/doc-util'
 
 const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
-const subAnnotationStr = 'apps.open-cluster-management.io/subscriptions'
+export const subAnnotationStr = 'apps.open-cluster-management.io/subscriptions'
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
 const localSubSuffixStr = '-local'
@@ -821,7 +821,13 @@ export default function ApplicationsOverview() {
             actions.push({
                 id: 'editApplication',
                 title: t('Edit application'),
-                click: () => {},
+                click: () => {
+                    history.push(
+                        NavigationPath.editApplicationSubscription
+                            .replace(':namespace', item.metadata?.namespace as string)
+                            .replace(':name', item.metadata?.name as string)
+                    )
+                },
             })
         }
 

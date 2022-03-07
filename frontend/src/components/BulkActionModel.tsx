@@ -18,6 +18,8 @@ import {
     ModalVariant,
     Progress,
     ProgressMeasureLocation,
+    Stack,
+    StackItem,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
@@ -46,6 +48,7 @@ export interface IBulkActionModelProps<T = undefined> {
     showToolbar?: boolean
     hideTableAfterSubmit?: boolean
     icon?: 'success' | 'danger' | 'warning' | 'info' | 'default'
+    hasExternalResources?: boolean
 }
 
 export interface ItemError<T> {
@@ -165,6 +168,20 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                         )}
                         <div style={{ minHeight: '24px' }} />
                     </Fragment>
+                )}
+                {props.hasExternalResources && (
+                    <Stack>
+                        <StackItem>
+                            <AcmAlert
+                                variant="info"
+                                title={t('Some selected resources are managed externally')}
+                                message={t(
+                                    'Any changes made here may be overridden by the content of an upstream repository.'
+                                )}
+                                isInline
+                            />
+                        </StackItem>
+                    </Stack>
                 )}
                 <ActionGroup>
                     {errors

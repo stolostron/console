@@ -183,7 +183,7 @@ const getChanges = (
                             // convert A's and E's into 'N's
                             switch (kind) {
                                 case 'E': {
-                                    if (obj.$l > 1 && rhs) {
+                                    if (obj.$l > 1 && !lhs && rhs) {
                                         // convert edit to new if multiple lines were added
                                         kind = 'N'
                                         obj = { $r: obj.$r + 1, $l: obj.$l - 1 }
@@ -260,13 +260,13 @@ export const formatChanges = (
     editor: { revealLineInCenter: (arg0: any) => void; setSelection: (arg0: any) => void },
     monaco: { Selection: new (arg0: any, arg1: number, arg2: any, arg3: number) => any },
     changes: any[],
-    changeWithSecrets: { yaml?: string; mappings: any; parsed: any; resources?: any[]; hiddenSecretsValues?: any[] }
+    changeWithoutSecrets: { mappings: any; parsed: any; resources?: any[] }
 ) => {
     changes = changes
-        .filter((change: ChangeType) => get(changeWithSecrets.parsed, change.$p) !== undefined)
+        .filter((change: ChangeType) => get(changeWithoutSecrets.parsed, change.$p) !== undefined)
         .map((change: ChangeType) => {
-            const obj = get(changeWithSecrets.parsed, change.$p)
-            const objVs = get(changeWithSecrets.mappings, change.$a)
+            const obj = get(changeWithoutSecrets.parsed, change.$p)
+            const objVs = get(changeWithoutSecrets.mappings, change.$a)
             const formatted: FormattedChangeType = {
                 type: change.$t,
                 line: objVs?.$r ?? 1,
@@ -280,8 +280,8 @@ export const formatChanges = (
                         .split('\n')
                     break
                 case 'E':
-                    formatted.previous = change.$f
                     formatted.latest = objVs?.$v ?? ''
+                    formatted.previous = objVs.$s ? formatted.latest : change.$f
                     break
             }
             return formatted

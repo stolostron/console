@@ -159,3 +159,9 @@ i18n
             },
         },
     })
+
+const moment = jest.requireActual('moment-timezone')
+jest.doMock('moment', () => {
+    moment.tz.setDefault('UTC')
+    return moment
+})

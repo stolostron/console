@@ -14,13 +14,20 @@ export interface SyncDiffType {
 
 export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: string }): JSX.Element {
     const { editorChanges, errorMessage } = props
+
+    const ellipse = (str: string) => {
+        if (str.length > 32) {
+            return `${str.slice(0, 16)}...${str.slice(-16)}}`
+        }
+        return str
+    }
     const highlight = (line: string) => {
         const parts = line.split(':')
         return (
             <div style={{ color: '#04c' }}>
                 {parts[0]}
                 <span style={{ color: '#999' }}>:</span>
-                {parts.length > 1 && <span style={{ color: '#0d0d0d' }}>{parts[1]}</span>}
+                {parts.length > 1 && <span style={{ color: '#0d0d0d' }}>{ellipse(parts[1])}</span>}
             </div>
         )
     }
@@ -80,9 +87,9 @@ export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: str
                         if (part.added) {
                             return null
                         } else if (part.removed) {
-                            return <span style={{ backgroundColor: '#ff818266' }}>{part.value}</span>
+                            return <span style={{ backgroundColor: '#ff818266' }}>{ellipse(part.value)}</span>
                         }
-                        return part.value
+                        return ellipse(part.value)
                     })}
                 </Td>
                 <Td
@@ -101,9 +108,9 @@ export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: str
                         if (part.removed) {
                             return null
                         } else if (part.added) {
-                            return <span style={{ backgroundColor: '#abf2bc' }}>{part.value}</span>
+                            return <span style={{ backgroundColor: '#abf2bc' }}>{ellipse(part.value)}</span>
                         }
-                        return part.value
+                        return ellipse(part.value)
                     })}
                 </Td>
             </Tr>

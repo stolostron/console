@@ -8,6 +8,7 @@ import {
     getResourceLabel,
     getAge,
     getSearchLink,
+    getShortDateTime,
     getEditLink,
 } from './resource-helper'
 import i18next from 'i18next'
@@ -210,5 +211,24 @@ describe('getEditLink', () => {
         ).toEqual(
             '/multicloud/home/search/resources?apiversion=v1&cluster=magchen-test&kind=Application&name=test-1&namespace=test-1-ns'
         )
+    })
+})
+
+describe('getShortDateTime', () => {
+    const sampleDate = '2020-08-26T13:21:04Z'
+    const sameDay = sampleDate
+    const sameYear = '2020-06-21T09:21:04Z'
+    const futureYear = '2021-12-13T23:21:04Z'
+
+    it('omits date and year for timestamps today', () => {
+        expect(getShortDateTime(sampleDate, moment(sameDay))).toEqual('1:21 pm')
+    })
+
+    it('omits year for timestamps from this year', () => {
+        expect(getShortDateTime(sampleDate, moment(sameYear))).toEqual('Aug 26, 1:21 pm')
+    })
+
+    it('includes all elements for timestamps from a different year', () => {
+        expect(getShortDateTime(sampleDate, moment(futureYear))).toEqual('Aug 26 2020, 1:21 pm')
     })
 })

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, isEmpty, includes, cloneDeep } from 'lodash'
+import { cloneDeep, get, includes, isEmpty } from 'lodash'
 
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
 const NAMESPACE = 'metadata.namespace'
@@ -28,22 +28,23 @@ export const getSubscriptionApplication = (model, app, selectedChannel, recoilSt
 
         // pick subscription based on channel requested by ui or 1st by default
         model.activeChannel = selectedChannel ? selectedChannel : getChannelName(selectedSubscriptions[0])
-
         // get all requested subscriptions
         selectedSubscriptions = selectedChannel === ALL_SUBSCRIPTIONS ? subscriptions : selectedSubscriptions
 
         // get reports, hooks and rules
-        const { rulesMap, preHooksMap, postHooksMap } = buildSubscriptionMaps(
+        const { channelsMap, rulesMap, preHooksMap, postHooksMap } = buildSubscriptionMaps(
             selectedSubscriptions,
             model.subscriptions
         )
         selectedSubscriptions.forEach((subscription) => {
-            const report = recoilStates.subscriptionReports.find((report) => {
-                return (
-                    get(report, 'metadata.namespace') === get(subscription, 'metadata.namespace') &&
-                    get(report, 'metadata.name') === get(subscription, 'metadata.name')
-                )
-            })
+            const report =
+                recoilStates.subscriptionReports &&
+                recoilStates.subscriptionReports.find((report) => {
+                    return (
+                        get(report, 'metadata.namespace') === get(subscription, 'metadata.namespace') &&
+                        get(report, 'metadata.name') === get(subscription, 'metadata.name')
+                    )
+                })
             if (report) {
                 subscription.report = report
                 model.reports.push(subscription.report)
@@ -55,9 +56,8 @@ export const getSubscriptionApplication = (model, app, selectedChannel, recoilSt
 
         // get all channels
         getAllAppChannels(model.allChannels, subscriptions, recoilStates.channels)
-        // if (includeChannels) {
-        //     this.getAppChannels(channelsMap)
-        // }
+
+        getAppChannels(channelsMap, model.allChannels)
     }
     return model
 }
@@ -419,26 +419,19 @@ const longestCommonSubstring = (str1, str2) => {
 //   };
 // }
 
-// async getAppChannels(channelsMap) {
-//   const requests = Object.entries(channelsMap).map(async ([namespace, values]) => {
-//     // get all rules in this namespace
-//     const response = await this.kubeConnector.getResources(
-//       (ns) => `/apis/apps.open-cluster-management.io/v1/namespaces/${ns}/channels`,
-//       { kind: 'Channel', namespaces: [namespace] },
-//     ) || [];
-
-//     // stuff responses into subscriptions that requested them
-//     response.forEach((channel) => {
-//       const name = _.get(channel, 'metadata.name');
-//       values.forEach(({ chnName, subscription }) => {
-//         if (name === chnName) {
-//           subscription.channels.push(channel);
-//         }
-//       });
-//     });
-//   });
-//   return Promise.all(requests);
-// }
+function getAppChannels(channelsMap, allChannels) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(channelsMap).map(([namespace, values]) => {
+        allChannels.forEach((channel) => {
+            const name = get(channel, 'metadata.name')
+            values.forEach(({ chnName, subscription }) => {
+                if (name === chnName) {
+                    subscription.channels.push(channel)
+                }
+            })
+        })
+    })
+}
 
 // async getPlacementRules(resources) {
 //   const requests = resources.map(async (resource) => {

@@ -14,7 +14,7 @@ import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory, useLocation, useParams } from 'react-router'
-import { useRecoilState } from 'recoil'
+import { useRecoilCallback } from 'recoil'
 import { namespacesState } from '../../atoms'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
@@ -41,6 +41,7 @@ import {
     validateWebURL,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
+import schema from './schema.json'
 import {
     createResource,
     getSecret,
@@ -101,15 +102,27 @@ export default function CredentialsFormPage() {
 
     const [error, setError] = useState<Error>()
 
-    const [namespaces] = useRecoilState(namespacesState)
+    // any recoil resources that constantly update because of a time stamp
+    const getNamespaces = useRecoilCallback(
+        ({ snapshot }) =>
+            () =>
+                snapshot.getPromise(namespacesState),
+        []
+    )
+
     const [projects, setProjects] = useState<string[]>()
     useEffect(() => {
-        if (!isEditing && !isViewing)
-            getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
-                .then((namespaces: string[]) => setProjects(namespaces.sort()))
+        if (!isEditing && !isViewing) {
+            getNamespaces()
+                .then((namespaces) => {
+                    getAuthorizedNamespaces([rbacCreate(SecretDefinition)], namespaces)
+                        .then((namespaces: string[]) => setProjects(namespaces.sort()))
+                        .catch(setError)
+                })
                 .catch(setError)
+        }
         return undefined
-    }, [namespaces, isEditing, isViewing])
+    }, [isEditing, isViewing])
 
     const [providerConnection, setProviderConnection] = useState<ProviderConnection | undefined>()
     useEffect(() => {
@@ -1320,8 +1333,12 @@ export function CredentialsForm(props: {
             },
         ],
         submit: () => {
+            let credentialData = formData?.customData ?? stateToData()
+            if (Array.isArray(credentialData)) {
+                credentialData = credentialData[0]
+            }
             if (isEditing) {
-                const secret = stateToData() as Secret
+                const secret = credentialData as Secret
                 const patch: { op: 'replace'; path: string; value: unknown }[] = []
                 if (secret.stringData) {
                     patch.push({ op: 'replace', path: `/stringData`, value: secret.stringData })
@@ -1339,7 +1356,7 @@ export function CredentialsForm(props: {
                     history.push(NavigationPath.credentials)
                 })
             } else {
-                return createResource(stateToData() as IResource).promise.then(() => {
+                return createResource(credentialData as IResource).promise.then(() => {
                     toastContext.addAlert({
                         title: t('Credentials created'),
                         message: t('credentialsForm.created.message', { name }),
@@ -1363,7 +1380,30 @@ export function CredentialsForm(props: {
     return (
         <AcmDataFormPage
             formData={formData}
+            editorTitle={t('Credentials YAML')}
+            schema={schema}
             mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
+            secrets={[
+                'Secret[0].stringData.pullSecret',
+                'Secret[0].stringData.aws_secret_access_key',
+                'Secret[0].stringData.ssh-privatekey',
+                'Secret[0].stringData.ssh-publickey',
+                'Secret[0].stringData.password',
+                'Secret[0].stringData.token',
+                'Secret[0].stringData.ocmAPIToken',
+                'Secret[0].stringData.additionalTrustBundle',
+                'Secret[0].stringData.ovirt_password',
+                ['Secret', '0', 'stringData', 'osServicePrincipal.json'],
+                ['Secret', '0', 'stringData', 'osServiceAccount.json'],
+                ['Secret', '0', 'stringData', 'clouds.yaml'],
+            ]}
+            immutables={[
+                'Secret[0].apiVersion',
+                'Secret[0].kind',
+                'Secret[0].type',
+                'Secret[0].metadata.*',
+                'Secret[0].stringData',
+            ]}
             edit={() => {
                 if (providerConnection) {
                     history.push(

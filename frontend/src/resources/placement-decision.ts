@@ -12,13 +12,15 @@ export interface PlacementDecision extends IResource {
     apiVersion: PlacementDecisionApiVersionType
     kind: PlacementDecisionKindType
     metadata: Metadata
-    status: {
-        /**
-         * Decisions is a slice of decisions according to a placement
-         * The number of decisions should not be larger than 100
-         */
-        decisions: ClusterDecision[]
-    }
+    status: PlacementDecisionStatus
+}
+
+export interface PlacementDecisionStatus {
+    /**
+     * Decisions is a slice of decisions according to a placement
+     * The number of decisions should not be larger than 100
+     */
+    decisions: ClusterDecision[]
 }
 
 /**

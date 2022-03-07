@@ -78,6 +78,7 @@ export enum NavigationPath {
     applicationDetails = '/multicloud/applications/details/:namespace/:name',
     applicationOverview = '/multicloud/applications/details/:namespace/:name/overview',
     applicationTopology = '/multicloud/applications/details/:namespace/:name/topology',
+    editApplicationSubscription = '/multicloud/applications/edit/:namespace/:name',
 
     // Governance
     governance = '/multicloud/governance',
