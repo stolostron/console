@@ -443,9 +443,15 @@ export default function ApplicationsOverview() {
                 cell: (application) => (
                     <span style={{ whiteSpace: 'nowrap' }}>
                         <Link
-                            to={NavigationPath.applicationDetails
-                                .replace(':namespace', application.metadata?.namespace as string)
-                                .replace(':name', application.metadata?.name as string)}
+                            to={
+                                NavigationPath.applicationDetails
+                                    .replace(':namespace', application.metadata?.namespace as string)
+                                    .replace(':name', application.metadata?.name as string) +
+                                '?apiVersion=' +
+                                application.kind.toLowerCase() +
+                                '.' +
+                                application.apiVersion.split('/')[0]
+                            }
                         >
                             {application.metadata?.name}
                         </Link>

@@ -17,7 +17,7 @@ const t = i18next.t
 jest.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string) => i18next.t(key),
-    })
+    }),
 }))
 
 describe('normalizeRepoType', () => {

@@ -150,12 +150,12 @@ i18n
         nsSeparator: '~',
         supportedLngs: ['en'], // only languages from this array will attempt to be loaded
         simplifyPluralSuffix: true,
-        lng: "en",
-        fallbackLng: "en",
-        ns: "translation",
+        lng: 'en',
+        fallbackLng: 'en',
+        ns: 'translation',
         resources: {
             en: {
-              translation: require('../public/locales/en/translation.json')
+                translation: require('../public/locales/en/translation.json'),
             },
-          },
+        },
     })

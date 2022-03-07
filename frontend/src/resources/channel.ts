@@ -37,7 +37,7 @@ export function listChannels() {
 }
 
 async function getChannelSecret(secretArgs?: { secretRef?: string; namespace?: string }) {
-    let channelSecret = { user: '', accessToken: '' }
+    const channelSecret = { user: '', accessToken: '' }
     if (secretArgs && secretArgs.secretRef && secretArgs.namespace) {
         const { secretRef, namespace } = secretArgs
         await getSecret({ name: secretRef, namespace: namespace })

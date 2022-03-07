@@ -82,7 +82,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                     <p
                         dangerouslySetInnerHTML={{
                             __html: `
-                    ${props.t('Select {{appType} to delete {{name}} and all related resources.', {
+                    ${props.t('Select {{appType}} to delete {{name}} and all related resources.', {
                         appType: getItalicSpan(appTypeMsg),
                         name: props.resource.metadata?.name!,
                     })}
