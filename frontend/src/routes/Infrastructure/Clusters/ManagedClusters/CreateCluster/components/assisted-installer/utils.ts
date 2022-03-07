@@ -5,13 +5,36 @@ import { CIM } from 'openshift-assisted-ui-lib'
 
 const { getAnnotationsFromAgentSelector } = CIM
 
+const setProvisionRequirements = (
+    agentClusterInstall: CIM.AgentClusterInstallK8sResource,
+    workerCount: number | undefined,
+    masterCount: number | undefined
+) => {
+    const provisionRequirements = { ...(agentClusterInstall.spec?.provisionRequirements || {}) }
+    if (workerCount !== undefined) {
+        provisionRequirements.workerAgents = workerCount
+    }
+    if (masterCount !== undefined) {
+        provisionRequirements.controlPlaneAgents = masterCount
+    }
+
+    return patchResource(agentClusterInstall, [
+        {
+            op: agentClusterInstall.spec?.provisionRequirements ? 'add' : 'replace',
+            path: '/spec/provisionRequirements',
+            value: provisionRequirements,
+        },
+    ]).promise
+}
+
 type OnHostsNext = {
     values: any
     clusterDeployment: CIM.ClusterDeploymentK8sResource
     agents: CIM.AgentK8sResource[]
+    agentClusterInstall: CIM.AgentClusterInstallK8sResource
 }
 
-export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHostsNext) => {
+export const onHostsNext = async ({ values, clusterDeployment, agents, agentClusterInstall }: OnHostsNext) => {
     const hostIds = values.autoSelectHosts ? values.autoSelectedHostIds : values.selectedHostIds
     const name = clusterDeployment.metadata.name
     const namespace = clusterDeployment.metadata.namespace
@@ -61,6 +84,14 @@ export const onHostsNext = async ({ values, clusterDeployment, agents }: OnHosts
                 value: getAnnotationsFromAgentSelector(clusterDeployment, values),
             },
         ]).promise
+    }
+
+    const masterCount = agentClusterInstall.spec?.provisionRequirements?.controlPlaneAgents
+    if (masterCount) {
+        let workerCount = hostIds.length - masterCount
+        workerCount = workerCount > 0 ? workerCount : 0
+
+        await setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
     }
 }
 
