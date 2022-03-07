@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmAlert, AcmButton, AcmDescriptionList, AcmModal, AcmPageContent, ListItems } from '@stolostron/ui-components'
+import { AcmButton, AcmDescriptionList, AcmPageContent, ListItems } from '@stolostron/ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Button, ButtonVariant, PageSection, Skeleton, Spinner, Tooltip } from '@patternfly/react-core'
 import {
@@ -35,7 +35,7 @@ import {
 import ResourceLabels from '../../components/ResourceLabels'
 import '../../css/ApplicationOverview.css'
 import { TFunction } from 'i18next'
-import { getApplicationRepos, getAnnotation } from '../../Overview'
+import { getApplicationRepos } from '../../Overview'
 import { ApplicationDataType } from '../ApplicationDetails'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
@@ -43,123 +43,11 @@ import { ISyncResourceModalProps, SyncResourceModal } from '../../components/Syn
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
 
-function createSyncButton(resources: IResource[], setModalProps: any, t: TFunction) {
-    const mutateStatus = ''
-    const syncInProgress = mutateStatus === REQUEST_STATUS.IN_PROGRESS
-    return (
-        <Fragment>
-            <AcmButton
-                variant={ButtonVariant.link}
-                className={`${syncInProgress ? 'syncInProgress' : ''}`}
-                id="sync-app"
-                component="a"
-                rel="noreferrer"
-                icon={<SyncAltIcon />}
-                iconPosition="left"
-                onClick={() => {
-                    setModalProps({
-                        open: true,
-                        errors: undefined,
-                        close: () => {
-                            setModalProps({ open: false })
-                        },
-                        resources,
-                        t,
-                    })
-                }}
-            >
-                {'Sync'}
-                {syncInProgress && <Spinner size="sm" />}
-            </AcmButton>
-        </Fragment>
-    )
-}
-
-function createSubsCards(
-    subsList: (Subscription | undefined)[],
-    t: TFunction,
-    appResource: Application,
-    channels: Channel[]
-) {
-    return (
-        subsList.length &&
-        subsList.map((sub) => {
-            const appRepos = getApplicationRepos(appResource, [sub] as Subscription[], channels)
-            if (sub) {
-                return (
-                    <Fragment key={sub.metadata.name}>
-                        <div
-                            className="sub-card-container"
-                            style={{
-                                width: '100%',
-                                height: '6.75rem',
-                                display: 'grid',
-                                marginTop: '16px',
-                                fontSize: '14px',
-                                backgroundColor: 'white',
-                                boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.1)',
-                                gridTemplateColumns: '33% 34% 33%',
-                            }}
-                        >
-                            <div className="sub-card-column add-right-border">
-                                <GripHorizontalIcon />
-                                <div className="sub-card-content">
-                                    <div className="sub-card-title">Subscription</div>
-                                    <span>{sub.metadata.name}</span>
-                                </div>
-                            </div>
-                            <div className="sub-card-column add-right-border">
-                                <FolderIcon />
-                                <div className="sub-card-content">
-                                    <div className="sub-card-title">Repository resource</div>
-                                    <ResourceLabels
-                                        appRepos={appRepos as any[]}
-                                        translation={t}
-                                        isArgoApp={false}
-                                        showSubscriptionAttributes={true}
-                                    />
-                                </div>
-                            </div>
-                            <div className="sub-card-column">
-                                <OutlinedClockIcon />
-                                <div className="sub-card-content">
-                                    <div className="sub-card-title">Time window</div>
-                                    {!sub.spec.timewindow?.windowtype ? (
-                                        <AcmButton
-                                            id="set-time-window-link"
-                                            target="_blank"
-                                            component="a"
-                                            href={NavigationPath.editApplicationSubscription
-                                                .replace(':namespace', appResource.metadata?.namespace as string)
-                                                .replace(':name', appResource.metadata?.name as string)}
-                                            variant={ButtonVariant.link}
-                                            rel="noreferrer"
-                                        >
-                                            Set time window
-                                        </AcmButton>
-                                    ) : (
-                                        <TimeWindowLabels
-                                            subName={sub.metadata.name as string}
-                                            type={sub.spec.timewindow?.windowtype}
-                                            days={sub.spec.timewindow?.daysofweek}
-                                            timezone={sub.spec.timewindow?.location}
-                                            ranges={sub.spec.timewindow?.hours}
-                                            missingData={sub.spec.timewindow?.missingData}
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </Fragment>
-                )
-            }
-            return ''
-        })
-    )
-}
-
 export function ApplicationOverviewPageContent(props: { applicationData: ApplicationDataType | undefined }) {
     const { applicationData } = props
+    if (_.get(applicationData, 'statuses')) {
+        // TODO: return status icons
+    }
     const { t } = useTranslation()
     const hasSyncPermission = true //TODO
     const localClusterStr = 'local-cluster'
@@ -336,6 +224,17 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     key: t('Clusters'),
                     value: getClusterField(searchLink, clusterCountString, clusterCount),
                 },
+                {
+                    key: t('Cluster resource status'),
+                    value: createStatusIcons(applicationData),
+                    keyAction: (
+                        <Tooltip content={'Status represents the subscription selection within Resource topology.'}>
+                            <OutlinedQuestionCircleIcon
+                                style={{ fill: '#0066cc', marginLeft: '4px', cursor: 'pointer' }}
+                            />
+                        </Tooltip>
+                    ),
+                },
             ]
         }
     }
@@ -374,5 +273,137 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                 )}
             </PageSection>
         </AcmPageContent>
+    )
+}
+
+function createSyncButton(resources: IResource[], setModalProps: any, t: TFunction) {
+    const mutateStatus = ''
+    const syncInProgress = mutateStatus === REQUEST_STATUS.IN_PROGRESS
+    return (
+        <Fragment>
+            <AcmButton
+                variant={ButtonVariant.link}
+                className={`${syncInProgress ? 'syncInProgress' : ''}`}
+                id="sync-app"
+                component="a"
+                rel="noreferrer"
+                icon={<SyncAltIcon />}
+                iconPosition="left"
+                onClick={() => {
+                    setModalProps({
+                        open: true,
+                        errors: undefined,
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                        resources,
+                        t,
+                    })
+                }}
+            >
+                {t('Sync')}
+                {syncInProgress && <Spinner size="sm" />}
+            </AcmButton>
+        </Fragment>
+    )
+}
+
+function createStatusIcons(applicationData: ApplicationDataType) {
+    const { statuses } = applicationData
+    if (statuses) {
+        // render the status of the application
+        return (
+            <Fragment>
+                <div className="status-icon-container green-status" id="green-resources"></div>
+                <div className="status-icon-container orange-status" id="orange-resources"></div>
+                <div className="status-icon-container yellow-status" id="yellow-resources"></div>
+                <div className="status-icon-container red-status" id="red-resources"></div>
+            </Fragment>
+        )
+    }
+
+    return <Spinner size="sm" />
+}
+
+function createSubsCards(
+    subsList: (Subscription | undefined)[],
+    t: TFunction,
+    appResource: Application,
+    channels: Channel[]
+) {
+    return (
+        subsList.length &&
+        subsList.map((sub) => {
+            const appRepos = getApplicationRepos(appResource, [sub] as Subscription[], channels)
+            if (sub) {
+                return (
+                    <Fragment key={sub.metadata.name}>
+                        <div
+                            className="sub-card-container"
+                            style={{
+                                width: '100%',
+                                height: '6.75rem',
+                                display: 'grid',
+                                marginTop: '16px',
+                                fontSize: '14px',
+                                backgroundColor: 'white',
+                                boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.1)',
+                                gridTemplateColumns: '33% 34% 33%',
+                            }}
+                        >
+                            <div className="sub-card-column add-right-border">
+                                <GripHorizontalIcon />
+                                <div className="sub-card-content">
+                                    <div className="sub-card-title">Subscription</div>
+                                    <span>{sub.metadata.name}</span>
+                                </div>
+                            </div>
+                            <div className="sub-card-column add-right-border">
+                                <FolderIcon />
+                                <div className="sub-card-content">
+                                    <div className="sub-card-title">Repository resource</div>
+                                    <ResourceLabels
+                                        appRepos={appRepos as any[]}
+                                        translation={t}
+                                        isArgoApp={false}
+                                        showSubscriptionAttributes={true}
+                                    />
+                                </div>
+                            </div>
+                            <div className="sub-card-column">
+                                <OutlinedClockIcon />
+                                <div className="sub-card-content">
+                                    <div className="sub-card-title">Time window</div>
+                                    {!sub.spec.timewindow?.windowtype ? (
+                                        <AcmButton
+                                            id="set-time-window-link"
+                                            target="_blank"
+                                            component="a"
+                                            href={NavigationPath.editApplicationSubscription
+                                                .replace(':namespace', appResource.metadata?.namespace as string)
+                                                .replace(':name', appResource.metadata?.name as string)}
+                                            variant={ButtonVariant.link}
+                                            rel="noreferrer"
+                                        >
+                                            Set time window
+                                        </AcmButton>
+                                    ) : (
+                                        <TimeWindowLabels
+                                            subName={sub.metadata.name as string}
+                                            type={sub.spec.timewindow?.windowtype}
+                                            days={sub.spec.timewindow?.daysofweek}
+                                            timezone={sub.spec.timewindow?.location}
+                                            ranges={sub.spec.timewindow?.hours}
+                                            missingData={sub.spec.timewindow?.missingData}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </Fragment>
+                )
+            }
+            return ''
+        })
     )
 }
