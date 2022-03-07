@@ -144,24 +144,20 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         !!agentClusterInstall,
     ])
 
-    const onFinish = () => {
-        const doItAsync = async () => {
-            await patchResource(agentClusterInstall, [
-                // effectively, the property gets deleted instead of holding "false" value by that change
-                {
-                    op:
-                        agentClusterInstall.spec?.holdInstallation ||
-                        agentClusterInstall.spec?.holdInstallation === false
-                            ? 'replace'
-                            : 'add',
-                    path: '/spec/holdInstallation',
-                    value: false,
-                },
-            ]).promise
+    const onFinish = async () => {
+        await patchResource(agentClusterInstall, [
+            // effectively, the property gets deleted instead of holding "false" value by that change
+            {
+                op:
+                    agentClusterInstall.spec?.holdInstallation || agentClusterInstall.spec?.holdInstallation === false
+                        ? 'replace'
+                        : 'add',
+                path: '/spec/holdInstallation',
+                value: false,
+            },
+        ]).promise
 
-            history.push(NavigationPath.clusterDetails.replace(':id', agentClusterInstall.metadata.name))
-        }
-        doItAsync()
+        history.push(NavigationPath.clusterDetails.replace(':id', agentClusterInstall.metadata.name))
     }
 
     return patchingHoldInstallation ? (
