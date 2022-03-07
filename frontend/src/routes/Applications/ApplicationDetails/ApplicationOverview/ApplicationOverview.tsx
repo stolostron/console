@@ -1,48 +1,42 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmButton, AcmDescriptionList, AcmPageContent, ListItems } from '@stolostron/ui-components'
+import { AcmAlert, AcmButton, AcmDescriptionList, AcmModal, AcmPageContent, ListItems } from '@stolostron/ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { Button, ButtonVariant, Card, CardBody, PageSection, Skeleton, Spinner, Tooltip } from '@patternfly/react-core'
+import { Button, ButtonVariant PageSection, Skeleton, Spinner, Tooltip } from '@patternfly/react-core'
 import {
     FolderIcon,
     GripHorizontalIcon,
     OutlinedClockIcon,
     OutlinedQuestionCircleIcon,
-    OutlinedWindowRestoreIcon,
     SyncAltIcon,
 } from '@patternfly/react-icons'
 import { useRecoilState } from 'recoil'
 import { Fragment, useState } from 'react'
 import {
-    applicationSetsState,
-    // applicationSetsState,
-    applicationsState,
     argoApplicationsState,
-    // argoApplicationsState,
     channelsState,
     managedClustersState,
     placementRulesState,
     subscriptionsState,
 } from '../../../../atoms'
 import { createClustersText, getShortDateTime } from '../../helpers/resource-helper'
-import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
 import { getSearchLink } from '../../helpers/resource-helper'
 import _ from 'lodash'
 import { REQUEST_STATUS } from './actions'
-import { Application, Channel, Subscription } from '../../../../resources'
+import { Application, ApplicationApiVersion, ApplicationKind, Channel, Subscription } from '../../../../resources'
 import ResourceLabels from '../../components/ResourceLabels'
 import '../../css/ApplicationOverview.css'
 import { TFunction } from 'i18next'
 import { getApplicationRepos, getAnnotation } from '../../Overview'
 import { ApplicationDataType } from '../ApplicationDetails'
-
-const subscriptionAnnotationStr = 'apps.open-cluster-management.io/subscriptions'
+import { NavigationPath } from '../../../../NavigationPath'
+import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
 
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
 
-function createSyncButton(namespace: string, name: string) {
+function createSyncButton(namespace: string, name: string, setModalProps: any, t: TFunction) {
     // const { mutateStatus } = this.props //TODO: Need to implement openSyncModal
     const mutateStatus = ''
     const syncInProgress = mutateStatus === REQUEST_STATUS.IN_PROGRESS
@@ -56,7 +50,16 @@ function createSyncButton(namespace: string, name: string) {
                 rel="noreferrer"
                 icon={<SyncAltIcon />}
                 iconPosition="left"
-                // onClick={() => openSyncModal(namespace, name)} //TODO
+                onClick={() => {
+                    setModalProps({
+                        open: true,
+                        errors: undefined,
+                        close: () => {
+                            setModalProps({ open: false })
+                        },
+                        t,
+                    })
+                }}
             >
                 {'Sync'}
                 {syncInProgress && <Spinner size="sm" />}
@@ -119,7 +122,9 @@ function createSubsCards(
                                             id="set-time-window-link"
                                             target="_blank"
                                             component="a"
-                                            href={''} //TODO: update once edit link is in
+                                            href={NavigationPath.editApplicationSubscription
+                                                .replace(':namespace', appResource.metadata?.namespace as string)
+                                                .replace(':name', appResource.metadata?.name as string)}
                                             variant={ButtonVariant.link}
                                             rel="noreferrer"
                                         >
@@ -148,7 +153,6 @@ function createSubsCards(
 
 export function ApplicationOverviewPageContent(props: { applicationData: ApplicationDataType | undefined }) {
     const { applicationData } = props
-    debugger
     const { t } = useTranslation()
     const hasSyncPermission = true //TODO
     const localClusterStr = 'local-cluster'
@@ -160,6 +164,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     const [managedClusters] = useRecoilState(managedClustersState)
     const localCluster = managedClusters.find((cls) => cls.metadata.name === localClusterStr)
     const [showSubCards, setShowSubCards] = useState(false)
+    const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
+        open: false,
+    })
+    let isArgoApp = false
     let disableBtn
     let subsList = []
 
@@ -167,8 +175,23 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         return checkData !== -1 ? showData : <Skeleton width={width} className="loading-skeleton-text" />
     }
 
+    function getClusterField(
+        searchLink: string,
+        clusterCountString: string,
+        clusterCount: { localPlacement: boolean; remoteCount: number }
+    ) {
+        if (clusterCount.remoteCount && clusterCountString !== 'None') {
+            return (
+                <a className="cluster-count-link" href={searchLink}>
+                    {t(clusterCountString)}
+                </a>
+            )
+        }
+        return t(clusterCountString)
+    }
+
     if (applicationData) {
-        const { isArgoApp } = applicationData.appData
+        isArgoApp = applicationData.appData.isArgoApp
         const { name, namespace } = applicationData.application.metadata
         ////////////////////////////////// argo items ////////////////////////////////////
         if (isArgoApp) {
@@ -220,8 +243,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             subsList = applicationData.application.allSubscriptions
             disableBtn = subsList && subsList.length > 0 ? false : true
             const clusterList = applicationData.application.allClusters
-            const applicationResource = applicationData.appData
-            // value not right TODO
+            const applicationResource = applicationData.application.app
             const clusterCountString = createClustersText({
                 resource: applicationResource,
                 clusterCount,
@@ -231,6 +253,24 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                 subscriptions,
                 localCluster,
             })
+            const searchParams: any =
+                applicationResource.kind === ApplicationKind && applicationResource.apiVersion === ApplicationApiVersion
+                    ? {
+                          properties: {
+                              apigroup: 'app.k8s.io',
+                              kind: 'application',
+                              name: applicationResource.metadata?.name,
+                              namespace: applicationResource.metadata?.namespace,
+                          },
+                          showRelated: 'cluster',
+                      }
+                    : {
+                          properties: {
+                              name: clusterList,
+                              kind: 'cluster',
+                          },
+                      }
+            const searchLink = getSearchLink(searchParams)
             let lastSynced = ''
             allSubscriptions.forEach((subs: Subscription) => {
                 if (!lastSynced) {
@@ -256,7 +296,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                             {renderData(
                                 t(getShortDateTime(lastSynced)),
                                 hasSyncPermission ? (
-                                    createSyncButton(namespace, name)
+                                    createSyncButton(namespace, name, setModalProps, t)
                                 ) : (
                                     <Tooltip
                                         content={t(
@@ -265,7 +305,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                                         isContentLeftAligned
                                         position="right"
                                     >
-                                        {createSyncButton(namespace, name)}
+                                        {createSyncButton(namespace, name, setModalProps, t)}
                                     </Tooltip>
                                 )
                             )}
@@ -283,13 +323,14 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             rightItems = [
                 {
                     key: t('Clusters'),
-                    value: clusterCountString,
+                    value: getClusterField(searchLink, clusterCountString, clusterCount),
                 },
             ]
         }
     }
     return (
         <AcmPageContent id="overview">
+            <SyncResourceModal {...modalProps} />
             <PageSection>
                 <div className="overview-cards-container">
                     <AcmDescriptionList
@@ -299,25 +340,27 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     ></AcmDescriptionList>
                 </div>
                 {/* Hide for argo */}
-                <div className="overview-cards-subs-section">
-                    {showSubCards && !disableBtn
-                        ? createSubsCards(subsList, t, applicationData?.appData, channels)
-                        : ''}
-                    <Button
-                        className="toggle-subs-btn"
-                        variant="secondary"
-                        isDisabled={disableBtn}
-                        data-test-subscription-details={!disableBtn}
-                        onClick={() => setShowSubCards(!showSubCards)}
-                    >
-                        {renderData(
-                            subsList,
-                            (showSubCards ? 'Hide subscription details' : 'Show subscription details') +
-                                ` (${subsList.length})`,
-                            '70%'
-                        )}
-                    </Button>
-                </div>
+                {!isArgoApp && (
+                    <div className="overview-cards-subs-section">
+                        {showSubCards && !disableBtn
+                            ? createSubsCards(subsList, t, applicationData?.application?.app, channels)
+                            : ''}
+                        <Button
+                            className="toggle-subs-btn"
+                            variant="secondary"
+                            isDisabled={disableBtn}
+                            data-test-subscription-details={!disableBtn}
+                            onClick={() => setShowSubCards(!showSubCards)}
+                        >
+                            {renderData(
+                                subsList,
+                                (showSubCards ? 'Hide subscription details' : 'Show subscription details') +
+                                    ` (${subsList.length})`,
+                                '70%'
+                            )}
+                        </Button>
+                    </div>
+                )}
             </PageSection>
         </AcmPageContent>
     )
