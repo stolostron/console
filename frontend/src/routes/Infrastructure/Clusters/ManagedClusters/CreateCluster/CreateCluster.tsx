@@ -40,7 +40,6 @@ import { createResource as createResourceTool } from '../../../../../resources'
 import { WarningContext, WarningContextType, Warning } from './Warning'
 import { CIM } from 'openshift-assisted-ui-lib'
 
-
 const { isAIFlowInfraEnv } = CIM
 
 interface CreationStatus {

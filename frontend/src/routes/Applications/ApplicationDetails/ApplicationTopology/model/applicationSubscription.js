@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, isEmpty, includes, cloneDeep } from 'lodash'
+import { cloneDeep, get, includes, isEmpty } from 'lodash'
 
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
 const NAMESPACE = 'metadata.namespace'
@@ -420,9 +420,10 @@ const longestCommonSubstring = (str1, str2) => {
 // }
 
 function getAppChannels(channelsMap, allChannels) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Object.entries(channelsMap).map(([namespace, values]) => {
         allChannels.forEach((channel) => {
-            const name = _.get(channel, 'metadata.name')
+            const name = get(channel, 'metadata.name')
             values.forEach(({ chnName, subscription }) => {
                 if (name === chnName) {
                     subscription.channels.push(channel)
