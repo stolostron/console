@@ -229,7 +229,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         </Route>
                         <Route exact path={NavigationPath.applicationDetails}>
                             <Redirect
-                                to={NavigationPath.applicationTopology
+                                to={NavigationPath.applicationOverview
                                     .replace(':namespace', match.params.namespace as string)
                                     .replace(':name', match.params.name as string)}
                             />
