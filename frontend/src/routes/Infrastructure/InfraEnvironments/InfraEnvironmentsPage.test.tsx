@@ -5,7 +5,7 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 
 import { infraEnvironmentsState } from '../../../atoms'
-import { clickByText, waitForNotText, waitForTestId, waitForText } from '../../../lib/test-util'
+import { waitForTestId, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import InfraEnvironmentsPage from './InfraEnvironmentsPage'
 
@@ -103,7 +103,5 @@ describe('Infrastructure Environments page', () => {
 
         // is the infraEnv listed?
         await waitForText(infraEnvName, true)
-
-        // screen.debug(undefined, -1)
     })
 })
