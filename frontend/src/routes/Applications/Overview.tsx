@@ -44,6 +44,7 @@ import {
     getAge,
     getSubscriptionsFromAnnotation,
     getSearchLink,
+    subAnnotationStr,
 } from './helpers/resource-helper'
 import { canUser } from '../../lib/rbac-util'
 import { Link } from 'react-router-dom'
