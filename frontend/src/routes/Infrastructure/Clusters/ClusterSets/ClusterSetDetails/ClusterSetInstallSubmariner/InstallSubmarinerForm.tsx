@@ -331,7 +331,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         })
 
         // if globalnet support create
-        if (globalnetEnabled && !isGlobalnetAlreadyConfigured) {
+        if (!isGlobalnetAlreadyConfigured) {
             const broker: Broker = {
                 apiVersion: BrokerApiVersion,
                 kind: BrokerKind,
@@ -341,7 +341,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
                 },
                 spec: {
-                    globalnetEnabled: true,
+                    globalnetEnabled,
                 },
             }
             resources.push(broker)
