@@ -16,7 +16,7 @@ import isMatch from 'lodash/isMatch'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { InfraEnvK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'
 import { useEffect, useState } from 'react'
-import { useTranslation } from '../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { acmRouteState, agentsState, infraEnvironmentsState } from '../../../atoms'
@@ -25,7 +25,6 @@ import { RbacDropdown } from '../../../components/Rbac'
 import { deleteResources } from '../../../lib/delete-resources'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { OnPremiseBanner } from '../Clusters/ManagedClusters/components/cim/OnPremiseBanner'
 
 const { AGENT_LOCATION_LABEL_KEY, getAgentStatus } = CIM
 
@@ -54,13 +53,6 @@ const InfraEnvironmentsPage: React.FC = () => {
     return (
         <AcmPage hasDrawer header={<AcmPageHeader title={t('infraenvs')} />}>
             <AcmPageContent id="infra-environments">
-                <OnPremiseBanner
-                    id="banner.infraenv"
-                    WrappingComponent={PageSection}
-                    titleKey="cim.infra.banner.header"
-                    textKey="cim.infra.banner.body"
-                />
-
                 <PageSection>
                     <InfraEnvsTable infraEnvs={infraEnvs} agents={agents} />
                 </PageSection>
@@ -278,6 +270,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                     <AcmEmptyState
                         key="ieEmptyState"
                         title={t('infraEnv.emptyStateHeader')}
+                        message={<Trans i18nKey={'infraEnv.emptyStateBody'} components={{ bold: <strong /> }} />}
                         action={
                             <AcmButton component={Link} variant="primary" to={NavigationPath.createInfraEnv}>
                                 {t('infraEnv.createCluster')}

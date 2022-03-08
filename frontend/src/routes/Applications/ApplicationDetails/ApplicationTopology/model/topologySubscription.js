@@ -308,7 +308,7 @@ const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
     return node
 }
 
-const createReplicaChild = (parentObject, template, links, nodes) => {
+export const createReplicaChild = (parentObject, template, links, nodes) => {
     const parentType = get(parentObject, 'type', '')
     if (parentType === 'deploymentconfig' || parentType === 'deployment') {
         const type = parentType === 'deploymentconfig' ? 'replicationcontroller' : 'replicaset'

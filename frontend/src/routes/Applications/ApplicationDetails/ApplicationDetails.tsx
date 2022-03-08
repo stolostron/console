@@ -100,6 +100,18 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         subscriptionReports: subscriptionReportsState,
         managedClusters: managedClustersState,
     }
+    
+    const urlParams = location.search ? location.search.substring(1).split('&') : []
+    let apiVersion: string
+    let cluster: string
+    urlParams.forEach((param) => {
+        if (param.startsWith('apiVersion')) {
+            apiVersion = param.split('=')[1]
+        }
+        if (param.startsWith('cluster')) {
+            cluster = param.split('=')[1]
+        }
+    })
 
     // refresh application the first time and then every n seconds
     useEffect(() => {
@@ -122,11 +134,19 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                     const managedClusters = map['managedClusters']
 
                     // get application object from recoil states
-                    const application = getApplication(match.params.namespace, match.params.name, activeChannel, map)
+                    const application = getApplication(
+                        match.params.namespace, 
+                        match.params.name, 
+                        activeChannel, 
+                        map,
+                        cluster,
+                        apiVersion
+                    )
                     const topology = getTopology(
                         application,
                         managedClusters,
-                        lastRefreshRef?.current?.relatedResources
+                        lastRefreshRef?.current?.relatedResources,
+                        { cluster }
                     )
                     const appData = getApplicationData(topology.nodes)
 
@@ -189,9 +209,11 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 }
                             >
                                 <Link
-                                    to={NavigationPath.applicationOverview
-                                        .replace(':namespace', match.params.namespace as string)
-                                        .replace(':name', match.params.name as string)}
+                                    to={
+                                        NavigationPath.applicationOverview
+                                            .replace(':namespace', match.params.namespace as string)
+                                            .replace(':name', match.params.name as string) + location.search
+                                    }
                                 >
                                     {t('Overview')}
                                 </Link>
@@ -205,9 +227,11 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 }
                             >
                                 <Link
-                                    to={NavigationPath.applicationTopology
-                                        .replace(':namespace', match.params.namespace as string)
-                                        .replace(':name', match.params.name as string)}
+                                    to={
+                                        NavigationPath.applicationTopology
+                                            .replace(':namespace', match.params.namespace as string)
+                                            .replace(':name', match.params.name as string) + location.search
+                                    }
                                 >
                                     {t('Topology')}
                                 </Link>
@@ -235,9 +259,11 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         </Route>
                         <Route exact path={NavigationPath.applicationDetails}>
                             <Redirect
-                                to={NavigationPath.applicationTopology
-                                    .replace(':namespace', match.params.namespace as string)
-                                    .replace(':name', match.params.name as string)}
+                                to={
+                                    NavigationPath.applicationOverview
+                                        .replace(':namespace', match.params.namespace as string)
+                                        .replace(':name', match.params.name as string) + location.search
+                                }
                             />
                         </Route>
                     </Switch>
