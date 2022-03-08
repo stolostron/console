@@ -97,6 +97,18 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         []
     )
 
+    const urlParams = location.search ? location.search.substring(1).split('&') : []
+    let apiVersion: string
+    let cluster: string
+    urlParams.forEach((param) => {
+        if (param.startsWith('apiVersion')) {
+            apiVersion = param.split('=')[1]
+        }
+        if (param.startsWith('cluster')) {
+            cluster = param.split('=')[1]
+        }
+    })
+
     // refresh application the first time and then every n seconds
     useEffect(() => {
         setApplicationData(undefined)
@@ -106,21 +118,30 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 ;(async () => {
                     const subscriptions = await getSubscriptions()
                     // get application object from recoil states
-                    const application = getApplication(match.params.namespace, match.params.name, activeChannel, {
-                        applications,
-                        applicationSets,
-                        argoApplications,
-                        ansibleJob,
-                        subscriptions,
-                        channels,
-                        subscriptionReports,
-                        placements,
-                        placementRules,
-                    })
+                    const application = getApplication(
+                        match.params.namespace,
+                        match.params.name,
+                        activeChannel,
+                        {
+                            applications,
+                            applicationSets,
+                            argoApplications,
+                            ansibleJob,
+                            subscriptions,
+                            channels,
+                            subscriptionReports,
+                            placements,
+                            placementRules,
+                            managedClusters,
+                        },
+                        cluster,
+                        apiVersion
+                    )
                     const topology = getTopology(
                         application,
                         managedClusters,
-                        lastRefreshRef?.current?.relatedResources
+                        lastRefreshRef?.current?.relatedResources,
+                        { cluster }
                     )
                     const appData = getApplicationData(topology.nodes)
 
@@ -143,7 +164,10 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                             topology,
                             lastRefreshRef.current
                         )
-                        const topologyWithRelated = getTopology(application, managedClusters, relatedResources)
+                        const topologyWithRelated = getTopology(application, managedClusters, relatedResources, {
+                            topology,
+                            cluster,
+                        })
                         setApplicationData({
                             activeChannel: application.activeChannel,
                             allChannels: application.channels,
@@ -183,9 +207,11 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 }
                             >
                                 <Link
-                                    to={NavigationPath.applicationOverview
-                                        .replace(':namespace', match.params.namespace as string)
-                                        .replace(':name', match.params.name as string)}
+                                    to={
+                                        NavigationPath.applicationOverview
+                                            .replace(':namespace', match.params.namespace as string)
+                                            .replace(':name', match.params.name as string) + location.search
+                                    }
                                 >
                                     {t('Overview')}
                                 </Link>
@@ -199,9 +225,11 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 }
                             >
                                 <Link
-                                    to={NavigationPath.applicationTopology
-                                        .replace(':namespace', match.params.namespace as string)
-                                        .replace(':name', match.params.name as string)}
+                                    to={
+                                        NavigationPath.applicationTopology
+                                            .replace(':namespace', match.params.namespace as string)
+                                            .replace(':name', match.params.name as string) + location.search
+                                    }
                                 >
                                     {t('Topology')}
                                 </Link>
@@ -229,9 +257,11 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         </Route>
                         <Route exact path={NavigationPath.applicationDetails}>
                             <Redirect
-                                to={NavigationPath.applicationOverview
-                                    .replace(':namespace', match.params.namespace as string)
-                                    .replace(':name', match.params.name as string)}
+                                to={
+                                    NavigationPath.applicationOverview
+                                        .replace(':namespace', match.params.namespace as string)
+                                        .replace(':name', match.params.name as string) + location.search
+                                }
                             />
                         </Route>
                     </Switch>
