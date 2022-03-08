@@ -9,7 +9,7 @@ import { get, set, isEqual } from 'lodash'
 export async function getSubscriptionResourceStatuses(application, appData, topology, lastRefresh) {
     // get related resources -- only need to do if subscription report changes
     // with SubscriptionReport need to find out what service/replicaset goes with what route/deployment
-    let relatedResources={}
+    let relatedResources = {}
     if (application.reports && (!lastRefresh || !isEqual(application.reports, lastRefresh.application.reports))) {
         relatedResources = await getRelatedResources(application.reports)
     } else if (lastRefresh) {

@@ -61,7 +61,7 @@ export const useApplicationPageContext = (ActionList: ElementType) => {
 }
 
 export type ApplicationDataType = {
-    refreshTime: number,
+    refreshTime: number
     activeChannel: string | undefined
     allChannels: [string] | undefined
     application: any
@@ -83,21 +83,22 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
 
     const getSnapshot = useRecoilCallback(
         ({ snapshot }) =>
-            () => snapshot,
+            () =>
+                snapshot,
         []
     )
 
     const stateMap = {
-        'applications': applicationsState,
-        'applicationSets': applicationSetsState,
-        'argoApplications': argoApplicationsState,
-        'ansibleJob': ansibleJobState,
-        'channels': channelsState,
-        'placements': placementsState,
-        'placementRules': placementRulesState,
-        'subscriptions': subscriptionsState,
-        'subscriptionReports': subscriptionReportsState,
-        'managedClusters': managedClustersState,
+        applications: applicationsState,
+        applicationSets: applicationSetsState,
+        argoApplications: argoApplicationsState,
+        ansibleJob: ansibleJobState,
+        channels: channelsState,
+        placements: placementsState,
+        placementRules: placementRulesState,
+        subscriptions: subscriptionsState,
+        subscriptionReports: subscriptionReportsState,
+        managedClusters: managedClustersState,
     }
 
     // refresh application the first time and then every n seconds
@@ -107,13 +108,12 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         const interval = setInterval(
             (function refresh() {
                 ;(async () => {
-
                     // fetch states from recoil
                     const map: Record<string, any> = {}
                     const snapshot = getSnapshot()
-                    const promises = Object.entries(stateMap).map(([key, state]) =>{
+                    const promises = Object.entries(stateMap).map(([key, state]) => {
                         const promise = snapshot.getPromise(state as any)
-                        promise.then(data=>{
+                        promise.then((data) => {
                             map[key] = data
                         })
                         return promise

@@ -48,7 +48,8 @@ export function ApplicationTopologyPageContent(props: {
     const [options] = useState<any>(getOptions())
     const [elements, setElements] = useState<{
         nodes: any[]
-        links: any[]}>({ nodes: [], links: [] })
+        links: any[]
+    }>({ nodes: [], links: [] })
     const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
         page: 1,
         startIdx: 0,
@@ -141,9 +142,9 @@ export function ApplicationTopologyPageContent(props: {
 
     const canUpdateStatuses = !!statuses
     useEffect(() => {
-    if (application && appData && topology) {
-        setElements(cloneDeep(getDiagramElements(appData, cloneDeep(topology), statuses, canUpdateStatuses, t)))
-    }
+        if (application && appData && topology) {
+            setElements(cloneDeep(getDiagramElements(appData, cloneDeep(topology), statuses, canUpdateStatuses, t)))
+        }
     }, [refreshTime])
 
     return (
