@@ -165,9 +165,10 @@ export function LogsContainer(props: ILogsContainerProps) {
                 isRequired={true}
                 onChange={(value) => {
                     setSelectedPod(value as string)
-                    const selectedPodData = pods.find((item: any) => {
-                        return item.name === value
-                    }) || {}
+                    const selectedPodData =
+                        pods.find((item: any) => {
+                            return item.name === value
+                        }) || {}
                     const selectedPodContainers = selectedPodData.container
                         ? selectedPodData.container.split(';').map((item: string) => {
                               return item.trim()
