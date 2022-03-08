@@ -351,7 +351,10 @@ describe('Clusters Page', () => {
 
     test('should be able to delete cluster using row action', async () => {
         await clickRowAction(1, 'Destroy cluster')
-        await typeByText(`Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`, mockManagedCluster0.metadata!.name!)
+        await typeByText(
+            `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
+            mockManagedCluster0.metadata!.name!
+        )
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
         await clickByText('Destroy')
         await waitForNocks(deleteNocks)
@@ -368,7 +371,10 @@ describe('Clusters Page', () => {
 
     test('should be able to detach cluster using row action', async () => {
         await clickRowAction(1, 'Detach cluster')
-        await typeByText(`Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`, mockManagedCluster0.metadata!.name!)
+        await typeByText(
+            `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
+            mockManagedCluster0.metadata!.name!
+        )
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0)]
         await clickByText('Detach')
         await waitForNocks(deleteNocks)

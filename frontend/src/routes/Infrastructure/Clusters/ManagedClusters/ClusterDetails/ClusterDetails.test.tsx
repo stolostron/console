@@ -739,10 +739,14 @@ describe('ClusterDetails', () => {
         await waitForText(clusterName, true)
 
         await clickByLabel('Edit labels')
-        await waitForText('Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.')
+        await waitForText(
+            'Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.'
+        )
 
         await clickByText('Cancel')
-        await waitForNotText('Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.')
+        await waitForNotText(
+            'Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.'
+        )
     })
 
     test('overview page handles channel select', async () => {
@@ -750,10 +754,14 @@ describe('ClusterDetails', () => {
         await waitForText(clusterName, true)
 
         await clickByLabel('Select channels')
-        await waitForText('Select channels for the clusters. Only the selected clusters that have available channels are listed.')
+        await waitForText(
+            'Select channels for the clusters. Only the selected clusters that have available channels are listed.'
+        )
 
         await clickByText('Cancel')
-        await waitForNotText('Select channels for the clusters. Only the selected clusters that have available channels are listed.')
+        await waitForNotText(
+            'Select channels for the clusters. Only the selected clusters that have available channels are listed.'
+        )
     })
 
     test('nodes page renders', async () => {
@@ -782,7 +790,10 @@ describe('ClusterDetails', () => {
         await clickByText('Actions')
 
         await clickByText('Detach cluster')
-        await typeByText(`Confirm by typing "${mockManagedCluster.metadata.name!}" below:`, mockManagedCluster.metadata.name!)
+        await typeByText(
+            `Confirm by typing "${mockManagedCluster.metadata.name!}" below:`,
+            mockManagedCluster.metadata.name!
+        )
 
         const deleteNock = nockDelete(mockManagedCluster)
         await clickByText('Detach')
@@ -792,7 +803,10 @@ describe('ClusterDetails', () => {
     test('overview page handles destroy', async () => {
         await clickByText('Actions')
         await clickByText('Destroy cluster')
-        await typeByText(`Confirm by typing "${mockManagedCluster.metadata.name!}" below:`, mockManagedCluster.metadata.name!)
+        await typeByText(
+            `Confirm by typing "${mockManagedCluster.metadata.name!}" below:`,
+            mockManagedCluster.metadata.name!
+        )
 
         const deleteNocks: Scope[] = [nockDelete(mockManagedCluster), nockDelete(mockClusterDeployment)]
         await clickByText('Destroy')

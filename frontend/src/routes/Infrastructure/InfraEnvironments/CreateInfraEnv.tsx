@@ -95,12 +95,11 @@ const CreateInfraEnv: React.FC = () => {
                 }
             } else {
                 setCreationStatus({ status: 'DONE', messages: [] })
-                history.push(NavigationPath.infraEnvironmentOverview
-                    .replace(':namespace', infraEnv.metadata.namespace)
-                    .replace(':name', infraEnv.metadata.name))
-                
-
-
+                history.push(
+                    NavigationPath.infraEnvironmentOverview
+                        .replace(':namespace', infraEnv.metadata.namespace)
+                        .replace(':name', infraEnv.metadata.name)
+                )
             }
         }
     }

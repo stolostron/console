@@ -12,7 +12,6 @@ import {
 import { DeleteResourceModal } from './DeleteResourceModal'
 import userEvent from '@testing-library/user-event'
 
-
 const t = i18n.t
 
 describe('DeleteResourceModal', () => {
