@@ -23,7 +23,7 @@ import {
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { clusterCuratorsState, clusterManagementAddonsState, policiesState } from '../../../../atoms'
+import { clusterCuratorsState, clusterManagementAddonsState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
@@ -41,8 +41,6 @@ import {
     patchResource,
     ResourceErrorCode,
 } from '../../../../resources'
-import { useClusterPolicyViolationsColumn } from '../../../Governance/clusters/useClusterPolicyViolationsColumn'
-import { useClusterViolationSummaryMap } from '../../../Governance/overview/ClusterViolationSummary'
 import { usePageContext } from '../ClustersPage'
 import { AddCluster } from './components/AddCluster'
 import { BatchChannelSelectModal } from './components/BatchChannelSelectModal'
@@ -187,16 +185,6 @@ export function ClustersTable(props: {
     const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators)
     const clusterLabelsColumn = useClusterLabelsColumn()
     const clusterNodesColumn = useClusterNodesColumn()
-    const [policiesSource] = useRecoilState(policiesState)
-    const policies = useMemo(
-        () =>
-            policiesSource.filter(
-                (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
-            ),
-        [policiesSource]
-    )
-    const clusterViolationSummaryMap = useClusterViolationSummaryMap(policies)
-    const clusterPolicyViolationsColumn = useClusterPolicyViolationsColumn(clusterViolationSummaryMap)
 
     const modalColumns = useMemo(
         () => [clusterNameColumn, clusterStatusColumn, clusterProviderColumn],
@@ -207,7 +195,6 @@ export function ClustersTable(props: {
         () => [
             clusterNameColumn,
             clusterStatusColumn,
-            clusterPolicyViolationsColumn,
             clusterProviderColumn,
             clusterDistributionColumn,
             clusterLabelsColumn,
@@ -223,7 +210,6 @@ export function ClustersTable(props: {
         [
             clusterNameColumn,
             clusterStatusColumn,
-            clusterPolicyViolationsColumn,
             clusterProviderColumn,
             clusterDistributionColumn,
             clusterLabelsColumn,

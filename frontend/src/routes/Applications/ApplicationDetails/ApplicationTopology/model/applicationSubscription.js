@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, isEmpty, includes, cloneDeep } from 'lodash'
+import { cloneDeep, get, includes, isEmpty } from 'lodash'
 
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
 const NAMESPACE = 'metadata.namespace'

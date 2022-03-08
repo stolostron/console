@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Octokit } from '@octokit/rest'
+import _ from 'lodash'
+import { getSecret, listResources } from '.'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
-import { Octokit } from '@octokit/rest'
-import { getSecret, listResources } from '.'
-import _ from 'lodash'
 
 export const ChannelApiVersion = 'apps.open-cluster-management.io/v1'
 export type ChannelApiVersionType = 'apps.open-cluster-management.io/v1'

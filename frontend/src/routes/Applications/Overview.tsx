@@ -51,7 +51,7 @@ import { DOC_LINKS } from '../../lib/doc-util'
 
 const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
-const subAnnotationStr = 'apps.open-cluster-management.io/subscriptions'
+export const subAnnotationStr = 'apps.open-cluster-management.io/subscriptions'
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
 const localSubSuffixStr = '-local'
@@ -443,9 +443,15 @@ export default function ApplicationsOverview() {
                 cell: (application) => (
                     <span style={{ whiteSpace: 'nowrap' }}>
                         <Link
-                            to={NavigationPath.applicationDetails
-                                .replace(':namespace', application.metadata?.namespace as string)
-                                .replace(':name', application.metadata?.name as string)}
+                            to={
+                                NavigationPath.applicationDetails
+                                    .replace(':namespace', application.metadata?.namespace as string)
+                                    .replace(':name', application.metadata?.name as string) +
+                                '?apiVersion=' +
+                                application.kind.toLowerCase() +
+                                '.' +
+                                application.apiVersion.split('/')[0]
+                            }
                         >
                             {application.metadata?.name}
                         </Link>

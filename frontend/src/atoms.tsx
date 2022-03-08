@@ -101,6 +101,9 @@ import {
     NamespaceKind,
     Placement,
     PlacementApiVersion,
+    PlacementDecision,
+    PlacementDecisionApiVersion,
+    PlacementDecisionKind,
     PlacementKind,
     PlacementRule,
     PlacementRuleApiVersion,
@@ -172,6 +175,7 @@ export const policySetsState = AtomArray<PolicySet>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
 export const placementsState = AtomArray<Placement>()
 export const placementRulesState = AtomArray<PlacementRule>()
+export const placementDecisionsState = AtomArray<PlacementDecision>()
 export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
@@ -248,6 +252,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setPlacementBindingsState] = useRecoilState(placementBindingsState)
     const [, setPlacementsState] = useRecoilState(placementsState)
     const [, setPlacementRulesState] = useRecoilState(placementRulesState)
+    const [, setPlacementDecisionsState] = useRecoilState(placementDecisionsState)
     const [, setPolicyReports] = useRecoilState(policyreportState)
     const [, setSecrets] = useRecoilState(secretsState)
     const [, setSettings] = useRecoilState(settingsState)
@@ -266,6 +271,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
         addSetter(PlacementApiVersion, PlacementKind, setPlacementsState)
         addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
+        addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
         addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
         addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
         addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)

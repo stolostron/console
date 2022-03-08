@@ -16,10 +16,8 @@ import {
     listProviderConnections,
     getGitChannelBranches,
     getGitChannelPaths,
-    // PlacementRuleKind,
 } from '../../../../../resources'
-// import SharedResourceWarning from '../components/SharedResourceWarning'
-
+import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
 import _ from 'lodash'
 
 const onlineClustersCheckbox = 'online-cluster-only-checkbox'
@@ -594,3 +592,11 @@ export const setAvailableSecrets = (control, result) => {
         control.isLoading = loading
     }
 }
+
+export const getSharedPlacementRuleWarning = (control) => (
+    <SharedResourceWarning resourceType={RESOURCE_TYPES.HCM_PLACEMENT_RULES} control={control} />
+)
+
+export const getSharedSubscriptionWarning = (control) => (
+    <SharedResourceWarning resourceType={RESOURCE_TYPES.HCM_SUBSCRIPTIONS} control={control} />
+)

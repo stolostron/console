@@ -6,7 +6,7 @@ import { NavigationPath } from '../../NavigationPath'
 import Handlebars from 'handlebars'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { ApplicationKind, createResources as createKubeResources, IResource, updateResources } from '../../resources'
+import { ApplicationKind, createResources as createKubeResources, IResource, updateAppResources } from '../../resources'
 import '../Applications/CreateApplication/Subscription/style.css'
 
 // Template Data
@@ -16,6 +16,7 @@ import gitTemplate from './CreateApplication/Subscription/templates/templateGit.
 import helmTemplate from './CreateApplication/Subscription/templates/templateHelm.hbs'
 import ObjTemplate from './CreateApplication/Subscription/templates/templateObjectStore.hbs'
 import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
+import otherTemplate from './CreateApplication/Subscription/templates/templateOther.hbs'
 
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
@@ -153,7 +154,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                     }
                 })
 
-                updateResources(createResources)
+                updateAppResources(createResources)
                     .then(() => {
                         const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
                         toastContext.addAlert({
@@ -228,6 +229,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     Handlebars.registerPartial('templateHelm', Handlebars.compile(helmTemplate))
     Handlebars.registerPartial('templateObjectStore', Handlebars.compile(ObjTemplate))
     Handlebars.registerPartial('templatePlacement', Handlebars.compile(placementTemplate))
+    Handlebars.registerPartial('templateOther', Handlebars.compile(otherTemplate))
     const [fetchControl, setFetchControl] = useState<any>(null)
     const [applications] = useRecoilState(applicationsState)
     const [ansibleJob] = useRecoilState(ansibleJobState)
@@ -238,8 +240,9 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     if (editApplication) {
         // if editing an existing app, grab it first
         const { selectedAppName, selectedAppNamespace } = editApplication
+        const allChannels = '__ALL__/__ALL__//__ALL__/__ALL__'
         // get application object from recoil states
-        const application = getApplication(selectedAppNamespace, selectedAppName, '', {
+        const application = getApplication(selectedAppNamespace, selectedAppName, allChannels, {
             applications,
             ansibleJob,
             subscriptions,

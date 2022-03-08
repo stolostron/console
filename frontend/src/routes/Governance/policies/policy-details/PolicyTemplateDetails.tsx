@@ -40,10 +40,12 @@ export function PolicyTemplateDetails(props: {
     const [isExpanded, setIsExpanded] = useState<boolean>(true)
 
     function getRelatedObjects(resource: any) {
-        return resource?.status?.relatedObjects.map((obj: any) => {
-            obj.cluster = resource.metadata.namespace
-            return obj
-        })
+        return (
+            resource?.status?.relatedObjects?.map((obj: any) => {
+                obj.cluster = resource.metadata.namespace
+                return obj
+            }) ?? []
+        )
     }
 
     useEffect(() => {
