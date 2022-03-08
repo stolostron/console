@@ -230,13 +230,14 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         const name = defaultBrokerName
         const namespace = clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation]
         if (namespace) {
-            getBroker({ name, namespace }).promise.then(broker=>{
-                setGlobalnetEnabled(broker?.spec?.globalnetEnabled ?? false)
-                setIsGlobalnetAlreadyConfigured(true)
-            })
-            .catch(() => {
-                setIsGlobalnetAlreadyConfigured(false)
-            })
+            getBroker({ name, namespace })
+                .promise.then((broker) => {
+                    setGlobalnetEnabled(broker?.spec?.globalnetEnabled ?? false)
+                    setIsGlobalnetAlreadyConfigured(true)
+                })
+                .catch(() => {
+                    setIsGlobalnetAlreadyConfigured(false)
+                })
         }
     }, [clusterSet])
 
@@ -334,8 +335,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 kind: BrokerKind,
                 metadata: {
                     name: 'submariner-broker',
-                    namespace:
-                        clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
+                    namespace: clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
                 },
                 spec: {
                     globalnetEnabled,
@@ -473,7 +473,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         label: t('Enable Globalnet'),
                         value: globalnetEnabled,
                         isDisabled: isGlobalnetAlreadyConfigured,
-                        helperText: isGlobalnetAlreadyConfigured ? t('Already enabled for clusters in this cluster set') : '',
+                        helperText: isGlobalnetAlreadyConfigured
+                            ? t('Already enabled for clusters in this cluster set')
+                            : '',
                         onChange: (value: boolean) => {
                             setGlobalnetEnabled(value)
                         },
@@ -691,4 +693,3 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         />
     )
 }
-

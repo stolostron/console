@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { BrokerDefinition, defaultBrokerName, ManagedClusterAddOn, ManagedClusterSetDefinition, ResourceErrorCode, submarinerBrokerNamespaceAnnotation } from '../../../../../../resources'
+import {
+    BrokerDefinition,
+    defaultBrokerName,
+    ManagedClusterAddOn,
+    ManagedClusterSetDefinition,
+    ResourceErrorCode,
+    submarinerBrokerNamespaceAnnotation,
+} from '../../../../../../resources'
 import {
     AcmButton,
     AcmEmptyState,
@@ -371,7 +378,7 @@ export function ClusterSetSubmarinerPageContent() {
                                             )
                                         ),
                                     variant: ButtonVariant.primary,
-                                    isDisabled: !canInstallSubmarinerAddons
+                                    isDisabled: !canInstallSubmarinerAddons,
                                 },
                             ]}
                             emptyState={
@@ -427,12 +434,16 @@ export function ClusterSetSubmarinerPageContent() {
                                                 rbac={[
                                                     rbacCreate(
                                                         BrokerDefinition,
-                                                        clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
+                                                        clusterSet?.metadata?.annotations?.[
+                                                            submarinerBrokerNamespaceAnnotation
+                                                        ],
                                                         defaultBrokerName
                                                     ),
                                                     rbacGet(
                                                         BrokerDefinition,
-                                                        clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
+                                                        clusterSet?.metadata?.annotations?.[
+                                                            submarinerBrokerNamespaceAnnotation
+                                                        ],
                                                         defaultBrokerName
                                                     ),
                                                 ]}
