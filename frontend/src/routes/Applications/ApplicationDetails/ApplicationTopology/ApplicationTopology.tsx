@@ -2,7 +2,7 @@
 
 import { PageSection, ActionListItem } from '@patternfly/react-core'
 import { AcmActionGroup } from '@stolostron/ui-components'
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { getDiagramElements } from './model/topology'
 
@@ -34,6 +34,7 @@ export function ApplicationTopologyPageContent(props: {
     const { t } = useTranslation()
     const {
         applicationData = {
+            refreshTime: undefined,
             activeChannel: undefined,
             allChannels: undefined,
             application: undefined,
@@ -42,9 +43,13 @@ export function ApplicationTopologyPageContent(props: {
             statuses: undefined,
         },
     } = props
-    const { activeChannel, allChannels, application, appData, topology, statuses } = applicationData
+    const { refreshTime, activeChannel, allChannels, application, appData, topology, statuses } = applicationData
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const [options] = useState<any>(getOptions())
+    const [elements, setElements] = useState<{
+        nodes: any[]
+        links: any[]
+    }>({ nodes: [], links: [] })
     const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
         page: 1,
         startIdx: 0,
@@ -135,14 +140,12 @@ export function ApplicationTopologyPageContent(props: {
         processResourceActionLink(resource, toggleLoading, handleErrorMsg)
     }
 
-    let elements: {
-        nodes: any[]
-        links: any[]
-    } = { nodes: [], links: [] }
     const canUpdateStatuses = !!statuses
-    if (application && appData && topology) {
-        elements = cloneDeep(getDiagramElements(appData, cloneDeep(topology), statuses, canUpdateStatuses, t))
-    }
+    useEffect(() => {
+        if (application && appData && topology) {
+            setElements(cloneDeep(getDiagramElements(appData, cloneDeep(topology), statuses, canUpdateStatuses, t)))
+        }
+    }, [refreshTime])
 
     return (
         <PageSection>
