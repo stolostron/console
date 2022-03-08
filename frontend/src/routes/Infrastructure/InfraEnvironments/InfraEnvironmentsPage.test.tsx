@@ -5,7 +5,7 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 
 import { infraEnvironmentsState } from '../../../atoms'
-import { waitForTestId, waitForText, clickByText, waitForNotText } from '../../../lib/test-util'
+import { waitForTestId, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import InfraEnvironmentsPage from './InfraEnvironmentsPage'
 
@@ -91,14 +91,6 @@ describe('Infrastructure Environments page', () => {
         await waitForText('Infrastructure environments', true)
 
         // the top-level hint
-        await waitForText(
-            'Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.'
-        )
-        await clickByText('Dismiss')
-        await waitForNotText(
-            'Provision hosts for cluster creation. Create new or select existing Infrastructure Environment, once completed, click on the “Add hosts” to discover, provision and add hosts to it.'
-        )
-
         await waitForTestId('createInfraEnv')
 
         // is the infraEnv listed?
