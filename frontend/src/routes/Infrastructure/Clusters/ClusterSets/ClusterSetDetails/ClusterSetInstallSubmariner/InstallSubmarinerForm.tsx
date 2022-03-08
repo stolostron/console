@@ -7,6 +7,7 @@ import {
     CableDriver,
     Cluster,
     createResource,
+    defaultBrokerName,
     getBroker,
     IResource,
     listNamespaceSecrets,
@@ -17,6 +18,7 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
+    submarinerBrokerNamespaceAnnotation,
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
     submarinerConfigDefault,
@@ -226,8 +228,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     }, [availableClusters, providerSecretMap, fetchSecrets])
 
     useEffect(() => {
-        const name = 'submariner-broker'
-        const namespace = clusterSet?.metadata?.annotations?.['cluster.open-cluster-management.io/submariner-broker-ns']
+        const name = defaultBrokerName
+        const namespace = clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation]
         if (namespace) {
             getBroker({ name, namespace }).promise.then(broker=>{
                 setGlobalnetEnabled(broker?.spec?.globalnetEnabled ?? false)
@@ -336,7 +338,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 metadata: {
                     name: 'submariner-broker',
                     namespace:
-                        clusterSet?.metadata?.annotations?.['cluster.open-cluster-management.io/submariner-broker-ns'],
+                        clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
                 },
                 spec: {
                     globalnetEnabled: true,
@@ -475,7 +477,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         value: globalnetEnabled,
                         isDisabled: isGlobalnetAlreadyConfigured,
                         isHidden: isGlobalnetHidden,
-                        helperText: isGlobalnetAlreadyConfigured ? t('Already enabled globally') : '',
+                        helperText: isGlobalnetAlreadyConfigured ? t('Already enabled for clusters in this cluster set') : '',
                         onChange: (value: boolean) => {
                             setGlobalnetEnabled(value)
                         },
