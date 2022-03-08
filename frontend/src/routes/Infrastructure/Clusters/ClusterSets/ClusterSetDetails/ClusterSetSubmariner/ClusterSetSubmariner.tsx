@@ -115,7 +115,6 @@ export function ClusterSetSubmarinerPageContent() {
         )
         Promise.all([create.promise, get.promise])
             .then((result) => {
-                console.log(result)
                 setCanInstallSubmarinerAddons(result.every((r) => r.status?.allowed!))
             })
             .catch((err) => console.error(err))
