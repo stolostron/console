@@ -35,6 +35,7 @@ import {
     getResourcesClustersForApp,
     allClustersAreOnline,
     findParentForOwnerID,
+    setAppSetDeployStatus,
 } from './diagram-helpers-utils'
 import { getEditLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
@@ -441,10 +442,24 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
                 }
             }
             break
+        case 'applicationset':
+            if (isDeployable) {
+                pulse = getPulseStatusForGenericNode(node, t)
+            } else {
+                pulse = getPulseStatusForArgoApp(node, true)
+            }
+            break
         case 'placements':
             if (isDeployable) {
                 pulse = getPulseStatusForGenericNode(node, t)
             } else if (!_.get(node, 'specs.raw.status.decisions')) {
+                pulse = 'red'
+            }
+            break
+        case 'placement':
+            if (isDeployable) {
+                pulse = getPulseStatusForGenericNode(node, t)
+            } else if (_.get(node, 'specs.raw.status.numberOfSelectedClusters') === 0) {
                 pulse = 'red'
             }
             break
@@ -1109,7 +1124,15 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
     if (
         nodeMustHavePods(node) ||
         node.type === 'package' ||
-        (!isDeployable && R.includes(node.type, ['application', 'placements', 'placement', 'cluster', 'subscription']))
+        (!isDeployable &&
+            R.includes(node.type, [
+                'application',
+                'applicationset',
+                'placements',
+                'placement',
+                'cluster',
+                'subscription',
+            ]))
     ) {
         //resource with pods info is processed separately
         //ignore packages or any resources from the above list not defined as a deployable
@@ -1696,12 +1719,14 @@ export const setPlacementRuleDeployStatus = (node, details, t) => {
 }
 
 export const setApplicationDeployStatus = (node, details, t) => {
-    if (node.type !== 'application') {
+    if (node.type !== 'application' && node.type !== 'applicationset') {
         return details
     }
 
     const apiVersion = _.get(node, apiVersionPath)
-    if (apiVersion && apiVersion.indexOf('argoproj.io') > -1) {
+    if (node.type === 'applicationset') {
+        setAppSetDeployStatus(node, details, t)
+    } else if (apiVersion && apiVersion.indexOf('argoproj.io') > -1) {
         setArgoApplicationDeployStatus(node, details, t)
     } else {
         addPropertyToList(
