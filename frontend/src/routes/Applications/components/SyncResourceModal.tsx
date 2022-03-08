@@ -23,7 +23,7 @@ export function SyncResourceModal(props: ISyncResourceModalProps | { open: false
     const handleSubmit = () => {
         props.close()
         const existingResources = props.resources
-        let subNames: (string | undefined)[] = []
+        const subNames: (string | undefined)[] = []
         props.resources.forEach((sub) => {
             subNames.push(sub.metadata?.name)
             const annotations = _.get(sub, 'metadata.annotations', {})

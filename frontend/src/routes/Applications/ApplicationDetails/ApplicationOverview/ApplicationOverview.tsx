@@ -2,7 +2,17 @@
 
 import { AcmButton, AcmDescriptionList, AcmPageContent, ListItems } from '@stolostron/ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { Button, ButtonVariant, Card, CardBody, PageSection, Skeleton, Spinner, Tooltip } from '@patternfly/react-core'
+import {
+    Button,
+    ButtonVariant,
+    Card,
+    CardBody,
+    Label,
+    PageSection,
+    Skeleton,
+    Spinner,
+    Tooltip,
+} from '@patternfly/react-core'
 import {
     FolderIcon,
     GripHorizontalIcon,
@@ -41,6 +51,8 @@ import { ApplicationDataType } from '../ApplicationDetails'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
 import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
+import { DiagramIcons } from '../../../../components/Topology/shapes/DiagramIcons'
+import { getDiagramElements } from '../ApplicationTopology/model/topology'
 
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
@@ -62,6 +74,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         open: false,
     })
     let isArgoApp = false
+    let isSubscription = false
     let disableBtn
     let subsList = []
 
@@ -86,11 +99,23 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
     if (applicationData) {
         isArgoApp = applicationData.appData.isArgoApp
+        const isAppSet = applicationData.application.isAppSet
+        isSubscription = !isArgoApp && !isAppSet
         const { name, namespace } = applicationData.application.metadata
         ////////////////////////////////// argo items ////////////////////////////////////
-        if (isArgoApp) {
+        if (!isSubscription) {
             leftItems = [
-                { key: t('Name'), value: name },
+                {
+                    key: t('Name'),
+                    value: (
+                        <Fragment>
+                            <div className="app-name-container">
+                                <div className="app-name">{name}</div>
+                                {createArgoAppIcon(isArgoApp, isAppSet, t)}
+                            </div>
+                        </Fragment>
+                    ),
+                },
                 {
                     key: t('Namespace'),
                     value: namespace,
@@ -125,6 +150,17 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             rightItems = [
                 {
                     key: t('Clusters'),
+                },
+                {
+                    key: t('Cluster resource status'),
+                    value: createStatusIcons(applicationData, t),
+                    keyAction: (
+                        <Tooltip content={t('Status represents the subscription selection within Resource topology.')}>
+                            <OutlinedQuestionCircleIcon
+                                style={{ fill: '#0066cc', marginLeft: '4px', cursor: 'pointer' }}
+                            />
+                        </Tooltip>
+                    ),
                 },
             ]
         } else {
@@ -225,9 +261,9 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                 },
                 {
                     key: t('Cluster resource status'),
-                    value: createStatusIcons(applicationData),
+                    value: createStatusIcons(applicationData, t),
                     keyAction: (
-                        <Tooltip content={'Status represents the subscription selection within Resource topology.'}>
+                        <Tooltip content={t('Status represents the subscription selection within Resource topology.')}>
                             <OutlinedQuestionCircleIcon
                                 style={{ fill: '#0066cc', marginLeft: '4px', cursor: 'pointer' }}
                             />
@@ -248,10 +284,10 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                         rightItems={rightItems}
                     ></AcmDescriptionList>
                 </div>
-                {renderCardsSection(isArgoApp, t, applicationData?.application?.app)}
+                {renderCardsSection(isSubscription, t, applicationData?.application?.app)}
 
                 {/* Hide for argo */}
-                {!isArgoApp && (
+                {isSubscription && (
                     <div className="overview-cards-subs-section">
                         {showSubCards && !disableBtn
                             ? createSubsCards(subsList, t, applicationData?.application?.app, channels)
@@ -309,17 +345,63 @@ function createSyncButton(resources: IResource[], setModalProps: any, t: TFuncti
     )
 }
 
-function createStatusIcons(applicationData: ApplicationDataType) {
-    const { statuses } = applicationData
+interface INodeStatuses {
+    green: number
+    yellow: number
+    red: number
+    orange: number
+}
+function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
+    const { application, appData, statuses, topology } = applicationData
+    let elements: {
+        nodes: any[]
+        links: any[]
+    } = { nodes: [], links: [] }
+    const nodeStatuses: INodeStatuses = { green: 0, yellow: 0, red: 0, orange: 0 }
+    const canUpdateStatuses = !!statuses
+    if (application && appData && topology) {
+        elements = _.cloneDeep(getDiagramElements(appData, _.cloneDeep(topology), statuses, canUpdateStatuses, t))
+
+        elements.nodes.map((node) => {
+            //get pulse for all objects generated from a deployable
+            const pulse: 'green' = _.get(node, 'specs.pulse')
+
+            if (pulse) {
+                // Get cluster resource statuses
+                nodeStatuses[pulse]++
+            }
+        })
+    }
+
     if (statuses) {
         // render the status of the application
-        debugger
         return (
             <Fragment>
-                <div className="status-icon-container green-status" id="green-resources"></div>
-                <div className="status-icon-container orange-status" id="orange-resources"></div>
-                <div className="status-icon-container yellow-status" id="yellow-resources"></div>
-                <div className="status-icon-container red-status" id="red-resources"></div>
+                <DiagramIcons />
+                <div className="status-icon-container green-status" id="green-resources">
+                    <svg className="status-icon">
+                        <use href={'#diagramIcons_checkmark'} style={{ fill: '#3E8635' }} />
+                    </svg>
+                    <div className="status-count">{nodeStatuses.green}</div>
+                </div>
+                <div className="status-icon-container orange-status" id="orange-resources">
+                    <svg className="status-icon">
+                        <use href={'#diagramIcons_pending'} />
+                    </svg>
+                    <div className="status-count">{nodeStatuses.orange}</div>
+                </div>
+                <div className="status-icon-container yellow-status" id="yellow-resources">
+                    <svg className="status-icon">
+                        <use href={'#diagramIcons_warning'} />
+                    </svg>
+                    <div className="status-count">{nodeStatuses.yellow}</div>
+                </div>
+                <div className="status-icon-container red-status" id="red-resources">
+                    <svg className="status-icon">
+                        <use href={'#diagramIcons_failure'} />
+                    </svg>
+                    <div className="status-count">{nodeStatuses.red}</div>
+                </div>
             </Fragment>
         )
     }
@@ -327,7 +409,7 @@ function createStatusIcons(applicationData: ApplicationDataType) {
     return <Spinner size="sm" />
 }
 
-function renderCardsSection(isArgoApp: boolean, t: TFunction, resource: IResource) {
+function renderCardsSection(isSubscription: boolean, t: TFunction, resource: IResource) {
     let getUrl = window.location.href
     getUrl = getUrl.substring(0, getUrl.indexOf('/multicloud/applications/'))
     if (resource) {
@@ -341,7 +423,7 @@ function renderCardsSection(isArgoApp: boolean, t: TFunction, resource: IResourc
                 apiversion,
             },
         })
-        if (isSearchAvailable() && !isArgoApp) {
+        if (isSearchAvailable() && isSubscription) {
             return (
                 <Card>
                     <CardBody>
@@ -447,4 +529,8 @@ function createSubsCards(
             return ''
         })
     )
+}
+
+function createArgoAppIcon(isArgoApp: boolean, isAppSet: boolean, t: TFunction) {
+    return <Fragment>{isArgoApp || isAppSet ? <Label color="blue">{t('Argo')}</Label> : ''}</Fragment>
 }
