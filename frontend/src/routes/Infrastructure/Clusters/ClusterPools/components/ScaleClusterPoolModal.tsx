@@ -30,9 +30,6 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
         } else if (!props.clusterPool) {
             setSize(0)
         }
-    }, [props.clusterPool])
-
-    useEffect(() => {
         if (props.clusterPool && !!props.clusterPool.spec?.runningCount) {
             setRunningCount(props.clusterPool.spec?.runningCount!)
         } else if (!props.clusterPool) {
@@ -73,7 +70,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                 onMinus={() => setSize(size - 1)}
                                 onPlus={() => setSize(size + 1)}
                                 validation={(size: Number) => {
-                                    if (size < 0) return t('clusterPool.modal.scale.validation.greaterThanZero')
+                                    if (size < 0) return t('clusterPool.modal.scale.validation.greaterThanOrEqualZero')
                                     return undefined
                                 }}
                                 required
@@ -87,7 +84,8 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                 onMinus={() => setRunningCount(runningCount - 1)}
                                 onPlus={() => setRunningCount(runningCount + 1)}
                                 validation={(runningCount: Number) => {
-                                    if (runningCount < 0) return t('clusterPool.modal.scale.validation.greaterThanZero')
+                                    if (runningCount < 0)
+                                        return t('clusterPool.modal.scale.validation.greaterThanOrEqualZero')
                                     return undefined
                                 }}
                                 required
