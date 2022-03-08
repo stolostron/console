@@ -653,7 +653,14 @@ const sleep = async (ms: number) => new Promise((resolve) => setTimeout(resolve,
 export const getOnSaveISOParams =
     (infraEnv: CIM.InfraEnvK8sResource) => async (values: CIM.DiscoveryImageFormValues) => {
         const patches: any[] = []
-        appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey || '', infraEnv.spec?.sshAuthorizedKey)
+        if (!!values.sshPublicKey) {
+            appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey, infraEnv.spec?.sshAuthorizedKey)
+        } else if (infraEnv.spec?.sshAuthorizedKey) {
+            patches.push({
+                op: 'remove',
+                path: '/spec/sshAuthorizedKey',
+            })
+        }
 
         const proxy = values.enableProxy
             ? {
@@ -661,8 +668,16 @@ export const getOnSaveISOParams =
                   httpsProxy: values.httpsProxy,
                   noProxy: values.noProxy,
               }
-            : {}
-        appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
+            : undefined
+
+        if (proxy) {
+            appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
+        } else if (infraEnv.spec?.proxy) {
+            patches.push({
+                op: 'remove',
+                path: '/spec/proxy',
+            })
+        }
 
         // TODO(mlibra): Once implemented on the backend, persist values.imageType
 
