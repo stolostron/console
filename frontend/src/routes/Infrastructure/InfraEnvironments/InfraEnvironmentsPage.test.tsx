@@ -5,7 +5,7 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 
 import { infraEnvironmentsState } from '../../../atoms'
-import { waitForTestId, waitForText } from '../../../lib/test-util'
+import { waitForTestId, waitForText, clickByText, waitForNotText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import InfraEnvironmentsPage from './InfraEnvironmentsPage'
 
