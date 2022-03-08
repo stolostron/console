@@ -1,10 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Chip } from '@patternfly/react-core'
+import { TFunction } from 'i18next'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { channelsState, helmReleaseState, subscriptionsState } from '../../../atoms'
-import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     Channel,
@@ -147,24 +145,21 @@ export function resolveExternalStatus(policy: Policy) {
     return managedFields.some((mf) => knownExternalManagers.includes(mf.manager ?? 'none'))
 }
 
-function getHelmReleaseMap() {
-    const [helmReleases] = useRecoilState(helmReleaseState)
+function getHelmReleaseMap(helmReleases: HelmRelease[]) {
     const resourceMap = new Map()
     helmReleases.forEach((helmRelease: HelmRelease) => {
         resourceMap.set(`${helmRelease.metadata.namespace}/${helmRelease.metadata.name}`, helmRelease)
     })
     return resourceMap
 }
-function getSubscriptionMap() {
-    const [subscriptions] = useRecoilState(subscriptionsState)
+function getSubscriptionMap(subscriptions: Subscription[]) {
     const resourceMap = new Map()
     subscriptions.forEach((subscription: Subscription) => {
         resourceMap.set(`${subscription.metadata.namespace}/${subscription.metadata.name}`, subscription)
     })
     return resourceMap
 }
-function getChannelMap() {
-    const [channels] = useRecoilState(channelsState)
+function getChannelMap(channels: Channel[]) {
     const resourceMap = new Map()
     channels.forEach((channel: Channel) => {
         resourceMap.set(`${channel.metadata.namespace}/${channel.metadata.name}`, channel)
@@ -173,7 +168,7 @@ function getChannelMap() {
 }
 
 // This function may need some revision/testing
-export function resolveSource(policy: Policy) {
+export function resolveSource(policy: Policy, helmReleases: HelmRelease[], channels: Channel[], subscriptions: Subscription[]) {
     const getAnnotations = (item: any) => item.metadata.annotations ?? {}
     const getHostingSubscription = (annotations: any) =>
         annotations['apps.open-cluster-management.io/hosting-subscription']
@@ -184,15 +179,15 @@ export function resolveSource(policy: Policy) {
         const releaseNamespace = parentAnnotations['meta.helm.sh/release-namespace']
         const releaseName = parentAnnotations['meta.helm.sh/release-name']
         if (releaseNamespace && releaseName) {
-            const helmReleaseMap = getHelmReleaseMap()
+            const helmReleaseMap = getHelmReleaseMap(helmReleases)
             const helmRelease = helmReleaseMap.get(`${releaseNamespace}/${releaseName}`)
             const helmReleaseAnnotations = getAnnotations(helmRelease)
             hostingSubscription = getHostingSubscription(helmReleaseAnnotations)
         }
     }
     if (hostingSubscription) {
-        const subscriptionMap = getSubscriptionMap()
-        const channelMap = getChannelMap()
+        const subscriptionMap = getSubscriptionMap(subscriptions)
+        const channelMap = getChannelMap(channels)
         const subscription = subscriptionMap.get(hostingSubscription)
         const channel = channelMap.get(subscription.spec.channel ?? '')
         if (subscription && channel) {
@@ -215,8 +210,7 @@ export function resolveSource(policy: Policy) {
     return null
 }
 
-export function getSourceText(policySource: any, isExternal: boolean) {
-    const { t } = useTranslation()
+export function getSourceText(policySource: any, isExternal: boolean, t: TFunction) {
     if (policySource.type) {
         const channelType = (policySource.type && policySource.type.toLowerCase()) || ''
         const normalizedChannelType: string = channelType === 'github' ? 'git' : channelType
@@ -228,8 +222,7 @@ export function getSourceText(policySource: any, isExternal: boolean) {
     }
 }
 
-export function getSource(policySource: any, isExternal: boolean) {
-    const { t } = useTranslation()
+export function getSource(policySource: any, isExternal: boolean, t: TFunction) {
     if (policySource) {
         return (
             // Reusing the app label component (works the same for app and policy)
@@ -241,21 +234,20 @@ export function getSource(policySource: any, isExternal: boolean) {
             />
         )
     } else {
-        return getSourceText(policySource, isExternal)
+        return getSourceText(policySource, isExternal, t)
     }
 }
 
-export function getPolicyDetailSourceLabel(policy: Policy) {
-    const { t } = useTranslation()
+export function getPolicyDetailSourceLabel(policy: Policy, helmReleases: HelmRelease[], channels: Channel[], subscriptions: Subscription[], t:TFunction) {
     const isExternal = resolveExternalStatus(policy)
-    const policySource = resolveSource(policy)
+    const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
     if (isExternal) {
         return (
             <div style={{ display: 'flex', alignItems: 'center' }}>
                 {policySource ? (
                     <>
                         <p style={{ paddingRight: '.25rem' }}>{t('Managed by')}</p>
-                        {getSource(policySource, isExternal)}
+                        {getSource(policySource, isExternal, t)}
                     </>
                 ) : (
                     <p>{t('Managed externally')}</p>

@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { IResourceDefinition } from '.'
 import { Metadata } from './metadata'
 import { ResourceRef } from './resource-ref'
 
@@ -7,6 +8,11 @@ export type PolicyApiVersionType = 'policy.open-cluster-management.io/v1'
 
 export const PolicyKind = 'Policy'
 export type PolicyKindType = 'Policy'
+
+export const PolicyDefinition : IResourceDefinition = {
+    apiVersion: PolicyApiVersion,
+    kind: PolicyKind,
+}
 
 export interface Policy {
     apiVersion: PolicyApiVersionType

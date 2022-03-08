@@ -4,7 +4,7 @@ import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@s
 import { Fragment, Suspense, useMemo } from 'react'
 import { Link, Route, Switch, useLocation, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { policiesState } from '../../../../atoms'
+import { channelsState, helmReleaseState, policiesState, subscriptionsState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy } from '../../../../resources'
@@ -16,6 +16,9 @@ export function PolicyDetailsPage() {
     const location = useLocation()
     const { t } = useTranslation()
     const [policies] = useRecoilState(policiesState)
+    const [helmReleases] = useRecoilState(helmReleaseState)
+    const [subscriptions] = useRecoilState(subscriptionsState)
+    const [channels] = useRecoilState(channelsState)
 
     const params = useParams<{ namespace: string; name: string }>()
     const policyNamespace = params.namespace
@@ -60,7 +63,7 @@ export function PolicyDetailsPage() {
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
-                    description={getPolicyDetailSourceLabel(selectedPolicy)}
+                    description={getPolicyDetailSourceLabel(selectedPolicy, helmReleases, channels, subscriptions, t)}
                     // TODO once edit policy wizard is done
                     // controls={
                     //     <Fragment>
