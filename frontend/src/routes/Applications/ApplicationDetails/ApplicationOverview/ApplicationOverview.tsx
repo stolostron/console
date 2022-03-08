@@ -2,12 +2,13 @@
 
 import { AcmButton, AcmDescriptionList, AcmPageContent, ListItems } from '@stolostron/ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { Button, ButtonVariant, PageSection, Skeleton, Spinner, Tooltip } from '@patternfly/react-core'
+import { Button, ButtonVariant, Card, CardBody, PageSection, Skeleton, Spinner, Tooltip } from '@patternfly/react-core'
 import {
     FolderIcon,
     GripHorizontalIcon,
     OutlinedClockIcon,
     OutlinedQuestionCircleIcon,
+    OutlinedWindowRestoreIcon,
     SyncAltIcon,
 } from '@patternfly/react-icons'
 import { useRecoilState } from 'recoil'
@@ -39,15 +40,13 @@ import { getApplicationRepos } from '../../Overview'
 import { ApplicationDataType } from '../ApplicationDetails'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
+import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
 
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
 
 export function ApplicationOverviewPageContent(props: { applicationData: ApplicationDataType | undefined }) {
     const { applicationData } = props
-    if (_.get(applicationData, 'statuses')) {
-        // TODO: return status icons
-    }
     const { t } = useTranslation()
     const hasSyncPermission = true //TODO
     const localClusterStr = 'local-cluster'
@@ -249,6 +248,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                         rightItems={rightItems}
                     ></AcmDescriptionList>
                 </div>
+                {renderCardsSection(isArgoApp, t, applicationData?.application?.app)}
+
                 {/* Hide for argo */}
                 {!isArgoApp && (
                     <div className="overview-cards-subs-section">
@@ -312,6 +313,7 @@ function createStatusIcons(applicationData: ApplicationDataType) {
     const { statuses } = applicationData
     if (statuses) {
         // render the status of the application
+        debugger
         return (
             <Fragment>
                 <div className="status-icon-container green-status" id="green-resources"></div>
@@ -323,6 +325,45 @@ function createStatusIcons(applicationData: ApplicationDataType) {
     }
 
     return <Spinner size="sm" />
+}
+
+function renderCardsSection(isArgoApp: boolean, t: TFunction, resource: IResource) {
+    let getUrl = window.location.href
+    getUrl = getUrl.substring(0, getUrl.indexOf('/multicloud/applications/'))
+    if (resource) {
+        const [apigroup, apiversion] = resource.apiVersion.split('/')
+        const targetLink = getSearchLink({
+            properties: {
+                name: resource.metadata?.name,
+                namespace: resource.metadata?.namespace,
+                kind: resource.kind.toLowerCase(),
+                apigroup,
+                apiversion,
+            },
+        })
+        if (isSearchAvailable() && !isArgoApp) {
+            return (
+                <Card>
+                    <CardBody>
+                        <AcmButton
+                            id="search-resource"
+                            target="_blank"
+                            component="a"
+                            href={getUrl + targetLink}
+                            variant={ButtonVariant.link}
+                            rel="noreferrer"
+                            icon={<OutlinedWindowRestoreIcon />}
+                            iconPosition="right"
+                        >
+                            {t('Search resource')}
+                        </AcmButton>
+                    </CardBody>
+                </Card>
+            )
+        }
+    }
+
+    return null
 }
 
 function createSubsCards(
