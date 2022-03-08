@@ -177,7 +177,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
 
     const [globalnetEnabled, setGlobalnetEnabled] = useState<boolean>(false)
     const [isGlobalnetAlreadyConfigured, setIsGlobalnetAlreadyConfigured] = useState<boolean>(true)
-    const [isGlobalnetHidden, setGlobalnetHidden] = useState<boolean>(false)
 
     const [awsAccessKeyIDs, setAwsAccessKeyIDs] = useState<Record<string, string | undefined>>({})
     const [awsSecretAccessKeyIDs, setAwsSecretAccessKeyIDs] = useState<Record<string, string | undefined>>({})
@@ -238,8 +237,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             .catch(() => {
                 setIsGlobalnetAlreadyConfigured(false)
             })
-        } else {
-            setGlobalnetHidden(true)
         }
     }, [clusterSet])
 
@@ -476,7 +473,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         label: t('Enable Globalnet'),
                         value: globalnetEnabled,
                         isDisabled: isGlobalnetAlreadyConfigured,
-                        isHidden: isGlobalnetHidden,
                         helperText: isGlobalnetAlreadyConfigured ? t('Already enabled for clusters in this cluster set') : '',
                         onChange: (value: boolean) => {
                             setGlobalnetEnabled(value)
