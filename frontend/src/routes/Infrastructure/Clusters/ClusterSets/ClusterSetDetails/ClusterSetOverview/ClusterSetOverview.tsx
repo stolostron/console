@@ -39,10 +39,14 @@ export function ClusterSetOverviewPageContent() {
                             key: t('table.name'),
                             value: clusterSet?.metadata.name,
                         },
-                        ...(isSubmarinerAvailable ? [{
-                            key: t('table.networkStatus'),
-                            value: <MultiClusterNetworkStatus clusterSet={clusterSet!} />,
-                        }] : []),
+                        ...(isSubmarinerAvailable
+                            ? [
+                                  {
+                                      key: t('table.networkStatus'),
+                                      value: <MultiClusterNetworkStatus clusterSet={clusterSet!} />,
+                                  },
+                              ]
+                            : []),
                     ]}
                     rightItems={[
                         {
@@ -74,21 +78,31 @@ export function ClusterSetOverviewPageContent() {
                         id="summary-status"
                         title={t('summary.status')}
                         cards={[
-                            ...(isSubmarinerAvailable ? [{
-                                id: 'submariners',
-                                count: submarinerAddons!.length,
-                                title: t('submariner.addons'),
-                                linkText: t('summary.submariner.launch'),
-                                onLinkClick: () =>
-                                    push(
-                                        NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)
-                                    ),
-                                countClick: () =>
-                                    push(
-                                        NavigationPath.clusterSetSubmariner.replace(':id', clusterSet!.metadata.name!)
-                                    ),
-                                isDanger: unhealthySubmariners.length > 0,
-                            }] : []),
+                            ...(isSubmarinerAvailable
+                                ? [
+                                      {
+                                          id: 'submariners',
+                                          count: submarinerAddons!.length,
+                                          title: t('submariner.addons'),
+                                          linkText: t('summary.submariner.launch'),
+                                          onLinkClick: () =>
+                                              push(
+                                                  NavigationPath.clusterSetSubmariner.replace(
+                                                      ':id',
+                                                      clusterSet!.metadata.name!
+                                                  )
+                                              ),
+                                          countClick: () =>
+                                              push(
+                                                  NavigationPath.clusterSetSubmariner.replace(
+                                                      ':id',
+                                                      clusterSet!.metadata.name!
+                                                  )
+                                              ),
+                                          isDanger: unhealthySubmariners.length > 0,
+                                      },
+                                  ]
+                                : []),
                             {
                                 id: 'clusters',
                                 count: clusters!.length,

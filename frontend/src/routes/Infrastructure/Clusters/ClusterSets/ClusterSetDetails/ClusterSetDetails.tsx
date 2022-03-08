@@ -163,9 +163,11 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                     <Route exact path={NavigationPath.clusterSetManage.replace(':id', match.params.id)}>
                         <ClusterSetManageResourcesPage />
                     </Route>
-                    {isSubmarinerAvailable && (<Route exact path={NavigationPath.clusterSetSubmarinerInstall.replace(':id', match.params.id)}>
-                        <InstallSubmarinerFormPage />
-                    </Route>)}
+                    {isSubmarinerAvailable && (
+                        <Route exact path={NavigationPath.clusterSetSubmarinerInstall.replace(':id', match.params.id)}>
+                            <InstallSubmarinerFormPage />
+                        </Route>
+                    )}
                     <AcmPage
                         hasDrawer
                         header={
@@ -190,18 +192,23 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                                                 {t('tab.overview')}
                                             </Link>
                                         </AcmSecondaryNavItem>
-                                        {isSubmarinerAvailable && (<AcmSecondaryNavItem
-                                            isActive={
-                                                location.pathname ===
-                                                NavigationPath.clusterSetSubmariner.replace(':id', match.params.id)
-                                            }
-                                        >
-                                            <Link
-                                                to={NavigationPath.clusterSetSubmariner.replace(':id', match.params.id)}
+                                        {isSubmarinerAvailable && (
+                                            <AcmSecondaryNavItem
+                                                isActive={
+                                                    location.pathname ===
+                                                    NavigationPath.clusterSetSubmariner.replace(':id', match.params.id)
+                                                }
                                             >
-                                                {t('tab.submariner')}
-                                            </Link>
-                                        </AcmSecondaryNavItem>)}
+                                                <Link
+                                                    to={NavigationPath.clusterSetSubmariner.replace(
+                                                        ':id',
+                                                        match.params.id
+                                                    )}
+                                                >
+                                                    {t('tab.submariner')}
+                                                </Link>
+                                            </AcmSecondaryNavItem>
+                                        )}
                                         <AcmSecondaryNavItem
                                             isActive={
                                                 location.pathname ===
@@ -247,9 +254,11 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                         <Route exact path={NavigationPath.clusterSetOverview}>
                             <ClusterSetOverviewPageContent />
                         </Route>
-                        {isSubmarinerAvailable && (<Route exact path={NavigationPath.clusterSetSubmariner}>
-                            <ClusterSetSubmarinerPageContent />
-                        </Route>)}
+                        {isSubmarinerAvailable && (
+                            <Route exact path={NavigationPath.clusterSetSubmariner}>
+                                <ClusterSetSubmarinerPageContent />
+                            </Route>
+                        )}
                         <Route exact path={NavigationPath.clusterSetClusters}>
                             <ClusterSetClustersPageContent />
                         </Route>

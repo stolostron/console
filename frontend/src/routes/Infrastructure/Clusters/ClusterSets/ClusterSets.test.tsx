@@ -78,7 +78,11 @@ describe('ClusterSets page', () => {
 describe('ClusterSets page without Submariner', () => {
     beforeEach(() => {
         nockIgnoreRBAC()
-        render(<PluginContext.Provider value={{ isSubmarinerAvailable: false }}><Component /></PluginContext.Provider>)
+        render(
+            <PluginContext.Provider value={{ isSubmarinerAvailable: false }}>
+                <Component />
+            </PluginContext.Provider>
+        )
     })
     test('renders', async () => {
         await waitForText(mockManagedClusterSet.metadata.name!)

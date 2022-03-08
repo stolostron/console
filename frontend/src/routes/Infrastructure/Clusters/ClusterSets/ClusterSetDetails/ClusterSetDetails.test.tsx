@@ -626,7 +626,11 @@ describe('ClusterSetDetails page without Submariner', () => {
     beforeEach(async () => {
         const getNocks = [nockClusterList(mockUser, [mockUser]), nockClusterList(mockGroup, [mockGroup])]
         nockIgnoreRBAC()
-        render(<PluginContext.Provider value={{ isSubmarinerAvailable: false }}><Component /></PluginContext.Provider>)
+        render(
+            <PluginContext.Provider value={{ isSubmarinerAvailable: false }}>
+                <Component />
+            </PluginContext.Provider>
+        )
         await waitForNocks(getNocks)
     })
     test('does not render Submariner add-ons tab', async () => {

@@ -126,27 +126,28 @@ export default function ClusterSetsPage() {
                                     </AcmButton>
                                 </FlexItem>
                             </Flex>
-                            {isSubmarinerAvailable && (<Flex>
-                                <FlexItem>
-                                    <TextContent>
-                                        <Text component={TextVariants.h4}>{t('submariner')}</Text>
-                                        <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
-                                    </TextContent>
-                                </FlexItem>
-                                <FlexItem align={{ default: 'alignRight' }}>
-                                    <AcmButton
-                                        onClick={() => window.open(DOC_LINKS.SUBMARINER, '_blank')}
-                                        variant="link"
-                                        role="link"
-                                        icon={<ExternalLinkAltIcon />}
-                                        iconPosition="right"
-                                    >
-                                        {t('view.documentation')}
-                                    </AcmButton>
-                                </FlexItem>
-                            </Flex>)}
+                            {isSubmarinerAvailable && (
+                                <Flex>
+                                    <FlexItem>
+                                        <TextContent>
+                                            <Text component={TextVariants.h4}>{t('submariner')}</Text>
+                                            <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
+                                        </TextContent>
+                                    </FlexItem>
+                                    <FlexItem align={{ default: 'alignRight' }}>
+                                        <AcmButton
+                                            onClick={() => window.open(DOC_LINKS.SUBMARINER, '_blank')}
+                                            variant="link"
+                                            role="link"
+                                            icon={<ExternalLinkAltIcon />}
+                                            iconPosition="right"
+                                        >
+                                            {t('view.documentation')}
+                                        </AcmButton>
+                                    </FlexItem>
+                                </Flex>
+                            )}
                         </Flex>
-
                     </AcmExpandableCard>
                     <Stack>
                         <ClusterSetsTable clusters={clusters} managedClusterSets={managedClusterSets} />
@@ -205,13 +206,13 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
             },
             ...(isSubmarinerAvailable
                 ? [
-                    {
-                        header: t('table.networkStatus'),
-                        cell: (managedClusterSet: ManagedClusterSet) => {
-                            return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
-                        },
-                    },
-                ]
+                      {
+                          header: t('table.networkStatus'),
+                          cell: (managedClusterSet: ManagedClusterSet) => {
+                              return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
+                          },
+                      },
+                  ]
                 : []),
             {
                 header: t('table.clusters'),
@@ -269,15 +270,16 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                             </span>
                         ),
                     },
-                    ...(isSubmarinerAvailable ?
-                        [
-                    {
-                        header: t('table.networkStatus'),
-                        cell: (managedClusterSet: ManagedClusterSet) => {
-                            return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
-                        },
-                            }
-                        ] : []),
+                    ...(isSubmarinerAvailable
+                        ? [
+                              {
+                                  header: t('table.networkStatus'),
+                                  cell: (managedClusterSet: ManagedClusterSet) => {
+                                      return <MultiClusterNetworkStatus clusterSet={managedClusterSet} />
+                                  },
+                              },
+                          ]
+                        : []),
                     {
                         header: t('table.clusters'),
                         cell: (managedClusterSet: ManagedClusterSet) => {

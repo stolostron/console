@@ -81,31 +81,48 @@ export function StatusSummaryCount() {
                         ),
                         isDanger: cluster?.nodes?.unhealthy! + cluster?.nodes?.unknown! > 0,
                     },
-                    ...(isSearchAvailable && isApplicationsAvailable ? [{
-                        id: 'applications',
-                        count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[0]?.related?.[0]?.count ?? 0,
-                        countClick: () => push(buildSearchLink({ cluster: cluster?.name!, kind: 'subscription' }, 'application')),
-                        title: t('summary.applications'),
-                        linkText: t('summary.applications.launch'),
-                        onLinkClick: () => push(NavigationPath.applications),
-                    }] : []),
-                    ...(isSearchAvailable && isGovernanceAvailable ? [{
-                        id: 'violations',
-                        count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[1]?.count ?? 0 ?? 0,
-                        // TODO the link clicks here should both rooute to Policies table with new query url to filter by the cluster
-                        countClick: () => push(
-                                buildSearchLink({
-                                    cluster: 'local-cluster',
-                                    kind: 'policy',
-                                    namespace: cluster?.namespace!,
-                                    compliant: '!Compliant',
-                                })
-                            ),
-                        title: t('summary.violations'),
-                        linkText: t('summary.violations.launch'),
-                        onLinkClick: () => push(NavigationPath.policies),
-                        isDanger: true,
-                    }] : []),
+                    ...(isSearchAvailable && isApplicationsAvailable
+                        ? [
+                              {
+                                  id: 'applications',
+                                  count:
+                                      /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[0]?.related?.[0]
+                                          ?.count ?? 0,
+                                  countClick: () =>
+                                      push(
+                                          buildSearchLink(
+                                              { cluster: cluster?.name!, kind: 'subscription' },
+                                              'application'
+                                          )
+                                      ),
+                                  title: t('summary.applications'),
+                                  linkText: t('summary.applications.launch'),
+                                  onLinkClick: () => push(NavigationPath.applications),
+                              },
+                          ]
+                        : []),
+                    ...(isSearchAvailable && isGovernanceAvailable
+                        ? [
+                              {
+                                  id: 'violations',
+                                  count: /* istanbul ignore next */ data?.[0]?.data?.searchResult?.[1]?.count ?? 0 ?? 0,
+                                  // TODO the link clicks here should both rooute to Policies table with new query url to filter by the cluster
+                                  countClick: () =>
+                                      push(
+                                          buildSearchLink({
+                                              cluster: 'local-cluster',
+                                              kind: 'policy',
+                                              namespace: cluster?.namespace!,
+                                              compliant: '!Compliant',
+                                          })
+                                      ),
+                                  title: t('summary.violations'),
+                                  linkText: t('summary.violations.launch'),
+                                  onLinkClick: () => push(NavigationPath.policies),
+                                  isDanger: true,
+                              },
+                          ]
+                        : []),
                     {
                         id: 'clusterIssues',
                         count: policyReportViolationsCount,

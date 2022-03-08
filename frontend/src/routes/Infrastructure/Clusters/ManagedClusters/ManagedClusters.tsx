@@ -216,7 +216,7 @@ export function ClustersTable(props: {
             clusterDistributionColumn,
             clusterLabelsColumn,
             clusterNodesColumn,
-            isGovernanceAvailable
+            isGovernanceAvailable,
         ]
     )
 

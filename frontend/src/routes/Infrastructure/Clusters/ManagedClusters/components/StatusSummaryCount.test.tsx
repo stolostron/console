@@ -15,7 +15,7 @@ const push = jest.fn()
 jest.mock('react-router-dom', () => ({
     ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
     useHistory: () => ({
-        push
+        push,
     }),
 }))
 
@@ -230,7 +230,9 @@ describe('StatusSummaryCount', () => {
 
             await clickByText('4')
             expect(push).toHaveBeenCalledTimes(1)
-            expect(push.mock.calls[0][0]).toBe('/multicloud/home/search?filters={"textsearch":"cluster:test-cluster%20kind:subscription"}&showrelated=application')
+            expect(push.mock.calls[0][0]).toBe(
+                '/multicloud/home/search?filters={"textsearch":"cluster:test-cluster%20kind:subscription"}&showrelated=application'
+            )
 
             await clickByText('Go to Applications')
             expect(push).toHaveBeenCalledTimes(2)
@@ -238,7 +240,9 @@ describe('StatusSummaryCount', () => {
 
             await clickByText('1')
             expect(push).toHaveBeenCalledTimes(3)
-            expect(push.mock.calls[2][0]).toBe('/multicloud/home/search?filters={"textsearch":"cluster:local-cluster%20kind:policy%20namespace:test-cluster%20compliant:!Compliant"}')
+            expect(push.mock.calls[2][0]).toBe(
+                '/multicloud/home/search?filters={"textsearch":"cluster:local-cluster%20kind:policy%20namespace:test-cluster%20compliant:!Compliant"}'
+            )
 
             await clickByText('Go to Policies')
             expect(push).toHaveBeenCalledTimes(4)
@@ -252,7 +256,11 @@ describe('StatusSummaryCount', () => {
     })
     test('renders without search', async () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
-        render(<PluginContext.Provider value={{ isSearchAvailable: false }}><Component /></PluginContext.Provider>)
+        render(
+            <PluginContext.Provider value={{ isSearchAvailable: false }}>
+                <Component />
+            </PluginContext.Provider>
+        )
         await act(async () => {
             await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
             await waitFor(() => expect(search.isDone()).toBeTruthy())
@@ -271,7 +279,11 @@ describe('StatusSummaryCount', () => {
     })
     test('renders without applications and governance', async () => {
         const search = nockSearch(mockSearchQuery, mockSearchResponse)
-        render(<PluginContext.Provider value={{ isApplicationsAvailable: false, isGovernanceAvailable: false }}><Component /></PluginContext.Provider>)
+        render(
+            <PluginContext.Provider value={{ isApplicationsAvailable: false, isGovernanceAvailable: false }}>
+                <Component />
+            </PluginContext.Provider>
+        )
         await act(async () => {
             await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
             await waitFor(() => expect(search.isDone()).toBeTruthy())

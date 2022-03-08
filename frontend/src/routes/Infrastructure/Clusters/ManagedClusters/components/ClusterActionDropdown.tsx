@@ -216,14 +216,18 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     rbacCreate(ClusterCuratorDefinition, cluster.namespace),
                 ],
             },
-            ...(isSearchAvailable ? [{
-                id: 'search-cluster',
-                text: t('managed.search'),
-                click: (cluster: Cluster) =>
-                    window.location.assign(
-                        `/multicloud/home/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
-                    ),
-            }] : []),
+            ...(isSearchAvailable
+                ? [
+                      {
+                          id: 'search-cluster',
+                          text: t('managed.search'),
+                          click: (cluster: Cluster) =>
+                              window.location.assign(
+                                  `/multicloud/home/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
+                              ),
+                      },
+                  ]
+                : []),
             {
                 id: 'import-cluster',
                 text: t('managed.import'),
