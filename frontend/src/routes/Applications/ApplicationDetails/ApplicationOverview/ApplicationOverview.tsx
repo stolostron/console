@@ -146,6 +146,16 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     key: t('Created'),
                     value: t(getShortDateTime(applicationData.application.metadata.creationTimestamp)),
                 },
+                {
+                    key: t('Last reconciled'),
+                    keyAction: (
+                        <Tooltip content={t('Date and time of the most recent reconcile for application resources.')}>
+                            <OutlinedQuestionCircleIcon
+                                style={{ fill: '#0066cc', marginLeft: '4px', cursor: 'pointer' }}
+                            />
+                        </Tooltip>
+                    ),
+                },
             ]
             rightItems = [
                 {
