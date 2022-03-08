@@ -172,7 +172,7 @@ export const findMatchingCluster = (argoApp, argoMappingInfo) => {
     return serverApi
 }
 
-const getArgoSecret = (appData, resourceStatuses = {}) => {
+export const getArgoSecret = (appData, resourceStatuses = {}) => {
     const searchResult = _.get(resourceStatuses, 'data.searchResult', [])
     if (searchResult.length > 0 && searchResult[0].items) {
         // For the no applicationSet case, make sure we don't include apps with applicationSet
@@ -198,7 +198,7 @@ const getArgoSecret = (appData, resourceStatuses = {}) => {
     return Promise.resolve()
 }
 
-const getQueryStringForResource = (resourcename, name, namespace) => {
+export const getQueryStringForResource = (resourcename, name, namespace) => {
     let resource = ''
     const nameForQuery = name ? `name:${name}` : ''
     const namespaceForQuery = namespace ? ` namespace:${namespace}` : ''

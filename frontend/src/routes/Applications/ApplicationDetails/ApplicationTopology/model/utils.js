@@ -68,7 +68,8 @@ export const addClusters = (
     clusterNames,
     managedClusterNames,
     links,
-    nodes
+    nodes,
+    topology
 ) => {
     // create element if not already created
     const sortedClusterNames = _.sortBy(clusterNames)
@@ -79,6 +80,11 @@ export const addClusters = (
         clusterNames.length === 1 && clusterNames[0] === localClusterName
             ? getLocalClusterElement(createdClusterElements)
             : undefined
+    const topoClusterNode = topology
+        ? _.find(topology.nodes, {
+              id: 'member--clusters--',
+          })
+        : undefined
     if (!createdClusterElements.has(clusterId) && !localClusterElement) {
         const filteredClusters = managedClusterNames.filter((cluster) => {
             const cname = _.get(cluster, metadataName)
@@ -94,6 +100,8 @@ export const addClusters = (
                 cluster: subscription && filteredClusters.length === 1 ? filteredClusters[0] : undefined,
                 clusters: filteredClusters,
                 sortedClusterNames,
+                appClusters: topoClusterNode ? topoClusterNode.specs.appClusters : undefined,
+                targetNamespaces: topoClusterNode ? topoClusterNode.specs.targetNamespaces : undefined,
             },
         })
         createdClusterElements.add(clusterId)
