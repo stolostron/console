@@ -1,11 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+    Broker,
+    BrokerApiVersion,
+    BrokerKind,
     CableDriver,
     Cluster,
     createResource,
+    defaultBrokerName,
+    getBroker,
+    IResource,
     listNamespaceSecrets,
-    ManagedClusterAddOn,
     ManagedClusterAddOnApiVersion,
     ManagedClusterAddOnKind,
     ManagedClusterSetDefinition,
@@ -13,6 +18,7 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
+    submarinerBrokerNamespaceAnnotation,
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
     submarinerConfigDefault,
@@ -42,6 +48,7 @@ import { rbacCreate } from '../../../../../../lib/rbac-util'
 import { validateJSON } from '../../../../../../lib/validation'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { ClusterSetContext } from '../ClusterSetDetails'
+import schema from './schema.json'
 
 export function InstallSubmarinerFormPage() {
     const { t } = useTranslation()
@@ -168,6 +175,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     const [withoutSubmarinerConfigClusters, setWithoutSubmarinerConfigClusters] = useState<Cluster[]>([])
     const [fetchSecrets, setFetchSecrets] = useState<boolean>(true)
 
+    const [globalnetEnabled, setGlobalnetEnabled] = useState<boolean>(false)
+    const [isGlobalnetAlreadyConfigured, setIsGlobalnetAlreadyConfigured] = useState<boolean>(true)
+
     const [awsAccessKeyIDs, setAwsAccessKeyIDs] = useState<Record<string, string | undefined>>({})
     const [awsSecretAccessKeyIDs, setAwsSecretAccessKeyIDs] = useState<Record<string, string | undefined>>({})
 
@@ -216,8 +226,125 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         }
     }, [availableClusters, providerSecretMap, fetchSecrets])
 
+    useEffect(() => {
+        const name = defaultBrokerName
+        const namespace = clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation]
+        if (namespace) {
+            getBroker({ name, namespace })
+                .promise.then((broker) => {
+                    setGlobalnetEnabled(broker?.spec?.globalnetEnabled ?? false)
+                    setIsGlobalnetAlreadyConfigured(true)
+                })
+                .catch(() => {
+                    setIsGlobalnetAlreadyConfigured(false)
+                })
+        }
+    }, [clusterSet])
+
     function stateToData() {
-        return {}
+        const resources: any = []
+        selectedClusters?.forEach((selected) => {
+            const cluster: Cluster = availableClusters.find((c) => c.displayName === selected)!
+
+            if (
+                submarinerConfigProviders.includes(cluster.provider!) &&
+                (cluster.provider === Provider.vmware || providerSecretMap[cluster.displayName!] !== undefined)
+            ) {
+                // ManagedClusterAddOn resource
+                resources.push({
+                    apiVersion: ManagedClusterAddOnApiVersion,
+                    kind: ManagedClusterAddOnKind,
+                    metadata: {
+                        name: 'submariner',
+                        namespace: cluster?.namespace!,
+                    },
+                    spec: {
+                        installNamespace: 'submariner-operator',
+                    },
+                })
+
+                // Create credential secret if one doesn't exist
+                const secret: Secret = {
+                    apiVersion: SecretApiVersion,
+                    kind: SecretKind,
+                    metadata: {
+                        name: `${cluster.name}-${cluster.provider}-creds`,
+                        namespace: cluster.namespace,
+                    },
+                    stringData: {},
+                    type: 'Opaque',
+                }
+
+                // configure secret if one doesn't exist
+                if (cluster.provider !== Provider.vmware && providerSecretMap[cluster.displayName!] === null) {
+                    if (cluster.provider === Provider.aws) {
+                        secret.stringData!['aws_access_key_id'] = awsAccessKeyIDs[cluster.displayName!]! || ''
+                        secret.stringData!['aws_secret_access_key'] = awsSecretAccessKeyIDs[cluster.displayName!]! || ''
+                    } else if (cluster.provider === Provider.gcp) {
+                        secret.stringData!['osServiceAccount.json'] = gcServiceAccountKeys[cluster.displayName!]! || ''
+                    }
+
+                    resources.push(secret)
+                }
+
+                const submarinerConfig: SubmarinerConfig = {
+                    apiVersion: SubmarinerConfigApiVersion,
+                    kind: SubmarinerConfigKind,
+                    metadata: {
+                        name: 'submariner',
+                        namespace: cluster?.namespace!,
+                    },
+                    spec: {
+                        gatewayConfig: {
+                            gateways: gateways[cluster.displayName!] || submarinerConfigDefault.gateways,
+                        },
+                        IPSecNATTPort: nattPorts[cluster.displayName!] ?? submarinerConfigDefault.nattPort,
+                        NATTEnable: nattEnables[cluster.displayName!] ?? submarinerConfigDefault.nattEnable,
+                        cableDriver: cableDrivers[cluster.displayName!] ?? submarinerConfigDefault.cableDriver,
+                    },
+                }
+
+                if (cluster.provider !== Provider.vmware) {
+                    // use existing secret name
+                    if (providerSecretMap[cluster.displayName!]) {
+                        submarinerConfig.spec.credentialsSecret = {
+                            name: providerSecretMap[cluster.displayName!]!,
+                        }
+                    } else {
+                        // use secret name that will be created
+                        submarinerConfig.spec.credentialsSecret = {
+                            name: secret.metadata.name!,
+                        }
+                    }
+                }
+
+                // configure instance type if AWS
+                if (cluster.provider === Provider.aws) {
+                    submarinerConfig.spec.gatewayConfig!.aws = {
+                        instanceType: awsInstanceTypes[cluster.displayName!] ?? submarinerConfigDefault.awsInstanceType,
+                    }
+                }
+                resources.push(submarinerConfig)
+            }
+        })
+
+        // if globalnet support create
+        if (!isGlobalnetAlreadyConfigured) {
+            const broker: Broker = {
+                apiVersion: BrokerApiVersion,
+                kind: BrokerKind,
+                metadata: {
+                    name: 'submariner-broker',
+                    namespace: clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
+                },
+                spec: {
+                    globalnetEnabled,
+                },
+            }
+            resources.push(broker)
+        }
+
+        return resources
     }
 
     const formData: FormData = {
@@ -338,6 +465,20 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         },
                         isRequired: true,
                         options: [...availableClusters.map((c) => ({ id: c.displayName!, value: c.displayName! }))],
+                    },
+                    {
+                        id: 'globalist-enable',
+                        type: 'Checkbox',
+                        title: t('Globalnet Settings'),
+                        label: t('Enable Globalnet'),
+                        value: globalnetEnabled,
+                        isDisabled: isGlobalnetAlreadyConfigured,
+                        helperText: isGlobalnetAlreadyConfigured
+                            ? t('Already enabled for clusters in this cluster set')
+                            : '',
+                        onChange: (value: boolean) => {
+                            setGlobalnetEnabled(value)
+                        },
                     },
                 ],
             },
@@ -516,101 +657,10 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         ],
         submit: () => {
             return new Promise(async (resolve, reject) => {
-                const calls: any[] = []
-                selectedClusters?.forEach((selected) => {
-                    const cluster: Cluster = availableClusters.find((c) => c.displayName === selected)!
-                    // ManagedClusterAddOn resource
-                    calls.push(
-                        createResource<ManagedClusterAddOn>({
-                            apiVersion: ManagedClusterAddOnApiVersion,
-                            kind: ManagedClusterAddOnKind,
-                            metadata: {
-                                name: 'submariner',
-                                namespace: cluster?.namespace!,
-                            },
-                            spec: {
-                                installNamespace: 'submariner-operator',
-                            },
-                        })
-                    )
-
-                    if (submarinerConfigProviders.includes(cluster.provider!)) {
-                        if (
-                            cluster.provider !== Provider.vmware &&
-                            providerSecretMap[cluster.displayName!] === undefined
-                        ) {
-                            return
-                        }
-
-                        // Create credential secret if one doesn't exist
-                        const secret: Secret = {
-                            apiVersion: SecretApiVersion,
-                            kind: SecretKind,
-                            metadata: {
-                                name: `${cluster.name}-${cluster.provider}-creds`,
-                                namespace: cluster.namespace,
-                            },
-                            stringData: {},
-                            type: 'Opaque',
-                        }
-
-                        // configure secret if one doesn't exist
-                        if (cluster.provider !== Provider.vmware && providerSecretMap[cluster.displayName!] === null) {
-                            if (cluster.provider === Provider.aws) {
-                                secret.stringData!['aws_access_key_id'] = awsAccessKeyIDs[cluster.displayName!]!
-                                secret.stringData!['aws_secret_access_key'] =
-                                    awsSecretAccessKeyIDs[cluster.displayName!]!
-                            } else if (cluster.provider === Provider.gcp) {
-                                secret.stringData!['osServiceAccount.json'] =
-                                    gcServiceAccountKeys[cluster.displayName!]!
-                            }
-
-                            calls.push(createResource<Secret>(secret))
-                        }
-
-                        const submarinerConfig: SubmarinerConfig = {
-                            apiVersion: SubmarinerConfigApiVersion,
-                            kind: SubmarinerConfigKind,
-                            metadata: {
-                                name: 'submariner',
-                                namespace: cluster?.namespace!,
-                            },
-                            spec: {
-                                gatewayConfig: {
-                                    gateways: gateways[cluster.displayName!] || submarinerConfigDefault.gateways,
-                                },
-                                IPSecNATTPort: nattPorts[cluster.displayName!] ?? submarinerConfigDefault.nattPort,
-                                NATTEnable: nattEnables[cluster.displayName!] ?? submarinerConfigDefault.nattEnable,
-                                cableDriver: cableDrivers[cluster.displayName!] ?? submarinerConfigDefault.cableDriver,
-                            },
-                        }
-
-                        if (cluster.provider !== Provider.vmware) {
-                            // use existing secret name
-                            if (providerSecretMap[cluster.displayName!]) {
-                                submarinerConfig.spec.credentialsSecret = {
-                                    name: providerSecretMap[cluster.displayName!]!,
-                                }
-                            } else {
-                                // use secret name that will be created
-                                submarinerConfig.spec.credentialsSecret = {
-                                    name: secret.metadata.name!,
-                                }
-                            }
-                        }
-
-                        // configure instance type if AWS
-                        if (cluster.provider === Provider.aws) {
-                            submarinerConfig.spec.gatewayConfig!.aws = {
-                                instanceType:
-                                    awsInstanceTypes[cluster.displayName!] ?? submarinerConfigDefault.awsInstanceType,
-                            }
-                        }
-
-                        calls.push(createResource<SubmarinerConfig>(submarinerConfig))
-                    }
+                const resources = formData?.customData ?? stateToData()
+                const calls: any[] = resources.map((resource: IResource) => {
+                    return createResource(resource)
                 })
-
                 const requests = resultsSettled(calls)
                 const results = await requests.promise
                 const errors: string[] = []
@@ -630,5 +680,16 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         },
     }
 
-    return <AcmDataFormPage formData={formData} mode="wizard" />
+    return (
+        <AcmDataFormPage
+            formData={formData}
+            mode="wizard"
+            editorTitle={t('Submariner YAML')}
+            schema={schema}
+            secrets={[
+                'Secret[*].stringData.aws_secret_access_key',
+                ['Secret', '*', 'stringData', 'osServiceAccount.json'],
+            ]}
+        />
+    )
 }
