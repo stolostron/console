@@ -90,6 +90,7 @@ describe('Infrastructure Environments page', () => {
 
         await waitForText('Infrastructure environments', true)
 
+        // the top-level hint
         await waitForTestId('createInfraEnv')
 
         // is the infraEnv listed?

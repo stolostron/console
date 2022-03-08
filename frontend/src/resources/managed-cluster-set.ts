@@ -9,6 +9,8 @@ export type ManagedClusterSetApiVersionType = 'cluster.open-cluster-management.i
 export const ManagedClusterSetKind = 'ManagedClusterSet'
 export type ManagedClusterSetKindType = 'ManagedClusterSet'
 
+export const submarinerBrokerNamespaceAnnotation = 'cluster.open-cluster-management.io/submariner-broker-ns'
+
 export const ManagedClusterSetDefinition: IResourceDefinition = {
     apiVersion: ManagedClusterSetApiVersion,
     kind: ManagedClusterSetKind,

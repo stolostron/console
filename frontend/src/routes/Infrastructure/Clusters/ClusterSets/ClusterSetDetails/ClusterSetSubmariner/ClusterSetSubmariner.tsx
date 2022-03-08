@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ManagedClusterAddOn, ManagedClusterSetDefinition, ResourceErrorCode } from '../../../../../../resources'
+import {
+    BrokerDefinition,
+    defaultBrokerName,
+    ManagedClusterAddOn,
+    ManagedClusterSetDefinition,
+    ResourceErrorCode,
+    submarinerBrokerNamespaceAnnotation,
+} from '../../../../../../resources'
 import {
     AcmButton,
     AcmEmptyState,
@@ -24,7 +31,7 @@ import {
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -33,7 +40,7 @@ import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../
 import { RbacButton, RbacDropdown } from '../../../../../../components/Rbac'
 import { deleteSubmarinerAddon } from '../../../../../../lib/delete-submariner'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
-import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../../lib/rbac-util'
+import { canUser, rbacCreate, rbacGet, rbacDelete, rbacPatch } from '../../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { EditSubmarinerConfigModal, EditSubmarinerConfigModalProps } from '../../components/EditSubmarinerConfigModal'
 import { ClusterSetContext } from '../ClusterSetDetails'
@@ -82,6 +89,7 @@ export function ClusterSetSubmarinerPageContent() {
     const history = useHistory()
     const [submarinerConfigs] = useRecoilState(submarinerConfigsState)
     const { clusterSet, clusters, submarinerAddons } = useContext(ClusterSetContext)
+    const [canInstallSubmarinerAddons, setCanInstallSubmarinerAddons] = useState<boolean>(false)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ManagedClusterAddOn> | { open: false }>({
         open: false,
     })
@@ -91,6 +99,30 @@ export function ClusterSetSubmarinerPageContent() {
     function keyFn(mca: ManagedClusterAddOn) {
         return mca.metadata.namespace!
     }
+
+    useEffect(() => {
+        const create = canUser(
+            'create',
+            BrokerDefinition,
+            clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
+            defaultBrokerName
+        )
+        const get = canUser(
+            'get',
+            BrokerDefinition,
+            clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
+            defaultBrokerName
+        )
+        Promise.all([create.promise, get.promise])
+            .then((result) => {
+                setCanInstallSubmarinerAddons(result.every((r) => r.status?.allowed!))
+            })
+            .catch((err) => console.error(err))
+        return () => {
+            create.abort()
+            get.abort()
+        }
+    }, [])
 
     const columns = [
         {
@@ -345,6 +377,7 @@ export function ClusterSetSubmarinerPageContent() {
                                             )
                                         ),
                                     variant: ButtonVariant.primary,
+                                    isDisabled: !canInstallSubmarinerAddons,
                                 },
                             ]}
                             emptyState={
@@ -389,20 +422,33 @@ export function ClusterSetSubmarinerPageContent() {
                                                 {t('managed.clusterSets.clusters.emptyStateButton')}
                                             </RbacButton>
                                         ) : (
-                                            <AcmButton
+                                            <RbacButton
                                                 id="install-submariner"
+                                                component={Link}
+                                                to={NavigationPath.clusterSetSubmarinerInstall.replace(
+                                                    ':id',
+                                                    clusterSet?.metadata.name!
+                                                )}
                                                 variant="primary"
-                                                onClick={() =>
-                                                    history.push(
-                                                        NavigationPath.clusterSetSubmarinerInstall.replace(
-                                                            ':id',
-                                                            clusterSet?.metadata.name!
-                                                        )
-                                                    )
-                                                }
+                                                rbac={[
+                                                    rbacCreate(
+                                                        BrokerDefinition,
+                                                        clusterSet?.metadata?.annotations?.[
+                                                            submarinerBrokerNamespaceAnnotation
+                                                        ],
+                                                        defaultBrokerName
+                                                    ),
+                                                    rbacGet(
+                                                        BrokerDefinition,
+                                                        clusterSet?.metadata?.annotations?.[
+                                                            submarinerBrokerNamespaceAnnotation
+                                                        ],
+                                                        defaultBrokerName
+                                                    ),
+                                                ]}
                                             >
                                                 {t('managed.clusterSets.submariner.addons.install')}
-                                            </AcmButton>
+                                            </RbacButton>
                                         )
                                     }
                                 />
