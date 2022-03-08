@@ -1,6 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { BrokerDefinition, ManagedClusterAddOn, ManagedClusterSetDefinition, ResourceErrorCode } from '../../../../../../resources'
+import {
+    BrokerDefinition,
+    ManagedClusterAddOn,
+    ManagedClusterSetDefinition,
+    ResourceErrorCode,
+} from '../../../../../../resources'
 import {
     AcmButton,
     AcmEmptyState,

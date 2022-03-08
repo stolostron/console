@@ -229,13 +229,14 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         const name = 'submariner-broker'
         const namespace = clusterSet?.metadata?.annotations?.['cluster.open-cluster-management.io/submariner-broker-ns']
         if (namespace) {
-            getBroker({ name, namespace }).promise.then(broker=>{
-                setGlobalnetEnabled(broker?.spec?.globalnetEnabled ?? false)
-                setIsGlobalnetAlreadyConfigured(true)
-            })
-            .catch(() => {
-                setIsGlobalnetAlreadyConfigured(false)
-            })
+            getBroker({ name, namespace })
+                .promise.then((broker) => {
+                    setGlobalnetEnabled(broker?.spec?.globalnetEnabled ?? false)
+                    setIsGlobalnetAlreadyConfigured(true)
+                })
+                .catch(() => {
+                    setIsGlobalnetAlreadyConfigured(false)
+                })
         } else {
             setGlobalnetHidden(true)
         }
@@ -693,4 +694,3 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         />
     )
 }
-

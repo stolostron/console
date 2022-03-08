@@ -18,7 +18,7 @@
                 "spec": {
                     "type": "object",
                     "properties": {
-                        "installNamespace": {  "type": "string", "const": "submariner-operator"  }
+                        "installNamespace": { "type": "string", "const": "submariner-operator" }
                     },
                     "required": ["installNamespace"]
                 }
@@ -47,9 +47,12 @@
                     "properties": {
                         "aws_access_key_id": { "type": "string" },
                         "aws_secret_access_key": { "type": "string" },
-                        "osServiceAccount.json": { "type": "string" }                       
+                        "osServiceAccount.json": { "type": "string" }
                     },
-                    "oneOf": [{ "required": ["aws_access_key_id", "aws_secret_access_key"] }, { "required": ["osServiceAccount.json"] }]
+                    "oneOf": [
+                        { "required": ["aws_access_key_id", "aws_secret_access_key"] },
+                        { "required": ["osServiceAccount.json"] }
+                    ]
                 }
             },
             "required": ["apiVersion", "type", "kind", "metadata", "stringData"]
@@ -91,12 +94,7 @@
                             "required": ["name"]
                         }
                     },
-                    "required": [
-                        "gatewayConfig",
-                        "IPSecNATTPort",
-                        "cableDriver",
-                        "credentialsSecret"
-                    ]
+                    "required": ["gatewayConfig", "IPSecNATTPort", "cableDriver", "credentialsSecret"]
                 }
             },
             "required": ["apiVersion", "metadata", "spec"]
