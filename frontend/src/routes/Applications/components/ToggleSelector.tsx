@@ -1,7 +1,8 @@
+/* eslint-disable no-debugger */
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { AcmTable, AcmTablePaginationContextProvider } from '@stolostron/ui-components'
+import { AcmTable, AcmEmptyState, AcmTablePaginationContextProvider } from '@stolostron/ui-components'
 import { ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { TFunction } from 'i18next'
 import { useHistory } from 'react-router-dom'
@@ -28,7 +29,6 @@ export function ToggleSelector(props: IToggleSelectorProps) {
 
     const selectedId = getSelectedId({ location, options, defaultOption, queryParam: 'resources' })
     const selectedResources = _.get(props.table, `${selectedId}`)
-
     return (
         <AcmTablePaginationContextProvider localStorageKey="advanced-tables-pagination">
             <DeleteResourceModal {...props.modalProps} />
@@ -54,6 +54,16 @@ export function ToggleSelector(props: IToggleSelectorProps) {
                     />
                 }
                 rowActionResolver={selectedResources.rowActionResolver}
+                emptyState={
+                    <AcmEmptyState
+                        message={t('View the documentation for more information.')}
+                        title={t(
+                            `You don't have any ${options
+                                .find((option) => option.id === selectedId)
+                                ?.title.toLowerCase()}`
+                        )}
+                    />
+                }
             />
         </AcmTablePaginationContextProvider>
     )
