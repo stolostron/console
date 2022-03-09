@@ -6,11 +6,14 @@ import _ from 'lodash'
 import R from 'ramda'
 import { getArgoTopology } from './topologyArgo'
 import { getSubscriptionTopology } from './topologySubscription'
+import { getAppSetTopology } from './topologyAppSet'
 
-export const getTopology = (application, managedClusters, relatedResources) => {
+export const getTopology = (application, managedClusters, relatedResources, argoData) => {
     let topology
     if (application.isArgoApp) {
-        topology = getArgoTopology(application, managedClusters)
+        topology = getArgoTopology(application, managedClusters, argoData)
+    } else if (application.isAppSet) {
+        topology = getAppSetTopology(application)
     } else {
         topology = getSubscriptionTopology(application, managedClusters, relatedResources)
     }

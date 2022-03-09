@@ -893,7 +893,7 @@ export function AcmDataFormInputs(props: {
                             <FormGroup
                                 id={`${input.id}-form-group`}
                                 fieldId={input.id}
-                                label={input.label}
+                                label={input?.title ?? input.label}
                                 isRequired={input.isRequired}
                                 helperTextInvalid={
                                     <Split>

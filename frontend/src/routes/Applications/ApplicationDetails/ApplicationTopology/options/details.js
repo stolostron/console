@@ -26,8 +26,8 @@ import {
     addIngressNodeInfo,
     setClusterStatus,
 } from '../helpers/diagram-helpers'
+import { setPlacementDeployStatus } from '../helpers/diagram-helpers-utils'
 import { kubeNaming } from '../../../../../components/Topology/helpers/utilities'
-import { showArgoApplicationSetLink } from '../helpers/diagram-helpers-argo'
 
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'
@@ -38,7 +38,7 @@ export const getNodeDetails = (node, updatedNode, activeFilters, t) => {
         const { type, labels = [] } = node
 
         // for argo apps with application sets
-        showArgoApplicationSetLink(node, details, t)
+        //showArgoApplicationSetLink(node, details, t)
 
         details.push({
             type: 'spacer',
@@ -291,6 +291,14 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
         })
     }
 
+    //placement
+    if (type === 'placement') {
+        mainDetails.push({
+            labelKey: t('Matched Clusters'),
+            value: _.get(node, 'specs.raw.status.numberOfSelectedClusters', 0),
+        })
+    }
+
     //routes
     addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'to'], t('To')))
 
@@ -311,10 +319,15 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
     addIngressNodeInfo(node, details)
 
     setApplicationDeployStatus(node, details, t)
+
     //subscriptions status
     setSubscriptionDeployStatus(node, details, activeFilters, t)
+
     //placement rule details
     setPlacementRuleDeployStatus(node, details, t)
+
+    //placement status
+    setPlacementDeployStatus(node, details, t)
 
     //show error if the resource doesn't produce pods and was not deployed on remote clusters
     setResourceDeployStatus(node, details, activeFilters, t)
