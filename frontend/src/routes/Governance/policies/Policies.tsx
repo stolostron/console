@@ -17,19 +17,20 @@ import {
 } from '@patternfly/react-core'
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmAlert, AcmTable, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import moment from 'moment'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
+    channelsState,
+    helmReleaseState,
     namespacesState,
-    policiesState,
-    policySetsState,
     placementBindingsState,
     placementRulesState,
     placementsState,
-    helmReleaseState,
+    policiesState,
+    policySetsState,
     subscriptionsState,
-    channelsState,
 } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -153,6 +154,16 @@ export default function PoliciesPage() {
             {
                 header: t('Automation'),
                 cell: () => '-',
+            },
+            {
+                header: t('Created'),
+                cell: (item: PolicyTableItem) => {
+                    if (item.policy.metadata?.creationTimestamp) {
+                        return <span>{moment(new Date(item.policy.metadata?.creationTimestamp)).fromNow()}</span>
+                    }
+                    return '-'
+                },
+                sort: 'policy.metadata.creationTimestamp',
             },
             {
                 header: '',
@@ -465,44 +476,7 @@ export default function PoliciesPage() {
         [namespaces]
     )
 
-    const [compact, setCompact] = useState(false)
-
-    useEffect(() => {
-        function handleResize() {
-            setCompact(window.innerWidth < 1200)
-        }
-        handleResize()
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
-
-    let activeColumns = policyColumns
-    let subColumns: IAcmTableColumn<PolicyTableItem>[] | undefined = undefined
-
-    if (compact) {
-        activeColumns = policyColumns.filter((column) => {
-            switch (column.header) {
-                case t('Controls'):
-                case t('Categories'):
-                case t('Standards'):
-                case t('Created'):
-                    return false
-            }
-            return true
-        })
-        subColumns = policyColumns.filter((column) => {
-            switch (column.header) {
-                case t('Controls'):
-                case t('Categories'):
-                case t('Standards'):
-                case t('Created'):
-                    return true
-            }
-            return false
-        })
-    }
-
-    if (policies.length === 0) {
+    if (tableItems.length === 0) {
         return <GovernanceCreatePolicyEmptyState />
     }
 
@@ -512,7 +486,7 @@ export default function PoliciesPage() {
             <BulkActionModel<PolicyTableItem> {...modalProps} />
             <AcmTable<PolicyTableItem>
                 plural={t('Policies')}
-                columns={activeColumns}
+                columns={policyColumns}
                 keyFn={policyKeyFn}
                 items={tableItems}
                 tableActions={tableActions}
@@ -526,8 +500,12 @@ export default function PoliciesPage() {
                         click: () => history.push(NavigationPath.createPolicy),
                     },
                 ]}
-                addSubRows={(policy) => {
-                    if (!subColumns) return undefined
+                addSubRows={(item: PolicyTableItem) => {
+                    const standards = item.policy.metadata.annotations?.['policy.open-cluster-management.io/standards']
+                    const controls = item.policy.metadata.annotations?.['policy.open-cluster-management.io/controls']
+                    const categories =
+                        item.policy.metadata.annotations?.['policy.open-cluster-management.io/categories']
+                    if (!standards && !controls && !categories) return undefined
                     return [
                         {
                             fullWidth: true,
@@ -536,16 +514,24 @@ export default function PoliciesPage() {
                                     title: (
                                         <div style={{ marginLeft: 106, marginTop: '20px', marginBottom: '20px' }}>
                                             <DescriptionList isAutoFit isAutoColumnWidths>
-                                                {subColumns.map((column) => (
-                                                    <DescriptionListGroup>
-                                                        <DescriptionListTerm>{column.header}</DescriptionListTerm>
-                                                        <DescriptionListDescription>
-                                                            {typeof column.cell === 'string'
-                                                                ? column.cell
-                                                                : column.cell(policy)}
-                                                        </DescriptionListDescription>
-                                                    </DescriptionListGroup>
-                                                ))}
+                                                <DescriptionListGroup>
+                                                    <DescriptionListTerm>{'Standards'}</DescriptionListTerm>
+                                                    <DescriptionListDescription>
+                                                        {standards ?? '-'}
+                                                    </DescriptionListDescription>
+                                                </DescriptionListGroup>
+                                                <DescriptionListGroup>
+                                                    <DescriptionListTerm>{'Controls'}</DescriptionListTerm>
+                                                    <DescriptionListDescription>
+                                                        {controls ?? '-'}
+                                                    </DescriptionListDescription>
+                                                </DescriptionListGroup>
+                                                <DescriptionListGroup>
+                                                    <DescriptionListTerm>{'Categories'}</DescriptionListTerm>
+                                                    <DescriptionListDescription>
+                                                        {categories ?? '-'}
+                                                    </DescriptionListDescription>
+                                                </DescriptionListGroup>
                                             </DescriptionList>
                                         </div>
                                     ),
@@ -567,8 +553,12 @@ function usePolicyViolationsColumn(
         header: t('Cluster violations'),
         cell: (item) => {
             const clusterViolationSummary = policyClusterViolationSummaryMap[item.policy.metadata.uid ?? '']
-            if (clusterViolationSummary) {
-                // TODO - add url seearch params when ready to soort/filter by violation type
+            if (
+                clusterViolationSummary.compliant ||
+                clusterViolationSummary.noncompliant ||
+                clusterViolationSummary.unknown
+            ) {
+                // TODO - add url search params when ready to soort/filter by violation type
                 return (
                     <ClusterPolicyViolationIcons2
                         compliant={clusterViolationSummary.compliant}
