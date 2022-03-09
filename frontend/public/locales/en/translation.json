@@ -1332,6 +1332,7 @@
     "machinePool.replica.count": "{{range}} replicas",
     "machinePool.scale": "Scale machine pool",
     "machinePool.view.machines": "View machines",
+    "Manage policies": "Manage policies",
     "manageClusterSet.form.modal.tab.added": "Added",
     "manageClusterSet.form.modal.tab.removed": "Removed",
     "manageClusterSet.form.modal.tab.unchanged": "No changes",
