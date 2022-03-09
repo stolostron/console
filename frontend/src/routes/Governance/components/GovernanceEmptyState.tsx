@@ -56,7 +56,7 @@ export function GovernanceManagePoliciesEmptyState() {
             action={
                 <div>
                     <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
-                        {t('Create policy')}
+                        {t('Manage policies')}
                     </AcmButton>
                     <TextContent>{viewDocumentation(DOC_LINKS.POLICIES, t)}</TextContent>
                 </div>
