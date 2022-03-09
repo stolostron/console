@@ -7,7 +7,7 @@ import { Placement, PlacementBinding, PlacementRule, PolicySet } from '../../../
 import PolicySetCard from './PolicySetCard'
 
 const policySet: PolicySet = {
-    apiVersion: 'policy.open-cluster-management.io/v1',
+    apiVersion: 'policy.open-cluster-management.io/v1beta1',
     kind: 'PolicySet',
     metadata: {
         annotations: {
@@ -51,7 +51,7 @@ describe('Policy Set Card', () => {
         const { container } = render(
             <RecoilRoot>
                 <MemoryRouter>
-                    <PolicySetCard policySet={policySet} />
+                    <PolicySetCard policySet={policySet} selectedCardID={''} setSelectedCardID={() => {}} />
                 </MemoryRouter>
             </RecoilRoot>
         )
