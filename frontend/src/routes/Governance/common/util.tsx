@@ -168,7 +168,12 @@ function getChannelMap(channels: Channel[]) {
 }
 
 // This function may need some revision/testing
-export function resolveSource(policy: Policy, helmReleases: HelmRelease[], channels: Channel[], subscriptions: Subscription[]) {
+export function resolveSource(
+    policy: Policy,
+    helmReleases: HelmRelease[],
+    channels: Channel[],
+    subscriptions: Subscription[]
+) {
     const getAnnotations = (item: any) => item.metadata.annotations ?? {}
     const getHostingSubscription = (annotations: any) =>
         annotations['apps.open-cluster-management.io/hosting-subscription']
@@ -238,7 +243,13 @@ export function getSource(policySource: any, isExternal: boolean, t: TFunction) 
     }
 }
 
-export function getPolicyDetailSourceLabel(policy: Policy, helmReleases: HelmRelease[], channels: Channel[], subscriptions: Subscription[], t:TFunction) {
+export function getPolicyDetailSourceLabel(
+    policy: Policy,
+    helmReleases: HelmRelease[],
+    channels: Channel[],
+    subscriptions: Subscription[],
+    t: TFunction
+) {
     const isExternal = resolveExternalStatus(policy)
     const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
     if (isExternal) {
