@@ -51,7 +51,7 @@ describe('Policy Set Card', () => {
         const { container } = render(
             <RecoilRoot>
                 <MemoryRouter>
-                    <PolicySetCard policySet={policySet} selectedCardID={''} setSelectedCardID={() => {}} />
+                    <PolicySetCard policySet={policySet} />
                 </MemoryRouter>
             </RecoilRoot>
         )
