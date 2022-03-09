@@ -65,7 +65,7 @@ export function PolicyActionDropdown(props: {
         },
     ]
 
-    let actions = useMemo(
+    const actions = useMemo(
         () => [
             {
                 id: 'enable-policy',
