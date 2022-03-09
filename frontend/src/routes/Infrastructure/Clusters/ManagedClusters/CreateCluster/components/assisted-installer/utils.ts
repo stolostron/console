@@ -100,7 +100,7 @@ export const setProvisionRequirements = (
 
     return patchResource(agentClusterInstall, [
         {
-            op: agentClusterInstall.spec?.provisionRequirements ? 'add' : 'replace',
+            op: agentClusterInstall.spec?.provisionRequirements ? 'replace' : 'add',
             path: '/spec/provisionRequirements',
             value: provisionRequirements,
         },
