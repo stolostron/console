@@ -22,6 +22,7 @@ import {
     useNMStatesOfNamespace,
     useOnDeleteHost,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
+import { isBMPlatform } from '../utils'
 
 const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames, AgentAlerts } = CIM
 
@@ -49,7 +50,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
 
     const canDelete = useCallback(
         (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => !!nmStates && (!!agent || !!bmh),
-        []
+        [nmStates]
     )
 
     return (
@@ -81,6 +82,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                                 onChangeHostname={onSaveAgent}
                                 onChangeBMHHostname={onChangeBMHHostname}
                                 onMassDeleteHost={onMassDeleteHost}
+                                isBMPlatform={isBMPlatform(infraEnv)}
                             />
                             <EditBMHModal
                                 infraEnv={infraEnv}

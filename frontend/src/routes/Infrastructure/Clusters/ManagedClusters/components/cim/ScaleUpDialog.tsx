@@ -5,9 +5,7 @@ import { CIM } from 'openshift-assisted-ui-lib'
 
 import { agentsState } from '../../../../../../atoms'
 import { patchResource } from '../../../../../../resources/utils/resource-request'
-import {
-    useClusterDeployment,
-} from '../../CreateCluster/components/assisted-installer/utils'
+import { useClusterDeployment } from '../../CreateCluster/components/assisted-installer/utils'
 
 const { ScaleUpModal } = CIM
 

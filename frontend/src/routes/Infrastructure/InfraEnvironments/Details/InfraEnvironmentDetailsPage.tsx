@@ -14,7 +14,13 @@ import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 
-import { acmRouteState, agentsState, bareMetalHostsState, configMapsState, infrastructuresState } from '../../../../atoms'
+import {
+    acmRouteState,
+    agentsState,
+    bareMetalHostsState,
+    configMapsState,
+    infrastructuresState,
+} from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'

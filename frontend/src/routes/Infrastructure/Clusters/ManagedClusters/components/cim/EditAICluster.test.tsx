@@ -14,7 +14,7 @@ import {
     infraEnvironmentsState,
 } from '../../../../../../atoms'
 import { clickByText, waitForTestId, waitForText, waitForNocks } from '../../../../../../lib/test-util'
-import { nockList, nockPatch } from '../../../../../../lib/nock-util'
+import { nockList } from '../../../../../../lib/nock-util'
 
 import EditAICluster from './EditAICluster'
 import {
@@ -59,9 +59,6 @@ describe('Edit AI Cluster', () => {
     test('can be rendered', async () => {
         const nocks = [
             nockList(mockNMStateConfig, mockNMStateConfig, ['agent-install.openshift.io/bmh']),
-            nockPatch(mockAgentClusterInstall, [
-                { op: 'replace', path: '/spec/imageSetRef/name', value: 'ocp-release48' },
-            ]),
         ]
         render(<Component />)
         await new Promise((resolve) => setTimeout(resolve, 500))
@@ -70,9 +67,10 @@ describe('Edit AI Cluster', () => {
         await waitForText('Cluster details', true)
         await waitForText('Cluster hosts')
         await waitForText('Cluster network')
+        await waitForText('Review and create')
 
         await waitForTestId('form-static-openshiftVersion-field')
-        await waitForText('OpenShift ocp-release48')
+        await waitForText('OpenShift 4.8.15')
 
         await clickByText('Next')
         await waitForNocks(nocks)

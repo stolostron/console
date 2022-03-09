@@ -653,7 +653,7 @@ const sleep = async (ms: number) => new Promise((resolve) => setTimeout(resolve,
 export const getOnSaveISOParams =
     (infraEnv: CIM.InfraEnvK8sResource) => async (values: CIM.DiscoveryImageFormValues) => {
         const patches: any[] = []
-        if (!!values.sshPublicKey) {
+        if (values.sshPublicKey) {
             appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey, infraEnv.spec?.sshAuthorizedKey)
         } else if (infraEnv.spec?.sshAuthorizedKey) {
             patches.push({
@@ -684,9 +684,8 @@ export const getOnSaveISOParams =
         // TODO(mlibra): Why is oldIsoCreatedTimestamp not from a condition? I would expect infraEnv.status?.conditions?.find((condition) => condition.type === 'ImageCreated')
         const oldIsoCreatedTimestamp = infraEnv.status?.createdTime
 
-        await patchResource(infraEnv, patches).promise
-
         if (patches.length) {
+            await patchResource(infraEnv, patches).promise
             // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
             // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
             // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.
