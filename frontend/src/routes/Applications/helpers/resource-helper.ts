@@ -4,8 +4,6 @@ import { TFunction } from 'i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import queryString from 'query-string'
-import { IResource } from '../../../resources'
-import { useTranslation } from '../../../lib/acm-i18next'
 import {
     ApplicationKind,
     ApplicationSetKind,

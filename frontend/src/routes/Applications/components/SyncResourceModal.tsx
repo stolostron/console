@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmModal, AcmToastContext } from '@stolostron/ui-components'
 import { Button, ModalVariant } from '@patternfly/react-core'
+import { AcmModal, AcmToastContext } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
-import { IResource, reconcileResources } from '../../../resources'
 import _ from 'lodash'
 import { useContext } from 'react'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { IResource, reconcileResources } from '../../../resources'
 export interface ISyncResourceModalProps {
     close: () => void
     open: boolean
@@ -14,11 +15,12 @@ export interface ISyncResourceModalProps {
 }
 
 export function SyncResourceModal(props: ISyncResourceModalProps | { open: false }) {
+    const { t } = useTranslation()
+    const toastContext = useContext(AcmToastContext)
+
     if (props.open === false) {
         return <></>
     }
-    const { t } = props
-    const toastContext = useContext(AcmToastContext)
 
     const handleSubmit = () => {
         props.close()

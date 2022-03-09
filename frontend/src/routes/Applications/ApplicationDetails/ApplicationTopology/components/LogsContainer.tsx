@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
-import { useEffect, useState } from 'react'
-import { fetchRetry, getBackendUrl } from '../../../../../resources'
 import { PageSection, SelectOption } from '@patternfly/react-core'
 import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
-import './LogsContainer.css'
+import _ from 'lodash'
+import { useEffect, useState } from 'react'
+import { fetchRetry, getBackendUrl } from '../../../../../resources'
 import { createResourceURL } from '../helpers/diagram-helpers'
+import './LogsContainer.css'
 
 export interface ILogsContainerProps {
     node: any[]
@@ -108,7 +108,7 @@ export function LogsContainer(props: ILogsContainerProps) {
                     setLogsError(err.message)
                 })
         }
-    }, [cluster, container, namespace, selectedPod])
+    }, [cluster, container, currentNamespace, selectedPod])
 
     if (resourceError !== '') {
         return (

@@ -4,9 +4,9 @@ import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { TFunction } from 'i18next'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -36,30 +36,23 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
-    SubscriptionKind,
-    SubscriptionApiVersion,
-    Subscription,
-    PlacementRuleKind,
+    IResource,
     PlacementRuleApiVersion,
+    PlacementRuleKind,
+    Subscription,
+    SubscriptionApiVersion,
+    SubscriptionKind,
 } from '../../resources'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import {
     createClustersText,
-    isArgoApp,
     getAge,
-    getSubscriptionsFromAnnotation,
     getSearchLink,
+    getSubscriptionsFromAnnotation,
+    isArgoApp,
     subAnnotationStr,
 } from './helpers/resource-helper'
-import { canUser } from '../../lib/rbac-util'
-import { Link } from 'react-router-dom'
-import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
-import { useQuery } from '../../lib/useQuery'
-import { queryRemoteArgoApps } from '../../lib/search'
-import { NavigationPath } from '../../NavigationPath'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { DOC_LINKS } from '../../lib/doc-util'
 
 const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
@@ -502,7 +495,7 @@ export default function ApplicationsOverview() {
                 search: 'transformed.createdText',
             },
         ],
-        [channels, createClustersText, getTimeWindow, subscriptions, t]
+        [argoApplications, channels, getTimeWindow, localCluster, placementRules, subscriptions, t]
     )
 
     const filters = [

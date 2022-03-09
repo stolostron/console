@@ -27,7 +27,6 @@ import { clusterCuratorsState, clusterManagementAddonsState } from '../../../../
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
-import { PluginContext } from '../../../../lib/PluginContext'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -171,7 +170,6 @@ export function ClustersTable(props: {
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
 
     const { t } = useTranslation()
-    const { isGovernanceAvailable } = useContext(PluginContext)
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
     const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
@@ -217,7 +215,6 @@ export function ClustersTable(props: {
             clusterDistributionColumn,
             clusterLabelsColumn,
             clusterNodesColumn,
-            isGovernanceAvailable,
         ]
     )
 

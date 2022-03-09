@@ -2,16 +2,14 @@
 
 import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { DeletePolicyModal } from '../policies/Policies'
-
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 // import { rbacDelete } from '../../../lib/rbac-util'
 import { patchResource, Policy, PolicyApiVersion, PolicyDefinition, PolicyKind } from '../../../resources'
-import { PolicyTableItem } from '../policies/Policies'
-import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
+import { DeletePolicyModal, PolicyTableItem } from '../policies/Policies'
 
 export function PolicyActionDropdown(props: {
     setModal: (modal: React.ReactNode) => void
@@ -29,41 +27,47 @@ export function PolicyActionDropdown(props: {
 
     const { setModal } = props
 
-    const bulkModalStatusColumns = [
-        {
-            header: t('policy.tableHeader.name'),
-            cell: 'policy.metadata.name',
-            sort: 'policy.metadata.name',
-        },
-        {
-            header: t('policy.table.actionGroup.status'),
-            cell: (item: PolicyTableItem) => (
-                <span>
-                    {item.policy.spec.disabled === true
-                        ? t('policy.table.actionGroup.status.disabled')
-                        : t('policy.table.actionGroup.status.enabled')}
-                </span>
-            ),
-        },
-    ]
+    const bulkModalStatusColumns = useMemo(
+        () => [
+            {
+                header: t('policy.tableHeader.name'),
+                cell: 'policy.metadata.name',
+                sort: 'policy.metadata.name',
+            },
+            {
+                header: t('policy.table.actionGroup.status'),
+                cell: (item: PolicyTableItem) => (
+                    <span>
+                        {item.policy.spec.disabled === true
+                            ? t('policy.table.actionGroup.status.disabled')
+                            : t('policy.table.actionGroup.status.enabled')}
+                    </span>
+                ),
+            },
+        ],
+        [t]
+    )
 
-    const bulkModalRemediationColumns = [
-        {
-            header: t('policy.tableHeader.name'),
-            cell: 'policy.metadata.name',
-            sort: 'policy.metadata.name',
-        },
-        {
-            header: t('policy.table.actionGroup.status'),
-            cell: (item: PolicyTableItem) => (
-                <span>
-                    {item.policy.spec.remediationAction === t('policy.table.actions.inform').toLowerCase()
-                        ? t('policy.table.actions.inform')
-                        : t('policy.table.actions.enforce')}
-                </span>
-            ),
-        },
-    ]
+    const bulkModalRemediationColumns = useMemo(
+        () => [
+            {
+                header: t('policy.tableHeader.name'),
+                cell: 'policy.metadata.name',
+                sort: 'policy.metadata.name',
+            },
+            {
+                header: t('policy.table.actionGroup.status'),
+                cell: (item: PolicyTableItem) => (
+                    <span>
+                        {item.policy.spec.remediationAction === t('policy.table.actions.inform').toLowerCase()
+                            ? t('policy.table.actions.inform')
+                            : t('policy.table.actions.enforce')}
+                    </span>
+                ),
+            },
+        ],
+        [t]
+    )
 
     const actions = useMemo(
         () => [
@@ -237,7 +241,17 @@ export function PolicyActionDropdown(props: {
                 rbac: [rbacDelete(PolicyDefinition, item.policy.metadata.namespace, item.policy.metadata.name)],
             },
         ],
-        [item]
+        [
+            bulkModalRemediationColumns,
+            bulkModalStatusColumns,
+            history,
+            item.policy.metadata.name,
+            item.policy.metadata.namespace,
+            item.policy.spec.disabled,
+            item.policy.spec.remediationAction,
+            setModal,
+            t,
+        ]
     )
 
     return (
