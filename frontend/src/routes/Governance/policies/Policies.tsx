@@ -504,7 +504,7 @@ export default function PoliciesPage() {
 
     return (
         <PageSection isWidthLimited>
-            {modal && modal}
+            {modal !== undefined && modal}
             <BulkActionModel<PolicyTableItem> {...modalProps} />
             <AcmTable<PolicyTableItem>
                 plural={t('Policies')}
