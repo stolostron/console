@@ -1,13 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
+import {
+    AcmActionGroup,
+    AcmButton,
+    AcmPage,
+    AcmPageHeader,
+    AcmSecondaryNav,
+    AcmSecondaryNavItem,
+} from '@stolostron/ui-components'
 import { Fragment, Suspense, useMemo } from 'react'
-import { Link, Route, Switch, useLocation, useParams } from 'react-router-dom'
+import { Link, Route, Switch, useHistory, useLocation, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { channelsState, helmReleaseState, policiesState, subscriptionsState } from '../../../../atoms'
+import { ErrorPage } from '../../../../components/ErrorPage'
+import { RbacDropdown } from '../../../../components/Rbac'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { rbacPatch } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Policy } from '../../../../resources'
+import { Policy, ResourceError } from '../../../../resources'
 import { getPolicyDetailSourceLabel } from '../../common/util'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
 import PolicyDetailsResults from './PolicyDetailsResults'
@@ -15,6 +25,7 @@ import PolicyDetailsResults from './PolicyDetailsResults'
 export function PolicyDetailsPage() {
     const location = useLocation()
     const { t } = useTranslation()
+    const history = useHistory()
     const [policies] = useRecoilState(policiesState)
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)
@@ -41,6 +52,42 @@ export function PolicyDetailsPage() {
         return policies[idx]
     }, [policies, policyName, policyNamespace])
 
+    const actions = useMemo(
+        () => [
+            {
+                id: 'edit-policy',
+                text: t('Edit policy'),
+                click: () =>
+                    history.push(
+                        NavigationPath.editPolicy.replace(':namespace', policyNamespace).replace(':name', policyName)
+                    ),
+                isAriaDisabled: true,
+                rbac: [
+                    selectedPolicy &&
+                        rbacPatch(
+                            selectedPolicy,
+                            selectedPolicy?.metadata.namespace ?? '',
+                            selectedPolicy?.metadata.name ?? ''
+                        ),
+                ],
+            },
+        ],
+        [selectedPolicy, policyNamespace, policyName, history, t]
+    )
+
+    if (!selectedPolicy) {
+        return (
+            <ErrorPage
+                error={new ResourceError('Not found', 404)}
+                actions={
+                    <AcmButton role="link" onClick={() => history.push(NavigationPath.policies)}>
+                        {t('Back to policies')}
+                    </AcmButton>
+                }
+            />
+        )
+    }
+
     return (
         <AcmPage
             hasDrawer
@@ -64,18 +111,19 @@ export function PolicyDetailsPage() {
                         </AcmSecondaryNav>
                     }
                     description={getPolicyDetailSourceLabel(selectedPolicy, helmReleases, channels, subscriptions, t)}
-                    // TODO once edit policy wizard is done
-                    // controls={
-                    //     <Fragment>
-                    //         <AcmButton
-                    //             key="edit-policy"
-                    //             id="edit-policy"
-                    //             onClick={() => history.push(NavigationPath.editPolicy)}
-                    //         >
-                    //             {t('Edit policy')}
-                    //         </AcmButton>
-                    //     </Fragment>
-                    // }
+                    actions={
+                        <AcmActionGroup>
+                            {[
+                                <RbacDropdown<Policy>
+                                    id={`${selectedPolicy?.metadata.name ?? 'policy'}-actions`}
+                                    item={selectedPolicy}
+                                    isKebab={false}
+                                    text={t('actions')}
+                                    actions={actions}
+                                />,
+                            ]}
+                        </AcmActionGroup>
+                    }
                 />
             }
         >
