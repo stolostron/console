@@ -121,7 +121,7 @@ export const mockPolicies: Policy[] = [mockPolicyRole, mockPolicyTesting, mockPo
 describe('PolicySets Page', () => {
     test('Should render PolicySet page correctly', async () => {
         const policySet: PolicySet = {
-            apiVersion: 'policy.open-cluster-management.io/v1',
+            apiVersion: 'policy.open-cluster-management.io/v1beta1',
             kind: 'PolicySet',
             metadata: { name: 'test-policyset', namespace: 'test-ns' },
             spec: {

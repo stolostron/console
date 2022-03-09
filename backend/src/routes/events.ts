@@ -94,7 +94,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'MultiClusterHub', apiVersion: 'operator.open-cluster-management.io/v1' },
     { kind: 'PlacementBinding', apiVersion: 'policy.open-cluster-management.io/v1' },
     { kind: 'Policy', apiVersion: 'policy.open-cluster-management.io/v1' },
-    { kind: 'PolicySet', apiVersion: 'policy.open-cluster-management.io/v1' },
+    { kind: 'PolicySet', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
     { kind: 'SubmarinerConfig', apiVersion: 'submarineraddon.open-cluster-management.io/v1alpha1' },
     { kind: 'AnsibleJob', apiVersion: 'tower.ansible.com/v1alpha1' },
     { kind: 'ConfigMap', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'insight-content-data' } },
