@@ -1,4 +1,3 @@
-/* eslint-disable no-debugger */
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
