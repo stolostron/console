@@ -76,7 +76,7 @@ const fixupControlsForClusterPool = (controlData) => {
             type: 'number',
             initial: '0',
             validation: {
-                required: false,
+                required: true,
             },
         }
     )

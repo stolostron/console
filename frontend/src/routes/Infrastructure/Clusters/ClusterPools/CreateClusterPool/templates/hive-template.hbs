@@ -19,8 +19,8 @@ metadata:
     cluster.open-cluster-management.io/clusterset: '{{{clusterSet}}}'
 {{/if}}
 spec:
-  runningCount: {{{runningCount}}} ##runningCount
   size: {{{size}}} ##size
+  runningCount: {{{runningCount}}} ##runningCount
   baseDomain: {{{baseDomain}}}  ##baseDomain
 {{#if singleNode}}
   skipMachinePools: true
