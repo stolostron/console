@@ -40,7 +40,7 @@ export interface ApplicationSet extends IResource {
                     targetRevision?: string
                     chart?: string
                 }
-                syncPolicy: any
+                syncPolicy?: any
             }
         }
     }
