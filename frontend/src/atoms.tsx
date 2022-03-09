@@ -313,7 +313,53 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(SecretApiVersion, SecretKind, setSecrets)
         addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
         return setters
-    }, [])
+    }, [
+        setAgentClusterInstalls,
+        setAgents,
+        setAnsibleJobs,
+        setAppProjectsState,
+        setApplicationSetsState,
+        setApplicationsState,
+        setArgoApplicationsState,
+        setArgoCDsState,
+        setBareMetalAssets,
+        setBareMetalHosts,
+        setCertificateSigningRequests,
+        setChannelsState,
+        setClusterClaims,
+        setClusterCurators,
+        setClusterDeployments,
+        setClusterImageSets,
+        setClusterManagementAddons,
+        setClusterPools,
+        setClusterProvisions,
+        setConfigMaps,
+        setDiscoveredClusters,
+        setDiscoveryConfigs,
+        setGitOpsClustersState,
+        setHelmReleases,
+        setInfraEnvironments,
+        setInfrastructure,
+        setMachinePools,
+        setManagedClusterAddons,
+        setManagedClusterInfos,
+        setManagedClusterSetBindings,
+        setManagedClusterSets,
+        setManagedClusters,
+        setMultiClusterHubs,
+        setNamespaces,
+        setPlacementBindingsState,
+        setPlacementDecisionsState,
+        setPlacementRulesState,
+        setPlacementsState,
+        setPoliciesState,
+        setPolicyReports,
+        setPolicySetsState,
+        setSecrets,
+        setSubmarinerConfigs,
+        setSubscriptionReportsState,
+        setSubscriptionsState,
+    ])
 
     useEffect(() => {
         const eventQueue: WatchEvent[] = []
@@ -413,7 +459,7 @@ export function LoadData(props: { children?: ReactNode }) {
             clearInterval(timeout)
             if (evtSource) evtSource.close()
         }
-    }, [])
+    }, [setSettings, setters])
 
     useEffect(() => {
         function checkLoggedIn() {

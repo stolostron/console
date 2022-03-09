@@ -80,7 +80,7 @@ export function PolicyTemplateDetails(props: {
                     setTemplateError(err)
                 })
         }
-    }, [clusterName, kind, apiGroup, apiVersion])
+    }, [clusterName, kind, apiGroup, apiVersion, templateName])
 
     const descriptionItems = [
         {
@@ -229,7 +229,7 @@ export function PolicyTemplateDetails(props: {
                 },
             },
         ],
-        []
+        [t]
     )
 
     if (templateError) {

@@ -1,6 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// Copyright (c) 2021 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
 import { makeStyles } from '@material-ui/styles'
 import { PageSection } from '@patternfly/react-core'
 import { AcmAlert, AcmButton, AcmLoadingPage } from '@stolostron/ui-components'
@@ -76,7 +74,7 @@ export default function YAMLPage(props: {
         handleResize()
         window.addEventListener('resize', handleResize)
         return () => window.removeEventListener('resize', handleResize)
-    }, [window.innerHeight])
+    }, [])
 
     useEffect(() => {
         if (!editedResourceYaml) {
@@ -100,7 +98,7 @@ export default function YAMLPage(props: {
             .then((result) => setUserCanEdit(result.status?.allowed!))
             .catch((err) => console.error(err))
         return () => canUpdateResource.abort()
-    }, [cluster, editedResourceYaml])
+    }, [apiversion, cluster, editedResourceYaml, kind, name, namespace])
 
     function fireUpdateResource() {
         fireManagedClusterAction(

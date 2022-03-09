@@ -127,7 +127,7 @@ export default function CardViewToolbarSearch(props: {
 
         const divider = <Divider key="divider" />
         setMenuItems([headingItem, divider, ...filteredMenuItems])
-    }, [inputValue])
+    }, [inputValue, menuItemsText, selectedKey])
 
     /** add selected key/value pair as a chip in the chip group */
     const selectValue = (selectedValue: string) => {

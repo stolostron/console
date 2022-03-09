@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
 import {
     Card,
     CardBody,
@@ -15,33 +14,34 @@ import {
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
+import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from '../../lib/acm-i18next'
-import { useHistory, Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } from '../../atoms'
+import { useTranslation } from '../../lib/acm-i18next'
+import { DOC_LINKS } from '../../lib/doc-util'
+import { canUser } from '../../lib/rbac-util'
 import {
-    IResource,
     ChannelApiVersion,
     ChannelDefinition,
-    SubscriptionApiVersion,
-    SubscriptionDefinition,
+    ChannelKind,
+    IResource,
     PlacementApiVersionAlpha,
     PlacementDefinition,
+    PlacementKind,
     PlacementRuleApiVersion,
     PlacementRuleDefinition,
-    SubscriptionKind,
-    ChannelKind,
-    PlacementKind,
     PlacementRuleKind,
+    SubscriptionApiVersion,
+    SubscriptionDefinition,
+    SubscriptionKind,
 } from '../../resources'
-import { getAge, getClusterCountString, getSearchLink, getEditLink } from './helpers/resource-helper'
-import { DOC_LINKS } from '../../lib/doc-util'
-import ResourceLabels from './components/ResourceLabels'
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
+import ResourceLabels from './components/ResourceLabels'
 import { ToggleSelector } from './components/ToggleSelector'
-import { canUser } from '../../lib/rbac-util'
+import { getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
 
 export default function AdvancedConfiguration() {
     const { t } = useTranslation()
@@ -96,6 +96,48 @@ export default function AdvancedConfiguration() {
             .catch((err) => console.error(err))
         return () => canDeletePlacementRulePromise.abort()
     }, [])
+
+    const getSubscriptionClusterCount = useCallback(
+        function getSubscriptionClusterCount(
+            resource: IResource,
+            clusterCount: { localPlacement: boolean; remoteCount: number },
+            showSearchLink?: boolean
+        ) {
+            const namespace = _.get(resource, 'metadata.namespace')
+            const placementrule = _.get(resource, 'spec.placement')
+            const localDeployment = _.get(placementrule, 'local', '')
+            const placementRef = _.get(placementrule, 'placementRef', '')
+            if (localDeployment) {
+                clusterCount.localPlacement = true
+            }
+            if (placementRef) {
+                const name = _.get(placementRef, 'name')
+                const selectedPlacementrule = placementrules.find(
+                    (placement) => placement.metadata.name === name && placement.metadata.namespace === namespace
+                )
+                if (selectedPlacementrule) {
+                    clusterCount = getPlacementruleClusterCount(selectedPlacementrule, clusterCount)
+                    if (clusterCount.remoteCount && showSearchLink) {
+                        const subscriptionName = _.get(resource, 'metadata.name')
+                        const searchLink = getSearchLink({
+                            properties: {
+                                name: subscriptionName,
+                                namespace,
+                                kind: 'subscription',
+                            },
+                            showRelated: 'cluster',
+                        })
+                        return (
+                            <Link style={{ color: '#0066cc' }} to={searchLink}>
+                                {getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)}
+                            </Link>
+                        )
+                    }
+                }
+            }
+        },
+        [placementrules]
+    )
 
     // Cache cell text for sorting and searching
     const generateTransformData = (tableItem: IResource) => {
@@ -384,7 +426,7 @@ export default function AdvancedConfiguration() {
                         sort: 'metadata.creationTimestamp',
                     },
                 ],
-                []
+                [getSubscriptionClusterCount, t]
             ),
             items: SubscriptiontableItems,
             rowActionResolver: getRowActionResolver,
@@ -474,7 +516,7 @@ export default function AdvancedConfiguration() {
                         sort: 'metadata.creationTimestamp',
                     },
                 ],
-                []
+                [t]
             ),
             items: ChanneltableItems,
             rowActionResolver: getRowActionResolver,
@@ -520,7 +562,7 @@ export default function AdvancedConfiguration() {
                         sort: 'metadata.creationTimestamp',
                     },
                 ],
-                []
+                [t]
             ),
             items: placements,
             rowActionResolver: getRowActionResolver,
@@ -567,7 +609,7 @@ export default function AdvancedConfiguration() {
                         sort: 'metadata.creationTimestamp',
                     },
                 ],
-                []
+                [t]
             ),
             items: PlacementRuleTableItems,
             rowActionResolver: getRowActionResolver,
@@ -676,45 +718,6 @@ export default function AdvancedConfiguration() {
             })
         }
         return clusterCount
-    }
-
-    function getSubscriptionClusterCount(
-        resource: IResource,
-        clusterCount: { localPlacement: boolean; remoteCount: number },
-        showSearchLink?: boolean
-    ) {
-        const namespace = _.get(resource, 'metadata.namespace')
-        const placementrule = _.get(resource, 'spec.placement')
-        const localDeployment = _.get(placementrule, 'local', '')
-        const placementRef = _.get(placementrule, 'placementRef', '')
-        if (localDeployment) {
-            clusterCount.localPlacement = true
-        }
-        if (placementRef) {
-            const name = _.get(placementRef, 'name')
-            const selectedPlacementrule = placementrules.find(
-                (placement) => placement.metadata.name === name && placement.metadata.namespace === namespace
-            )
-            if (selectedPlacementrule) {
-                clusterCount = getPlacementruleClusterCount(selectedPlacementrule, clusterCount)
-                if (clusterCount.remoteCount && showSearchLink) {
-                    const subscriptionName = _.get(resource, 'metadata.name')
-                    const searchLink = getSearchLink({
-                        properties: {
-                            name: subscriptionName,
-                            namespace,
-                            kind: 'subscription',
-                        },
-                        showRelated: 'cluster',
-                    })
-                    return (
-                        <Link style={{ color: '#0066cc' }} to={searchLink}>
-                            {getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)}
-                        </Link>
-                    )
-                }
-            }
-        }
     }
 
     function editLink(params: { resource: any; kind: string; apiversion: string }) {

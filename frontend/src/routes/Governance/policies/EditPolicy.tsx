@@ -47,7 +47,7 @@ export function EditPolicy() {
         const policyPlacements = getPlacementsForResource(policy, policyPlacementBindings, placements)
         const policyPlacementRules = getPlacementsForResource(policy, policyPlacementBindings, placementRules)
         setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
-    }, [])
+    }, [history, params.name, params.namespace, placementBindings, placementRules, placements, policies])
 
     if (existingResources === undefined) {
         return <LoadingPage />

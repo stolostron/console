@@ -64,6 +64,8 @@ export default function ClusterSetsPage() {
     const { t } = useTranslation()
     const { isSubmarinerAvailable } = useContext(PluginContext)
     const alertContext = useContext(AcmAlertContext)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
     const [

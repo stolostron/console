@@ -27,7 +27,6 @@ import { clusterCuratorsState, clusterManagementAddonsState } from '../../../../
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
-import { PluginContext } from '../../../../lib/PluginContext'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -76,6 +75,7 @@ export default function ManagedClusters() {
         }
     })
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
     usePageContext(clusters.length > 0, PageActions)
@@ -170,7 +170,6 @@ export function ClustersTable(props: {
     const [clusterCurators] = useRecoilState(clusterCuratorsState)
 
     const { t } = useTranslation()
-    const { isGovernanceAvailable } = useContext(PluginContext)
     const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
     const [selectChannels, setSelectChannels] = useState<Array<Cluster> | undefined>()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
@@ -216,7 +215,6 @@ export function ClustersTable(props: {
             clusterDistributionColumn,
             clusterLabelsColumn,
             clusterNodesColumn,
-            isGovernanceAvailable,
         ]
     )
 
@@ -359,7 +357,7 @@ export function ClustersTable(props: {
                 variant: 'bulk-action',
             },
         ],
-        [modalColumns]
+        [modalColumns, t]
     )
 
     const rowActions = useMemo(() => [], [])
@@ -391,7 +389,7 @@ export function ClustersTable(props: {
                 tableFilterFn: (selectedValues, cluster) => selectedValues.includes(t(`status.${cluster.status}`)),
             },
         ]
-    }, [])
+    }, [t])
 
     return (
         <Fragment>

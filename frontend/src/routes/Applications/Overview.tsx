@@ -1,59 +1,58 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
 import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
+import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from '../../lib/acm-i18next'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { TFunction } from 'react-i18next'
 import { useHistory } from 'react-router'
+import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
-    applicationsState,
     applicationSetsState,
+    applicationsState,
     argoApplicationsState,
-    subscriptionsState,
     channelsState,
-    placementRulesState,
     managedClustersState,
+    placementRulesState,
+    subscriptionsState,
 } from '../../atoms'
+import { useTranslation } from '../../lib/acm-i18next'
+import { DOC_LINKS } from '../../lib/doc-util'
+import { canUser } from '../../lib/rbac-util'
+import { queryRemoteArgoApps } from '../../lib/search'
+import { useQuery } from '../../lib/useQuery'
+import { NavigationPath } from '../../NavigationPath'
 import {
     ApplicationApiVersion,
+    ApplicationDefinition,
     ApplicationKind,
+    ApplicationSet,
+    ApplicationSetDefinition,
+    ApplicationSetKind,
     ArgoApplication,
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
-    ApplicationSetKind,
-    IResource,
-    ApplicationSet,
-    ApplicationDefinition,
-    ApplicationSetDefinition,
     Channel,
-    SubscriptionKind,
-    SubscriptionApiVersion,
-    Subscription,
-    PlacementRuleKind,
+    IResource,
     PlacementRuleApiVersion,
+    PlacementRuleKind,
+    Subscription,
+    SubscriptionApiVersion,
+    SubscriptionKind,
 } from '../../resources'
+import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import {
     createClustersText,
-    isArgoApp,
     getAge,
-    getSubscriptionsFromAnnotation,
     getSearchLink,
+    getSubscriptionsFromAnnotation,
+    isArgoApp,
     subAnnotationStr,
 } from './helpers/resource-helper'
-import { canUser } from '../../lib/rbac-util'
-import { Link } from 'react-router-dom'
-import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
-import { useQuery } from '../../lib/useQuery'
-import { queryRemoteArgoApps } from '../../lib/search'
-import { NavigationPath } from '../../NavigationPath'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { DOC_LINKS } from '../../lib/doc-util'
 
 const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
@@ -251,39 +250,42 @@ export default function ApplicationsOverview() {
         return { ...tableItem, ...transformedObject }
     }
 
-    const getTimeWindow = (app: IResource) => {
-        if (!(app.apiVersion === ApplicationApiVersion && app.kind === ApplicationKind)) {
-            return ''
-        }
-
-        const subAnnotations = getSubscriptionsFromAnnotation(app)
-        let hasTimeWindow = false
-
-        for (let i = 0; i < subAnnotations.length; i++) {
-            if (
-                _.endsWith(subAnnotations[i], localSubSuffixStr) &&
-                _.indexOf(subAnnotations, _.trimEnd(subAnnotations[i], localSubSuffixStr)) !== -1
-            ) {
-                // skip local sub
-                continue
+    const getTimeWindow = useCallback(
+        (app: IResource) => {
+            if (!(app.apiVersion === ApplicationApiVersion && app.kind === ApplicationKind)) {
+                return ''
             }
-            const subDetails = subAnnotations[i].split('/')
 
-            for (let j = 0; j < subscriptions.length; j++) {
+            const subAnnotations = getSubscriptionsFromAnnotation(app)
+            let hasTimeWindow = false
+
+            for (let i = 0; i < subAnnotations.length; i++) {
                 if (
-                    subscriptions[j].metadata.name === subDetails[1] &&
-                    subscriptions[j].metadata.namespace === subDetails[0]
+                    _.endsWith(subAnnotations[i], localSubSuffixStr) &&
+                    _.indexOf(subAnnotations, _.trimEnd(subAnnotations[i], localSubSuffixStr)) !== -1
                 ) {
-                    if (subscriptions[j].spec.timewindow) {
-                        hasTimeWindow = true
-                        break
+                    // skip local sub
+                    continue
+                }
+                const subDetails = subAnnotations[i].split('/')
+
+                for (let j = 0; j < subscriptions.length; j++) {
+                    if (
+                        subscriptions[j].metadata.name === subDetails[1] &&
+                        subscriptions[j].metadata.namespace === subDetails[0]
+                    ) {
+                        if (subscriptions[j].spec.timewindow) {
+                            hasTimeWindow = true
+                            break
+                        }
                     }
                 }
             }
-        }
 
-        return hasTimeWindow ? t('Yes') : ''
-    }
+            return hasTimeWindow ? t('Yes') : ''
+        },
+        [subscriptions, t]
+    )
 
     // Combine all application types
     applications.forEach((app) => {
@@ -493,7 +495,7 @@ export default function ApplicationsOverview() {
                 search: 'transformed.createdText',
             },
         ],
-        []
+        [argoApplications, channels, getTimeWindow, localCluster, placementRules, subscriptions, t]
     )
 
     const filters = [

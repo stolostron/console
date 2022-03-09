@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmAlert, AcmModal } from '@stolostron/ui-components'
 import { Button, Checkbox, ModalVariant } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { AcmAlert, AcmModal } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
 import { Trans } from '../../../lib/acm-i18next'
 import React, { ReactNode, useState } from 'react'
-import { ApplicationKind, ApplicationSetKind, IResource } from '../../../resources'
 import { deleteApplication } from '../../../lib/delete-application'
+import { ApplicationKind, ApplicationSetKind, IResource } from '../../../resources'
 import '../css/DeleteResourceModal.css'
 
 export interface IDeleteResourceModalProps {
@@ -28,12 +28,12 @@ export interface IDeleteResourceModalProps {
 }
 
 export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: false }) {
+    const [removeAppResources, setRemoveAppResources] = useState<boolean>(false)
+    const [removeAppSetResource, setRemoveAppSetResource] = useState<boolean>(false)
+
     if (props.open === false) {
         return <></>
     }
-
-    const [removeAppResources, setRemoveAppResources] = useState<boolean>(false)
-    const [removeAppSetResource, setRemoveAppSetResource] = useState<boolean>(false)
 
     const toggleRemoveAppRsources = () => {
         setRemoveAppResources(!removeAppResources)

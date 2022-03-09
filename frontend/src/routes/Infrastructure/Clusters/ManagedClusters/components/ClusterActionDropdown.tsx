@@ -1,14 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmInlineProvider, Provider } from '@stolostron/ui-components'
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { AcmInlineProvider, Provider } from '@stolostron/ui-components'
 import { useContext, useMemo, useState } from 'react'
-import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
 import { createImportResources } from '../../../../../lib/import-cluster'
+import { PluginContext } from '../../../../../lib/PluginContext'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
@@ -26,7 +27,6 @@ import { BatchUpgradeModal } from './BatchUpgradeModal'
 import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
 import { StatusField } from './StatusField'
-import { PluginContext } from '../../../../../lib/PluginContext'
 
 /**
  * Function to return cluster actions available to a cluster
@@ -180,7 +180,10 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         [t]
     )
 
-    const destroyRbac = [rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name)]
+    const destroyRbac = useMemo(
+        () => [rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
+        [cluster.name, cluster.namespace]
+    )
     if (cluster.isManaged) {
         destroyRbac.push(rbacDelete(ManagedClusterDefinition, undefined, cluster.name))
     }
@@ -409,7 +412,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 click: () => setScaleUpModalOpen(true),
             },
         ],
-        []
+        [cluster, destroyRbac, history, isSearchAvailable, modalColumns, t]
     )
     const clusterActions = getClusterActions(cluster)
     actions = actions.filter((action) => clusterActions.indexOf(action.id) > -1)

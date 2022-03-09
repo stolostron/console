@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    createDiscoveryConfig,
-    deleteResource,
-    DiscoveryConfig,
-    DiscoveryConfigApiVersion,
-    DiscoveryConfigDefinition,
-    DiscoveryConfigKind,
-    replaceDiscoveryConfig,
-    ResourceError,
-    Secret,
-} from '../../../../../resources'
+    ActionGroup,
+    ButtonVariant,
+    Divider,
+    Flex,
+    FlexItem,
+    PageSection,
+    SelectOption,
+    Text,
+    TextVariants,
+} from '@patternfly/react-core'
 import {
     AcmAlertContext,
     AcmButton,
@@ -27,26 +27,26 @@ import {
     AcmToastContext,
     Provider,
 } from '@stolostron/ui-components'
-import {
-    ActionGroup,
-    ButtonVariant,
-    Divider,
-    Flex,
-    FlexItem,
-    PageSection,
-    SelectOption,
-    Text,
-    TextVariants,
-} from '@patternfly/react-core'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../../../atoms'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../NavigationPath'
+import {
+    createDiscoveryConfig,
+    deleteResource,
+    DiscoveryConfig,
+    DiscoveryConfigApiVersion,
+    DiscoveryConfigDefinition,
+    DiscoveryConfigKind,
+    replaceDiscoveryConfig,
+    ResourceError,
+    Secret,
+} from '../../../../../resources'
 
 const discoveryVersions = ['4.6', '4.7', '4.8', '4.9']
 
@@ -344,7 +344,7 @@ export function DiscoveryConfigPageContent(props: {
                 canCreateDiscoveryConfig.abort()
             }
         }
-    }, [editing, discoveryConfig.metadata.namespace])
+    }, [editing, discoveryConfig.metadata.namespace, alertContext])
 
     return (
         <AcmForm>

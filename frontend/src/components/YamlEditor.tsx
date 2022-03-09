@@ -1,6 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// Copyright (c) 2021 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
 import { CodeEditor, Language } from '@patternfly/react-code-editor'
 import { global_BackgroundColor_dark_100 } from '@patternfly/react-tokens'
 import useResizeObserver from '@react-hook/resize-observer'
@@ -65,6 +63,7 @@ export default function YAMLEditor(props: {
     }
 
     // react to changes from editing yaml
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const onChange = useCallback(
         debounce((value) => {
             setEditedResourceYaml && setEditedResourceYaml(value)

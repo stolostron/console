@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { TFunction } from 'i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import queryString from 'query-string'
-import { useTranslation } from '../../../lib/acm-i18next'
 import {
     ApplicationKind,
     ApplicationSetKind,
@@ -177,8 +177,7 @@ export function getResourceType(type: String, t: (arg: String) => String) {
     }
 }
 
-export const getResourceLabel = (type: string, count: number) => {
-    const { t } = useTranslation()
+export const getResourceLabel = (type: string, count: number, t: TFunction) => {
     // const label = t(`resource.type.${type}`)
     const label = getResourceType(type, t)
     const optionalCount = count > 1 ? ` (${count})` : ''

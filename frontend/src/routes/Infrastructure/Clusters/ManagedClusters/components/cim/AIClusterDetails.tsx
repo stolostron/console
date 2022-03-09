@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useMemo, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { AcmExpandableCard } from '@stolostron/ui-components'
