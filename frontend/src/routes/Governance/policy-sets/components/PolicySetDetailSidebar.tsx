@@ -221,7 +221,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 },
             },
         ],
-        [clusterPolicyViolationsColumn]
+        [clusterPolicyViolationsColumn, managedClusters, t]
     )
 
     const policyColumnDefs = useMemo(
@@ -289,7 +289,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 },
             },
         ],
-        []
+        [policies, t]
     )
 
     return (

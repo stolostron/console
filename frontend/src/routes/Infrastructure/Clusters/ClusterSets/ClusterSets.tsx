@@ -62,6 +62,8 @@ import { CreateClusterSetModal } from './CreateClusterSet/CreateClusterSetModal'
 export default function ClusterSetsPage() {
     const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
     const [

@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from 'react'
 import { RouteComponentProps, StaticContext, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'

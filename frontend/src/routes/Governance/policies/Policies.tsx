@@ -76,8 +76,6 @@ export default function PoliciesPage() {
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<PolicyTableItem> | { open: false }>({
         open: false,
     })
-    const [placementBindingChecked] = useState(false)
-    const [placementRuleChecked] = useState(false)
     const policyKeyFn = useCallback(
         (resource: PolicyTableItem) =>
             resource.policy.metadata.uid ?? `${resource.policy.metadata.name}/${resource.policy.metadata.namespace}`,
@@ -149,44 +147,50 @@ export default function PoliciesPage() {
                 cell: () => '-',
             },
         ],
-        [policyClusterViolationsColumn]
+        [policyClusterViolationsColumn, policySets, t]
     )
 
-    const bulkModalStatusColumns = [
-        {
-            header: t('policy.tableHeader.name'),
-            cell: 'policy.metadata.name',
-            sort: 'policy.metadata.name',
-        },
-        {
-            header: t('policy.table.actionGroup.status'),
-            cell: (item: PolicyTableItem) => (
-                <span>
-                    {item.policy.spec.disabled === true
-                        ? t('policy.table.actionGroup.status.disabled')
-                        : t('policy.table.actionGroup.status.enabled')}
-                </span>
-            ),
-        },
-    ]
+    const bulkModalStatusColumns = useMemo(
+        () => [
+            {
+                header: t('policy.tableHeader.name'),
+                cell: 'policy.metadata.name',
+                sort: 'policy.metadata.name',
+            },
+            {
+                header: t('policy.table.actionGroup.status'),
+                cell: (item: PolicyTableItem) => (
+                    <span>
+                        {item.policy.spec.disabled === true
+                            ? t('policy.table.actionGroup.status.disabled')
+                            : t('policy.table.actionGroup.status.enabled')}
+                    </span>
+                ),
+            },
+        ],
+        [t]
+    )
 
-    const bulkModalRemediationColumns = [
-        {
-            header: t('policy.tableHeader.name'),
-            cell: 'policy.metadata.name',
-            sort: 'policy.metadata.name',
-        },
-        {
-            header: t('policy.table.actionGroup.status'),
-            cell: (item: PolicyTableItem) => (
-                <span>
-                    {item.policy.spec.remediationAction === t('policy.table.actions.inform').toLowerCase()
-                        ? t('policy.table.actions.inform')
-                        : t('policy.table.actions.enforce')}
-                </span>
-            ),
-        },
-    ]
+    const bulkModalRemediationColumns = useMemo(
+        () => [
+            {
+                header: t('policy.tableHeader.name'),
+                cell: 'policy.metadata.name',
+                sort: 'policy.metadata.name',
+            },
+            {
+                header: t('policy.table.actionGroup.status'),
+                cell: (item: PolicyTableItem) => (
+                    <span>
+                        {item.policy.spec.remediationAction === t('policy.table.actions.inform').toLowerCase()
+                            ? t('policy.table.actions.inform')
+                            : t('policy.table.actions.enforce')}
+                    </span>
+                ),
+            },
+        ],
+        [t]
+    )
 
     const tableActions = useMemo<IAcmTableAction<PolicyTableItem>[]>(
         () => [
@@ -402,7 +406,7 @@ export default function PoliciesPage() {
                 ],
             },
         ],
-        [placementRuleChecked, placementBindingChecked]
+        [t, bulkModalStatusColumns, bulkModalRemediationColumns]
     )
 
     const rowActionResolver = useCallback(
@@ -570,7 +574,7 @@ export default function PoliciesPage() {
             ]
             return policyRowActions
         },
-        [placementRuleChecked, placementBindingChecked]
+        [t, history]
     )
 
     const [namespaces] = useRecoilState(namespacesState)
@@ -817,7 +821,7 @@ function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () => void }
             }
             setIsDeleting(false)
         }
-    }, [props.onClose, placements, placementRules, placementBindings, deletePlacements, deletePlacementBindings])
+    }, [props, placements, placementRules, placementBindings, deletePlacements, deletePlacementBindings, t])
     return (
         <Modal
             title={t('policy.modal.title.delete')}

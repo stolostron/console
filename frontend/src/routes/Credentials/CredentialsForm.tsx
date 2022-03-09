@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { PageSection } from '@patternfly/react-core'
 import {
     AcmEmptyState,
     AcmIcon,
@@ -9,10 +10,8 @@ import {
     ProviderIconMap,
     ProviderLongTextMap,
 } from '@stolostron/ui-components'
-import { PageSection } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
-import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory, useLocation, useParams } from 'react-router'
 import { useRecoilCallback } from 'recoil'
 import { namespacesState } from '../../atoms'
@@ -20,6 +19,7 @@ import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
 import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
+import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { getAuthorizedNamespaces, rbacCreate } from '../../lib/rbac-util'
 import {
@@ -41,7 +41,6 @@ import {
     validateWebURL,
 } from '../../lib/validation'
 import { NavigationPath } from '../../NavigationPath'
-import schema from './schema.json'
 import {
     createResource,
     getSecret,
@@ -52,6 +51,7 @@ import {
     SecretDefinition,
     unpackProviderConnection,
 } from '../../resources'
+import schema from './schema.json'
 
 const credentialProviders: Provider[] = [
     Provider.openstack,
@@ -122,7 +122,7 @@ export default function CredentialsFormPage() {
                 .catch(setError)
         }
         return undefined
-    }, [isEditing, isViewing])
+    }, [getNamespaces, isEditing, isViewing])
 
     const [providerConnection, setProviderConnection] = useState<ProviderConnection | undefined>()
     useEffect(() => {
@@ -192,37 +192,39 @@ export function CredentialsForm(props: {
     const history = useHistory()
 
     const [credentialsType, setCredentialsType] = useState(
-        providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
+        () => providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] ?? ''
     )
 
     // Details
-    const [name, setName] = useState(providerConnection?.metadata.name ?? '')
-    const [namespace, setNamespace] = useState(providerConnection?.metadata.namespace ?? '')
+    const [name, setName] = useState(() => providerConnection?.metadata.name ?? '')
+    const [namespace, setNamespace] = useState(() => providerConnection?.metadata.namespace ?? '')
 
     // Base Domain
-    const [baseDomain, setBaseDomain] = useState(providerConnection?.stringData?.baseDomain ?? '')
+    const [baseDomain, setBaseDomain] = useState(() => providerConnection?.stringData?.baseDomain ?? '')
 
     // Pull Secret
-    const [pullSecret, setPullSecret] = useState(providerConnection?.stringData?.pullSecret ?? '')
+    const [pullSecret, setPullSecret] = useState(() => providerConnection?.stringData?.pullSecret ?? '')
 
     // SSH Key
-    const [sshPublickey, setSshPublickey] = useState(providerConnection?.stringData?.['ssh-publickey'] ?? '')
-    const [sshPrivatekey, setSshPrivatekey] = useState(providerConnection?.stringData?.['ssh-privatekey'] ?? '')
+    const [sshPublickey, setSshPublickey] = useState(() => providerConnection?.stringData?.['ssh-publickey'] ?? '')
+    const [sshPrivatekey, setSshPrivatekey] = useState(() => providerConnection?.stringData?.['ssh-privatekey'] ?? '')
 
     // Proxy
-    const [httpProxy, setHttpProxy] = useState(providerConnection?.stringData?.httpProxy ?? '')
-    const [httpsProxy, setHttpsProxy] = useState(providerConnection?.stringData?.httpsProxy ?? '')
-    const [noProxy, setNoProxy] = useState(providerConnection?.stringData?.noProxy ?? '')
+    const [httpProxy, setHttpProxy] = useState(() => providerConnection?.stringData?.httpProxy ?? '')
+    const [httpsProxy, setHttpsProxy] = useState(() => providerConnection?.stringData?.httpsProxy ?? '')
+    const [noProxy, setNoProxy] = useState(() => providerConnection?.stringData?.noProxy ?? '')
 
     // Amazon Web Services State
-    const [aws_access_key_id, setAwsAccessKeyID] = useState(providerConnection?.stringData?.aws_access_key_id ?? '')
+    const [aws_access_key_id, setAwsAccessKeyID] = useState(
+        () => providerConnection?.stringData?.aws_access_key_id ?? ''
+    )
     const [aws_secret_access_key, setAwsSecretAccessKeyID] = useState(
-        providerConnection?.stringData?.aws_secret_access_key ?? ''
+        () => providerConnection?.stringData?.aws_secret_access_key ?? ''
     )
 
     // Azure Cloud State
     const [baseDomainResourceGroupName, setBaseDomainResourceGroupName] = useState(
-        providerConnection?.stringData?.baseDomainResourceGroupName ?? ''
+        () => providerConnection?.stringData?.baseDomainResourceGroupName ?? ''
     )
     enum CloudNames {
         AzurePublicCloud = 'AzurePublicCloud',
@@ -250,57 +252,59 @@ export function CredentialsForm(props: {
         }
     }
 
-    const [clientId, setClientId] = useState(osServicePrincipalJson?.clientId ?? '')
-    const [clientSecret, setClientSecret] = useState(osServicePrincipalJson?.clientSecret ?? '')
-    const [tenantId, setTenantId] = useState(osServicePrincipalJson?.tenantId ?? '')
-    const [subscriptionId, setSubscriptionId] = useState(osServicePrincipalJson?.subscriptionId ?? '')
+    const [clientId, setClientId] = useState(() => osServicePrincipalJson?.clientId ?? '')
+    const [clientSecret, setClientSecret] = useState(() => osServicePrincipalJson?.clientSecret ?? '')
+    const [tenantId, setTenantId] = useState(() => osServicePrincipalJson?.tenantId ?? '')
+    const [subscriptionId, setSubscriptionId] = useState(() => osServicePrincipalJson?.subscriptionId ?? '')
 
     // Google
-    const [projectID, setGcProjectID] = useState(providerConnection?.stringData?.projectID ?? '')
+    const [projectID, setGcProjectID] = useState(() => providerConnection?.stringData?.projectID ?? '')
     const [osServiceAccountJson, setGcServiceAccountKey] = useState(
-        providerConnection?.stringData?.['osServiceAccount.json'] ?? ''
+        () => providerConnection?.stringData?.['osServiceAccount.json'] ?? ''
     )
 
     // VMware
-    const [vCenter, setVcenter] = useState(providerConnection?.stringData?.vCenter ?? '')
-    const [username, setUsername] = useState(providerConnection?.stringData?.username ?? '')
-    const [password, setPassword] = useState(providerConnection?.stringData?.password ?? '')
-    const [cacertificate, setCacertificate] = useState(providerConnection?.stringData?.cacertificate ?? '')
-    const [cluster, setVmClusterName] = useState(providerConnection?.stringData?.cluster ?? '')
-    const [datacenter, setDatacenter] = useState(providerConnection?.stringData?.datacenter ?? '')
-    const [defaultDatastore, setDatastore] = useState(providerConnection?.stringData?.defaultDatastore ?? '')
+    const [vCenter, setVcenter] = useState(() => providerConnection?.stringData?.vCenter ?? '')
+    const [username, setUsername] = useState(() => providerConnection?.stringData?.username ?? '')
+    const [password, setPassword] = useState(() => providerConnection?.stringData?.password ?? '')
+    const [cacertificate, setCacertificate] = useState(() => providerConnection?.stringData?.cacertificate ?? '')
+    const [cluster, setVmClusterName] = useState(() => providerConnection?.stringData?.cluster ?? '')
+    const [datacenter, setDatacenter] = useState(() => providerConnection?.stringData?.datacenter ?? '')
+    const [defaultDatastore, setDatastore] = useState(() => providerConnection?.stringData?.defaultDatastore ?? '')
 
     // OpenStack
-    const [cloudsYaml, setOpenstackCloudsYaml] = useState(providerConnection?.stringData?.['clouds.yaml'] ?? '')
-    const [cloud, setOpenstackCloud] = useState(providerConnection?.stringData?.cloud ?? '')
+    const [cloudsYaml, setOpenstackCloudsYaml] = useState(() => providerConnection?.stringData?.['clouds.yaml'] ?? '')
+    const [cloud, setOpenstackCloud] = useState(() => providerConnection?.stringData?.cloud ?? '')
 
     // Red Hat Virtualization
-    const [ovirtUrl, setOvirtUrl] = useState(providerConnection?.stringData?.ovirt_url ?? '')
-    const [ovirtUsername, setOvirtUsername] = useState(providerConnection?.stringData?.ovirt_username ?? '')
-    const [ovirtPassword, setOvirtPassword] = useState(providerConnection?.stringData?.ovirt_password ?? '')
-    const [ovirtCABundle, setOvirtCABundle] = useState(providerConnection?.stringData?.ovirt_ca_bundle ?? '')
+    const [ovirtUrl, setOvirtUrl] = useState(() => providerConnection?.stringData?.ovirt_url ?? '')
+    const [ovirtUsername, setOvirtUsername] = useState(() => providerConnection?.stringData?.ovirt_username ?? '')
+    const [ovirtPassword, setOvirtPassword] = useState(() => providerConnection?.stringData?.ovirt_password ?? '')
+    const [ovirtCABundle, setOvirtCABundle] = useState(() => providerConnection?.stringData?.ovirt_ca_bundle ?? '')
 
     // BareMetal
-    const [libvirtURI, setLibvirtURI] = useState(providerConnection?.stringData?.libvirtURI ?? '')
-    const [sshKnownHosts, setSshKnownHosts] = useState(providerConnection?.stringData?.sshKnownHosts ?? '')
-    const [bootstrapOSImage, setBootstrapOSImage] = useState(providerConnection?.stringData?.bootstrapOSImage ?? '')
-    const [imageMirror, setImageMirror] = useState(providerConnection?.stringData?.imageMirror ?? '')
+    const [libvirtURI, setLibvirtURI] = useState(() => providerConnection?.stringData?.libvirtURI ?? '')
+    const [sshKnownHosts, setSshKnownHosts] = useState(() => providerConnection?.stringData?.sshKnownHosts ?? '')
+    const [bootstrapOSImage, setBootstrapOSImage] = useState(
+        () => providerConnection?.stringData?.bootstrapOSImage ?? ''
+    )
+    const [imageMirror, setImageMirror] = useState(() => providerConnection?.stringData?.imageMirror ?? '')
 
     // Disconnected or Proxy
-    const [clusterOSImage, setClusterOSImage] = useState(providerConnection?.stringData?.clusterOSImage ?? '')
+    const [clusterOSImage, setClusterOSImage] = useState(() => providerConnection?.stringData?.clusterOSImage ?? '')
     const [additionalTrustBundle, setAdditionalTrustBundle] = useState(
-        providerConnection?.stringData?.additionalTrustBundle ?? ''
+        () => providerConnection?.stringData?.additionalTrustBundle ?? ''
     )
     const [imageContentSources, setImageContentSources] = useState(
-        providerConnection?.stringData?.imageContentSources ?? ''
+        () => providerConnection?.stringData?.imageContentSources ?? ''
     )
 
     // Ansible
-    const [ansibleHost, setAnsibleHost] = useState(providerConnection?.stringData?.host ?? '')
-    const [ansibleToken, setAnsibleToken] = useState(providerConnection?.stringData?.token ?? '')
+    const [ansibleHost, setAnsibleHost] = useState(() => providerConnection?.stringData?.host ?? '')
+    const [ansibleToken, setAnsibleToken] = useState(() => providerConnection?.stringData?.token ?? '')
 
     // Red Hat Cloud
-    const [ocmAPIToken, setOcmAPIToken] = useState(providerConnection?.stringData?.ocmAPIToken ?? '')
+    const [ocmAPIToken, setOcmAPIToken] = useState(() => providerConnection?.stringData?.ocmAPIToken ?? '')
 
     function stateToData() {
         const secret: ProviderConnection = {

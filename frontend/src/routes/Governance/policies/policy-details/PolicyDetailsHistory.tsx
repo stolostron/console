@@ -52,7 +52,7 @@ export function PolicyDetailsHistory(props: {
             })
         })
         return statuses
-    }, [policyName, policyNamespace, clusterName, templateName])
+    }, [policyName, policyNamespace, clusterName, templateName, policies])
 
     const columns = useMemo(
         () => [
@@ -100,7 +100,7 @@ export function PolicyDetailsHistory(props: {
                 cell: (item: any) => (item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-'),
             },
         ],
-        []
+        [t]
     )
 
     return (

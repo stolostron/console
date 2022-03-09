@@ -36,7 +36,7 @@ export function PolicyDetailsPage() {
                 (policy: Policy) => policy.metadata.namespace === policyNamespace && policy.metadata.name === policyName
             ) ?? 0
         return policies[idx]
-    }, [policies])
+    }, [policies, policyName, policyNamespace])
 
     return (
         <AcmPage

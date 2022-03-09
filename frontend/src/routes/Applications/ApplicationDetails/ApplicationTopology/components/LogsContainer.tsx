@@ -106,7 +106,7 @@ export function LogsContainer(props: ILogsContainerProps) {
                     setLogsError(err.message)
                 })
         }
-    }, [cluster, container, selectedPod])
+    }, [cluster, container, namespace, selectedPod])
 
     if (resourceError !== '') {
         return (

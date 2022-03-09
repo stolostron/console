@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmInlineProvider, Provider } from '@stolostron/ui-components'
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { AcmInlineProvider, Provider } from '@stolostron/ui-components'
 import { useMemo, useState } from 'react'
-import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory } from 'react-router'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../../../components/Rbac'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../../lib/delete-cluster'
 import { createImportResources } from '../../../../../lib/import-cluster'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
@@ -178,7 +178,10 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         [t]
     )
 
-    const destroyRbac = [rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name)]
+    const destroyRbac = useMemo(
+        () => [rbacDelete(ClusterDeploymentDefinition, cluster.namespace, cluster.name)],
+        [cluster.name, cluster.namespace]
+    )
     if (cluster.isManaged) {
         destroyRbac.push(rbacDelete(ManagedClusterDefinition, undefined, cluster.name))
     }
@@ -403,7 +406,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                 click: () => setScaleUpModalOpen(true),
             },
         ],
-        []
+        [cluster, destroyRbac, history, modalColumns, t]
     )
     const clusterActions = getClusterActions(cluster)
     actions = actions.filter((action) => clusterActions.indexOf(action.id) > -1)

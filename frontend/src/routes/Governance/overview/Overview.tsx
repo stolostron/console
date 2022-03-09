@@ -134,6 +134,6 @@ function useSecurityGroupViolations(group: string, policies: Policy[]) {
             }
         }
         return Object.values(clusterViolations)
-    }, [policies])
+    }, [group, policies])
     return violations
 }

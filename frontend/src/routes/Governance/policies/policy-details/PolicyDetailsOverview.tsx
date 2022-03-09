@@ -3,7 +3,7 @@ import { Alert, LabelGroup, PageSection, Split, SplitItem, Stack, Text, TextVari
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmDescriptionList, AcmTable } from '@stolostron/ui-components'
 import moment from 'moment'
-import { Fragment, useMemo } from 'react'
+import { Fragment, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -145,7 +145,17 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             // },
         ]
         return { leftItems, rightItems }
-    }, [policy])
+    }, [
+        govData.categories.groups,
+        govData.clusterRisks,
+        govData.controls.groups,
+        govData.standards.groups,
+        policy.metadata.creationTimestamp,
+        policy.metadata.name,
+        policy.metadata.namespace,
+        policy.spec.disabled,
+        policy.spec.remediationAction,
+    ])
 
     // Need to get bindings for all policysets a policy is included in
     const associatedPolicySets = policySets.filter(
@@ -153,48 +163,54 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             ps.metadata.namespace === policy.metadata.namespace && ps.spec.policies.includes(policy.metadata.name!)
     )
 
-    function getPlacementMatches<T extends Placement | PlacementRule>(
-        policy: Policy,
-        placementResources: T[],
-        placementDecisions: PlacementDecision[]
-    ) {
-        let matches: T[] = []
-        const resources: any[] = [policy]
-        if (associatedPolicySets.length > 0) {
-            resources.push(...associatedPolicySets)
-        }
-        resources.forEach(
-            (resource: Policy | PolicySet) =>
-                (matches = [...matches, ...getPlacementsForResource(resource, placementBindings, placementResources)])
-        )
-        return matches.map((placement: T) => {
-            if (placement.kind === 'Placement') {
-                const decisions = getPlacementDecisionsForPlacements(placementDecisions, [placement])[0]?.status
+    const getPlacementMatches = useCallback(
+        function getPlacementMatches<T extends Placement | PlacementRule>(
+            policy: Policy,
+            placementResources: T[],
+            placementDecisions: PlacementDecision[]
+        ) {
+            let matches: T[] = []
+            const resources: any[] = [policy]
+            if (associatedPolicySets.length > 0) {
+                resources.push(...associatedPolicySets)
+            }
+            resources.forEach(
+                (resource: Policy | PolicySet) =>
+                    (matches = [
+                        ...matches,
+                        ...getPlacementsForResource(resource, placementBindings, placementResources),
+                    ])
+            )
+            return matches.map((placement: T) => {
+                if (placement.kind === 'Placement') {
+                    const decisions = getPlacementDecisionsForPlacements(placementDecisions, [placement])[0]?.status
+                    return {
+                        apiVersion: placement.apiVersion,
+                        kind: placement.kind,
+                        metadata: placement.metadata,
+                        status: decisions ?? {},
+                        policy,
+                    }
+                }
                 return {
                     apiVersion: placement.apiVersion,
                     kind: placement.kind,
                     metadata: placement.metadata,
-                    status: decisions ?? {},
+                    status: placement.status ?? {},
                     policy,
                 }
-            }
-            return {
-                apiVersion: placement.apiVersion,
-                kind: placement.kind,
-                metadata: placement.metadata,
-                status: placement.status ?? {},
-                policy,
-            }
-        })
-    }
+            })
+        },
+        [associatedPolicySets, placementBindings]
+    )
 
     const placementRuleMatches: TableData[] = useMemo(() => {
         return getPlacementMatches(policy, placementRules, [])
-    }, [associatedPolicySets, placementBindings, placementRules, policy])
+    }, [getPlacementMatches, placementRules, policy])
 
     const placementMatches: TableData[] = useMemo(() => {
         return getPlacementMatches(policy, placements, placementDecisions)
-    }, [associatedPolicySets, placementBindings, placements, policy, placementDecisions])
+    }, [getPlacementMatches, policy, placements, placementDecisions])
 
     const placementCols = useMemo(
         () => [
@@ -328,7 +344,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                 },
             },
         ],
-        []
+        [policy.metadata.name, policy.metadata.namespace, t]
     )
 
     return (

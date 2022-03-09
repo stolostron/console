@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* eslint-disable react-hooks/rules-of-hooks */
 import { Chip } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -293,7 +294,7 @@ export function PolicySetList(props: { policySets: PolicySet[] }) {
                     </div>
                 )
             }),
-        [policySets]
+        [policySets, showAll]
     )
 
     if (policySetLinks.length > 2) {

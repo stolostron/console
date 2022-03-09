@@ -55,7 +55,7 @@ export const useApplicationPageContext = (ActionList: ElementType) => {
     useEffect(() => {
         setActions(<ActionList />)
         return () => setActions(null)
-    }, [setActions])
+    }, [ActionList, setActions])
 
     return ActionList
 }
@@ -160,7 +160,21 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             10000
         )
         return () => clearInterval(interval)
-    }, [activeChannel])
+    }, [
+        activeChannel,
+        ansibleJob,
+        applicationSets,
+        applications,
+        argoApplications,
+        channels,
+        getSubscriptions,
+        managedClusters,
+        match.params.name,
+        match.params.namespace,
+        placementRules,
+        placements,
+        subscriptionReports,
+    ])
 
     return (
         <AcmPage

@@ -2,17 +2,6 @@
 
 import { makeStyles } from '@material-ui/styles'
 import {
-    AcmAlertContext,
-    AcmButton,
-    AcmEmptyState,
-    AcmExpandableCard,
-    AcmInlineProvider,
-    AcmPageContent,
-    AcmTable,
-    IAcmTableButtonAction,
-    Provider,
-} from '@stolostron/ui-components'
-import {
     ButtonVariant,
     Flex,
     FlexItem,
@@ -24,14 +13,25 @@ import {
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
+import {
+    AcmAlertContext,
+    AcmButton,
+    AcmEmptyState,
+    AcmExpandableCard,
+    AcmInlineProvider,
+    AcmPageContent,
+    AcmTable,
+    IAcmTableButtonAction,
+    Provider,
+} from '@stolostron/ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -54,6 +54,8 @@ export default function ClusterPoolsPage() {
     const alertContext = useContext(AcmAlertContext)
     const history = useHistory()
     const { t } = useTranslation()
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
     const [clusterPools] = useRecoilValue(waitForAll([clusterPoolsState, clusterImageSetsState]))

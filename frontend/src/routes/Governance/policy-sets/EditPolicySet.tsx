@@ -51,7 +51,7 @@ export function EditPolicySet() {
             ...policySetPlacementRules,
             ...policySetPlacementBindings,
         ])
-    }, [])
+    }, [history, params.name, params.namespace, placementBindings, placementRules, placements, policySets])
 
     if (existingResources === undefined) {
         return <LoadingPage />

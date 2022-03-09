@@ -1,19 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    createProject,
-    createResource,
-    KlusterletAddonConfigApiVersion,
-    KlusterletAddonConfigKind,
-    ManagedClusterApiVersion,
-    ManagedClusterKind,
-    managedClusterSetLabel,
-    ResourceError,
-    ResourceErrorCode,
-    Secret,
-    SecretApiVersion,
-    SecretKind,
-} from '../../../../../resources'
+    ActionGroup,
+    Button,
+    Drawer,
+    DrawerColorVariant,
+    DrawerContent,
+    DrawerContentBody,
+    DrawerPanelContent,
+    FormGroup,
+    Label,
+    Page,
+    PageSection,
+    SelectOption,
+    Switch,
+    Text,
+} from '@patternfly/react-core'
+import { CheckCircleIcon } from '@patternfly/react-icons'
+import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
+import useResizeObserver from '@react-hook/resize-observer'
 import {
     AcmAlertContext,
     AcmAlertGroup,
@@ -28,35 +33,30 @@ import {
     AcmTextArea,
     AcmTextInput,
 } from '@stolostron/ui-components'
-import {
-    ActionGroup,
-    Button,
-    Drawer,
-    DrawerColorVariant,
-    DrawerContent,
-    DrawerContentBody,
-    DrawerPanelContent,
-    FormGroup,
-    Label,
-    PageSection,
-    SelectOption,
-    Text,
-    Page,
-    Switch,
-} from '@patternfly/react-core'
-import { CheckCircleIcon } from '@patternfly/react-icons'
-import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
-import { Fragment, useContext, useRef, useState, useEffect } from 'react'
-import useResizeObserver from '@react-hook/resize-observer'
-import { useTranslation } from '../../../../../lib/acm-i18next'
+import { keyBy } from 'lodash'
+import { Fragment, useContext, useEffect, useRef, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
+import { SyncDiff, SyncDiffType } from '../../../../../components/SyncEditor/SyncDiff'
+import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath } from '../../../../../NavigationPath'
+import {
+    createProject,
+    createResource,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+    managedClusterSetLabel,
+    ResourceError,
+    ResourceErrorCode,
+    Secret,
+    SecretApiVersion,
+    SecretKind,
+} from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
-import { keyBy } from 'lodash'
-import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
-import { SyncDiff, SyncDiffType } from '../../../../../components/SyncEditor/SyncDiff'
 import schema from './schema.json'
 
 const minWizardSize = 1000
@@ -267,7 +267,17 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
         })
         setImportResources(resources)
         onFormChange(resources)
-    }, [importMode, discovered, clusterName, additionalLabels, kubeConfig, managedClusterSet, token, server])
+    }, [
+        importMode,
+        discovered,
+        clusterName,
+        additionalLabels,
+        kubeConfig,
+        managedClusterSet,
+        token,
+        server,
+        onFormChange,
+    ])
 
     const onReset = () => {
         setClusterName('')
