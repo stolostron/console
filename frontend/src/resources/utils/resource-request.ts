@@ -7,7 +7,7 @@ import { ApplicationKind, SubscriptionApiVersion, SubscriptionKind } from '..'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
-import { subAnnotationStr } from '../../routes/Applications/Overview'
+import { subAnnotationStr } from '../../routes/Applications/helpers/resource-helper'
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -155,11 +155,13 @@ export async function createResources(
     } catch (err) {
         if (options?.dryRun !== true) {
             if (options?.deleteCreatedOnError) {
-                for (const createdResource of createdResources) {
-                    try {
-                        deleteResource(createdResource).promise.catch(noop)
-                    } catch (err) {
-                        // Do nothing
+                if (createResource.length) {
+                    for (const createdResource of createdResources) {
+                        try {
+                            deleteResource(createdResource).promise.catch(noop)
+                        } catch (err) {
+                            // Do nothing
+                        }
                     }
                 }
             }

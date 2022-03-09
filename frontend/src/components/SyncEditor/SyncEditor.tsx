@@ -303,52 +303,51 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             userEdits,
             validationRef.current
         )
-        let timeoutID: NodeJS.Timeout
         setLastUserEdits(userEdits)
-        if (yaml.length) {
-            setProhibited(protectedRanges)
+        //        if (yaml.length) {
+        setProhibited(protectedRanges)
 
-            // using monaco editor setValue blows away undo/redo and decorations
-            // but the design decision is the editor is agnostic of its form
-            // so form changes aren't articulated into individual line changes
-            const model = editorRef.current?.getModel()
-            const saveDecorations = getResourceEditorDecorations(editorRef)
-            model.setValue(yaml)
-            editorRef.current.deltaDecorations([], saveDecorations)
-            setLastChangeWithSecrets(changeWithSecrets)
+        // using monaco editor setValue blows away undo/redo and decorations
+        // but the design decision is the editor is agnostic of its form
+        // so form changes aren't articulated into individual line changes
+        const model = editorRef.current?.getModel()
+        const saveDecorations = getResourceEditorDecorations(editorRef)
+        model.setValue(yaml)
+        editorRef.current.deltaDecorations([], saveDecorations)
+        setLastChangeWithSecrets(changeWithSecrets)
 
-            // determine what changes were made by form so we can decorate
-            const { changes, userEdits: edits } = getFormChanges(
+        // determine what changes were made by form so we can decorate
+        const { changes, userEdits: edits } = getFormChanges(
+            errors,
+            change,
+            userEdits,
+            formComparison,
+            lastChange,
+            lastFormComparison
+        )
+
+        // report to form
+        onReportChange(edits, changeWithSecrets, change, errors)
+
+        const timeoutID = setTimeout(() => {
+            // decorate errors, changes
+            const squigglyTooltips = decorate(
+                false,
+                editorRef,
+                monacoRef,
                 errors,
+                changes,
                 change,
-                userEdits,
-                formComparison,
-                lastChange,
-                lastFormComparison
+                edits,
+                protectedRanges
             )
-
-            // report to form
-            onReportChange(edits, changeWithSecrets, change, errors)
-
-            timeoutID = setTimeout(() => {
-                // decorate errors, changes
-                const squigglyTooltips = decorate(
-                    false,
-                    editorRef,
-                    monacoRef,
-                    errors,
-                    changes,
-                    change,
-                    edits,
-                    protectedRanges
-                )
-                setShowsFormChanges(!!lastChange)
-                setSquigglyTooltips(squigglyTooltips)
-                setLastFormComparison(formComparison)
-                setLastChange(change)
-                setUserEdits(edits)
-            }, 0)
-        }
+            setShowsFormChanges(!!lastChange)
+            setSquigglyTooltips(squigglyTooltips)
+            setLastFormComparison(formComparison)
+            setLastChange(change)
+            setUserEdits(edits)
+        }, 0)
+        //        }
         setHasRedo(false)
         setHasUndo(false)
         return () => clearInterval(timeoutID)

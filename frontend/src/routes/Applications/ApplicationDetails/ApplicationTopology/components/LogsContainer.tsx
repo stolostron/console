@@ -32,8 +32,8 @@ export function LogsContainer(props: ILogsContainerProps) {
     let initialPod = ''
     let initialContainers: string[] = []
     let initialContainer = ''
-    let namespace = ''
-    let cluster = ''
+    let initialNamespace = ''
+    let initialCluster = ''
     let initialPodURL = ''
     if (pods.length > 0) {
         initialPod = pods[0].name
@@ -43,13 +43,13 @@ export function LogsContainer(props: ILogsContainerProps) {
               })
             : []
         initialContainer = initialContainers.length > 0 ? initialContainers[0] : ''
-        namespace = pods[0].namespace
-        cluster = pods[0].cluster
+        initialNamespace = pods[0].namespace
+        initialCluster = pods[0].cluster
         initialPodURL = createResourceURL(
             {
-                cluster,
+                initialCluster,
                 type: pods[0].kind,
-                namespace,
+                initialNamespace,
                 name: initialPod,
                 specs: {
                     raw: {
@@ -67,6 +67,8 @@ export function LogsContainer(props: ILogsContainerProps) {
     const [container, setContainer] = useState<string>(initialContainer)
     const [currentContainers, setCurrentContainers] = useState<string[]>(initialContainers)
     const [currentPodURL, setCurrentPodURL] = useState<string>(initialPodURL)
+    const [currentNamespace, setCurrentNamespace] = useState<string>(initialNamespace)
+    const [cluster, setCluster] = useState<string>(initialCluster)
 
     useEffect(() => {
         if (cluster !== 'local-cluster' && container !== '') {
@@ -75,7 +77,7 @@ export function LogsContainer(props: ILogsContainerProps) {
                 method: 'GET',
                 url:
                     getBackendUrl() +
-                    `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${namespace}/${selectedPod}/${container}?tailLines=1000`,
+                    `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${currentNamespace}/${selectedPod}/${container}?tailLines=1000`,
                 signal: abortController.signal,
                 retries: process.env.NODE_ENV === 'production' ? 2 : 0,
                 headers: { Accept: '*/*' },
@@ -93,7 +95,7 @@ export function LogsContainer(props: ILogsContainerProps) {
                 method: 'GET',
                 url:
                     getBackendUrl() +
-                    `/api/v1/namespaces/${namespace}/pods/${selectedPod}/log?container=${container}&tailLines=1000`,
+                    `/api/v1/namespaces/${currentNamespace}/pods/${selectedPod}/log?container=${container}&tailLines=1000`,
                 signal: abortController.signal,
                 retries: process.env.NODE_ENV === 'production' ? 2 : 0,
                 headers: { Accept: '*/*' },
@@ -149,7 +151,7 @@ export function LogsContainer(props: ILogsContainerProps) {
                         action: 'open_link',
                         targetLink: currentPodURL,
                         name: selectedPod,
-                        namespace,
+                        namespace: currentNamespace,
                         kind: 'pod',
                     },
                 },
@@ -177,6 +179,8 @@ export function LogsContainer(props: ILogsContainerProps) {
                     setCurrentContainers(selectedPodContainers)
                     const selectedPodInitialContainer = selectedPodContainers.length > 0 ? selectedPodContainers[0] : ''
                     setContainer(selectedPodInitialContainer)
+                    setCurrentNamespace(selectedPodData.namespace)
+                    setCluster(selectedPodData.cluster)
                     setCurrentPodURL(
                         createResourceURL(
                             {
@@ -208,7 +212,7 @@ export function LogsContainer(props: ILogsContainerProps) {
             <AcmLogWindow
                 id={'pod-logs-viewer'}
                 cluster={cluster}
-                namespace={namespace}
+                namespace={currentNamespace}
                 initialContainer={container}
                 onSwitchContainer={(newContainer: string | undefined) => {
                     setContainer(newContainer || container)

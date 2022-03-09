@@ -7,6 +7,7 @@ import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     managedClusterSetBindingsState,
+    managedClustersState,
     namespacesState,
     placementBindingsState,
     placementRulesState,
@@ -30,6 +31,7 @@ export function EditPolicySet() {
     const [namespaces] = useRecoilState(namespacesState)
     const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)
+    const [managedClusters] = useRecoilState(managedClustersState)
     const [placementBindings] = useRecoilState(placementBindingsState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
@@ -61,8 +63,9 @@ export function EditPolicySet() {
         <PolicySetWizard
             title={t('Edit policy set')}
             policies={policies}
-            namespaces={namespaceNames}
+            clusters={managedClusters}
             placements={placements}
+            namespaces={namespaceNames}
             placementRules={placementRules}
             clusterSetBindings={clusterSetBindings}
             editMode={EditMode.Edit}

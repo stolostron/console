@@ -578,7 +578,7 @@ function canAccess(
                     namespace:
                         resource.metadata?.namespace ??
                         (resource.kind === 'Namespace' ? resource.metadata?.name : undefined),
-                    resource: resource.kind.toLowerCase() + 's',
+                    resource: pluralize(resource.kind.toLowerCase()),
                     verb,
                 },
             },
@@ -590,7 +590,7 @@ function canAccess(
                 msg: 'access',
                 allowed: result.body.status.allowed,
                 verb,
-                resource: resource.kind.toLowerCase() + 's',
+                resource: pluralize(resource.kind.toLowerCase()),
                 name: resource.metadata?.name,
                 namespace: resource.metadata?.namespace,
             })

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { CSSProperties } from 'react'
+import { NavigationPath } from './NavigationPath'
 
 function ACMIcon() {
     const acmIconStyle: CSSProperties = {
@@ -20,6 +21,6 @@ function ACMIcon() {
 
 export const icon = { default: ACMIcon }
 
-export const getLandingPageURL = () => '/multicloud/home/welcome'
+export const getLandingPageURL = () => NavigationPath.managedClusters
 
 export const getImportRedirectURL = (namespace: string) => `/k8s/cluster/projects/${namespace}/workloads`

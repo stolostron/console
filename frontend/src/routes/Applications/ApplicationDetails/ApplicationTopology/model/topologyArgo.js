@@ -1,9 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get, uniq, uniqBy } from 'lodash'
-
 import { getClusterName, addClusters } from './utils'
+import { createReplicaChild } from './topologySubscription'
 
-export function getArgoTopology(application, managedClusters, cluster) {
+export function getArgoTopology(application, managedClusters, argoData) {
+    const { topology, cluster } = argoData
     const links = []
     const nodes = []
     let name
@@ -44,6 +45,7 @@ export function getArgoTopology(application, managedClusters, cluster) {
         //})
     }
     clusterNames = uniq(clusterNames)
+    const relatedApps = topology ? topology.nodes[0].specs.relatedApps : undefined
 
     const appId = `application--${name}`
     nodes.push({
@@ -64,39 +66,23 @@ export function getArgoTopology(application, managedClusters, cluster) {
             },
             clusterNames,
             channels: application.channels,
+            relatedApps,
         },
     })
 
     delete application.app.spec.apps
 
-    // create placement node
-    const placement = get(application, 'placement', '')
-    if (placement) {
-        const {
-            metadata: { name, namespace },
-        } = placement
-        const placementId = `member--placements--${namespace}--${name}`
-        nodes.push({
-            name,
-            namespace,
-            type: 'placement',
-            id: placementId,
-            uid: placementId,
-            specs: {
-                isDesign: true,
-                raw: placement,
-            },
-        })
-        links.push({
-            from: { uid: appId },
-            to: { uid: placementId },
-            type: '',
-            specs: { isDesign: true },
-        })
-    }
-
     // create cluster node
-    const clusterId = addClusters(appId, new Set(), null, clusterNames, uniqBy(clusters, 'metadata.name'), links, nodes)
+    const clusterId = addClusters(
+        appId,
+        new Set(),
+        null,
+        clusterNames,
+        uniqBy(clusters, 'metadata.name'),
+        links,
+        nodes,
+        topology
+    )
     const resources = get(application, 'app.status.resources', [])
 
     resources.forEach((deployable) => {
@@ -144,6 +130,10 @@ export function getArgoTopology(application, managedClusters, cluster) {
             to: { uid: memberId },
             type: '',
         })
+
+        const template = { metadata: {} }
+        // create replica subobject, if this object defines a replicas
+        createReplicaChild(deployableObj, template, links, nodes)
     })
 
     return { nodes: uniqBy(nodes, 'uid'), links }
