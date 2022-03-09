@@ -1,4 +1,4 @@
-apiVersion: policy.open-cluster-management.io/v1
+apiVersion: policy.open-cluster-management.io/v1beta1
 kind: PolicySet
 metadata:
     name: policy-set-with-placement-rules-aws-gcp
@@ -78,7 +78,7 @@ spec:
           type: ManagedClusterConditionAvailable
     clusterSelector:
         matchLabels:
-          cloud: Google
+            cloud: Google
         matchExpressions:
             - key: vendor
               operator: In
