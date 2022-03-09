@@ -15,9 +15,8 @@ import {
     Stack,
     StackItem,
 } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmAlert, AcmTable, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
-import { fitContent } from 'openshift-assisted-ui-lib/cim'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
