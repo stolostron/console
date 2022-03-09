@@ -100,7 +100,7 @@ import {
     NamespaceApiVersion,
     NamespaceKind,
     Placement,
-    PlacementApiVersion,
+    PlacementApiVersionAlpha,
     PlacementDecision,
     PlacementDecisionApiVersion,
     PlacementDecisionKind,
@@ -269,7 +269,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
         addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
-        addSetter(PlacementApiVersion, PlacementKind, setPlacementsState)
+        addSetter(PlacementApiVersionAlpha, PlacementKind, setPlacementsState)
         addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
         addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
         addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
