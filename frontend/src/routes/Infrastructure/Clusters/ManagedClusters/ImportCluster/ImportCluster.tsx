@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
     ActionGroup,
     Button,
@@ -267,17 +267,7 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
         })
         setImportResources(resources)
         onFormChange(resources)
-    }, [
-        importMode,
-        discovered,
-        clusterName,
-        additionalLabels,
-        kubeConfig,
-        managedClusterSet,
-        token,
-        server,
-        onFormChange,
-    ])
+    }, [importMode, discovered, clusterName, additionalLabels, kubeConfig, managedClusterSet, token, server])
 
     const onReset = () => {
         setClusterName('')
