@@ -9,7 +9,7 @@ export type PolicyApiVersionType = 'policy.open-cluster-management.io/v1'
 export const PolicyKind = 'Policy'
 export type PolicyKindType = 'Policy'
 
-export const PolicyDefinition : IResourceDefinition = {
+export const PolicyDefinition: IResourceDefinition = {
     apiVersion: PolicyApiVersion,
     kind: PolicyKind,
 }
