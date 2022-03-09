@@ -269,7 +269,7 @@ export function nockArgoGitBranches(repositoryUrl: string, response: GetGitBranc
     const url = new URL(repositoryUrl)
     return nock('https://api.github.com')
         .get('/repos' + url.pathname + '/branches')
-        .reply(statusCode, response.branchList, {})
+        .reply(statusCode, response.branchList)
 }
 
 export function nockArgoGitPathSha(
@@ -281,14 +281,14 @@ export function nockArgoGitPathSha(
     const url = new URL(repositoryUrl)
     return nock('https://api.github.com')
         .get('/repos' + url.pathname + '/branches/' + branch)
-        .reply(statusCode, response, {})
+        .reply(statusCode, response)
 }
 
 export function nockArgoGitPathTree(repositoryUrl: string, response: GetGitPathsArgoResponse, statusCode = 200) {
     const url = new URL(repositoryUrl)
     return nock('https://api.github.com')
         .get('/repos' + url.pathname + '/git/trees/01?recursive=true')
-        .reply(statusCode, response, {})
+        .reply(statusCode, response)
 }
 
 export function nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource, statusCode = 204) {

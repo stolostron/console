@@ -3,19 +3,22 @@ import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 import { Selector } from './selector'
 
-export const PlacementApiVersion = 'cluster.open-cluster-management.io/v1alpha1'
-export type PlacementApiVersionType = 'cluster.open-cluster-management.io/v1alpha1'
+export const PlacementApiVersionAlpha = 'cluster.open-cluster-management.io/v1alpha1'
+export type PlacementApiVersionAlphaType = 'cluster.open-cluster-management.io/v1alpha1'
+
+export const PlacementApiVersionBeta = 'cluster.open-cluster-management.io/v1beta1'
+export type PlacementApiVersionBetaType = 'cluster.open-cluster-management.io/v1beta1'
 
 export const PlacementKind = 'Placement'
 export type PlacementKindType = 'Placement'
 
 export const PlacementDefinition: IResourceDefinition = {
-    apiVersion: PlacementApiVersion,
+    apiVersion: PlacementApiVersionAlpha,
     kind: PlacementKind,
 }
 
 export interface Placement extends IResource {
-    apiVersion: PlacementApiVersionType
+    apiVersion: PlacementApiVersionAlphaType | PlacementApiVersionBetaType
     kind: PlacementKindType
     metadata: Metadata
     spec: {
