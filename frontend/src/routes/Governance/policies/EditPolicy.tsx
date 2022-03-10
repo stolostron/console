@@ -76,7 +76,7 @@ export function EditPolicy() {
                             autoClose: true,
                         })
                     }
-                    history.push(NavigationPath.policySets)
+                    history.push(NavigationPath.policies)
                 })
             }}
             onCancel={() => history.push(NavigationPath.policies)}

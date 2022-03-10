@@ -49,7 +49,7 @@ export function CreatePolicy() {
                             autoClose: true,
                         })
                     }
-                    history.push(NavigationPath.policySets)
+                    history.push(NavigationPath.policies)
                 })
             }}
         />
