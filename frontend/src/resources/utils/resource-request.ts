@@ -155,13 +155,11 @@ export async function createResources(
     } catch (err) {
         if (options?.dryRun !== true) {
             if (options?.deleteCreatedOnError) {
-                if (createResource.length) {
-                    for (const createdResource of createdResources) {
-                        try {
-                            deleteResource(createdResource).promise.catch(noop)
-                        } catch (err) {
-                            // Do nothing
-                        }
+                for (const createdResource of createdResources) {
+                    try {
+                        deleteResource(createdResource).promise.catch(noop)
+                    } catch (err) {
+                        // Do nothing
                     }
                 }
             }

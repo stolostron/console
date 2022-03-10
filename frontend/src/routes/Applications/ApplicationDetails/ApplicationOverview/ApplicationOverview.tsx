@@ -75,7 +75,12 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         open: false,
     })
     const [hasSyncPermission, setHasSyncPermission] = useState(false)
-    const clusterCount = {
+    const openTabIcon = '#diagramIcons_open-new-tab'
+    interface IClusterCountProps {
+        localPlacement: boolean
+        remoteCount: number
+    }
+    const clusterCount: IClusterCountProps = {
         localPlacement: false,
         remoteCount: 0,
     }
@@ -90,8 +95,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
     useEffect(() => {
         const fetchNamespaces = async () => {
-            const namespaces = await listNamespaces().promise
-            return namespaces
+            return await listNamespaces().promise
         }
 
         fetchNamespaces().then((namespaces) => {
@@ -120,11 +124,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         return checkData !== -1 ? showData : <Skeleton width={width} className="loading-skeleton-text" />
     }
 
-    function getClusterField(
-        searchLink: string,
-        clusterCountString: string,
-        clusterCount: { localPlacement: boolean; remoteCount: number }
-    ) {
+    function getClusterField(searchLink: string, clusterCountString: string, clusterCount: IClusterCountProps) {
         if (clusterCount.remoteCount && clusterCountString !== 'None') {
             return (
                 <a className="cluster-count-link" href={searchLink}>
@@ -175,12 +175,13 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     }
                 })
             }
+            let lastSyncedTimeStamp = ''
+            if (isArgoApp) {
+                lastSyncedTimeStamp = _.get(applicationData, 'application.app.status.reconciledAt', '')
+            } else if (isAppSet) {
+                lastSyncedTimeStamp = lastSynced
+            }
 
-            const lastSyncedTimeStamp = isArgoApp
-                ? _.get(applicationData, 'application.app.status.reconciledAt', '')
-                : isAppSet
-                ? lastSynced
-                : ''
             leftItems = [
                 {
                     key: t('Name'),
@@ -264,7 +265,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             const allSubscriptions = _.get(applicationData.application, 'allSubscriptions', [])
             subsList = applicationData.application.allSubscriptions
             disableBtn = subsList && subsList.length > 0 ? false : true
-            // const clusterList = applicationData.application.allClusters
 
             let lastSynced = ''
             allSubscriptions.forEach((subs: Subscription) => {
@@ -352,6 +352,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     isAppSet,
                     t,
                     getUrl,
+                    openTabIcon,
                 })}
 
                 {/* Hide for argo */}
@@ -484,10 +485,11 @@ interface IRenderCardsSectionProps {
     t: TFunction
     resource: IResource
     getUrl: string
+    openTabIcon: string
 }
 
 function renderCardsSection(props: IRenderCardsSectionProps) {
-    const { isSubscription, isAppSet, isArgoApp, t, resource, getUrl } = props
+    const { isSubscription, isAppSet, isArgoApp, t, resource, getUrl, openTabIcon } = props
     if (resource) {
         const [apigroup, apiversion] = resource.apiVersion.split('/')
         const targetLink = getSearchLink({
@@ -512,7 +514,7 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
                             rel="noreferrer"
                             icon={
                                 <svg className="new-tab-icon">
-                                    <use href={'#diagramIcons_open-new-tab'} />
+                                    <use href={openTabIcon} />
                                 </svg>
                             }
                             iconPosition="right"
@@ -539,7 +541,7 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
                                             rel="noreferrer"
                                             icon={
                                                 <svg className="new-tab-icon argo-app-link">
-                                                    <use href={'#diagramIcons_open-new-tab'} />
+                                                    <use href={openTabIcon} />
                                                 </svg>
                                             }
                                             iconPosition="right"
@@ -557,7 +559,7 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
                                             rel="noreferrer"
                                             icon={
                                                 <svg className="new-tab-icon argo-app-link">
-                                                    <use href={'#diagramIcons_open-new-tab'} />
+                                                    <use href={openTabIcon} />
                                                 </svg>
                                             }
                                             iconPosition="right"
@@ -665,11 +667,16 @@ function createArgoAppIcon(isArgoApp: boolean, isAppSet: boolean, t: TFunction) 
 }
 
 function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolean, isAppSet: boolean) {
-    const sourcePath = isArgoApp ? 'spec.source' : isAppSet ? 'spec.template.spec.source' : ''
+    let sourcePath = ''
+    if (isArgoApp) {
+        sourcePath = 'spec.source'
+    } else if (isAppSet) {
+        sourcePath = 'spec.template.spec.source'
+    }
     const { path, repoURL } = _.get(resource, sourcePath)
     const [apigroup, apiversion] = resource.apiVersion.split('/')
     if (resource) {
-        const searctLink = getSearchLink({
+        return getSearchLink({
             properties: {
                 kind: ApplicationKind.toLowerCase(),
                 path,
@@ -678,7 +685,6 @@ function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolea
                 apiversion,
             },
         })
-        return searctLink
     }
     return ''
 }
