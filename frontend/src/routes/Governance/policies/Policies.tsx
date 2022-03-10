@@ -28,9 +28,9 @@ import {
     placementBindingsState,
     placementRulesState,
     placementsState,
-    policiesState,
     policySetsState,
     subscriptionsState,
+    usePolicies,
 } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -53,17 +53,11 @@ export interface PolicyTableItem {
 
 export default function PoliciesPage() {
     const { t } = useTranslation()
-    const [policiesSource] = useRecoilState(policiesState)
+    const policies = usePolicies()
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
-    const policies = useMemo(
-        () =>
-            policiesSource.filter(
-                (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
-            ),
-        [policiesSource]
-    )
+
     // in a useEffect hook
     const tableItems: PolicyTableItem[] = policies.map((policy) => {
         const isExternal = resolveExternalStatus(policy)

@@ -3,7 +3,7 @@ import { PageSection } from '@patternfly/react-core'
 import { AcmTable, IAcmTableColumn } from '@stolostron/ui-components'
 import { useCallback, useMemo } from 'react'
 import { useRecoilState } from 'recoil'
-import { clusterCuratorsState, policiesState } from '../../../atoms'
+import { clusterCuratorsState, usePolicies } from '../../../atoms'
 import { Cluster } from '../../../resources'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
@@ -22,14 +22,7 @@ import { usePolicyViolationSummary } from '../overview/PolicyViolationSummary'
 import { useClusterPolicyViolationsColumn } from './useClusterPolicyViolationsColumn'
 
 export default function GovernanceClustersPage() {
-    const [policiesSource] = useRecoilState(policiesState)
-    const policies = useMemo(
-        () =>
-            policiesSource.filter(
-                (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
-            ),
-        [policiesSource]
-    )
+    const policies = usePolicies()
     const policyViolationSummary = usePolicyViolationSummary(policies)
     const clusterViolationSummaryMap = useClusterViolationSummaryMap(policies)
     if (policies.length === 0) {

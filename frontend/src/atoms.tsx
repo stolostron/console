@@ -498,3 +498,8 @@ export function LoadData(props: { children?: ReactNode }) {
 
     return <Fragment>{props.children}</Fragment>
 }
+
+export function usePolicies() {
+    const [policies] = useRecoilState(policiesState)
+    return policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'])
+}

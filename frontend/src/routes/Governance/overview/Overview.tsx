@@ -3,8 +3,7 @@ import { Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@pattern
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { t } from 'i18next'
 import { Fragment, useMemo } from 'react'
-import { useRecoilState } from 'recoil'
-import { policiesState } from '../../../atoms'
+import { usePolicies } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { Policy } from '../../../resources'
 import {
@@ -16,14 +15,7 @@ import { PolicySetViolationsCard } from './PolicySetViolationSummary'
 import { PolicyViolationsCard, usePolicyViolationSummary } from './PolicyViolationSummary'
 
 export default function GovernanceOverview() {
-    const [policiesSource] = useRecoilState(policiesState)
-    const policies = useMemo(
-        () =>
-            policiesSource.filter(
-                (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
-            ),
-        [policiesSource]
-    )
+    const policies = usePolicies()
     const policyViolationSummary = usePolicyViolationSummary(policies)
     const clusterViolationSummaryMap = useClusterViolationSummaryMap(policies)
     if (policies.length === 0) {
