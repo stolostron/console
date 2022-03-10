@@ -8,7 +8,7 @@ import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '@stolostron
 import { TFunction } from 'i18next'
 import { useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { managedClustersState, policiesState, usePolicies } from '../../../../atoms'
+import { managedClustersState, usePolicies } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { PolicySet, PolicySetResultCluster, PolicySetStatusResult } from '../../../../resources'
 import { usePolicySetClusterPolicyViolationsColumn } from '../../clusters/useClusterPolicyViolationsColumn'
