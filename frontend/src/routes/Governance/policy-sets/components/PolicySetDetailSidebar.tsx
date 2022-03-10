@@ -8,7 +8,7 @@ import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '@stolostron
 import { TFunction } from 'i18next'
 import { useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { managedClustersState, policiesState } from '../../../../atoms'
+import { managedClustersState, usePolicies } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { PolicySet, PolicySetResultCluster, PolicySetStatusResult } from '../../../../resources'
 import { usePolicySetClusterPolicyViolationsColumn } from '../../clusters/useClusterPolicyViolationsColumn'
@@ -122,7 +122,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
     const classes = useStyles()
     const { t } = useTranslation()
     const [managedClusters] = useRecoilState(managedClustersState)
-    const [policies] = useRecoilState(policiesState)
+    const policies = usePolicies()
     const [type, setType] = useState<'Clusters' | 'Policies'>('Clusters')
     const selectType = (type: 'Clusters' | 'Policies') => {
         setType(type)
