@@ -95,18 +95,15 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
     useEffect(() => {
         const fetchNamespaces = async () => {
-            return await listNamespaces().promise
+            return listNamespaces().promise
         }
 
-        fetchNamespaces().then((namespaces) => {
+        fetchNamespaces().then((ns) => {
             const fetchAuthorizedNamespaces = async () => {
-                const authorizedNamespaces = await getAuthorizedNamespaces(
-                    [rbacCreate(NamespaceDefinition)],
-                    namespaces
-                )
+                const authorizedNamespaces = await getAuthorizedNamespaces([rbacCreate(NamespaceDefinition)], ns)
                 return {
                     authorizedNamespaces,
-                    namespaces,
+                    namespaces: ns,
                 }
             }
             fetchAuthorizedNamespaces().then(({ authorizedNamespaces, namespaces }) => {
@@ -124,8 +121,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         return checkData !== -1 ? showData : <Skeleton width={width} className="loading-skeleton-text" />
     }
 
-    function getClusterField(searchLink: string, clusterCountString: string, clusterCount: IClusterCountProps) {
-        if (clusterCount.remoteCount && clusterCountString !== 'None') {
+    function getClusterField(searchLink: string, clusterCountString: string, count: IClusterCountProps) {
+        if (count.remoteCount && clusterCountString !== 'None') {
             return (
                 <a className="cluster-count-link" href={searchLink}>
                     {t(clusterCountString)}
@@ -167,19 +164,15 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
         ////////////////////////////////// argo items ////////////////////////////////////
         if (!isSubscription) {
-            let lastSynced = ''
-            if (isAppSet) {
-                applicationData.application.appSetApps.forEach((appSet: ApplicationSet) => {
-                    if (!lastSynced) {
-                        lastSynced = _.get(appSet, 'status.reconciledAt', '')
-                    }
-                })
-            }
             let lastSyncedTimeStamp = ''
             if (isArgoApp) {
                 lastSyncedTimeStamp = _.get(applicationData, 'application.app.status.reconciledAt', '')
             } else if (isAppSet) {
-                lastSyncedTimeStamp = lastSynced
+                applicationData.application.appSetApps.forEach((appSet: ApplicationSet) => {
+                    if (!lastSyncedTimeStamp) {
+                        lastSyncedTimeStamp = _.get(appSet, 'status.reconciledAt', '')
+                    }
+                })
             }
 
             leftItems = [
