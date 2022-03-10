@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { Subscription, SubscriptionApiVersion, SubscriptionKind } from '../../../resources'
 import { TimeWindowLabels } from './TimeWindowLabels'
