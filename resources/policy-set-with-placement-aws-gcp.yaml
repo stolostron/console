@@ -8,7 +8,7 @@ spec:
         As a customer I want to place policies on my Amazon and Google clusters in my-cluster-set in regions east and west but not on my production clusters.
     policies: []
 ---
-apiVersion: cluster.open-cluster-management.io/v1alpha1
+apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
 metadata:
     name: policy-set-with-placement-aws-gcp-1
