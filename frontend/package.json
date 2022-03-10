@@ -29,7 +29,8 @@
         "serve:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && npx http-server ./dist -p $PORT -c-1 --cors",
         "serve:plugin:acm": "PLUGIN=acm PORT=3002 npm run serve:plugin",
         "serve:plugin:mce": "PLUGIN=mce PORT=3001 npm run serve:plugin",
-        "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup"
+        "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup",
+        "cypress:open": "cypress open"
     },
     "dependencies": {
         "@apollo/client": "3.5.10",
@@ -124,6 +125,7 @@
         "crypto-browserify": "3.12.0",
         "css-loader": "6.6.0",
         "css-minimizer-webpack-plugin": "3.4.1",
+        "cypress": "^9.5.1",
         "eslint": "8.10.0",
         "eslint-config-prettier": "^8.5.0",
         "eslint-plugin-import": "^2.25.4",
