@@ -33,10 +33,10 @@ describe('create policy set', () => {
         cy.get('#nav-toggle').click()
         cy.get('#yaml-switch').click({ force: true })
         cy.contains('Submit').click()
+        cy.contains('Policy sets')
     })
 
     it('verify', () => {
-        cy.contains('Policy sets')
         cy.contains('cypress-policy-set')
     })
 })

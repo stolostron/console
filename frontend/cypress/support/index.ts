@@ -19,7 +19,7 @@
 // require('./commands')
 import './commands'
 
-beforeEach(() => {
+before(() => {
     Cypress.Cookies.defaults({
         preserve: ['_csrf', '_oauth_proxy', 'acm-access-token-cookie'],
     })
