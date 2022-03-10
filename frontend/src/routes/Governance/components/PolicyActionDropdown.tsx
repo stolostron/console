@@ -221,7 +221,9 @@ export function PolicyActionDropdown(props: {
                     })
                 },
                 rbac:
-                    item.policy.spec.remediationAction === 'enforce' ? undefined : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+                    item.policy.spec.remediationAction === 'enforce'
+                        ? undefined
+                        : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
             {
                 id: 'edit-policy',
