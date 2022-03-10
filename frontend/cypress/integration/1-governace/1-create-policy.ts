@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /// <reference types="cypress" />
 
-describe('create policy set', () => {
+describe('create policy', () => {
     it('displays', () => {
         cy.visit(`/multicloud/governance/policies/create`)
         cy.login()
@@ -10,7 +10,7 @@ describe('create policy set', () => {
     it('details', () => {
         cy.get('#details').within(() => {
             cy.get('#name').type('cypress-policy')
-            cy.get('#namespace').click().get('#test').click()
+            cy.get('#namespace').click().get('#cypress').click()
         })
         cy.contains('Next').click()
     })

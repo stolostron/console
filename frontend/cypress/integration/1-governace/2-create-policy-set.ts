@@ -9,7 +9,7 @@ describe('create policy set', () => {
 
     it('details', () => {
         cy.get('#name').type('cypress-policy-set')
-        cy.get('#namespace').click().get('#test').click()
+        cy.get('#namespace').click().get('#cypress').click()
         cy.contains('Next').click()
     })
 
