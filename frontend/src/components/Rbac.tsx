@@ -29,7 +29,7 @@ type Actions<T = unknown> = {
 export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
     const { t } = useTranslation()
     const [actions, setActions] = useState<Actions<T>[]>([])
-
+    console.log
     useEffect(() => {
         const isUpdated = !props.actions.every((a, i) => a?.id === actions?.[i]?.id)
         if (isUpdated) {
@@ -57,7 +57,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
                             return {
                                 ...action,
                                 isAriaDisabled: isAriaDisabled,
-                                tooltip: isAriaDisabled ? t('rbac.unauthorized') : '',
+                                tooltip: isAriaDisabled ? t('rbac.unauthorized') : (action.tooltip ? action.tooltip : ''),
                             }
                         } else {
                             return action

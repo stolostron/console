@@ -40,6 +40,7 @@ import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
 import { PolicyActionDropdown } from '../components/PolicyActionDropdown'
+import { PolicyAutomationButton } from '../components/PolicyAutomationButton'
 import {
     PolicyClusterViolationSummaryMap,
     usePolicyClusterViolationSummaryMap,
@@ -152,7 +153,13 @@ export default function PoliciesPage() {
             },
             {
                 header: t('Automation'),
-                cell: () => '-',
+                cell: (item: PolicyTableItem) => {
+                    if (item.policy.metadata.namespace) {
+                        return <PolicyAutomationButton policy={item.policy} />
+                    } else {
+                        return ''
+                    }
+                },
             },
             {
                 header: '',
@@ -162,7 +169,7 @@ export default function PoliciesPage() {
                 cellTransforms: [fitContent],
             },
         ],
-        [policyClusterViolationsColumn, policySets, t]
+        [policyClusterViolationsColumn, policySets, t, policies]
     )
 
     const bulkModalStatusColumns = useMemo(
