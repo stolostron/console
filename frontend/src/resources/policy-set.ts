@@ -35,24 +35,11 @@ export interface PolicySetSpec {
 export interface PolicySetStatus {
     compliant?: 'NonCompliant' | 'Compliant'
     placement?: PolicySetStatusPlacement[]
-    results: PolicySetStatusResult[]
 }
 
 export interface PolicySetStatusPlacement {
-    placement: string
-    placementBinding: string
+    placement?: string
+    placementRule?: string
+    placementBinding?: string
     placementDecisions?: string[]
-}
-
-export interface PolicySetStatusResult {
-    policy: string
-    compliant?: 'NonCompliant' | 'Compliant'
-    message?: string
-    clusters?: PolicySetResultCluster[]
-}
-
-export interface PolicySetResultCluster {
-    clusterName: string
-    clusterNamespace: string
-    compliant: 'NonCompliant' | 'Compliant'
 }

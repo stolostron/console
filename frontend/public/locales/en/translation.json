@@ -265,6 +265,8 @@
     "Cluster violation": "Cluster violation",
     "Cluster violations": "Cluster violations",
     "Cluster where the selected Argo application resources are deployed.": "Cluster where the selected Argo application resources are deployed.",
+    "Cluster with policy violations": "Cluster with policy violations",
+    "Cluster without policy violations": "Cluster without policy violations",
     "cluster.count.local": "Local",
     "cluster.count.none": "None",
     "cluster.create.ai.subtitle": "Discover new hosts",
