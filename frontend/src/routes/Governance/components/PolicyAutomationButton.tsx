@@ -20,19 +20,18 @@ export function PolicyAutomationButton(props: { policy: Policy }) {
     //    if (policyAutomation) {
     //        const automationName = _.get(policyAutomation, 'metadata.name')
     //        return this.automationLaunch(item, automationName, automationAccess, locale, refetch)
-    //    } 
-    // 
+    //    }
+    //
     // No automation render automation configure
-    
 
-     useEffect(() => {
-         const canUpdateResource = canUser('create', PolicyDefinition)
+    useEffect(() => {
+        const canUpdateResource = canUser('create', PolicyDefinition)
 
-         canUpdateResource.promise
-             .then((result) => setUserAccess(result.status?.allowed!))
-             .catch((err) => console.error(err))
-         return () => canUpdateResource.abort()
-     }, [policy])
+        canUpdateResource.promise
+            .then((result) => setUserAccess(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canUpdateResource.abort()
+    }, [policy])
 
     function handleAutomationDrawer(event: React.MouseEvent) {
         if (!event.currentTarget.contains(event.target as Node)) {
@@ -52,7 +51,16 @@ export function PolicyAutomationButton(props: { policy: Policy }) {
         const tooltipRef = useRef()
         return (
             <>
-                <Tooltip content= {userAccess ? t('Configure automation for this policy') : t('You are not authorized to complete this action. See your cluster administrator for role-based access information.')} reference={tooltipRef} />
+                <Tooltip
+                    content={
+                        userAccess
+                            ? t('Configure automation for this policy')
+                            : t(
+                                  'You are not authorized to complete this action. See your cluster administrator for role-based access information.'
+                              )
+                    }
+                    reference={tooltipRef}
+                />
                 <Button
                     innerRef={tooltipRef}
                     isAriaDisabled={!userAccess}

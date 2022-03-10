@@ -30,7 +30,6 @@ const useStyles = makeStyles({
         borderBottom: '1px solid #D2D2D2',
         margin: '0 -2rem 1rem -2rem',
     },
-
 })
 
 export function PolicyAutomationSidebar(props: { policy: Policy }) {
@@ -141,7 +140,6 @@ export function PolicyAutomationSidebar(props: { policy: Policy }) {
     //         initializeFinished: true,
     //     })
     // }
-
 
     const policyCompliance = (policy: Policy) => {
         console.log('status', policy.status)
