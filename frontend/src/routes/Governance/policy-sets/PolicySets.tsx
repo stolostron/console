@@ -23,15 +23,21 @@ import CardViewToolbarSearch from './components/CardViewToolbarSearch'
 import PolicySetCard from './components/PolicySetCard'
 
 function violationFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
+    if (!policySet.status) {
+        return false
+    }
     return policySet.status.compliant === 'NonCompliant'
 }
 function nonViolationFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
+    if (!policySet.status) {
+        return false
+    }
     return policySet.status.compliant === 'Compliant'
 }
 function unknownStatusFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return true
+    if (!policySet.status) {
+        return true
+    }
     return !policySet.status.compliant
 }
 
@@ -67,8 +73,6 @@ export default function PolicySetsPage() {
     const [perPage, setPerPage] = useState<number>(10)
     const [filteredPolicySets, setFilteredPolicySets] = useState<PolicySet[]>(policySets)
     const [selectedCardID, setSelectedCardID] = useState<string>('')
-
-    // TODO add memo to get new filtered policysets on policyset update
 
     const updatePerPage = useCallback(
         (newPerPage: number) => {

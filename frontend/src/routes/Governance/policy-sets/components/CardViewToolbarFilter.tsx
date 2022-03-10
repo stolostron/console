@@ -22,6 +22,8 @@ const useStyles = makeStyles({
     },
 })
 
+const noViolation = 'no-violation'
+
 export default function CardViewToolbarFilter(props: {
     setViolationFilters: React.Dispatch<React.SetStateAction<string[]>>
 }) {
@@ -67,10 +69,10 @@ export default function CardViewToolbarFilter(props: {
                 </div>
             </SelectOption>
             <SelectOption
-                key={'no-violation'}
-                inputId={'no-violation'}
-                value={'no-violation'}
-                isChecked={selectedFilters.indexOf('no-violation') > -1}
+                key={noViolation}
+                inputId={noViolation}
+                value={noViolation}
+                isChecked={selectedFilters.indexOf(noViolation) > -1}
             >
                 <div className={classes.filterOption}>
                     {'Without violation'}
@@ -97,7 +99,9 @@ export default function CardViewToolbarFilter(props: {
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
                         {
                             policySets.filter((policySet: PolicySet) => {
-                                if (!policySet.status) return true
+                                if (!policySet.status) {
+                                    return true
+                                }
                                 return policySet.status && policySet.status.compliant === undefined
                             }).length
                         }

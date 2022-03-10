@@ -84,7 +84,7 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
             key:
                 clusterCompliantCount === 1
                     ? t('Cluster without policy violations')
-                    : t('Cluster without policy violations'),
+                    : t('Clusters without policy violations'),
             value: clusterCompliantCount,
             isPrimary: true,
         },
@@ -179,23 +179,20 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
             placements
         )
 
-        const policySetClusterCompliance: {
+        const psClusterCompliance: {
             compliant: string[]
             nonCompliant: string[]
         } = {
             compliant: [...placementRuleClusterCompliance.compliant, ...placementClusterCompliance.compliant],
             nonCompliant: [...placementRuleClusterCompliance.nonCompliant, ...placementClusterCompliance.nonCompliant],
         }
-        const policySetClusters: string[] = [
-            ...policySetClusterCompliance.compliant,
-            ...policySetClusterCompliance.nonCompliant,
-        ]
-        const policySetPolicies: PolicyCompliance[] = [...placementRulePolicyCompliance, ...placementPolicyCompliance]
+        const psClusters: string[] = [...psClusterCompliance.compliant, ...psClusterCompliance.nonCompliant]
+        const psPolicies: PolicyCompliance[] = [...placementRulePolicyCompliance, ...placementPolicyCompliance]
 
         return {
-            policySetClusters,
-            policySetClusterCompliance,
-            policySetPolicies,
+            policySetClusters: psClusters,
+            policySetClusterCompliance: psClusterCompliance,
+            policySetPolicies: psPolicies,
         }
     }, [policySet, policies, placementDecisions, placementBindings, placementRules, placements])
 
