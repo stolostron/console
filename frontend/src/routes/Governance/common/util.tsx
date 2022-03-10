@@ -175,7 +175,7 @@ export function resolveSource(
     channels: Channel[],
     subscriptions: Subscription[]
 ) {
-    const getAnnotations = (item: any) => item.metadata.annotations ?? {}
+    const getAnnotations = (item: any) => item?.metadata?.annotations ?? {}
     const getHostingSubscription = (annotations: any) =>
         annotations['apps.open-cluster-management.io/hosting-subscription']
     const parentAnnotations = getAnnotations(policy)
