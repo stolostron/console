@@ -7,7 +7,6 @@ import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-// import { rbacDelete } from '../../../lib/rbac-util'
 import { patchResource, Policy, PolicyApiVersion, PolicyDefinition, PolicyKind } from '../../../resources'
 import { DeletePolicyModal, PolicyTableItem } from '../policies/Policies'
 
@@ -105,7 +104,9 @@ export function PolicyActionDropdown(props: {
                         hasExternalResources: item.source !== 'Local',
                     })
                 },
-                rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+                rbac: item.policy.spec.disabled
+                    ? [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)]
+                    : undefined,
             },
             {
                 id: 'disable-policy',
@@ -141,7 +142,9 @@ export function PolicyActionDropdown(props: {
                         hasExternalResources: item.source !== 'Local',
                     })
                 },
-                rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+                rbac: item.policy.spec.disabled
+                    ? undefined
+                    : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
             {
                 id: 'inform-policy',
@@ -178,7 +181,10 @@ export function PolicyActionDropdown(props: {
                         hasExternalResources: item.source !== 'Local',
                     })
                 },
-                rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+                rbac:
+                    item.policy.spec.remediationAction === 'inform'
+                        ? undefined
+                        : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
             {
                 id: 'enforce-policy',
@@ -214,7 +220,10 @@ export function PolicyActionDropdown(props: {
                         hasExternalResources: item.source !== 'Local',
                     })
                 },
-                rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
+                rbac:
+                    item.policy.spec.remediationAction === 'enforce'
+                        ? undefined
+                        : [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
             {
                 id: 'edit-policy',
