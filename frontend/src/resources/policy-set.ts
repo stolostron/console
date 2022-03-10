@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-export const PolicySetApiVersion = 'policy.open-cluster-management.io/v1'
-export type PolicySetApiVersionType = 'policy.open-cluster-management.io/v1'
+export const PolicySetApiVersion = 'policy.open-cluster-management.io/v1beta1'
+export type PolicySetApiVersionType = 'policy.open-cluster-management.io/v1beta1'
 
 export const PolicySetKind = 'PolicySet'
 export type PolicySetKindType = 'PolicySet'

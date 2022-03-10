@@ -6,6 +6,7 @@ import { NavigationPath } from '../../NavigationPath'
 import Handlebars from 'handlebars'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
+import { Location } from 'history'
 import { ApplicationKind, createResources as createKubeResources, IResource, updateAppResources } from '../../resources'
 import '../Applications/CreateApplication/Subscription/style.css'
 
@@ -207,8 +208,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
         return t(key, arg)
     }
 
-    function getEditApplication() {
-        const location = useLocation()
+    function getEditApplication(location: Location) {
         const pathname = location.pathname
         if (pathname.includes('/edit')) {
             const params = pathname.replace(/(.*)edit\//, '')
@@ -236,29 +236,33 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [placementRules] = useRecoilState(placementRulesState)
-    const editApplication = getEditApplication()
-    if (editApplication) {
-        // if editing an existing app, grab it first
-        const { selectedAppName, selectedAppNamespace } = editApplication
-        const allChannels = '__ALL__/__ALL__//__ALL__/__ALL__'
-        // get application object from recoil states
-        const application = getApplication(selectedAppNamespace, selectedAppName, allChannels, {
-            applications,
-            ansibleJob,
-            subscriptions,
-            channels,
-            placementRules,
-        })
-        useEffect(() => {
+    const location = useLocation()
+    const editApplication = getEditApplication(location)
+    useEffect(() => {
+        if (editApplication) {
+            const { selectedAppName, selectedAppNamespace } = editApplication
+            const allChannels = '__ALL__/__ALL__//__ALL__/__ALL__'
+            // get application object from recoil states
+            const application = getApplication(selectedAppNamespace, selectedAppName, allChannels, {
+                applications,
+                ansibleJob,
+                subscriptions,
+                channels,
+                placementRules,
+            })
             setFetchControl({
                 resources: getApplicationResources(application),
                 isLoaded: true,
             })
-        }, [])
-        useEffect(() => {
+        }
+    }, [ansibleJob, applications, channels, editApplication, placementRules, subscriptions])
+
+    useEffect(() => {
+        if (editApplication) {
+            const { selectedAppName } = editApplication
             setTitle(selectedAppName)
-        }, [])
-    }
+        }
+    }, [editApplication, setTitle])
 
     const createControl = {
         createResource: handleCreate,

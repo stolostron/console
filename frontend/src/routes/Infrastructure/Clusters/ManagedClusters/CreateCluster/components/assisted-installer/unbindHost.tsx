@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Alert, AlertVariant } from '@patternfly/react-core'

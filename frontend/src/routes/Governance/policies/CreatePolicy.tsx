@@ -6,6 +6,7 @@ import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     managedClusterSetBindingsState,
+    managedClustersState,
     namespacesState,
     placementRulesState,
     placementsState,
@@ -23,12 +24,14 @@ export function CreatePolicy() {
     const [namespaces] = useRecoilState(namespacesState)
     const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)
+    const [managedClusters] = useRecoilState(managedClustersState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
     return (
         <PolicyWizard
             title={t('Create policy')}
             policies={policies}
+            clusters={managedClusters}
             namespaces={namespaceNames}
             placements={placements}
             placementRules={placementRules}

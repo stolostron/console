@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmAlert, AcmModal } from '@stolostron/ui-components'
 import { Button, Checkbox, ModalVariant } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { AcmAlert, AcmModal } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
+import { Trans } from '../../../lib/acm-i18next'
 import React, { ReactNode, useState } from 'react'
-import { ApplicationKind, ApplicationSetKind, IResource } from '../../../resources'
 import { deleteApplication } from '../../../lib/delete-application'
+import { ApplicationKind, ApplicationSetKind, IResource } from '../../../resources'
 import '../css/DeleteResourceModal.css'
 
 export interface IDeleteResourceModalProps {
@@ -27,12 +28,12 @@ export interface IDeleteResourceModalProps {
 }
 
 export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: false }) {
+    const [removeAppResources, setRemoveAppResources] = useState<boolean>(false)
+    const [removeAppSetResource, setRemoveAppSetResource] = useState<boolean>(false)
+
     if (props.open === false) {
         return <></>
     }
-
-    const [removeAppResources, setRemoveAppResources] = useState<boolean>(false)
-    const [removeAppSetResource, setRemoveAppSetResource] = useState<boolean>(false)
 
     const toggleRemoveAppRsources = () => {
         setRemoveAppResources(!removeAppResources)
@@ -40,10 +41,6 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
 
     const toggleRemoveAppSetResources = () => {
         setRemoveAppSetResource(!removeAppSetResource)
-    }
-
-    const getItalicSpan = (text: string) => {
-        return `<span class="italic-font">${text}</span>`
     }
 
     const handleSubmit = () => {
@@ -76,19 +73,18 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
             ? props.t('Remove Application related resources')
             : props.t('Remove ApplicationSet related resources')
 
+        console.log(appTypeMsg)
+
         return (
             <React.Fragment>
                 <div className="remove-app-modal-content-text">
-                    <p
-                        dangerouslySetInnerHTML={{
-                            __html: `
-                    ${props.t('Select {{appType} to delete {{name}} and all related resources.', {
-                        appType: getItalicSpan(appTypeMsg),
-                        name: props.resource.metadata?.name!,
-                    })}
-                    `,
-                        }}
-                    />
+                    <p>
+                        <Trans
+                            i18nKey="Select <italic>{{appType}}</italic> to delete {{name}} and all related resources."
+                            values={{ appType: appTypeMsg, name: props.resource.metadata?.name! }}
+                            components={{ italic: <span className="italic-font" /> }}
+                        />
+                    </p>
                 </div>
                 <div className="remove-app-modal-content-data">
                     <Checkbox

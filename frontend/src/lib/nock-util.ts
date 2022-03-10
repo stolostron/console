@@ -239,6 +239,18 @@ interface AnsibleCredentialPostBody {
     token: string
 }
 
+interface GetGitBranchesArgoResponse {
+    branchList: { name: string }[]
+}
+
+interface GetGitBranchShaArgoResponse {
+    commit: { sha: string }
+}
+
+interface GetGitPathsArgoResponse {
+    tree: { path: string; type: string }[]
+}
+
 export function nockAnsibleTower(
     data: AnsibleCredentialPostBody | unknown,
     response: AnsibleTowerJobTemplateList,
@@ -251,6 +263,32 @@ export function nockAnsibleTower(
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Credentials': 'true',
         })
+}
+
+export function nockArgoGitBranches(repositoryUrl: string, response: GetGitBranchesArgoResponse, statusCode = 200) {
+    const url = new URL(repositoryUrl)
+    return nock('https://api.github.com')
+        .get('/repos' + url.pathname + '/branches')
+        .reply(statusCode, response.branchList)
+}
+
+export function nockArgoGitPathSha(
+    repositoryUrl: string,
+    branch: string,
+    response: GetGitBranchShaArgoResponse,
+    statusCode = 200
+) {
+    const url = new URL(repositoryUrl)
+    return nock('https://api.github.com')
+        .get('/repos' + url.pathname + '/branches/' + branch)
+        .reply(statusCode, response)
+}
+
+export function nockArgoGitPathTree(repositoryUrl: string, response: GetGitPathsArgoResponse, statusCode = 200) {
+    const url = new URL(repositoryUrl)
+    return nock('https://api.github.com')
+        .get('/repos' + url.pathname + '/git/trees/01?recursive=true')
+        .reply(statusCode, response)
 }
 
 export function nockPatch(resource: IResource, data: unknown[] | unknown, response?: IResource, statusCode = 204) {

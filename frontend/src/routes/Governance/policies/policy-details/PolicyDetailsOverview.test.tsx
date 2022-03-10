@@ -46,7 +46,7 @@ const rootPolicy: Policy = {
 }
 
 const policySet: PolicySet = {
-    apiVersion: 'policy.open-cluster-management.io/v1',
+    apiVersion: 'policy.open-cluster-management.io/v1beta1',
     kind: 'PolicySet',
     metadata: {
         annotations: {

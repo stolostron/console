@@ -237,7 +237,7 @@ function DeletePolicySetModal(props: { item: PolicySet; onClose: () => void }) {
             }
             setIsDeleting(false)
         }
-    }, [props.onClose, placements, placementRules, placementBindings, deletePlacements, deletePlacementBindings])
+    }, [props, placements, placementRules, placementBindings, deletePlacements, deletePlacementBindings, t])
     return (
         <Modal
             title={t('Permanently delete {{type}} {{name}}?', {

@@ -1,14 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import {
-    ClusterCurator,
-    deleteResource,
-    filterForTemplatedCurators,
-    getTemplateJobsNum,
-    LinkAnsibleCredential,
-    unpackProviderConnection,
-} from '../../../resources'
+import { ButtonVariant, Hint, PageSection } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { fitContent } from '@patternfly/react-table'
 import {
     AcmAlertContext,
     AcmButton,
@@ -19,19 +14,24 @@ import {
     AcmRoute,
     AcmTable,
 } from '@stolostron/ui-components'
-import { ButtonVariant, Hint, PageSection } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, clusterCuratorsState, configMapsState, secretsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
+import {
+    ClusterCurator,
+    deleteResource,
+    filterForTemplatedCurators,
+    getTemplateJobsNum,
+    LinkAnsibleCredential,
+    unpackProviderConnection,
+} from '../../../resources'
 
 export default function AnsibleAutomationsPage() {
     const [, setRoute] = useRecoilState(acmRouteState)
@@ -39,7 +39,10 @@ export default function AnsibleAutomationsPage() {
     useEffect(() => setRoute(AcmRoute.Automation), [setRoute])
 
     const alertContext = useContext(AcmAlertContext)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
+
     const { t } = useTranslation()
 
     const useStyles = makeStyles({

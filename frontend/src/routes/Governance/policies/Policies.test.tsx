@@ -95,7 +95,7 @@ const policy0: Policy = {
 }
 
 const policySet0: PolicySet = {
-    apiVersion: 'policy.open-cluster-management.io/v1',
+    apiVersion: 'policy.open-cluster-management.io/v1beta1',
     kind: 'PolicySet',
     metadata: {
         name: 'policy-set-with-1-placement',

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
 import stringSimilarity from 'string-similarity'
-import { isEmpty, get, set, keyBy, cloneDeep, has } from 'lodash'
+import { isEmpty, get, set, keyBy, cloneDeep, has, PropertyPath } from 'lodash'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 
@@ -137,8 +137,30 @@ const process = (
             resources: cloneDeep(resources),
             hiddenSecretsValues,
         }
-        // stuff secrets with '*******'
+
+        // expand wildcard secrets
+        const allSecrets: any = []
         secrets.forEach((secret) => {
+            if (Array.isArray(secret)) {
+                if (mappings[secret[0]] && secret[1] === '*') {
+                    Array.from(Array(mappings[secret[0]].length)).forEach((_d, inx) => {
+                        allSecrets.push([secret[0], inx, ...secret.slice(2)])
+                    })
+                }
+            } else if (secret.includes('[*]')) {
+                const arr = secret.split('[*]')
+                if (mappings[arr[0]]) {
+                    Array.from(Array(mappings[arr[0]].length)).forEach((_d, inx) => {
+                        allSecrets.push(`${arr[0]}[${inx}]${arr[1]}`)
+                    })
+                }
+            } else {
+                allSecrets.push(secret)
+            }
+        })
+
+        // stuff secrets with '*******'
+        allSecrets.forEach((secret: PropertyPath) => {
             const value = get(parsed, secret)
             if (value) {
                 hiddenSecretsValues.push({ path: secret, value })
@@ -152,7 +174,7 @@ const process = (
         ;({ mappings, parsed, resources } = getMappings(documents))
 
         // prevent typing on secrets
-        secrets.forEach((secret) => {
+        allSecrets.forEach((secret: string | string[]) => {
             const value = get(mappings, getPathArray(secret))
             if (value && value.$v) {
                 protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))

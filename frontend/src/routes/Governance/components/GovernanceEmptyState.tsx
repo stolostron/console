@@ -2,6 +2,7 @@
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton, AcmEmptyState } from '@stolostron/ui-components'
+import { TFunction } from 'i18next'
 import { Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -9,8 +10,7 @@ import { NavigationPath } from '../../../NavigationPath'
 
 // GovernanceCreatePolicysetEmptyState
 
-function viewDocumentation(doclink: string) {
-    const { t } = useTranslation()
+function viewDocumentation(doclink: string, t: TFunction) {
     return (
         <Text
             component={TextVariants.a}
@@ -40,7 +40,7 @@ export function GovernanceCreatePolicyEmptyState() {
                     <AcmButton component={Link} variant="primary" to={NavigationPath.createPolicy}>
                         {t('Create policy')}
                     </AcmButton>
-                    <TextContent>{viewDocumentation(DOC_LINKS.POLICIES)}</TextContent>
+                    <TextContent>{viewDocumentation(DOC_LINKS.POLICIES, t)}</TextContent>
                 </div>
             }
         />
@@ -56,9 +56,9 @@ export function GovernanceManagePoliciesEmptyState() {
             action={
                 <div>
                     <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
-                        {t('Create policy')}
+                        {t('Manage policies')}
                     </AcmButton>
-                    <TextContent>{viewDocumentation(DOC_LINKS.POLICIES)}</TextContent>
+                    <TextContent>{viewDocumentation(DOC_LINKS.POLICIES, t)}</TextContent>
                 </div>
             }
         />
@@ -76,7 +76,7 @@ export function GovernanceCreatePolicysetEmptyState() {
                     <AcmButton component={Link} variant="primary" to={NavigationPath.createPolicySet}>
                         {'Create policy set'}
                     </AcmButton>
-                    <TextContent>{viewDocumentation(DOC_LINKS.POLICY_SETS)}</TextContent>
+                    <TextContent>{viewDocumentation(DOC_LINKS.POLICY_SETS, t)}</TextContent>
                 </div>
             }
         />

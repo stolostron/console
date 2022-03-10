@@ -70,10 +70,12 @@ export const getSimplifiedImageName = (image) => {
     }
 }
 
-export const getWorkerName = (control) => {
+export const numberedControlNameFunction = (key) => (control, controlData, i18n) => {
     const { grpNum } = control
-    return `Worker pool ${grpNum + 1}`
+    return i18n(key, [grpNum + 1])
 }
+
+export const getWorkerName = numberedControlNameFunction('creation.ocp.node.worker.pool.title')
 
 export const setAvailableOCPImages = (provider, control, result) => {
     const { loading } = result
@@ -371,7 +373,7 @@ export const networkingControlData = [
                 id: 'networkGroup',
                 type: 'section',
                 collapsable: true,
-                subtitle: 'creation.ocp.node.network.title',
+                subtitle: numberedControlNameFunction('creation.ocp.node.network.title'),
                 info: 'creation.ocp.node.network.info',
             },
             {

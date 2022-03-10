@@ -1,67 +1,67 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
 import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
+import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from '../../lib/acm-i18next'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { TFunction } from 'react-i18next'
 import { useHistory } from 'react-router'
+import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
-    applicationsState,
     applicationSetsState,
+    applicationsState,
     argoApplicationsState,
-    subscriptionsState,
     channelsState,
-    placementRulesState,
     managedClustersState,
+    placementRulesState,
+    subscriptionsState,
 } from '../../atoms'
+import { useTranslation } from '../../lib/acm-i18next'
+import { DOC_LINKS } from '../../lib/doc-util'
+import { canUser } from '../../lib/rbac-util'
+import { queryRemoteArgoApps } from '../../lib/search'
+import { useQuery } from '../../lib/useQuery'
+import { NavigationPath } from '../../NavigationPath'
 import {
     ApplicationApiVersion,
+    ApplicationDefinition,
     ApplicationKind,
+    ApplicationSet,
+    ApplicationSetDefinition,
+    ApplicationSetKind,
     ArgoApplication,
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
-    ApplicationSetKind,
-    IResource,
-    ApplicationSet,
-    ApplicationDefinition,
-    ApplicationSetDefinition,
     Channel,
-    SubscriptionKind,
-    SubscriptionApiVersion,
-    Subscription,
-    PlacementRuleKind,
+    IResource,
     PlacementRuleApiVersion,
-    ManagedCluster,
+    PlacementRuleKind,
+    Subscription,
+    SubscriptionApiVersion,
+    SubscriptionKind,
 } from '../../resources'
-import ResourceLabels from './components/ResourceLabels'
-import { getAge, getClusterCountString, getSearchLink } from './helpers/resource-helper'
-import { canUser } from '../../lib/rbac-util'
-import { Link } from 'react-router-dom'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
-import { useQuery } from '../../lib/useQuery'
-import { queryRemoteArgoApps } from '../../lib/search'
-import { NavigationPath } from '../../NavigationPath'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { DOC_LINKS } from '../../lib/doc-util'
+import ResourceLabels from './components/ResourceLabels'
+import {
+    createClustersText,
+    getAge,
+    getSearchLink,
+    getSubscriptionsFromAnnotation,
+    isArgoApp,
+    subAnnotationStr,
+} from './helpers/resource-helper'
 
 const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
-export const subAnnotationStr = 'apps.open-cluster-management.io/subscriptions'
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
 const localSubSuffixStr = '-local'
 const localClusterStr = 'local-cluster'
 const appSetPlacementStr =
     'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
-
-function isArgoApp(item: IResource) {
-    return item.apiVersion === ArgoApplicationApiVersion && item.kind === ArgoApplicationKind
-}
 
 // Map resource kind to type column
 function getResourceType(resource: IResource) {
@@ -76,25 +76,6 @@ function getResourceType(resource: IResource) {
             return 'ApplicationSet'
         }
     }
-}
-
-// Check if server URL matches hub URL
-function isLocalClusterURL(url: string, localCluster: ManagedCluster | undefined) {
-    let argoServerURL
-    const localClusterConfigs = localCluster ? localCluster.spec?.managedClusterClientConfigs! : []
-    const localClusterURL = new URL(localClusterConfigs.length > 0 ? localClusterConfigs[0].url : '')
-
-    try {
-        argoServerURL = new URL(url)
-    } catch (_) {
-        return false
-    }
-
-    const hostnameWithOutAPI = argoServerURL.hostname.substr(argoServerURL.hostname.indexOf('api.') + 4)
-    if (localClusterURL.host.indexOf(hostnameWithOutAPI) > -1) {
-        return true
-    }
-    return false
 }
 
 function getEmptyMessage(t: TFunction) {
@@ -119,13 +100,6 @@ function getAppSetApps(argoApps: IResource[], appSetName: string) {
     })
 
     return appSetApps
-}
-
-function getSubscriptionsFromAnnotation(app: IResource) {
-    const subAnnotation =
-        app.metadata?.annotations !== undefined ? app.metadata?.annotations[subAnnotationStr] : undefined
-
-    return subAnnotation !== undefined ? subAnnotation.split(',') : []
 }
 
 export function getAnnotation(resource: IResource, annotationString: string) {
@@ -232,85 +206,6 @@ export default function ApplicationsOverview() {
     const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
     useEffect(startPolling, [startPolling])
 
-    const calculateClusterCount = (resource: ArgoApplication, clusterCount: any, clusterList: string[]) => {
-        const isRemoteArgoApp = resource.status.cluster ? true : false
-
-        if (
-            (resource.spec.destination?.name === 'in-cluster' ||
-                resource.spec.destination?.name === localClusterStr ||
-                isLocalClusterURL(resource.spec.destination?.server || '', localCluster)) &&
-            !isRemoteArgoApp
-        ) {
-            clusterCount.localPlacement = true
-            clusterList.push(localClusterStr)
-        } else {
-            clusterCount.remoteCount++
-            if (isRemoteArgoApp) {
-                clusterList.push(resource.status.cluster)
-            } else if (resource.spec.destination?.name) {
-                clusterList.push(resource.spec.destination?.name)
-            }
-        }
-    }
-
-    const createClustersText = (resource: IResource, clusterCount: any, clusterList: string[]) => {
-        if (resource.kind === ApplicationSetKind) {
-            argoApplications!.forEach((app) => {
-                if (app.metadata?.ownerReferences) {
-                    if (app.metadata.ownerReferences[0].name === resource.metadata?.name) {
-                        calculateClusterCount(app, clusterCount, clusterList)
-                    }
-                }
-            })
-        }
-
-        if (isArgoApp(resource)) {
-            calculateClusterCount(resource as ArgoApplication, clusterCount, clusterList)
-        }
-
-        if (resource.kind === ApplicationKind) {
-            const subAnnotationArray = getSubscriptionsFromAnnotation(resource)
-
-            for (let i = 0; i < subAnnotationArray.length; i++) {
-                if (
-                    _.endsWith(subAnnotationArray[i], localSubSuffixStr) &&
-                    _.indexOf(subAnnotationArray, _.trimEnd(subAnnotationArray[i], localSubSuffixStr)) !== -1
-                ) {
-                    // skip local sub
-                    continue
-                }
-                const subDetails = subAnnotationArray[i].split('/')
-
-                subscriptions.forEach((sub) => {
-                    if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
-                        const placementRef = sub.spec.placement?.placementRef
-
-                        if (placementRef) {
-                            const placement = placementRules.find((rule) => rule.metadata.name === placementRef.name)
-                            const decisions = placement?.status?.decisions
-
-                            if (decisions) {
-                                decisions.forEach((cluster) => {
-                                    if (cluster.clusterName === localClusterStr) {
-                                        clusterCount.localPlacement = true
-                                    } else {
-                                        clusterCount.remoteCount++
-                                    }
-                                })
-                            }
-                        }
-                    }
-                })
-            }
-        }
-
-        return isArgoApp(resource)
-            ? clusterList.length > 0
-                ? clusterList[0]
-                : 'None'
-            : getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
-    }
-
     // Cache cell text for sorting and searching
     const generateTransformData = (tableItem: IResource) => {
         // Cluster column
@@ -318,7 +213,15 @@ export default function ApplicationsOverview() {
             localPlacement: false,
             remoteCount: 0,
         }
-        const clusterTransformData = createClustersText(tableItem, clusterCount, [])
+        const clusterTransformData = createClustersText({
+            resource: tableItem,
+            clusterCount,
+            clusterList: [],
+            argoApplications,
+            placementRules,
+            subscriptions,
+            localCluster,
+        })
 
         // Resource column
         const resourceMap: { [key: string]: string } = {}
@@ -347,39 +250,42 @@ export default function ApplicationsOverview() {
         return { ...tableItem, ...transformedObject }
     }
 
-    const getTimeWindow = (app: IResource) => {
-        if (!(app.apiVersion === ApplicationApiVersion && app.kind === ApplicationKind)) {
-            return ''
-        }
-
-        const subAnnotations = getSubscriptionsFromAnnotation(app)
-        let hasTimeWindow = false
-
-        for (let i = 0; i < subAnnotations.length; i++) {
-            if (
-                _.endsWith(subAnnotations[i], localSubSuffixStr) &&
-                _.indexOf(subAnnotations, _.trimEnd(subAnnotations[i], localSubSuffixStr)) !== -1
-            ) {
-                // skip local sub
-                continue
+    const getTimeWindow = useCallback(
+        (app: IResource) => {
+            if (!(app.apiVersion === ApplicationApiVersion && app.kind === ApplicationKind)) {
+                return ''
             }
-            const subDetails = subAnnotations[i].split('/')
 
-            for (let j = 0; j < subscriptions.length; j++) {
+            const subAnnotations = getSubscriptionsFromAnnotation(app)
+            let hasTimeWindow = false
+
+            for (let i = 0; i < subAnnotations.length; i++) {
                 if (
-                    subscriptions[j].metadata.name === subDetails[1] &&
-                    subscriptions[j].metadata.namespace === subDetails[0]
+                    _.endsWith(subAnnotations[i], localSubSuffixStr) &&
+                    _.indexOf(subAnnotations, _.trimEnd(subAnnotations[i], localSubSuffixStr)) !== -1
                 ) {
-                    if (subscriptions[j].spec.timewindow) {
-                        hasTimeWindow = true
-                        break
+                    // skip local sub
+                    continue
+                }
+                const subDetails = subAnnotations[i].split('/')
+
+                for (let j = 0; j < subscriptions.length; j++) {
+                    if (
+                        subscriptions[j].metadata.name === subDetails[1] &&
+                        subscriptions[j].metadata.namespace === subDetails[0]
+                    ) {
+                        if (subscriptions[j].spec.timewindow) {
+                            hasTimeWindow = true
+                            break
+                        }
                     }
                 }
             }
-        }
 
-        return hasTimeWindow ? t('Yes') : ''
-    }
+            return hasTimeWindow ? t('Yes') : ''
+        },
+        [subscriptions, t]
+    )
 
     // Combine all application types
     applications.forEach((app) => {
@@ -443,9 +349,15 @@ export default function ApplicationsOverview() {
                 cell: (application) => (
                     <span style={{ whiteSpace: 'nowrap' }}>
                         <Link
-                            to={NavigationPath.applicationDetails
-                                .replace(':namespace', application.metadata?.namespace as string)
-                                .replace(':name', application.metadata?.name as string)}
+                            to={
+                                NavigationPath.applicationDetails
+                                    .replace(':namespace', application.metadata?.namespace as string)
+                                    .replace(':name', application.metadata?.name as string) +
+                                '?apiVersion=' +
+                                application.kind.toLowerCase() +
+                                '.' +
+                                application.apiVersion.split('/')[0]
+                            }
                         >
                             {application.metadata?.name}
                         </Link>
@@ -499,7 +411,16 @@ export default function ApplicationsOverview() {
                         remoteCount: 0,
                     }
                     const clusterList: string[] = []
-                    const clusterCountString = createClustersText(resource, clusterCount, clusterList)
+
+                    const clusterCountString = createClustersText({
+                        resource: resource,
+                        clusterCount,
+                        clusterList: clusterList,
+                        argoApplications,
+                        placementRules,
+                        subscriptions,
+                        localCluster,
+                    })
                     const searchParams: any =
                         resource.kind === ApplicationKind && resource.apiVersion === ApplicationApiVersion
                             ? {
@@ -574,7 +495,7 @@ export default function ApplicationsOverview() {
                 search: 'transformed.createdText',
             },
         ],
-        []
+        [argoApplications, channels, getTimeWindow, localCluster, placementRules, subscriptions, t]
     )
 
     const filters = [

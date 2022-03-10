@@ -169,7 +169,16 @@ const SharedResourceWarning = ({ resourceType, control }) => {
                     }
                 })
         }
-    }, [control.editMode, applicationName, applicationNamespace, prName, prNamespace, resourceName, resourceNamespace])
+    }, [
+        control.editMode,
+        applicationName,
+        applicationNamespace,
+        prName,
+        prNamespace,
+        resourceName,
+        resourceNamespace,
+        resourceType,
+    ])
 
     return deployingSubscription || siblingApplications.length || childResources.length ? (
         <div className="shared-resource-warning">

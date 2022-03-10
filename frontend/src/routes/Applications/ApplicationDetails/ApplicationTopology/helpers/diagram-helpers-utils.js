@@ -356,6 +356,38 @@ export const setArgoApplicationDeployStatus = (node, details, t) => {
     })
 }
 
+export const setAppSetDeployStatus = (node, details, t) => {
+    const appSetApps = _.get(node, 'specs.appSetApps', [])
+    if (appSetApps.length === 0) {
+        details.push({
+            labelKey: 'Error',
+            value: t(
+                'There are no Argo applications created. Check the following resources and make sure they are configured properly: applicationset placement, gitopscluster, gitopcluster placement, managedclusterset'
+            ),
+            status: failureStatus,
+        })
+        return
+    }
+
+    details.push({
+        type: 'label',
+        labelKey: t('Application deploy status'),
+    })
+    details.push({
+        type: 'spacer',
+    })
+    // continue checking app status
+    // look at each app, display ones with status other than Healthy
+    appSetApps.forEach((argoApp) => {
+        const appHealth = _.get(argoApp, 'status.health.status', '')
+        const appName = _.get(argoApp, metadataName)
+        details.push({
+            labelKey: appName,
+            value: appHealth,
+        })
+    })
+}
+
 export const getStatusForArgoApp = (healthStatus) => {
     if (healthStatus === argoAppHealthyStatus) {
         return checkmarkStatus
@@ -382,14 +414,25 @@ export const translateArgoHealthStatus = (healthStatus) => {
     return 2
 }
 
-export const getPulseStatusForArgoApp = (node) => {
-    const relatedApps = _.get(node, 'specs.relatedApps', [])
+export const getPulseStatusForArgoApp = (node, isAppSet) => {
+    const relatedApps = isAppSet ? _.get(node, 'specs.appSetApps', []) : []
+
+    if (!isAppSet) {
+        // add this node
+        const appStatus = _.get(node, 'specs.raw.status.health.status', argoAppUnknownStatus)
+        relatedApps.push({
+            status: appStatus,
+        })
+    }
+
     let healthyCount = 0,
         missingUnknownProgressingSuspendedCount = 0,
         degradedCount = 0
 
     relatedApps.forEach((app) => {
-        const relatedAppHealth = _.get(app, 'status', '')
+        const relatedAppHealth = isAppSet
+            ? _.get(app, 'status.health.status', argoAppUnknownStatus)
+            : _.get(app, 'status', '')
         if (relatedAppHealth === argoAppHealthyStatus) {
             healthyCount++
         } else if (
@@ -626,4 +669,23 @@ export const mustRefreshTopologyMap = (topology, currentUpdate) => {
         _.set(firstNode, '_lastUpdated', currentUpdate)
     }
     return true
+}
+
+export const setPlacementDeployStatus = (node, details, t) => {
+    if (node.type !== 'placement') {
+        return
+    }
+
+    const placementStatus = _.get(node, 'specs.raw.status')
+    if (placementStatus) {
+        if (placementStatus.numberOfSelectedClusters === 0) {
+            details.push({
+                labelValue: t('Error'),
+                value: t(
+                    'This Placement does not match any remote clusters. Make sure the requiredClusterSelector property is valid and match your clusters.'
+                ),
+                status: failureStatus,
+            })
+        }
+    }
 }

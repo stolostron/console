@@ -1,19 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { AcmAlert, AcmButton, AcmModal } from '@stolostron/ui-components'
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
+import { AcmAlert, AcmButton, AcmModal } from '@stolostron/ui-components'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { canUser } from '../../../../../lib/rbac-util'
 import { fireManagedClusterAction } from '../../../../../resources/managedclusteraction'
+import { convertStringToQuery } from '../../search-helper'
 import { searchClient } from '../../search-sdk/search-client'
 import {
     SearchResultItemsDocument,
     SearchResultRelatedCountDocument,
     SearchResultRelatedItemsDocument,
 } from '../../search-sdk/search-sdk'
-import { convertStringToQuery } from '../../search-helper'
 
 export interface IDeleteModalProps {
     open: boolean
@@ -67,7 +67,7 @@ export const DeleteResourceModal = (props: any) => {
                 setAccessError(err)
             })
         return () => canDeleteResource.abort()
-    }, [resource])
+    }, [apiGroup, resource])
 
     function deleteResourceFn() {
         fireManagedClusterAction('Delete', resource.cluster, resource.kind, apiGroup, resource.name, resource.namespace)

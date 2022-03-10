@@ -185,7 +185,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                 },
             },
         ],
-        [policiesDeployedOnCluster]
+        [t]
     )
 
     return (

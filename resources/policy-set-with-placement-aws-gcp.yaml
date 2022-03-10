@@ -1,4 +1,4 @@
-apiVersion: policy.open-cluster-management.io/v1
+apiVersion: policy.open-cluster-management.io/v1beta1
 kind: PolicySet
 metadata:
     name: policy-set-with-placement-aws-gcp
@@ -18,49 +18,49 @@ spec:
         - cluster-set
     predicates:
         - requiredClusterSelector:
-            labelSelector:
-                matchExpressions:
-                    - key: cloud
-                      operator: In
-                      values:
-                        - Amazon
-                    - key: vendor
-                      operator: In
-                      values:
-                        - OpenShift
-                    - key: region
-                      operator: In
-                      values:
-                        - us-east-1
-                        - us-east-2
-                        - us-west-1
-                        - us-west-2
-                    - key: environment
-                      operator: NotIn
-                      values:
-                        - Production
+              labelSelector:
+                  matchExpressions:
+                      - key: cloud
+                        operator: In
+                        values:
+                            - Amazon
+                      - key: vendor
+                        operator: In
+                        values:
+                            - OpenShift
+                      - key: region
+                        operator: In
+                        values:
+                            - us-east-1
+                            - us-east-2
+                            - us-west-1
+                            - us-west-2
+                      - key: environment
+                        operator: NotIn
+                        values:
+                            - Production
         - requiredClusterSelector:
-            labelSelector:
-                matchExpressions:
-                    - key: cloud
-                      operator: In
-                      values:
-                        - Google
-                    - key: vendor
-                      operator: In
-                      values:
-                        - OpenShift
-                    - key: region
-                      operator: In
-                      values:
-                        - us-east1
-                        - us-east4
-                        - us-west1
-                        - us-west2
-                    - key: environment
-                      operator: NotIn
-                      values:
-                        - Production                      
+              labelSelector:
+                  matchExpressions:
+                      - key: cloud
+                        operator: In
+                        values:
+                            - Google
+                      - key: vendor
+                        operator: In
+                        values:
+                            - OpenShift
+                      - key: region
+                        operator: In
+                        values:
+                            - us-east1
+                            - us-east4
+                            - us-west1
+                            - us-west2
+                      - key: environment
+                        operator: NotIn
+                        values:
+                            - Production
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding

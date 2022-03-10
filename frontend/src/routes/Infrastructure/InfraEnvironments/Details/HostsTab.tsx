@@ -1,29 +1,27 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useMemo } from 'react'
-import { AcmPageContent } from '@stolostron/ui-components'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
+import { AcmPageContent } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
-
+import { useMemo, useState } from 'react'
+import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
+import { DOC_VERSION } from '../../../../lib/doc-util'
+import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
+import {
+    useCanUnbindAgent,
+    useOnUnbindHost,
+} from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/unbindHost'
 import {
     fetchNMState,
     fetchSecret,
     getClusterDeploymentLink,
-    useOnDeleteHost,
     onApproveAgent,
-    onSaveBMH,
-    useNMStatesOfNamespace,
-    onSaveAgent,
     onChangeBMHHostname,
     onMassDeleteHost,
+    onSaveAgent,
+    onSaveBMH,
+    useNMStatesOfNamespace,
+    useOnDeleteHost,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
-
-import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
-import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
-import {
-    useOnUnbindHost,
-    useCanUnbindAgent,
-} from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/unbindHost'
-import { DOC_VERSION } from '../../../../lib/doc-util'
 
 const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames, AgentAlerts } = CIM
 
@@ -45,7 +43,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
     const onUnbindHost = useOnUnbindHost(setBulkModalProps, undefined, undefined)
     const canUnbindAgent = useCanUnbindAgent(infraEnv)
 
-    const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, bareMetalHosts), [infraAgents])
+    const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, bareMetalHosts), [bareMetalHosts, infraAgents])
 
     return (
         <>

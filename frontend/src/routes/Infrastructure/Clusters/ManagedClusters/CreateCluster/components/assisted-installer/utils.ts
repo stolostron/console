@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import { isEqual } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'

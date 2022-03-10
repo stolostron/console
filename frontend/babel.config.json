@@ -1,4 +1,9 @@
 // https://babeljs.io/docs/en/configuration
 {
-    "presets": ["@babel/env", "@babel/react", "@babel/preset-typescript"]
+    "presets": [
+        ["@babel/preset-react", { "runtime": "automatic" }],
+        "@babel/preset-typescript",
+        ["@babel/preset-env", { "modules": "auto" }]
+    ],
+    "plugins": ["@babel/transform-runtime"]
 }

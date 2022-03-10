@@ -1,45 +1,41 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
-
-import { AcmPage } from '@stolostron/ui-components'
-import {
-    applicationsState,
-    applicationSetsState,
-    argoApplicationsState,
-    ansibleJobState,
-    subscriptionsState,
-    channelsState,
-    placementsState,
-    placementRulesState,
-    subscriptionReportsState,
-    managedClustersState,
-} from '../../../atoms'
-
+import { AcmPage, AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 import {
     createContext,
-    Fragment,
-    Suspense,
-    useEffect,
-    useContext,
     ElementType,
+    Fragment,
     ReactNode,
-    useState,
+    Suspense,
+    useContext,
+    useEffect,
+    useMemo,
     useRef,
+    useState,
 } from 'react'
+import { Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
+import { useRecoilCallback, useRecoilState } from 'recoil'
+import {
+    acmRouteState,
+    ansibleJobState,
+    applicationSetsState,
+    applicationsState,
+    argoApplicationsState,
+    channelsState,
+    managedClustersState,
+    placementRulesState,
+    placementsState,
+    subscriptionReportsState,
+    subscriptionsState,
+} from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { Link, Route, RouteComponentProps, Switch, Redirect, useLocation } from 'react-router-dom'
-import { useRecoilState, useRecoilCallback } from 'recoil'
-import { acmRouteState } from '../../../atoms'
-
 import { NavigationPath } from '../../../NavigationPath'
-import { ApplicationTopologyPageContent } from './ApplicationTopology/ApplicationTopology'
 import { ApplicationOverviewPageContent } from './ApplicationOverview/ApplicationOverview'
-
+import { ApplicationTopologyPageContent } from './ApplicationTopology/ApplicationTopology'
 import { getApplication } from './ApplicationTopology/model/application'
+import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
 import { getTopology } from './ApplicationTopology/model/topology'
 import { getApplicationData } from './ApplicationTopology/model/utils'
-import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
 
 export const ApplicationContext = createContext<{
     readonly actions: null | ReactNode
@@ -55,12 +51,13 @@ export const useApplicationPageContext = (ActionList: ElementType) => {
     useEffect(() => {
         setActions(<ActionList />)
         return () => setActions(null)
-    }, [setActions])
+    }, [ActionList, setActions])
 
     return ActionList
 }
 
 export type ApplicationDataType = {
+    refreshTime: number
     activeChannel: string | undefined
     allChannels: [string] | undefined
     application: any
@@ -74,26 +71,43 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
-    const [applications] = useRecoilState(applicationsState)
-    const [applicationSets] = useRecoilState(applicationSetsState)
-    const [argoApplications] = useRecoilState(argoApplicationsState)
-    const [ansibleJob] = useRecoilState(ansibleJobState)
-    const [channels] = useRecoilState(channelsState)
-    const [placements] = useRecoilState(placementsState)
-    const [placementRules] = useRecoilState(placementRulesState)
-    const [subscriptionReports] = useRecoilState(subscriptionReportsState)
-    const [managedClusters] = useRecoilState(managedClustersState)
     const [activeChannel, setActiveChannel] = useState<string>()
     const [applicationData, setApplicationData] = useState<ApplicationDataType>()
     const lastRefreshRef = useRef<any>()
 
     useEffect(() => setRoute(AcmRoute.Applications), [setRoute])
 
-    // any recoil resources that constantly update because of a time stamp
-    const getSubscriptions = useRecoilCallback(
+    const getSnapshot = useRecoilCallback(
         ({ snapshot }) =>
             () =>
-                snapshot.getPromise(subscriptionsState),
+                snapshot,
+        []
+    )
+
+    const urlParams = location.search ? location.search.substring(1).split('&') : []
+    let apiVersion: string | undefined
+    let cluster: string | undefined
+    urlParams.forEach((param) => {
+        if (param.startsWith('apiVersion')) {
+            apiVersion = param.split('=')[1]
+        }
+        if (param.startsWith('cluster')) {
+            cluster = param.split('=')[1]
+        }
+    })
+    const stateMap = useMemo(
+        () => ({
+            applications: applicationsState,
+            applicationSets: applicationSetsState,
+            argoApplications: argoApplicationsState,
+            ansibleJob: ansibleJobState,
+            channels: channelsState,
+            placements: placementsState,
+            placementRules: placementRulesState,
+            subscriptions: subscriptionsState,
+            subscriptionReports: subscriptionReportsState,
+            managedClusters: managedClustersState,
+        }),
         []
     )
 
@@ -104,29 +118,40 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         const interval = setInterval(
             (function refresh() {
                 ;(async () => {
-                    const subscriptions = await getSubscriptions()
-                    // get application object from recoil states
-                    const application = getApplication(match.params.namespace, match.params.name, activeChannel, {
-                        applications,
-                        applicationSets,
-                        argoApplications,
-                        ansibleJob,
-                        subscriptions,
-                        channels,
-                        subscriptionReports,
-                        placements,
-                        placementRules,
+                    // fetch states from recoil
+                    const map: Record<string, any> = {}
+                    const snapshot = getSnapshot()
+                    const promises = Object.entries(stateMap).map(([key, state]) => {
+                        const promise = snapshot.getPromise(state as any)
+                        promise.then((data) => {
+                            map[key] = data
+                        })
+                        return promise
                     })
+                    await Promise.allSettled(promises)
+                    const managedClusters = map['managedClusters']
+
+                    // get application object from recoil states
+                    const application = getApplication(
+                        match.params.namespace,
+                        match.params.name,
+                        activeChannel,
+                        map,
+                        cluster,
+                        apiVersion
+                    )
                     const topology = getTopology(
                         application,
                         managedClusters,
-                        lastRefreshRef?.current?.relatedResources
+                        lastRefreshRef?.current?.relatedResources,
+                        { cluster }
                     )
                     const appData = getApplicationData(topology.nodes)
 
                     // when first opened, refresh topology with wait statuses
                     if (!lastRefreshRef?.current?.resourceStatuses) {
                         setApplicationData({
+                            refreshTime: Date.now(),
                             activeChannel: application.activeChannel,
                             allChannels: application.channels,
                             application,
@@ -136,31 +161,33 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                     }
 
                     // from then on, only refresh topology with new statuses
-                    ;(async () => {
-                        const { resourceStatuses, relatedResources, appDataWithStatuses } = await getResourceStatuses(
-                            application,
-                            appData,
-                            topology,
-                            lastRefreshRef.current
-                        )
-                        const topologyWithRelated = getTopology(application, managedClusters, relatedResources)
-                        setApplicationData({
-                            activeChannel: application.activeChannel,
-                            allChannels: application.channels,
-                            application,
-                            topology: topologyWithRelated,
-                            appData: appDataWithStatuses,
-                            statuses: resourceStatuses,
-                        })
-                        lastRefreshRef.current = { application, resourceStatuses, relatedResources }
-                    })()
+                    const { resourceStatuses, relatedResources, appDataWithStatuses } = await getResourceStatuses(
+                        application,
+                        appData,
+                        topology,
+                        lastRefreshRef.current
+                    )
+                    const topologyWithRelated = getTopology(application, managedClusters, relatedResources, {
+                        topology,
+                        cluster,
+                    })
+                    setApplicationData({
+                        refreshTime: Date.now(),
+                        activeChannel: application.activeChannel,
+                        allChannels: application.channels,
+                        application,
+                        topology: topologyWithRelated,
+                        appData: appDataWithStatuses,
+                        statuses: resourceStatuses,
+                    })
+                    lastRefreshRef.current = { application, resourceStatuses, relatedResources }
                 })()
                 return refresh
             })(),
             10000
         )
         return () => clearInterval(interval)
-    }, [activeChannel])
+    }, [activeChannel, apiVersion, cluster, getSnapshot, match.params.name, match.params.namespace, stateMap])
 
     return (
         <AcmPage
@@ -183,9 +210,11 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 }
                             >
                                 <Link
-                                    to={NavigationPath.applicationOverview
-                                        .replace(':namespace', match.params.namespace as string)
-                                        .replace(':name', match.params.name as string)}
+                                    to={
+                                        NavigationPath.applicationOverview
+                                            .replace(':namespace', match.params.namespace as string)
+                                            .replace(':name', match.params.name as string) + location.search
+                                    }
                                 >
                                     {t('Overview')}
                                 </Link>
@@ -199,9 +228,11 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 }
                             >
                                 <Link
-                                    to={NavigationPath.applicationTopology
-                                        .replace(':namespace', match.params.namespace as string)
-                                        .replace(':name', match.params.name as string)}
+                                    to={
+                                        NavigationPath.applicationTopology
+                                            .replace(':namespace', match.params.namespace as string)
+                                            .replace(':name', match.params.name as string) + location.search
+                                    }
                                 >
                                     {t('Topology')}
                                 </Link>
@@ -216,10 +247,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.applicationOverview}>
-                            <ApplicationOverviewPageContent
-                                name={match.params.name}
-                                namespace={match.params.namespace}
-                            />
+                            <ApplicationOverviewPageContent applicationData={applicationData} />
                         </Route>
                         <Route exact path={NavigationPath.applicationTopology}>
                             <ApplicationTopologyPageContent
@@ -229,9 +257,11 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         </Route>
                         <Route exact path={NavigationPath.applicationDetails}>
                             <Redirect
-                                to={NavigationPath.applicationTopology
-                                    .replace(':namespace', match.params.namespace as string)
-                                    .replace(':name', match.params.name as string)}
+                                to={
+                                    NavigationPath.applicationOverview
+                                        .replace(':namespace', match.params.namespace as string)
+                                        .replace(':name', match.params.name as string) + location.search
+                                }
                             />
                         </Route>
                     </Switch>

@@ -15,18 +15,22 @@ import {
     Stack,
     StackItem,
 } from '@patternfly/react-core'
-import { TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmAlert, AcmTable, IAcmTableAction, IAcmTableColumn, ITableFilter } from '@stolostron/ui-components'
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import moment from 'moment'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
+    channelsState,
+    helmReleaseState,
     namespacesState,
     placementBindingsState,
     placementRulesState,
     placementsState,
     policiesState,
     policySetsState,
+    subscriptionsState,
 } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -36,18 +40,23 @@ import { patchResource, Policy, PolicyApiVersion, PolicyKind, PolicySet } from '
 import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
+import { PolicyActionDropdown } from '../components/PolicyActionDropdown'
 import {
     PolicyClusterViolationSummaryMap,
     usePolicyClusterViolationSummaryMap,
 } from '../overview/PolicyViolationSummary'
 
-interface PolicyTableItem {
+export interface PolicyTableItem {
     policy: Policy
     source: ReactNode | undefined
 }
 
 export default function PoliciesPage() {
+    const { t } = useTranslation()
     const [policiesSource] = useRecoilState(policiesState)
+    const [helmReleases] = useRecoilState(helmReleaseState)
+    const [subscriptions] = useRecoilState(subscriptionsState)
+    const [channels] = useRecoilState(channelsState)
     const policies = useMemo(
         () =>
             policiesSource.filter(
@@ -58,10 +67,10 @@ export default function PoliciesPage() {
     // in a useEffect hook
     const tableItems: PolicyTableItem[] = policies.map((policy) => {
         const isExternal = resolveExternalStatus(policy)
-        const policySource = resolveSource(policy)
+        const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
         let source: string | JSX.Element = 'Local'
         if (isExternal) {
-            source = policySource ? getSource(policySource, isExternal) : 'Managed Externally'
+            source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
         }
         return {
             policy,
@@ -71,19 +80,17 @@ export default function PoliciesPage() {
 
     const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(policies)
     const history = useHistory()
-    const { t } = useTranslation()
     const [policySets] = useRecoilState(policySetsState)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<PolicyTableItem> | { open: false }>({
         open: false,
     })
-    const [placementBindingChecked] = useState(false)
-    const [placementRuleChecked] = useState(false)
     const policyKeyFn = useCallback(
         (resource: PolicyTableItem) =>
             resource.policy.metadata.uid ?? `${resource.policy.metadata.name}/${resource.policy.metadata.namespace}`,
         []
     )
     const policyClusterViolationsColumn = usePolicyViolationsColumn(policyClusterViolationSummaryMap)
+    const [modal, setModal] = useState<ReactNode | undefined>()
 
     const policyColumns = useMemo<IAcmTableColumn<PolicyTableItem>[]>(
         () => [
@@ -148,83 +155,71 @@ export default function PoliciesPage() {
                 header: t('Automation'),
                 cell: () => '-',
             },
+            {
+                header: t('Created'),
+                cell: (item: PolicyTableItem) => {
+                    if (item.policy.metadata?.creationTimestamp) {
+                        return <span>{moment(new Date(item.policy.metadata?.creationTimestamp)).fromNow()}</span>
+                    }
+                    return '-'
+                },
+                sort: 'policy.metadata.creationTimestamp',
+            },
+            {
+                header: '',
+                cell: (item: PolicyTableItem) => {
+                    return <PolicyActionDropdown setModal={setModal} item={item} isKebab={true} />
+                },
+                cellTransforms: [fitContent],
+            },
         ],
-        [policyClusterViolationsColumn]
+        [policyClusterViolationsColumn, policySets, t]
     )
 
-    const bulkModalStatusColumns = [
-        {
-            header: t('policy.tableHeader.name'),
-            cell: 'policy.metadata.name',
-            sort: 'policy.metadata.name',
-        },
-        {
-            header: t('policy.table.actionGroup.status'),
-            cell: (item: PolicyTableItem) => (
-                <span>
-                    {item.policy.spec.disabled === true
-                        ? t('policy.table.actionGroup.status.disabled')
-                        : t('policy.table.actionGroup.status.enabled')}
-                </span>
-            ),
-        },
-    ]
+    const bulkModalStatusColumns = useMemo(
+        () => [
+            {
+                header: t('policy.tableHeader.name'),
+                cell: 'policy.metadata.name',
+                sort: 'policy.metadata.name',
+            },
+            {
+                header: t('policy.table.actionGroup.status'),
+                cell: (item: PolicyTableItem) => (
+                    <span>
+                        {item.policy.spec.disabled === true
+                            ? t('policy.table.actionGroup.status.disabled')
+                            : t('policy.table.actionGroup.status.enabled')}
+                    </span>
+                ),
+            },
+        ],
+        [t]
+    )
 
-    const bulkModalRemediationColumns = [
-        {
-            header: t('policy.tableHeader.name'),
-            cell: 'policy.metadata.name',
-            sort: 'policy.metadata.name',
-        },
-        {
-            header: t('policy.table.actionGroup.status'),
-            cell: (item: PolicyTableItem) => (
-                <span>
-                    {item.policy.spec.remediationAction === t('policy.table.actions.inform').toLowerCase()
-                        ? t('policy.table.actions.inform')
-                        : t('policy.table.actions.enforce')}
-                </span>
-            ),
-        },
-    ]
+    const bulkModalRemediationColumns = useMemo(
+        () => [
+            {
+                header: t('policy.tableHeader.name'),
+                cell: 'policy.metadata.name',
+                sort: 'policy.metadata.name',
+            },
+            {
+                header: t('policy.table.actionGroup.status'),
+                cell: (item: PolicyTableItem) => (
+                    <span>
+                        {item.policy.spec.remediationAction === t('policy.table.actions.inform').toLowerCase()
+                            ? t('policy.table.actions.inform')
+                            : t('policy.table.actions.enforce')}
+                    </span>
+                ),
+            },
+        ],
+        [t]
+    )
 
     const tableActions = useMemo<IAcmTableAction<PolicyTableItem>[]>(
         () => [
-            // TODO: Revisit bulk deletion
-            /*{
-                variant: 'bulk-action',
-                id: 'delete-policy',
-                title: t('Delete'),
-                click: (policies: Policy[]) => {
-                    setModalProps({
-                        open: true,
-                        title: t('policy.bulk.title.delete'),
-                        action: t('delete'),
-                        processing: t('deleting'),
-                        resources: [...policies],
-                        description: t('bulk.message.delete.grc'),
-                        columns: [
-                            {
-                                header: t('policy.tableHeader.name'),
-                                cell: 'metadata.name',
-                                sort: 'metadata.name',
-                            },
-                        ],
-                        keyFn: (policy: Policy) => policy.metadata.uid as string,
-                        actionFn: (policy) => deletePolicy(policy, pbcheck, prcheck),
-                        close: () => {
-                            setModalProps({ open: false })
-                            pbcheck = false
-                            prcheck = false
-                        },
-                        checkBox: renderRelatedResourceCheckbox(placementRuleChecked, placementBindingChecked),
-                        isDanger: true,
-                        icon: 'warning',
-                        confirmText: 'confirm',
-                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                    })
-                },
-            }, */
             {
                 variant: 'bulk-action',
                 id: 'add-to-set',
@@ -402,175 +397,7 @@ export default function PoliciesPage() {
                 ],
             },
         ],
-        [placementRuleChecked, placementBindingChecked]
-    )
-
-    const rowActionResolver = useCallback(
-        (item: PolicyTableItem) => {
-            const policyRowActions = [
-                {
-                    id: 'enable-policy',
-                    title: t('Enable'),
-                    tooltip: item.policy.spec.disabled ? 'Enable policy' : 'Policy is already enabled',
-                    isDisabled: item.policy.spec.disabled === false,
-                    click: (item: PolicyTableItem) => {
-                        setModalProps({
-                            open: true,
-                            title: t('policy.modal.title.enable'),
-                            action: t('policy.table.actions.enable'),
-                            processing: t('policy.table.actions.enabling'),
-                            resources: [item],
-                            description: t('policy.modal.message.enable'),
-                            keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-                            actionFn: (item: PolicyTableItem) => {
-                                return patchResource(
-                                    {
-                                        apiVersion: PolicyApiVersion,
-                                        kind: PolicyKind,
-                                        metadata: {
-                                            name: item.policy.metadata.name,
-                                            namespace: item.policy.metadata.namespace,
-                                        },
-                                    } as Policy,
-                                    [{ op: 'replace', path: '/spec/disabled', value: false }]
-                                )
-                            },
-                            close: () => {
-                                setModalProps({ open: false })
-                            },
-                            hasExternalResources: item.source !== 'Local',
-                        })
-                    },
-                },
-                {
-                    id: 'disable-policy',
-                    title: t('policy.table.actions.disable'),
-                    tooltip: item.policy.spec.disabled ? 'Policy is already disabled' : 'Disable policy',
-                    isDisabled: item.policy.spec.disabled === true,
-                    click: (item: PolicyTableItem) => {
-                        setModalProps({
-                            open: true,
-                            title: t('policy.modal.title.disable'),
-                            action: t('policy.table.actions.disable'),
-                            processing: t('policy.table.actions.disabling'),
-                            resources: [item],
-                            description: t('policy.modal.message.disable'),
-                            keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-                            actionFn: (item) => {
-                                return patchResource(
-                                    {
-                                        apiVersion: PolicyApiVersion,
-                                        kind: PolicyKind,
-                                        metadata: {
-                                            name: item.policy.metadata.name,
-                                            namespace: item.policy.metadata.namespace,
-                                        },
-                                    } as Policy,
-                                    [{ op: 'replace', path: '/spec/disabled', value: true }]
-                                )
-                            },
-                            close: () => {
-                                setModalProps({ open: false })
-                            },
-                            hasExternalResources: item.source !== 'Local',
-                        })
-                    },
-                },
-                {
-                    id: 'inform-policy',
-                    title: t('policy.table.actions.inform'),
-                    tooltip: item.policy.spec.remediationAction === 'inform' ? 'Already informing' : 'Inform policy',
-                    addSeparator: true,
-                    isDisabled: item.policy.spec.remediationAction === 'inform',
-                    click: (item: PolicyTableItem) => {
-                        setModalProps({
-                            open: true,
-                            title: t('policy.modal.title.inform'),
-                            action: t('policy.table.actions.inform'),
-                            processing: t('policy.table.actions.informing'),
-                            resources: [item],
-                            description: t('policy.modal.message.inform'),
-                            keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-                            actionFn: (item) => {
-                                return patchResource(
-                                    {
-                                        apiVersion: PolicyApiVersion,
-                                        kind: PolicyKind,
-                                        metadata: {
-                                            name: item.policy.metadata.name,
-                                            namespace: item.policy.metadata.namespace,
-                                        },
-                                    } as Policy,
-                                    [{ op: 'replace', path: '/spec/remediationAction', value: 'inform' }]
-                                )
-                            },
-                            close: () => {
-                                setModalProps({ open: false })
-                            },
-                            hasExternalResources: item.source !== 'Local',
-                        })
-                    },
-                },
-                {
-                    id: 'enforce-policy',
-                    title: t('policy.table.actions.enforce'),
-                    tooltip: item.policy.spec.remediationAction === 'enforce' ? 'Already enforcing' : 'Enforce policy',
-                    isDisabled: item.policy.spec.remediationAction === 'enforce',
-                    click: (item: PolicyTableItem) => {
-                        setModalProps({
-                            open: true,
-                            title: t('policy.modal.title.enforce'),
-                            action: t('policy.table.actions.enforce'),
-                            processing: t('policy.table.actions.enforcing'),
-                            resources: [item],
-                            description: t('policy.modal.message.enforce'),
-                            keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-                            actionFn: (item) => {
-                                return patchResource(
-                                    {
-                                        apiVersion: PolicyApiVersion,
-                                        kind: PolicyKind,
-                                        metadata: {
-                                            name: item.policy.metadata.name,
-                                            namespace: item.policy.metadata.namespace,
-                                        },
-                                    } as Policy,
-                                    [{ op: 'replace', path: '/spec/remediationAction', value: 'enforce' }]
-                                )
-                            },
-                            close: () => {
-                                setModalProps({ open: false })
-                            },
-                            hasExternalResources: item.source !== 'Local',
-                        })
-                    },
-                },
-                {
-                    id: 'edit-policy',
-                    title: t('Edit'),
-                    tooltip: 'Edit policy',
-                    addSeparator: true,
-                    click: (item: PolicyTableItem) => {
-                        history.push(
-                            NavigationPath.editPolicy
-                                .replace(':namespace', item.policy.metadata.namespace!)
-                                .replace(':name', item.policy.metadata.name!)
-                        )
-                    },
-                },
-                {
-                    id: 'delete-policy',
-                    title: t('Delete'),
-                    // tooltip: 'Delete policy',
-                    addSeparator: true,
-                    click: (policy: PolicyTableItem) => {
-                        setModal(<DeletePolicyModal item={policy} onClose={() => setModal(undefined)} />)
-                    },
-                },
-            ]
-            return policyRowActions
-        },
-        [placementRuleChecked, placementBindingChecked]
+        [t, bulkModalStatusColumns, bulkModalRemediationColumns]
     )
 
     const [namespaces] = useRecoilState(namespacesState)
@@ -649,46 +476,7 @@ export default function PoliciesPage() {
         [namespaces]
     )
 
-    const [compact, setCompact] = useState(false)
-
-    useEffect(() => {
-        function handleResize() {
-            setCompact(window.innerWidth < 1200)
-        }
-        handleResize()
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
-
-    let activeColumns = policyColumns
-    let subColumns: IAcmTableColumn<PolicyTableItem>[] | undefined = undefined
-
-    if (compact) {
-        activeColumns = policyColumns.filter((column) => {
-            switch (column.header) {
-                case t('Controls'):
-                case t('Categories'):
-                case t('Standards'):
-                case t('Created'):
-                    return false
-            }
-            return true
-        })
-        subColumns = policyColumns.filter((column) => {
-            switch (column.header) {
-                case t('Controls'):
-                case t('Categories'):
-                case t('Standards'):
-                case t('Created'):
-                    return true
-            }
-            return false
-        })
-    }
-
-    const [modal, setModal] = useState<ReactNode | undefined>()
-
-    if (policies.length === 0) {
+    if (tableItems.length === 0) {
         return <GovernanceCreatePolicyEmptyState />
     }
 
@@ -698,10 +486,9 @@ export default function PoliciesPage() {
             <BulkActionModel<PolicyTableItem> {...modalProps} />
             <AcmTable<PolicyTableItem>
                 plural={t('Policies')}
-                columns={activeColumns}
+                columns={policyColumns}
                 keyFn={policyKeyFn}
                 items={tableItems}
-                rowActionResolver={rowActionResolver}
                 tableActions={tableActions}
                 gridBreakPoint={TableGridBreakpoint.none}
                 filters={filters}
@@ -713,8 +500,12 @@ export default function PoliciesPage() {
                         click: () => history.push(NavigationPath.createPolicy),
                     },
                 ]}
-                addSubRows={(policy) => {
-                    if (!subColumns) return undefined
+                addSubRows={(item: PolicyTableItem) => {
+                    const standards = item.policy.metadata.annotations?.['policy.open-cluster-management.io/standards']
+                    const controls = item.policy.metadata.annotations?.['policy.open-cluster-management.io/controls']
+                    const categories =
+                        item.policy.metadata.annotations?.['policy.open-cluster-management.io/categories']
+                    if (!standards && !controls && !categories) return undefined
                     return [
                         {
                             fullWidth: true,
@@ -723,16 +514,24 @@ export default function PoliciesPage() {
                                     title: (
                                         <div style={{ marginLeft: 106, marginTop: '20px', marginBottom: '20px' }}>
                                             <DescriptionList isAutoFit isAutoColumnWidths>
-                                                {subColumns.map((column) => (
-                                                    <DescriptionListGroup>
-                                                        <DescriptionListTerm>{column.header}</DescriptionListTerm>
-                                                        <DescriptionListDescription>
-                                                            {typeof column.cell === 'string'
-                                                                ? column.cell
-                                                                : column.cell(policy)}
-                                                        </DescriptionListDescription>
-                                                    </DescriptionListGroup>
-                                                ))}
+                                                <DescriptionListGroup>
+                                                    <DescriptionListTerm>{'Standards'}</DescriptionListTerm>
+                                                    <DescriptionListDescription>
+                                                        {standards ?? '-'}
+                                                    </DescriptionListDescription>
+                                                </DescriptionListGroup>
+                                                <DescriptionListGroup>
+                                                    <DescriptionListTerm>{'Controls'}</DescriptionListTerm>
+                                                    <DescriptionListDescription>
+                                                        {controls ?? '-'}
+                                                    </DescriptionListDescription>
+                                                </DescriptionListGroup>
+                                                <DescriptionListGroup>
+                                                    <DescriptionListTerm>{'Categories'}</DescriptionListTerm>
+                                                    <DescriptionListDescription>
+                                                        {categories ?? '-'}
+                                                    </DescriptionListDescription>
+                                                </DescriptionListGroup>
                                             </DescriptionList>
                                         </div>
                                     ),
@@ -754,8 +553,12 @@ function usePolicyViolationsColumn(
         header: t('Cluster violations'),
         cell: (item) => {
             const clusterViolationSummary = policyClusterViolationSummaryMap[item.policy.metadata.uid ?? '']
-            if (clusterViolationSummary) {
-                // TODO - add url seearch params when ready to soort/filter by violation type
+            if (
+                clusterViolationSummary.compliant ||
+                clusterViolationSummary.noncompliant ||
+                clusterViolationSummary.unknown
+            ) {
+                // TODO - add url search params when ready to soort/filter by violation type
                 return (
                     <ClusterPolicyViolationIcons2
                         compliant={clusterViolationSummary.compliant}
@@ -787,7 +590,7 @@ function usePolicyViolationsColumn(
     }
 }
 
-function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () => void }) {
+export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () => void }) {
     const { t } = useTranslation()
     const [deletePlacements, setDeletePlacements] = useState(true)
     const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
@@ -817,7 +620,7 @@ function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () => void }
             }
             setIsDeleting(false)
         }
-    }, [props.onClose, placements, placementRules, placementBindings, deletePlacements, deletePlacementBindings])
+    }, [props, placements, placementRules, placementBindings, deletePlacements, deletePlacementBindings, t])
     return (
         <Modal
             title={t('policy.modal.title.delete')}

@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Page } from '@patternfly/react-core'
 import {
     AcmButton,
     AcmPage,
@@ -7,26 +8,29 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@stolostron/ui-components'
-import { Page } from '@patternfly/react-core'
+import { isMatch } from 'lodash'
+import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from '../../../../lib/acm-i18next'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { isMatch } from 'lodash'
-
-import { acmRouteState, configMapsState, infraEnvironmentsState } from '../../../../atoms'
+import {
+    acmRouteState,
+    agentsState,
+    bareMetalHostsState,
+    configMapsState,
+    infraEnvironmentsState,
+} from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError } from '../../../../resources'
-import { agentsState, bareMetalHostsState } from '../../../../atoms'
 import {
+    getAIConfigMap,
     getOnCreateBMH,
     getOnSaveISOParams,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
-import { getAIConfigMap } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 
 const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY, getAgentsHostsNames } = CIM
 
@@ -59,7 +63,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
             bmh.metadata.labels?.[INFRAENV_AGENTINSTALL_LABEL_KEY] === infraEnv?.metadata?.name
     )
 
-    const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, infraBMHs), [infraAgents])
+    const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, infraBMHs), [infraAgents, infraBMHs])
     const aiConfigMap = getAIConfigMap(configMaps)
 
     if (!infraEnv) {

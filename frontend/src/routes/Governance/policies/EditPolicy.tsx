@@ -7,6 +7,7 @@ import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     managedClusterSetBindingsState,
+    managedClustersState,
     namespacesState,
     placementBindingsState,
     placementRulesState,
@@ -28,10 +29,12 @@ export function EditPolicy() {
     const [namespaces] = useRecoilState(namespacesState)
     const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)
+    const [managedClusters] = useRecoilState(managedClustersState)
     const [placementBindings] = useRecoilState(placementBindingsState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
     const [existingResources, setExistingResources] = useState<IResource[]>()
+
     useEffect(() => {
         const policy = policies.find(
             (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
@@ -44,7 +47,7 @@ export function EditPolicy() {
         const policyPlacements = getPlacementsForResource(policy, policyPlacementBindings, placements)
         const policyPlacementRules = getPlacementsForResource(policy, policyPlacementBindings, placementRules)
         setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
-    }, [])
+    }, [history, params.name, params.namespace, placementBindings, placementRules, placements, policies])
 
     if (existingResources === undefined) {
         return <LoadingPage />
@@ -54,8 +57,9 @@ export function EditPolicy() {
         <PolicyWizard
             title={t('Edit policy')}
             policies={policies}
-            namespaces={namespaceNames}
+            clusters={managedClusters}
             placements={placements}
+            namespaces={namespaceNames}
             placementRules={placementRules}
             clusterSetBindings={clusterSetBindings}
             editMode={EditMode.Edit}

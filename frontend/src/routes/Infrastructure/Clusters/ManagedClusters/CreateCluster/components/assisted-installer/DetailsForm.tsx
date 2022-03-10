@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useRef, useEffect, useState, useMemo } from 'react'
 import { FormikProps } from 'formik'
 import { CIM } from 'openshift-assisted-ui-lib'
