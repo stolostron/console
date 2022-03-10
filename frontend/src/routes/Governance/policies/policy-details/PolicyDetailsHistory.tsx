@@ -5,7 +5,8 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from 
 import { AcmTable, AcmTablePaginationContextProvider } from '@stolostron/ui-components'
 import moment from 'moment'
 import { useMemo } from 'react'
-import { usePolicies } from '../../../../atoms'
+import { useRecoilState } from 'recoil'
+import { policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Policy, PolicyStatusDetails } from '../../../../resources'
 
@@ -22,7 +23,7 @@ export function PolicyDetailsHistory(props: {
 }) {
     const { t } = useTranslation()
     const { policyName, policyNamespace, clusterName, templateName } = props
-    const policies = usePolicies()
+    const [policies] = useRecoilState(policiesState)
 
     const statusItems: HistoryTableData[] = useMemo(() => {
         if (!(policyName && policyNamespace && clusterName && templateName)) {
