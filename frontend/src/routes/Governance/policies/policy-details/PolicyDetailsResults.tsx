@@ -5,7 +5,8 @@ import { AcmTable, AcmTablePaginationContextProvider } from '@stolostron/ui-comp
 import moment from 'moment'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { usePolicies } from '../../../../atoms'
+import { useRecoilState } from 'recoil'
+import { policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { getGroupFromApiVersion, Policy, PolicyStatusDetails } from '../../../../resources'
@@ -26,7 +27,7 @@ interface resultsTableData {
 export default function PolicyDetailsResults(props: { policy: Policy }) {
     const { t } = useTranslation()
     const { policy } = props
-    const policies = usePolicies()
+    const [policies] = useRecoilState(policiesState)
 
     const policiesDeployedOnCluster: resultsTableData[] = useMemo(() => {
         const policyName = policy.metadata.name ?? ''
