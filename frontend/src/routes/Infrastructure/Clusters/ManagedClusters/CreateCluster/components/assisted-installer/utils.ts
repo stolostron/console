@@ -14,6 +14,11 @@ import {
     listNamespacedResources,
     ClusterImageSet,
     listClusterImageSets,
+    listResources,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
 } from '../../../../../../../resources'
 import {
     agentClusterInstallsState,
@@ -371,6 +376,12 @@ export const fetchNMState = async (namespace: string, bmhName: string) => {
 
 export const fetchSecret = (namespace: string, name: string) =>
     getResource({ apiVersion: 'v1', kind: 'Secret', metadata: { namespace, name } }).promise
+
+export const fetchManagedClusters = () =>
+    listResources({ apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind }).promise
+
+export const fetchKlusterletAddonConfig = () =>
+    listResources({ apiVersion: KlusterletAddonConfigApiVersion, kind: KlusterletAddonConfigKind }).promise
 
 export const getDeleteHostAction =
     (
