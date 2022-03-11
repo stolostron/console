@@ -1,18 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-    Card,
-    CardBody,
-    CardTitle,
-    Gallery,
-    GalleryItem,
-    Page,
-    PageSection,
-    Stack,
-    Text,
-    Title,
-} from '@patternfly/react-core'
+import { Card, CardBody, CardTitle, Page, PageSection, Stack, Text, Title } from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { AcmMasonry } from '../../../components/AcmMasonry'
 import { NavigationPath } from '../../../NavigationPath'
 import OverviewIcon from './graphics/welcome-card-1-icon.svg'
 import InfrastructureIcon from './graphics/welcome-card-2-icon.svg'
@@ -144,20 +134,14 @@ export default function WelcomePage() {
                 </div>
             </PageSection>
             <PageSection variant="default">
-                <Gallery
-                    hasGutter
-                    minWidths={{
-                        default: '600px',
-                    }}
-                >
+                <AcmMasonry minSize={600}>
                     {cards.map((card) => (
-                        <GalleryItem>
+                        <div>
                             <Link to={card.link} style={{ color: 'black', textDecoration: 'none' }}>
                                 <Card
                                     isRounded
                                     isLarge
                                     isHoverable
-                                    isFullHeight
                                     key={card.title}
                                     style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
                                 >
@@ -170,9 +154,9 @@ export default function WelcomePage() {
                                     <CardBody>{card.description}</CardBody>
                                 </Card>
                             </Link>
-                        </GalleryItem>
+                        </div>
                     ))}
-                </Gallery>
+                </AcmMasonry>
             </PageSection>
             <PageSection variant="light">
                 <Stack hasGutter>
@@ -182,40 +166,27 @@ export default function WelcomePage() {
                         provides the following mission critical capabilities based on open source projects:
                     </Text>
                     <div style={{ paddingTop: 16 }}>
-                        <Gallery
-                            hasGutter
-                            minWidths={{
-                                default: '400px',
-                            }}
-                        >
+                        <AcmMasonry minSize={400}>
                             {capabilities.map((card) => (
-                                <GalleryItem>
-                                    <Card isRounded isFlat isFullHeight key={card.title}>
-                                        <CardTitle>{card.title}</CardTitle>
-                                        <CardBody>{card.description}</CardBody>
-                                    </Card>
-                                </GalleryItem>
+                                <Card isRounded isFlat key={card.title}>
+                                    <CardTitle>{card.title}</CardTitle>
+                                    <CardBody>{card.description}</CardBody>
+                                </Card>
                             ))}
-                        </Gallery>
+                        </AcmMasonry>
                     </div>
                 </Stack>
             </PageSection>
             <PageSection variant="default">
                 <Stack hasGutter>
                     <Title headingLevel="h2">Converse and connect.</Title>
-                    <Gallery
-                        hasGutter
-                        minWidths={{
-                            default: '400px',
-                        }}
-                    >
+                    <AcmMasonry minSize={400}>
                         {connections.map((card) => (
-                            <GalleryItem>
+                            <div>
                                 <a href={card.link} target="_blank" style={{ color: 'black', textDecoration: 'none' }}>
                                     <Card
                                         isRounded
                                         isHoverable
-                                        isFullHeight
                                         key={card.title}
                                         style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
                                     >
@@ -228,9 +199,9 @@ export default function WelcomePage() {
                                         <CardBody>{card.description}</CardBody>
                                     </Card>
                                 </a>
-                            </GalleryItem>
+                            </div>
                         ))}
-                    </Gallery>
+                    </AcmMasonry>
                 </Stack>
             </PageSection>
         </Page>
