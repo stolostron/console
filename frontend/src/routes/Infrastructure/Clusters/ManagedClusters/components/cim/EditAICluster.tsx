@@ -88,7 +88,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
 
     const aiConfigMap = getAIConfigMap(configMaps)
 
-    const [isPreviewOpen, setPreviewOpen] = useState(!!localStorage.getItem(TEMPLATE_EDITOR_OPEN_COOKIE));
+    const [isPreviewOpen, setPreviewOpen] = useState(!!localStorage.getItem(TEMPLATE_EDITOR_OPEN_COOKIE))
 
     const onSaveDetails = (values: any) => {
         return patchResource(agentClusterInstall, [

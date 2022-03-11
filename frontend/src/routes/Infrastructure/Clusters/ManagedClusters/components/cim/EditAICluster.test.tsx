@@ -14,7 +14,7 @@ import {
     infraEnvironmentsState,
 } from '../../../../../../atoms'
 import { clickByText, waitForTestId, waitForText, waitForNocks } from '../../../../../../lib/test-util'
-import { nockList } from '../../../../../../lib/nock-util'
+import { nockGet, nockList } from '../../../../../../lib/nock-util'
 
 import EditAICluster from './EditAICluster'
 import {
@@ -26,6 +26,9 @@ import {
     mockConfigMapAI,
     mockInfraEnv1,
     mockNMStateConfig,
+    pullSecretMock,
+    managedClusterMock,
+    klusterletMock,
 } from './EditAICluster.sharedmocks'
 
 const Component = () => {
@@ -59,6 +62,9 @@ describe('Edit AI Cluster', () => {
     test('can be rendered', async () => {
         const nocks = [
             nockList(mockNMStateConfig, mockNMStateConfig, ['agent-install.openshift.io/bmh']),
+            nockGet(pullSecretMock, pullSecretMock),
+            nockList(managedClusterMock, managedClusterMock),
+            nockList({ apiVersion: klusterletMock.apiVersion, kind: klusterletMock.kind }, klusterletMock),
         ]
         render(<Component />)
         await new Promise((resolve) => setTimeout(resolve, 500))
