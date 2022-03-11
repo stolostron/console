@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Correctly returns CreateApplicationLink 1`] = `"-"`;
+exports[`Correctly returns CreateApplicationTopologyLink 1`] = `"-"`;
 
 exports[`Correctly returns CreateDetailsLink - ACM-Application 1`] = `
 <a
@@ -1840,7 +1840,7 @@ exports[`Correctly returns category components 1`] = `
 />
 `;
 
-exports[`Correctly returns empty CreateApplicationLink 1`] = `"-"`;
+exports[`Correctly returns empty CreateApplicationTopologyLink 1`] = `"-"`;
 
 exports[`Correctly returns empty CreateExternalLink 1`] = `"-"`;
 
