@@ -4,6 +4,9 @@ import { useEffect, useState, useMemo } from 'react'
 import { RouteComponentProps, StaticContext, useHistory } from 'react-router'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { ClusterDeploymentWizardStepsType } from 'openshift-assisted-ui-lib/cim'
+import { PageSection, Switch } from '@patternfly/react-core'
+import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolostron/ui-components'
 
 import { patchResource } from '../../../../../../resources'
 import { agentsState, clusterImageSetsState, configMapsState } from '../../../../../../atoms'
@@ -28,15 +31,14 @@ import {
     useInfraEnv,
     useNMStatesOfNamespace,
     fetchInfraEnv,
+    fetchManagedClusters,
+    fetchKlusterletAddonConfig,
 } from '../../CreateCluster/components/assisted-installer/utils'
-
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { ClusterDeploymentWizardStepsType } from 'openshift-assisted-ui-lib/cim'
-import { PageSection } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolostron/ui-components'
+import { isBMPlatform } from '../../../../InfraEnvironments/utils'
 
 const {
     ClusterDeploymentWizard,
@@ -46,6 +48,8 @@ const {
     getAgentsHostsNames,
     isAgentOfInfraEnv,
 } = CIM
+
+const TEMPLATE_EDITOR_OPEN_COOKIE = 'template-editor-open-cookie'
 
 type EditAIClusterProps = RouteComponentProps<
     { namespace: string; name: string },
@@ -83,6 +87,8 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
 
     const aiConfigMap = getAIConfigMap(configMaps)
+
+    const [isPreviewOpen, setPreviewOpen] = useState(!!localStorage.getItem(TEMPLATE_EDITOR_OPEN_COOKIE))
 
     const onSaveDetails = (values: any) => {
         return patchResource(agentClusterInstall, [
@@ -145,27 +151,23 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         !!agentClusterInstall,
     ])
 
-    const onFinish = () => {
-        const doItAsync = async () => {
-            await patchResource(agentClusterInstall, [
-                // effectively, the property gets deleted instead of holding "false" value by that change
-                {
-                    op:
-                        agentClusterInstall.spec?.holdInstallation ||
-                        agentClusterInstall.spec?.holdInstallation === false
-                            ? 'replace'
-                            : 'add',
-                    path: '/spec/holdInstallation',
-                    value: false,
-                },
-            ]).promise
+    const onFinish = async () => {
+        await patchResource(agentClusterInstall, [
+            // effectively, the property gets deleted instead of holding "false" value by that change
+            {
+                op:
+                    agentClusterInstall.spec?.holdInstallation || agentClusterInstall.spec?.holdInstallation === false
+                        ? 'replace'
+                        : 'add',
+                path: '/spec/holdInstallation',
+                value: false,
+            },
+        ]).promise
 
-            history.push(NavigationPath.clusterDetails.replace(':id', agentClusterInstall.metadata.name))
-        }
-        doItAsync()
+        history.push(NavigationPath.clusterDetails.replace(':id', agentClusterInstall.metadata.name))
     }
 
-    return patchingHoldInstallation ? (
+    return patchingHoldInstallation || !clusterDeployment || !agentClusterInstall ? (
         <LoadingState />
     ) : (
         <AcmPage
@@ -183,6 +185,20 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                         },
                     ]}
                     title={t('managed.ai.editCluster.title')}
+                    switches={
+                        <Switch
+                            label={`YAML: ${isPreviewOpen ? 'On' : 'Off'}`}
+                            isChecked={isPreviewOpen}
+                            onChange={(checked) => {
+                                setPreviewOpen(checked)
+                                if (checked) {
+                                    localStorage.setItem(TEMPLATE_EDITOR_OPEN_COOKIE, 'true')
+                                } else {
+                                    localStorage.removeItem(TEMPLATE_EDITOR_OPEN_COOKIE)
+                                }
+                            }}
+                        />
+                    }
                 />
             }
         >
@@ -234,6 +250,11 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                 infraEnv={infraEnv}
                                 initialStep={locationState?.initialStep}
                                 fetchInfraEnv={fetchInfraEnv}
+                                isBMPlatform={isBMPlatform(infraEnv)}
+                                isPreviewOpen={isPreviewOpen}
+                                setPreviewOpen={setPreviewOpen}
+                                fetchManagedClusters={fetchManagedClusters}
+                                fetchKlusterletAddonConfig={fetchKlusterletAddonConfig}
                             />
                             <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
                         </FeatureGateContextProvider>

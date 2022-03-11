@@ -14,6 +14,11 @@ import {
     listNamespacedResources,
     ClusterImageSet,
     listClusterImageSets,
+    listResources,
+    ManagedClusterApiVersion,
+    ManagedClusterKind,
+    KlusterletAddonConfigApiVersion,
+    KlusterletAddonConfigKind,
 } from '../../../../../../../resources'
 import {
     agentClusterInstallsState,
@@ -100,7 +105,7 @@ export const setProvisionRequirements = (
 
     return patchResource(agentClusterInstall, [
         {
-            op: agentClusterInstall.spec?.provisionRequirements ? 'add' : 'replace',
+            op: agentClusterInstall.spec?.provisionRequirements ? 'replace' : 'add',
             path: '/spec/provisionRequirements',
             value: provisionRequirements,
         },
@@ -371,6 +376,12 @@ export const fetchNMState = async (namespace: string, bmhName: string) => {
 
 export const fetchSecret = (namespace: string, name: string) =>
     getResource({ apiVersion: 'v1', kind: 'Secret', metadata: { namespace, name } }).promise
+
+export const fetchManagedClusters = () =>
+    listResources({ apiVersion: ManagedClusterApiVersion, kind: ManagedClusterKind }).promise
+
+export const fetchKlusterletAddonConfig = () =>
+    listResources({ apiVersion: KlusterletAddonConfigApiVersion, kind: KlusterletAddonConfigKind }).promise
 
 export const getDeleteHostAction =
     (
@@ -653,7 +664,14 @@ const sleep = async (ms: number) => new Promise((resolve) => setTimeout(resolve,
 export const getOnSaveISOParams =
     (infraEnv: CIM.InfraEnvK8sResource) => async (values: CIM.DiscoveryImageFormValues) => {
         const patches: any[] = []
-        appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey || '', infraEnv.spec?.sshAuthorizedKey)
+        if (values.sshPublicKey) {
+            appendPatch(patches, '/spec/sshAuthorizedKey', values.sshPublicKey, infraEnv.spec?.sshAuthorizedKey)
+        } else if (infraEnv.spec?.sshAuthorizedKey) {
+            patches.push({
+                op: 'remove',
+                path: '/spec/sshAuthorizedKey',
+            })
+        }
 
         const proxy = values.enableProxy
             ? {
@@ -661,17 +679,24 @@ export const getOnSaveISOParams =
                   httpsProxy: values.httpsProxy,
                   noProxy: values.noProxy,
               }
-            : {}
-        appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
+            : undefined
+
+        if (proxy) {
+            appendPatch(patches, '/spec/proxy', proxy, infraEnv.spec?.proxy)
+        } else if (infraEnv.spec?.proxy) {
+            patches.push({
+                op: 'remove',
+                path: '/spec/proxy',
+            })
+        }
 
         // TODO(mlibra): Once implemented on the backend, persist values.imageType
 
         // TODO(mlibra): Why is oldIsoCreatedTimestamp not from a condition? I would expect infraEnv.status?.conditions?.find((condition) => condition.type === 'ImageCreated')
         const oldIsoCreatedTimestamp = infraEnv.status?.createdTime
 
-        await patchResource(infraEnv, patches).promise
-
         if (patches.length) {
+            await patchResource(infraEnv, patches).promise
             // Keep the handleIsoConfigSubmit() promise going until ISO is regenerated - the Loading status will be present in the meantime
             // TODO(mlibra): there is MGMT-7255 WIP to add image streaming service when this waiting will not be needed and following code can be removed, just relying on infraEnv's isoDownloadURL to be always up-to-date.
             // For that reason we keep following polling logic here and not moving it to the calling components where it could rely on a watcher.

@@ -1267,7 +1267,7 @@
     "infraEnv.emptyStateBody": "To create a pool of hosts that is ready for cluster creation, create an infrastructure environment. Once a new infrastructure environment is created, you can discover, provision, and add hosts to it.",
     "infraEnv.emptyStateHeader": "No infrastructure environments yet",
     "infraEnv.rowAction.delete.title": "Delete infrastructure environment",
-    "infraEnv.tableHeader.hosts": "Hosts available",
+    "infraEnv.tableHeader.hosts": "Hosts",
     "infraEnv.tableHeader.labels": "Labels",
     "infraEnv.tableHeader.location": "Location",
     "infraEnv.tableHeader.name": "Name",
