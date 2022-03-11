@@ -176,6 +176,10 @@ export const setAvailableConnections = (control, secrets) => {
         if (replacements['osServiceAccount.json']) {
             replacements['osServiceAccountJson'] = replacements['osServiceAccount.json']
         }
+        // RHV
+        if (replacements['ovirt_ca_bundle']) {
+            replacements['ovirtCaBundle'] = replacements['ovirt_ca_bundle']
+        }
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
         control.noHandlebarReplacements = true

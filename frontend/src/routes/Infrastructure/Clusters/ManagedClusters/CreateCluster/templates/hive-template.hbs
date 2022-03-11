@@ -465,15 +465,15 @@ metadata:
   name: {{{../../name}}}-ovirt-creds
   namespace: '{{{../../name}}}'
 stringData:
-  ovirt-config.yaml: |
+{{#if ../../showSecrets}}
+  ovirt-config.yaml: |-
     ovirt_url: {{{../../ovirt_url}}}
     ovirt_username: {{{../../ovirt_username}}}
-{{#if ../../showSecrets}}
     ovirt_password: {{{../../ovirt_password}}}
-    ovirt_ca_bundle: {{{../../cacertificate}}}
+    ovirt_ca_bundle: |+
+      {{{../../ovirt_ca_bundle}}}
 {{else}}
-    ovirt_password: # injected on create
-    ovirt_ca_bundle: # injected on create
+  ovirt-config.yaml: # injected on create
 {{/if}}
 ---
 
@@ -483,14 +483,13 @@ type: Opaque
 metadata:
   name: {{{../../name}}}-ovirt-certs
   namespace: '{{{../../name}}}'
-data:
-
+stringData:
 {{#if ../../showSecrets}}
-  .cacert: {{{../../ovirt_ca_bundle}}}
+  .cacert: |+
+    {{../../ovirt_ca_bundle}}
 {{else}}
   .cacert: # injected on create
 {{/if}}
-
 {{/case}}
 
 {{#case 'OpenStack'}}
