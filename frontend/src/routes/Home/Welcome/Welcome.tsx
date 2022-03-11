@@ -2,7 +2,7 @@
 import { Card, CardBody, CardTitle, Page, PageSection, Stack, Text, Title } from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { AcmMasonry } from '../../../components/AcmMasonry'
+import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
 import { NavigationPath } from '../../../NavigationPath'
 import OverviewIcon from './graphics/welcome-card-1-icon.svg'
 import InfrastructureIcon from './graphics/welcome-card-2-icon.svg'
@@ -134,14 +134,58 @@ export default function WelcomePage() {
                 </div>
             </PageSection>
             <PageSection variant="default">
-                <AcmMasonry minSize={600}>
+                <AcmDynamicGrid minSize={600}>
                     {cards.map((card) => (
-                        <div>
-                            <Link to={card.link} style={{ color: 'black', textDecoration: 'none' }}>
+                        <Link to={card.link} style={{ color: 'black', textDecoration: 'none' }}>
+                            <Card
+                                isRounded
+                                isLarge
+                                isHoverable
+                                isFullHeight
+                                key={card.title}
+                                style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
+                            >
+                                <CardTitle>
+                                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                                        {card.icon}
+                                        {card.title}
+                                    </div>
+                                </CardTitle>
+                                <CardBody>{card.description}</CardBody>
+                            </Card>
+                        </Link>
+                    ))}
+                </AcmDynamicGrid>
+            </PageSection>
+            <PageSection variant="light">
+                <Stack hasGutter>
+                    <Title headingLevel="h2">Easy, simple, and secure.</Title>
+                    <Text>
+                        Easy to use and simple to understand, Red Hat Advanced Cluster Management for Kubernetes
+                        provides the following mission critical capabilities based on open source projects:
+                    </Text>
+                    <div style={{ paddingTop: 16 }}>
+                        <AcmDynamicGrid minSize={400}>
+                            {capabilities.map((card) => (
+                                <Card isRounded isFlat isFullHeight key={card.title}>
+                                    <CardTitle>{card.title}</CardTitle>
+                                    <CardBody>{card.description}</CardBody>
+                                </Card>
+                            ))}
+                        </AcmDynamicGrid>
+                    </div>
+                </Stack>
+            </PageSection>
+            <PageSection variant="default">
+                <Stack hasGutter>
+                    <Title headingLevel="h2">Converse and connect.</Title>
+                    <AcmDynamicGrid minSize={400}>
+                        {connections.map((card) => (
+                            <a href={card.link} target="_blank" style={{ color: 'black', textDecoration: 'none' }}>
                                 <Card
                                     isRounded
-                                    isLarge
                                     isHoverable
+                                    isFullHeight
                                     key={card.title}
                                     style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
                                 >
@@ -153,55 +197,9 @@ export default function WelcomePage() {
                                     </CardTitle>
                                     <CardBody>{card.description}</CardBody>
                                 </Card>
-                            </Link>
-                        </div>
-                    ))}
-                </AcmMasonry>
-            </PageSection>
-            <PageSection variant="light">
-                <Stack hasGutter>
-                    <Title headingLevel="h2">Easy, simple, and secure.</Title>
-                    <Text>
-                        Easy to use and simple to understand, Red Hat Advanced Cluster Management for Kubernetes
-                        provides the following mission critical capabilities based on open source projects:
-                    </Text>
-                    <div style={{ paddingTop: 16 }}>
-                        <AcmMasonry minSize={400}>
-                            {capabilities.map((card) => (
-                                <Card isRounded isFlat key={card.title}>
-                                    <CardTitle>{card.title}</CardTitle>
-                                    <CardBody>{card.description}</CardBody>
-                                </Card>
-                            ))}
-                        </AcmMasonry>
-                    </div>
-                </Stack>
-            </PageSection>
-            <PageSection variant="default">
-                <Stack hasGutter>
-                    <Title headingLevel="h2">Converse and connect.</Title>
-                    <AcmMasonry minSize={400}>
-                        {connections.map((card) => (
-                            <div>
-                                <a href={card.link} target="_blank" style={{ color: 'black', textDecoration: 'none' }}>
-                                    <Card
-                                        isRounded
-                                        isHoverable
-                                        key={card.title}
-                                        style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
-                                    >
-                                        <CardTitle>
-                                            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                                                {card.icon}
-                                                {card.title}
-                                            </div>
-                                        </CardTitle>
-                                        <CardBody>{card.description}</CardBody>
-                                    </Card>
-                                </a>
-                            </div>
+                            </a>
                         ))}
-                    </AcmMasonry>
+                    </AcmDynamicGrid>
                 </Stack>
             </PageSection>
         </Page>
