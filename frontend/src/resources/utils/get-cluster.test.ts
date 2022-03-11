@@ -4,7 +4,8 @@ import { ClusterDeployment, ClusterDeploymentApiVersion, ClusterDeploymentKind }
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../managed-cluster'
 import { ManagedClusterInfo, ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../managed-cluster-info'
 import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../cluster-curator'
-import { getDistributionInfo } from './get-cluster'
+import { ClusterStatus, getClusterStatus, getDistributionInfo } from './get-cluster'
+import { ClusterClaim, ClusterClaimApiVersion, ClusterClaimKind } from '../cluster-claim'
 export const clusterName = 'test-cluster'
 const mockClusterCurator: ClusterCurator = {
     apiVersion: ClusterCuratorApiVersion,
@@ -264,11 +265,308 @@ const mockClusterDeployment: ClusterDeployment = {
         cliImage:
             'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:8b8e08e498c61ccec5c446d6ab50c96792799c992c78cfce7bbb8481f04a64cb',
         conditions: [],
+        powerState: 'Running',
         installerImage:
             'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:a3ed2bf438dfa5a114aa94cb923103432cd457cac51d1c4814ae0ef7e6e9853b',
         provisionRef: {
             name: 'test-cluster-31-26h5q',
         },
+    },
+}
+
+const mockClusterDeploymentInstalled: ClusterDeployment = {
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
+    metadata: {
+        labels: {
+            cloud: 'AWS',
+            'hive.openshift.io/cluster-platform': 'aws',
+            'hive.openshift.io/cluster-region': 'us-east-1',
+            region: 'us-east-1',
+            vendor: 'OpenShift',
+        },
+        name: clusterName,
+        namespace: clusterName,
+    },
+    spec: {
+        baseDomain: 'dev02.test-chesterfield.com',
+        clusterName: clusterName,
+        installed: true,
+        platform: {
+            aws: {
+                credentialsSecretRef: {
+                    name: 'test-cluster-aws-creds',
+                },
+                region: 'us-east-1',
+            },
+        },
+        provisioning: {
+            imageSetRef: {
+                name: 'img4.5.15-x86-64',
+            },
+            installConfigSecretRef: {
+                name: 'test-cluster-install-config',
+            },
+            sshPrivateKeySecretRef: {
+                name: 'test-cluster-ssh-private-key',
+            },
+        },
+        pullSecretRef: {
+            name: 'test-cluster-pull-secret',
+        },
+    },
+    status: {
+        cliImage:
+            'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:8b8e08e498c61ccec5c446d6ab50c96792799c992c78cfce7bbb8481f04a64cb',
+        conditions: [],
+        powerState: 'Running',
+        installerImage:
+            'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:a3ed2bf438dfa5a114aa94cb923103432cd457cac51d1c4814ae0ef7e6e9853b',
+        provisionRef: {
+            name: 'test-cluster-31-26h5q',
+        },
+    },
+}
+
+const mockClusterDeploymentHibernating: ClusterDeployment = {
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
+    metadata: {
+        labels: {
+            cloud: 'AWS',
+            'hive.openshift.io/cluster-platform': 'aws',
+            'hive.openshift.io/cluster-region': 'us-east-1',
+            region: 'us-east-1',
+            vendor: 'OpenShift',
+        },
+        name: clusterName,
+        namespace: clusterName,
+    },
+    spec: {
+        baseDomain: 'dev02.test-chesterfield.com',
+        clusterName: clusterName,
+        installed: true,
+        platform: {
+            aws: {
+                credentialsSecretRef: {
+                    name: 'test-cluster-aws-creds',
+                },
+                region: 'us-east-1',
+            },
+        },
+        provisioning: {
+            imageSetRef: {
+                name: 'img4.5.15-x86-64',
+            },
+            installConfigSecretRef: {
+                name: 'test-cluster-install-config',
+            },
+            sshPrivateKeySecretRef: {
+                name: 'test-cluster-ssh-private-key',
+            },
+        },
+        pullSecretRef: {
+            name: 'test-cluster-pull-secret',
+        },
+    },
+    status: {
+        cliImage:
+            'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:8b8e08e498c61ccec5c446d6ab50c96792799c992c78cfce7bbb8481f04a64cb',
+        conditions: [],
+        powerState: 'Hibernating',
+        installerImage:
+            'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:a3ed2bf438dfa5a114aa94cb923103432cd457cac51d1c4814ae0ef7e6e9853b',
+        provisionRef: {
+            name: 'test-cluster-31-26h5q',
+        },
+    },
+}
+
+const mockClusterDeploymentStarting: ClusterDeployment = {
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
+    metadata: {
+        labels: {
+            cloud: 'AWS',
+            'hive.openshift.io/cluster-platform': 'aws',
+            'hive.openshift.io/cluster-region': 'us-east-1',
+            region: 'us-east-1',
+            vendor: 'OpenShift',
+        },
+        name: clusterName,
+        namespace: clusterName,
+    },
+    spec: {
+        baseDomain: 'dev02.test-chesterfield.com',
+        clusterName: clusterName,
+        installed: true,
+        platform: {
+            aws: {
+                credentialsSecretRef: {
+                    name: 'test-cluster-aws-creds',
+                },
+                region: 'us-east-1',
+            },
+        },
+        provisioning: {
+            imageSetRef: {
+                name: 'img4.5.15-x86-64',
+            },
+            installConfigSecretRef: {
+                name: 'test-cluster-install-config',
+            },
+            sshPrivateKeySecretRef: {
+                name: 'test-cluster-ssh-private-key',
+            },
+        },
+        pullSecretRef: {
+            name: 'test-cluster-pull-secret',
+        },
+        powerState: 'Running',
+    },
+    status: {
+        cliImage:
+            'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:8b8e08e498c61ccec5c446d6ab50c96792799c992c78cfce7bbb8481f04a64cb',
+        conditions: [
+            {
+                message:
+                    'Waiting for cluster machines to start. Some machines are not yet running: i-somemachine (step 1/4)',
+                reason: 'WaitingForMachines',
+                status: 'False',
+                type: 'Ready',
+            },
+        ],
+        powerState: 'WaitingForMachines',
+        installerImage:
+            'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:a3ed2bf438dfa5a114aa94cb923103432cd457cac51d1c4814ae0ef7e6e9853b',
+        provisionRef: {
+            name: 'test-cluster-31-26h5q',
+        },
+    },
+}
+
+const mockClusterDeploymentStopping: ClusterDeployment = {
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
+    metadata: {
+        labels: {
+            cloud: 'AWS',
+            'hive.openshift.io/cluster-platform': 'aws',
+            'hive.openshift.io/cluster-region': 'us-east-1',
+            region: 'us-east-1',
+            vendor: 'OpenShift',
+        },
+        name: clusterName,
+        namespace: clusterName,
+    },
+    spec: {
+        baseDomain: 'dev02.test-chesterfield.com',
+        clusterName: clusterName,
+        installed: true,
+        platform: {
+            aws: {
+                credentialsSecretRef: {
+                    name: 'test-cluster-aws-creds',
+                },
+                region: 'us-east-1',
+            },
+        },
+        provisioning: {
+            imageSetRef: {
+                name: 'img4.5.15-x86-64',
+            },
+            installConfigSecretRef: {
+                name: 'test-cluster-install-config',
+            },
+            sshPrivateKeySecretRef: {
+                name: 'test-cluster-ssh-private-key',
+            },
+        },
+        pullSecretRef: {
+            name: 'test-cluster-pull-secret',
+        },
+        powerState: 'Hibernating',
+    },
+    status: {
+        cliImage:
+            'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:8b8e08e498c61ccec5c446d6ab50c96792799c992c78cfce7bbb8481f04a64cb',
+        conditions: [
+            {
+                message: 'Stopping cluster machines. Some machines have not yet stopped: i-somemachine',
+                reason: 'WaitingForMachinesToStop',
+                status: 'False',
+                type: 'Hibernating',
+            },
+        ],
+        powerState: 'WaitingForMachinesToStop',
+        installerImage:
+            'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:a3ed2bf438dfa5a114aa94cb923103432cd457cac51d1c4814ae0ef7e6e9853b',
+        provisionRef: {
+            name: 'test-cluster-31-26h5q',
+        },
+    },
+}
+
+const mockClusterDeploymentUnknown: ClusterDeployment = {
+    apiVersion: ClusterDeploymentApiVersion,
+    kind: ClusterDeploymentKind,
+    metadata: {
+        labels: {
+            cloud: 'AWS',
+            'hive.openshift.io/cluster-platform': 'aws',
+            'hive.openshift.io/cluster-region': 'us-east-1',
+            region: 'us-east-1',
+            vendor: 'OpenShift',
+        },
+        name: clusterName,
+        namespace: clusterName,
+    },
+    spec: {
+        baseDomain: 'dev02.test-chesterfield.com',
+        clusterName: clusterName,
+        installed: true,
+        platform: {
+            aws: {
+                credentialsSecretRef: {
+                    name: 'test-cluster-aws-creds',
+                },
+                region: 'us-east-1',
+            },
+        },
+        provisioning: {
+            imageSetRef: {
+                name: 'img4.5.15-x86-64',
+            },
+            installConfigSecretRef: {
+                name: 'test-cluster-install-config',
+            },
+            sshPrivateKeySecretRef: {
+                name: 'test-cluster-ssh-private-key',
+            },
+        },
+        pullSecretRef: {
+            name: 'test-cluster-pull-secret',
+        },
+    },
+    status: {
+        cliImage:
+            'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:8b8e08e498c61ccec5c446d6ab50c96792799c992c78cfce7bbb8481f04a64cb',
+        conditions: [],
+        powerState: 'Unreachable',
+        installerImage:
+            'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:a3ed2bf438dfa5a114aa94cb923103432cd457cac51d1c4814ae0ef7e6e9853b',
+        provisionRef: {
+            name: 'test-cluster-31-26h5q',
+        },
+    },
+}
+
+const mockClusterClaim: ClusterClaim = {
+    apiVersion: ClusterClaimApiVersion,
+    kind: ClusterClaimKind,
+    metadata: {
+        name: 'claim',
+        namespace: 'default',
     },
 }
 
@@ -388,5 +686,96 @@ describe('getDistributionInfo', () => {
             mockClusterCuratorSelectingChannel
         )
         expect(d1?.upgradeInfo.isUpgrading).toBeFalsy()
+    })
+})
+
+describe('getClusterStatus', () => {
+    it('should return running for an unclaimed running cluster in a pool', () => {
+        const status = getClusterStatus(
+            mockClusterDeploymentInstalled,
+            undefined /* managedClusterInfo */,
+            undefined /* certificateSigningRequests */,
+            undefined /* managedCluster */,
+            [] /* managedClusterAddOns */,
+            undefined /* clusterCurator */,
+            undefined /* agentClusterInstall */,
+            undefined /* clusterClaim */
+        )
+        expect(status.status).toBe(ClusterStatus.running)
+        expect(status.statusMessage).toBeUndefined()
+    })
+    it('should return detached for a claimed running cluster', () => {
+        const status = getClusterStatus(
+            mockClusterDeploymentInstalled,
+            undefined /* managedClusterInfo */,
+            undefined /* certificateSigningRequests */,
+            undefined /* managedCluster */,
+            [] /* managedClusterAddOns */,
+            undefined /* clusterCurator */,
+            undefined /* agentClusterInstall */,
+            mockClusterClaim
+        )
+        expect(status.status).toBe(ClusterStatus.detached)
+        expect(status.statusMessage).toBeUndefined()
+    })
+    it('should return hibernating for a stopped cluster', () => {
+        const status = getClusterStatus(
+            mockClusterDeploymentHibernating,
+            undefined /* managedClusterInfo */,
+            undefined /* certificateSigningRequests */,
+            undefined /* managedCluster */,
+            [] /* managedClusterAddOns */,
+            undefined /* clusterCurator */,
+            undefined /* agentClusterInstall */,
+            undefined /* clusterClaim */
+        )
+        expect(status.status).toBe(ClusterStatus.hibernating)
+        expect(status.statusMessage).toBeUndefined()
+    })
+    it('should return resuming for a starting cluster', () => {
+        const status = getClusterStatus(
+            mockClusterDeploymentStarting,
+            undefined /* managedClusterInfo */,
+            undefined /* certificateSigningRequests */,
+            undefined /* managedCluster */,
+            [] /* managedClusterAddOns */,
+            undefined /* clusterCurator */,
+            undefined /* agentClusterInstall */,
+            undefined /* clusterClaim */
+        )
+        expect(status.status).toBe(ClusterStatus.resuming)
+        expect(status.statusMessage).toBe(
+            'Waiting for cluster machines to start. Some machines are not yet running: i-somemachine (step 1/4)'
+        )
+    })
+    it('should return stopping for a cluster that is shutting down', () => {
+        const status = getClusterStatus(
+            mockClusterDeploymentStopping,
+            undefined /* managedClusterInfo */,
+            undefined /* certificateSigningRequests */,
+            undefined /* managedCluster */,
+            [] /* managedClusterAddOns */,
+            undefined /* clusterCurator */,
+            undefined /* agentClusterInstall */,
+            undefined /* clusterClaim */
+        )
+        expect(status.status).toBe(ClusterStatus.stopping)
+        expect(status.statusMessage).toBe(
+            'Stopping cluster machines. Some machines have not yet stopped: i-somemachine'
+        )
+    })
+    it('should return unknown for a cluster in a pool that has an unrecognized desired power state', () => {
+        const status = getClusterStatus(
+            mockClusterDeploymentUnknown,
+            undefined /* managedClusterInfo */,
+            undefined /* certificateSigningRequests */,
+            undefined /* managedCluster */,
+            [] /* managedClusterAddOns */,
+            undefined /* clusterCurator */,
+            undefined /* agentClusterInstall */,
+            undefined /* clusterClaim */
+        )
+        expect(status.status).toBe(ClusterStatus.unknown)
+        expect(status.statusMessage).toBeUndefined()
     })
 })
