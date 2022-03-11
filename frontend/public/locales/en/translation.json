@@ -366,7 +366,7 @@
     "clusterPool.creation.success.message": "{{name}} was successfully created.",
     "clusterPool.creation.success.title": "Cluster pool created",
     "clusterPool.destroy": "Destroy cluster pool",
-    "clusterPool.modal.scale.message": "Specify the desired size of <bold>{{clusterPoolName}}</bold>. Adjusting the size or running count of the cluster pool will result in the creation or destruction of clusters; only unclaimed clusters will be destroyed if downsizing.",
+    "clusterPool.modal.scale.message": "Specify the desired size of <bold>{{clusterPoolName}}</bold>. Adjusting the size of the cluster pool will result in the creation or destruction of clusters; only unclaimed clusters will be destroyed if downsizing.",
     "clusterPool.modal.scale.poolName": "Cluster pool name",
     "clusterPool.modal.scale.poolNamespace": "Cluster pool namespace",
     "clusterPool.modal.scale.runningCount.input": "Set desired number of running clusters",
