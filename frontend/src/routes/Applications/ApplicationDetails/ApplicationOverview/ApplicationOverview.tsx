@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmButton, AcmDescriptionList, AcmPageContent, ListItems } from '@stolostron/ui-components'
+import { AcmActionGroup, AcmButton, AcmDescriptionList, AcmPageContent, ListItems } from '@stolostron/ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import {
     Button,
@@ -18,11 +18,10 @@ import {
     GripHorizontalIcon,
     OutlinedClockIcon,
     OutlinedQuestionCircleIcon,
-    OutlinedWindowRestoreIcon,
     SyncAltIcon,
 } from '@patternfly/react-icons'
 import { useRecoilState } from 'recoil'
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import {
     argoApplicationsState,
     channelsState,
@@ -37,10 +36,12 @@ import _ from 'lodash'
 import { REQUEST_STATUS } from './actions'
 import {
     Application,
-    ApplicationApiVersion,
     ApplicationKind,
+    ApplicationSet,
     Channel,
     IResource,
+    listNamespaces,
+    NamespaceDefinition,
     Subscription,
 } from '../../../../resources'
 import ResourceLabels from '../../components/ResourceLabels'
@@ -53,6 +54,7 @@ import { ISyncResourceModalProps, SyncResourceModal } from '../../components/Syn
 import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
 import { DiagramIcons } from '../../../../components/Topology/shapes/DiagramIcons'
 import { getDiagramElements } from '../ApplicationTopology/model/topology'
+import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
@@ -60,7 +62,6 @@ let rightItems: ListItems[] = []
 export function ApplicationOverviewPageContent(props: { applicationData: ApplicationDataType | undefined }) {
     const { applicationData } = props
     const { t } = useTranslation()
-    const hasSyncPermission = true //TODO
     const localClusterStr = 'local-cluster'
 
     const [argoApplications] = useRecoilState(argoApplicationsState)
@@ -73,21 +74,55 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
         open: false,
     })
+    const [hasSyncPermission, setHasSyncPermission] = useState(false)
+    const openTabIcon = '#diagramIcons_open-new-tab'
+    interface IClusterCountProps {
+        localPlacement: boolean
+        remoteCount: number
+    }
+    const clusterCount: IClusterCountProps = {
+        localPlacement: false,
+        remoteCount: 0,
+    }
     let isArgoApp = false
+    let isAppSet = false
     let isSubscription = false
     let disableBtn
     let subsList = []
+
+    let getUrl = window.location.href
+    getUrl = getUrl.substring(0, getUrl.indexOf('/multicloud/applications/'))
+
+    useEffect(() => {
+        const fetchNamespaces = async () => {
+            return listNamespaces().promise
+        }
+
+        fetchNamespaces().then((ns) => {
+            const fetchAuthorizedNamespaces = async () => {
+                const authorizedNamespaces = await getAuthorizedNamespaces([rbacCreate(NamespaceDefinition)], ns)
+                return {
+                    authorizedNamespaces,
+                    namespaces: ns,
+                }
+            }
+            fetchAuthorizedNamespaces().then(({ authorizedNamespaces, namespaces }) => {
+                // see if the user has access to all namespaces
+                if (authorizedNamespaces.length < namespaces.length) {
+                    setHasSyncPermission(false)
+                } else {
+                    setHasSyncPermission(true)
+                }
+            })
+        })
+    }, [])
 
     function renderData(checkData: any, showData: any, width?: string) {
         return checkData !== -1 ? showData : <Skeleton width={width} className="loading-skeleton-text" />
     }
 
-    function getClusterField(
-        searchLink: string,
-        clusterCountString: string,
-        clusterCount: { localPlacement: boolean; remoteCount: number }
-    ) {
-        if (clusterCount.remoteCount && clusterCountString !== 'None') {
+    function getClusterField(searchLink: string, clusterCountString: string, count: IClusterCountProps) {
+        if (count.remoteCount && clusterCountString !== 'None') {
             return (
                 <a className="cluster-count-link" href={searchLink}>
                     {t(clusterCountString)}
@@ -99,11 +134,47 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
     if (applicationData) {
         isArgoApp = applicationData.appData.isArgoApp
-        const isAppSet = applicationData.application.isAppSet
+        isAppSet = applicationData.application.isAppSet
         isSubscription = !isArgoApp && !isAppSet
         const { name, namespace } = applicationData.application.metadata
+        const applicationResource = applicationData.application.app
+        const appRepos = getApplicationRepos(applicationData.application.app, subscriptions, channels)
+        const [apigroup, apiversion] = applicationResource.apiVersion.split('/')
+        const searchParams: any = {
+            properties: {
+                apigroup,
+                apiversion,
+                kind: applicationResource.kind.toLowerCase(),
+                name: applicationResource.metadata?.name,
+                namespace: applicationResource.metadata?.namespace,
+            },
+            showRelated: 'cluster',
+        }
+        const searchLink = getSearchLink(searchParams)
+
+        const clusterCountString = createClustersText({
+            resource: applicationResource,
+            clusterCount,
+            clusterList: [],
+            argoApplications,
+            placementRules,
+            subscriptions,
+            localCluster,
+        })
+
         ////////////////////////////////// argo items ////////////////////////////////////
         if (!isSubscription) {
+            let lastSyncedTimeStamp = ''
+            if (isArgoApp) {
+                lastSyncedTimeStamp = _.get(applicationData, 'application.app.status.reconciledAt', '')
+            } else if (isAppSet) {
+                applicationData.application.appSetApps.forEach((appSet: ApplicationSet) => {
+                    if (!lastSyncedTimeStamp) {
+                        lastSyncedTimeStamp = _.get(appSet, 'status.reconciledAt', '')
+                    }
+                })
+            }
+
             leftItems = [
                 {
                     key: t('Name'),
@@ -130,19 +201,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     ),
                 },
                 {
-                    key: t('Server'),
-                    value: '', //TODO
-                    keyAction: (
-                        <Tooltip
-                            content={
-                                <div>{t('Cluster where the selected Argo application resources are deployed.')}</div>
-                            }
-                        >
-                            <OutlinedQuestionCircleIcon className="help-icon" />
-                        </Tooltip>
-                    ),
-                },
-                {
                     key: t('Created'),
                     value: t(getShortDateTime(applicationData.application.metadata.creationTimestamp)),
                 },
@@ -150,67 +208,57 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     key: t('Last reconciled'),
                     keyAction: (
                         <Tooltip content={t('Date and time of the most recent reconcile for application resources.')}>
-                            <OutlinedQuestionCircleIcon
-                                style={{ fill: '#0066cc', marginLeft: '4px', cursor: 'pointer' }}
-                            />
+                            <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
                     ),
+                    value: getShortDateTime(lastSyncedTimeStamp),
                 },
             ]
             rightItems = [
                 {
                     key: t('Clusters'),
+                    value: getClusterField(searchLink, clusterCountString, clusterCount),
+                    keyAction: (
+                        <Tooltip
+                            content={
+                                <div>
+                                    {t(
+                                        "Number of clusters where the grouped Argo applications' resources are deployed."
+                                    )}
+                                </div>
+                            }
+                        >
+                            <OutlinedQuestionCircleIcon className="help-icon" />
+                        </Tooltip>
+                    ),
                 },
                 {
                     key: t('Cluster resource status'),
                     value: createStatusIcons(applicationData, t),
                     keyAction: (
                         <Tooltip content={t('Status represents the subscription selection within Resource topology.')}>
-                            <OutlinedQuestionCircleIcon
-                                style={{ fill: '#0066cc', marginLeft: '4px', cursor: 'pointer' }}
-                            />
+                            <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
+                    ),
+                },
+                {
+                    key: t('Respository Resource'),
+                    value: (
+                        <ResourceLabels
+                            appRepos={appRepos as any[]}
+                            translation={t}
+                            isArgoApp={isAppSet || isArgoApp}
+                            showSubscriptionAttributes={true}
+                        />
                     ),
                 },
             ]
         } else {
             /////////////////////////// subscription items //////////////////////////////////////////////
             const allSubscriptions = _.get(applicationData.application, 'allSubscriptions', [])
-            const clusterCount = {
-                localPlacement: false,
-                remoteCount: 0,
-            }
             subsList = applicationData.application.allSubscriptions
             disableBtn = subsList && subsList.length > 0 ? false : true
-            const clusterList = applicationData.application.allClusters
-            const applicationResource = applicationData.application.app
-            const clusterCountString = createClustersText({
-                resource: applicationResource,
-                clusterCount,
-                clusterList,
-                argoApplications,
-                placementRules,
-                subscriptions,
-                localCluster,
-            })
-            const searchParams: any =
-                applicationResource.kind === ApplicationKind && applicationResource.apiVersion === ApplicationApiVersion
-                    ? {
-                          properties: {
-                              apigroup: 'app.k8s.io',
-                              kind: 'application',
-                              name: applicationResource.metadata?.name,
-                              namespace: applicationResource.metadata?.namespace,
-                          },
-                          showRelated: 'cluster',
-                      }
-                    : {
-                          properties: {
-                              name: clusterList,
-                              kind: 'cluster',
-                          },
-                      }
-            const searchLink = getSearchLink(searchParams)
+
             let lastSynced = ''
             allSubscriptions.forEach((subs: Subscription) => {
                 if (!lastSynced) {
@@ -257,9 +305,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     ),
                     keyAction: (
                         <Tooltip content={'Date and time of the most recent sync request for application resources.'}>
-                            <OutlinedQuestionCircleIcon
-                                style={{ fill: '#0066cc', marginLeft: '4px', cursor: 'pointer' }}
-                            />
+                            <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
                     ),
                 },
@@ -274,9 +320,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     value: createStatusIcons(applicationData, t),
                     keyAction: (
                         <Tooltip content={t('Status represents the subscription selection within Resource topology.')}>
-                            <OutlinedQuestionCircleIcon
-                                style={{ fill: '#0066cc', marginLeft: '4px', cursor: 'pointer' }}
-                            />
+                            <OutlinedQuestionCircleIcon className="help-icon" />
                         </Tooltip>
                     ),
                 },
@@ -294,7 +338,15 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                         rightItems={rightItems}
                     ></AcmDescriptionList>
                 </div>
-                {renderCardsSection(isSubscription, t, applicationData?.application?.app)}
+                {renderCardsSection({
+                    resource: applicationData?.application?.app,
+                    isSubscription,
+                    isArgoApp,
+                    isAppSet,
+                    t,
+                    getUrl,
+                    openTabIcon,
+                })}
 
                 {/* Hide for argo */}
                 {isSubscription && (
@@ -372,7 +424,7 @@ function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
     if (application && appData && topology) {
         elements = _.cloneDeep(getDiagramElements(appData, _.cloneDeep(topology), statuses, canUpdateStatuses, t))
 
-        elements.nodes.map((node) => {
+        elements.nodes.forEach((node) => {
             //get pulse for all objects generated from a deployable
             const pulse: 'green' = _.get(node, 'specs.pulse')
 
@@ -419,9 +471,18 @@ function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
     return <Spinner size="sm" />
 }
 
-function renderCardsSection(isSubscription: boolean, t: TFunction, resource: IResource) {
-    let getUrl = window.location.href
-    getUrl = getUrl.substring(0, getUrl.indexOf('/multicloud/applications/'))
+interface IRenderCardsSectionProps {
+    isSubscription: boolean
+    isAppSet: boolean
+    isArgoApp: boolean
+    t: TFunction
+    resource: IResource
+    getUrl: string
+    openTabIcon: string
+}
+
+function renderCardsSection(props: IRenderCardsSectionProps) {
+    const { isSubscription, isAppSet, isArgoApp, t, resource, getUrl, openTabIcon } = props
     if (resource) {
         const [apigroup, apiversion] = resource.apiVersion.split('/')
         const targetLink = getSearchLink({
@@ -444,7 +505,11 @@ function renderCardsSection(isSubscription: boolean, t: TFunction, resource: IRe
                             href={getUrl + targetLink}
                             variant={ButtonVariant.link}
                             rel="noreferrer"
-                            icon={<OutlinedWindowRestoreIcon />}
+                            icon={
+                                <svg className="new-tab-icon">
+                                    <use href={openTabIcon} />
+                                </svg>
+                            }
                             iconPosition="right"
                         >
                             {t('Search resource')}
@@ -452,6 +517,55 @@ function renderCardsSection(isSubscription: boolean, t: TFunction, resource: IRe
                     </CardBody>
                 </Card>
             )
+        } else {
+            if (isArgoApp || isAppSet) {
+                return (
+                    <Card className="argo-links-container">
+                        <CardBody>
+                            {isSearchAvailable() && (
+                                <Fragment>
+                                    <AcmActionGroup>
+                                        <AcmButton
+                                            href={getUrl + targetLink}
+                                            variant={ButtonVariant.link}
+                                            id="app-search-argo-apps-link"
+                                            component="a"
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            icon={
+                                                <svg className="new-tab-icon argo-app-link">
+                                                    <use href={openTabIcon} />
+                                                </svg>
+                                            }
+                                            iconPosition="right"
+                                        >
+                                            {t('Search Resource')}
+                                        </AcmButton>
+                                        <AcmButton
+                                            href={
+                                                getUrl + getSearchLinkForArgoApplications(resource, isArgoApp, isAppSet)
+                                            }
+                                            variant={ButtonVariant.link}
+                                            id="app-search-argo-apps-link"
+                                            component="a"
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            icon={
+                                                <svg className="new-tab-icon argo-app-link">
+                                                    <use href={openTabIcon} />
+                                                </svg>
+                                            }
+                                            iconPosition="right"
+                                        >
+                                            {t('Search all related applications')}
+                                        </AcmButton>
+                                    </AcmActionGroup>
+                                </Fragment>
+                            )}
+                        </CardBody>
+                    </Card>
+                )
+            }
         }
     }
 
@@ -543,4 +657,27 @@ function createSubsCards(
 
 function createArgoAppIcon(isArgoApp: boolean, isAppSet: boolean, t: TFunction) {
     return <Fragment>{isArgoApp || isAppSet ? <Label color="blue">{t('Argo')}</Label> : ''}</Fragment>
+}
+
+function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolean, isAppSet: boolean) {
+    let sourcePath = ''
+    if (isArgoApp) {
+        sourcePath = 'spec.source'
+    } else if (isAppSet) {
+        sourcePath = 'spec.template.spec.source'
+    }
+    const { path, repoURL } = _.get(resource, sourcePath)
+    const [apigroup, apiversion] = resource.apiVersion.split('/')
+    if (resource) {
+        return getSearchLink({
+            properties: {
+                kind: ApplicationKind.toLowerCase(),
+                path,
+                repoURL,
+                apigroup,
+                apiversion,
+            },
+        })
+    }
+    return ''
 }

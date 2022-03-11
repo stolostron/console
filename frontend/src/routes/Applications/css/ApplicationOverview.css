@@ -45,7 +45,7 @@
 }
 
 /* "?" help icons */
-.help-icon {
+.overview-cards-container .help-icon {
     fill: #0066cc;
     margin-left: 4px;
     cursor: pointer;
@@ -99,7 +99,7 @@
 }
 
 /* Argo links */
-.argo-links-container {
+.overview-cards-container .argo-links-container {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
@@ -172,4 +172,17 @@
     color: #0066cc;
     text-decoration: none;
     cursor: pointer;
+}
+
+.new-tab-icon {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-bottom: 2px;
+    margin-left: 6px;
+}
+
+.new-tab-icon .argo-app-link {
+    margin-left: 0px;
 }
