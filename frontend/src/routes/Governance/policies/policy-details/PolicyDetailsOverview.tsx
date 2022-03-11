@@ -11,6 +11,7 @@ import {
     placementDecisionsState,
     placementRulesState,
     placementsState,
+    policyAutomationState,
     policySetsState,
 } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -22,6 +23,7 @@ import {
     PlacementRule,
     PlacementRuleStatus,
     Policy,
+    PolicyAutomation,
     PolicySet,
 } from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
@@ -45,6 +47,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     const [placementBindings] = useRecoilState(placementBindingsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [placementDecisions] = useRecoilState(placementDecisionsState)
+    const [policyAutomations] = useRecoilState(policyAutomationState)
     const govData = useGovernanceData([policy])
     const clusterRiskScore =
         govData.clusterRisks.high +
@@ -52,6 +55,10 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
         govData.clusterRisks.low +
         govData.clusterRisks.unknown +
         govData.clusterRisks.synced
+    const policyAutomationMatch = policyAutomations.find(
+        (pa: PolicyAutomation) => pa.spec.policyRef === policy.metadata.name
+    )
+
     const { leftItems, rightItems } = useMemo(() => {
         const leftItems = [
             {
@@ -99,11 +106,40 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                 key: 'Created',
                 value: moment(policy.metadata.creationTimestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow(),
             },
-            // TODO need to implement automation
-            // {
-            //     key: 'Automation',
-            //     value: '-', // react node (link)
-            // },
+            {
+                key: 'Automation',
+                value: policyAutomationMatch ? (
+                    <Link
+                        to={{
+                            pathname: NavigationPath.editPolicyAutomation
+                                .replace(':namespace', policy.metadata.namespace as string)
+                                .replace(':name', policy.metadata.name as string),
+                            state: {
+                                from: NavigationPath.policyDetails
+                                    .replace(':namespace', policy.metadata.namespace as string)
+                                    .replace(':name', policy.metadata.name as string),
+                            },
+                        }}
+                    >
+                        {policyAutomationMatch.metadata.name}
+                    </Link>
+                ) : (
+                    <Link
+                        to={{
+                            pathname: NavigationPath.createPolicyAutomation
+                                .replace(':namespace', policy.metadata.namespace as string)
+                                .replace(':name', policy.metadata.name as string),
+                            state: {
+                                from: NavigationPath.policyDetails
+                                    .replace(':namespace', policy.metadata.namespace as string)
+                                    .replace(':name', policy.metadata.name as string),
+                            },
+                        }}
+                    >
+                        {t('Configure')}
+                    </Link>
+                ),
+            },
         ]
         return { leftItems, rightItems }
     }, [
@@ -115,6 +151,8 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
         policy.metadata.annotations,
         policy.spec.disabled,
         policy.spec.remediationAction,
+        policyAutomationMatch,
+        t,
     ])
 
     // Need to get bindings for all policysets a policy is included in
