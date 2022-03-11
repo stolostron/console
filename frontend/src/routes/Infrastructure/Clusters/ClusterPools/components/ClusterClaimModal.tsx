@@ -9,6 +9,7 @@ import {
     getResource,
 } from '../../../../../resources'
 import {
+    AcmAlert,
     AcmAlertContext,
     AcmAlertGroup,
     AcmButton,
@@ -109,6 +110,16 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                         components={{ bold: <strong /> }}
                                     />
                                 </div>
+                                {props.clusterPool?.status?.ready === 0 && (
+                                    <div>
+                                        &nbsp;
+                                        <AcmAlert
+                                            message={t('clusterClaim.warning')}
+                                            noClose={true}
+                                            variant="warning"
+                                        />
+                                    </div>
+                                )}
                                 &nbsp;
                                 <AcmTextInput
                                     id="clusterClaimName"

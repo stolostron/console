@@ -27,7 +27,7 @@ import {
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
-import { clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
+import { clusterImageSetsState, clusterPoolsState, clusterClaimsState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
@@ -37,6 +37,7 @@ import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { locationWithCancelBack, NavigationPath } from '../../../../NavigationPath'
 import {
     Cluster,
+    ClusterClaim,
     ClusterClaimDefinition,
     ClusterPool,
     ClusterStatus,
@@ -165,6 +166,8 @@ export function ClusterPoolsTable(props: {
     tableActionButtons?: IAcmTableButtonAction[]
 }) {
     const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
+    const [clusterClaims] = useRecoilValue(waitForAll([clusterClaimsState]))
+
     const { clusterPools } = props
     const { t } = useTranslation()
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterPool> | { open: false }>({
@@ -227,6 +230,9 @@ export function ClusterPoolsTable(props: {
                             cluster.hive.clusterPoolNamespace === clusterPool.metadata.namespace &&
                             cluster.hive.clusterClaimName === undefined
                     )
+                    const clusterPoolClaims = clusterClaims.filter((claim) => {
+                        return claim.spec?.clusterPoolName === clusterPool.metadata.name && !claim.spec?.namespace
+                    })
                     if (clusterPoolClusters.length === 0) {
                         return undefined
                     } else {
@@ -245,6 +251,26 @@ export function ClusterPoolsTable(props: {
                                                             </Text>
                                                         </TextContent>
                                                         <ClusterPoolClustersTable clusters={available} />
+                                                    </div>
+                                                )}
+                                            </>
+                                        ),
+                                    },
+                                ],
+                            },
+                            {
+                                cells: [
+                                    {
+                                        title: (
+                                            <>
+                                                {clusterPoolClaims.length > 0 && (
+                                                    <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+                                                        <TextContent>
+                                                            <Text component={TextVariants.h3}>
+                                                                {t('clusterClaims')}
+                                                            </Text>
+                                                        </TextContent>
+                                                        <ClusterPoolClaimsTable claims={clusterPoolClaims} />
                                                     </div>
                                                 )}
                                             </>
@@ -518,6 +544,92 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                             const isAvailable =
                                 !cluster.hive.clusterClaimName && availableStatuses.includes(cluster.status)
                             return <span style={{ whiteSpace: 'nowrap' }}>{t(`${isAvailable ? 'Yes' : 'No'}`)}</span>
+                        },
+                    },
+                ]}
+            />
+        </div>
+    )
+}
+
+function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
+    const { t } = useTranslation()
+    const classes = useStyles()
+    const alertContext = useContext(AcmAlertContext)
+    return (
+        <div className={classes.table}>
+            <AcmTable<ClusterClaim>
+                noBorders
+                keyFn={(claim: ClusterClaim) => claim.metadata.name!}
+                key="clusterPoolClaimsTable"
+                autoHidePagination
+                showToolbar={false}
+                plural="claims"
+                items={props.claims}
+                columns={[
+                    {
+                        header: t('table.name'),
+                        sort: 'displayName',
+                        cell: (claim) => (
+                            <>
+                                <span style={{ whiteSpace: 'nowrap' }}>{claim.metadata.name}</span>
+                            </>
+                        ),
+                    },
+                    {
+                        header: t('table.status'),
+                        sort: 'status',
+                        search: 'status',
+                        cell: (claim: ClusterClaim) => (
+                            <span style={{ whiteSpace: 'nowrap' }}>{claim.status?.conditions ? 'Pending' : '-'}</span>
+                        ),
+                    },
+                    {
+                        header: t('table.userIdentityStamp'),
+                        sort: 'hive',
+                        search: 'status',
+                        cell: (claim: ClusterClaim) => {
+                            return (
+                                <div>
+                                    {atob(claim.metadata.annotations!['open-cluster-management.io/user-identity'])}
+                                </div>
+                            )
+                        },
+                    },
+                    {
+                        header: '',
+                        cellTransforms: [fitContent],
+                        cell: (claim: ClusterClaim) => {
+                            return (
+                                <AcmButton
+                                    id="deleteClaim"
+                                    variant="link"
+                                    style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
+                                    label={t('clusterClaim.delete')}
+                                    onClick={async () => {
+                                        alertContext.clearAlerts()
+                                        return new Promise(async (resolve, reject) => {
+                                            const request = deleteResource(claim)
+                                            request.promise
+                                                .then(async () => {
+                                                    return resolve()
+                                                })
+                                                .catch((e) => {
+                                                    if (e instanceof Error) {
+                                                        alertContext.addAlert({
+                                                            type: 'danger',
+                                                            title: t('request.failed'),
+                                                            message: e.message,
+                                                        })
+                                                        reject(e)
+                                                    }
+                                                })
+                                        })
+                                    }}
+                                >
+                                    {t('clusterClaim.delete')}
+                                </AcmButton>
+                            )
                         },
                     },
                 ]}
