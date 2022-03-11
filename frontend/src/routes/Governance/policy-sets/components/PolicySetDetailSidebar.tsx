@@ -7,6 +7,7 @@ import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     managedClustersState,
@@ -17,6 +18,7 @@ import {
     usePolicies,
 } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { NavigationPath } from '../../../../NavigationPath'
 import { Policy, PolicySet } from '../../../../resources'
 import { usePolicySetClusterPolicyViolationsColumn } from '../../clusters/useClusterPolicyViolationsColumn'
 import { getClustersSummaryForPolicySet, getPolicyComplianceForPolicySet, PolicyCompliance } from '../../common/util'
@@ -271,13 +273,16 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                     /* istanbul ignore next */
                     compareStrings(a.policyName, b.policyName),
                 cell: (policy: PolicyCompliance) => {
-                    const currentPolicy = policies.find((p: Policy) => p.metadata.name === policy.policyName)
                     return (
-                        <a
-                            href={`/multicloud/governance/policies/${currentPolicy?.metadata.namespace}/${currentPolicy?.metadata.name}`}
+                        <Link
+                            to={{
+                                pathname: NavigationPath.policyDetails
+                                    .replace(':namespace', policy.policyNamespace)
+                                    .replace(':name', policy.policyName),
+                            }}
                         >
                             {policy.policyName}
-                        </a>
+                        </Link>
                     )
                 },
             },
@@ -381,7 +386,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 <AcmTable<string>
                     plural="Clusters"
                     items={policySetClusters}
-                    sort={{
+                    initialSort={{
                         index: 1, // default to sorting by violation count
                         direction: 'desc',
                     }}
@@ -397,7 +402,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 <AcmTable<PolicyCompliance>
                     plural="Policies"
                     items={policySetPolicies}
-                    sort={{
+                    initialSort={{
                         index: 0, // default to sorting by violation count
                         direction: 'desc',
                     }}

@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     Channel,
+    Cluster,
     HelmRelease,
     Placement,
     PlacementBinding,
@@ -20,7 +21,14 @@ import ResourceLabels from '../../Applications/components/ResourceLabels'
 
 export interface PolicyCompliance {
     policyName: string
+    policyNamespace: string
     clusterCompliance: { clusterName: string; compliance: 'Compliant' | 'NonCompliant' }[]
+}
+
+export interface ClusterPolicies {
+    policyName: string
+    policyNamespace: string
+    compliance: string
 }
 
 export function getPlacementBindingsForResource(resource: Policy | PolicySet, placementBindings: PlacementBinding[]) {
@@ -79,6 +87,25 @@ export function getPoliciesForPolicySet(policySet: PolicySet, policies: Policy[]
     )
 }
 
+export function getPolicyForCluster(cluster: Cluster, policies: Policy[]) {
+    const clusterPolicies: ClusterPolicies[] = []
+    for (const policy of policies) {
+        const policyStatus = policy.status?.status
+        if (policyStatus) {
+            for (const status of policyStatus) {
+                if (status.clustername === cluster.name) {
+                    clusterPolicies.push({
+                        policyName: policy.metadata.name!,
+                        policyNamespace: policy.metadata.namespace!,
+                        compliance: status.compliant,
+                    })
+                }
+            }
+        }
+    }
+    return clusterPolicies
+}
+
 export function getPolicyComplianceForPolicySet(
     policySet: PolicySet,
     policies: Policy[],
@@ -106,6 +133,7 @@ export function getPolicyComplianceForPolicySet(
                     if (policyIdx < 0) {
                         policyCompliance.push({
                             policyName: policy.metadata.name!,
+                            policyNamespace: policy.metadata.namespace!,
                             clusterCompliance: [
                                 {
                                     clusterName: decision.clusterName,
@@ -123,6 +151,7 @@ export function getPolicyComplianceForPolicySet(
                     if (policyIdx < 0) {
                         policyCompliance.push({
                             policyName: policy.metadata.name!,
+                            policyNamespace: policy.metadata.namespace!,
                             clusterCompliance: [
                                 {
                                     clusterName: decision.clusterName,
