@@ -82,41 +82,41 @@ export function ApplicationTopologyPageContent(props: {
         })
     }
 
-    useApplicationPageContext(() => {
-        return (
-            <AcmActionGroup>
-                {[
-                    <ActionListItem>
-                        <div className="diagram-title">
-                            <span
-                                className="how-to-read-text"
-                                tabIndex={0}
-                                onClick={() =>
-                                    setDrawerContent(
-                                        t('How to read topology'),
-                                        true,
-                                        false,
-                                        false,
-                                        false,
-                                        <LegendView t={t} />
-                                    )
-                                }
-                                onKeyPress={() => {
-                                    // noop function
-                                }}
-                                role="button"
-                            >
-                                {t('How to read topology')}
-                                <svg className="how-to-read-icon">
-                                    <use href={'#diagramIcons_sidecar'} />
-                                </svg>
-                            </span>
-                        </div>
-                    </ActionListItem>,
-                ]}
-            </AcmActionGroup>
-        )
-    })
+    // useApplicationPageContext(() => {
+    //     return (
+    //         <AcmActionGroup>
+    //             {[
+    //                 <ActionListItem>
+    //                     <div className="diagram-title">
+    //                         <span
+    //                             className="how-to-read-text"
+    //                             tabIndex={0}
+    //                             onClick={() =>
+    //                                 setDrawerContent(
+    //                                     t('How to read topology'),
+    //                                     true,
+    //                                     false,
+    //                                     false,
+    //                                     false,
+    //                                     <LegendView t={t} />
+    //                                 )
+    //                             }
+    //                             onKeyPress={() => {
+    //                                 // noop function
+    //                             }}
+    //                             role="button"
+    //                         >
+    //                             {t('How to read topology')}
+    //                             <svg className="how-to-read-icon">
+    //                                 <use href={'#diagramIcons_sidecar'} />
+    //                             </svg>
+    //                         </span>
+    //                     </div>
+    //                 </ActionListItem>,
+    //             ]}
+    //         </AcmActionGroup>
+    //     )
+    // })
 
     const changeTheChannel = (fetchChannel: string) => {
         props.setActiveChannel(fetchChannel)
