@@ -581,7 +581,6 @@ export default function ApplicationsOverview() {
                             'This application is deployed by the subscription {{subName}}. The delete action might be reverted when resources are reconciled with the resource repository.',
                             { subName }
                         )
-                        return [[], []]
                     }
                     setModalProps({
                         open: true,

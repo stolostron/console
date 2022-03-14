@@ -313,10 +313,10 @@ export const getAppChildResources = (
     const removableSubs: any[] = []
     const children: any[] = []
     const sharedChildren: any[] = []
-    const related: IResource[] = []
     const rules: any[] = []
 
     for (let i = 0; i < subAnnotationArray.length; i++) {
+        const related: IResource[] = []
         const siblingApps: string[] = []
         const subChildResources: string[] = []
         if (

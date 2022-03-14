@@ -175,7 +175,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                     appSetPlacement: appSetRelatedResources[0],
                     appSetsSharingPlacement: appSetRelatedResources[1],
                     appKind: selectedApp.kind,
-                    appSetApps: getAppSetApps(argoApplications, selectedApp.metadata?.name!),
+                    appSetApps: getAppSetApps(argoApplications, selectedApp.metadata?.name),
                     close: () => {
                         setModalProps({ open: false })
                     },
