@@ -2,13 +2,13 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import searchDefinitions, {
-    GetAge,
+    CreateApplicationTopologyLink,
     CreateDetailsLink,
-    CreateApplicationLink,
     CreateExternalLink,
     FormatLabels,
-    FormatPolicyReportPolicies,
     FormatPolicyReportCategories,
+    FormatPolicyReportPolicies,
+    GetAge,
     GetUrlSearchParam,
 } from './searchDefinitions'
 
@@ -127,23 +127,23 @@ test('Correctly returns CreateDetailsLink - Default', () => {
     expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns CreateApplicationLink', () => {
+test('Correctly returns CreateApplicationTopologyLink', () => {
     const item = {
         name: 'testName',
         namespace: 'testNamespace',
         dashboard: 'http://dashboard',
     }
-    const result = CreateApplicationLink(item)
+    const result = CreateApplicationTopologyLink(item)
     expect(result).toMatchSnapshot()
 })
 
-test('Correctly returns empty CreateApplicationLink', () => {
+test('Correctly returns empty CreateApplicationTopologyLink', () => {
     const item = {
         name: 'testName',
         namespace: 'testNamespace',
         dashboard: '',
     }
-    const result = CreateApplicationLink(item)
+    const result = CreateApplicationTopologyLink(item)
     expect(result).toMatchSnapshot()
 })
 

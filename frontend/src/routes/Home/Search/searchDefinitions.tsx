@@ -9,6 +9,7 @@ import _ from 'lodash'
 import moment from 'moment'
 import queryString from 'query-string'
 import { Link } from 'react-router-dom'
+import { NavigationPath } from '../../../NavigationPath'
 
 const searchDefinitions: any = {
     application: {
@@ -33,10 +34,9 @@ const searchDefinitions: any = {
                 },
             },
             {
-                header: 'Dashboard',
-                sort: 'dashboard',
+                header: 'Topology',
                 cell: (item: any) => {
-                    return CreateApplicationLink(item)
+                    return CreateApplicationTopologyLink(item)
                 },
             },
             {
@@ -1400,15 +1400,23 @@ export function CreateDetailsLink(item: any) {
             return <a href={`/multicloud/infrastructure/clusters/details/${item.name}/overview`}>{item.name}</a>
 
         case 'application': {
-            const { apigroup, apiversion, applicationSet, cluster, name, namespace } = item
+            const { apigroup, applicationSet, cluster, name, namespace, kind } = item
             if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
                 // only redirect to apps page if it is an ACM application
                 const params = queryString.stringify({
-                    apiVersion: `${apigroup}/${apiversion}`,
+                    apiVersion: `${kind}.${apigroup}`,
                     cluster: cluster === 'local-cluster' ? undefined : cluster,
                     applicationset: applicationSet == null ? undefined : applicationSet,
                 })
-                return <a href={`/multicloud/applications/${namespace}/${name}?${params}`}>{name}</a>
+                return (
+                    <a
+                        href={`${NavigationPath.applicationTopology
+                            .replace(':namespace', namespace)
+                            .replace(':name', name)}?${params}`}
+                    >
+                        {name}
+                    </a>
+                )
             }
             return (
                 <Link
@@ -1428,7 +1436,15 @@ export function CreateDetailsLink(item: any) {
             // Redirects to the policy page if the policy is a hub cluster resource.
             // If the policy is not, it will redirect and just show the yaml.
             if (item._hubClusterResource && item.apigroup === 'policy.open-cluster-management.io') {
-                return <a href={`/multicloud/governance/policies/${item.name}`}>{item.name}</a>
+                return (
+                    <a
+                        href={NavigationPath.policyDetails
+                            .replace(':namespace', item.namespace)
+                            .replace(':name', item.name)}
+                    >
+                        {item.name}
+                    </a>
+                )
             }
             return (
                 <Link
@@ -1470,14 +1486,16 @@ export function CreateDetailsLink(item: any) {
     }
 }
 
-export function CreateApplicationLink(item: any) {
+export function CreateApplicationTopologyLink(item: any) {
     if (item.apiversion && item.apigroup) {
-        const apiversion = encodeURIComponent(`${item.apigroup}/${item.apiversion}`)
-        const link = `multicloud/applications/${item.namespace}/${item.name}?apiVersion=${apiversion}`
+        const apiversion = encodeURIComponent(`${item.kind}.${item.apigroup}`)
+        const link = `${NavigationPath.applicationTopology
+            .replace(':namespace', item.namespace)
+            .replace(':name', item.name)}?apiVersion=${apiversion}`
         return (
-            <a target="_blank" rel="noopener noreferrer" href={link}>
+            <a href={link}>
                 {/* TODO Not translating - caused issue: https://github.com/open-cluster-management/backlog/issues/9184 */}
-                {'Launch health view'}
+                {'View topology'}
             </a>
         )
     }

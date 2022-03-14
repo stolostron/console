@@ -28,6 +28,7 @@ import {
     placementBindingsState,
     placementRulesState,
     placementsState,
+    policyAutomationState,
     policySetsState,
     subscriptionsState,
     usePolicies,
@@ -36,7 +37,7 @@ import { BulkActionModel, IBulkActionModelProps } from '../../../components/Bulk
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
 import { NavigationPath } from '../../../NavigationPath'
-import { patchResource, Policy, PolicyApiVersion, PolicyKind, PolicySet } from '../../../resources'
+import { patchResource, Policy, PolicyApiVersion, PolicyAutomation, PolicyKind, PolicySet } from '../../../resources'
 import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
@@ -57,6 +58,7 @@ export default function PoliciesPage() {
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
+    const [policyAutomations] = useRecoilState(policyAutomationState)
 
     // in a useEffect hook
     const tableItems: PolicyTableItem[] = policies.map((policy) => {
@@ -147,7 +149,42 @@ export default function PoliciesPage() {
             },
             {
                 header: t('Automation'),
-                cell: () => '-',
+                cell: (item: PolicyTableItem) => {
+                    const policyAutomationMatch = policyAutomations.find(
+                        (pa: PolicyAutomation) => pa.spec.policyRef === item.policy.metadata.name
+                    )
+                    if (policyAutomationMatch) {
+                        return (
+                            <Link
+                                to={{
+                                    pathname: NavigationPath.editPolicyAutomation
+                                        .replace(':namespace', item.policy.metadata.namespace as string)
+                                        .replace(':name', item.policy.metadata.name as string),
+                                    state: {
+                                        from: NavigationPath.policies,
+                                    },
+                                }}
+                            >
+                                {policyAutomationMatch.metadata.name}
+                            </Link>
+                        )
+                    } else {
+                        return (
+                            <Link
+                                to={{
+                                    pathname: NavigationPath.createPolicyAutomation
+                                        .replace(':namespace', item.policy.metadata.namespace as string)
+                                        .replace(':name', item.policy.metadata.name as string),
+                                    state: {
+                                        from: NavigationPath.policies,
+                                    },
+                                }}
+                            >
+                                {t('Configure')}
+                            </Link>
+                        )
+                    }
+                },
             },
             {
                 header: t('Created'),
@@ -167,7 +204,7 @@ export default function PoliciesPage() {
                 cellTransforms: [fitContent],
             },
         ],
-        [policyClusterViolationsColumn, policySets, t]
+        [policyClusterViolationsColumn, policySets, policyAutomations, t]
     )
 
     const bulkModalStatusColumns = useMemo(
