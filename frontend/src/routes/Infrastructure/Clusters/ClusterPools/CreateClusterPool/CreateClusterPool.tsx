@@ -7,7 +7,7 @@ import { PageSection } from '@patternfly/react-core'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { NavigationPath } from '../../../../../NavigationPath'
+import { CancelBackState, cancelNavigation, NavigationPath } from '../../../../../NavigationPath'
 import Handlebars from 'handlebars'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { namespacesState, settingsState } from '../../../../../atoms'
@@ -100,7 +100,7 @@ export default function CreateClusterPoolPage() {
 
 export function CreateClusterPool() {
     const history = useHistory()
-    const location = useLocation()
+    const location = useLocation<CancelBackState>()
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const toastContext = useContext(AcmToastContext)
@@ -139,7 +139,7 @@ export function CreateClusterPool() {
 
     // cancel button
     const cancelCreate = () => {
-        history.push(NavigationPath.clusterPools)
+        cancelNavigation(location, history, NavigationPath.clusterPools)
     }
 
     // setup translation
