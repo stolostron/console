@@ -33,7 +33,7 @@ export function ClusterSetClusterPoolsPageContent() {
                             action={
                                 <RbacButton
                                     component={Link}
-                                    to={NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)}
+                                    to={NavigationPath.createClusterPool + `?clusterSet=${clusterSet!.metadata.name}`}
                                     variant="primary"
                                     rbac={[
                                         rbacCreate(
@@ -44,7 +44,7 @@ export function ClusterSetClusterPoolsPageContent() {
                                         ),
                                     ]}
                                 >
-                                    {t('managed.clusterSets.clusters.emptyStateButton')}
+                                    {t('managed.clusterSets.clusterPools.emptyStateButton')}
                                 </RbacButton>
                             }
                         />

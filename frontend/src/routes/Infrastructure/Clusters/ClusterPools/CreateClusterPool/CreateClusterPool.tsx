@@ -162,6 +162,9 @@ export function CreateClusterPool() {
           }
         : null
 
+    // Check for pre-selected cluster set
+    const selectedClusterSet = urlParams.get('clusterSet')
+
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
     function onControlInitialize(control: any) {
@@ -172,6 +175,9 @@ export function CreateClusterPool() {
             case 'clusterSet':
                 if (control.available) {
                     control.available = canJoinClusterSets?.map((mcs) => mcs.metadata.name) ?? []
+                    if (selectedClusterSet && control.available.includes(selectedClusterSet)) {
+                        control.active = selectedClusterSet
+                    }
                     control.validation.required = mustJoinClusterSet ?? false
                 }
                 break
