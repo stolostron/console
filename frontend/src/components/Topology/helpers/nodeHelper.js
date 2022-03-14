@@ -163,8 +163,9 @@ export default class NodeHelper {
         // update node icons
         this.updateNodeIcons()
 
-        // cluster count text
-        this.createClusterCountText(draw, nodes)
+        // cluster count text - can't use newNodes for initial render
+        // as it won't get the latest cluster count value
+        this.createClusterCountText(draw, nodes, newNodes)
     }
 
     createNodePulse = (nodes) => {
@@ -325,12 +326,21 @@ export default class NodeHelper {
     }
 
     // Only for cluster nodes, put the cluster count text
-    createClusterCountText = (draw, nodes) => {
-        const clusterNode = nodes.filter((d) => {
+    createClusterCountText = (draw, nodes, newNodes) => {
+        let clusterNode = nodes.filter((d) => {
             const { layout } = d
+            console.log(layout.type)
             return layout.type === 'cluster'
         })
 
+        // Need this when we switch tabs Overview -> Topology
+        if (clusterNode.empty()) {
+            clusterNode = newNodes.filter((d) => {
+                const { layout } = d
+                console.log(layout.type)
+                return layout.type === 'cluster'
+            })
+        }
         const clusterCountTextNodes = clusterNode.selectAll(gClusterCountText)
         clusterCountTextNodes.remove()
 
