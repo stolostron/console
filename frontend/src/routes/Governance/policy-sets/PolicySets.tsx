@@ -22,33 +22,23 @@ import CardViewToolbarFilter from './components/CardViewToolbarFilter'
 import CardViewToolbarSearch from './components/CardViewToolbarSearch'
 import PolicySetCard from './components/PolicySetCard'
 
-function clusterViolationFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
-    return (
-        policySet.status.results.filter(
-            (result) => result.clusters && result.clusters?.some((cluster) => cluster.compliant === 'NonCompliant')
-        ).length > 0
-    )
+function violationFilterFn(policySet: PolicySet) {
+    if (!policySet.status) {
+        return false
+    }
+    return policySet.status.compliant === 'NonCompliant'
 }
-function clusterNonViolationFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
-    return policySet.status.results.every((result) => {
-        return (result.clusters && result.clusters.every((cluster) => cluster.compliant !== 'NonCompliant')) ?? false
-    })
+function nonViolationFilterFn(policySet: PolicySet) {
+    if (!policySet.status) {
+        return false
+    }
+    return policySet.status.compliant === 'Compliant'
 }
-function policyViolationFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
-    return policySet.status.results.filter((result) => result.compliant === 'NonCompliant').length > 0
-}
-function policyNonViolationFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
-    return policySet.status.results.every((result) => {
-        return (result && result.compliant && result.compliant !== 'NonCompliant') ?? false
-    })
-}
-function policyUnknownFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
-    return policySet.status.results.filter((result) => !result.compliant).length > 0
+function unknownStatusFilterFn(policySet: PolicySet) {
+    if (!policySet.status) {
+        return true
+    }
+    return !policySet.status.compliant
 }
 
 function getPresetURIFilters() {
@@ -82,6 +72,7 @@ export default function PolicySetsPage() {
     const [page, setPage] = useState<number>(1)
     const [perPage, setPerPage] = useState<number>(10)
     const [filteredPolicySets, setFilteredPolicySets] = useState<PolicySet[]>(policySets)
+    const [selectedCardID, setSelectedCardID] = useState<string>('')
 
     const updatePerPage = useCallback(
         (newPerPage: number) => {
@@ -100,49 +91,34 @@ export default function PolicySetsPage() {
             if (violationFilters.length === 0) {
                 return true
             }
-            let clusterFilterMatch =
-                violationFilters.includes('cluster-violation') || violationFilters.includes('cluster-no-violation')
-                    ? false
-                    : true
-            let policyFilterMatch =
-                violationFilters.includes('policy-violation') ||
-                violationFilters.includes('policy-no-violation') ||
-                violationFilters.includes('policy-unknown')
+            let filterMatch =
+                violationFilters.includes('violation') ||
+                violationFilters.includes('no-violation') ||
+                violationFilters.includes('no-status')
                     ? false
                     : true
 
             for (const filter of violationFilters) {
                 switch (filter) {
-                    case 'cluster-violation':
-                        if (clusterViolationFilterFn(policySet)) {
-                            clusterFilterMatch = true
+                    case 'violation':
+                        if (violationFilterFn(policySet)) {
+                            filterMatch = true
                         }
                         break
-                    case 'cluster-no-violation':
-                        if (clusterNonViolationFilterFn(policySet)) {
-                            clusterFilterMatch = true
+                    case 'no-violation':
+                        if (nonViolationFilterFn(policySet)) {
+                            filterMatch = true
                         }
                         break
-                    case 'policy-violation':
-                        if (policyViolationFilterFn(policySet)) {
-                            policyFilterMatch = true
-                        }
-                        break
-                    case 'policy-no-violation':
-                        if (policyNonViolationFilterFn(policySet)) {
-                            policyFilterMatch = true
-                        }
-                        break
-                    case 'policy-unknown':
-                        if (policyUnknownFilterFn(policySet)) {
-                            policyFilterMatch = true
+                    case 'no-status':
+                        if (unknownStatusFilterFn(policySet)) {
+                            filterMatch = true
                         }
                         break
                 }
             }
 
-            // AND different group filter selections
-            return clusterFilterMatch && policyFilterMatch
+            return filterMatch
         })
 
         // multi values are OR, multi attributes are AND
@@ -250,11 +226,17 @@ export default function PolicySetsPage() {
                 ) : (
                     <PageSection isFilled isWidthLimited>
                         <AcmMasonry minSize={400}>
-                            {/* Need to compute all cards here then slice. The PolicySet card render uses usePolicySetSummary which includes a react hook.
+                            {/* Need to compute all cards here then slice. The PolicySet card render uses react hooks.
                         So paging to a page with less cards than the previous causes a react hook error if rendered in time. */}
                             {filteredPolicySets
                                 .map((policyset: PolicySet) => {
-                                    return <PolicySetCard policySet={policyset} />
+                                    return (
+                                        <PolicySetCard
+                                            policySet={policyset}
+                                            selectedCardID={selectedCardID}
+                                            setSelectedCardID={setSelectedCardID}
+                                        />
+                                    )
                                 })
                                 .slice((actualPage - 1) * perPage, (actualPage - 1) * perPage + perPage)}
                         </AcmMasonry>

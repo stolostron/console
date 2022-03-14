@@ -1,45 +1,41 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
-
-import { AcmPage } from '@stolostron/ui-components'
-import {
-    applicationsState,
-    applicationSetsState,
-    argoApplicationsState,
-    ansibleJobState,
-    subscriptionsState,
-    channelsState,
-    placementsState,
-    placementRulesState,
-    subscriptionReportsState,
-    managedClustersState,
-} from '../../../atoms'
-
+import { AcmPage, AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 import {
     createContext,
-    Fragment,
-    Suspense,
-    useEffect,
-    useContext,
     ElementType,
+    Fragment,
     ReactNode,
-    useState,
+    Suspense,
+    useContext,
+    useEffect,
+    useMemo,
     useRef,
+    useState,
 } from 'react'
+import { Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
+import { useRecoilCallback, useRecoilState } from 'recoil'
+import {
+    acmRouteState,
+    ansibleJobState,
+    applicationSetsState,
+    applicationsState,
+    argoApplicationsState,
+    channelsState,
+    managedClustersState,
+    placementRulesState,
+    placementsState,
+    subscriptionReportsState,
+    subscriptionsState,
+} from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { Link, Route, RouteComponentProps, Switch, Redirect, useLocation } from 'react-router-dom'
-import { useRecoilState, useRecoilCallback } from 'recoil'
-import { acmRouteState } from '../../../atoms'
-
 import { NavigationPath } from '../../../NavigationPath'
-import { ApplicationTopologyPageContent } from './ApplicationTopology/ApplicationTopology'
 import { ApplicationOverviewPageContent } from './ApplicationOverview/ApplicationOverview'
-
+import { ApplicationTopologyPageContent } from './ApplicationTopology/ApplicationTopology'
 import { getApplication } from './ApplicationTopology/model/application'
+import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
 import { getTopology } from './ApplicationTopology/model/topology'
 import { getApplicationData } from './ApplicationTopology/model/utils'
-import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
 
 export const ApplicationContext = createContext<{
     readonly actions: null | ReactNode
@@ -55,7 +51,7 @@ export const useApplicationPageContext = (ActionList: ElementType) => {
     useEffect(() => {
         setActions(<ActionList />)
         return () => setActions(null)
-    }, [setActions])
+    }, [ActionList, setActions])
 
     return ActionList
 }
@@ -89,8 +85,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     )
 
     const urlParams = location.search ? location.search.substring(1).split('&') : []
-    let apiVersion: string
-    let cluster: string
+    let apiVersion: string | undefined
+    let cluster: string | undefined
     urlParams.forEach((param) => {
         if (param.startsWith('apiVersion')) {
             apiVersion = param.split('=')[1]
@@ -99,18 +95,21 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             cluster = param.split('=')[1]
         }
     })
-    const stateMap = {
-        applications: applicationsState,
-        applicationSets: applicationSetsState,
-        argoApplications: argoApplicationsState,
-        ansibleJob: ansibleJobState,
-        channels: channelsState,
-        placements: placementsState,
-        placementRules: placementRulesState,
-        subscriptions: subscriptionsState,
-        subscriptionReports: subscriptionReportsState,
-        managedClusters: managedClustersState,
-    }
+    const stateMap = useMemo(
+        () => ({
+            applications: applicationsState,
+            applicationSets: applicationSetsState,
+            argoApplications: argoApplicationsState,
+            ansibleJob: ansibleJobState,
+            channels: channelsState,
+            placements: placementsState,
+            placementRules: placementRulesState,
+            subscriptions: subscriptionsState,
+            subscriptionReports: subscriptionReportsState,
+            managedClusters: managedClustersState,
+        }),
+        []
+    )
 
     // refresh application the first time and then every n seconds
     useEffect(() => {
@@ -188,7 +187,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             10000
         )
         return () => clearInterval(interval)
-    }, [activeChannel])
+    }, [activeChannel, apiVersion, cluster, getSnapshot, match.params.name, match.params.namespace, stateMap])
 
     return (
         <AcmPage
@@ -248,10 +247,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 <Suspense fallback={<Fragment />}>
                     <Switch>
                         <Route exact path={NavigationPath.applicationOverview}>
-                            <ApplicationOverviewPageContent
-                                name={match.params.name}
-                                namespace={match.params.namespace}
-                            />
+                            <ApplicationOverviewPageContent applicationData={applicationData} />
                         </Route>
                         <Route exact path={NavigationPath.applicationTopology}>
                             <ApplicationTopologyPageContent

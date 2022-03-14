@@ -75,6 +75,7 @@ export default function ManagedClusters() {
         }
     })
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
 
     usePageContext(clusters.length > 0, PageActions)
@@ -356,7 +357,7 @@ export function ClustersTable(props: {
                 variant: 'bulk-action',
             },
         ],
-        [modalColumns]
+        [modalColumns, t]
     )
 
     const rowActions = useMemo(() => [], [])
@@ -388,7 +389,7 @@ export function ClustersTable(props: {
                 tableFilterFn: (selectedValues, cluster) => selectedValues.includes(t(`status.${cluster.status}`)),
             },
         ]
-    }, [])
+    }, [t])
 
     return (
         <Fragment>

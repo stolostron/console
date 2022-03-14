@@ -95,7 +95,7 @@ const policy0: Policy = {
 }
 
 const policySet0: PolicySet = {
-    apiVersion: 'policy.open-cluster-management.io/v1',
+    apiVersion: 'policy.open-cluster-management.io/v1beta1',
     kind: 'PolicySet',
     metadata: {
         name: 'policy-set-with-1-placement',
@@ -108,13 +108,6 @@ const policySet0: PolicySet = {
     status: {
         compliant: 'Compliant',
         placement: [{ placement: 'policy-set-with-1-placement', placementBinding: 'policy-set-with-1-placement' }],
-        results: [
-            {
-                clusters: [{ clusterName: 'local-cluster', clusterNamespace: 'local-cluster', compliant: 'Compliant' }],
-                compliant: 'Compliant',
-                policy: 'policy-set-with-1-placement-policy-1',
-            },
-        ],
     },
 }
 

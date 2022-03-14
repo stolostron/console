@@ -87,7 +87,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                 isComponentMounted = false
             }
         }
-    }, [cluster, kind, apiVersion, name, namespace])
+    }, [cluster, kind, apiVersion, name, namespace, isDesign])
 
     if (!resource && resourceError.message === '') {
         return <AcmLoadingPage />

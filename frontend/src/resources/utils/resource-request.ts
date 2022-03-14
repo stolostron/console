@@ -7,7 +7,7 @@ import { ApplicationKind, SubscriptionApiVersion, SubscriptionKind } from '..'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
-import { subAnnotationStr } from '../../routes/Applications/Overview'
+import { subAnnotationStr } from '../../routes/Applications/helpers/resource-helper'
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -148,20 +148,15 @@ export async function createResources(
             abortController?.signal.addEventListener('abort', requestResult.abort)
             try {
                 await requestResult.promise
+                createdResources.push(resource)
             } finally {
                 abortController?.signal.removeEventListener('abort', requestResult.abort)
             }
         }
     } catch (err) {
-        if (options?.dryRun !== true) {
-            if (options?.deleteCreatedOnError) {
-                for (const createdResource of createdResources) {
-                    try {
-                        deleteResource(createdResource).promise.catch(noop)
-                    } catch (err) {
-                        // Do nothing
-                    }
-                }
+        if (options?.dryRun !== true && options?.deleteCreatedOnError) {
+            for (const createdResource of createdResources) {
+                deleteResource(createdResource).promise.catch(noop)
             }
         }
         throw err

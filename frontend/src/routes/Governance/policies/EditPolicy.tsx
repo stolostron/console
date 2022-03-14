@@ -12,7 +12,7 @@ import {
     placementBindingsState,
     placementRulesState,
     placementsState,
-    policiesState,
+    usePolicies,
 } from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -25,7 +25,7 @@ export function EditPolicy() {
     const toast = useContext(AcmToastContext)
     const params: { namespace?: string; name?: string } = useParams()
     const history = useHistory()
-    const [policies] = useRecoilState(policiesState)
+    const policies = usePolicies()
     const [namespaces] = useRecoilState(namespacesState)
     const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)
@@ -47,7 +47,7 @@ export function EditPolicy() {
         const policyPlacements = getPlacementsForResource(policy, policyPlacementBindings, placements)
         const policyPlacementRules = getPlacementsForResource(policy, policyPlacementBindings, placementRules)
         setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
-    }, [])
+    }, [history, params.name, params.namespace, placementBindings, placementRules, placements, policies])
 
     if (existingResources === undefined) {
         return <LoadingPage />
@@ -76,7 +76,7 @@ export function EditPolicy() {
                             autoClose: true,
                         })
                     }
-                    history.push(NavigationPath.policySets)
+                    history.push(NavigationPath.policies)
                 })
             }}
             onCancel={() => history.push(NavigationPath.policies)}

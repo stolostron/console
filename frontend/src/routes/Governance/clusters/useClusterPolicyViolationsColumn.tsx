@@ -2,7 +2,7 @@
 import { IAcmTableColumn } from '@stolostron/ui-components'
 import { Fragment } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { Cluster, PolicySetResultCluster } from '../../../resources'
+import { Cluster } from '../../../resources'
 import { PolicyViolationIcons2 } from '../components/PolicyViolations'
 import { ClusterViolationSummaryMap } from '../overview/ClusterViolationSummary'
 
@@ -39,12 +39,12 @@ export function useClusterPolicyViolationsColumn(
 
 export function usePolicySetClusterPolicyViolationsColumn(
     clusterViolationSummaryMap: ClusterViolationSummaryMap
-): IAcmTableColumn<PolicySetResultCluster> {
+): IAcmTableColumn<string> {
     const { t } = useTranslation()
     return {
         header: t('Policy violations'),
-        cell: (cluster: PolicySetResultCluster) => {
-            const clusterViolationSummary = clusterViolationSummaryMap[cluster.clusterName ?? '']
+        cell: (cluster: string) => {
+            const clusterViolationSummary = clusterViolationSummaryMap[cluster ?? '']
             if (!clusterViolationSummary) return <Fragment />
             return (
                 <PolicyViolationIcons2
@@ -54,8 +54,8 @@ export function usePolicySetClusterPolicyViolationsColumn(
             )
         },
         sort: (lhs, rhs) => {
-            const lhsViolations = clusterViolationSummaryMap[lhs.clusterName ?? '']
-            const rhsViolations = clusterViolationSummaryMap[rhs.clusterName ?? '']
+            const lhsViolations = clusterViolationSummaryMap[lhs ?? '']
+            const rhsViolations = clusterViolationSummaryMap[rhs ?? '']
             if (lhsViolations === rhsViolations) return 0
             if (!lhsViolations) return -1
             if (!rhsViolations) return 1

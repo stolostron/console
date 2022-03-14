@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 module.exports = {
-    preset: 'ts-jest',
+    preset: 'ts-jest/presets/js-with-ts',
     testEnvironment: 'jsdom',
     automock: false,
     testResultsProcessor: 'jest-sonar-reporter',
@@ -20,7 +20,9 @@ module.exports = {
         '^.+\\.hbs$': 'jest-raw-loader',
         '\\.(css|less)$': 'jest-raw-loader',
     },
-    transformIgnorePatterns: ['node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib)'],
+    transformIgnorePatterns: [
+        'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly-labs/react-form-wizard)',
+    ],
     coverageDirectory: './coverage',
     coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
     collectCoverageFrom: [

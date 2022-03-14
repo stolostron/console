@@ -428,7 +428,7 @@ const longestCommonSubstring = (str1, str2) => {
 
 function getAppChannels(channelsMap, allChannels) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Object.entries(channelsMap).map(([_namespace, values]) => {
+    return Object.entries(channelsMap).forEach(([_namespace, values]) => {
         allChannels.forEach((channel) => {
             const name = get(channel, 'metadata.name')
             values.forEach(({ chnName, subscription }) => {

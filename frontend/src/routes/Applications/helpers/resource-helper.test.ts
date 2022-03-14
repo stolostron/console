@@ -113,23 +113,23 @@ describe('getResourceType', () => {
 
 describe('getResourceLabel', () => {
     it('should work with git', () => {
-        expect(getResourceLabel('git', 2)).toEqual('Git (2)')
+        expect(getResourceLabel('git', 2, (t) => t)).toEqual('Git (2)')
     })
 
     it('should work with helmrepo', () => {
-        expect(getResourceLabel('helmrepo', 2)).toEqual('Helm (2)')
+        expect(getResourceLabel('helmrepo', 2, (t) => t)).toEqual('Helm (2)')
     })
 
     it('should work with namespace', () => {
-        expect(getResourceLabel('namespace', 2)).toEqual('Namespace (2)')
+        expect(getResourceLabel('namespace', 2, (t) => t)).toEqual('Namespace (2)')
     })
 
     it('should work with objectbucket', () => {
-        expect(getResourceLabel('objectbucket', 2)).toEqual('Object storage (2)')
+        expect(getResourceLabel('objectbucket', 2, (t) => t)).toEqual('Object storage (2)')
     })
 
     it('should work with undefined', () => {
-        expect(getResourceLabel('', 2)).toEqual('undefined (2)')
+        expect(getResourceLabel('', 2, (t) => t)).toEqual('undefined (2)')
     })
 })
 

@@ -5,12 +5,19 @@ import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
 import { nockSearch } from '../../../../../lib/nock-util'
-import { clickByText, waitForText } from '../../../../../lib/test-util'
+import { PluginContext } from '../../../../../lib/PluginContext'
+import { clickByText, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus, PolicyReport } from '../../../../../resources'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { StatusSummaryCount } from './StatusSummaryCount'
 
-window.open = jest.fn()
+const push = jest.fn()
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
+    useHistory: () => ({
+        push,
+    }),
+}))
 
 const mockCluster: Cluster = {
     name: 'test-cluster',
@@ -222,16 +229,70 @@ describe('StatusSummaryCount', () => {
             await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
             await clickByText('4')
-            expect(window.open).toHaveBeenCalled()
+            expect(push).toHaveBeenCalledTimes(1)
+            expect(push.mock.calls[0][0]).toBe(
+                '/multicloud/home/search?filters={"textsearch":"cluster:test-cluster%20kind:subscription"}&showrelated=application'
+            )
 
             await clickByText('Go to Applications')
-            expect(window.open).toHaveBeenCalled()
+            expect(push).toHaveBeenCalledTimes(2)
+            expect(push.mock.calls[1][0]).toBe('/multicloud/applications')
 
             await clickByText('1')
-            expect(window.open).toHaveBeenCalled()
+            expect(push).toHaveBeenCalledTimes(3)
+            expect(push.mock.calls[2][0]).toBe(
+                '/multicloud/home/search?filters={"textsearch":"cluster:local-cluster%20kind:policy%20namespace:test-cluster%20compliant:!Compliant"}'
+            )
 
             await clickByText('Go to Policies')
-            expect(window.open).toHaveBeenCalled()
+            expect(push).toHaveBeenCalledTimes(4)
+            expect(push.mock.calls[3][0]).toBe('/multicloud/governance/policies')
+
+            await clickByText('6')
+
+            await waitForText('Identified issues')
+            await waitForText('0 Critical, 1 Important, 0 Moderate, 1 Low')
+        })
+    })
+    test('renders without search', async () => {
+        const search = nockSearch(mockSearchQuery, mockSearchResponse)
+        render(
+            <PluginContext.Provider value={{ isSearchAvailable: false }}>
+                <Component />
+            </PluginContext.Provider>
+        )
+        await act(async () => {
+            await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
+            await waitFor(() => expect(search.isDone()).toBeTruthy())
+            await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
+            await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
+
+            await waitForNotText('Go to Applications')
+
+            await waitForNotText('Go to Policies')
+
+            await clickByText('6')
+
+            await waitForText('Identified issues')
+            await waitForText('0 Critical, 1 Important, 0 Moderate, 1 Low')
+        })
+    })
+    test('renders without applications and governance', async () => {
+        const search = nockSearch(mockSearchQuery, mockSearchResponse)
+        render(
+            <PluginContext.Provider value={{ isApplicationsAvailable: false, isGovernanceAvailable: false }}>
+                <Component />
+            </PluginContext.Provider>
+        )
+        await act(async () => {
+            await waitFor(() => expect(screen.getAllByRole('progressbar').length).toBeGreaterThan(0))
+            await waitFor(() => expect(search.isDone()).toBeTruthy())
+            await waitFor(() => expect(screen.queryByRole('progressbar')).toBeNull())
+            await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
+
+            await waitForNotText('Go to Applications')
+
+            await waitForNotText('Go to Policies')
 
             await clickByText('6')
 

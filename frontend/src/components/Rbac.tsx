@@ -57,7 +57,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
                             return {
                                 ...action,
                                 isAriaDisabled: isAriaDisabled,
-                                tooltip: isAriaDisabled ? t('rbac.unauthorized') : '',
+                                tooltip: isAriaDisabled ? t('rbac.unauthorized') : action.tooltip ?? '',
                             }
                         } else {
                             return action

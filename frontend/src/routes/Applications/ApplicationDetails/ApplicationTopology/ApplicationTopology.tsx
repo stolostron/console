@@ -1,21 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PageSection, ActionListItem } from '@patternfly/react-core'
-import { AcmActionGroup } from '@stolostron/ui-components'
-import { useState, useContext, useEffect } from 'react'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { getDiagramElements } from './model/topology'
-
-import './ApplicationTopology.css'
+import { ActionListItem, PageSection } from '@patternfly/react-core'
+import { AcmActionGroup, AcmDrawerContext } from '@stolostron/ui-components'
+import { cloneDeep } from 'lodash'
+import { useContext, useEffect, useState } from 'react'
 import Topology from '../../../../components/Topology/Topology'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { ApplicationDataType, useApplicationPageContext } from '../ApplicationDetails'
+import './ApplicationTopology.css'
 import DiagramViewer from './components/DiagramViewer'
 import LegendView from './components/LegendView'
-import { getOptions } from './options'
-import { useApplicationPageContext, ApplicationDataType } from '../ApplicationDetails'
-import { AcmDrawerContext } from '@stolostron/ui-components'
 import { processResourceActionLink } from './helpers/diagram-helpers'
-
-import { cloneDeep } from 'lodash'
+import { getDiagramElements } from './model/topology'
+import { getOptions } from './options'
 
 export type ArgoAppDetailsContainerData = {
     page: number
@@ -145,7 +142,7 @@ export function ApplicationTopologyPageContent(props: {
         if (application && appData && topology) {
             setElements(cloneDeep(getDiagramElements(appData, cloneDeep(topology), statuses, canUpdateStatuses, t)))
         }
-    }, [refreshTime])
+    }, [appData, application, canUpdateStatuses, refreshTime, statuses, t, topology])
 
     return (
         <PageSection>

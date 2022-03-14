@@ -29,7 +29,7 @@ import {
     applicationsState,
     argoApplicationsState,
     managedClustersState,
-    policiesState,
+    usePolicies,
 } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -234,7 +234,7 @@ export default function OverviewPage() {
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
     const [managedClusters] = useRecoilState(managedClustersState)
-    const [policies] = useRecoilState(policiesState)
+    const policies = usePolicies()
     const [apps] = useRecoilState(applicationsState)
     const [argoApps] = useRecoilState(argoApplicationsState)
     useEffect(() => setRoute(AcmRoute.Overview), [setRoute])

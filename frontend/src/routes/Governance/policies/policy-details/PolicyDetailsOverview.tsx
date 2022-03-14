@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, LabelGroup, PageSection, Split, SplitItem, Stack, Text, TextVariants } from '@patternfly/react-core'
+import { Alert, LabelGroup, PageSection, Stack, Text, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmDescriptionList, AcmTable } from '@stolostron/ui-components'
 import moment from 'moment'
-import { Fragment, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -11,6 +11,7 @@ import {
     placementDecisionsState,
     placementRulesState,
     placementsState,
+    policyAutomationState,
     policySetsState,
 } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -22,6 +23,7 @@ import {
     PlacementRule,
     PlacementRuleStatus,
     Policy,
+    PolicyAutomation,
     PolicySet,
 } from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
@@ -45,7 +47,17 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     const [placementBindings] = useRecoilState(placementBindingsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [placementDecisions] = useRecoilState(placementDecisionsState)
+    const [policyAutomations] = useRecoilState(policyAutomationState)
     const govData = useGovernanceData([policy])
+    const clusterRiskScore =
+        govData.clusterRisks.high +
+        govData.clusterRisks.medium +
+        govData.clusterRisks.low +
+        govData.clusterRisks.unknown +
+        govData.clusterRisks.synced
+    const policyAutomationMatch = policyAutomations.find(
+        (pa: PolicyAutomation) => pa.spec.policyRef === policy.metadata.name
+    )
 
     const { leftItems, rightItems } = useMemo(() => {
         const leftItems = [
@@ -67,85 +79,81 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             },
             {
                 key: 'Cluster violations',
-                value: <ClusterPolicyViolationIcons risks={govData.clusterRisks} />,
+                value:
+                    clusterRiskScore > 0 ? (
+                        <ClusterPolicyViolationIcons risks={govData.clusterRisks} />
+                    ) : (
+                        <div>
+                            <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" /> {'No status'}
+                        </div>
+                    ),
             },
         ]
         const rightItems = [
             {
                 key: 'Categories',
-                value:
-                    govData.categories.groups.map((group) => {
-                        const hasRisks =
-                            group.policyRisks.high +
-                                group.policyRisks.low +
-                                group.policyRisks.medium +
-                                group.policyRisks.synced +
-                                group.policyRisks.unknown >
-                            0
-                        if (!hasRisks) return <Fragment />
-                        return (
-                            <Split hasGutter>
-                                <SplitItem>
-                                    <Text>{group.name}</Text>
-                                </SplitItem>
-                            </Split>
-                        )
-                    }) ?? '-',
+                value: policy.metadata.annotations?.['policy.open-cluster-management.io/categories'] ?? '-',
             },
             {
                 key: 'Controls',
-                value:
-                    govData.controls.groups.map((group) => {
-                        const hasRisks =
-                            group.policyRisks.high +
-                                group.policyRisks.low +
-                                group.policyRisks.medium +
-                                group.policyRisks.synced +
-                                group.policyRisks.unknown >
-                            0
-                        if (!hasRisks) return <Fragment />
-                        return (
-                            <Split hasGutter>
-                                <SplitItem>
-                                    <Text>{group.name}</Text>
-                                </SplitItem>
-                            </Split>
-                        )
-                    }) ?? '-',
+                value: policy.metadata.annotations?.['policy.open-cluster-management.io/controls'] ?? '-',
             },
             {
                 key: 'Standards',
-                value:
-                    govData.standards.groups.map((group) => {
-                        const hasRisks =
-                            group.policyRisks.high +
-                                group.policyRisks.low +
-                                group.policyRisks.medium +
-                                group.policyRisks.synced +
-                                group.policyRisks.unknown >
-                            0
-                        if (!hasRisks) return <Fragment />
-                        return (
-                            <Split hasGutter>
-                                <SplitItem>
-                                    <Text>{group.name}</Text>
-                                </SplitItem>
-                            </Split>
-                        )
-                    }) ?? '-',
+                value: policy.metadata.annotations?.['policy.open-cluster-management.io/standards'] ?? '-',
             },
             {
                 key: 'Created',
                 value: moment(policy.metadata.creationTimestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow(),
             },
-            // TODO need to implement automation
-            // {
-            //     key: 'Automation',
-            //     value: '-', // react node (link)
-            // },
+            {
+                key: 'Automation',
+                value: policyAutomationMatch ? (
+                    <Link
+                        to={{
+                            pathname: NavigationPath.editPolicyAutomation
+                                .replace(':namespace', policy.metadata.namespace as string)
+                                .replace(':name', policy.metadata.name as string),
+                            state: {
+                                from: NavigationPath.policyDetails
+                                    .replace(':namespace', policy.metadata.namespace as string)
+                                    .replace(':name', policy.metadata.name as string),
+                            },
+                        }}
+                    >
+                        {policyAutomationMatch.metadata.name}
+                    </Link>
+                ) : (
+                    <Link
+                        to={{
+                            pathname: NavigationPath.createPolicyAutomation
+                                .replace(':namespace', policy.metadata.namespace as string)
+                                .replace(':name', policy.metadata.name as string),
+                            state: {
+                                from: NavigationPath.policyDetails
+                                    .replace(':namespace', policy.metadata.namespace as string)
+                                    .replace(':name', policy.metadata.name as string),
+                            },
+                        }}
+                    >
+                        {t('Configure')}
+                    </Link>
+                ),
+            },
         ]
         return { leftItems, rightItems }
-    }, [policy])
+    }, [
+        clusterRiskScore,
+        govData.clusterRisks,
+        policy.metadata.creationTimestamp,
+        policy.metadata.name,
+        policy.metadata.namespace,
+        policy.metadata.annotations,
+        policy.spec.disabled,
+        policy.spec.remediationAction,
+        policyAutomationMatch,
+        t,
+    ])
 
     // Need to get bindings for all policysets a policy is included in
     const associatedPolicySets = policySets.filter(
@@ -153,48 +161,54 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             ps.metadata.namespace === policy.metadata.namespace && ps.spec.policies.includes(policy.metadata.name!)
     )
 
-    function getPlacementMatches<T extends Placement | PlacementRule>(
-        policy: Policy,
-        placementResources: T[],
-        placementDecisions: PlacementDecision[]
-    ) {
-        let matches: T[] = []
-        const resources: any[] = [policy]
-        if (associatedPolicySets.length > 0) {
-            resources.push(...associatedPolicySets)
-        }
-        resources.forEach(
-            (resource: Policy | PolicySet) =>
-                (matches = [...matches, ...getPlacementsForResource(resource, placementBindings, placementResources)])
-        )
-        return matches.map((placement: T) => {
-            if (placement.kind === 'Placement') {
-                const decisions = getPlacementDecisionsForPlacements(placementDecisions, [placement])[0]?.status
+    const getPlacementMatches = useCallback(
+        function getPlacementMatches<T extends Placement | PlacementRule>(
+            policy: Policy,
+            placementResources: T[],
+            placementDecisions: PlacementDecision[]
+        ) {
+            let matches: T[] = []
+            const resources: any[] = [policy]
+            if (associatedPolicySets.length > 0) {
+                resources.push(...associatedPolicySets)
+            }
+            resources.forEach(
+                (resource: Policy | PolicySet) =>
+                    (matches = [
+                        ...matches,
+                        ...getPlacementsForResource(resource, placementBindings, placementResources),
+                    ])
+            )
+            return matches.map((placement: T) => {
+                if (placement.kind === 'Placement') {
+                    const decisions = getPlacementDecisionsForPlacements(placementDecisions, [placement])[0]?.status
+                    return {
+                        apiVersion: placement.apiVersion,
+                        kind: placement.kind,
+                        metadata: placement.metadata,
+                        status: decisions ?? {},
+                        policy,
+                    }
+                }
                 return {
                     apiVersion: placement.apiVersion,
                     kind: placement.kind,
                     metadata: placement.metadata,
-                    status: decisions ?? {},
+                    status: placement.status ?? {},
                     policy,
                 }
-            }
-            return {
-                apiVersion: placement.apiVersion,
-                kind: placement.kind,
-                metadata: placement.metadata,
-                status: placement.status ?? {},
-                policy,
-            }
-        })
-    }
+            })
+        },
+        [associatedPolicySets, placementBindings]
+    )
 
     const placementRuleMatches: TableData[] = useMemo(() => {
         return getPlacementMatches(policy, placementRules, [])
-    }, [associatedPolicySets, placementBindings, placementRules, policy])
+    }, [getPlacementMatches, placementRules, policy])
 
     const placementMatches: TableData[] = useMemo(() => {
         return getPlacementMatches(policy, placements, placementDecisions)
-    }, [associatedPolicySets, placementBindings, placements, policy, placementDecisions])
+    }, [getPlacementMatches, policy, placements, placementDecisions])
 
     const placementCols = useMemo(
         () => [
@@ -322,13 +336,18 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                     }
                     // If there are no clusters, return a hyphen
                     if (statusList.length === 0) {
-                        return '-'
+                        return (
+                            <div>
+                                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />{' '}
+                                {t('No status')}
+                            </div>
+                        )
                     }
                     return statusList
                 },
             },
         ],
-        []
+        [policy.metadata.name, policy.metadata.namespace, t]
     )
 
     return (

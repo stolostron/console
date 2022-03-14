@@ -6,7 +6,7 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 
 import { infraEnvironmentsState } from '../../../../atoms'
-import { nockGet, nockList, nockPatch } from '../../../../lib/nock-util'
+import { nockGet, nockList } from '../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForTestId, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { infraEnvName, mockInfraEnv1, mockPullSecret } from '../InfraEnvironmentsPage.test'
@@ -15,11 +15,6 @@ import InfraEnvironmentDetailsPage from './InfraEnvironmentDetailsPage'
 import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim/EditAICluster.sharedmocks'
 
 const mockInfraEnvironments: CIM.InfraEnvK8sResource[] = [mockInfraEnv1]
-
-const patchInfraEnv = [
-    { op: 'add', path: '/spec/sshAuthorizedKey', value: '' },
-    { op: 'add', path: '/spec/proxy', value: {} },
-]
 
 // This will be changed after MGMT-7255
 const mockInfraEnvRegeneratedISO = cloneDeep(mockInfraEnv1)
@@ -68,15 +63,6 @@ describe('Infrastructure Environment Details page', () => {
         await waitForText('Generate Discovery ISO')
         await clickByText('Generate Discovery ISO')
 
-        // Waiting state
-        const generateNocks = [
-            nockPatch(mockInfraEnv1, patchInfraEnv, mockInfraEnv1),
-            nockGet(mockInfraEnvRegeneratedISO),
-        ]
-
-        await waitForText('Discovery image is being prepared, this might take a few seconds.')
-        await waitForNocks(generateNocks)
-
         // Discovery ISO download state
         await waitForText('Discovery ISO is ready to download')
         await waitForText('Download Discovery ISO')
@@ -90,14 +76,11 @@ describe('Infrastructure Environment Details page', () => {
 
         // The Hosts tab
         const nocks = [
-            // nockList(mockNMStateConfig, mockNMStateConfig),
             nockList(mockNMStateConfigInfraEnv, mockNMStateConfigInfraEnv, ['agent-install.openshift.io/bmh']),
         ]
         await clickByText('Hosts')
         await waitForText('Hosts may take a few minutes to appear here after booting.')
 
         await waitForNocks(nocks)
-
-        // screen.debug(undefined, -1)
     })
 })

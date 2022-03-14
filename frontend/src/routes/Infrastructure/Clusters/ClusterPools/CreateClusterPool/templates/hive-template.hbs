@@ -175,6 +175,18 @@ stringData:
   username: {{{../../username}}}
   password: {{{../../password}}}
 
+{{#case 'RHV'}}
+metadata:
+  name: {{{../../name}}}-ovirt-creds
+  namespace: '{{{../../namespace}}}'
+stringData:
+{{#if ../../showSecrets}}
+  ovirt-config.yaml:{{{../../ovirtConfigYaml}}}
+{{else}}
+  ovirt-config.yaml: # injected on create
+{{/if}}
+{{/case}}
+
 ---
 
 apiVersion: v1

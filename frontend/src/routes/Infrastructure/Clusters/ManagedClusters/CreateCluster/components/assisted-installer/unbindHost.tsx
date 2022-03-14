@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback } from 'react'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Alert, AlertVariant } from '@patternfly/react-core'
@@ -59,13 +60,13 @@ export const useCanUnbindAgent = (singleInfraEnv?: CIM.InfraEnvK8sResource) => {
                         'installing-in-progress',
                         'installing-pending-user-action',
                         'resetting-pending-user-action',
-                    ].includes(status)
+                    ].includes(status.key)
                 ) {
                     return [false, AGENT_INSTALLING]
                 }
 
                 if (
-                    ['installed', 'error', 'cancelled'].includes(status) &&
+                    ['installed', 'error', 'cancelled'].includes(status.key) &&
                     (agent.status?.role === 'master' || agent.status?.role === 'bootstrap')
                 ) {
                     return [false, UNSUPPORTED_MASTER_COUNT]
@@ -81,7 +82,7 @@ export const useCanUnbindAgent = (singleInfraEnv?: CIM.InfraEnvK8sResource) => {
                     }
 
                     if (
-                        ['installed', 'error', 'cancelled'].includes(status) &&
+                        ['installed', 'error', 'cancelled'].includes(status.key) &&
                         agent.status?.role === 'worker' &&
                         aci.spec?.provisionRequirements?.workerAgents === 5
                     ) {

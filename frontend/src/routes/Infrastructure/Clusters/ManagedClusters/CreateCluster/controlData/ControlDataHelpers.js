@@ -70,10 +70,12 @@ export const getSimplifiedImageName = (image) => {
     }
 }
 
-export const getWorkerName = (control) => {
+export const numberedControlNameFunction = (key) => (control, controlData, i18n) => {
     const { grpNum } = control
-    return `Worker pool ${grpNum + 1}`
+    return i18n(key, [grpNum + 1])
 }
+
+export const getWorkerName = numberedControlNameFunction('creation.ocp.node.worker.pool.title')
 
 export const setAvailableOCPImages = (provider, control, result) => {
     const { loading } = result
@@ -173,6 +175,10 @@ export const setAvailableConnections = (control, secrets) => {
         // handlebars don't like periods in ids, so use a substitute tag - GCP
         if (replacements['osServiceAccount.json']) {
             replacements['osServiceAccountJson'] = replacements['osServiceAccount.json']
+        }
+        // RHV
+        if (replacements['ovirt_ca_bundle']) {
+            replacements['ovirtCaBundle'] = replacements['ovirt_ca_bundle']
         }
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
@@ -371,7 +377,7 @@ export const networkingControlData = [
                 id: 'networkGroup',
                 type: 'section',
                 collapsable: true,
-                subtitle: 'creation.ocp.node.network.title',
+                subtitle: numberedControlNameFunction('creation.ocp.node.network.title'),
                 info: 'creation.ocp.node.network.info',
             },
             {

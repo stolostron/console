@@ -94,7 +94,8 @@ const definitions: IWatchOptions[] = [
     { kind: 'MultiClusterHub', apiVersion: 'operator.open-cluster-management.io/v1' },
     { kind: 'PlacementBinding', apiVersion: 'policy.open-cluster-management.io/v1' },
     { kind: 'Policy', apiVersion: 'policy.open-cluster-management.io/v1' },
-    { kind: 'PolicySet', apiVersion: 'policy.open-cluster-management.io/v1' },
+    { kind: 'PolicyAutomation', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
+    { kind: 'PolicySet', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
     { kind: 'SubmarinerConfig', apiVersion: 'submarineraddon.open-cluster-management.io/v1alpha1' },
     { kind: 'AnsibleJob', apiVersion: 'tower.ansible.com/v1alpha1' },
     { kind: 'ConfigMap', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'insight-content-data' } },
@@ -578,7 +579,7 @@ function canAccess(
                     namespace:
                         resource.metadata?.namespace ??
                         (resource.kind === 'Namespace' ? resource.metadata?.name : undefined),
-                    resource: resource.kind.toLowerCase() + 's',
+                    resource: pluralize(resource.kind.toLowerCase()),
                     verb,
                 },
             },
@@ -590,7 +591,7 @@ function canAccess(
                 msg: 'access',
                 allowed: result.body.status.allowed,
                 verb,
-                resource: resource.kind.toLowerCase() + 's',
+                resource: pluralize(resource.kind.toLowerCase()),
                 name: resource.metadata?.name,
                 namespace: resource.metadata?.namespace,
             })

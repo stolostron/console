@@ -1,15 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import {
-    Badge,
-    Divider,
-    Select,
-    SelectGroup,
-    SelectOption,
-    SelectOptionObject,
-    SelectVariant,
-} from '@patternfly/react-core'
+import { Badge, Select, SelectGroup, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core'
 import { FilterIcon } from '@patternfly/react-icons'
 import { useState } from 'react'
 import { useRecoilState } from 'recoil'
@@ -29,6 +21,8 @@ const useStyles = makeStyles({
         marginLeft: '.5rem',
     },
 })
+
+const noViolation = 'no-violation'
 
 export default function CardViewToolbarFilter(props: {
     setViolationFilters: React.Dispatch<React.SetStateAction<string[]>>
@@ -53,102 +47,20 @@ export default function CardViewToolbarFilter(props: {
     }
 
     const selectOptions = [
-        <SelectGroup key={'cluster-violation'} label={'Cluster violation'}>
+        <SelectGroup key={'violation'} label={'Violations'}>
             <SelectOption
-                key={'cluster-violation'}
-                inputId={'cluster-violation'}
-                value={'cluster-violation'}
-                isChecked={selectedFilters.indexOf('cluster-violation') > -1}
+                key={'violation'}
+                inputId={'violation'}
+                value={'violation'}
+                isChecked={selectedFilters.indexOf('violation') > -1}
             >
                 <div className={classes.filterOption}>
                     {'With violation'}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
                         {
                             policySets.filter((policySet: PolicySet) => {
-                                if (policySet && policySet.status && policySet.status.results) {
-                                    return (
-                                        policySet.status.results.filter((result) =>
-                                            result.clusters?.some((cluster) => cluster.compliant === 'NonCompliant')
-                                        ).length > 0
-                                    )
-                                }
-                                return []
-                            }).length
-                        }
-                    </Badge>
-                </div>
-            </SelectOption>
-            <SelectOption
-                key={'cluster-no-violation'}
-                inputId={'cluster-no-violation'}
-                value={'cluster-no-violation'}
-                isChecked={selectedFilters.indexOf('cluster-no-violation') > -1}
-            >
-                <div className={classes.filterOption}>
-                    {'Without violation'}
-                    <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-                        {
-                            policySets.filter((policySet: PolicySet) => {
-                                if (policySet && policySet.status && policySet.status.results) {
-                                    return policySet.status.results.every((result) => {
-                                        return (
-                                            (result.clusters &&
-                                                result.clusters.every(
-                                                    (cluster) => cluster.compliant !== 'NonCompliant'
-                                                )) ??
-                                            false
-                                        )
-                                    })
-                                }
-                                return []
-                            }).length
-                        }
-                    </Badge>
-                </div>
-            </SelectOption>
-        </SelectGroup>,
-        <Divider component="li" key={'options-divider'} />,
-        <SelectGroup key={'policy-violation'} label={'Policy violation'}>
-            <SelectOption
-                key={'policy-violation'}
-                inputId={'policy-violation'}
-                value={'policy-violation'}
-                isChecked={selectedFilters.indexOf('policy-violation') > -1}
-            >
-                <div className={classes.filterOption}>
-                    {'With violation'}
-                    <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-                        {
-                            policySets.filter((policySet: PolicySet) => {
-                                if (policySet && policySet.status && policySet.status.results) {
-                                    return (
-                                        policySet.status.results.filter((result) => result.compliant === 'NonCompliant')
-                                            .length > 0
-                                    )
-                                }
-                                return []
-                            }).length
-                        }
-                    </Badge>
-                </div>
-            </SelectOption>
-            <SelectOption
-                key={'policy-no-violation'}
-                inputId={'policy-no-violation'}
-                value={'policy-no-violation'}
-                isChecked={selectedFilters.indexOf('policy-no-violation') > -1}
-            >
-                <div className={classes.filterOption}>
-                    {'Without violation'}
-                    <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
-                        {
-                            policySets.filter((policySet: PolicySet) => {
-                                if (policySet && policySet.status && policySet.status.results) {
-                                    return policySet.status.results.every((result) => {
-                                        return (
-                                            (result && result.compliant && result.compliant !== 'NonCompliant') ?? false
-                                        )
-                                    })
+                                if (policySet.status && policySet.status.compliant) {
+                                    return policySet.status.compliant === 'NonCompliant'
                                 }
                                 return false
                             }).length
@@ -157,20 +69,40 @@ export default function CardViewToolbarFilter(props: {
                 </div>
             </SelectOption>
             <SelectOption
-                key={'policy-unknown'}
-                inputId={'policy-unknown'}
-                value={'policy-unknown'}
-                isChecked={selectedFilters.indexOf('policy-unknown') > -1}
+                key={noViolation}
+                inputId={noViolation}
+                value={noViolation}
+                isChecked={selectedFilters.indexOf(noViolation) > -1}
             >
                 <div className={classes.filterOption}>
-                    {'Unknown'}
+                    {'Without violation'}
                     <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
                         {
                             policySets.filter((policySet: PolicySet) => {
-                                if (policySet && policySet.status && policySet.status.results) {
-                                    return policySet.status.results.filter((result) => !result.compliant).length > 0
+                                if (policySet.status && policySet.status.compliant) {
+                                    return policySet.status.compliant === 'Compliant'
                                 }
                                 return false
+                            }).length
+                        }
+                    </Badge>
+                </div>
+            </SelectOption>
+            <SelectOption
+                key={'no-status'}
+                inputId={'no-status'}
+                value={'no-status'}
+                isChecked={selectedFilters.indexOf('no-status') > -1}
+            >
+                <div className={classes.filterOption}>
+                    {'No status'}
+                    <Badge className={classes.filterOptionBadge} key={'option.option.value'} isRead>
+                        {
+                            policySets.filter((policySet: PolicySet) => {
+                                if (!policySet.status) {
+                                    return true
+                                }
+                                return policySet.status && policySet.status.compliant === undefined
                             }).length
                         }
                     </Badge>

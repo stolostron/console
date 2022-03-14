@@ -100,7 +100,10 @@ import {
     NamespaceApiVersion,
     NamespaceKind,
     Placement,
-    PlacementApiVersion,
+    PlacementApiVersionAlpha,
+    PlacementBinding,
+    PlacementBindingApiVersion,
+    PlacementBindingKind,
     PlacementDecision,
     PlacementDecisionApiVersion,
     PlacementDecisionKind,
@@ -108,9 +111,18 @@ import {
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
+    Policy,
+    PolicyApiVersion,
+    PolicyAutomation,
+    PolicyAutomationApiVersion,
+    PolicyAutomationKind,
+    PolicyKind,
     PolicyReport,
     PolicyReportApiVersion,
     PolicyReportKind,
+    PolicySet,
+    PolicySetApiVersion,
+    PolicySetKind,
     Secret,
     SecretApiVersion,
     SecretKind,
@@ -124,9 +136,6 @@ import {
     SubscriptionReportApiVersion,
     SubscriptionReportKind,
 } from './resources'
-import { PlacementBinding, PlacementBindingApiVersion, PlacementBindingKind } from './resources/placement-binding'
-import { Policy, PolicyApiVersion, PolicyKind } from './resources/policy'
-import { PolicySet, PolicySetApiVersion, PolicySetKind } from './resources/policy-set'
 
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -171,6 +180,7 @@ export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
 export const nmStateConfigState = AtomArray<CIM.NMStateK8sResource>()
 export const policiesState = AtomArray<Policy>()
+export const policyAutomationState = AtomArray<PolicyAutomation>()
 export const policySetsState = AtomArray<PolicySet>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
 export const placementsState = AtomArray<Placement>()
@@ -248,6 +258,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setPoliciesState] = useRecoilState(policiesState)
+    const [, setPolicyAutomationState] = useRecoilState(policyAutomationState)
     const [, setPolicySetsState] = useRecoilState(policySetsState)
     const [, setPlacementBindingsState] = useRecoilState(placementBindingsState)
     const [, setPlacementsState] = useRecoilState(placementsState)
@@ -269,7 +280,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
         addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
-        addSetter(PlacementApiVersion, PlacementKind, setPlacementsState)
+        addSetter(PlacementApiVersionAlpha, PlacementKind, setPlacementsState)
         addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
         addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
         addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
@@ -307,13 +318,61 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
         addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
         addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
+        addSetter(PolicyAutomationApiVersion, PolicyAutomationKind, setPolicyAutomationState)
         addSetter(PolicySetApiVersion, PolicySetKind, setPolicySetsState)
         addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
         addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
         addSetter(SecretApiVersion, SecretKind, setSecrets)
         addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
         return setters
-    }, [])
+    }, [
+        setAgentClusterInstalls,
+        setAgents,
+        setAnsibleJobs,
+        setAppProjectsState,
+        setApplicationSetsState,
+        setApplicationsState,
+        setArgoApplicationsState,
+        setArgoCDsState,
+        setBareMetalAssets,
+        setBareMetalHosts,
+        setCertificateSigningRequests,
+        setChannelsState,
+        setClusterClaims,
+        setClusterCurators,
+        setClusterDeployments,
+        setClusterImageSets,
+        setClusterManagementAddons,
+        setClusterPools,
+        setClusterProvisions,
+        setConfigMaps,
+        setDiscoveredClusters,
+        setDiscoveryConfigs,
+        setGitOpsClustersState,
+        setHelmReleases,
+        setInfraEnvironments,
+        setInfrastructure,
+        setMachinePools,
+        setManagedClusterAddons,
+        setManagedClusterInfos,
+        setManagedClusterSetBindings,
+        setManagedClusterSets,
+        setManagedClusters,
+        setMultiClusterHubs,
+        setNamespaces,
+        setPlacementBindingsState,
+        setPlacementDecisionsState,
+        setPlacementRulesState,
+        setPlacementsState,
+        setPoliciesState,
+        setPolicyAutomationState,
+        setPolicyReports,
+        setPolicySetsState,
+        setSecrets,
+        setSubmarinerConfigs,
+        setSubscriptionReportsState,
+        setSubscriptionsState,
+    ])
 
     useEffect(() => {
         const eventQueue: WatchEvent[] = []
@@ -413,7 +472,7 @@ export function LoadData(props: { children?: ReactNode }) {
             clearInterval(timeout)
             if (evtSource) evtSource.close()
         }
-    }, [])
+    }, [setSettings, setters])
 
     useEffect(() => {
         function checkLoggedIn() {
@@ -451,4 +510,9 @@ export function LoadData(props: { children?: ReactNode }) {
     if (loading || getBackendUrl() === undefined) return <LoadingPage />
 
     return <Fragment>{props.children}</Fragment>
+}
+
+export function usePolicies() {
+    const [policies] = useRecoilState(policiesState)
+    return policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'])
 }

@@ -1,24 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-    BrokerDefinition,
-    defaultBrokerName,
-    ManagedClusterAddOn,
-    ManagedClusterSetDefinition,
-    ResourceErrorCode,
-    submarinerBrokerNamespaceAnnotation,
-} from '../../../../../../resources'
-import {
-    AcmButton,
-    AcmEmptyState,
-    AcmExpandableCard,
-    AcmInlineProvider,
-    AcmInlineStatus,
-    AcmPageContent,
-    AcmTable,
-    StatusType,
-} from '@stolostron/ui-components'
-import {
     ButtonVariant,
     Flex,
     FlexItem,
@@ -31,17 +13,35 @@ import {
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
+import {
+    AcmButton,
+    AcmEmptyState,
+    AcmExpandableCard,
+    AcmInlineProvider,
+    AcmInlineStatus,
+    AcmPageContent,
+    AcmTable,
+    StatusType,
+} from '@stolostron/ui-components'
 import { useContext, useEffect, useState } from 'react'
-import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { submarinerConfigsState } from '../../../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { RbacButton, RbacDropdown } from '../../../../../../components/Rbac'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { deleteSubmarinerAddon } from '../../../../../../lib/delete-submariner'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
-import { canUser, rbacCreate, rbacGet, rbacDelete, rbacPatch } from '../../../../../../lib/rbac-util'
+import { canUser, rbacCreate, rbacDelete, rbacGet, rbacPatch } from '../../../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../../../NavigationPath'
+import {
+    BrokerDefinition,
+    defaultBrokerName,
+    ManagedClusterAddOn,
+    ManagedClusterSetDefinition,
+    ResourceErrorCode,
+    submarinerBrokerNamespaceAnnotation,
+} from '../../../../../../resources'
 import { EditSubmarinerConfigModal, EditSubmarinerConfigModalProps } from '../../components/EditSubmarinerConfigModal'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
@@ -122,7 +122,7 @@ export function ClusterSetSubmarinerPageContent() {
             create.abort()
             get.abort()
         }
-    }, [])
+    }, [clusterSet?.metadata?.annotations])
 
     const columns = [
         {
