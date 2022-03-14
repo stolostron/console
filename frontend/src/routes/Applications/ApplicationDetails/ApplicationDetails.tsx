@@ -110,22 +110,24 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
 
     let modalWarnings: string
 
-    let actions: any = [
+    const actions: any = [
         {
             id: 'search-application',
             text: t('Search application'),
             click: () => {
-                const [apigroup, apiversion] = applicationData?.application.app.apiVersion.split('/')
-                const searchLink = getSearchLink({
-                    properties: {
-                        name: applicationData?.application.app.metadata?.name,
-                        namespace: applicationData?.application.app.metadata?.namespace,
-                        kind: applicationData?.application.app.kind.toLowerCase(),
-                        apigroup,
-                        apiversion,
-                    },
-                })
-                history.push(searchLink)
+                if (applicationData) {
+                    const [apigroup, apiversion] = applicationData.application.app.apiVersion.split('/')
+                    const searchLink = getSearchLink({
+                        properties: {
+                            name: applicationData?.application.app.metadata?.name,
+                            namespace: applicationData?.application.app.metadata?.namespace,
+                            kind: applicationData?.application.app.kind.toLowerCase(),
+                            apigroup: apigroup as string,
+                            apiversion: apiversion as string,
+                        },
+                    })
+                    history.push(searchLink)
+                }
             },
         },
     ]
@@ -153,15 +155,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             click: () => {
                 const appChildResources =
                     selectedApp.kind === ApplicationKind
-                        ? getAppChildResources(
-                              selectedApp,
-                              t,
-                              applications,
-                              subscriptions,
-                              placementRules,
-                              channels,
-                              modalWarnings
-                          )
+                        ? getAppChildResources(selectedApp, applications, subscriptions, placementRules, channels)
                         : [[], []]
                 const appSetRelatedResources =
                     selectedApp.kind === ApplicationSetKind
@@ -184,8 +178,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         setModalProps({ open: false })
                     },
                     t,
+                    redirect: NavigationPath.applications,
                 })
-                history.push(NavigationPath.applications)
             },
         })
     }
@@ -386,30 +380,30 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             }
         >
             <DeleteResourceModal {...modalProps} />
-            <ApplicationContext.Provider value={{ actions }}>
-                <Suspense fallback={<Fragment />}>
-                    <Switch>
-                        <Route exact path={NavigationPath.applicationOverview}>
-                            <ApplicationOverviewPageContent applicationData={applicationData} />
-                        </Route>
-                        <Route exact path={NavigationPath.applicationTopology}>
-                            <ApplicationTopologyPageContent
-                                applicationData={applicationData}
-                                setActiveChannel={setActiveChannel}
-                            />
-                        </Route>
-                        <Route exact path={NavigationPath.applicationDetails}>
-                            <Redirect
-                                to={
-                                    NavigationPath.applicationOverview
-                                        .replace(':namespace', match.params.namespace as string)
-                                        .replace(':name', match.params.name as string) + location.search
-                                }
-                            />
-                        </Route>
-                    </Switch>
-                </Suspense>
-            </ApplicationContext.Provider>
+            {/* <ApplicationContext.Provider value={{ actions }}> */}
+            <Suspense fallback={<Fragment />}>
+                <Switch>
+                    <Route exact path={NavigationPath.applicationOverview}>
+                        <ApplicationOverviewPageContent applicationData={applicationData} />
+                    </Route>
+                    <Route exact path={NavigationPath.applicationTopology}>
+                        <ApplicationTopologyPageContent
+                            applicationData={applicationData}
+                            setActiveChannel={setActiveChannel}
+                        />
+                    </Route>
+                    <Route exact path={NavigationPath.applicationDetails}>
+                        <Redirect
+                            to={
+                                NavigationPath.applicationOverview
+                                    .replace(':namespace', match.params.namespace as string)
+                                    .replace(':name', match.params.name as string) + location.search
+                            }
+                        />
+                    </Route>
+                </Switch>
+            </Suspense>
+            {/* </ApplicationContext.Provider> */}
         </AcmPage>
     )
 }

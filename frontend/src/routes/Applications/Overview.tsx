@@ -37,11 +37,7 @@ import {
     ArgoApplicationKind,
     Channel,
     IResource,
-    PlacementRuleApiVersion,
-    PlacementRuleKind,
     Subscription,
-    SubscriptionApiVersion,
-    SubscriptionKind,
 } from '../../resources'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
@@ -52,6 +48,7 @@ import {
     getAppSetRelatedResources,
     getSearchLink,
     getSubscriptionsFromAnnotation,
+    hostingSubAnnotationStr,
     isArgoApp,
 } from './helpers/resource-helper'
 
@@ -524,6 +521,7 @@ export default function ApplicationsOverview() {
     const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
     const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
     let modalWarnings: string
+
     const rowActionResolver = (item: IResource) => {
         const actions: IAcmRowAction<any>[] = [
             {
@@ -572,18 +570,19 @@ export default function ApplicationsOverview() {
                 click: () => {
                     const appChildResources =
                         item.kind === ApplicationKind
-                            ? getAppChildResources(
-                                  item,
-                                  t,
-                                  applications,
-                                  subscriptions,
-                                  placementRules,
-                                  channels,
-                                  modalWarnings
-                              )
+                            ? getAppChildResources(item, applications, subscriptions, placementRules, channels)
                             : [[], []]
                     const appSetRelatedResources =
                         item.kind === ApplicationSetKind ? getAppSetRelatedResources(item, applicationSets) : ['', []]
+                    const hostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
+                    if (hostingSubAnnotation) {
+                        const subName = hostingSubAnnotation.split('/')[1]
+                        modalWarnings = t(
+                            'This application is deployed by the subscription {{subName}}. The delete action might be reverted when resources are reconciled with the resource repository.',
+                            { subName }
+                        )
+                        return [[], []]
+                    }
                     setModalProps({
                         open: true,
                         canRemove: item.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,

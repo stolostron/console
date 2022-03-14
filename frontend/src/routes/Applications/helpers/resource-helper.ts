@@ -30,7 +30,7 @@ const localSubSuffixStr = '-local'
 const localClusterStr = 'local-cluster'
 const appSetPlacementStr =
     'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
-const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
+export const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
 
 export function isArgoApp(item: IResource) {
@@ -302,24 +302,11 @@ export const getAppSetRelatedResources = (appSet: IResource, applicationSets: Ap
 
 export const getAppChildResources = (
     app: IResource,
-    t: Function,
     applications: Application[],
     subscriptions: Subscription[],
     placementRules: PlacementRule[],
-    channels: Channel[],
-    modalWarnings: string
+    channels: Channel[]
 ) => {
-    const hostingSubAnnotation = getAnnotation(app, hostingSubAnnotationStr)
-
-    if (hostingSubAnnotation) {
-        const subName = hostingSubAnnotation.split('/')[1]
-        modalWarnings = t(
-            'This application is deployed by the subscription {{subName}}. The delete action might be reverted when resources are reconciled with the resource repository.',
-            { subName }
-        )
-        return [[], []]
-    }
-
     const subAnnotationArray = getSubscriptionsFromAnnotation(app)
     const removableSubs: any[] = []
     const children: any[] = []

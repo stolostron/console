@@ -9,6 +9,7 @@ import React, { ReactNode, useState } from 'react'
 import { deleteApplication } from '../../../lib/delete-application'
 import { ApplicationKind, ApplicationSetKind, IResource } from '../../../resources'
 import '../css/DeleteResourceModal.css'
+import { useHistory } from 'react-router-dom'
 
 export interface IDeleteResourceModalProps {
     open: boolean
@@ -25,11 +26,13 @@ export interface IDeleteResourceModalProps {
     appSetApps?: string[]
     close: () => void
     t: TFunction
+    redirect?: string
 }
 
 export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: false }) {
     const [removeAppResources, setRemoveAppResources] = useState<boolean>(false)
     const [removeAppSetResource, setRemoveAppSetResource] = useState<boolean>(false)
+    const history = useHistory()
 
     if (props.open === false) {
         return <></>
@@ -45,6 +48,10 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
 
     const handleSubmit = () => {
         props.close()
+        if (props.redirect) {
+            history.push(props.redirect)
+        }
+
         if (props.resource.kind === ApplicationKind) {
             return deleteApplication(props.resource, removeAppResources ? props.selected : [])
         }

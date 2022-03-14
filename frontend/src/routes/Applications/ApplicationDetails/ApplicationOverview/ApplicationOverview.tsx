@@ -258,7 +258,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             const allSubscriptions = _.get(applicationData.application, 'allSubscriptions', [])
             subsList = applicationData.application.allSubscriptions
             disableBtn = subsList && subsList.length > 0 ? false : true
-            debugger
 
             let lastSynced = ''
             allSubscriptions.forEach((subs: Subscription) => {
