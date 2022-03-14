@@ -64,6 +64,8 @@ export const ApplicationContext = createContext<{
     setActions: () => {},
 })
 
+const namespaceString = ':namespace'
+
 export const useApplicationPageContext = (ActionList: ElementType) => {
     const { setActions } = useContext(ApplicationContext)
 
@@ -87,7 +89,6 @@ export type ApplicationDataType = {
 
 export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ name: string; namespace: string }>) {
     const location = useLocation()
-    // const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
     const [applicationSets] = useRecoilState(applicationSetsState)
@@ -140,7 +141,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             click: () => {
                 history.push(
                     NavigationPath.editApplicationSubscription
-                        .replace(':namespace', selectedApp.metadata?.namespace as string)
+                        .replace(namespaceString, selectedApp.metadata?.namespace as string)
                         .replace(':name', selectedApp.metadata?.name as string)
                 )
             },
@@ -173,7 +174,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                     appSetPlacement: appSetRelatedResources[0],
                     appSetsSharingPlacement: appSetRelatedResources[1],
                     appKind: selectedApp.kind,
-                    appSetApps: getAppSetApps(argoApplications, selectedApp.metadata?.name!),
+                    appSetApps: getAppSetApps(argoApplications, selectedApp?.metadata?.name!),
                     close: () => {
                         setModalProps({ open: false })
                     },
@@ -329,14 +330,14 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 isActive={
                                     location.pathname ===
                                     NavigationPath.applicationOverview
-                                        .replace(':namespace', match.params.namespace as string)
+                                        .replace(namespaceString, match.params.namespace as string)
                                         .replace(':name', match.params.name as string)
                                 }
                             >
                                 <Link
                                     to={
                                         NavigationPath.applicationOverview
-                                            .replace(':namespace', match.params.namespace as string)
+                                            .replace(namespaceString, match.params.namespace as string)
                                             .replace(':name', match.params.name as string) + location.search
                                     }
                                 >
@@ -347,14 +348,14 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 isActive={
                                     location.pathname ===
                                     NavigationPath.applicationTopology
-                                        .replace(':namespace', match.params.namespace as string)
+                                        .replace(namespaceString, match.params.namespace as string)
                                         .replace(':name', match.params.name as string)
                                 }
                             >
                                 <Link
                                     to={
                                         NavigationPath.applicationTopology
-                                            .replace(':namespace', match.params.namespace as string)
+                                            .replace(namespaceString, match.params.namespace as string)
                                             .replace(':name', match.params.name as string) + location.search
                                     }
                                 >

@@ -282,7 +282,9 @@ export const getAppSetRelatedResources = (appSet: IResource, applicationSets: Ap
         ? _.get(currentAppSetGenerators[0], appSetPlacementStr, '')
         : undefined
 
-    if (!currentAppSetPlacement) return ['', []]
+    if (!currentAppSetPlacement) {
+        return ['', []]
+    }
 
     applicationSets.forEach((item) => {
         const appSetGenerators = item.spec.generators
