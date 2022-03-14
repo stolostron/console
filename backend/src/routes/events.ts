@@ -75,6 +75,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'ManagedCluster', apiVersion: 'cluster.open-cluster-management.io/v1' },
     { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1alpha1' },
+    { kind: 'PlacementDecision', apiVersion: 'cluster.open-cluster-management.io/v1alpha1' },
     { kind: 'PlacementDecision', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ManagedClusterSetBinding', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ManagedClusterSet', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
