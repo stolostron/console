@@ -65,6 +65,7 @@ export const ApplicationContext = createContext<{
 })
 
 const namespaceString = ':namespace'
+const nameString = ':name'
 
 export const useApplicationPageContext = (ActionList: ElementType) => {
     const { setActions } = useContext(ApplicationContext)
@@ -141,8 +142,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             click: () => {
                 history.push(
                     NavigationPath.editApplicationSubscription
-                        .replace(namespaceString, selectedApp.metadata?.namespace as string)
-                        .replace(':name', selectedApp.metadata?.name as string)
+                        .replace(namespaceString, selectedApp.metadata?.namespace)
+                        .replace(nameString, selectedApp.metadata?.name)
                 )
             },
             rbac: [
@@ -174,7 +175,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                     appSetPlacement: appSetRelatedResources[0],
                     appSetsSharingPlacement: appSetRelatedResources[1],
                     appKind: selectedApp.kind,
-                    appSetApps: getAppSetApps(argoApplications, selectedApp?.metadata?.name!),
+                    appSetApps: getAppSetApps(argoApplications, selectedApp.metadata?.name!),
                     close: () => {
                         setModalProps({ open: false })
                     },
@@ -330,15 +331,15 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 isActive={
                                     location.pathname ===
                                     NavigationPath.applicationOverview
-                                        .replace(namespaceString, match.params.namespace as string)
-                                        .replace(':name', match.params.name as string)
+                                        .replace(namespaceString, match.params.namespace)
+                                        .replace(nameString, match.params.name)
                                 }
                             >
                                 <Link
                                     to={
                                         NavigationPath.applicationOverview
-                                            .replace(namespaceString, match.params.namespace as string)
-                                            .replace(':name', match.params.name as string) + location.search
+                                            .replace(namespaceString, match.params.namespace)
+                                            .replace(nameString, match.params.name) + location.search
                                     }
                                 >
                                     {t('Overview')}
@@ -348,15 +349,15 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 isActive={
                                     location.pathname ===
                                     NavigationPath.applicationTopology
-                                        .replace(namespaceString, match.params.namespace as string)
-                                        .replace(':name', match.params.name as string)
+                                        .replace(namespaceString, match.params.namespace)
+                                        .replace(nameString, match.params.name)
                                 }
                             >
                                 <Link
                                     to={
                                         NavigationPath.applicationTopology
-                                            .replace(namespaceString, match.params.namespace as string)
-                                            .replace(':name', match.params.name as string) + location.search
+                                            .replace(namespaceString, match.params.namespace)
+                                            .replace(nameString, match.params.name) + location.search
                                     }
                                 >
                                     {t('Topology')}
@@ -381,7 +382,6 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             }
         >
             <DeleteResourceModal {...modalProps} />
-            {/* <ApplicationContext.Provider value={{ actions }}> */}
             <Suspense fallback={<Fragment />}>
                 <Switch>
                     <Route exact path={NavigationPath.applicationOverview}>
@@ -397,14 +397,13 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         <Redirect
                             to={
                                 NavigationPath.applicationOverview
-                                    .replace(':namespace', match.params.namespace as string)
-                                    .replace(':name', match.params.name as string) + location.search
+                                    .replace(namespaceString, match.params.namespace)
+                                    .replace(nameString, match.params.name) + location.search
                             }
                         />
                     </Route>
                 </Switch>
             </Suspense>
-            {/* </ApplicationContext.Provider> */}
         </AcmPage>
     )
 }
