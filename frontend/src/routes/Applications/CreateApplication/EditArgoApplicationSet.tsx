@@ -90,7 +90,7 @@ export function EditArgoApplicationSet() {
                 )
         )
         setExistingResources([applicationSet, ...applicationSetPlacements])
-    }, [history, params.name, params.namespace])
+    }, [applicationSets, history, params.name, params.namespace, placementDecisions, placements])
 
     if (existingResources === undefined) {
         return <LoadingPage />
