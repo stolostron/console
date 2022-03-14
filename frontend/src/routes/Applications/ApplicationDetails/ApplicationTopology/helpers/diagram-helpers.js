@@ -1734,7 +1734,7 @@ export const setApplicationDeployStatus = (node, details, t) => {
             getNodePropery(
                 node,
                 ['specs', 'raw', 'spec', 'selector'],
-                t('This application has no subscription match selector (spec.selector.matchExpressions)'),
+                t('Subscription Selector'),
                 t('This application has no subscription match selector (spec.selector.matchExpressions)'),
                 true
             )

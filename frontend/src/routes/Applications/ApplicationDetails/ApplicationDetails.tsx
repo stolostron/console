@@ -133,7 +133,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                     const managedClusters = map['managedClusters']
 
                     // get application object from recoil states
-                    const application = getApplication(
+                    const application = await getApplication(
                         match.params.namespace,
                         match.params.name,
                         activeChannel,

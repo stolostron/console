@@ -62,7 +62,8 @@ export function getAppSetTopology(application) {
 
     const clusterParentId = placement ? placementId : appId
     const clusterId = addClusters(clusterParentId, new Set(), null, clusterNames, clusterNames, links, nodes)
-    const resources = appSetApps.length > 0 ? get(appSetApps[0], 'status.resources', []) : [] // what if first app doesn't have resources?
+    const firstAppWithResourceStatus = appSetApps.find((app) => app.status.resources !== undefined)
+    const resources = appSetApps.length > 0 ? get(firstAppWithResourceStatus, 'status.resources', []) : []
 
     resources.forEach((deployable) => {
         const { name: deployableName, namespace: deployableNamespace, kind, version, group } = deployable

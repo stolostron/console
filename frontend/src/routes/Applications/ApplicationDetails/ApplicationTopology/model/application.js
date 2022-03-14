@@ -3,7 +3,7 @@
 import { get } from 'lodash'
 import { getSubscriptionApplication } from './applicationSubscription'
 
-export const getApplication = (namespace, name, selectedChannel, recoilStates, cluster, apiversion) => {
+export const getApplication = async (namespace, name, selectedChannel, recoilStates, cluster, apiversion) => {
     let app
     let model
     let placement
@@ -68,7 +68,7 @@ export const getApplication = (namespace, name, selectedChannel, recoilStates, c
             return getAppSetApplication(model, app, recoilStates)
         }
 
-        return getSubscriptionApplication(model, app, selectedChannel, recoilStates, cluster, apiversion)
+        return await getSubscriptionApplication(model, app, selectedChannel, recoilStates, cluster, apiversion)
     }
     return model
 }
