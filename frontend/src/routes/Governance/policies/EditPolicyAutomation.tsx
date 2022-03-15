@@ -37,13 +37,13 @@ export function EditPolicyAutomation() {
         [secrets]
     )
 
-    // TODO If no credentials then wizard needs to have link to creds page
     return (
         <PolicyAutomationWizard
             title={t('Edit policy automation')}
             editMode={EditMode.Edit}
             policy={currentPolicy ?? {}}
             credentials={credentials}
+            createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
             resource={currentPolicyAutomation ?? {}}
             onCancel={() => history.push(NavigationPath.policies)}
             onSubmit={(data) => {
@@ -60,7 +60,6 @@ export function EditPolicyAutomation() {
                     history.push(window.history?.state?.state?.from ?? NavigationPath.policies)
                 })
             }}
-            // TODO credential should be Secret type not IResource
             getAnsibleJobsCallback={async (credential: any) => {
                 const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
                 const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')
