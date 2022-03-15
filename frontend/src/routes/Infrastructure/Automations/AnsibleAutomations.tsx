@@ -326,7 +326,7 @@ function AnsibleJobTemplateTable() {
                 emptyState={
                     <AcmEmptyState
                         title={t('template.emptyStateHeader')}
-                        message={<Trans i18nKey={t('template.emptyStateMsg')} components={{ bold: <strong /> }} />}
+                        message={<Trans i18nKey={'template.emptyStateMsg'} components={{ bold: <strong /> }} />}
                         action={
                             <AcmButton
                                 role="link"
