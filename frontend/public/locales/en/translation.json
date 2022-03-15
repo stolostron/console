@@ -1615,7 +1615,6 @@
     "policy.violations_plural": "{{count}} policies with violations",
     "Ports": "Ports",
     "preview.clusterPools": "<bold>Technology Preview</bold>: For more information, <a>view documentation</a> on Cluster pools",
-    "preview.clusterSets": "<bold>Technology Preview</bold>: For more information, <a>view documentation</a> on Cluster sets",
     "preview.machinePools": "<bold>Technology Preview</bold>: For more information, <a>view documentation</a> on Machine pools",
     "Project ID": "Project ID",
     "prop.details.section": "Details",
