@@ -10,7 +10,6 @@ import { NavigationPath } from '../../../NavigationPath'
 import {
     IResource,
     listAnsibleTowerJobs,
-    PolicyAutomation,
     PolicyAutomationApiVersion,
     PolicyAutomationKind,
     reconcileResources,
@@ -37,27 +36,25 @@ export function CreatePolicyAutomation() {
         [secrets]
     )
 
-    // TODO If no credentials then wizard needs to have link to creds page
     return (
         <PolicyAutomationWizard
             title={t('Create policy automation')}
             policy={currentPolicy ?? {}}
             credentials={credentials}
-            resource={
-                {
-                    kind: PolicyAutomationKind,
-                    apiVersion: PolicyAutomationApiVersion,
-                    metadata: {
-                        name: `${currentPolicy?.metadata?.name ?? ''}-policy-automation`,
-                        namespace: currentPolicy?.metadata?.namespace ?? '',
-                    },
-                    spec: {
-                        policyRef: currentPolicy?.metadata?.name ?? '',
-                        mode: 'once',
-                        automationDef: { name: '', secret: '', type: 'AnsibleJob' },
-                    },
-                } as PolicyAutomation
-            }
+            createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
+            resource={{
+                kind: PolicyAutomationKind,
+                apiVersion: PolicyAutomationApiVersion,
+                metadata: {
+                    name: `${currentPolicy?.metadata?.name ?? ''}-policy-automation`,
+                    namespace: currentPolicy?.metadata?.namespace ?? '',
+                },
+                spec: {
+                    policyRef: currentPolicy?.metadata?.name ?? '',
+                    mode: 'once',
+                    automationDef: { name: '', secret: '', type: 'AnsibleJob' },
+                },
+            }}
             onCancel={() => history.push(NavigationPath.policies)}
             onSubmit={(data) => {
                 const resource = data as IResource
@@ -73,7 +70,6 @@ export function CreatePolicyAutomation() {
                     history.push(window.history?.state?.state?.from ?? NavigationPath.policies)
                 })
             }}
-            // TODO credential should be Secret type not IResource
             getAnsibleJobsCallback={async (credential: any) => {
                 const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
                 const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')
