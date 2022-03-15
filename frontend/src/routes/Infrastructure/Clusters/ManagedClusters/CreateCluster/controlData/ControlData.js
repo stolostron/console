@@ -38,7 +38,13 @@ export const getActiveCardID = (control, fetchData = {}) => {
     return null
 }
 
-export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate = false, snoFeatureGate = false) => [
+export const getControlData = (
+    warning,
+    onControlSelect,
+    awsPrivateFeatureGate = false,
+    snoFeatureGate = false,
+    includeKlusterletAddonConfig = true
+) => [
     ///////////////////////  container platform  /////////////////////////////////////
     {
         id: 'distStep',
@@ -54,6 +60,11 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
         id: 'warning',
         type: 'custom',
         component: warning,
+    },
+    {
+        id: 'includeKlusterletAddonConfig',
+        type: 'hidden',
+        active: includeKlusterletAddonConfig,
     },
     ///////////////////////  cloud  /////////////////////////////////////
     {

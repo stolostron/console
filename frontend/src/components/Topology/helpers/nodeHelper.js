@@ -329,7 +329,6 @@ export default class NodeHelper {
     createClusterCountText = (draw, nodes, newNodes) => {
         let clusterNode = nodes.filter((d) => {
             const { layout } = d
-            console.log(layout.type)
             return layout.type === 'cluster'
         })
 
@@ -337,7 +336,6 @@ export default class NodeHelper {
         if (clusterNode.empty()) {
             clusterNode = newNodes.filter((d) => {
                 const { layout } = d
-                console.log(layout.type)
                 return layout.type === 'cluster'
             })
         }

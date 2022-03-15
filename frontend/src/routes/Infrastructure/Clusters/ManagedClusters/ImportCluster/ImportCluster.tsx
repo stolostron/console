@@ -271,7 +271,17 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
         }
         setImportResources(resources)
         onFormChange(resources)
-    }, [importMode, discovered, clusterName, additionalLabels, kubeConfig, managedClusterSet, token, server, isACMAvailable])
+    }, [
+        importMode,
+        discovered,
+        clusterName,
+        additionalLabels,
+        kubeConfig,
+        managedClusterSet,
+        token,
+        server,
+        isACMAvailable,
+    ])
 
     const onReset = () => {
         setClusterName('')

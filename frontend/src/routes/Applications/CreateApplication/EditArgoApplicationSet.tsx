@@ -76,8 +76,6 @@ export function EditArgoApplicationSet() {
                     resourceMatchesSelector(placementDecision, generator.clusterDecisionResource?.labelSelector ?? {})
                 )
         )
-        console.log(placementDecisions)
-        console.log(applicationSetPlacementDecisions)
 
         const applicationSetPlacements = placements.filter(
             (placement) =>

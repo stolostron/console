@@ -80,8 +80,6 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
             ? props.t('Remove Application related resources')
             : props.t('Remove ApplicationSet related resources')
 
-        console.log(appTypeMsg)
-
         return (
             <React.Fragment>
                 <div className="remove-app-modal-content-text">
