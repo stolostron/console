@@ -114,9 +114,11 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                     <div>
                                         &nbsp;
                                         <AcmAlert
-                                            message={t('clusterClaim.warning')}
+                                            isInline={true}
                                             noClose={true}
                                             variant="warning"
+                                            title={t('no.running.clusters.in.pool')}
+                                            message={t('clusterClaim.warning')}
                                         />
                                     </div>
                                 )}
@@ -146,16 +148,16 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                 const request = createResource(clusterClaim!)
                                                 request.promise
                                                     .then(async (result) => {
+                                                        if (props.clusterPool?.status?.ready === 0) {
+                                                            props.onClose?.()
+                                                            return resolve()
+                                                        }
                                                         const updatedClaim = (await pollClaim(result)) as ClusterClaim
                                                         if (updatedClaim) {
                                                             setClusterClaim(updatedClaim)
                                                             setClaimed(true)
                                                         } else {
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: t('error'),
-                                                                message: t('clusterClaim.create.timeOut'),
-                                                            })
+                                                            props.onClose?.()
                                                         }
                                                         return resolve()
                                                     })

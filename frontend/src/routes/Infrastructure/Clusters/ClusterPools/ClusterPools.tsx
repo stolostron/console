@@ -267,7 +267,7 @@ export function ClusterPoolsTable(props: {
                                                     <div style={{ marginTop: '16px', marginBottom: '16px' }}>
                                                         <TextContent>
                                                             <Text component={TextVariants.h3}>
-                                                                {t('clusterClaims')}
+                                                                {t('pending.cluster.claims')}
                                                             </Text>
                                                         </TextContent>
                                                         <ClusterPoolClaimsTable claims={clusterPoolClaims} />
@@ -556,8 +556,57 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
     const { t } = useTranslation()
     const classes = useStyles()
     const alertContext = useContext(AcmAlertContext)
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<ClusterClaim> | { open: false }>({
+        open: false,
+    })
+
+    function deleteModal(claim: ClusterClaim) {
+        setModalProps({
+            open: true,
+            title: t('clusterClaim.delete'),
+            action: t('delete'),
+            processing: t('deleting'),
+            resources: [claim],
+            description: t('bulk.message.delete.claim'),
+            keyFn: (claim) => claim.metadata.name as string,
+            actionFn: (claim) => deleteClaim(claim),
+            close: () => setModalProps({ open: false }),
+            isDanger: true,
+            icon: 'warning',
+            confirmText: claim.metadata.name!,
+            isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+        })
+    }
+
+    function deleteClaim(claim: ClusterClaim) {
+        return {
+            promise: new Promise(async (resolve, reject) => {
+                const request = deleteResource(claim)
+                request.promise
+                    .then(async () => {
+                        return resolve(request)
+                    })
+                    .catch((e) => {
+                        if (e instanceof Error) {
+                            alertContext.addAlert({
+                                type: 'danger',
+                                title: t('request.failed'),
+                                message: e.message,
+                            })
+                            reject(e)
+                            return
+                        }
+                    })
+            }),
+            abort: () => {
+                setModalProps({ open: false })
+            },
+        }
+    }
+
     return (
         <div className={classes.table}>
+            <BulkActionModel<ClusterClaim> {...modalProps} />
             <AcmTable<ClusterClaim>
                 noBorders
                 keyFn={(claim: ClusterClaim) => claim.metadata.name!}
@@ -585,9 +634,8 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
                         ),
                     },
                     {
-                        header: t('table.userIdentityStamp'),
+                        header: t('table.createdBy'),
                         sort: 'hive',
-                        search: 'status',
                         cell: (claim: ClusterClaim) => {
                             return (
                                 <div>
@@ -606,25 +654,8 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
                                     variant="link"
                                     style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
                                     label={t('clusterClaim.delete')}
-                                    onClick={async () => {
-                                        alertContext.clearAlerts()
-                                        return new Promise(async (resolve, reject) => {
-                                            const request = deleteResource(claim)
-                                            request.promise
-                                                .then(async () => {
-                                                    return resolve()
-                                                })
-                                                .catch((e) => {
-                                                    if (e instanceof Error) {
-                                                        alertContext.addAlert({
-                                                            type: 'danger',
-                                                            title: t('request.failed'),
-                                                            message: e.message,
-                                                        })
-                                                        reject(e)
-                                                    }
-                                                })
-                                        })
+                                    onClick={() => {
+                                        deleteModal(claim)
                                     }}
                                 >
                                     {t('clusterClaim.delete')}
