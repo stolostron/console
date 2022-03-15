@@ -49,7 +49,7 @@ import {
     getSearchLink,
     getSubscriptionsFromAnnotation,
     hostingSubAnnotationStr,
-    isArgoApp,
+    isResourceTypeOf,
 } from './helpers/resource-helper'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
@@ -522,24 +522,55 @@ export default function ApplicationsOverview() {
     const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
     let modalWarnings: string
 
-    const rowActionResolver = (item: IResource) => {
-        const actions: IAcmRowAction<any>[] = [
-            {
+    const rowActionResolver = (resource: IResource) => {
+        const actions: IAcmRowAction<any>[] = []
+
+        if (isResourceTypeOf(resource, ApplicationDefinition)) {
+            actions.push({
                 id: 'viewApplication',
                 title: t('View application'),
-                click: () => {},
-            },
-        ]
-
-        if (!isArgoApp(item)) {
+                click: () => {
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', resource.metadata?.namespace as string)
+                            .replace(':name', resource.metadata?.name as string)
+                    )
+                },
+            })
             actions.push({
                 id: 'editApplication',
                 title: t('Edit application'),
                 click: () => {
                     history.push(
                         NavigationPath.editApplicationSubscription
-                            .replace(':namespace', item.metadata?.namespace as string)
-                            .replace(':name', item.metadata?.name as string)
+                            .replace(':namespace', resource.metadata?.namespace as string)
+                            .replace(':name', resource.metadata?.name as string)
+                    )
+                },
+            })
+        }
+
+        if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
+            actions.push({
+                id: 'viewApplication',
+                title: t('View application'),
+                click: () => {
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', resource.metadata?.namespace as string)
+                            .replace(':name', resource.metadata?.name as string) +
+                            '?apiVersion=applicationset.argoproj.io'
+                    )
+                },
+            })
+            actions.push({
+                id: 'editApplication',
+                title: t('Edit application'),
+                click: () => {
+                    history.push(
+                        NavigationPath.editApplicationArgo
+                            .replace(':namespace', resource.metadata?.namespace as string)
+                            .replace(':name', resource.metadata?.name as string)
                     )
                 },
             })
@@ -549,12 +580,12 @@ export default function ApplicationsOverview() {
             id: 'searchApplication',
             title: t('Search application'),
             click: () => {
-                const [apigroup, apiversion] = item.apiVersion.split('/')
+                const [apigroup, apiversion] = resource.apiVersion.split('/')
                 const searchLink = getSearchLink({
                     properties: {
-                        name: item.metadata?.name,
-                        namespace: item.metadata?.namespace,
-                        kind: item.kind.toLowerCase(),
+                        name: resource.metadata?.name,
+                        namespace: resource.metadata?.namespace,
+                        kind: resource.kind.toLowerCase(),
                         apigroup,
                         apiversion,
                     },
@@ -563,18 +594,20 @@ export default function ApplicationsOverview() {
             },
         })
 
-        if (!isArgoApp(item)) {
+        if (isResourceTypeOf(resource, ApplicationDefinition)) {
             actions.push({
                 id: 'deleteApplication',
                 title: t('Delete application'),
                 click: () => {
                     const appChildResources =
-                        item.kind === ApplicationKind
-                            ? getAppChildResources(item, applications, subscriptions, placementRules, channels)
+                        resource.kind === ApplicationKind
+                            ? getAppChildResources(resource, applications, subscriptions, placementRules, channels)
                             : [[], []]
                     const appSetRelatedResources =
-                        item.kind === ApplicationSetKind ? getAppSetRelatedResources(item, applicationSets) : ['', []]
-                    const hostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
+                        resource.kind === ApplicationSetKind
+                            ? getAppSetRelatedResources(resource, applicationSets)
+                            : ['', []]
+                    const hostingSubAnnotation = getAnnotation(resource, hostingSubAnnotationStr)
                     if (hostingSubAnnotation) {
                         const subName = hostingSubAnnotation.split('/')[1]
                         modalWarnings = t(
@@ -584,8 +617,9 @@ export default function ApplicationsOverview() {
                     }
                     setModalProps({
                         open: true,
-                        canRemove: item.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
-                        resource: item,
+                        canRemove:
+                            resource.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
+                        resource: resource,
                         errors: undefined,
                         warnings: modalWarnings,
                         loading: false,
@@ -593,15 +627,15 @@ export default function ApplicationsOverview() {
                         shared: appChildResources[1], // shared children
                         appSetPlacement: appSetRelatedResources[0],
                         appSetsSharingPlacement: appSetRelatedResources[1],
-                        appKind: item.kind,
-                        appSetApps: getAppSetApps(argoApplications, item.metadata?.name!),
+                        appKind: resource.kind,
+                        appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
                         close: () => {
                             setModalProps({ open: false })
                         },
                         t,
                     })
                 },
-                isDisabled: item.kind === ApplicationSetKind ? !canDeleteApplicationSet : !canDeleteApplication,
+                isDisabled: resource.kind === ApplicationSetKind ? !canDeleteApplicationSet : !canDeleteApplication,
             })
         }
         return actions
