@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
+import {
+    AcmActionGroup,
+    AcmPage,
+    AcmPageHeader,
+    AcmRoute,
+    AcmSecondaryNav,
+    AcmSecondaryNavItem,
+} from '@stolostron/ui-components'
 import {
     createContext,
     ElementType,
@@ -13,7 +20,7 @@ import {
     useRef,
     useState,
 } from 'react'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
+import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilCallback, useRecoilState } from 'recoil'
 import {
     acmRouteState,
@@ -28,8 +35,20 @@ import {
     subscriptionReportsState,
     subscriptionsState,
 } from '../../../atoms'
+import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { canUser, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
+import {
+    Application,
+    ApplicationDefinition,
+    ApplicationKind,
+    ApplicationSetDefinition,
+    ApplicationSetKind,
+} from '../../../resources'
+import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
+import { getAppChildResources, getAppSetRelatedResources, getSearchLink } from '../helpers/resource-helper'
+import { getAppSetApps } from '../Overview'
 import { ApplicationOverviewPageContent } from './ApplicationOverview/ApplicationOverview'
 import { ApplicationTopologyPageContent } from './ApplicationTopology/ApplicationTopology'
 import { getApplication } from './ApplicationTopology/model/application'
@@ -44,6 +63,9 @@ export const ApplicationContext = createContext<{
     actions: null,
     setActions: () => {},
 })
+
+const namespaceString = ':namespace'
+const nameString = ':name'
 
 export const useApplicationPageContext = (ActionList: ElementType) => {
     const { setActions } = useContext(ApplicationContext)
@@ -68,14 +90,118 @@ export type ApplicationDataType = {
 
 export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ name: string; namespace: string }>) {
     const location = useLocation()
-    const [actions, setActions] = useState<undefined | ReactNode>(undefined)
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
+    const [applicationSets] = useRecoilState(applicationSetsState)
+    const [applications] = useRecoilState(applicationsState)
+    const [argoApplications] = useRecoilState(argoApplicationsState)
+    const [subscriptions] = useRecoilState(subscriptionsState)
+    const [channels] = useRecoilState(channelsState)
+    const [placementRules] = useRecoilState(placementRulesState)
     const [activeChannel, setActiveChannel] = useState<string>()
     const [applicationData, setApplicationData] = useState<ApplicationDataType>()
+    const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
+        open: false,
+    })
+    const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
+    const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
+
     const lastRefreshRef = useRef<any>()
+    const history = useHistory()
+    const isArgoApp = applicationData?.application.isArgoApp
+
+    let modalWarnings: string
+
+    const actions: any = [
+        {
+            id: 'search-application',
+            text: t('Search application'),
+            click: () => {
+                if (applicationData) {
+                    const [apigroup, apiversion] = applicationData.application.app.apiVersion.split('/')
+                    const searchLink = getSearchLink({
+                        properties: {
+                            name: applicationData?.application.app.metadata?.name,
+                            namespace: applicationData?.application.app.metadata?.namespace,
+                            kind: applicationData?.application.app.kind.toLowerCase(),
+                            apigroup: apigroup as string,
+                            apiversion: apiversion as string,
+                        },
+                    })
+                    history.push(searchLink)
+                }
+            },
+        },
+    ]
+
+    if (!isArgoApp) {
+        const selectedApp = applicationData?.application.app
+        actions.push({
+            id: 'edit-application',
+            text: t('Edit application'),
+            click: () => {
+                history.push(
+                    NavigationPath.editApplicationSubscription
+                        .replace(namespaceString, selectedApp.metadata?.namespace)
+                        .replace(nameString, selectedApp.metadata?.name)
+                )
+            },
+            rbac: [
+                selectedApp &&
+                    rbacPatch(selectedApp, selectedApp?.metadata.namespace ?? '', selectedApp?.metadata.name ?? ''),
+            ],
+        })
+        actions.push({
+            id: 'delete-application',
+            text: t('Delete application'),
+            click: () => {
+                const appChildResources =
+                    selectedApp.kind === ApplicationKind
+                        ? getAppChildResources(selectedApp, applications, subscriptions, placementRules, channels)
+                        : [[], []]
+                const appSetRelatedResources =
+                    selectedApp.kind === ApplicationSetKind
+                        ? getAppSetRelatedResources(selectedApp, applicationSets)
+                        : ['', []]
+                setModalProps({
+                    open: true,
+                    canRemove: selectedApp.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
+                    resource: selectedApp,
+                    errors: undefined,
+                    warnings: modalWarnings,
+                    loading: false,
+                    selected: appChildResources[0], // children
+                    shared: appChildResources[1], // shared children
+                    appSetPlacement: appSetRelatedResources[0],
+                    appSetsSharingPlacement: appSetRelatedResources[1],
+                    appKind: selectedApp.kind,
+                    appSetApps: getAppSetApps(argoApplications, selectedApp.metadata?.name),
+                    close: () => {
+                        setModalProps({ open: false })
+                    },
+                    t,
+                    redirect: NavigationPath.applications,
+                })
+            },
+        })
+    }
 
     useEffect(() => setRoute(AcmRoute.Applications), [setRoute])
+
+    useEffect(() => {
+        const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
+        canDeleteApplicationPromise.promise
+            .then((result) => setCanDeleteApplication(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeleteApplicationPromise.abort()
+    }, [])
+    useEffect(() => {
+        const canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
+        canDeleteApplicationSetPromise.promise
+            .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canDeleteApplicationSetPromise.abort()
+    }, [])
 
     const getSnapshot = useRecoilCallback(
         ({ snapshot }) =>
@@ -205,15 +331,15 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 isActive={
                                     location.pathname ===
                                     NavigationPath.applicationOverview
-                                        .replace(':namespace', match.params.namespace as string)
-                                        .replace(':name', match.params.name as string)
+                                        .replace(namespaceString, match.params.namespace)
+                                        .replace(nameString, match.params.name)
                                 }
                             >
                                 <Link
                                     to={
                                         NavigationPath.applicationOverview
-                                            .replace(':namespace', match.params.namespace as string)
-                                            .replace(':name', match.params.name as string) + location.search
+                                            .replace(namespaceString, match.params.namespace)
+                                            .replace(nameString, match.params.name) + location.search
                                     }
                                 >
                                     {t('Overview')}
@@ -223,15 +349,15 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                                 isActive={
                                     location.pathname ===
                                     NavigationPath.applicationTopology
-                                        .replace(':namespace', match.params.namespace as string)
-                                        .replace(':name', match.params.name as string)
+                                        .replace(namespaceString, match.params.namespace)
+                                        .replace(nameString, match.params.name)
                                 }
                             >
                                 <Link
                                     to={
                                         NavigationPath.applicationTopology
-                                            .replace(':namespace', match.params.namespace as string)
-                                            .replace(':name', match.params.name as string) + location.search
+                                            .replace(namespaceString, match.params.namespace)
+                                            .replace(nameString, match.params.name) + location.search
                                     }
                                 >
                                     {t('Topology')}
@@ -239,34 +365,45 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                             </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
-                    actions={actions}
+                    actions={
+                        <AcmActionGroup>
+                            {[
+                                <RbacDropdown<Application>
+                                    id={`${applicationData?.application.app?.metadata.name ?? 'app'}-actions`}
+                                    item={applicationData?.application.app}
+                                    isKebab={false}
+                                    text={t('actions')}
+                                    actions={actions}
+                                />,
+                            ]}
+                        </AcmActionGroup>
+                    }
                 />
             }
         >
-            <ApplicationContext.Provider value={{ actions, setActions }}>
-                <Suspense fallback={<Fragment />}>
-                    <Switch>
-                        <Route exact path={NavigationPath.applicationOverview}>
-                            <ApplicationOverviewPageContent applicationData={applicationData} />
-                        </Route>
-                        <Route exact path={NavigationPath.applicationTopology}>
-                            <ApplicationTopologyPageContent
-                                applicationData={applicationData}
-                                setActiveChannel={setActiveChannel}
-                            />
-                        </Route>
-                        <Route exact path={NavigationPath.applicationDetails}>
-                            <Redirect
-                                to={
-                                    NavigationPath.applicationOverview
-                                        .replace(':namespace', match.params.namespace as string)
-                                        .replace(':name', match.params.name as string) + location.search
-                                }
-                            />
-                        </Route>
-                    </Switch>
-                </Suspense>
-            </ApplicationContext.Provider>
+            <DeleteResourceModal {...modalProps} />
+            <Suspense fallback={<Fragment />}>
+                <Switch>
+                    <Route exact path={NavigationPath.applicationOverview}>
+                        <ApplicationOverviewPageContent applicationData={applicationData} />
+                    </Route>
+                    <Route exact path={NavigationPath.applicationTopology}>
+                        <ApplicationTopologyPageContent
+                            applicationData={applicationData}
+                            setActiveChannel={setActiveChannel}
+                        />
+                    </Route>
+                    <Route exact path={NavigationPath.applicationDetails}>
+                        <Redirect
+                            to={
+                                NavigationPath.applicationOverview
+                                    .replace(namespaceString, match.params.namespace)
+                                    .replace(nameString, match.params.name) + location.search
+                            }
+                        />
+                    </Route>
+                </Switch>
+            </Suspense>
         </AcmPage>
     )
 }
