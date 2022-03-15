@@ -2,7 +2,6 @@
 
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
 import {
-    PageSection,
     Split,
     SplitItem,
     Stack,
