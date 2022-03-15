@@ -1393,7 +1393,11 @@ describe('CreateCluster', () => {
         const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
 
         // create the form
-        const { container } = render(<PluginContext.Provider value={{ isACMAvailable: false }}><Component /></PluginContext.Provider>)
+        const { container } = render(
+            <PluginContext.Provider value={{ isACMAvailable: false }}>
+                <Component />
+            </PluginContext.Provider>
+        )
 
         await new Promise((resolve) => setTimeout(resolve, 500))
 
