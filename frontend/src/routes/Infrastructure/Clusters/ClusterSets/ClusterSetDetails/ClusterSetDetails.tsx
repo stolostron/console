@@ -157,14 +157,11 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
         >
             <Suspense fallback={<Fragment />}>
                 <Switch>
-                    <Route exact path={NavigationPath.clusterSetDetails.replace(':id', match.params.id)}>
-                        <Redirect to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)} />
-                    </Route>
-                    <Route exact path={NavigationPath.clusterSetManage.replace(':id', match.params.id)}>
+                    <Route exact path={NavigationPath.clusterSetManage}>
                         <ClusterSetManageResourcesPage />
                     </Route>
                     {isSubmarinerAvailable && (
-                        <Route exact path={NavigationPath.clusterSetSubmarinerInstall.replace(':id', match.params.id)}>
+                        <Route exact path={NavigationPath.clusterSetSubmarinerInstall}>
                             <InstallSubmarinerFormPage />
                         </Route>
                     )}
@@ -251,26 +248,28 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
                             />
                         }
                     >
-                        <Route exact path={NavigationPath.clusterSetOverview}>
-                            <ClusterSetOverviewPageContent />
-                        </Route>
-                        {isSubmarinerAvailable && (
-                            <Route exact path={NavigationPath.clusterSetSubmariner}>
-                                <ClusterSetSubmarinerPageContent />
+                        <Switch>
+                            <Route exact path={NavigationPath.clusterSetOverview}>
+                                <ClusterSetOverviewPageContent />
                             </Route>
-                        )}
-                        <Route exact path={NavigationPath.clusterSetClusters}>
-                            <ClusterSetClustersPageContent />
-                        </Route>
-                        <Route exact path={NavigationPath.clusterSetClusterPools}>
-                            <ClusterSetClusterPoolsPageContent />
-                        </Route>
-                        <Route exact path={NavigationPath.clusterSetAccess}>
-                            <ClusterSetAccessManagement />
-                        </Route>
-                        <Route path="*">
-                            <Redirect to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)} />
-                        </Route>
+                            {isSubmarinerAvailable && (
+                                <Route exact path={NavigationPath.clusterSetSubmariner}>
+                                    <ClusterSetSubmarinerPageContent />
+                                </Route>
+                            )}
+                            <Route exact path={NavigationPath.clusterSetClusters}>
+                                <ClusterSetClustersPageContent />
+                            </Route>
+                            <Route exact path={NavigationPath.clusterSetClusterPools}>
+                                <ClusterSetClusterPoolsPageContent />
+                            </Route>
+                            <Route exact path={NavigationPath.clusterSetAccess}>
+                                <ClusterSetAccessManagement />
+                            </Route>
+                            <Route path="*">
+                                <Redirect to={NavigationPath.clusterSetOverview.replace(':id', match.params.id)} />
+                            </Route>
+                        </Switch>
                     </AcmPage>
                 </Switch>
             </Suspense>
