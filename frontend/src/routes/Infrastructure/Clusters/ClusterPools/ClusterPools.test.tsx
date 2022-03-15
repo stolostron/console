@@ -90,7 +90,8 @@ const mockClusterPool: ClusterPool = {
                 type: 'MissingDependencies',
             },
         ],
-        ready: 2,
+        ready: 1,
+        standby: 1,
         size: 2,
     },
 }
@@ -184,6 +185,12 @@ describe('ClusterPools page', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
+    })
+    test('shows correct available clusters count', async () => {
+        await waitForText(mockClusterPool.metadata.name!)
+        await waitForText(mockClusterPoolStandbyOnly.metadata.name!)
+        await waitForText('1 out of 2')
+        await waitForText('0 out of 2')
     })
     test('should be able to destroy a cluster pool using a row action', async () => {
         await waitForText(mockClusterPool.metadata.name!)
