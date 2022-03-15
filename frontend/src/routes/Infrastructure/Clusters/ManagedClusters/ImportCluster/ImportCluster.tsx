@@ -40,6 +40,7 @@ import { SyncDiff, SyncDiffType } from '../../../../../components/SyncEditor/Syn
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
+import { PluginContext } from '../../../../../lib/PluginContext'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
     createProject,
@@ -174,6 +175,7 @@ enum ImportMode {
 const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }) => {
     const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
+    const { isACMAvailable } = useContext(PluginContext)
     const history = useHistory()
     const { canJoinClusterSets } = useCanJoinClusterSets()
     const mustJoinClusterSet = useMustJoinClusterSet()
@@ -250,24 +252,36 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                     type: 'Opaque',
                 })
         }
-        resources.push({
-            apiVersion: KlusterletAddonConfigApiVersion,
-            kind: KlusterletAddonConfigKind,
-            metadata: { name: clusterName, namespace: clusterName },
-            spec: {
-                clusterName: clusterName,
-                clusterNamespace: clusterName,
-                clusterLabels: { ...clusterLabels },
-                applicationManager: { enabled: true, argocdCluster: false },
-                policyController: { enabled: true },
-                searchCollector: { enabled: true },
-                certPolicyController: { enabled: true },
-                iamPolicyController: { enabled: true },
-            },
-        })
+        if (isACMAvailable) {
+            resources.push({
+                apiVersion: KlusterletAddonConfigApiVersion,
+                kind: KlusterletAddonConfigKind,
+                metadata: { name: clusterName, namespace: clusterName },
+                spec: {
+                    clusterName: clusterName,
+                    clusterNamespace: clusterName,
+                    clusterLabels: { ...clusterLabels },
+                    applicationManager: { enabled: true, argocdCluster: false },
+                    policyController: { enabled: true },
+                    searchCollector: { enabled: true },
+                    certPolicyController: { enabled: true },
+                    iamPolicyController: { enabled: true },
+                },
+            })
+        }
         setImportResources(resources)
         onFormChange(resources)
-    }, [importMode, discovered, clusterName, additionalLabels, kubeConfig, managedClusterSet, token, server])
+    }, [
+        importMode,
+        discovered,
+        clusterName,
+        additionalLabels,
+        kubeConfig,
+        managedClusterSet,
+        token,
+        server,
+        isACMAvailable,
+    ])
 
     const onReset = () => {
         setClusterName('')

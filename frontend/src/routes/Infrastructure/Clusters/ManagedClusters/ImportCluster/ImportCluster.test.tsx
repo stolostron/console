@@ -44,6 +44,7 @@ import {
 import { NavigationPath } from '../../../../../NavigationPath'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
+import { PluginContext } from '../../../../../lib/PluginContext'
 
 const mockProject: ProjectRequest = {
     apiVersion: ProjectRequestApiVersion,
@@ -314,6 +315,35 @@ describe('ImportCluster', () => {
         await clickByText('Import another')
         await waitFor(() => expect(queryByTestId('import-command')).toBeNull())
         expect(getByTestId('clusterName')).toHaveValue('')
+    })
+
+    test('can import without KlusterletAddonConfig for MCE', async () => {
+        const projectNock = nockCreate(mockProject, mockProjectResponse)
+        const mockCluster = JSON.parse(JSON.stringify(mockManagedCluster))
+        const mockClusterResponse = JSON.parse(JSON.stringify(mockManagedClusterResponse))
+        mockCluster.metadata.labels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+        mockClusterResponse.metadata.labels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+        const managedClusterNock = nockCreate(mockCluster, mockClusterResponse)
+        const importSecretNock = nockGet(mockSecretResponse)
+
+        const { getByTestId, getByText } = render(
+            <PluginContext.Provider value={{ isACMAvailable: false }}>
+                <Component />
+            </PluginContext.Provider>
+        )
+
+        await typeByTestId('clusterName', 'foobar')
+
+        await clickByText('Select a cluster set')
+        await clickByText(mockManagedClusterSet.metadata.name!)
+        await clickByTestId('label-input-button')
+        await typeByTestId('additionalLabels', 'foo=bar{enter}')
+        expect(getByText('Save import and generate code')).toHaveAttribute('aria-disabled', 'false')
+        await clickByText('Save import and generate code')
+
+        await waitForNocks([projectNock, managedClusterNock, importSecretNock])
+
+        await waitFor(() => expect(getByTestId('import-command')).toBeInTheDocument())
     })
 
     test('can create resources when auto importing using kubeconfig', async () => {

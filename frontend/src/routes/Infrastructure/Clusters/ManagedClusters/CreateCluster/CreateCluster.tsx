@@ -3,7 +3,7 @@ import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolo
 import { PageSection } from '@patternfly/react-core'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
-import { useState, useRef, useEffect } from 'react'
+import { useContext, useState, useRef, useEffect } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilState } from 'recoil'
 // include monaco editor
@@ -39,6 +39,7 @@ import { Secret } from '../../../../../resources'
 import { createResource as createResourceTool } from '../../../../../resources'
 import { WarningContext, WarningContextType, Warning } from './Warning'
 import { CIM } from 'openshift-assisted-ui-lib'
+import { PluginContext } from '../../../../../lib/PluginContext'
 
 const { isAIFlowInfraEnv } = CIM
 
@@ -66,6 +67,7 @@ export default function CreateClusterPage() {
     const history = useHistory()
     const location = useLocation()
     const [secrets] = useRecoilState(secretsState)
+    const { isACMAvailable } = useContext(PluginContext)
     const templateEditorRef = useRef<null>()
 
     // if a connection is added outside of wizard, add it to connection selection
@@ -382,7 +384,8 @@ export default function CreateClusterPage() {
         <Warning />,
         onControlSelect,
         settings.awsPrivateWizardStep === 'enabled',
-        settings.singleNodeOpenshift === 'enabled'
+        settings.singleNodeOpenshift === 'enabled',
+        isACMAvailable /* includeKlusterletAddonConfig */
     )
 
     return (
