@@ -651,7 +651,12 @@ export default function OverviewPage() {
                                         title: `${policyReportItems.length}`,
                                         subTitle: t('Clusters with issues'),
                                     }}
-                                    colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
+                                    colorScale={[
+                                        'var(--pf-global--danger-color--100)',
+                                        'var(--pf-global--palette--orange-300)',
+                                        'var(--pf-global--palette--orange-200)',
+                                        'var(--pf-global--warning-color--100)',
+                                    ]}
                                 />
                             </AcmChartGroup>
                         )}
