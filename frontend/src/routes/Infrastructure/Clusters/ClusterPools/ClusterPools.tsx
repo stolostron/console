@@ -280,12 +280,10 @@ export function ClusterPoolsTable(props: {
                         header: t('table.available'),
                         cell: (clusterPool: ClusterPool) => {
                             const ready = clusterPool?.status?.ready === undefined ? 0 : clusterPool?.status?.ready
-                            const standby =
-                                clusterPool?.status?.standby === undefined ? 0 : clusterPool?.status?.standby
                             return (
                                 <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
                                     {t('outOf', {
-                                        firstNumber: ready + standby,
+                                        firstNumber: ready,
                                         secondNumber: clusterPool.spec!.size,
                                     })}
                                 </span>
@@ -318,28 +316,21 @@ export function ClusterPoolsTable(props: {
                         header: '',
                         cellTransforms: [fitContent],
                         cell: (clusterPool: ClusterPool) => {
-                            const ready = clusterPool?.status?.ready === undefined ? 0 : clusterPool?.status?.ready
-                            const standby =
-                                clusterPool?.status?.standby === undefined ? 0 : clusterPool?.status?.standby
-                            if (ready + standby > 0) {
-                                return (
-                                    <RbacButton
-                                        onClick={() => {
-                                            setClusterClaimModalProps({
-                                                clusterPool,
-                                                onClose: () => setClusterClaimModalProps(undefined),
-                                            })
-                                        }}
-                                        variant="link"
-                                        style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
-                                        rbac={[rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)]}
-                                    >
-                                        {t('clusterPool.claim')}
-                                    </RbacButton>
-                                )
-                            } else {
-                                return null
-                            }
+                            return (
+                                <RbacButton
+                                    onClick={() => {
+                                        setClusterClaimModalProps({
+                                            clusterPool,
+                                            onClose: () => setClusterClaimModalProps(undefined),
+                                        })
+                                    }}
+                                    variant="link"
+                                    style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
+                                    rbac={[rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)]}
+                                >
+                                    {t('clusterPool.claim')}
+                                </RbacButton>
+                            )
                         },
                     },
                     {
@@ -506,13 +497,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                         sort: 'hive',
                         search: 'status',
                         cell: (cluster: Cluster) => {
-                            const availableStatuses = [
-                                ClusterStatus.ready,
-                                ClusterStatus.detached,
-                                ClusterStatus.hibernating,
-                                ClusterStatus.resuming,
-                                ClusterStatus.stopping,
-                            ]
+                            const availableStatuses = [ClusterStatus.running]
                             const isAvailable =
                                 !cluster.hive.clusterClaimName && availableStatuses.includes(cluster.status)
                             return <span style={{ whiteSpace: 'nowrap' }}>{t(`${isAvailable ? 'Yes' : 'No'}`)}</span>
