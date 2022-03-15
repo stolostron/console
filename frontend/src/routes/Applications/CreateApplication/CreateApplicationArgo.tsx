@@ -1,7 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
+import { AcmToastContext } from '@stolostron/ui-components'
 import moment from 'moment-timezone'
+import { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -13,9 +15,11 @@ import {
     placementsState,
     secretsState,
 } from '../../../atoms'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
 import {
+    ApplicationSetKind,
     createResources,
     getGitChannelBranches,
     getGitChannelPaths,
@@ -28,7 +32,9 @@ export default function CreateArgoApplicationSetPage() {
 }
 
 export function CreateApplicationArgo() {
+    const { t } = useTranslation()
     const history = useHistory()
+    const toast = useContext(AcmToastContext)
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
     const [channels] = useRecoilState(channelsState)
@@ -64,16 +70,25 @@ export function CreateApplicationArgo() {
             placements={placements}
             clusters={managedClusters}
             clusterSetBindings={managedClusterSetBindings}
-            onCancel={() => history.push('.')}
             channels={channels}
             getGitRevisions={getGitChannelBranches}
             getGitPaths={getGitChannelPaths}
-            onSubmit={(resources) =>
-                createResources(resources as IResource[]).then((error) => {
+            onCancel={() => history.push(NavigationPath.applications)}
+            onSubmit={(data) => {
+                const resources = data as IResource[]
+                return createResources(resources).then(() => {
+                    const applicationSet = resources.find((resource) => resource.kind === ApplicationSetKind)
+                    if (applicationSet) {
+                        toast.addAlert({
+                            title: t('Application set created'),
+                            message: t('{{name}} was successfully created.', { name: applicationSet.metadata?.name }),
+                            type: 'success',
+                            autoClose: true,
+                        })
+                    }
                     history.push(NavigationPath.applications)
-                    return error
                 })
-            }
+            }}
             timeZones={timeZones}
         />
     )

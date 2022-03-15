@@ -4,12 +4,12 @@ import { Button, Checkbox, ModalVariant } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmAlert, AcmModal } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
-import { Trans } from '../../../lib/acm-i18next'
 import React, { ReactNode, useState } from 'react'
+import { useHistory } from 'react-router-dom'
+import { Trans } from '../../../lib/acm-i18next'
 import { deleteApplication } from '../../../lib/delete-application'
 import { ApplicationKind, ApplicationSetKind, IResource } from '../../../resources'
 import '../css/DeleteResourceModal.css'
-import { useHistory } from 'react-router-dom'
 
 export interface IDeleteResourceModalProps {
     open: boolean
@@ -268,7 +268,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
             aria-label={modalTitle}
             showClose={true}
             onClose={props.close}
-            variant={ModalVariant.large}
+            variant={ModalVariant.medium}
             titleIconVariant="warning"
             position="top"
             positionOffset="225px"

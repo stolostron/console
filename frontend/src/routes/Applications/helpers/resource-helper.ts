@@ -14,6 +14,7 @@ import {
     ArgoApplicationKind,
     Channel,
     IResource,
+    IResourceDefinition,
     ManagedCluster,
     PlacementRule,
     PlacementRuleApiVersion,
@@ -35,6 +36,10 @@ const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-
 
 export function isArgoApp(item: IResource) {
     return item.apiVersion === ArgoApplicationApiVersion && item.kind === ArgoApplicationKind
+}
+
+export function isResourceTypeOf(resource: IResource, resourceType: IResourceDefinition) {
+    return resource.apiVersion === resourceType.apiVersion && resource.kind === resourceType.kind
 }
 
 export function getSubscriptionsFromAnnotation(app: IResource) {

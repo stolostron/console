@@ -88,6 +88,8 @@
     "app.enter.subfolder": "Optional: Enter the Amazon S3 or MinIO subfolder bucket path",
     "Application created": "Application created",
     "Application deploy status": "Application deploy status",
+    "Application set created": "Application set created",
+    "Application set updated": "Application set updated",
     "Application updated": "Application updated",
     "application.app.k8s.io/v1beta1": "application.app.k8s.io/v1beta1",
     "application.argoproj.io/v1alpha1": "application.argoproj.io/v1alpha1",
