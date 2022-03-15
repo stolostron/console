@@ -131,7 +131,9 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 onClose={history.goBack}
                 onSaveDetails={onSaveDetails}
                 onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
-                onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents })}
+                onSaveHostsSelection={(values) =>
+                    onHostsNext({ values, clusterDeployment, agents, agentClusterInstall })
+                }
                 hostActions={hostActions}
                 onFinish={onFinish}
                 aiConfigMap={aiConfigMap}
