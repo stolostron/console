@@ -7,6 +7,7 @@ import { useClusters } from './useClusters'
 export function ClusterStatuses(props: { managedClusterSet?: ManagedClusterSet; clusterPool?: ClusterPool }) {
     const clusters = useClusters(props.managedClusterSet, props.clusterPool)
     let healthy = 0
+    let running = 0
     let warning = 0
     let progress = 0
     let danger = 0
@@ -19,6 +20,9 @@ export function ClusterStatuses(props: { managedClusterSet?: ManagedClusterSet; 
         switch (cluster.status) {
             case ClusterStatus.ready:
                 healthy++
+                break
+            case ClusterStatus.running:
+                running++
                 break
             case ClusterStatus.needsapproval:
                 warning++
@@ -67,6 +71,7 @@ export function ClusterStatuses(props: { managedClusterSet?: ManagedClusterSet; 
     ) : (
         <AcmInlineStatusGroup
             healthy={healthy}
+            running={running}
             warning={warning}
             progress={progress}
             danger={danger}

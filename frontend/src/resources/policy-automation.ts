@@ -26,5 +26,5 @@ interface AutomationDef {
     name: string
     secret: string
     type?: string
-    extra_vars?: object
+    extra_vars?: Record<string, string>
 }

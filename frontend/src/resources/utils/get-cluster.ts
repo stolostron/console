@@ -44,6 +44,7 @@ export enum ClusterStatus {
     'posthookfailed' = 'posthookfailed',
     'importfailed' = 'importfailed',
     'draft' = 'draft',
+    'running' = 'running',
 }
 
 export const clusterDangerStatuses = [
@@ -207,7 +208,8 @@ export function getCluster(
         managedCluster,
         managedClusterAddOns,
         clusterCurator,
-        agentClusterInstall
+        agentClusterInstall,
+        clusterClaim
     )
     return {
         name: clusterDeployment?.metadata.name ?? managedCluster?.metadata.name ?? managedClusterInfo?.metadata.name,
@@ -664,7 +666,8 @@ export function getClusterStatus(
     managedCluster: ManagedCluster | undefined,
     managedClusterAddOns: ManagedClusterAddOn[],
     clusterCurator: ClusterCurator | undefined,
-    agentClusterInstall: CIM.AgentClusterInstallK8sResource | undefined
+    agentClusterInstall: CIM.AgentClusterInstallK8sResource | undefined,
+    clusterClaim: ClusterClaim | undefined
 ) {
     let statusMessage: string | undefined
 
@@ -769,23 +772,29 @@ export function getClusterStatus(
 
             // provision success
         } else if (clusterDeployment.spec?.installed) {
-            cdStatus = ClusterStatus.detached
-
-            const hibernatingCondition = clusterDeployment?.status?.conditions?.find((c) => c.type === 'Hibernating')
-            // covers reason = Running or Unsupported
-            if (hibernatingCondition?.status === 'False') {
-                cdStatus = ClusterStatus.detached
-            } else {
-                switch (hibernatingCondition?.reason) {
-                    case 'Resuming':
-                        cdStatus = ClusterStatus.resuming
-                        break
-                    case 'Stopping':
+            const powerState = clusterDeployment?.status?.powerState
+            switch (powerState) {
+                case 'Running':
+                    cdStatus = clusterClaim ? ClusterStatus.detached : ClusterStatus.running
+                    break
+                case 'Hibernating':
+                    cdStatus = ClusterStatus.hibernating
+                    break
+                default: {
+                    if (clusterDeployment.spec.powerState === 'Hibernating') {
                         cdStatus = ClusterStatus.stopping
-                        break
-                    case 'Hibernating':
-                        cdStatus = ClusterStatus.hibernating
-                        break
+                        const readyCondition = clusterDeployment?.status?.conditions?.find(
+                            (c) => c.type === 'Hibernating'
+                        )
+                        statusMessage = readyCondition?.message
+                    } else {
+                        const readyCondition = clusterDeployment?.status?.conditions?.find((c) => c.type === 'Ready')
+                        statusMessage = readyCondition?.message
+                        cdStatus =
+                            clusterDeployment.spec.powerState === 'Running'
+                                ? ClusterStatus.resuming
+                                : ClusterStatus.unknown
+                    }
                 }
             }
 

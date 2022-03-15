@@ -118,7 +118,11 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                         type: 'success',
                         autoClose: true,
                     })
-                    history.push(NavigationPath.applications)
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', applicationResourceJSON.metadata.namespace as string)
+                            .replace(':name', applicationResourceJSON.metadata.name as string) + location.search
+                    )
                 })
                 .catch((err) => {
                     const errorInfo = getErrorInfo(err)

@@ -105,6 +105,7 @@ export interface ClusterDeployment {
         conditions: V1CustomResourceDefinitionCondition[]
         installedTimestamp?: string
         installerImage: string
+        powerState: string
         provisionRef?: {
             name: string
         }

@@ -9,6 +9,7 @@ import {
     CardHeader,
     CardTitle,
     Checkbox,
+    DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
     DescriptionListTerm,
@@ -58,6 +59,14 @@ export default function PolicySetCard(props: {
                 setDrawerContext(undefined)
                 setSelectedCardID('')
             },
+            title: (
+                <Stack>
+                    {policySet.metadata.name}
+                    <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
+                        {`Namespace: ${policySet.metadata.namespace}`}
+                    </div>
+                </Stack>
+            ),
             panelContent: <PolicySetDetailSidebar policySet={policySet} />,
             panelContentProps: { defaultSize: '40%' },
             isInline: true,
@@ -147,36 +156,39 @@ export default function PolicySetCard(props: {
                         />
                     </CardActions>
                     <CardTitle>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <Stack>
                             {policySet.metadata.name}
-                            <div style={{ fontSize: 'small', opacity: 0.6, fontWeight: 'normal' }}>
+                            <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
                                 {`Namespace: ${policySet.metadata.namespace}`}
                             </div>
-                        </div>
+                        </Stack>
                     </CardTitle>
                 </CardHeader>
                 <CardBody>
                     <Stack hasGutter>
                         {policySet.spec.description && <div>{policySet.spec.description ?? ''}</div>}
                         {policySet.status?.compliant && (
-                            <DescriptionListGroup>
-                                <DescriptionListTerm>
-                                    <strong>{t('Status')}</strong>
-                                </DescriptionListTerm>
-                                <DescriptionListDescription>
-                                    {policySet.status?.compliant === 'Compliant' ? (
-                                        <div>
-                                            <CheckCircleIcon color="var(--pf-global--success-color--100)" />{' '}
-                                            {t('No violations')}
-                                        </div>
-                                    ) : (
-                                        <div>
-                                            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
-                                            {t('Violations')}
-                                        </div>
-                                    )}
-                                </DescriptionListDescription>
-                            </DescriptionListGroup>
+                            <DescriptionList>
+                                <DescriptionListGroup>
+                                    <DescriptionListTerm>
+                                        <strong>{t('Status')}</strong>
+                                    </DescriptionListTerm>
+                                    <DescriptionListDescription>
+                                        {policySet.status?.compliant === 'Compliant' ? (
+                                            <div>
+                                                <CheckCircleIcon color="var(--pf-global--success-color--100)" /> &nbsp;
+                                                {t('No violations')}
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
+                                                &nbsp;
+                                                {t('Violations')}
+                                            </div>
+                                        )}
+                                    </DescriptionListDescription>
+                                </DescriptionListGroup>
+                            </DescriptionList>
                         )}
                     </Stack>
                 </CardBody>

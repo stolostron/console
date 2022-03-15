@@ -8,8 +8,8 @@ export const CriticalRiskIcon = () => {
                 <g
                     id="Clusters-Insights-2---disable"
                     transform="translate(-1048.000000, -261.000000)"
-                    fill="#A30000"
-                    stroke="#A30000"
+                    fill="var(--pf-global--danger-color--100)"
+                    stroke="var(--pf-global--danger-color--100)"
                 >
                     <g id="Group" transform="translate(1049.000000, 261.000000)">
                         <path
@@ -29,7 +29,11 @@ export const ImportantRiskIcon = () => {
         <svg width="9px" height="11px" viewBox="0 0 9 11" version="1.1" role="presentation">
             <title>important</title>
             <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
-                <g id="Clusters-Insights-2---disable" transform="translate(-1049.000000, -291.000000)" fill="#EC7A08">
+                <g
+                    id="Clusters-Insights-2---disable"
+                    transform="translate(-1049.000000, -291.000000)"
+                    fill="var(--pf-global--palette--orange-300)"
+                >
                     <g id="Group" transform="translate(1049.000000, 261.000000)">
                         <g
                             transform="translate(4.583333, 35.166667) rotate(90.000000) translate(-4.583333, -35.166667) translate(-0.416667, 31.000000)"
@@ -53,7 +57,7 @@ export const ModerateRiskIcon = () => {
                 <g
                     id="Clusters-Insights-2---disable"
                     transform="translate(-1049.000000, -321.000000)"
-                    fill="#F4C145"
+                    fill="var(--pf-global--palette--orange-200)"
                     fillRule="nonzero"
                 >
                     <g id="Group" transform="translate(1049.000000, 261.000000)">
@@ -75,7 +79,11 @@ export const LowRiskIcon = () => {
         <svg width="8px" height="11px" viewBox="0 0 8 11" version="1.1" role="presentation">
             <title>low</title>
             <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
-                <g id="Clusters-Insights-2---disable" transform="translate(-1050.000000, -348.000000)" fill="#2B9AF3">
+                <g
+                    id="Clusters-Insights-2---disable"
+                    transform="translate(-1050.000000, -348.000000)"
+                    fill="var(--pf-global--warning-color--100)"
+                >
                     <g id="Group" transform="translate(1049.000000, 261.000000)">
                         <g
                             transform="translate(5.000000, 92.923077) scale(1, -1) rotate(90.000000) translate(-5.000000, -92.923077) translate(-0.000000, 89.076923)"

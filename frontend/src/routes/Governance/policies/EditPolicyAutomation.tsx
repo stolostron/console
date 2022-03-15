@@ -6,6 +6,7 @@ import { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policyAutomationState, secretsState, usePolicies } from '../../../atoms'
+import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, listAnsibleTowerJobs, PolicyAutomation, reconcileResources, Secret } from '../../../resources'
@@ -37,14 +38,18 @@ export function EditPolicyAutomation() {
         [secrets]
     )
 
-    // TODO If no credentials then wizard needs to have link to creds page
+    if (currentPolicyAutomation === undefined) {
+        return <LoadingPage />
+    }
+
     return (
         <PolicyAutomationWizard
             title={t('Edit policy automation')}
             editMode={EditMode.Edit}
             policy={currentPolicy ?? {}}
             credentials={credentials}
-            resource={currentPolicyAutomation ?? {}}
+            createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
+            resource={currentPolicyAutomation}
             onCancel={() => history.push(NavigationPath.policies)}
             onSubmit={(data) => {
                 const resource = data as IResource
@@ -60,7 +65,6 @@ export function EditPolicyAutomation() {
                     history.push(window.history?.state?.state?.from ?? NavigationPath.policies)
                 })
             }}
-            // TODO credential should be Secret type not IResource
             getAnsibleJobsCallback={async (credential: any) => {
                 const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
                 const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')

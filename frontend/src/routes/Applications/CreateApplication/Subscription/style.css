@@ -1,3 +1,7 @@
+.pf-c-page__main-wizard .temptifly {
+    margin: 20px 0 0 20px;
+}
+
 .pf-c-content .temptifly.showEditor,
 .temptifly.showWizard {
     height: 100%;

@@ -23,6 +23,9 @@ export function StatusField(props: { cluster: Cluster }) {
         case ClusterStatus.ready:
             type = StatusType.healthy
             break
+        case ClusterStatus.running:
+            type = StatusType.running
+            break
         case ClusterStatus.needsapproval:
             type = StatusType.warning
             break

@@ -109,7 +109,12 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
                 <ChartLegend
                     data={legendData}
                     labelComponent={<ChartLabel />}
-                    colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
+                    colorScale={[
+                        'var(--pf-global--danger-color--100)',
+                        'var(--pf-global--palette--orange-300)',
+                        'var(--pf-global--palette--orange-200)',
+                        'var(--pf-global--warning-color--100)',
+                    ]}
                 />
             }
             labels={({ datum }) => `${datum.x}: ${datum.y}`}
@@ -123,7 +128,12 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
             subTitle={t('Total issues')}
             width={400}
             height={200}
-            colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
+            colorScale={[
+                'var(--pf-global--danger-color--100)',
+                'var(--pf-global--palette--orange-300)',
+                'var(--pf-global--palette--orange-200)',
+                'var(--pf-global--warning-color--100)',
+            ]}
         />
     )
 }
