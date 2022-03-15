@@ -10,7 +10,6 @@ import { NavigationPath } from '../../../NavigationPath'
 import {
     IResource,
     listAnsibleTowerJobs,
-    PolicyAutomation,
     PolicyAutomationApiVersion,
     PolicyAutomationKind,
     reconcileResources,
@@ -43,21 +42,19 @@ export function CreatePolicyAutomation() {
             policy={currentPolicy ?? {}}
             credentials={credentials}
             createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
-            resource={
-                {
-                    kind: PolicyAutomationKind,
-                    apiVersion: PolicyAutomationApiVersion,
-                    metadata: {
-                        name: `${currentPolicy?.metadata?.name ?? ''}-policy-automation`,
-                        namespace: currentPolicy?.metadata?.namespace ?? '',
-                    },
-                    spec: {
-                        policyRef: currentPolicy?.metadata?.name ?? '',
-                        mode: 'once',
-                        automationDef: { name: '', secret: '', type: 'AnsibleJob' },
-                    },
-                } as PolicyAutomation
-            }
+            resource={{
+                kind: PolicyAutomationKind,
+                apiVersion: PolicyAutomationApiVersion,
+                metadata: {
+                    name: `${currentPolicy?.metadata?.name ?? ''}-policy-automation`,
+                    namespace: currentPolicy?.metadata?.namespace ?? '',
+                },
+                spec: {
+                    policyRef: currentPolicy?.metadata?.name ?? '',
+                    mode: 'once',
+                    automationDef: { name: '', secret: '', type: 'AnsibleJob' },
+                },
+            }}
             onCancel={() => history.push(NavigationPath.policies)}
             onSubmit={(data) => {
                 const resource = data as IResource

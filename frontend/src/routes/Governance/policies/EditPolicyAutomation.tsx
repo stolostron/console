@@ -6,6 +6,7 @@ import { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policyAutomationState, secretsState, usePolicies } from '../../../atoms'
+import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, listAnsibleTowerJobs, PolicyAutomation, reconcileResources, Secret } from '../../../resources'
@@ -37,6 +38,10 @@ export function EditPolicyAutomation() {
         [secrets]
     )
 
+    if (currentPolicyAutomation === undefined) {
+        return <LoadingPage />
+    }
+
     return (
         <PolicyAutomationWizard
             title={t('Edit policy automation')}
@@ -44,7 +49,7 @@ export function EditPolicyAutomation() {
             policy={currentPolicy ?? {}}
             credentials={credentials}
             createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
-            resource={currentPolicyAutomation ?? {}}
+            resource={currentPolicyAutomation}
             onCancel={() => history.push(NavigationPath.policies)}
             onSubmit={(data) => {
                 const resource = data as IResource
