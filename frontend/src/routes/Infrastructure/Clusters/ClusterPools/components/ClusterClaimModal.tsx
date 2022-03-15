@@ -40,6 +40,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
     const { t } = useTranslation()
     const history = useHistory()
     const [clusterClaim, setClusterClaim] = useState<ClusterClaim | undefined>()
+    const [claimCreated, setClaimCreated] = useState<boolean>(false)
     const [claimed, setClaimed] = useState<boolean>(false)
 
     useEffect(() => {
@@ -69,6 +70,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
 
     function reset() {
         props.onClose?.()
+        setClaimCreated(false)
         setClaimed(false)
         setClusterClaim(undefined)
     }
@@ -93,12 +95,18 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={!claimed ? t('clusterClaim.create.title') : t('clusterClaim.create.title.success')}
-            titleIconVariant={!claimed ? undefined : 'success'}
+            title={
+                claimCreated
+                    ? claimed
+                        ? t('clusterClaim.create.title.success')
+                        : t('clusterClaim.create.title.pending')
+                    : t('clusterClaim.create.title')
+            }
+            titleIconVariant={claimCreated ? 'success' : undefined}
             isOpen={!!props.clusterPool}
             onClose={reset}
         >
-            {!claimed ? (
+            {!claimCreated && (
                 <AcmForm style={{ gap: 0 }}>
                     <AcmAlertContext.Consumer>
                         {(alertContext) => (
@@ -148,17 +156,12 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                 const request = createResource(clusterClaim!)
                                                 request.promise
                                                     .then(async (result) => {
-                                                        if (props.clusterPool?.status?.ready === 0) {
-                                                            props.onClose?.()
-                                                            return resolve()
-                                                        }
                                                         const updatedClaim = (await pollClaim(result)) as ClusterClaim
                                                         if (updatedClaim) {
                                                             setClusterClaim(updatedClaim)
                                                             setClaimed(true)
-                                                        } else {
-                                                            props.onClose?.()
                                                         }
+                                                        setClaimCreated(true)
                                                         return resolve()
                                                     })
                                                     .catch((e) => {
@@ -182,7 +185,8 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         )}
                     </AcmAlertContext.Consumer>
                 </AcmForm>
-            ) : (
+            )}
+            {claimCreated && claimed && (
                 <>
                     <p>
                         <Trans
@@ -196,10 +200,6 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         isAutoColumnWidths
                         style={{ marginBottom: '24px', marginTop: '16px' }}
                     >
-                        {/* <DescriptionListGroup>
-                            <DescriptionListTerm>{t('clusterClaim.cluster.displayName')}</DescriptionListTerm>
-                            <DescriptionListDescription>{clusterClaim?.metadata!.name!}</DescriptionListDescription>
-                        </DescriptionListGroup> */}
                         <DescriptionListGroup>
                             <DescriptionListTerm>{t('clusterClaim.cluster.name')}</DescriptionListTerm>
                             <DescriptionListDescription>{clusterClaim?.spec!.namespace!}</DescriptionListDescription>
@@ -215,6 +215,30 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                     >
                         {t('clusterClaim.modal.viewCluster')}
                     </AcmButton>
+                    <AcmButton key="cancel" variant="link" onClick={reset}>
+                        {t('close')}
+                    </AcmButton>
+                </>
+            )}
+            {claimCreated && !claimed && (
+                <>
+                    <p>
+                        <Trans
+                            i18nKey="clusterClaim.create.message.pending"
+                            values={{ clusterPoolName: clusterClaim?.spec?.clusterPoolName! }}
+                            components={{ bold: <strong /> }}
+                        />
+                    </p>
+                    <DescriptionList
+                        isHorizontal
+                        isAutoColumnWidths
+                        style={{ marginBottom: '24px', marginTop: '16px' }}
+                    >
+                        <DescriptionListGroup>
+                            <DescriptionListTerm>{t('clusterClaim.name.label')}</DescriptionListTerm>
+                            <DescriptionListDescription>{clusterClaim?.metadata!.name!}</DescriptionListDescription>
+                        </DescriptionListGroup>
+                    </DescriptionList>
                     <AcmButton key="cancel" variant="link" onClick={reset}>
                         {t('close')}
                     </AcmButton>
