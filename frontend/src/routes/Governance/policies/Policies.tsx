@@ -715,7 +715,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                 search: 'policy.metadata.namespace',
             },
         ],
-        []
+        [t]
     )
 
     return (
