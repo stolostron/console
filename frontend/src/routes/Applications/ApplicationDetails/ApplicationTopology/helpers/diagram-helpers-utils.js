@@ -11,23 +11,16 @@
 'use strict'
 import R from 'ramda'
 import _ from 'lodash'
+import {
+    warningStatus,
+    pendingStatus,
+    checkmarkCode,
+    warningCode,
+    pendingCode,
+    failureCode,
+    metadataName,
+} from '../model/computeStatuses'
 
-const checkmarkCode = 3
-const warningCode = 2
-const pendingCode = 1
-const failureCode = 0
-const checkmarkStatus = 'checkmark'
-const warningStatus = 'warning'
-const pendingStatus = 'pending'
-const failureStatus = 'failure'
-const pulseValueArr = ['red', 'orange', 'yellow', 'green']
-const metadataName = 'metadata.name'
-const argoAppHealthyStatus = 'Healthy'
-const argoAppDegradedStatus = 'Degraded'
-const argoAppMissingStatus = 'Missing'
-const argoAppProgressingStatus = 'Progressing'
-const argoAppSuspendedStatus = 'Suspended'
-const argoAppUnknownStatus = 'Unknown'
 export const nodesWithNoNS = ['namespace', 'clusterrole', 'clusterrolebinding']
 
 export const isDeployableResource = (node) => {
@@ -157,34 +150,6 @@ export const filterSubscriptionObject = (resourceMap, activeFilterCodes) => {
     return filteredObject
 }
 
-export const getOnlineClusters = (node) => {
-    const clusterNames = R.split(',', getClusterName(_.get(node, 'id', ''), node))
-    const prClusters = _.get(node, 'clusters.specs.clusters', [])
-    const searchClusters = _.get(node, 'specs.searchClusters', [])
-    const clusterObjs = prClusters.length > searchClusters.length ? prClusters : searchClusters
-    const onlineClusters = []
-    clusterNames.forEach((clsName) => {
-        const cluster = clsName.trim()
-        if (cluster === 'local-cluster') {
-            onlineClusters.push(cluster)
-        } else {
-            const matchingCluster = _.find(
-                clusterObjs,
-                (cls) => _.get(cls, 'name', '') === cluster || _.get(cls, metadataName, '') === cluster
-            )
-            if (
-                matchingCluster &&
-                (_.includes(['ok', 'pendingimport', 'OK'], _.get(matchingCluster, 'status', '')) ||
-                    _.get(matchingCluster, 'ManagedClusterConditionAvailable', '') === 'True')
-            ) {
-                onlineClusters.push(cluster)
-            }
-        }
-    })
-    //always add local cluster
-    return _.uniqBy(_.union(onlineClusters, ['local-cluster']))
-}
-
 export const getClusterHost = (consoleURL) => {
     if (!consoleURL) {
         return ''
@@ -195,96 +160,6 @@ export const getClusterHost = (consoleURL) => {
         return ''
     }
     return consoleURLInstance.host.substr(ocpIdx + 1)
-}
-
-export const getPulseStatusForSubscription = (node) => {
-    let pulse = 'green'
-
-    const resourceMap = _.get(node, `specs.${node.type}Model`)
-    if (!resourceMap) {
-        pulse = 'orange' //resource not available
-        return pulse
-    }
-    let isPlaced = false
-    const onlineClusters = getOnlineClusters(node)
-    _.flatten(Object.values(resourceMap)).forEach((subscriptionItem) => {
-        const clsName = _.get(subscriptionItem, 'cluster', '')
-        if (subscriptionItem.status) {
-            if (R.includes('Failed', subscriptionItem.status)) {
-                pulse = 'red'
-            }
-            if (subscriptionItem.status === 'Subscribed') {
-                isPlaced = true // at least one cluster placed
-            }
-            if (
-                (!_.includes(onlineClusters, clsName) ||
-                    (subscriptionItem.status !== 'Subscribed' && subscriptionItem.status !== 'Propagated')) &&
-                pulse !== 'red'
-            ) {
-                pulse = 'yellow' // anything but failed or subscribed
-            }
-        }
-    })
-    if (pulse === 'green' && !isPlaced) {
-        pulse = 'yellow' // set to yellow if not placed
-    }
-
-    const statuses = _.get(node, 'specs.raw.status.statuses', {})
-    Object.values(statuses).forEach((cluster) => {
-        const packageItems = _.get(cluster, 'packages', {})
-        const failedPackage = Object.values(packageItems).find((item) => _.get(item, 'phase', '') === 'Failed')
-        if (failedPackage && pulse === 'green') {
-            pulse = 'yellow'
-        }
-    })
-
-    return pulse
-}
-
-export const getExistingResourceMapKey = (resourceMap, name, relatedKind) => {
-    // bofore loop, find all items with the same type as relatedKind
-    const isSameType = (item) => item.indexOf(`${relatedKind.kind}-`) === 0
-    const keys = R.filter(isSameType, Object.keys(resourceMap))
-    const relatedKindCls = _.get(relatedKind, 'cluster', '')
-    let i
-    for (i = 0; i < keys.length; i++) {
-        const keyObject = resourceMap[keys[i]]
-        const keyObjType = _.get(keyObject, 'type', '')
-        const keyObjName = _.get(keyObject, 'name', '')
-        if (
-            (keys[i].indexOf(name) > -1 && keys[i].indexOf(relatedKindCls) > -1) || //node id doesn't contain cluster name, match cluster using the object type
-            (_.includes(_.get(keyObject, 'specs.clustersNames', []), relatedKindCls) &&
-                name === `${keyObjType}-${keyObjName}-${relatedKindCls}`)
-        ) {
-            return keys[i]
-        }
-    }
-
-    return null
-}
-
-// The controllerrevision resource doesn't contain any desired pod count so
-// we need to get it from the parent; either a daemonset or statefulset
-export const syncControllerRevisionPodStatusMap = (resourceMap) => {
-    Object.keys(resourceMap).forEach((resourceName) => {
-        if (resourceName.startsWith('controllerrevision-')) {
-            const controllerRevision = resourceMap[resourceName]
-            const parentName = _.get(controllerRevision, 'specs.parent.parentName', '')
-            const parentType = _.get(controllerRevision, 'specs.parent.parentType', '')
-            const parentId = _.get(controllerRevision, 'specs.parent.parentId', '')
-            const clusterName = getClusterName(parentId).toString()
-            const parentResource =
-                resourceMap[`${parentType}-${parentName}-${clusterName}`] || resourceMap[`${parentType}-${parentName}-`]
-            if (parentResource) {
-                const parentModel = {
-                    ..._.get(parentResource, `specs.${parentResource.type}Model`, ''),
-                }
-                if (parentModel) {
-                    _.set(controllerRevision, 'specs.controllerrevisionModel', parentModel)
-                }
-            }
-        }
-    })
 }
 
 //for items with pods and not getting ready or available state, default those values to the current state
@@ -313,154 +188,6 @@ export const namespaceMatchTargetServer = (relatedKind, resourceMapForObject) =>
         relatedKind.cluster = _.get(findTargetClustersByNS[0], metadataName, '')
     }
     return findTargetClustersByNS.length > 0
-}
-
-export const setArgoApplicationDeployStatus = (node, details, t) => {
-    const relatedArgoApps = _.get(node, 'specs.relatedApps', [])
-    if (relatedArgoApps.length === 0) {
-        return // search is not available
-    }
-
-    // show error if app is not healthy
-    const appHealth = _.get(node, 'specs.raw.status.health.status')
-    const appStatusConditions = _.get(node, 'specs.raw.status.conditions')
-
-    if ((appHealth === 'Unknown' || appHealth === 'Degraded' || appHealth === 'Missing') && appStatusConditions) {
-        details.push({
-            labelKey: 'Health status',
-            value: t(
-                'The health status for application {{0}} is {{1}}. Use the Launch Argo editor action below to view the application details.',
-                [_.get(node, 'name', ''), appHealth]
-            ),
-            status: failureStatus,
-        })
-    }
-
-    // related Argo apps
-    details.push({
-        type: 'label',
-        labelValue: t('Related applications ({{0}})', [relatedArgoApps.length]),
-    })
-
-    details.push({
-        type: 'spacer',
-    })
-    // related Argo apps search and pagination
-    const sortByNameCaseInsensitive = R.sortBy(R.compose(R.toLower, R.prop('name')))
-    const sortedRelatedArgoApps = sortByNameCaseInsensitive(relatedArgoApps)
-    details.push({
-        type: 'relatedargoappdetails',
-        relatedargoappsdata: {
-            argoAppList: sortedRelatedArgoApps,
-        },
-    })
-}
-
-export const setAppSetDeployStatus = (node, details, t) => {
-    const appSetApps = _.get(node, 'specs.appSetApps', [])
-    if (appSetApps.length === 0) {
-        details.push({
-            labelKey: 'Error',
-            value: t(
-                'There are no Argo applications created. Check the following resources and make sure they are configured properly: applicationset placement, gitopscluster, gitopcluster placement, managedclusterset'
-            ),
-            status: failureStatus,
-        })
-        return
-    }
-
-    details.push({
-        type: 'label',
-        labelKey: t('Application deploy status'),
-    })
-    details.push({
-        type: 'spacer',
-    })
-    // continue checking app status
-    // look at each app, display ones with status other than Healthy
-    appSetApps.forEach((argoApp) => {
-        const appHealth = _.get(argoApp, 'status.health.status', '')
-        const appName = _.get(argoApp, metadataName)
-        details.push({
-            labelKey: appName,
-            value: appHealth,
-        })
-    })
-}
-
-export const getStatusForArgoApp = (healthStatus) => {
-    if (healthStatus === argoAppHealthyStatus) {
-        return checkmarkStatus
-    }
-    if (healthStatus === argoAppProgressingStatus) {
-        return pendingStatus
-    }
-    if (healthStatus === argoAppUnknownStatus) {
-        return failureStatus
-    }
-    return warningStatus
-}
-
-export const translateArgoHealthStatus = (healthStatus) => {
-    if (healthStatus === argoAppHealthyStatus) {
-        return 3
-    }
-    if (healthStatus === argoAppMissingStatus || healthStatus === argoAppUnknownStatus) {
-        return 1
-    }
-    if (healthStatus === argoAppDegradedStatus) {
-        return 0
-    }
-    return 2
-}
-
-export const getPulseStatusForArgoApp = (node, isAppSet) => {
-    const relatedApps = isAppSet ? _.get(node, 'specs.appSetApps', []) : []
-
-    if (!isAppSet) {
-        // add this node
-        const appStatus = _.get(node, 'specs.raw.status.health.status', argoAppUnknownStatus)
-        relatedApps.push({
-            status: appStatus,
-        })
-    }
-
-    let healthyCount = 0,
-        missingUnknownProgressingSuspendedCount = 0,
-        degradedCount = 0
-
-    relatedApps.forEach((app) => {
-        const relatedAppHealth = isAppSet
-            ? _.get(app, 'status.health.status', argoAppUnknownStatus)
-            : _.get(app, 'status', '')
-        if (relatedAppHealth === argoAppHealthyStatus) {
-            healthyCount++
-        } else if (
-            relatedAppHealth === argoAppMissingStatus ||
-            relatedAppHealth === argoAppUnknownStatus ||
-            relatedAppHealth === argoAppProgressingStatus ||
-            relatedAppHealth === argoAppSuspendedStatus
-        ) {
-            missingUnknownProgressingSuspendedCount++
-        } else if (relatedAppHealth === argoAppDegradedStatus) {
-            degradedCount++
-        }
-    })
-
-    if (degradedCount === relatedApps.length) {
-        return pulseValueArr[failureCode]
-    }
-    if (missingUnknownProgressingSuspendedCount === relatedApps.length) {
-        return pulseValueArr[pendingCode]
-    }
-    if (healthyCount === 0 && missingUnknownProgressingSuspendedCount === 0 && degradedCount === 0) {
-        return pulseValueArr[pendingCode]
-    }
-    if (healthyCount < relatedApps.length) {
-        return pulseValueArr[warningCode]
-    }
-
-    return pulseValueArr[checkmarkCode]
 }
 
 // try to match app destination clusters with hub clusters using search data
@@ -669,23 +396,4 @@ export const mustRefreshTopologyMap = (topology, currentUpdate) => {
         _.set(firstNode, '_lastUpdated', currentUpdate)
     }
     return true
-}
-
-export const setPlacementDeployStatus = (node, details, t) => {
-    if (node.type !== 'placement') {
-        return
-    }
-
-    const placementStatus = _.get(node, 'specs.raw.status')
-    if (placementStatus) {
-        if (placementStatus.numberOfSelectedClusters === 0) {
-            details.push({
-                labelValue: t('Error'),
-                value: t(
-                    'This Placement does not match any remote clusters. Make sure the requiredClusterSelector property is valid and match your clusters.'
-                ),
-                status: failureStatus,
-            })
-        }
-    }
 }

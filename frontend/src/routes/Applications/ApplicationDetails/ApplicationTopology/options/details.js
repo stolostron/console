@@ -14,19 +14,21 @@
 import R from 'ramda'
 import _ from 'lodash'
 import {
-    getNodePropery,
-    addPropertyToList,
     setResourceDeployStatus,
     setPodDeployStatus,
     setSubscriptionDeployStatus,
     setApplicationDeployStatus,
     setPlacementRuleDeployStatus,
+    setClusterStatus,
+    setPlacementDeployStatus,
+} from '../model/computeStatuses'
+import {
+    getNodePropery,
+    addPropertyToList,
     addDetails,
     addNodeOCPRouteLocationForCluster,
     addIngressNodeInfo,
-    setClusterStatus,
 } from '../helpers/diagram-helpers'
-import { setPlacementDeployStatus } from '../helpers/diagram-helpers-utils'
 import { kubeNaming } from '../../../../../components/Topology/helpers/utilities'
 
 const resName = 'resource.name'
