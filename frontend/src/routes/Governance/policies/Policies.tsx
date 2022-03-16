@@ -19,7 +19,6 @@ import {
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import {
     AcmAlert,
-    AcmDropdown,
     AcmSelect,
     AcmTable,
     IAcmTableAction,
@@ -53,8 +52,6 @@ import {
     PolicyAutomation,
     PolicyKind,
     PolicySet,
-    PolicySetApiVersion,
-    PolicySetKind,
     replaceResource,
 } from '../../../resources'
 import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
