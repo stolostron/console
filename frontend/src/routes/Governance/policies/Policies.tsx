@@ -762,6 +762,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                     <StackItem>
                         <AcmSelect
                             id="policy-sets"
+                            label=""
                             onChange={(key) => setSelectedPolicySetUid(key)}
                             value={selectedPolicySetUid}
                             placeholder={'Select a policy set'}
