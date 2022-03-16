@@ -274,7 +274,7 @@ export default function PoliciesPage() {
                 click: (item) => {
                     setModal(<AddToPolicySetModal policyTableItems={...item} onClose={() => setModal(undefined)} />)
                 },
-                tooltip: t('Add to Policy set'),
+                tooltip: t('Add to policy set'),
             },
             {
                 id: 'seperator-1',
@@ -289,6 +289,7 @@ export default function PoliciesPage() {
                         variant: 'bulk-action',
                         id: 'enable',
                         title: t('policy.table.actions.enable'),
+                        tooltip: t('Enable policies'),
                         click: (item) => {
                             setModalProps({
                                 open: true,
@@ -326,6 +327,7 @@ export default function PoliciesPage() {
                         variant: 'bulk-action',
                         id: 'disable',
                         title: t('policy.table.actions.disable'),
+                        tooltip: t('Disable policies'),
                         click: (item) => {
                             setModalProps({
                                 open: true,
@@ -374,6 +376,7 @@ export default function PoliciesPage() {
                         variant: 'bulk-action',
                         id: 'inform',
                         title: t('policy.table.actions.inform'),
+                        tooltip: t('Inform policies'),
                         click: (item) => {
                             setModalProps({
                                 open: true,
@@ -411,6 +414,7 @@ export default function PoliciesPage() {
                         variant: 'bulk-action',
                         id: 'enforce',
                         title: t('policy.table.actions.enforce'),
+                        tooltip: t('Enforce policies'),
                         click: (item) => {
                             setModalProps({
                                 open: true,
@@ -716,12 +720,17 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
 
     return (
         <Modal
-            title={t('Add to Policy set')}
-            description={t('Choose the Policy set you would like to add the specified policies to:')}
+            title={t('Add to policy set')}
+            description={t('Choose the policy set where you want to add specific policies.')}
             isOpen
             onClose={props.onClose}
             actions={[
-                <Button key="confirm" variant="primary" onClick={onConfirm} isAriaDisabled={!namespace}>
+                <Button
+                    key="confirm"
+                    variant="primary"
+                    onClick={onConfirm}
+                    isAriaDisabled={!namespace || namespacedPolicySets.length === 0}
+                >
                     {isAdding ? t('adding') : t('add')}
                 </Button>,
                 <Button key="cancel" variant="link" onClick={props.onClose}>
@@ -737,14 +746,14 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                             <AcmAlert
                                 variant="danger"
                                 title={t('Policy namespaces do not match')}
-                                message={t('In order to add policies to policy sets, their namespaces must match.')}
+                                message={t('To add policies to a policy set, the namespaces must match.')}
                                 isInline
                             />
                         ) : (
                             <AcmAlert
                                 variant="danger"
-                                title={t('no policies exist')}
-                                message={t('no policies exist')}
+                                title={t('No policy set in given namespace')}
+                                message={t('There are no policy sets in "{0}" namespace.').replace('{0}', namespace)}
                                 isInline
                             />
                         )}
@@ -753,9 +762,9 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                     <StackItem>
                         <AcmSelect
                             id="policy-sets"
-                            label={t('Policy sets')}
                             onChange={(key) => setSelectedPolicySetUid(key)}
                             value={selectedPolicySetUid}
+                            placeholder={'Select a policy set'}
                         >
                             {namespacedPolicySets.map((ps) => (
                                 <SelectOption key={ps.metadata.uid} value={ps.metadata.uid}>
