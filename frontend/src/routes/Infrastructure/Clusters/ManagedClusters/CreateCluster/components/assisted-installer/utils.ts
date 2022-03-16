@@ -534,7 +534,7 @@ export const onSaveBMH =
             const patches: any[] = []
             appendPatch(
                 patches,
-                `/metadata/annotations/'${BMH_HOSTNAME_ANNOTATION.replace('/', '~1')}'`,
+                `/metadata/annotations/${BMH_HOSTNAME_ANNOTATION.replace('/', '~1')}`,
                 values.hostname,
                 editModal.bmh.metadata.annotations?.[BMH_HOSTNAME_ANNOTATION]
             )
