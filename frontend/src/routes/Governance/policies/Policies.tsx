@@ -27,7 +27,7 @@ import {
     ITableFilter,
 } from '@stolostron/ui-components'
 import moment from 'moment'
-import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -55,6 +55,7 @@ import {
     PolicySet,
     PolicySetApiVersion,
     PolicySetKind,
+    replaceResource,
 } from '../../../resources'
 import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
@@ -274,7 +275,7 @@ export default function PoliciesPage() {
                 id: 'add-to-set',
                 title: t('policy.table.actions.addToPolicySet'),
                 click: (item) => {
-                    setModal(<AddToPolicySetModal items={...item} onClose={() => setModal(undefined)} />)
+                    setModal(<AddToPolicySetModal policyTableItems={...item} onClose={() => setModal(undefined)} />)
                 },
                 tooltip: t('Add to Policy set'),
             },
@@ -642,28 +643,40 @@ function usePolicyViolationsColumn(
     }
 }
 
-export function AddToPolicySetModal(props: { items: PolicyTableItem[]; onClose: () => void }) {
+export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]; onClose: () => void }) {
     const { t } = useTranslation()
     const [policySets] = useRecoilState(policySetsState)
+    const namespace = useMemo(() => namespaceCheck(props.policyTableItems), [props.policyTableItems])
+    const namespacedPolicySets = useMemo(
+        () => policySets.filter((ps) => ps.metadata.namespace === namespace),
+        [namespace, policySets]
+    )
     const [isAdding, setIsAdding] = useState(false)
-    const [selectedPolicySet, setSelectedPolicySet] = useState<string | undefined>('')
+    const [selectedPolicySet, setSelectedPolicySet] = useState<PolicySet>()
+    const [selectedPolicySetUid, setSelectedPolicySetUid] = useState<string>()
+
+    useEffect(() => {
+        setSelectedPolicySet(namespacedPolicySets.find((ps) => ps.metadata.uid === selectedPolicySetUid))
+    }, [selectedPolicySetUid, namespacedPolicySets])
+
     const [error, setError] = useState('')
-    const onConfirm = () => {
+    const onConfirm = async () => {
         setIsAdding(true)
         try {
             setError('')
-            props.items.map((item) =>
-                patchResource(
-                    {
-                        apiVersion: PolicySetApiVersion,
-                        kind: PolicySetKind,
-                        metadata: {
-                            name: selectedPolicySet,
-                        },
-                    } as PolicySet,
-                    [{ op: 'add', path: '/spec/policies', value: item.policy.metadata.name }]
-                )
-            )
+            if (selectedPolicySet) {
+                const policySet = JSON.parse(JSON.stringify(selectedPolicySet))
+                const policies = policySet.spec.policies
+                for (const policyTableItem of props.policyTableItems) {
+                    const policy = policyTableItem.policy
+                    const policyName = policy.metadata.name ?? ''
+                    if (!policies.includes(policyName)) {
+                        policies.push(policyName)
+                    }
+                }
+                policies.sort()
+                await replaceResource(policySet).promise
+            }
             props.onClose()
         } catch (err) {
             if (err instanceof Error) {
@@ -674,40 +687,35 @@ export function AddToPolicySetModal(props: { items: PolicyTableItem[]; onClose: 
             setIsAdding(false)
         }
     }
-    function namespaceCheck(items: PolicyTableItem[]) {
-        const ns = items[0].policy.metadata.namespace
-        const nsCheck = Object.keys(items).every((x: any) => items[x].policy.metadata.namespace === ns)
-        return !nsCheck
+    function namespaceCheck(policyTableItems: PolicyTableItem[]) {
+        let ns = ''
+        for (const policyTableItem of policyTableItems) {
+            if (!ns) {
+                ns = policyTableItem.policy.metadata.namespace ?? ''
+            } else if (ns !== policyTableItem.policy.metadata.namespace) {
+                return ''
+            }
+        }
+        return ns
     }
 
     const addPolicyToSetColumns = useMemo<IAcmTableColumn<PolicyTableItem>[]>(
         () => [
             {
                 header: t('Name'),
-                cell: (item: PolicyTableItem) => item.policy.metadata.name,
+                cell: (policyTableItem: PolicyTableItem) => policyTableItem.policy.metadata.name,
                 sort: 'policy.metadata.name',
                 search: 'policy.metadata.name',
             },
             {
                 header: t('Namespace'),
-                cell: (item: PolicyTableItem) => item.policy.metadata.namespace,
+                cell: (policyTableItem: PolicyTableItem) => policyTableItem.policy.metadata.namespace,
                 sort: 'policy.metadata.namespace',
                 search: 'policy.metadata.namespace',
             },
         ],
         []
     )
-
-    function availablePolicysets(items: PolicyTableItem[]) {
-        const ns = items[0].policy.metadata.namespace
-        const matches = policySets.filter((policyset) => policyset.metadata.namespace === ns)
-        const psList = matches.map((ps) => (
-            <SelectOption key={ps.metadata.name} value={ps.metadata.name}>
-                {ps.metadata.name}
-            </SelectOption>
-        ))
-        return psList
-    }
 
     return (
         <Modal
@@ -716,12 +724,7 @@ export function AddToPolicySetModal(props: { items: PolicyTableItem[]; onClose: 
             isOpen
             onClose={props.onClose}
             actions={[
-                <Button
-                    key="confirm"
-                    variant="primary"
-                    onClick={onConfirm}
-                    isAriaDisabled={namespaceCheck(props.items)}
-                >
+                <Button key="confirm" variant="primary" onClick={onConfirm} isAriaDisabled={!namespace}>
                     {isAdding ? t('adding') : t('add')}
                 </Button>,
                 <Button key="cancel" variant="link" onClick={props.onClose}>
@@ -731,32 +734,44 @@ export function AddToPolicySetModal(props: { items: PolicyTableItem[]; onClose: 
             variant={ModalVariant.small}
         >
             <Stack hasGutter>
-                {/* Render policyset dropdown if selected policy namespaces match, otherwise render alert */}
-                {namespaceCheck(props.items) ? (
+                {!namespace || namespacedPolicySets.length === 0 ? (
                     <StackItem>
-                        <AcmAlert
-                            variant="danger"
-                            title={t('Policy namespaces do not match')}
-                            message={t('In order to add policies to policy sets, their namespaces must match.')}
-                            isInline
-                        />
+                        {!namespace ? (
+                            <AcmAlert
+                                variant="danger"
+                                title={t('Policy namespaces do not match')}
+                                message={t('In order to add policies to policy sets, their namespaces must match.')}
+                                isInline
+                            />
+                        ) : (
+                            <AcmAlert
+                                variant="danger"
+                                title={t('no policies exist')}
+                                message={t('no policies exist')}
+                                isInline
+                            />
+                        )}
                     </StackItem>
                 ) : (
                     <StackItem>
                         <AcmSelect
                             id="policy-sets"
                             label={t('Policy sets')}
-                            onChange={(key) => setSelectedPolicySet(key)}
-                            value={selectedPolicySet}
+                            onChange={(key) => setSelectedPolicySetUid(key)}
+                            value={selectedPolicySetUid}
                         >
-                            {availablePolicysets(props.items)}
+                            {namespacedPolicySets.map((ps) => (
+                                <SelectOption key={ps.metadata.uid} value={ps.metadata.uid}>
+                                    {ps.metadata.name}
+                                </SelectOption>
+                            ))}
                         </AcmSelect>
                     </StackItem>
                 )}
                 <StackItem>
                     <AcmTable<PolicyTableItem>
                         columns={addPolicyToSetColumns}
-                        items={props.items}
+                        items={props.policyTableItems}
                         plural="Policies"
                         keyFn={(item: PolicyTableItem) => item.policy.metadata.uid as string}
                     />
