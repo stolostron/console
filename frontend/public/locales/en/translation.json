@@ -1630,6 +1630,8 @@
     "policy.violations_plural": "{{count}} policies with violations",
     "Ports": "Ports",
     "preview.clusterPools": "<bold>Technology Preview</bold>: For more information, <a>view documentation</a> on Cluster pools",
+    "preview.dynamicPluginsACM": "<bold>Technology Preview</bold>: You are using Red Hat Advanced Cluster Management for Kubernetes as a console plugin. <a>View documentation</a> for more information.",
+    "preview.dynamicPluginsMCE": "<bold>Technology Preview</bold>: You are using multicluster engine for Kubernetes as a console plugin. <a>View documentation</a> for more information.",
     "preview.machinePools": "<bold>Technology Preview</bold>: For more information, <a>view documentation</a> on Machine pools",
     "Project ID": "Project ID",
     "prop.details.section": "Details",

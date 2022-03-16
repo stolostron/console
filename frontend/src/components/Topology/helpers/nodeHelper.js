@@ -26,8 +26,6 @@ const gClusterCountText = 'g.clusterCountText'
 const useNodeIcon = 'use.nodeIcon'
 const useClusterCountIcon = 'use.clusterCountIcon'
 const dotClusterCountIcon = '.clusterCountIcon'
-const useArgoAppCountIcon = 'use.argoAppCountIcon'
-const dotArgoAppCountIcon = '.argoAppCountIcon'
 
 const hideTooltip = () => {
     return {
@@ -584,9 +582,6 @@ export default class NodeHelper {
         // move cluster count icon
         this.moveIcons(nodeLayer, dotClusterCountIcon)
 
-        // move argo app count icon
-        this.moveIcons(nodeLayer, dotArgoAppCountIcon)
-
         if (this.showsShapeTitles) {
             moveTitles(this.svg)
         }
@@ -655,9 +650,6 @@ export default class NodeHelper {
 
             // drag cluster count icon
             this.dragIcons(node, dotClusterCountIcon)
-
-            // drag argo app count icon
-            this.dragIcons(node, dotArgoAppCountIcon)
 
             // drag status message
             node.selectAll(textNodeStatus).call(attrs, ({ textBBox: { dy } }, i, ns) => {
@@ -889,9 +881,6 @@ export const counterZoomLabels = (svg, currentZoom) => {
 
         // cluster count icon
         setIconVisibility(nodeLayer, useClusterCountIcon)
-
-        // argo app count icon
-        setIconVisibility(nodeLayer, useArgoAppCountIcon)
 
         ///////// STATUS //////////////////
         nodeLayer.selectAll(textNodeStatus).each(({ y, search, uid, textBBox }, i, ns) => {
