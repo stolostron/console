@@ -65,6 +65,7 @@ import {
     clusterImageSet,
     mockClusterImageSet,
 } from './CreateCluster.sharedmocks'
+import { PluginContext } from '../../../../../lib/PluginContext'
 
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
 //const awsProjectNamespace = 'test-aws-namespace'
@@ -1385,4 +1386,76 @@ describe('CreateCluster', () => {
         },
         2 * 60 * 1000
     )
+
+    test('can create AWS cluster without KlusterletAddonConfig on MCE', async () => {
+        window.scrollBy = () => {}
+
+        const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
+
+        // create the form
+        const { container } = render(
+            <PluginContext.Provider value={{ isACMAvailable: false }}>
+                <Component />
+            </PluginContext.Provider>
+        )
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        // step 1 -- the infrastructure
+        await clickByTestId('amazon-web-services')
+
+        // wait for tables/combos to fill in
+        await waitForNocks(initialNocks)
+
+        // connection
+        await clickByPlaceholderText('Select a credential')
+        //screen.debug(debug(), 2000000)
+        await clickByText(providerConnectionAws.metadata.name!)
+        await clickByText('Next')
+
+        // step 2 -- the name and imageset
+        await typeByTestId('eman', clusterName!)
+        await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
+        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+        await clickByText('Next')
+
+        // step 3 -- nodes
+        await clickByText('Next')
+
+        // step 5 -- the network
+        await clickByText('Next')
+
+        // skipping private configuration
+        await clickByText('Next')
+
+        // skipping proxy
+        await clickByText('Next')
+
+        // step 6 - integration - skipping ansible template
+        await clickByText('Next')
+
+        // nocks for cluster creation
+        const createNocks = [
+            // create aws namespace (project)
+            nockCreate(mockClusterProject, mockClusterProjectResponse),
+
+            // create the managed cluster
+            nockCreate(mockManagedClusterAws),
+            nockCreate(mockMachinePoolAws),
+            nockCreate(mockProviderConnectionSecretCopiedAws),
+            nockCreate(mockPullSecretAws),
+            nockCreate(mockInstallConfigSecretAws),
+            nockCreate(mockPrivateSecretAws),
+            nockCreate(mockClusterDeploymentAws),
+        ]
+
+        // click create button
+        await clickByText('Create')
+
+        // expect(consoleInfos).hasNoConsoleLogs()
+        await waitForText('Creating cluster ...')
+
+        // make sure creating
+        await waitForNocks(createNocks)
+    })
 })

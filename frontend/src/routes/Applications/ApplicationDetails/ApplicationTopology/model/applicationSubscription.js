@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { cloneDeep, get, includes, isEmpty } from 'lodash'
+import { listResources } from '../../../../../resources/utils/resource-request'
 
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
 const NAMESPACE = 'metadata.namespace'
 
-export const getSubscriptionApplication = (model, app, selectedChannel, recoilStates) => {
+export const getSubscriptionApplication = async (model, app, selectedChannel, recoilStates) => {
     // get subscriptions to channels (pipelines)
     let subscriptionNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/subscriptions"]')
     if (subscriptionNames && subscriptionNames.length > 0) {
@@ -50,8 +51,9 @@ export const getSubscriptionApplication = (model, app, selectedChannel, recoilSt
                 model.reports.push(subscription.report)
             }
         })
-        getAppHooks(preHooksMap, true)
-        getAppHooks(postHooksMap, false)
+
+        await getAppHooks(preHooksMap, true)
+        await getAppHooks(postHooksMap, false)
         getAppRules(rulesMap, model.allClusters, recoilStates.placementRules)
 
         // get all channels
@@ -145,6 +147,9 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
                 arr.push({ deployableName, subscription })
             }
         })
+        if (postHooks) {
+            subscription.posthooks = []
+        }
 
         // get pre hooks
         const preHooks = get(subscription, 'status.ansiblejobs.prehookjobshistory', [])
@@ -159,6 +164,9 @@ const buildSubscriptionMaps = (subscriptions, modelSubscriptions) => {
                 arr.push({ deployableName, subscription })
             }
         })
+        if (preHooks) {
+            subscription.prehooks = []
+        }
 
         // ditto for channels
         const [chnNamespace, chnName] = get(subscription, 'spec.channel', '').split('/')
@@ -245,44 +253,43 @@ const getAllAppChannels = (appAllChannels, allSubscriptions, channels) => {
     })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getAppHooks = (hooks, isPreHooks) => {
+const getAppHooks = async (hooks, isPreHooks) => {
     if (!isEmpty(hooks)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const requests = Object.entries(hooks).map(async ([namespace, values]) => {
+            let response
+            try {
+                response = await listResources({
+                    apiVersion: 'tower.ansible.com/v1alpha1',
+                    kind: 'AnsibleJob',
+                }).promise
+            } catch (err) {
+                console.error('Error listing resource:', err)
+            }
+
+            if (response) {
+                response.forEach((deployable) => {
+                    const name = get(deployable, 'metadata.name')
+                    values.forEach(({ deployableName, subscription }) => {
+                        if (name === deployableName) {
+                            if (isPreHooks) {
+                                if (!subscription.prehooks) {
+                                    subscription.prehooks = []
+                                }
+                                subscription.prehooks.push(deployable)
+                            } else {
+                                if (!subscription.posthooks) {
+                                    subscription.posthooks = []
+                                }
+                                subscription.posthooks.push(deployable)
+                            }
+                        }
+                    })
+                })
+            }
+        })
+        return Promise.all(requests)
     }
-    return //czcz
-    // const requests = Object.entries(hooks).map(async ([namespace, values]) => {
-    //   // get all ansible hooks in this namespace
-    //   let response;
-    //   // try {
-    //   //   response = await this.kubeConnector.getResources(
-    //   //     (ns) => `/apis/tower.ansible.com/v1alpha1/namespaces/${ns}/ansiblejobs`,
-    //   //     { kind: 'AnsibleJob', namespaces: [namespace] },
-    //   //   ) || [];
-    //   // } catch (err) {
-    //   //   logger.error(err);
-    //   //   throw err;
-    //   // }
-    //   // stuff responses into subscriptions that requested them
-    //   response.forEach((deployable) => {
-    //     const name = get(deployable, 'metadata.name');
-    //     values.forEach(({ deployableName, subscription }) => {
-    //       if (name === deployableName) {
-    //         if (isPreHooks) {
-    //           if (!subscription.prehooks) {
-    //             subscription.prehooks = [];
-    //           }
-    //           subscription.prehooks.push(deployable);
-    //         } else {
-    //           if (!subscription.posthooks) {
-    //             subscription.posthooks = [];
-    //           }
-    //           subscription.posthooks.push(deployable);
-    //         }
-    //       }
-    //     });
-    //   });
-    // });
-    // return Promise.all(requests);
 }
 
 const longestCommonSubstring = (str1, str2) => {

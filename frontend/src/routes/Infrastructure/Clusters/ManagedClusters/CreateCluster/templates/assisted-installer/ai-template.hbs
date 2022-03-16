@@ -81,6 +81,7 @@ metadata:
 spec:
   hubAcceptsClient: true
 
+{{#if includeKlusterletAddonConfig}}
 ---
 apiVersion: agent.open-cluster-management.io/v1
 kind: KlusterletAddonConfig
@@ -102,7 +103,7 @@ spec:
     enabled: true
   iamPolicyController:
     enabled: true
-
+{{/if}}
 ---
 
 apiVersion: agent-install.openshift.io/v1beta1

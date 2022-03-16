@@ -1,15 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionListItem, PageSection } from '@patternfly/react-core'
-import { AcmActionGroup, AcmDrawerContext } from '@stolostron/ui-components'
+import { PageSection } from '@patternfly/react-core'
+import { AcmDrawerContext } from '@stolostron/ui-components'
 import { cloneDeep } from 'lodash'
 import { useContext, useEffect, useState } from 'react'
 import Topology from '../../../../components/Topology/Topology'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { ApplicationDataType, useApplicationPageContext } from '../ApplicationDetails'
+import { ApplicationDataType } from '../ApplicationDetails'
 import './ApplicationTopology.css'
 import DiagramViewer from './components/DiagramViewer'
-import LegendView from './components/LegendView'
 import { processResourceActionLink } from './helpers/diagram-helpers'
 import { getDiagramElements } from './model/topology'
 import { getOptions } from './options'
@@ -81,42 +80,42 @@ export function ApplicationTopologyPageContent(props: {
             drawerPanelBodyHasNoPadding,
         })
     }
-
-    useApplicationPageContext(() => {
-        return (
-            <AcmActionGroup>
-                {[
-                    <ActionListItem>
-                        <div className="diagram-title">
-                            <span
-                                className="how-to-read-text"
-                                tabIndex={0}
-                                onClick={() =>
-                                    setDrawerContent(
-                                        t('How to read topology'),
-                                        true,
-                                        false,
-                                        false,
-                                        false,
-                                        <LegendView t={t} />
-                                    )
-                                }
-                                onKeyPress={() => {
-                                    // noop function
-                                }}
-                                role="button"
-                            >
-                                {t('How to read topology')}
-                                <svg className="how-to-read-icon">
-                                    <use href={'#diagramIcons_sidecar'} />
-                                </svg>
-                            </span>
-                        </div>
-                    </ActionListItem>,
-                ]}
-            </AcmActionGroup>
-        )
-    })
+    // Use common dropdown Actions instead
+    // useApplicationPageContext(() => {
+    //     return (
+    //         <AcmActionGroup>
+    //             {[
+    //                 <ActionListItem>
+    //                     <div className="diagram-title">
+    //                         <span
+    //                             className="how-to-read-text"
+    //                             tabIndex={0}
+    //                             onClick={() =>
+    //                                 setDrawerContent(
+    //                                     t('How to read topology'),
+    //                                     true,
+    //                                     false,
+    //                                     false,
+    //                                     false,
+    //                                     <LegendView t={t} />
+    //                                 )
+    //                             }
+    //                             onKeyPress={() => {
+    //                                 // noop function
+    //                             }}
+    //                             role="button"
+    //                         >
+    //                             {t('How to read topology')}
+    //                             <svg className="how-to-read-icon">
+    //                                 <use href={'#diagramIcons_sidecar'} />
+    //                             </svg>
+    //                         </span>
+    //                     </div>
+    //                 </ActionListItem>,
+    //             ]}
+    //         </AcmActionGroup>
+    //     )
+    // })
 
     const changeTheChannel = (fetchChannel: string) => {
         props.setActiveChannel(fetchChannel)

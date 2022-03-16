@@ -4,8 +4,9 @@ import { Button, Checkbox, ModalVariant } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmAlert, AcmModal } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
-import { Trans } from '../../../lib/acm-i18next'
 import React, { ReactNode, useState } from 'react'
+import { useHistory } from 'react-router-dom'
+import { Trans } from '../../../lib/acm-i18next'
 import { deleteApplication } from '../../../lib/delete-application'
 import { ApplicationKind, ApplicationSetKind, IResource } from '../../../resources'
 import '../css/DeleteResourceModal.css'
@@ -25,11 +26,13 @@ export interface IDeleteResourceModalProps {
     appSetApps?: string[]
     close: () => void
     t: TFunction
+    redirect?: string
 }
 
 export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: false }) {
     const [removeAppResources, setRemoveAppResources] = useState<boolean>(false)
     const [removeAppSetResource, setRemoveAppSetResource] = useState<boolean>(false)
+    const history = useHistory()
 
     if (props.open === false) {
         return <></>
@@ -45,6 +48,10 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
 
     const handleSubmit = () => {
         props.close()
+        if (props.redirect) {
+            history.push(props.redirect)
+        }
+
         if (props.resource.kind === ApplicationKind) {
             return deleteApplication(props.resource, removeAppResources ? props.selected : [])
         }
@@ -72,8 +79,6 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
         const appTypeMsg = isAppKind
             ? props.t('Remove Application related resources')
             : props.t('Remove ApplicationSet related resources')
-
-        console.log(appTypeMsg)
 
         return (
             <React.Fragment>
@@ -261,7 +266,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
             aria-label={modalTitle}
             showClose={true}
             onClose={props.close}
-            variant={ModalVariant.large}
+            variant={ModalVariant.medium}
             titleIconVariant="warning"
             position="top"
             positionOffset="225px"

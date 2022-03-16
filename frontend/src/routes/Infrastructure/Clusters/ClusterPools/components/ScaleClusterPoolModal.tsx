@@ -22,6 +22,7 @@ export type ScaleClusterPoolModalProps = {
 export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
     const { t } = useTranslation()
     const [size, setSize] = useState<number>(0)
+    const [runningCount, setRunningCount] = useState<number>(0)
 
     useEffect(() => {
         if (props.clusterPool) {
@@ -29,11 +30,17 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
         } else if (!props.clusterPool) {
             setSize(0)
         }
+        if (props.clusterPool && !!props.clusterPool.spec?.runningCount) {
+            setRunningCount(props.clusterPool.spec?.runningCount!)
+        } else if (!props.clusterPool) {
+            setRunningCount(0)
+        }
     }, [props.clusterPool])
 
     function reset() {
         props.onClose?.()
         setSize(0)
+        setRunningCount(0)
     }
 
     return (
@@ -55,15 +62,30 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                 />
                             </div>
                             <AcmNumberInput
-                                label={t('clusterPool.modal.scale.input')}
-                                id="scale"
+                                label={t('clusterPool.modal.scale.size.input')}
+                                id="scale-size"
                                 min={0}
                                 value={size}
                                 onChange={(event) => setSize(Number((event.target as HTMLInputElement).value))}
                                 onMinus={() => setSize(size - 1)}
                                 onPlus={() => setSize(size + 1)}
                                 validation={(size: Number) => {
-                                    if (size < 0) return t('clusterPool.modal.scale.validation.greaterThanZero')
+                                    if (size < 0) return t('clusterPool.modal.scale.validation.greaterThanOrEqualZero')
+                                    return undefined
+                                }}
+                                required
+                            />
+                            <AcmNumberInput
+                                label={t('clusterPool.modal.scale.runningCount.input')}
+                                id="scale-runningCount"
+                                min={0}
+                                value={runningCount}
+                                onChange={(event) => setRunningCount(Number((event.target as HTMLInputElement).value))}
+                                onMinus={() => setRunningCount(runningCount - 1)}
+                                onPlus={() => setRunningCount(runningCount + 1)}
+                                validation={(runningCount: Number) => {
+                                    if (runningCount < 0)
+                                        return t('clusterPool.modal.scale.validation.greaterThanOrEqualZero')
                                     return undefined
                                 }}
                                 required
@@ -82,6 +104,11 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                                 op: 'replace',
                                                 path: '/spec/size',
                                                 value: size,
+                                            },
+                                            {
+                                                op: 'replace',
+                                                path: '/spec/runningCount',
+                                                value: runningCount,
                                             },
                                         ])
                                             .promise.then(() => reset())

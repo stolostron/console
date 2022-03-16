@@ -268,9 +268,6 @@ describe('PolicySets Page', () => {
             </RecoilRoot>
         )
 
-        // find the PolicySet name
-        await waitForText(policySet.metadata.name!)
-
         // Check clusters with violation count
         await waitForText('0 Clusters with policy violations')
         // Check policies with violation count

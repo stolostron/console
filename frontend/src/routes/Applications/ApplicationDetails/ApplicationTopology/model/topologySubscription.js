@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { get, includes, concat, uniqBy, filter, keyBy, cloneDeep } from 'lodash'
-
 import { createChildNode, addClusters } from './utils'
 
 const localClusterName = 'local-cluster'
@@ -84,6 +83,14 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
                 addSubscriptionRules(parentId, subscription, links, nodes)
             }
 
+            // add prehooks
+            if (subscription.prehooks && subscription.prehooks.length > 0) {
+                addSubscriptionHooks(parentId, subscription, links, nodes, true)
+            }
+            if (subscription.posthooks && subscription.posthooks.length > 0) {
+                addSubscriptionHooks(parentId, subscription, links, nodes, false)
+            }
+
             // if no cluster found by the placement, use a default empty cluster name so that the deployables are parsed and shown
             let clusterShapes = [['']]
             if (ruleClusterNames.length > 1) {
@@ -121,6 +128,7 @@ const addSubscription = (appId, subscription, isPlaced, links, nodes) => {
     } = subscription
     const subscriptionId = `member--subscription--${namespace}--${name}`
     const rule = get(subscription, 'rules[0]')
+
     nodes.push({
         name,
         namespace,
@@ -163,6 +171,34 @@ const addSubscriptionRules = (parentId, subscription, links, nodes) => {
             to: { uid: ruleId },
             type: '',
             specs: { isDesign: true },
+        })
+    })
+}
+
+const addSubscriptionHooks = (parentId, subscription, links, nodes, isPreHook) => {
+    const hookList = isPreHook ? subscription.prehooks : subscription.posthooks
+    hookList.forEach((hook) => {
+        const {
+            metadata: { name, namespace },
+            kind,
+        } = hook
+        const type = kind.toLowerCase()
+        const memberId = `member--deployed-resource--${parentId}--${namespace}--${name}--${type}`
+        hook.hookType = isPreHook ? 'pre-hook' : 'post-hook'
+
+        nodes.push({
+            name,
+            namespace,
+            type,
+            id: memberId,
+            uid: memberId,
+            specs: { isDesign: false, raw: hook },
+        })
+        links.push({
+            from: { uid: isPreHook ? memberId : parentId },
+            to: { uid: isPreHook ? parentId : memberId },
+            type: '',
+            specs: { isDesign: false },
         })
     })
 }

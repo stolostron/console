@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
+import { History, Location } from 'history'
 
 export enum NavigationPath {
     // Console
@@ -74,6 +75,7 @@ export enum NavigationPath {
     advancedConfiguration = '/multicloud/applications/advanced',
     applications = '/multicloud/applications',
     createApplicationArgo = '/multicloud/applications/create/argo',
+    editApplicationArgo = '/multicloud/applications/edit/argo/:namespace/:name',
     createApplicationSubscription = '/multicloud/applications/create/subscription',
     applicationDetails = '/multicloud/applications/details/:namespace/:name',
     applicationOverview = '/multicloud/applications/details/:namespace/:name/overview',
@@ -101,4 +103,22 @@ export enum NavigationPath {
     addCredentials = '/multicloud/credentials/create',
     editCredentials = '/multicloud/credentials/edit/:namespace/:name',
     viewCredentials = '/multicloud/credentials/details/:namespace/:name',
+}
+
+export type CancelBackState = { cancelBack?: boolean }
+
+export function locationWithCancelBack(
+    pathname: History.Pathname,
+    search?: History.Search,
+    hash?: History.Hash
+): Location<CancelBackState> {
+    return { pathname, search: search || '', hash: hash || '', state: { cancelBack: true } }
+}
+
+export function cancelNavigation(location: Location<CancelBackState>, history: History, pathname: string) {
+    if (location.state && location.state?.cancelBack) {
+        history.goBack()
+    } else {
+        history.push(pathname)
+    }
 }

@@ -108,7 +108,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             }
             fetchAuthorizedNamespaces().then(({ authorizedNamespaces, namespaces }) => {
                 // see if the user has access to all namespaces
-                if (authorizedNamespaces.length < namespaces.length) {
+                if (authorizedNamespaces?.length < namespaces?.length) {
                     setHasSyncPermission(false)
                 } else {
                     setHasSyncPermission(true)
@@ -256,8 +256,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         } else {
             /////////////////////////// subscription items //////////////////////////////////////////////
             const allSubscriptions = _.get(applicationData.application, 'allSubscriptions', [])
-            subsList = applicationData.application.allSubscriptions
-            disableBtn = subsList && subsList.length > 0 ? false : true
+            subsList = allSubscriptions
+            disableBtn = subsList && subsList?.length > 0 ? false : true
 
             let lastSynced = ''
             allSubscriptions.forEach((subs: Subscription) => {
@@ -364,7 +364,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                             {renderData(
                                 subsList,
                                 (showSubCards ? 'Hide subscription details' : 'Show subscription details') +
-                                    ` (${subsList.length})`,
+                                    ` (${subsList?.length})`,
                                 '70%'
                             )}
                         </Button>
@@ -579,7 +579,7 @@ function createSubsCards(
     channels: Channel[]
 ) {
     return (
-        subsList.length &&
+        subsList?.length &&
         subsList.map((sub) => {
             const appRepos = getApplicationRepos(appResource, [sub] as Subscription[], channels)
             if (sub) {

@@ -9,6 +9,7 @@ import {
     getResource,
 } from '../../../../../resources'
 import {
+    AcmAlert,
     AcmAlertContext,
     AcmAlertGroup,
     AcmButton,
@@ -39,6 +40,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
     const { t } = useTranslation()
     const history = useHistory()
     const [clusterClaim, setClusterClaim] = useState<ClusterClaim | undefined>()
+    const [claimCreated, setClaimCreated] = useState<boolean>(false)
     const [claimed, setClaimed] = useState<boolean>(false)
 
     useEffect(() => {
@@ -68,6 +70,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
 
     function reset() {
         props.onClose?.()
+        setClaimCreated(false)
         setClaimed(false)
         setClusterClaim(undefined)
     }
@@ -92,12 +95,18 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
     return (
         <AcmModal
             variant={ModalVariant.medium}
-            title={!claimed ? t('clusterClaim.create.title') : t('clusterClaim.create.title.success')}
-            titleIconVariant={!claimed ? undefined : 'success'}
+            title={
+                claimCreated
+                    ? claimed
+                        ? t('clusterClaim.create.title.success')
+                        : t('clusterClaim.create.title.pending')
+                    : t('clusterClaim.create.title')
+            }
+            titleIconVariant={claimCreated ? 'success' : undefined}
             isOpen={!!props.clusterPool}
             onClose={reset}
         >
-            {!claimed ? (
+            {!claimCreated && (
                 <AcmForm style={{ gap: 0 }}>
                     <AcmAlertContext.Consumer>
                         {(alertContext) => (
@@ -109,6 +118,18 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                         components={{ bold: <strong /> }}
                                     />
                                 </div>
+                                {props.clusterPool?.status?.ready === 0 && (
+                                    <div>
+                                        &nbsp;
+                                        <AcmAlert
+                                            isInline={true}
+                                            noClose={true}
+                                            variant="warning"
+                                            title={t('no.running.clusters.in.pool')}
+                                            message={t('clusterClaim.warning')}
+                                        />
+                                    </div>
+                                )}
                                 &nbsp;
                                 <AcmTextInput
                                     id="clusterClaimName"
@@ -139,13 +160,8 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                                                         if (updatedClaim) {
                                                             setClusterClaim(updatedClaim)
                                                             setClaimed(true)
-                                                        } else {
-                                                            alertContext.addAlert({
-                                                                type: 'danger',
-                                                                title: t('error'),
-                                                                message: t('clusterClaim.create.timeOut'),
-                                                            })
                                                         }
+                                                        setClaimCreated(true)
                                                         return resolve()
                                                     })
                                                     .catch((e) => {
@@ -169,7 +185,8 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         )}
                     </AcmAlertContext.Consumer>
                 </AcmForm>
-            ) : (
+            )}
+            {claimCreated && claimed && (
                 <>
                     <p>
                         <Trans
@@ -183,10 +200,6 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         isAutoColumnWidths
                         style={{ marginBottom: '24px', marginTop: '16px' }}
                     >
-                        {/* <DescriptionListGroup>
-                            <DescriptionListTerm>{t('clusterClaim.cluster.displayName')}</DescriptionListTerm>
-                            <DescriptionListDescription>{clusterClaim?.metadata!.name!}</DescriptionListDescription>
-                        </DescriptionListGroup> */}
                         <DescriptionListGroup>
                             <DescriptionListTerm>{t('clusterClaim.cluster.name')}</DescriptionListTerm>
                             <DescriptionListDescription>{clusterClaim?.spec!.namespace!}</DescriptionListDescription>
@@ -202,6 +215,30 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                     >
                         {t('clusterClaim.modal.viewCluster')}
                     </AcmButton>
+                    <AcmButton key="cancel" variant="link" onClick={reset}>
+                        {t('close')}
+                    </AcmButton>
+                </>
+            )}
+            {claimCreated && !claimed && (
+                <>
+                    <p>
+                        <Trans
+                            i18nKey="clusterClaim.create.message.pending"
+                            values={{ clusterPoolName: clusterClaim?.spec?.clusterPoolName! }}
+                            components={{ bold: <strong /> }}
+                        />
+                    </p>
+                    <DescriptionList
+                        isHorizontal
+                        isAutoColumnWidths
+                        style={{ marginBottom: '24px', marginTop: '16px' }}
+                    >
+                        <DescriptionListGroup>
+                            <DescriptionListTerm>{t('clusterClaim.name.label')}</DescriptionListTerm>
+                            <DescriptionListDescription>{clusterClaim?.metadata!.name!}</DescriptionListDescription>
+                        </DescriptionListGroup>
+                    </DescriptionList>
                     <AcmButton key="cancel" variant="link" onClick={reset}>
                         {t('close')}
                     </AcmButton>

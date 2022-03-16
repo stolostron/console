@@ -90,7 +90,8 @@ const mockClusterPool: ClusterPool = {
                 type: 'MissingDependencies',
             },
         ],
-        ready: 2,
+        ready: 1,
+        standby: 1,
         size: 2,
     },
 }
@@ -185,6 +186,12 @@ describe('ClusterPools page', () => {
             </RecoilRoot>
         )
     })
+    test('shows correct available clusters count', async () => {
+        await waitForText(mockClusterPool.metadata.name!)
+        await waitForText(mockClusterPoolStandbyOnly.metadata.name!)
+        await waitForText('1 out of 2')
+        await waitForText('0 out of 2')
+    })
     test('should be able to destroy a cluster pool using a row action', async () => {
         await waitForText(mockClusterPool.metadata.name!)
         await clickRowAction(1, 'Destroy cluster pool')
@@ -202,13 +209,34 @@ describe('ClusterPools page', () => {
         await waitForNocks(deleteNocks)
     })
 
-    test('should be able to scale a cluster pool', async () => {
+    test('should be able to scale a cluster pool size', async () => {
         await waitForText(mockClusterPool.metadata.name!)
         await clickByLabel('Actions', 0)
         await clickByText('Scale cluster pool')
         await waitForText('Scale cluster pool')
-        await clickByLabel('Plus')
-        const patchNocks: Scope[] = [nockPatch(mockClusterPool, [{ op: 'replace', path: '/spec/size', value: 3 }])]
+        await clickByLabel('Plus', 0)
+        const patchNocks: Scope[] = [
+            nockPatch(mockClusterPool, [
+                { op: 'replace', path: '/spec/size', value: 3 },
+                { op: 'replace', path: '/spec/runningCount', value: 2 },
+            ]),
+        ]
+        await clickByText('Scale')
+        await waitForNocks(patchNocks)
+    })
+
+    test('should be able to scale a cluster pool running count', async () => {
+        await waitForText(mockClusterPool.metadata.name!)
+        await clickByLabel('Actions', 0)
+        await clickByText('Scale cluster pool')
+        await waitForText('Scale cluster pool')
+        await clickByLabel('Plus', 1)
+        const patchNocks: Scope[] = [
+            nockPatch(mockClusterPool, [
+                { op: 'replace', path: '/spec/size', value: 2 },
+                { op: 'replace', path: '/spec/runningCount', value: 3 },
+            ]),
+        ]
         await clickByText('Scale')
         await waitForNocks(patchNocks)
     })
