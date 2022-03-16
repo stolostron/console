@@ -37,8 +37,16 @@ metadata:
   name: {{{channelName}}}-auth
   namespace: {{{channelName}}}-ns
 data:
+{{#if @root.showSecrets}}
   AccessKeyID: {{{accessKey}}}
+{{else}}
+  AccessKeyID: # injected on create
+{{/if}}
+{{#if @root.showSecrets}}
   SecretAccessKey: {{{secretKey}}}
+{{else}}
+  SecretAccessKey: # injected on create
+{{/if}}
   {{#if region}}
   Region: '{{{region}}}'
   {{/if}}

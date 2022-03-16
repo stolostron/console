@@ -61,6 +61,11 @@ export const controlData = async () => [
         note: 'creation.view.required.mark',
     },
     {
+        id: 'showSecrets',
+        type: 'hidden',
+        active: false,
+    },
+    {
         name: 'creation.app.name',
         tooltip: 'tooltip.creation.app.name',
         id: 'name',

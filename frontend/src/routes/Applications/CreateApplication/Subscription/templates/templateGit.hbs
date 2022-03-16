@@ -41,8 +41,16 @@ metadata:
   name: {{{channelName}}}-auth
   namespace: {{{channelName}}}-ns
 data:
+{{#if @root.showSecrets}}
   user: {{{githubUser}}}
+{{else}}
+  user: # injected on create
+{{/if}}
+{{#if @root.showSecrets}}
   accessToken: {{{githubAccessId}}}
+{{else}}
+  user: # injected on create
+{{/if}}
 {{/if}}
 {{/unless}}      
 ---
