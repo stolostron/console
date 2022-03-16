@@ -516,5 +516,8 @@ export function LoadData(props: { children?: ReactNode }) {
 
 export function usePolicies() {
     const [policies] = useRecoilState(policiesState)
-    return policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'])
+    return useMemo(
+        () => policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy']),
+        [policies]
+    )
 }
