@@ -94,7 +94,7 @@
     "Application updated": "Application updated",
     "application.app.k8s.io/v1beta1": "application.app.k8s.io/v1beta1",
     "application.argoproj.io/v1alpha1": "application.argoproj.io/v1alpha1",
-    "application.create.yaml": "Application Yaml",
+    "application.create.yaml": "Application YAML",
     "Applications": "Applications",
     "ApplicationSet": "ApplicationSet",
     "applicationset.argoproj.io/v1alpha1": "applicationset.argoproj.io/v1alpha1",

@@ -48,7 +48,7 @@ const Portals = Object.freeze({
 
 export default function CreateSubscriptionApplicationPage() {
     const { t } = useTranslation()
-    const [title, setTitle] = useState<string>(t('Create Application'))
+    const [title, setTitle] = useState<string>(t('Create application'))
 
     // create portals for buttons in header
     const switches = (
