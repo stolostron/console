@@ -392,6 +392,9 @@ export function getProvider(
         case 'VSPHERE':
             provider = Provider.vmware
             break
+        case 'RHV':
+            provider = Provider.redhatvirtualization
+            break
         case 'AUTO-DETECT':
             provider = undefined
             break
