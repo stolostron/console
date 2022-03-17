@@ -102,7 +102,7 @@ describe('computeResourceName node with pods no _hostingDeployable', () => {
         status: 'Running',
     }
     it('nodeMustHavePods POD no _hostingDeployable', () => {
-        expect(computeResourceName(node, null, 'redis-secondary', { value: 'true' })).toEqual('pod-redis')
+        expect(computeResourceName(node, null, 'redis-secondary', { value: 'true' })).toEqual('pod-redis-secondary')
     })
 })
 

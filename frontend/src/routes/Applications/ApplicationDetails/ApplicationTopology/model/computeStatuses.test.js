@@ -2,7 +2,6 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-//nudge
 import {
     computeNodeStatus,
     setSubscriptionDeployStatus,

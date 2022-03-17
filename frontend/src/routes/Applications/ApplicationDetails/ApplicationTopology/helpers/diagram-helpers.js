@@ -346,6 +346,10 @@ export const getNameWithoutChartRelease = (relatedKind, name, hasHelmReleases) =
 }
 
 export const computeResourceName = (relatedKind, deployableName, name, isClusterGrouped) => {
+    if (relatedKind.kind === 'pod' && !_.get(relatedKind, '_hostingDeployable') && !deployableName) {
+        name = getNameWithoutPodHash(relatedKind).nameNoHash
+    }
+
     if (relatedKind.kind !== 'subscription') {
         //expect for subscriptions, use cluster name to group resources
         name = isClusterGrouped.value
