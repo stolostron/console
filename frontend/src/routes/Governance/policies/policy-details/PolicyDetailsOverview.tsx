@@ -1,9 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, LabelGroup, PageSection, Stack, Text, TextVariants } from '@patternfly/react-core'
+import {
+    Alert,
+    Button,
+    ButtonVariant,
+    LabelGroup,
+    PageSection,
+    Stack,
+    Text,
+    TextVariants,
+} from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmDescriptionList, AcmTable } from '@stolostron/ui-components'
+import { AcmDescriptionList, AcmDrawerContext, AcmTable } from '@stolostron/ui-components'
 import moment from 'moment'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -28,6 +37,7 @@ import {
 } from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
 import { getPlacementDecisionsForPlacements, getPlacementsForResource } from '../../common/util'
+import { AutomationDetailsSidebar } from '../../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
 
@@ -42,6 +52,7 @@ interface TableData {
 export default function PolicyDetailsOverview(props: { policy: Policy }) {
     const { policy } = props
     const { t } = useTranslation()
+    const { setDrawerContext } = useContext(AcmDrawerContext)
     const [placements] = useRecoilState(placementsState)
     const [policySets] = useRecoilState(policySetsState)
     const [placementBindings] = useRecoilState(placementBindingsState)
@@ -109,20 +120,31 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             {
                 key: 'Automation',
                 value: policyAutomationMatch ? (
-                    <Link
-                        to={{
-                            pathname: NavigationPath.editPolicyAutomation
-                                .replace(':namespace', policy.metadata.namespace as string)
-                                .replace(':name', policy.metadata.name as string),
-                            state: {
-                                from: NavigationPath.policyDetails
-                                    .replace(':namespace', policy.metadata.namespace as string)
-                                    .replace(':name', policy.metadata.name as string),
-                            },
-                        }}
+                    <Button
+                        isInline
+                        variant={ButtonVariant.link}
+                        onClick={() =>
+                            setDrawerContext({
+                                isExpanded: true,
+                                onCloseClick: () => {
+                                    setDrawerContext(undefined)
+                                },
+                                title: policyAutomationMatch.metadata.name,
+                                panelContent: (
+                                    <AutomationDetailsSidebar
+                                        policyAutomationMatch={policyAutomationMatch}
+                                        policy={policy}
+                                        onClose={() => setDrawerContext(undefined)}
+                                    />
+                                ),
+                                panelContentProps: { defaultSize: '40%' },
+                                isInline: true,
+                                isResizable: true,
+                            })
+                        }
                     >
                         {policyAutomationMatch.metadata.name}
-                    </Link>
+                    </Button>
                 ) : (
                     <Link
                         to={{
@@ -142,18 +164,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             },
         ]
         return { leftItems, rightItems }
-    }, [
-        clusterRiskScore,
-        govData.clusterRisks,
-        policy.metadata.creationTimestamp,
-        policy.metadata.name,
-        policy.metadata.namespace,
-        policy.metadata.annotations,
-        policy.spec.disabled,
-        policy.spec.remediationAction,
-        policyAutomationMatch,
-        t,
-    ])
+    }, [clusterRiskScore, govData.clusterRisks, policy, policyAutomationMatch, setDrawerContext, t])
 
     // Need to get bindings for all policysets a policy is included in
     const associatedPolicySets = policySets.filter(
