@@ -43,7 +43,6 @@ describe('createChildNode', () => {
 describe('addClusters', () => {
     it('create cluster from given data', () => {
         const parentId = 'member--subscription--feng-error-app--feng-error-app-subscription-1'
-        const createdClusterElements = new Set()
         const subscription = {
             metadata: {
                 name: 'test',
