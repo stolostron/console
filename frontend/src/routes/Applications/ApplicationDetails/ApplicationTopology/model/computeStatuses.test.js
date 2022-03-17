@@ -13,7 +13,7 @@ import {
     setPlacementRuleDeployStatus,
     getPodState,
     getPulseStatusForCluster,
-} from './diagram-helpers'
+} from './computeStatuses'
 
 import {
     genericNodeYellowNotDefined,
