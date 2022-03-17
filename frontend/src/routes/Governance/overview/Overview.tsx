@@ -31,8 +31,8 @@ export default function GovernanceOverview() {
                     <PolicySetViolationsCard />
                     <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
                     <ClusterViolationsCard clusterViolationSummaryMap={clusterViolationSummaryMap} />
-                    <SecurityGroupCard key="categories" title="Categories" group="categories" policies={policies} />
                     <SecurityGroupCard key="standards" title="Standards" group="standards" policies={policies} />
+                    <SecurityGroupCard key="categories" title="Categories" group="categories" policies={policies} />
                     <SecurityGroupCard key="controls" title="Controls" group="controls" policies={policies} />
                 </AcmMasonry>
             </Stack>
