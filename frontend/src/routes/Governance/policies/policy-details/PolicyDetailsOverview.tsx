@@ -23,7 +23,6 @@ import {
     policyAutomationState,
     policySetsState,
 } from '../../../../atoms'
-import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -41,7 +40,6 @@ import { getPlacementDecisionsForPlacements, getPlacementsForResource } from '..
 import { AutomationDetailsSidebar } from '../../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
-import { PolicyTableItem } from '../Policies'
 
 interface TableData {
     apiVersion: string
