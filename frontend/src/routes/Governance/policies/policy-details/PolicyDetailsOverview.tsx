@@ -12,7 +12,7 @@ import {
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmDescriptionList, AcmDrawerContext, AcmTable } from '@stolostron/ui-components'
 import moment from 'moment'
-import { useCallback, useContext, useMemo } from 'react'
+import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -69,6 +69,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     const policyAutomationMatch = policyAutomations.find(
         (pa: PolicyAutomation) => pa.spec.policyRef === policy.metadata.name
     )
+    const [modal, setModal] = useState<ReactNode | undefined>()
 
     const { leftItems, rightItems } = useMemo(() => {
         const leftItems = [
@@ -132,6 +133,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                                 title: policyAutomationMatch.metadata.name,
                                 panelContent: (
                                     <AutomationDetailsSidebar
+                                        setModal={setModal}
                                         policyAutomationMatch={policyAutomationMatch}
                                         policy={policy}
                                         onClose={() => setDrawerContext(undefined)}
@@ -363,6 +365,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
 
     return (
         <PageSection>
+            {modal !== undefined && modal}
             <Stack hasGutter>
                 <div id="violation.details">
                     <AcmDescriptionList title={t('Policy details')} leftItems={leftItems} rightItems={rightItems} />
