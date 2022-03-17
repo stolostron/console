@@ -14,7 +14,7 @@ export function getAppSetTopology(application) {
 
     const appId = `application--${name}`
     nodes.push({
-        name,
+        name: '',
         namespace,
         type: 'applicationset',
         id: appId,
@@ -61,9 +61,9 @@ export function getAppSetTopology(application) {
     }
 
     const clusterParentId = placement ? placementId : appId
-    const clusterId = addClusters(clusterParentId, new Set(), null, clusterNames, clusterNames, links, nodes)
-    const firstAppWithResourceStatus = appSetApps.find((app) => app.status.resources !== undefined)
-    const resources = appSetApps.length > 0 ? get(firstAppWithResourceStatus, 'status.resources', []) : []
+    const source = get(application, 'app.spec.template.spec.source.path', '')
+    const clusterId = addClusters(clusterParentId, null, source, clusterNames, clusterNames, links, nodes)
+    const resources = appSetApps.length > 0 ? get(appSetApps[0], 'status.resources', []) : [] // what if first app doesn't have resources?
 
     resources.forEach((deployable) => {
         const { name: deployableName, namespace: deployableNamespace, kind, version, group } = deployable

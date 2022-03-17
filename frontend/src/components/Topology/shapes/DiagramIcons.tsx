@@ -27,8 +27,18 @@ export const DiagramIcons = () => (
                 </g>
             </g>
         </symbol>
-        <symbol viewBox="0 0 12 8" id="diagramIcons_clusterCount">
-            <rect width="100%" height="100%" stroke="white" fill="black" strokeWidth="1" />
+        <symbol viewBox="0 0 32 24" id="diagramIcons_clusterCount">
+            <rect
+                x="2px"
+                y="2px"
+                width="28px"
+                height="20px"
+                stroke="#c7c7c7"
+                fill="white"
+                strokeWidth="1.5"
+                rx="9px"
+                ry="9px"
+            />
         </symbol>
         <symbol viewBox="0 0 16 16" id="diagramIcons_success">
             <circle cx="8" cy="8" r="8" fill="white" fillOpacity="1" />
