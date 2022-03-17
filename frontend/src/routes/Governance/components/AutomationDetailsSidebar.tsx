@@ -66,8 +66,10 @@ export function AutomationDetailsSidebar(props: {
     const isOperatorInstalled = useMemo(() => {
         const ansibleOp = subscriptionOperators.filter((op: SubscriptionOperator) => {
             const conditions = op.status?.conditions[0]
-            op.metadata.name === 'ansible-automation-platform-operator' &&
+            return (
+                op.metadata.name === 'ansible-automation-platform-operator' &&
                 conditions?.reason === 'AllCatalogSourcesHealthy'
+            )
         })
         return ansibleOp.length > 0
     }, [subscriptionOperators])
