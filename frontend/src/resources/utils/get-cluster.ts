@@ -389,6 +389,7 @@ export function getProvider(
         case 'BAREMETAL':
             provider = Provider.baremetal
             break
+        case 'VMWARE':
         case 'VSPHERE':
             provider = Provider.vmware
             break
