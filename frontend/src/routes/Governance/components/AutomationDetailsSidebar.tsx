@@ -284,7 +284,7 @@ export function AutomationDetailsSidebar(props: {
                             },
                             onCancel: () => {
                                 setModalProps({ open: false })
-                            }
+                            },
                         })
                     }
                 >
