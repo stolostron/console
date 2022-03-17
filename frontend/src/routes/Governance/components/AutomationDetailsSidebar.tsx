@@ -271,7 +271,7 @@ export function AutomationDetailsSidebar(props: {
                                 const jobMatches = ansibleJobs.filter(
                                     (job) =>
                                         job.metadata.name === policyAutomationMatch.spec.automationDef.name &&
-                                        policyAutomationMatch.metadata.namespace
+                                        job.metadata.namespace === policyAutomationMatch.metadata.namespace
                                 )
                                 for (const job of jobMatches) {
                                     deleteResource(job)
