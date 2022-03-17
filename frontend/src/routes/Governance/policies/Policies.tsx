@@ -203,6 +203,7 @@ export default function PoliciesPage() {
                                         title: policyAutomationMatch.metadata.name,
                                         panelContent: (
                                             <AutomationDetailsSidebar
+                                                setModal={setModal}
                                                 policyAutomationMatch={policyAutomationMatch}
                                                 policy={item.policy}
                                                 onClose={() => setDrawerContext(undefined)}
