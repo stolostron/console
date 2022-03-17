@@ -102,6 +102,7 @@ describe('getPulseForNodeWithPodStatus', () => {
             deploymentModel: {
                 'mortgage-app-deploy-feng': [
                     {
+                        cluster: 'feng',
                         namespace: 'default',
                         ready: 2,
                         desired: 3,
@@ -214,6 +215,7 @@ describe('getPulseForNodeWithPodStatus controllerrevision type', () => {
             controllerrevisionModel: {
                 'mortgage-app-deploy-feng': [
                     {
+                        cluster: 'feng',
                         namespace: 'default',
                         ready: 2,
                         desired: 3,
@@ -332,6 +334,7 @@ describe('getPulseForNodeWithPodStatus controllerrevision type no desired', () =
             controllerrevisionModel: {
                 'mortgage-app-deploy-feng': [
                     {
+                        cluster: 'feng',
                         ready: 2,
                         unavailable: 1,
                         namespace: 'default',
@@ -523,46 +526,42 @@ describe('getPulseForData', () => {
 })
 
 describe('getPulseForData', () => {
-    const previousPulse = 'green'
     const available = 1
     const desired = 2
     const podsUnavailable = 0
 
     it('getPulseForData pulse red pod desired less then available', () => {
-        expect(getPulseForData(previousPulse, available, desired, podsUnavailable)).toEqual('yellow')
+        expect(getPulseForData(available, desired, podsUnavailable)).toEqual('yellow')
     })
 })
 
 describe('getPulseForData', () => {
-    const previousPulse = 'green'
     const available = 1
     const desired = 0
     const podsUnavailable = 0
 
     it('getPulseForData pulse yellow pod desired is 0', () => {
-        expect(getPulseForData(previousPulse, available, desired, podsUnavailable)).toEqual('yellow')
+        expect(getPulseForData(available, desired, podsUnavailable)).toEqual('yellow')
     })
 })
 
 describe('getPulseForData', () => {
-    const previousPulse = 'green'
     const available = 1
     const desired = 1
     const podsUnavailable = 0
 
     it('getPulseForData pulse green pod desired is equal with available', () => {
-        expect(getPulseForData(previousPulse, available, desired, podsUnavailable)).toEqual('green')
+        expect(getPulseForData(available, desired, podsUnavailable)).toEqual('green')
     })
 })
 
 describe('getPulseForData', () => {
-    const previousPulse = 'yellow'
     const available = 0
     const desired = undefined
     const podsUnavailable = 0
 
     it('getPulseForData pulse orange pod desired is undefined and no pods available', () => {
-        expect(getPulseForData(previousPulse, available, desired, podsUnavailable)).toEqual('orange')
+        expect(getPulseForData(available, desired, podsUnavailable)).toEqual('orange')
     })
 })
 
@@ -2173,7 +2172,7 @@ describe('setPodDeployStatus  with pod less then desired', () => {
             },
         },
         podStatusMap: {
-            'possiblereptile-default': {
+            'possiblereptile-default-pod-mortgage-app-deploy': {
                 cluster: 'possiblereptile',
                 namespace: 'default',
                 ready: 1,
@@ -2322,7 +2321,7 @@ describe('setPodDeployStatus  with pod but no pod model and no podStatusMap', ()
 
 describe('setPodDeployStatus  with pod as desired', () => {
     const node = {
-        type: 'pod1',
+        type: 'pod',
         name: 'mortgage-app-deploy',
         namespace: 'default',
         id: 'member--member--deployable--member--clusters--possiblereptile--default--mortgage-app-subscription-mortgage-mortgage-app-deploy-deployment--deployment--mortgage-app-deploy',
@@ -2339,7 +2338,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
             },
         },
         podStatusMap: {
-            'possiblereptile-default': {
+            'possiblereptile-default-pod-mortgage-app-deploy': {
                 namespace: 'default',
                 cluster: 'possiblereptile',
                 ready: 3,
@@ -2566,7 +2565,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
 
 describe('setPodDeployStatus - pod as desired with green filter', () => {
     const node = {
-        type: 'pod1',
+        type: 'pod',
         name: 'mortgage-app-deploy',
         namespace: 'default',
         id: 'member--member--deployable--member--clusters--possiblereptile--default--mortgage-app-subscription-mortgage-mortgage-app-deploy-deployment--deployment--mortgage-app-deploy',
@@ -2583,7 +2582,7 @@ describe('setPodDeployStatus - pod as desired with green filter', () => {
             },
         },
         podStatusMap: {
-            'possiblereptile-default': {
+            'possiblereptile-default-pod-mortgage-app-deploy': {
                 namespace: 'default',
                 ready: 3,
                 desired: 3,

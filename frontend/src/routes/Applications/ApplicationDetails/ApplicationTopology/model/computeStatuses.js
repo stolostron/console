@@ -31,14 +31,14 @@ import { t } from 'i18next'
 const specPulse = 'specs.pulse'
 const specShapeType = 'specs.shapeType'
 const showResourceYaml = 'show_resource_yaml'
-const checkmarkStatus = 'checkmark'
-const warningStatus = 'warning'
-const pendingStatus = 'pending'
-const failureStatus = 'failure'
-const checkmarkCode = 3
-const warningCode = 2
-const pendingCode = 1
-const failureCode = 0
+export const checkmarkStatus = 'checkmark'
+export const warningStatus = 'warning'
+export const pendingStatus = 'pending'
+export const failureStatus = 'failure'
+export const checkmarkCode = 3
+export const warningCode = 2
+export const pendingCode = 1
+export const failureCode = 0
 //pod state contains any of these strings
 const resErrorStates = ['err', 'off', 'invalid', 'kill', 'propagationfailed']
 const resWarningStates = [pendingStatus, 'creating', 'terminating']
@@ -546,7 +546,7 @@ const getPulseStatusForGenericNode = (node, t) => {
         targetNSList.forEach((targetNS) => {
             const resObjects = _.filter(resourcesForCluster, (obj) => _.get(obj, resourceNSString, '') === targetNS)
             if (resObjects.length === 0) {
-                pulse = 'red'
+                pulse = 'yellow'
             } else {
                 resObjects.forEach((resObject) => {
                     const resStatus = _.get(resObject, 'status', deployedStr).toLowerCase()
@@ -612,7 +612,7 @@ export const setApplicationDeployStatus = (node, details, t) => {
             getNodePropery(
                 node,
                 ['specs', 'raw', 'spec', 'selector'],
-                t('This application has no subscription match selector (spec.selector.matchExpressions)'),
+                t('Subscription Selector'),
                 t('This application has no subscription match selector (spec.selector.matchExpressions)'),
                 true
             )
