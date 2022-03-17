@@ -61,7 +61,7 @@ describe('addClusters', () => {
                 },
             ],
         }
-        const result = 'member--clusters--local-cluster-test'
+        const result = 'member--clusters--local-cluster--test'
         expect(addClusters(parentId, subscription, '', clusterNames, managedClusterNames, [], [], topology)).toEqual(
             result
         )
