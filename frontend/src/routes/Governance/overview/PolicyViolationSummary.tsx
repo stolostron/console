@@ -72,11 +72,11 @@ export function ViolationsCard(props: {
                 description={props.description}
                 donutLabel={{
                     title: props.noncompliant.toString(),
-                    subTitle: t('Violations', {count: props.noncompliant}),
+                    subTitle: t('Violation', { count: props.noncompliant }),
                 }}
                 data={[
                     {
-                        key: t('violations', {count: props.noncompliant}),
+                        key: t('violation', { count: props.noncompliant }),
                         value: props.noncompliant,
                         isPrimary: true,
                     },
