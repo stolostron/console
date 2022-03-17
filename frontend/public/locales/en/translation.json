@@ -551,7 +551,7 @@
     "creation.aws.privateAWS.info": "(Optional) Configuration for private AWS cluster provision",
     "creation.aws.serviceEndpoint.addPrompt": "Add Service Endpoint",
     "creation.aws.serviceEndpoint.deletePrompt": "Remove Service Endpoint",
-    "creation.aws.serviceEndpoint.info": "The AWS service endpoint name.",
+    "creation.aws.serviceEndpoint.info": "The AWS service endpoint name. Custom API endpoints can be specified for EC2, S3, IAM, Elastic Load Balancing, Tagging, Route 53, and STS AWS services.",
     "creation.aws.serviceEndpoint.subtitle": "Service Endpoints",
     "creation.aws.serviceEndpointName.placeholder": "Enter AWS service endpoint name",
     "creation.aws.serviceEndpointName.tooltip": "The AWS service endpoints. Custom endpoints are required when installing to an unknown AWS region.",
