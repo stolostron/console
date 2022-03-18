@@ -18,11 +18,12 @@ import _ from 'lodash'
 //examines resources to create the correct resource types that are being deployed
 export const discoverGroupsFromSource = (control, cd, templateObject, editor, i18n) => {
     const applicationResource = _.get(templateObject, 'Application[0].$raw')
-
-    // get application selflink
-    const selfLinkControl = cd.find(({ id }) => id === 'selfLink')
-    const selfLink = getResourceID(applicationResource)
-    selfLinkControl['active'] = selfLink
+    if (applicationResource) {
+        // get application selflink
+        const selfLinkControl = cd.find(({ id }) => id === 'selfLink')
+        const selfLink = getResourceID(applicationResource)
+        selfLinkControl['active'] = selfLink
+    }
 
     // find groups
     const {
