@@ -243,20 +243,16 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 sort: (a: PolicyCompliance, b: PolicyCompliance) => {
                     let violationCountA = 0
                     let violationCountB = 0
-                    a?.clusterCompliance?.forEach(
-                        (c: { clusterName: string; compliance: 'Compliant' | 'NonCompliant' }) => {
-                            if (c.compliance === 'NonCompliant') {
-                                violationCountA++
-                            }
+                    a?.clusterCompliance?.forEach((c) => {
+                        if (c.compliance === 'NonCompliant') {
+                            violationCountA++
                         }
-                    )
-                    b?.clusterCompliance?.forEach(
-                        (c: { clusterName: string; compliance: 'Compliant' | 'NonCompliant' }) => {
-                            if (c.compliance === 'NonCompliant') {
-                                violationCountB++
-                            }
+                    })
+                    b?.clusterCompliance?.forEach((c) => {
+                        if (c.compliance === 'NonCompliant') {
+                            violationCountB++
                         }
-                    )
+                    })
                     return compareNumbers(violationCountA, violationCountB)
                 },
                 cell: (policy: PolicyCompliance) => {
@@ -265,13 +261,11 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                     const hasCompliance = policy?.clusterCompliance?.filter((cluster) => cluster.compliance) ?? []
                     if (hasCompliance.length > 0) {
                         const currentPolicy = policies.find((p: Policy) => p.metadata.name === policy.policyName)
-                        hasCompliance.forEach(
-                            (c: { clusterName: string; compliance: 'Compliant' | 'NonCompliant' }) => {
-                                if (c.compliance === 'NonCompliant') {
-                                    violationCount++
-                                }
+                        hasCompliance.forEach((c) => {
+                            if (c.compliance === 'NonCompliant') {
+                                violationCount++
                             }
-                        )
+                        })
                         return (
                             <ClusterPolicyViolationIcons2
                                 compliant={hasCompliance.length - violationCount}
@@ -282,6 +276,20 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                         )
                     }
                     return '-'
+                },
+            },
+            {
+                header: t('Status'),
+                sort: (itemA: PolicyCompliance, itemB: PolicyCompliance) => {
+                    const policyA = policies.find((p: Policy) => p.metadata.name === itemA.policyName)
+                    const policyB = policies.find((p: Policy) => p.metadata.name === itemB.policyName)
+                    const statusA = policyA?.spec.disabled === true ? t('Disabled') : t('Enabled')
+                    const statusB = policyB?.spec.disabled === true ? t('Disabled') : t('Enabled')
+                    return compareStrings(statusA, statusB)
+                },
+                cell: (policyStatus: PolicyCompliance) => {
+                    const policy = policies.find((p: Policy) => p.metadata.name === policyStatus.policyName)
+                    return <span>{policy?.spec.disabled === true ? t('Disabled') : t('Enabled')}</span>
                 },
             },
             {
