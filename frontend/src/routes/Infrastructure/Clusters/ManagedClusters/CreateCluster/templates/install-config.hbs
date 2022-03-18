@@ -256,7 +256,6 @@ platform:
     hosts:
 {{#each ../../hosts}}
       - name: '{{{hostName}}}'  ##hosts.{{@index}}.hostName
-        namespace: '{{{hostNamespace}}}'  ##hosts.{{@index}}.hostNamespace
         role: {{{role}}}  ##hosts.{{@index}}.role
         bmc:
           address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
