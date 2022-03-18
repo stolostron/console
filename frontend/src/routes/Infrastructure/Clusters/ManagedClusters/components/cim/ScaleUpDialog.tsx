@@ -24,6 +24,8 @@ const ScaleUpDialog = ({ isOpen, closeDialog }: ScaleUpDialogProps) => {
         const name = clusterDeployment?.metadata?.name
         const namespace = clusterDeployment?.metadata?.namespace
 
+        if (!name || !namespace) throw new Error(`The cluster deployment ${clusterId} does not exist.`)
+
         const promises = agentsToAdd.map((agent) => {
             return patchResource(agent, [
                 {
