@@ -1565,8 +1565,6 @@
     "policies.noviolations_plural": "{{count}} policies with no violations",
     "policies.unknown": "1 policy with unknown status",
     "policies.unknown_plural": "{{count}} policies with unknown status",
-    "policies.violations": "1 policy with violations",
-    "policies.violations_plural": "{{count}} policies with violations",
     "Policy automation created": "Policy automation created",
     "Policy cluster compliance": "Policy cluster compliance",
     "Policy cluster compliance chart": "Policy cluster compliance chart",

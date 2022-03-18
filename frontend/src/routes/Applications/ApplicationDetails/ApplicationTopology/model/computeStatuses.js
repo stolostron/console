@@ -26,7 +26,6 @@ import {
 } from '../helpers/diagram-helpers-utils'
 import { isSearchAvailable } from '../helpers/search-helper'
 import { showAnsibleJobDetails, getPulseStatusForAnsibleNode } from '../helpers/ansible-task'
-import { t } from 'i18next'
 
 const specPulse = 'specs.pulse'
 const specShapeType = 'specs.shapeType'
@@ -881,7 +880,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                             value: 'true',
                         })
 
-                    setClusterWindowStatus(windowStatusArray, subscription, details)
+                    setClusterWindowStatus(windowStatusArray, subscription, details, t)
 
                     // If any packages under subscription statuses has Failed phase, refer user to view resource yaml for more details
                     const statuses = _.get(node, 'specs.raw.status.statuses', {})
@@ -1073,7 +1072,7 @@ export const setClusterStatus = (node, details, t) => {
     return details
 }
 
-const setClusterWindowStatus = (windowStatusArray, subscription, details) => {
+const setClusterWindowStatus = (windowStatusArray, subscription, details, t) => {
     windowStatusArray.forEach((wstatus) => {
         if (_.startsWith(_.trimStart(wstatus), `${subscription.cluster}:`)) {
             details.push({
@@ -1432,10 +1431,10 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
 
             if (res) {
                 //for open shift routes show location info
-                addOCPRouteLocation(node, clusterName, targetNS, details)
+                addOCPRouteLocation(node, clusterName, targetNS, details, t)
 
                 //for service
-                addNodeServiceLocation(node, clusterName, targetNS, details)
+                addNodeServiceLocation(node, clusterName, targetNS, details, t)
 
                 // add apiversion if not exist
                 if (!res.apiversion) {
