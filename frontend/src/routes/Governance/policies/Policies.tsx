@@ -83,9 +83,9 @@ export default function PoliciesPage() {
     // in a useEffect hook
     const tableItems: PolicyTableItem[] = policies.map((policy) => {
         const isExternal = resolveExternalStatus(policy)
-        const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
         let source: string | JSX.Element = 'Local'
         if (isExternal) {
+            const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
             source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
         }
         return {
