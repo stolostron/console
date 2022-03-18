@@ -129,7 +129,15 @@ export function getPolicyComplianceForPolicySet(
                 const policyClusterStatus = policy.status?.status?.find(
                     (clusterStatus) => clusterStatus.clustername === decision.clusterName
                 )
-                if (policyClusterStatus?.compliant === 'NonCompliant') {
+                if (!policyClusterStatus) {
+                    if (policyIdx < 0) {
+                        policyCompliance.push({
+                            policyName: policy.metadata.name!,
+                            policyNamespace: policy.metadata.namespace!,
+                            clusterCompliance: [],
+                        })
+                    }
+                } else if (policyClusterStatus?.compliant === 'NonCompliant') {
                     if (policyIdx < 0) {
                         policyCompliance.push({
                             policyName: policy.metadata.name!,
