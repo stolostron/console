@@ -16,13 +16,13 @@ export function ClusterPolicyViolationIcons(props: {
     return (
         <StatusIcons
             compliant={risks.synced}
-            compliantTooltip={t('{{count}} clusters without violations', {count: risks.synced})}
+            compliantTooltip={t('{{count}} clusters without violations', { count: risks.synced })}
             compliantHref={compliantHref}
             violations={violations}
-            violationsTooltip={t('{{count}} clusters with violations', {count: violations})}
+            violationsTooltip={t('{{count}} clusters with violations', { count: violations })}
             violationHref={violationHref}
             unknown={risks.unknown}
-            unknownTooltip={t('{{count}} clusters with unknown status', {count: risks.unknown})}
+            unknownTooltip={t('{{count}} clusters with unknown status', { count: risks.unknown })}
             unknownHref={unknownHref}
         />
     )
@@ -38,10 +38,10 @@ export function ClusterPolicyViolationIcons2(props: {
     return (
         <StatusIcons
             compliant={props.compliant}
-            compliantTooltip={t('{{count}} clusters without violations', {count: props.compliant})}
+            compliantTooltip={t('{{count}} clusters without violations', { count: props.compliant })}
             compliantHref={props.compliantHref}
             violations={props.noncompliant}
-            violationsTooltip={t('{{count}} clusters with violations', {count: props.noncompliant})}
+            violationsTooltip={t('{{count}} clusters with violations', { count: props.noncompliant })}
             violationHref={props.violationHref}
         />
     )
