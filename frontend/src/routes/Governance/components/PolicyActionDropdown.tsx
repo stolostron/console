@@ -198,7 +198,8 @@ export function PolicyActionDropdown(props: {
             {
                 id: 'enforce-policy',
                 text: t('policy.table.actions.enforce'),
-                tooltip: item.policy.spec.remediationAction === 'enforce' ? t('Already enforcing') : t('Enforce policy'),
+                tooltip:
+                    item.policy.spec.remediationAction === 'enforce' ? t('Already enforcing') : t('Enforce policy'),
                 isAriaDisabled: item.policy.spec.remediationAction === 'enforce',
                 click: (item: PolicyTableItem) => {
                     setModalProps({
