@@ -22,7 +22,7 @@ const mockResources = [
     },
 ]
 
-const t = i18next.t
+const t = i18next.t.bind(i18next)
 const modalProps: ISyncResourceModalProps = {
     open: true,
     close: () => {},
