@@ -69,9 +69,9 @@ const channelGit: Channel = {
     spec: {
         pathname: 'https://github.com/stolostron/application-lifecycle-samples',
         type: 'Git',
-        secretRef: {
-            name: 'secret-01',
-        },
+        // secretRef: {
+        //     name: 'secret-01',
+        // },
     },
 }
 
@@ -85,9 +85,9 @@ const channelHelm: Channel = {
     spec: {
         pathname: 'http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts',
         type: 'HelmRepo',
-        secretRef: {
-            name: 'secret-01',
-        },
+        // secretRef: {
+        //     name: 'secret-01',
+        // },
     },
 }
 
