@@ -65,7 +65,7 @@ export function CreateApplicationArgo() {
 
     return (
         <ArgoWizard
-            addClusterSets={NavigationPath.clusterSets}
+            createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
             ansibleCredentials={availableAnsibleCredentials}
             argoServers={availableArgoNS}
             namespaces={availableNamespace}
