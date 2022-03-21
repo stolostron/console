@@ -2,7 +2,7 @@
 
 import { PageSection, Title } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmTable, AcmTablePaginationContextProvider } from '@stolostron/ui-components'
+import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '@stolostron/ui-components'
 import moment from 'moment'
 import { useMemo } from 'react'
 import { useRecoilState } from 'recoil'
@@ -58,6 +58,13 @@ export function PolicyDetailsHistory(props: {
         () => [
             {
                 header: 'Violations',
+                sort: (itemA: any, itemB: any) => {
+                    const messageA = itemA.message ?? '-'
+                    const compliantA = messageA && typeof messageA === 'string' ? messageA.split(';')[0] : '-'
+                    const messageB = itemB.message ?? '-'
+                    const compliantB = messageB && typeof messageB === 'string' ? messageB.split(';')[0] : '-'
+                    return compareStrings(compliantA, compliantB)
+                },
                 cell: (item: any) => {
                     const message = item.message ?? '-'
                     let compliant = message && typeof message === 'string' ? message.split(';')[0] : '-'
@@ -97,6 +104,7 @@ export function PolicyDetailsHistory(props: {
             },
             {
                 header: 'Last report',
+                sort: 'timestamp',
                 cell: (item: any) => (item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-'),
             },
         ],
@@ -105,25 +113,23 @@ export function PolicyDetailsHistory(props: {
 
     return (
         <div>
-            {statusItems.map((item) => (
-                <PageSection>
-                    <Title headingLevel="h3">{clusterName}</Title>
-                    <Title headingLevel="h4">{t(`Template: ${templateName}`)}</Title>
-                    <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
-                        <AcmTable
-                            items={[item]}
-                            columns={columns}
-                            keyFn={(item) => `${item.message}.${item.timestamp}`}
-                            initialSort={{
-                                index: 1,
-                                direction: 'desc',
-                            }}
-                            fuseThreshold={0}
-                            plural={t('clusters')}
-                        />
-                    </AcmTablePaginationContextProvider>
-                </PageSection>
-            ))}
+            <PageSection>
+                <Title headingLevel="h3">{clusterName}</Title>
+                <Title headingLevel="h4">{t(`Template: ${templateName}`)}</Title>
+                <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
+                    <AcmTable
+                        items={statusItems}
+                        columns={columns}
+                        keyFn={(item) => `${item.message}.${item.timestamp}`}
+                        initialSort={{
+                            index: 1,
+                            direction: 'desc',
+                        }}
+                        fuseThreshold={0}
+                        plural={t('clusters')}
+                    />
+                </AcmTablePaginationContextProvider>
+            </PageSection>
         </div>
     )
 }

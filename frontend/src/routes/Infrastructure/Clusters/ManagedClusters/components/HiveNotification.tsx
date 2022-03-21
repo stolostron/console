@@ -11,7 +11,7 @@ import {
     getHivePod,
     getLatest,
 } from '../../../../../resources'
-import { AcmAlert, AcmButton } from '@stolostron/ui-components'
+import { AcmAlert, AcmButton, Provider } from '@stolostron/ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext } from 'react'
@@ -47,6 +47,8 @@ export function HiveNotification() {
     const clusterProvisionStatus =
         provisionFailedCondition?.status === 'True' ? provisionFailedCondition.message : cluster!.statusMessage
 
+    const isHybrid = cluster?.provider === Provider.hybrid
+
     const provisionStatuses: string[] = [
         ClusterStatus.destroying,
         ClusterStatus.provisionfailed,
@@ -58,6 +60,13 @@ export function HiveNotification() {
     }
 
     if (cluster!.statusMessage) {
+        return null
+    }
+
+    if (
+        isHybrid &&
+        (cluster?.status === ClusterStatus.provisionfailed || cluster?.status === ClusterStatus.deprovisionfailed)
+    ) {
         return null
     }
 

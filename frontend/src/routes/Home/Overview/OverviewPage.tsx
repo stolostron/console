@@ -38,41 +38,14 @@ import { ClusterManagementAddOn } from '../../../resources/cluster-management-ad
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery, useSearchResultItemsLazyQuery } from '../Search/search-sdk/search-sdk'
-
-export function mapProviderFromLabel(provider: string): Provider {
-    switch (provider.toLowerCase()) {
-        case 'amazon':
-            return Provider.aws
-        case 'azure':
-            return Provider.azure
-        case 'baremetal':
-            return Provider.baremetal
-        case 'google':
-            return Provider.gcp
-        case 'ibm':
-            return Provider.ibm
-        case 'ibmpowerplatform':
-            return Provider.ibmpower
-        case 'ibmzplatform':
-            return Provider.ibmz
-        case 'redhat':
-            return Provider.redhatcloud
-        case 'vmware':
-        case 'vsphere':
-            return Provider.vmware
-        case 'openstack':
-            return Provider.openstack
-        default:
-            return Provider.other
-    }
-}
+import { getProvider } from '../../../resources'
 
 function getClusterSummary(clusters: any, selectedCloud: string, setSelectedCloud: Dispatch<SetStateAction<string>>) {
     const clusterSummary = clusters.reduce(
         (prev: any, curr: any) => {
             // Data for Providers section.
             const cloudLabel = curr.metadata?.labels?.cloud || ''
-            const cloud = mapProviderFromLabel(cloudLabel)
+            const cloud = getProvider(curr) || Provider.other
             const provider = prev.providers.find((p: any) => p.provider === cloud)
             if (provider) {
                 provider.clusterCount = provider.clusterCount + 1

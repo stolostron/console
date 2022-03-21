@@ -19,14 +19,16 @@ import {
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import {
     AcmAlert,
+    AcmDrawerContext,
     AcmSelect,
     AcmTable,
+    compareStrings,
     IAcmTableAction,
     IAcmTableColumn,
     ITableFilter,
 } from '@stolostron/ui-components'
 import moment from 'moment'
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -55,6 +57,7 @@ import {
     replaceResource,
 } from '../../../resources'
 import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
+import { AutomationDetailsSidebar } from '../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
 import { PolicyActionDropdown } from '../components/PolicyActionDropdown'
@@ -75,13 +78,14 @@ export default function PoliciesPage() {
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [policyAutomations] = useRecoilState(policyAutomationState)
+    const { setDrawerContext } = useContext(AcmDrawerContext)
 
     // in a useEffect hook
     const tableItems: PolicyTableItem[] = policies.map((policy) => {
         const isExternal = resolveExternalStatus(policy)
-        const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
         let source: string | JSX.Element = 'Local'
         if (isExternal) {
+            const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
             source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
         }
         return {
@@ -135,6 +139,11 @@ export default function PoliciesPage() {
             },
             {
                 header: t('Status'),
+                sort: (itemA: PolicyTableItem, itemB: PolicyTableItem) => {
+                    const statusA = itemA.policy.spec.disabled === true ? t('Disabled') : t('Enabled')
+                    const statusB = itemB.policy.spec.disabled === true ? t('Disabled') : t('Enabled')
+                    return compareStrings(statusA, statusB)
+                },
                 cell: (item: PolicyTableItem) => (
                     <span>{item.policy.spec.disabled === true ? t('Disabled') : t('Enabled')}</span>
                 ),
@@ -147,8 +156,10 @@ export default function PoliciesPage() {
             {
                 header: t('Policy set'),
                 cell: (item: PolicyTableItem) => {
-                    const policySetsMatch = policySets.filter((policySet: PolicySet) =>
-                        policySet.spec.policies.includes(item.policy.metadata.name!)
+                    const policySetsMatch = policySets.filter(
+                        (policySet: PolicySet) =>
+                            policySet.metadata.namespace === item.policy.metadata.namespace &&
+                            policySet.spec.policies.includes(item.policy.metadata.name!)
                     )
                     if (policySetsMatch.length > 0) {
                         return <PolicySetList policySets={policySetsMatch} />
@@ -165,24 +176,49 @@ export default function PoliciesPage() {
             },
             {
                 header: t('Automation'),
+                sort: (itemA: PolicyTableItem, itemB: PolicyTableItem) => {
+                    const policyAutomationMatchA = policyAutomations.find(
+                        (pa: PolicyAutomation) => pa.spec.policyRef === itemA.policy.metadata.name
+                    )
+                    const policyAutomationMatchB = policyAutomations.find(
+                        (pa: PolicyAutomation) => pa.spec.policyRef === itemB.policy.metadata.name
+                    )
+                    const automationA = policyAutomationMatchA ? policyAutomationMatchA.metadata.name : 'configure'
+                    const automationB = policyAutomationMatchB ? policyAutomationMatchB.metadata.name : 'configure'
+                    return compareStrings(automationA, automationB)
+                },
                 cell: (item: PolicyTableItem) => {
                     const policyAutomationMatch = policyAutomations.find(
                         (pa: PolicyAutomation) => pa.spec.policyRef === item.policy.metadata.name
                     )
                     if (policyAutomationMatch) {
                         return (
-                            <Link
-                                to={{
-                                    pathname: NavigationPath.editPolicyAutomation
-                                        .replace(':namespace', item.policy.metadata.namespace as string)
-                                        .replace(':name', item.policy.metadata.name as string),
-                                    state: {
-                                        from: NavigationPath.policies,
-                                    },
-                                }}
+                            <Button
+                                isInline
+                                variant={ButtonVariant.link}
+                                onClick={() =>
+                                    setDrawerContext({
+                                        isExpanded: true,
+                                        onCloseClick: () => {
+                                            setDrawerContext(undefined)
+                                        },
+                                        title: policyAutomationMatch.metadata.name,
+                                        panelContent: (
+                                            <AutomationDetailsSidebar
+                                                setModal={setModal}
+                                                policyAutomationMatch={policyAutomationMatch}
+                                                policy={item.policy}
+                                                onClose={() => setDrawerContext(undefined)}
+                                            />
+                                        ),
+                                        panelContentProps: { defaultSize: '40%' },
+                                        isInline: true,
+                                        isResizable: true,
+                                    })
+                                }
                             >
                                 {policyAutomationMatch.metadata.name}
-                            </Link>
+                            </Button>
                         )
                     } else {
                         return (
@@ -220,7 +256,7 @@ export default function PoliciesPage() {
                 cellTransforms: [fitContent],
             },
         ],
-        [policyClusterViolationsColumn, policySets, policyAutomations, t]
+        [policyClusterViolationsColumn, policySets, policyAutomations, setDrawerContext, t]
     )
 
     const bulkModalStatusColumns = useMemo(
@@ -753,7 +789,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                             <AcmAlert
                                 variant="danger"
                                 title={t('No policy set in given namespace')}
-                                message={t('There are no policy sets in "{0}" namespace.').replace('{0}', namespace)}
+                                message={t('There are no policy sets in "{{0}}" namespace.', [namespace])}
                                 isInline
                             />
                         )}
