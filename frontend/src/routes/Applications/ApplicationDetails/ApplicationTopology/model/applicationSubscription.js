@@ -3,6 +3,7 @@
 import { cloneDeep, get, includes, isEmpty } from 'lodash'
 import { listResources } from '../../../../../resources/utils/resource-request'
 
+const EVERYTHING_CHANNEL = '__ALL__/__ALL__//__ALL__/__ALL__'
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
 const NAMESPACE = 'metadata.namespace'
 
@@ -82,6 +83,14 @@ const getAllChannels = (subscriptions, channels, selectedChannel) => {
             }
         }
     })
+    // add an ALL channel?
+    if (channels.length > 1) {
+        channels.unshift(EVERYTHING_CHANNEL)
+        // set default selectedSubscription when topology first render
+        if (!selectedSubscriptions) {
+            selectedSubscriptions = subscriptions.length > 0 ? [subscriptions[0]] : null
+        }
+    }
     // renders all subscriptions when selected all subscriptions
     if (selectedChannel === '__ALL__/__ALL__//__ALL__/__ALL__') {
         selectedSubscriptions = subscriptions

@@ -14,19 +14,21 @@
 import R from 'ramda'
 import _ from 'lodash'
 import {
-    getNodePropery,
-    addPropertyToList,
     setResourceDeployStatus,
     setPodDeployStatus,
     setSubscriptionDeployStatus,
     setApplicationDeployStatus,
     setPlacementRuleDeployStatus,
+    setClusterStatus,
+    setPlacementDeployStatus,
+} from '../model/computeStatuses'
+import {
+    getNodePropery,
+    addPropertyToList,
     addDetails,
     addNodeOCPRouteLocationForCluster,
     addIngressNodeInfo,
-    setClusterStatus,
 } from '../helpers/diagram-helpers'
-import { setPlacementDeployStatus } from '../helpers/diagram-helpers-utils'
 import { kubeNaming } from '../../../../../components/Topology/helpers/utilities'
 
 const resName = 'resource.name'
@@ -313,10 +315,10 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
     })
 
     //if Route with host, show it here
-    addNodeOCPRouteLocationForCluster(node, null, details)
+    addNodeOCPRouteLocationForCluster(node, null, details, t)
 
     //add Ingress service info
-    addIngressNodeInfo(node, details)
+    addIngressNodeInfo(node, details, t)
 
     setApplicationDeployStatus(node, details, t)
 

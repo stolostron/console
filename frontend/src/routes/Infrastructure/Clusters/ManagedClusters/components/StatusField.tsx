@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { Cluster, ClusterStatus, getLatestAnsibleJob } from '../../../../../resources'
-import { AcmButton, AcmInlineStatus, StatusType } from '@stolostron/ui-components'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { AcmButton, AcmInlineStatus, StatusType, Provider } from '@stolostron/ui-components'
+import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -10,15 +9,24 @@ import { ansibleJobState, configMapsState } from '../../../../../atoms'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
 import { launchLogs, launchToYaml } from './HiveNotification'
+import { CIM } from 'openshift-assisted-ui-lib'
+import { ButtonVariant, Button } from '@patternfly/react-core'
+import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
+
+const { LogsDownloadButton } = CIM
 
 export function StatusField(props: { cluster: Cluster }) {
     const { t } = useTranslation()
     const [configMaps] = useRecoilState(configMapsState)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
     const latestJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.name!)
+    const agentClusterInstall = useAgentClusterInstall({
+        name: props.cluster?.name!,
+        namespace: props.cluster?.namespace!,
+    })
 
     let type: StatusType
-
+    const isHybrid = props.cluster?.provider === Provider.hybrid
     switch (props.cluster?.status) {
         case ClusterStatus.ready:
             type = StatusType.healthy
@@ -128,19 +136,33 @@ export function StatusField(props: { cluster: Cluster }) {
         case ClusterStatus.destroying:
         case ClusterStatus.provisionfailed:
             hasAction = true
-            Action = () => (
-                <AcmButton
-                    style={{ padding: 0, fontSize: 'inherit' }}
-                    key={props.cluster.name}
-                    onClick={() => launchLogs(props.cluster, configMaps)}
-                    variant="link"
-                    role="link"
-                    icon={<ExternalLinkAltIcon />}
-                    iconPosition="right"
-                >
-                    {t('view.logs')}
-                </AcmButton>
-            )
+            if (isHybrid) {
+                Action = () => (
+                    <LogsDownloadButton
+                        Component={(props) => (
+                            <Button {...props} icon={<DownloadIcon />} iconPosition="right" isInline />
+                        )}
+                        id="cluster-logs-button"
+                        agentClusterInstall={agentClusterInstall}
+                        variant={ButtonVariant.link}
+                    />
+                )
+            } else {
+                Action = () => (
+                    <AcmButton
+                        style={{ padding: 0, fontSize: 'inherit' }}
+                        key={props.cluster.name}
+                        onClick={() => launchLogs(props.cluster, configMaps)}
+                        variant="link"
+                        role="link"
+                        icon={<ExternalLinkAltIcon />}
+                        iconPosition="right"
+                    >
+                        {t('view.logs')}
+                    </AcmButton>
+                )
+            }
+
             break
         case ClusterStatus.degraded:
             hasAction = true

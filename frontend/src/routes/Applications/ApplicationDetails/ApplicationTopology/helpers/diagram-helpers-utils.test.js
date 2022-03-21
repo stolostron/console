@@ -7,13 +7,9 @@ import {
     nodeMustHavePods,
     isDeployableResource,
     getRouteNameWithoutIngressHash,
-    getOnlineClusters,
     getActiveFilterCodes,
     filterSubscriptionObject,
     getClusterHost,
-    getPulseStatusForSubscription,
-    getExistingResourceMapKey,
-    syncControllerRevisionPodStatusMap,
     fixMissingStateOptions,
     namespaceMatchTargetServer,
     updateAppClustersMatchingSearch,
@@ -22,6 +18,10 @@ import {
     allClustersAreOnline,
     mustRefreshTopologyMap,
 } from './diagram-helpers-utils'
+
+import { getOnlineClusters, getPulseStatusForSubscription } from '../model/computeStatuses'
+
+import { getExistingResourceMapKey, syncControllerRevisionPodStatusMap } from '../model/computeRelated'
 
 describe('mustRefreshTopologyMap', () => {
     const updatedTime = 1621025105756
