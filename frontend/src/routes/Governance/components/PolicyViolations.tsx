@@ -24,7 +24,7 @@ export function PolicyViolationIcons(props: {
             compliantHref={compliantHref}
             compliantOnClick={compliantOnClick}
             violations={violations}
-            violationsTooltip={t('policies.violations', { count: violations })}
+            violationsTooltip={t('policy.violations', { count: violations })}
             violationHref={violationHref}
             violationOnClick={violationOnClick}
             unknown={risks.unknown}

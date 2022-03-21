@@ -109,6 +109,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     const lastRefreshRef = useRef<any>()
     const history = useHistory()
     const isArgoApp = applicationData?.application.isArgoApp
+    const isAppSet = applicationData?.application.isAppSet
 
     let modalWarnings: string
 
@@ -140,11 +141,19 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             id: 'edit-application',
             text: t('Edit application'),
             click: () => {
-                history.push(
-                    NavigationPath.editApplicationSubscription
-                        .replace(namespaceString, selectedApp.metadata?.namespace)
-                        .replace(nameString, selectedApp.metadata?.name)
-                )
+                if (isAppSet) {
+                    history.push(
+                        NavigationPath.editApplicationArgo
+                            .replace(namespaceString, selectedApp.metadata?.namespace)
+                            .replace(nameString, selectedApp.metadata?.name)
+                    )
+                } else {
+                    history.push(
+                        NavigationPath.editApplicationSubscription
+                            .replace(namespaceString, selectedApp.metadata?.namespace)
+                            .replace(nameString, selectedApp.metadata?.name)
+                    )
+                }
             },
             rbac: [
                 selectedApp &&

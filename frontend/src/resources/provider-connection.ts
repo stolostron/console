@@ -55,6 +55,7 @@ export interface ProviderConnectionStringData {
 
     // Red Hat Virtualization
     ovirt_url?: string
+    ovirt_fqdn?: string
     ovirt_username?: string
     ovirt_password?: string
     ovirt_ca_bundle?: string

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { StatusIcons } from '../../../components/StatusIcons'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { IPolicyRisks } from '../useGovernanceData'
 
 export function ClusterPolicyViolationIcons(props: {
@@ -11,28 +12,17 @@ export function ClusterPolicyViolationIcons(props: {
 }) {
     const { risks, compliantHref, violationHref, unknownHref } = props
     const violations = risks.high + risks.medium + risks.low
+    const { t } = useTranslation()
     return (
         <StatusIcons
             compliant={risks.synced}
-            compliantTooltip={
-                risks.synced == 1
-                    ? '1 cluster without violations'
-                    : '{0} clusters without violations'.replace('{0}', risks.synced.toString())
-            }
+            compliantTooltip={t('{{count}} clusters without violations', { count: risks.synced })}
             compliantHref={compliantHref}
             violations={violations}
-            violationsTooltip={
-                violations == 1
-                    ? '1 cluster with violations'
-                    : '{0} clusters with violations'.replace('{0}', violations.toString())
-            }
+            violationsTooltip={t('{{count}} clusters with violations', { count: violations })}
             violationHref={violationHref}
             unknown={risks.unknown}
-            unknownTooltip={
-                risks.unknown == 1
-                    ? '1 cluster with unknown status'
-                    : '{0} clusters with unknown status'.replace('{0}', risks.unknown.toString())
-            }
+            unknownTooltip={t('{{count}} clusters with unknown status', { count: risks.unknown })}
             unknownHref={unknownHref}
         />
     )
@@ -44,21 +34,14 @@ export function ClusterPolicyViolationIcons2(props: {
     compliantHref?: string
     violationHref?: string
 }) {
+    const { t } = useTranslation()
     return (
         <StatusIcons
             compliant={props.compliant}
-            compliantTooltip={
-                props.compliant == 1
-                    ? '1 cluster without violations'
-                    : '{0} clusters without violations'.replace('{0}', props.compliant.toString())
-            }
+            compliantTooltip={t('{{count}} clusters without violations', { count: props.compliant })}
             compliantHref={props.compliantHref}
             violations={props.noncompliant}
-            violationsTooltip={
-                props.noncompliant == 1
-                    ? '1 cluster with violations'
-                    : '{0} clusters with violations'.replace('{0}', props.noncompliant.toString())
-            }
+            violationsTooltip={t('{{count}} clusters with violations', { count: props.noncompliant })}
             violationHref={props.violationHref}
         />
     )

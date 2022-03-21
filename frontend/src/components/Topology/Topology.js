@@ -14,9 +14,7 @@
 import React, { createRef } from 'react'
 import PropTypes from 'prop-types'
 import { AcmAlert } from '@stolostron/ui-components'
-import SearchName from './components/SearchName'
 import ResourceFilterView from './components/ResourceFilterView'
-import ResourceFilterBar from './components/ResourceFilterBar'
 import { DiagramShapes } from './shapes/DiagramShapes'
 import { DiagramIcons } from './shapes/DiagramIcons'
 import './css/topology-details.css'
@@ -158,42 +156,15 @@ class Topology extends React.Component {
             processActionLink,
             argoAppDetailsContainerControl,
             setDrawerContent,
-            t,
         } = this.props
         const { isLoaded = true, isReloading = false } = fetchControl
         const { selectedNode, handleNodeSelected } = selectionControl
-        const { nodes, links, activeFilters, availableFilters, boundFilters, showChannelsControl } = this.state
+        const { nodes, links, activeFilters, availableFilters, showChannelsControl } = this.state
         const { searchName } = this.state
         const DiagramViewer = this.props.diagramViewer
 
         return (
             <div className="resourceDiagramControlsContainer">
-                <div className="topology-controls">
-                    <div className="topology-control-container">
-                        <SearchName searchName={searchName} onNameSearch={this.onNameSearch.bind(this)} t={t} />
-                    </div>
-                    <div className="topology-control-container">
-                        <ResourceFilterBar
-                            activeFilters={activeFilters}
-                            boundFilters={boundFilters}
-                            updateActiveFilters={this.onFilterChange.bind(this)}
-                            t={t}
-                        />
-                    </div>
-                    <div className="topology-control-container">
-                        <div
-                            tabIndex="0"
-                            role={'button'}
-                            onClick={this.showFilterView.bind(this)}
-                            onKeyPress={this.showFilterViewPress.bind(this)}
-                        >
-                            <svg className="button-icon">
-                                <use href={'#diagramIcons_filter'} />
-                            </svg>
-                            <div className="button-label">{t('Filters')}</div>
-                        </div>
-                    </div>
-                </div>
                 <div className="resourceDiagramSourceContainer">
                     <div className="topologyDiagramContainer">
                         <DiagramShapes />

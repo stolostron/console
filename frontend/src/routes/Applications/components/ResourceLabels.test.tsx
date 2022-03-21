@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import i18next from 'i18next'
 import { ResourceLabels } from './ResourceLabels'
 
-const t = i18next.t
+const t = i18next.t.bind(i18next)
 
 // Custom matcher function for text that are separated in multiple elements
 function getByTextMultiElement(
