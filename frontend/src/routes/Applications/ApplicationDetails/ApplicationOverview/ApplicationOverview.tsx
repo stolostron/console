@@ -55,6 +55,7 @@ import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
 import { DiagramIcons } from '../../../../components/Topology/shapes/DiagramIcons'
 import { getDiagramElements } from '../ApplicationTopology/model/topology'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
+import { Link } from 'react-router-dom'
 
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
@@ -89,9 +90,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     let isSubscription = false
     let disableBtn
     let subsList = []
-
-    let getUrl = window.location.href
-    getUrl = getUrl.substring(0, getUrl.indexOf('/multicloud/applications/'))
 
     useEffect(() => {
         const fetchNamespaces = async () => {
@@ -344,7 +342,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     isArgoApp,
                     isAppSet,
                     t,
-                    getUrl,
                     openTabIcon,
                 })}
 
@@ -477,12 +474,11 @@ interface IRenderCardsSectionProps {
     isArgoApp: boolean
     t: TFunction
     resource: IResource
-    getUrl: string
     openTabIcon: string
 }
 
 function renderCardsSection(props: IRenderCardsSectionProps) {
-    const { isSubscription, isAppSet, isArgoApp, t, resource, getUrl, openTabIcon } = props
+    const { isSubscription, isAppSet, isArgoApp, t, resource, openTabIcon } = props
     if (resource) {
         const [apigroup, apiversion] = resource.apiVersion.split('/')
         const targetLink = getSearchLink({
@@ -498,22 +494,12 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
             return (
                 <Card>
                     <CardBody>
-                        <AcmButton
-                            id="search-resource"
-                            target="_blank"
-                            component="a"
-                            href={getUrl + targetLink}
-                            variant={ButtonVariant.link}
-                            rel="noreferrer"
-                            icon={
-                                <svg className="new-tab-icon">
-                                    <use href={openTabIcon} />
-                                </svg>
-                            }
-                            iconPosition="right"
-                        >
-                            {t('Search resource')}
-                        </AcmButton>
+                        <Link to={targetLink}>
+                            {t('Search resource')}{' '}
+                            <svg className="new-tab-icon">
+                                <use href={openTabIcon} />
+                            </svg>
+                        </Link>
                     </CardBody>
                 </Card>
             )
@@ -525,40 +511,21 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
                             {isSearchAvailable() && (
                                 <Fragment>
                                     <AcmActionGroup>
-                                        <AcmButton
-                                            href={getUrl + targetLink}
-                                            variant={ButtonVariant.link}
+                                        <Link id="search-resource" to={targetLink}>
+                                            {t('Search resource')}{' '}
+                                            <svg className="new-tab-icon">
+                                                <use href={openTabIcon} />
+                                            </svg>
+                                        </Link>
+                                        <Link
                                             id="app-search-argo-apps-link"
-                                            component="a"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            icon={
-                                                <svg className="new-tab-icon argo-app-link">
-                                                    <use href={openTabIcon} />
-                                                </svg>
-                                            }
-                                            iconPosition="right"
+                                            to={getSearchLinkForArgoApplications(resource, isArgoApp, isAppSet)}
                                         >
-                                            {t('Search Resource')}
-                                        </AcmButton>
-                                        <AcmButton
-                                            href={
-                                                getUrl + getSearchLinkForArgoApplications(resource, isArgoApp, isAppSet)
-                                            }
-                                            variant={ButtonVariant.link}
-                                            id="app-search-argo-apps-link"
-                                            component="a"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            icon={
-                                                <svg className="new-tab-icon argo-app-link">
-                                                    <use href={openTabIcon} />
-                                                </svg>
-                                            }
-                                            iconPosition="right"
-                                        >
-                                            {t('Search all related applications')}
-                                        </AcmButton>
+                                            {t('Search all related applications')}{' '}
+                                            <svg className="new-tab-icon">
+                                                <use href={openTabIcon} />
+                                            </svg>
+                                        </Link>
                                     </AcmActionGroup>
                                 </Fragment>
                             )}

@@ -254,6 +254,7 @@ describe('add credentials page', () => {
             'redhatvirtualization',
             {
                 ovirt_url: 'rhv_url',
+                ovirt_fqdn: 'rhv_fqdn',
                 ovirt_username: 'username',
                 ovirt_password: 'password',
                 ovirt_ca_bundle: '-----BEGIN CERTIFICATE-----\ncertdata\n-----END CERTIFICATE-----',
@@ -270,6 +271,7 @@ describe('add credentials page', () => {
 
         // credentials
         await typeByTestId('ovirt_url', providerConnection.stringData?.ovirt_url!)
+        await typeByTestId('ovirt_fqdn', providerConnection.stringData?.ovirt_fqdn!)
         await typeByTestId('ovirt_username', providerConnection.stringData?.ovirt_username!)
         await typeByTestId('ovirt_password', providerConnection.stringData?.ovirt_password!)
         await typeByTestId('ovirt_ca_bundle', providerConnection.stringData?.ovirt_ca_bundle!)

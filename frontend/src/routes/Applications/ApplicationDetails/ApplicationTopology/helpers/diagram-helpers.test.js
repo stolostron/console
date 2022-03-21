@@ -20,10 +20,9 @@ import {
     checkNotOrObjects,
     checkAndObjects,
 } from './diagram-helpers'
+import i18n from 'i18next'
 
-const t = (string) => {
-    return string
-}
+const t = i18n.t.bind(i18n)
 
 window.open = () => {} // provide an empty implementation for window.open
 
@@ -701,7 +700,7 @@ describe('addNodeOCPRouteLocationForCluster no host spec', () => {
         },
     ]
     it('addNodeOCPRouteLocationForCluster no host spec', () => {
-        expect(addNodeOCPRouteLocationForCluster(node, obj, [])).toEqual(result)
+        expect(addNodeOCPRouteLocationForCluster(node, obj, [], t)).toEqual(result)
     })
 })
 
@@ -783,7 +782,7 @@ describe('addNodeOCPRouteLocationForCluster spec no route', () => {
     }
     const result = []
     it('addNodeOCPRouteLocationForCluster no route', () => {
-        expect(addNodeOCPRouteLocationForCluster(node, obj, [])).toEqual(result)
+        expect(addNodeOCPRouteLocationForCluster(node, obj, [], t)).toEqual(result)
     })
 })
 
@@ -854,7 +853,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
     }
     const result = []
     it('addNodeOCPRouteLocationForCluster with tls and host', () => {
-        expect(addNodeOCPRouteLocationForCluster(node, obj, [])).toEqual(result)
+        expect(addNodeOCPRouteLocationForCluster(node, obj, [], t)).toEqual(result)
     })
 })
 
@@ -902,7 +901,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
         { type: 'spacer' },
     ]
     it('addNodeOCPRouteLocationForCluster with tls and no obj', () => {
-        expect(addNodeOCPRouteLocationForCluster(node, undefined, [])).toEqual(result)
+        expect(addNodeOCPRouteLocationForCluster(node, undefined, [], t)).toEqual(result)
     })
 })
 
@@ -974,7 +973,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
     ]
 
     it('addNodeOCPRouteLocationForCluster with tls and no host', () => {
-        expect(addNodeOCPRouteLocationForCluster(node, obj, [])).toEqual(result)
+        expect(addNodeOCPRouteLocationForCluster(node, obj, [], t)).toEqual(result)
     })
 })
 
@@ -1023,7 +1022,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
         cluster: 'possiblereptile',
     }
     it('tests Routes generated from Ingress with 2 route rules', () => {
-        expect(addNodeOCPRouteLocationForCluster(node, obj, [])).toEqual([])
+        expect(addNodeOCPRouteLocationForCluster(node, obj, [], t)).toEqual([])
     })
 })
 
@@ -1102,7 +1101,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
     ]
 
     it('tests Routes generated from Ingress with one route rules', () => {
-        expect(addNodeOCPRouteLocationForCluster(node, obj, [])).toEqual(result)
+        expect(addNodeOCPRouteLocationForCluster(node, obj, [], t)).toEqual(result)
     })
 })
 
@@ -1180,7 +1179,7 @@ describe('addIngressNodeInfo 1', () => {
         { type: 'spacer' },
     ]
     it('addIngressNodeInfo 1', () => {
-        expect(addIngressNodeInfo(node, [])).toEqual(result)
+        expect(addIngressNodeInfo(node, [], t)).toEqual(result)
     })
 })
 
@@ -1200,7 +1199,7 @@ describe('addIngressNodeInfo other node type', () => {
         },
     }
     it('addIngressNodeInfo 1', () => {
-        expect(addIngressNodeInfo(node, [])).toEqual([])
+        expect(addIngressNodeInfo(node, [], t)).toEqual([])
     })
 })
 
@@ -1323,7 +1322,7 @@ describe('addNodeServiceLocationForCluster 1', () => {
     }
     const result = [{ labelKey: 'Location', value: '172.30.129.147:80' }]
     it('addNodeServiceLocationForCluster 1', () => {
-        expect(addNodeServiceLocationForCluster(node, obj, [])).toEqual(result)
+        expect(addNodeServiceLocationForCluster(node, obj, [], t)).toEqual(result)
     })
 })
 
@@ -1358,7 +1357,7 @@ describe('addNodeServiceLocationForCluster 1', () => {
     }
     const result = []
     it('addNodeServiceLocationForCluster no obj', () => {
-        expect(addNodeServiceLocationForCluster(node, undefined, [])).toEqual(result)
+        expect(addNodeServiceLocationForCluster(node, undefined, [], t)).toEqual(result)
     })
 })
 

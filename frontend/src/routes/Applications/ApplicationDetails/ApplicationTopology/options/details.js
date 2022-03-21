@@ -315,10 +315,10 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
     })
 
     //if Route with host, show it here
-    addNodeOCPRouteLocationForCluster(node, null, details)
+    addNodeOCPRouteLocationForCluster(node, null, details, t)
 
     //add Ingress service info
-    addIngressNodeInfo(node, details)
+    addIngressNodeInfo(node, details, t)
 
     setApplicationDeployStatus(node, details, t)
 
