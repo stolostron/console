@@ -12,7 +12,7 @@ import {
     Provider,
     ProviderLongTextMap,
 } from '@stolostron/ui-components'
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
@@ -25,6 +25,7 @@ import { RbacDropdown } from '../../components/Rbac'
 import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { NavigationPath } from '../../NavigationPath'
 import { deleteResource, DiscoveryConfig, ProviderConnection, Secret, unpackProviderConnection } from '../../resources'
+import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 
 export default function CredentialsPage() {
     const { t } = useTranslation()
@@ -53,9 +54,12 @@ export default function CredentialsPage() {
 const AddConnectionBtn = () => {
     const { t } = useTranslation()
     return (
-        <AcmButton component={Link} to={NavigationPath.addCredentials}>
-            {t('Add credential')}
-        </AcmButton>
+        <div>
+            <AcmButton component={Link} to={NavigationPath.addCredentials}>
+                {t('Add credential')}
+            </AcmButton>
+            <TextContent>{viewDocumentation(DOC_LINKS.CREATE_CONNECTION, t)}</TextContent>
+        </div>
     )
 }
 
@@ -116,9 +120,10 @@ export function CredentialsTable(props: {
                     <AcmEmptyState
                         title={t(`You don't have any credentials.`)}
                         message={
-                            <Trans>
-                                Click the <strong>Add credential</strong> button to create your resource.
-                            </Trans>
+                            <Trans
+                                i18nKey="Click the <bold>Add credential</bold> button to create your resource."
+                                components={{ bold: <strong /> }}
+                            />
                         }
                         action={<AddConnectionBtn />}
                     />

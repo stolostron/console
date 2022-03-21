@@ -19,8 +19,8 @@ import {
     placementRulesState,
     subscriptionsState,
 } from '../../atoms'
-import { useTranslation } from '../../lib/acm-i18next'
-import { DOC_LINKS } from '../../lib/doc-util'
+import { Trans, useTranslation } from '../../lib/acm-i18next'
+import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
 import { queryRemoteArgoApps } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
@@ -70,18 +70,6 @@ function getResourceType(resource: IResource) {
             return 'ApplicationSet'
         }
     }
-}
-
-function getEmptyMessage(t: TFunction) {
-    return (
-        <p>
-            <span
-                dangerouslySetInnerHTML={{ __html: t('Click the Create application button to create your resource.') }}
-            />
-            <br />
-            {t('View the documentation for more information.')}
-        </p>
-    )
 }
 
 export function getAppSetApps(argoApps: IResource[], appSetName: string) {
@@ -283,7 +271,7 @@ export default function ApplicationsOverview() {
 
     // Combine all application types
     applications.forEach((app) => {
-        tableItems.push(generateTransformData(app))
+        // tableItems.push(generateTransformData(app))
     })
     applicationSets.forEach((appset) => {
         tableItems.push(generateTransformData(appset))
@@ -665,45 +653,48 @@ export default function ApplicationsOverview() {
 
     const appCreationButton = () => {
         return (
-            <AcmDropdown
-                isDisabled={!canCreateApplication}
-                tooltip={
-                    !canCreateApplication
-                        ? 'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
-                        : ''
-                }
-                id={'application-create'}
-                onSelect={(id) => {
-                    id === 'create-argo'
-                        ? history.push(NavigationPath.createApplicationArgo)
-                        : history.push(NavigationPath.createApplicationSubscription)
-                }}
-                text={'Create application'}
-                dropdownItems={[
-                    {
-                        id: 'psuedo.group.label',
-                        isDisabled: true,
-                        text: <span style={{ fontSize: '14px' }}>Choose a type</span>,
-                    },
-                    {
-                        id: 'create-argo',
-                        text: 'Argo CD ApplicationSet',
-                        isDisabled: false,
-                        path: NavigationPath.createApplicationArgo,
-                    },
-                    {
-                        id: 'create-subscription',
-                        text: 'Subscription',
-                        isDisabled: false,
-                        path: NavigationPath.createApplicationSubscription,
-                    },
-                ]}
-                isKebab={false}
-                isPlain={true}
-                isPrimary={true}
-                // tooltipPosition={tableDropdown.tooltipPosition}
-                // dropdownPosition={DropdownPosition.left}
-            />
+            <div>
+                <AcmDropdown
+                    isDisabled={!canCreateApplication}
+                    tooltip={
+                        !canCreateApplication
+                            ? 'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                            : ''
+                    }
+                    id={'application-create'}
+                    onSelect={(id) => {
+                        id === 'create-argo'
+                            ? history.push(NavigationPath.createApplicationArgo)
+                            : history.push(NavigationPath.createApplicationSubscription)
+                    }}
+                    text={'Create application'}
+                    dropdownItems={[
+                        {
+                            id: 'psuedo.group.label',
+                            isDisabled: true,
+                            text: <span style={{ fontSize: '14px' }}>Choose a type</span>,
+                        },
+                        {
+                            id: 'create-argo',
+                            text: 'Argo CD ApplicationSet',
+                            isDisabled: false,
+                            path: NavigationPath.createApplicationArgo,
+                        },
+                        {
+                            id: 'create-subscription',
+                            text: 'Subscription',
+                            isDisabled: false,
+                            path: NavigationPath.createApplicationSubscription,
+                        },
+                    ]}
+                    isKebab={false}
+                    isPlain={true}
+                    isPrimary={true}
+                    // tooltipPosition={tableDropdown.tooltipPosition}
+                    // dropdownPosition={DropdownPosition.left}
+                />
+                <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
+            </div>
         )
     }
 
@@ -721,8 +712,15 @@ export default function ApplicationsOverview() {
                 emptyState={
                     <AcmEmptyState
                         key="appOverviewEmptyState"
-                        title={t('You don’t have any applications')}
-                        message={getEmptyMessage(t)}
+                        title={t("You don't have any applications")}
+                        message={
+                            <Text>
+                                <Trans
+                                    i18nKey="Click the <bold>Create application</bold> button to create your resource."
+                                    components={{ bold: <strong /> }}
+                                />
+                            </Text>
+                        }
                         action={appCreationButton()}
                     />
                 }
