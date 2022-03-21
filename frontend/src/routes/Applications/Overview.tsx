@@ -594,7 +594,7 @@ export default function ApplicationsOverview() {
             },
         })
 
-        if (isResourceTypeOf(resource, ApplicationDefinition)) {
+        if (isResourceTypeOf(resource, ApplicationDefinition) || isResourceTypeOf(resource, ApplicationSetDefinition)) {
             actions.push({
                 id: 'deleteApplication',
                 title: t('Delete application'),
@@ -638,6 +638,7 @@ export default function ApplicationsOverview() {
                 isDisabled: resource.kind === ApplicationSetKind ? !canDeleteApplicationSet : !canDeleteApplication,
             })
         }
+
         return actions
     }
 
