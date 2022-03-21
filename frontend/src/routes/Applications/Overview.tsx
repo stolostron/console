@@ -271,7 +271,7 @@ export default function ApplicationsOverview() {
 
     // Combine all application types
     applications.forEach((app) => {
-        // tableItems.push(generateTransformData(app))
+        tableItems.push(generateTransformData(app))
     })
     applicationSets.forEach((appset) => {
         tableItems.push(generateTransformData(appset))
