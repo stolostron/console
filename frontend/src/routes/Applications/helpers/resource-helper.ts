@@ -4,6 +4,7 @@ import { TFunction } from 'i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import queryString from 'query-string'
+import { NavigationPath } from '../../../NavigationPath'
 import {
     Application,
     ApplicationKind,
@@ -225,7 +226,9 @@ export const getSearchLink = (params: any) => {
     let textSearch = ''
 
     _.entries(properties).forEach(([key, value]) => {
-        textSearch = `${textSearch}${textSearch ? ' ' : ''}${key}:${Array.isArray(value) ? value.join() : value}`
+        textSearch = `${textSearch}${textSearch ? ' ' : ''}${key}:${
+            Array.isArray(value) ? value.join() : encodeURIComponent(value as string)
+        }`
     })
 
     if (textSearch) {
@@ -236,7 +239,7 @@ export const getSearchLink = (params: any) => {
     }
     const query = queryString.stringify(queryParams)
     const search = query ? `?${query}` : ''
-    return `/multicloud/home/search${search}`
+    return `${NavigationPath.search}${search}`
 }
 
 export const getEditLink = (params: {
