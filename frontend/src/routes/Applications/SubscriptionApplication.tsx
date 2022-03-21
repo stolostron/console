@@ -214,8 +214,8 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
 
     function getEditApplication(location: Location) {
         const pathname = location.pathname
-        if (pathname.includes('/edit')) {
-            const params = pathname.replace(/(.*)edit\//, '')
+        if (pathname.includes('/edit/subscription')) {
+            const params = pathname.replace(/(.*)edit\/subscription\//, '')
             const [namespace, name] = params.split('/')
             if (name && namespace) {
                 return {

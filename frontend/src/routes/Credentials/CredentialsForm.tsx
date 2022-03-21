@@ -278,6 +278,7 @@ export function CredentialsForm(props: {
 
     // Red Hat Virtualization
     const [ovirtUrl, setOvirtUrl] = useState(() => providerConnection?.stringData?.ovirt_url ?? '')
+    const [ovirtFqdn, setOvirtFqdn] = useState(() => providerConnection?.stringData?.ovirt_fqdn ?? '')
     const [ovirtUsername, setOvirtUsername] = useState(() => providerConnection?.stringData?.ovirt_username ?? '')
     const [ovirtPassword, setOvirtPassword] = useState(() => providerConnection?.stringData?.ovirt_password ?? '')
     const [ovirtCABundle, setOvirtCABundle] = useState(() => providerConnection?.stringData?.ovirt_ca_bundle ?? '')
@@ -425,6 +426,7 @@ export function CredentialsForm(props: {
                 break
             case Provider.redhatvirtualization:
                 secret.stringData!.ovirt_url = ovirtUrl
+                secret.stringData!.ovirt_fqdn = ovirtFqdn
                 secret.stringData!.ovirt_username = ovirtUsername
                 secret.stringData!.ovirt_password = ovirtPassword
                 secret.stringData!.ovirt_ca_bundle = ovirtCABundle
@@ -943,6 +945,19 @@ export function CredentialsForm(props: {
                         // validation: (value) => validateCloudsYaml(value, cloud, t),
                     },
                     {
+                        id: 'ovirt_fqdn',
+                        isHidden: credentialsType !== Provider.redhatvirtualization,
+                        type: 'Text',
+                        label: t('credentialsForm.ovirt_fqdn.label'),
+                        placeholder: t('credentialsForm.ovirt_fqdn.placeholder'),
+                        labelHelp: t('credentialsForm.ovirt_fqdn.labelHelp'),
+                        value: ovirtFqdn,
+                        onChange: setOvirtFqdn,
+                        isRequired: true,
+                        isSecret: false,
+                        // validation: (value) => validateCloudsYaml(value, cloud, t),
+                    },
+                    {
                         id: 'ovirt_username',
                         isHidden: credentialsType !== Provider.redhatvirtualization,
                         type: 'Text',
@@ -978,6 +993,7 @@ export function CredentialsForm(props: {
                         value: ovirtCABundle,
                         onChange: setOvirtCABundle,
                         isRequired: true,
+                        validation: (value) => validateCertificate(value, t),
                     },
                 ],
             },

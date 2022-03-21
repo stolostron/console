@@ -12,7 +12,7 @@ import {
 import { DeleteResourceModal } from './DeleteResourceModal'
 import userEvent from '@testing-library/user-event'
 
-const t = i18n.t
+const t = i18n.t.bind(i18n)
 
 describe('DeleteResourceModal', () => {
     it('should render delete ACM app no related resources', () => {

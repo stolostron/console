@@ -6,19 +6,27 @@ import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
+    channelsState,
+    helmReleaseState,
     managedClusterSetBindingsState,
     managedClustersState,
     namespacesState,
     placementBindingsState,
     placementRulesState,
     placementsState,
+    subscriptionsState,
     usePolicies,
 } from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicyKind, reconcileResources } from '../../../resources'
-import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
+import {
+    getPlacementBindingsForResource,
+    getPlacementsForResource,
+    resolveExternalStatus,
+    resolveSource,
+} from '../common/util'
 
 export function EditPolicy() {
     const { t } = useTranslation()
@@ -34,7 +42,10 @@ export function EditPolicy() {
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
     const [existingResources, setExistingResources] = useState<IResource[]>()
-
+    const [helmReleases] = useRecoilState(helmReleaseState)
+    const [subscriptions] = useRecoilState(subscriptionsState)
+    const [channels] = useRecoilState(channelsState)
+    const [gitSource, setGitSource] = useState('')
     useEffect(() => {
         const policy = policies.find(
             (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
@@ -46,8 +57,28 @@ export function EditPolicy() {
         const policyPlacementBindings = getPlacementBindingsForResource(policy, placementBindings)
         const policyPlacements = getPlacementsForResource(policy, policyPlacementBindings, placements)
         const policyPlacementRules = getPlacementsForResource(policy, policyPlacementBindings, placementRules)
+
+        const isExternal = resolveExternalStatus(policy)
+        if (isExternal) {
+            const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
+            setGitSource(policySource?.pathName ?? '')
+        }
+
         setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
-    }, [history, params.name, params.namespace, placementBindings, placementRules, placements, policies])
+        setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
+    }, [
+        channels,
+        helmReleases,
+        history,
+        params.name,
+        params.namespace,
+        placementBindings,
+        placementRules,
+        placements,
+        policies,
+        subscriptions,
+        t,
+    ])
 
     if (existingResources === undefined) {
         return <LoadingPage />
@@ -64,6 +95,7 @@ export function EditPolicy() {
             clusterSetBindings={clusterSetBindings}
             editMode={EditMode.Edit}
             resources={existingResources}
+            gitSource={gitSource}
             onSubmit={(data) => {
                 const resources = data as IResource[]
                 return reconcileResources(resources, existingResources).then(() => {

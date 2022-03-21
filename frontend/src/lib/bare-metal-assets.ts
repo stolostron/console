@@ -69,27 +69,35 @@ export async function syncBMAs(hosts: ImportedBareMetalAsset[], resources: IReso
             })
             const setSecrets = (fhosts: any[]) => {
                 fhosts.forEach((host) => {
-                    const { name, namespace } = host
+                    const { name, namespace, bootMACAddress } = host
+                    const installConfigHost = installConfigHostsWithoutCred.find(
+                        (h: any) => h.name === name && h.bootMACAddress === bootMACAddress
+                    )
                     const asset = assetsMap[`${name}-${namespace}`]
                     const credName = get(asset, 'spec.bmc.credentialsName', name)
                     const secret = secretMap[`${credName}-${namespace}`]
                     if (secret) {
                         const { username, password } = get(secret, 'value.data', {})
-                        set(
-                            host,
-                            BMC_USERNAME,
-                            username ? Buffer.from(username, 'base64').toString('ascii') : undefined
-                        )
-                        set(
-                            host,
-                            BMC_PASSWORD,
-                            password ? Buffer.from(password, 'base64').toString('ascii') : undefined
-                        )
+                        const setCreds = (host: any) => {
+                            set(
+                                host,
+                                BMC_USERNAME,
+                                username ? Buffer.from(username, 'base64').toString('ascii') : undefined
+                            )
+                            set(
+                                host,
+                                BMC_PASSWORD,
+                                password ? Buffer.from(password, 'base64').toString('ascii') : undefined
+                            )
+                        }
+                        setCreds(host)
+                        if (installConfigHost) {
+                            setCreds(installConfigHost)
+                        }
                     }
                 })
             }
             setSecrets(hostsWithoutCred)
-            setSecrets(installConfigHostsWithoutCred)
             if (installConfigHostsWithoutCred.length > 0) {
                 installConfig.data[INSTALL_CONFIG] = Buffer.from(yaml.dump(installConfigData)).toString('base64')
             }

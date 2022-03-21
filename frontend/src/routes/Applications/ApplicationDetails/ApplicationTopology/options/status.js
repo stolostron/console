@@ -12,7 +12,6 @@
 'use strict'
 
 import { StatusIcon } from '../../../../../components/Topology/constants.js'
-import { ClusterCountIcon, ArgoAppCountIcon } from './constants.js'
 import _ from 'lodash'
 
 const HOURS = 1000 * 60 * 60
@@ -151,11 +150,6 @@ export const updateNodeIcons = (nodes) => {
         let nodeStatus = ''
         let disabled = false
 
-        if (specs.raw && type === 'application' && specs.isDesign && specs.raw.apiVersion.indexOf('argoproj.io') > -1) {
-            layout.argoAppCountIcon = ArgoAppCountIcon
-            layout.argoAppCount = _.get(specs, 'relatedApps', [{}]).length
-        }
-
         if (type === 'cluster') {
             // determine icon
             if (specs.clusterStatus) {
@@ -170,12 +164,6 @@ export const updateNodeIcons = (nodes) => {
                 nodeStatus = status
                 disabled = isDisabled
             }
-            const clustersCount =
-                _.get(specs, 'clusters', []).length ||
-                _.get(specs, 'appClusters', []).length ||
-                _.get(specs, 'clustersNames', []).length
-            layout.clusterCountIcon = ClusterCountIcon
-            layout.clusterCount = clustersCount
         }
 
         const pulse = _.get(node, 'specs.pulse', '')

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { addDiagramDetails } from '../helpers/diagram-helpers'
-import { getClusterName, nodeMustHavePods, isDeployableResource } from '../helpers/diagram-helpers-utils'
-import { computeNodeStatus } from '../helpers/diagram-helpers'
+import { getClusterName, isDeployableResource } from '../helpers/diagram-helpers-utils'
+import { addDiagramDetails } from '../model/computeRelated'
+import { computeNodeStatus } from '../model/computeStatuses'
 import _ from 'lodash'
 import R from 'ramda'
 import { getArgoTopology } from './topologyArgo'
@@ -53,11 +53,16 @@ export const getDiagramElements = (appData, topology, resourceStatuses, canUpdat
             }
         }
 
+        // create a resource map of [type-name-cluster] =  node
+        // will stuff statuses into each one
         processNodeData(node, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
     })
 
     if (resourceStatuses) {
+        // set the queried resource statuses into the node map
         addDiagramDetails(resourceStatuses, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
+
+        // determine the status icon to put on each shape
         nodes.forEach((node) => {
             computeNodeStatus(node, canUpdateStatuses, t)
         })
@@ -82,7 +87,6 @@ export const processNodeData = (node, topoResourceMap, isClusterGrouped, hasHelm
     const channel = _.get(node, 'specs.raw.spec.channel', '')
     const keyName = !isDeployableResource(node) && channel.length > 0 ? `${channel}-${name}` : name
 
-    let podsKeyForThisNode = null
     const clusterName = getClusterName(node.id, node)
     if (type === 'subscription') {
         //don't use cluster name when grouping subscriptions
@@ -95,11 +99,15 @@ export const processNodeData = (node, topoResourceMap, isClusterGrouped, hasHelm
             hasHelmReleases.value = true
         }
     } else {
-        topoResourceMap[`${type}-${keyName}-${clusterName}`] = node
-        //podsKeyForThisNode must use the resource type and name since we can have
-        //resources deploying pods and having the same name, in the same deployment
-        //(for example deploymant and deploymentconfig with same name)
-        podsKeyForThisNode = `pod-${type}-${keyName}-${clusterName}`
+        // if this node represents multiple resources, create an entry for each resource in the map
+        const resources = _.get(node, 'specs.resources')
+        if (resources) {
+            resources.forEach(({ name }) => {
+                topoResourceMap[`${type}-${name}-${clusterName}`] = node
+            })
+        } else {
+            topoResourceMap[`${type}-${keyName}-${clusterName}`] = node
+        }
 
         if (clusterName.indexOf(', ') > -1) {
             isClusterGrouped.value = true
@@ -107,15 +115,6 @@ export const processNodeData = (node, topoResourceMap, isClusterGrouped, hasHelm
     }
     //keep clusters info to create route host and to match nodes to grouped clusters
     node['clusters'] = R.find(R.propEq('id', `member--clusters--${clusterName}`))(topology.nodes)
-
-    if (nodeMustHavePods(node)) {
-        //keep a map with the nodes names that could have pods
-        //since we don't have a link between pods and parent, we rely on pod name vs resource name to find pod's parents
-        //if resources have the same name, try to solve conflicts by setting this map name for resources that could have pods
-        //assuming we don't have resources with same name and producing pods, this workaorund will function
-        //for the future need to set a relation between pods and parents
-        topoResourceMap[podsKeyForThisNode] = node
-    }
 }
 
 export const evaluateSingleAnd = (operand1, operand2) => {

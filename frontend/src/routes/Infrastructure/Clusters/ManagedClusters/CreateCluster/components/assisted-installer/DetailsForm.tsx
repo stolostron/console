@@ -95,7 +95,10 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
             })
             if (!isEqual(active, control.active)) {
                 control.active = active
-                formRef?.current?.setValues(control.active)
+            }
+
+            if (formRef.current && !isEqual(active, formRef.current.values)) {
+                formRef.current.setValues(active)
             }
         }
         control.validate = () => {
@@ -170,14 +173,16 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     }, [managedClusterSet])
 
     const onValuesChanged = useCallback(
-        debounce((formiValues) => {
+        debounce((formikValues, initRender) => {
             const values = {
-                ...formiValues,
+                ...formikValues,
                 managedClusterSet: control.active.managedClusterSet,
                 additionalLabels: control.active.additionalLabels,
             }
             if (!isEqual(values, control.active)) {
-                control.active = values
+                if (!initRender || control.active.name === '') {
+                    control.active = values
+                }
                 control.step.title.isComplete = false
                 handleChange(control)
             }

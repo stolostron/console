@@ -389,8 +389,12 @@ export function getProvider(
         case 'BAREMETAL':
             provider = Provider.baremetal
             break
+        case 'VMWARE':
         case 'VSPHERE':
             provider = Provider.vmware
+            break
+        case 'RHV':
+            provider = Provider.redhatvirtualization
             break
         case 'AUTO-DETECT':
             provider = undefined
@@ -772,28 +776,51 @@ export function getClusterStatus(
 
             // provision success
         } else if (clusterDeployment.spec?.installed) {
+            cdStatus = ClusterStatus.detached
             const powerState = clusterDeployment?.status?.powerState
-            switch (powerState) {
-                case 'Running':
-                    cdStatus = clusterClaim ? ClusterStatus.detached : ClusterStatus.running
-                    break
-                case 'Hibernating':
-                    cdStatus = ClusterStatus.hibernating
-                    break
-                default: {
-                    if (clusterDeployment.spec.powerState === 'Hibernating') {
-                        cdStatus = ClusterStatus.stopping
-                        const readyCondition = clusterDeployment?.status?.conditions?.find(
-                            (c) => c.type === 'Hibernating'
-                        )
-                        statusMessage = readyCondition?.message
-                    } else {
-                        const readyCondition = clusterDeployment?.status?.conditions?.find((c) => c.type === 'Ready')
-                        statusMessage = readyCondition?.message
-                        cdStatus =
-                            clusterDeployment.spec.powerState === 'Running'
-                                ? ClusterStatus.resuming
-                                : ClusterStatus.unknown
+            if (powerState) {
+                switch (powerState) {
+                    case 'Running':
+                        cdStatus = clusterClaim ? ClusterStatus.detached : ClusterStatus.running
+                        break
+                    case 'Hibernating':
+                        cdStatus = ClusterStatus.hibernating
+                        break
+                    default: {
+                        if (clusterDeployment.spec.powerState === 'Hibernating') {
+                            cdStatus = ClusterStatus.stopping
+                            const readyCondition = clusterDeployment?.status?.conditions?.find(
+                                (c) => c.type === 'Hibernating'
+                            )
+                            statusMessage = readyCondition?.message
+                        } else {
+                            const readyCondition = clusterDeployment?.status?.conditions?.find(
+                                (c) => c.type === 'Ready'
+                            )
+                            statusMessage = readyCondition?.message
+                            cdStatus =
+                                clusterDeployment.spec.powerState === 'Running'
+                                    ? ClusterStatus.resuming
+                                    : ClusterStatus.unknown
+                        }
+                    }
+                }
+            } else {
+                const hibernatingCondition = clusterDeployment?.status?.conditions?.find(
+                    (c) => c.type === 'Hibernating'
+                )
+                // covers reason = Running or Unsupported
+                if (hibernatingCondition?.status === 'True') {
+                    switch (hibernatingCondition?.reason) {
+                        case 'Resuming':
+                            cdStatus = ClusterStatus.resuming
+                            break
+                        case 'Stopping':
+                            cdStatus = ClusterStatus.stopping
+                            break
+                        case 'Hibernating':
+                            cdStatus = ClusterStatus.hibernating
+                            break
                     }
                 }
             }
