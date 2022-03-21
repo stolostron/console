@@ -7,6 +7,7 @@ import { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
+    applicationSetsState,
     channelsState,
     gitOpsClustersState,
     managedClusterSetBindingsState,
@@ -34,6 +35,7 @@ export default function CreateArgoApplicationSetPage() {
 export function CreateApplicationArgo() {
     const { t } = useTranslation()
     const history = useHistory()
+    const [applicationSets] = useRecoilState(applicationSetsState)
     const toast = useContext(AcmToastContext)
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
@@ -67,6 +69,7 @@ export function CreateApplicationArgo() {
             ansibleCredentials={availableAnsibleCredentials}
             argoServers={availableArgoNS}
             namespaces={availableNamespace}
+            applicationSets={applicationSets}
             placements={placements}
             clusters={managedClusters}
             clusterSetBindings={managedClusterSetBindings}

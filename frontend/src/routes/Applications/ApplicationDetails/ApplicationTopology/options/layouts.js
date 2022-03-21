@@ -24,16 +24,10 @@ export const getConnectedLayoutOptions = ({ elements }) => {
         .roots((n) => {
             // only have the application node as root
             const ndata = n.data()
-            return ndata.node.type === 'application'
+            return ndata.node.type === 'application' || ndata.node.type === 'applicationset'
         })
         .toArray()
-    const leaves = nodes.leaves()
     positionApplicationRows(roots, typeToShapeMap)
-    if (nodes.length < 40 && roots.length === 1 && leaves.length > 2 && leaves.length < 20) {
-        return {
-            name: 'preset',
-        }
-    }
 
     // let cola position them, nicely
     return {
@@ -89,7 +83,9 @@ export const positionApplicationRows = (row, typeToShapeMap) => {
                     const subIncomers = subscription
                         .incomers((node) => {
                             const nodeData = node.data()
-                            return nodeData.node ? nodeData.node.type === 'application' : false
+                            return nodeData.node
+                                ? nodeData.node.type === 'application' || nodeData.node.type === 'applicationset'
+                                : false
                         })
                         .nodes()
                     const appNode = subIncomers[0]

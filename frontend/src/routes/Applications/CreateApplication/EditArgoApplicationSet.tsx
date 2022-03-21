@@ -105,6 +105,7 @@ export function EditArgoApplicationSet() {
             ansibleCredentials={availableAnsibleCredentials}
             argoServers={availableArgoNS}
             namespaces={availableNamespace}
+            applicationSets={applicationSets}
             placements={placements}
             clusters={managedClusters}
             clusterSetBindings={managedClusterSetBindings}

@@ -13,22 +13,7 @@ import { nockGet } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind, Policy } from '../../../resources'
 import { SearchResultCountDocument, SearchResultItemsDocument } from '../Search/search-sdk/search-sdk'
-import OverviewPage, { mapProviderFromLabel } from './OverviewPage'
-
-it('should responsed with correct value for mapProviderFromLabel function', () => {
-    expect(mapProviderFromLabel('Amazon')).toEqual('aws')
-    expect(mapProviderFromLabel('Azure')).toEqual('azr')
-    expect(mapProviderFromLabel('Baremetal')).toEqual('bmc')
-    expect(mapProviderFromLabel('Google')).toEqual('gcp')
-    expect(mapProviderFromLabel('IBM')).toEqual('ibm')
-    expect(mapProviderFromLabel('IBMPowerPlatform')).toEqual('ibmpower')
-    expect(mapProviderFromLabel('IBMZPlatform')).toEqual('ibmz')
-    expect(mapProviderFromLabel('RedHat')).toEqual('rhocm')
-    expect(mapProviderFromLabel('VMware')).toEqual('vmw')
-    expect(mapProviderFromLabel('VSphere')).toEqual('vmw')
-    expect(mapProviderFromLabel('vSphere')).toEqual('vmw')
-    expect(mapProviderFromLabel('other')).toEqual('other')
-})
+import OverviewPage from './OverviewPage'
 
 const getAddonRequest = {
     apiVersion: 'view.open-cluster-management.io/v1beta1',

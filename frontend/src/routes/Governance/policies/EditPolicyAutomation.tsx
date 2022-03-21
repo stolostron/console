@@ -9,7 +9,7 @@ import { policyAutomationState, secretsState, usePolicies } from '../../../atoms
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource, listAnsibleTowerJobs, PolicyAutomation, reconcileResources, Secret } from '../../../resources'
+import { createResource, listAnsibleTowerJobs, PolicyAutomation, reconcileResources, Secret } from '../../../resources'
 
 export function EditPolicyAutomation() {
     const { t } = useTranslation()
@@ -33,7 +33,10 @@ export function EditPolicyAutomation() {
     const credentials = useMemo(
         () =>
             secrets.filter(
-                (secret: Secret) => secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+                (secret: Secret) =>
+                    secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
+                    !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromNamespace'] &&
+                    !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
             ),
         [secrets]
     )
@@ -52,9 +55,35 @@ export function EditPolicyAutomation() {
             resource={currentPolicyAutomation}
             onCancel={() => history.push(NavigationPath.policies)}
             onSubmit={(data) => {
-                const resource = data as IResource
-                return reconcileResources([resource], []).then(() => {
+                const resource = data as PolicyAutomation
+                return reconcileResources([resource], [currentPolicyAutomation]).then(() => {
                     if (resource) {
+                        // Copy the cedential to the namespace of the policy
+                        const credToCopy: Secret[] = secrets.filter(
+                            (secret: Secret) =>
+                                secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
+                                secret.metadata.name === resource.spec.automationDef.secret
+                        )
+                        const credExists = credToCopy.find(
+                            (cred) => cred.metadata.namespace === resource.metadata.namespace
+                        )
+                        if (!credExists) {
+                            createResource<Secret>({
+                                ...credToCopy[0],
+                                metadata: {
+                                    annotations: credToCopy[0].metadata.annotations,
+                                    name: credToCopy[0].metadata.name,
+                                    namespace: resource.metadata.namespace!,
+                                    labels: {
+                                        'cluster.open-cluster-management.io/type': 'ans',
+                                        'cluster.open-cluster-management.io/copiedFromNamespace':
+                                            resource.metadata.namespace!,
+                                        'cluster.open-cluster-management.io/copiedFromSecretName':
+                                            resource.metadata.name!,
+                                    },
+                                },
+                            })
+                        }
                         toast.addAlert({
                             title: t('Policy automation created'),
                             message: t('{{name}} was successfully created.', { name: resource.metadata?.name }),

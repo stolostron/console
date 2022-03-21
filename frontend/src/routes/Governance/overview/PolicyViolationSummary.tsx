@@ -3,6 +3,7 @@ import { Card } from '@patternfly/react-core'
 import { AcmDonutChart } from '@stolostron/ui-components'
 import { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { Policy } from '../../../resources'
 
@@ -57,6 +58,7 @@ export function ViolationsCard(props: {
     unknown?: number
     to?: string
 }) {
+    const { t } = useTranslation()
     const history = useHistory()
     return (
         <Card
@@ -70,11 +72,11 @@ export function ViolationsCard(props: {
                 description={props.description}
                 donutLabel={{
                     title: props.noncompliant.toString(),
-                    subTitle: 'Violations',
+                    subTitle: t('Violation', { count: props.noncompliant }),
                 }}
                 data={[
                     {
-                        key: props.noncompliant === 1 ? 'Violation' : 'Violations',
+                        key: t('violation', { count: props.noncompliant }),
                         value: props.noncompliant,
                         isPrimary: true,
                     },

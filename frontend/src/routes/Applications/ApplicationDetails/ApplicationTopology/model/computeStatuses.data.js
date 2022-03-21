@@ -986,6 +986,7 @@ export const deploymentNodeRed3 = {
         deploymentModel: {
             'mortgage-app-deploy-feng': [
                 {
+                    cluster: 'feng',
                     namespace: 'default',
                     ready: 3,
                     desired: 3,
