@@ -156,8 +156,10 @@ export default function PoliciesPage() {
             {
                 header: t('Policy set'),
                 cell: (item: PolicyTableItem) => {
-                    const policySetsMatch = policySets.filter((policySet: PolicySet) =>
-                        policySet.spec.policies.includes(item.policy.metadata.name!)
+                    const policySetsMatch = policySets.filter(
+                        (policySet: PolicySet) =>
+                            policySet.metadata.namespace === item.policy.metadata.namespace &&
+                            policySet.spec.policies.includes(item.policy.metadata.name!)
                     )
                     if (policySetsMatch.length > 0) {
                         return <PolicySetList policySets={policySetsMatch} />

@@ -29,7 +29,12 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy, PolicySet } from '../../../../resources'
 import { usePolicySetClusterPolicyViolationsColumn } from '../../clusters/useClusterPolicyViolationsColumn'
-import { getClustersSummaryForPolicySet, getPolicyComplianceForPolicySet, PolicyCompliance } from '../../common/util'
+import {
+    getClustersSummaryForPolicySet,
+    getPolicyComplianceForPolicySet,
+    getPolicySetPolicies,
+    PolicyCompliance,
+} from '../../common/util'
 import { ClusterPolicyViolationIcons2 } from '../../components/ClusterPolicyViolations'
 import { useClusterViolationSummaryMap } from '../../overview/ClusterViolationSummary'
 
@@ -102,7 +107,11 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         setType(type)
     }
 
-    const { policySetClusters, policySetClusterCompliance, policySetPolicies } = useMemo(() => {
+    const policySetPolicies = useMemo(() => {
+        return getPolicySetPolicies(policies, policySet)
+    }, [policySet, policies])
+
+    const { policySetClusters, policySetClusterCompliance, policySetPolicyCompliance } = useMemo(() => {
         const placementRuleClusterCompliance = getClustersSummaryForPolicySet(
             policySet,
             policies,
@@ -146,7 +155,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         return {
             policySetClusters: psClusters,
             policySetClusterCompliance: psClusterCompliance,
-            policySetPolicies: psPolicies,
+            policySetPolicyCompliance: psPolicies,
         }
     }, [policySet, policies, placementDecisions, placementBindings, placementRules, placements])
 
@@ -154,7 +163,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         policies.filter(
             (policy: Policy) =>
                 policy.metadata.namespace === policySet.metadata.namespace &&
-                policySetPolicies.find((p) => p.policyName === policy.metadata.name)
+                policySetPolicyCompliance.find((p) => p.policyName === policy.metadata.name)
         )
     )
     const clusterPolicyViolationsColumn = usePolicySetClusterPolicyViolationsColumn(clusterViolationSummaryMap)
@@ -318,7 +327,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                             <strong>{policySetClusters.length}</strong>&nbsp; clusters
                         </SplitItem>
                         <SplitItem>
-                            <strong>{policySet.spec.policies.length ?? 0}</strong>&nbsp; policies
+                            <strong>{policySetPolicies.length}</strong>&nbsp; policies
                         </SplitItem>
                     </Split>
                 </Text>
@@ -361,7 +370,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
             ) : (
                 <AcmTable<PolicyCompliance>
                     plural="Policies"
-                    items={policySetPolicies}
+                    items={policySetPolicyCompliance}
                     initialSort={{
                         index: 0, // default to sorting by violation count
                         direction: 'desc',
