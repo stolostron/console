@@ -1408,7 +1408,7 @@
     "managed.clusterPools.emptyStateHeader": "You don't have any cluster pools",
     "managed.clusterPools.emptyStateMsg": "Click the <bold>Create cluster pool</bold> button to create a cluster pool.",
     "managed.clusterSets.clusterPools.emptyStateButton": "Create cluster pool",
-    "managed.clusterSets.clusterPools.emptyStateHeader": "You don't have any cluster pools assigned to this cluster set.",
+    "managed.clusterSets.clusterPools.emptyStateHeader": "You don't have any cluster pools assigned to this cluster set",
     "managed.clusterSets.clusterPools.emptyStateMsg": "Select the <bold>Create cluster pool</bold> button to create a cluster pool and assign it to this cluster set.",
     "managed.clusterSets.clusters.emptyStateButton": "Manage resource assignments",
     "managed.clusterSets.clusters.emptyStateHeader": "You don't have any clusters assigned to this cluster set",
