@@ -118,7 +118,7 @@ export function CredentialsTable(props: {
             <AcmTable<Secret>
                 emptyState={
                     <AcmEmptyState
-                        title={t(`You don't have any credentials.`)}
+                        title={t(`You don't have any credentials`)}
                         message={
                             <Trans
                                 i18nKey="Click the <bold>Add credential</bold> button to create your resource."

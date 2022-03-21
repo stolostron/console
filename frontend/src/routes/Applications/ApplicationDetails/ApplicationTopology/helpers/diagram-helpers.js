@@ -21,8 +21,6 @@ const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'
 export const pulseValueArr = ['red', 'orange', 'yellow', 'green', undefined]
 
-import { t } from 'i18next'
-
 export const getAge = (value) => {
     if (value) {
         if (value.includes('T')) {
@@ -420,7 +418,7 @@ export const checkAndObjects = (obj1, obj2) => {
     return obj1 && obj2
 }
 
-export const addNodeOCPRouteLocationForCluster = (node, typeObject, details) => {
+export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) => {
     const rules = R.pathOr([], ['specs', 'raw', 'spec', 'rules'])(node)
     if (rules.length > 1) {
         //we don't know how to process more then one hosts if the Ingress generates more than one route
@@ -513,16 +511,16 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details) => 
 }
 
 //route
-export const addOCPRouteLocation = (node, clusterName, targetNS, details) => {
+export const addOCPRouteLocation = (node, clusterName, targetNS, details, t) => {
     if (R.pathOr('', ['specs', 'raw', 'kind'])(node) === 'Route') {
-        return addNodeInfoPerCluster(node, clusterName, targetNS, details, addNodeOCPRouteLocationForCluster)
+        return addNodeInfoPerCluster(node, clusterName, targetNS, details, addNodeOCPRouteLocationForCluster, t)
     }
 
     return details //process only routes
 }
 
 //ingress
-export const addIngressNodeInfo = (node, details) => {
+export const addIngressNodeInfo = (node, details, t) => {
     if (R.pathOr('', ['specs', 'raw', 'kind'])(node) === 'Ingress') {
         details.push({
             type: 'label',
@@ -567,15 +565,15 @@ export const addIngressNodeInfo = (node, details) => {
 }
 
 //for service
-export const addNodeServiceLocation = (node, clusterName, targetNS, details) => {
+export const addNodeServiceLocation = (node, clusterName, targetNS, details, t) => {
     if (R.pathOr('', ['specs', 'raw', 'kind'])(node) === 'Service') {
-        return addNodeInfoPerCluster(node, clusterName, targetNS, details, addNodeServiceLocationForCluster) //process only services
+        return addNodeInfoPerCluster(node, clusterName, targetNS, details, addNodeServiceLocationForCluster, t) //process only services
     }
     return details
 }
 
 //generic function to write location info
-export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getDetailsFunction) => {
+export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getDetailsFunction, t) => {
     const resourceName = _.get(node, 'namespace', '')
     const resourceMap = _.get(node, `specs.${node.type}Model`, {})
 
@@ -583,7 +581,7 @@ export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getD
     const resourcesForCluster = resourceMap[`${resourceName}-${clusterName}`] || []
     const typeObject = _.find(resourcesForCluster, (obj) => _.get(obj, 'namespace', '') === targetNS)
     if (typeObject) {
-        getDetailsFunction(node, typeObject, locationDetails)
+        getDetailsFunction(node, typeObject, locationDetails, t)
     }
 
     locationDetails.forEach((locationDetail) => {
@@ -593,7 +591,7 @@ export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getD
     return details
 }
 
-export const addNodeServiceLocationForCluster = (node, typeObject, details) => {
+export const addNodeServiceLocationForCluster = (node, typeObject, details, t) => {
     if (node && typeObject && typeObject.clusterIP && typeObject.port) {
         let port = R.split(':', typeObject.port)[0] // take care of 80:etc format
         port = R.split('/', port)[0] //now remove any 80/TCP
