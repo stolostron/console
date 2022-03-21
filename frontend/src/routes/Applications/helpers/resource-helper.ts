@@ -226,9 +226,7 @@ export const getSearchLink = (params: any) => {
     let textSearch = ''
 
     _.entries(properties).forEach(([key, value]) => {
-        textSearch = `${textSearch}${textSearch ? ' ' : ''}${key}:${
-            Array.isArray(value) ? value.join() : encodeURIComponent(value as string)
-        }`
+        textSearch = `${textSearch}${textSearch ? ' ' : ''}${key}:${Array.isArray(value) ? value.join() : value}`
     })
 
     if (textSearch) {
@@ -237,7 +235,7 @@ export const getSearchLink = (params: any) => {
     if (showRelated) {
         queryParams.showrelated = showRelated
     }
-    const query = queryString.stringify(queryParams)
+    const query = queryString.stringify(queryParams, { strict: true }).replace(/\./g, '%2E')
     const search = query ? `?${query}` : ''
     return `${NavigationPath.search}${search}`
 }

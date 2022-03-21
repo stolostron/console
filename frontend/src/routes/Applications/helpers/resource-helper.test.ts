@@ -191,7 +191,7 @@ describe('getSearchLink', () => {
                 showRelated: 'cluster',
             })
         ).toEqual(
-            '/multicloud/home/search?filters=%7B%22textsearch%22%3A%22name%3Ahelloworld-local%2Chelloworld-remote%20namespace%3Aargocd%2Copenshift-gitops%20kind%3Aapplication%20apigroup%3Aargoproj.io%22%7D&showrelated=cluster'
+            '/multicloud/home/search?filters=%7B%22textsearch%22%3A%22name%3Ahelloworld-local%2Chelloworld-remote%20namespace%3Aargocd%2Copenshift-gitops%20kind%3Aapplication%20apigroup%3Aargoproj%2Eio%22%7D&showrelated=cluster'
         )
     })
 })
