@@ -4,6 +4,7 @@ import { TFunction } from 'i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import queryString from 'query-string'
+import { NavigationPath } from '../../../NavigationPath'
 import {
     Application,
     ApplicationKind,
@@ -234,9 +235,9 @@ export const getSearchLink = (params: any) => {
     if (showRelated) {
         queryParams.showrelated = showRelated
     }
-    const query = queryString.stringify(queryParams)
+    const query = queryString.stringify(queryParams, { strict: true }).replace(/\./g, '%2E')
     const search = query ? `?${query}` : ''
-    return `/multicloud/home/search${search}`
+    return `${NavigationPath.search}${search}`
 }
 
 export const getEditLink = (params: {
