@@ -273,6 +273,18 @@ const controlDataRHV = [
         },
     },
     {
+        id: 'vnicProfileID',
+        name: 'creation.ocp.cluster.rhv.vnicprofileid',
+        tooltip: 'tooltip.creation.ocp.cluster.rhv.vnicprofileid',
+        placeholder: 'creation.ocp.cluster.rhv.vnicprofileid',
+        type: 'text',
+        active: '',
+        validation: {
+            notification: 'creation.ocp.cluster.rhv.must.enter.network.name',
+            required: true,
+        },
+    },
+    {
         id: 'apiVIP',
         type: 'text',
         name: 'creation.ocp.api.vip',

@@ -43,8 +43,11 @@ describe('createChildNode', () => {
 describe('addClusters', () => {
     it('create cluster from given data', () => {
         const parentId = 'member--subscription--feng-error-app--feng-error-app-subscription-1'
-        const createdClusterElements = new Set()
-        const subscription = {}
+        const subscription = {
+            metadata: {
+                name: 'test',
+            },
+        }
         const clusterNames = ['local-cluster']
         const managedClusterNames = ['console-managed', 'local-cluster', 'rbrunopi-aws-01']
         const topology = {
@@ -58,41 +61,10 @@ describe('addClusters', () => {
                 },
             ],
         }
-        const result = 'member--clusters--local-cluster'
-        expect(
-            addClusters(
-                parentId,
-                createdClusterElements,
-                subscription,
-                clusterNames,
-                managedClusterNames,
-                [],
-                [],
-                topology
-            )
-        ).toEqual(result)
-    })
-
-    it('create cluster with subscription and topology undefined', () => {
-        const parentId = 'member--subscription--feng-error-app--feng-error-app-subscription-1'
-        const createdClusterElements = new Set()
-        const subscription = undefined
-        const clusterNames = ['local-cluster']
-        const managedClusterNames = ['console-managed', 'local-cluster', 'rbrunopi-aws-01']
-        const topology = undefined
-        const result = 'member--clusters--'
-        expect(
-            addClusters(
-                parentId,
-                createdClusterElements,
-                subscription,
-                clusterNames,
-                managedClusterNames,
-                [],
-                [],
-                topology
-            )
-        ).toEqual(result)
+        const result = 'member--clusters--local-cluster--test'
+        expect(addClusters(parentId, subscription, '', clusterNames, managedClusterNames, [], [], topology)).toEqual(
+            result
+        )
     })
 })
 

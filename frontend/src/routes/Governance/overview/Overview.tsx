@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-import { t } from 'i18next'
 import { Fragment, useMemo } from 'react'
 import { usePolicies } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { Policy } from '../../../resources'
 import {
     GovernanceCreatePolicyEmptyState,
@@ -31,8 +31,8 @@ export default function GovernanceOverview() {
                     <PolicySetViolationsCard />
                     <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
                     <ClusterViolationsCard clusterViolationSummaryMap={clusterViolationSummaryMap} />
-                    <SecurityGroupCard key="categories" title="Categories" group="categories" policies={policies} />
                     <SecurityGroupCard key="standards" title="Standards" group="standards" policies={policies} />
+                    <SecurityGroupCard key="categories" title="Categories" group="categories" policies={policies} />
                     <SecurityGroupCard key="controls" title="Controls" group="controls" policies={policies} />
                 </AcmMasonry>
             </Stack>
@@ -48,6 +48,7 @@ interface SecurityGroupViolations {
 
 function SecurityGroupCard(props: { title: string; group: string; policies: Policy[] }) {
     const violations = useSecurityGroupViolations(props.group, props.policies)
+    const { t } = useTranslation()
     return (
         <div>
             <Card isRounded>

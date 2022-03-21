@@ -141,7 +141,8 @@ export function ApplicationTopologyPageContent(props: {
         if (application && appData && topology) {
             setElements(cloneDeep(getDiagramElements(appData, cloneDeep(topology), statuses, canUpdateStatuses, t)))
         }
-    }, [appData, application, canUpdateStatuses, refreshTime, statuses, t, topology])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [refreshTime])
 
     return (
         <PageSection>

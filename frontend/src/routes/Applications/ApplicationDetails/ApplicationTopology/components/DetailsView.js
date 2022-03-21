@@ -13,15 +13,16 @@
 
 import _ from 'lodash'
 import R from 'ramda'
-import React from 'react'
+import React, { Fragment } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
-import { Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'
+import { Button, Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'
 import jsYaml from 'js-yaml'
-import { createResourceSearchLink, createResourceURL } from '../helpers/diagram-helpers'
+import { createResourceSearchLink, createResourceURL, getFilteredNode } from '../helpers/diagram-helpers'
 import { getLegendTitle } from '../options/titles'
 import ClusterDetailsContainer from './ClusterDetailsContainer'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
+import DetailsTable from './DetailsTable'
 import { LogsContainer } from './LogsContainer'
 import { YAMLContainer } from './YAMLContainer'
 
@@ -52,6 +53,7 @@ class DetailsView extends React.Component {
             isLoading: false,
             linkID: '',
             activeTabKey: this.props.activeTabKey,
+            filteredNode: undefined,
         }
     }
 
@@ -117,58 +119,97 @@ class DetailsView extends React.Component {
         )
     }
 
+    UNSAFE_componentWillReceiveProps() {
+        this.setState({ filteredNode: undefined })
+    }
+
     render() {
-        const { getLayoutNodes, options, selectedNodeId, nodes, activeFilters, t } = this.props
-        const { typeToShapeMap, getNodeDetails } = options
-        const currentUpdatedNode = nodes.find((n) => n.uid === selectedNodeId)
-        const currentNode = getLayoutNodes().find((n) => n.uid === selectedNodeId) || {}
+        const { filteredNode } = this.state
+        const { getLayoutNodes, options, selectedNodeId, nodes, t } = this.props
+        const { typeToShapeMap } = options
+        const currentNode = filteredNode || getLayoutNodes().find((n) => n.uid === selectedNodeId) || {}
+        const currentUpdatedNode = filteredNode || nodes.find((n) => n.uid === selectedNodeId)
         const { layout = {} } = currentNode
         const resourceType = layout.type || currentNode.type || currentUpdatedNode.type
+        const isTableView = _.get(currentNode, 'specs.resourceCount', 0) > 1 && currentNode.type !== 'cluster'
         const { shape = 'other', className = 'default' } = typeToShapeMap[resourceType] || {}
-        const details = getNodeDetails(currentNode, currentUpdatedNode, activeFilters, t)
-        const name = currentNode.type === 'cluster' ? '' : currentNode.name
+        let name = isTableView || currentNode.type === 'cluster' ? '' : currentNode.name
+        if (!name) {
+            name = _.get(currentNode, 'specs.raw.metadata.name')
+        }
         const legend = getLegendTitle(resourceType, t)
         const searchLink = createResourceSearchLink(currentNode, t)
-        const yamlURL = createResourceURL(currentNode, t)
-        const { namespace, type } = currentNode
-        const isLogTabHidden = !resourcesWithPods.has(currentNode.type)
-        const { activeTabKey } = this.state
 
-        // Only YAML tab has a key so it will get recreated when switching between nodes
         return (
             <div className="topologyDetails">
+                {filteredNode && (
+                    <div style={{ margin: '0 0 20px 10px' }}>
+                        <Button onClick={() => this.setState({ filteredNode: undefined })} variant="link" isInline>
+                            {t(`< Back to all ${resourceType}s`)}
+                        </Button>
+                    </div>
+                )}
                 <div className="detailsHeader">
                     <DetailsViewDecorator shape={shape} className={className} />
                     <div>
                         <div className="sectionContent">
                             <span className="label">{legend}</span>
                         </div>
-                        <div className="sectionContent">
-                            <span className="titleNameText">{name}</span>
-                        </div>
-                        <div className="openSearchLink">{this.renderLink(searchLink, t)}</div>
+                        {!isTableView && (
+                            <Fragment>
+                                <div className="sectionContent">
+                                    <span className="titleNameText">{name}</span>
+                                </div>
+                                <div className="openSearchLink">{this.renderLink(searchLink, t)}</div>
+                            </Fragment>
+                        )}
                     </div>
                 </div>
-                <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick} mountOnEnter={true} unmountOnExit={true}>
-                    <Tab eventKey={0} title={<TabTitleText>{t('Details')}</TabTitleText>} isHidden={false}>
-                        {details.map((detail) => this.renderDetail(detail, t))}
-                    </Tab>
-                    <Tab eventKey={1} title={<TabTitleText>{t('Logs')}</TabTitleText>} isHidden={isLogTabHidden}>
-                        <LogsContainer node={currentNode} t={t} renderResourceURLLink={this.renderResourceURLLink} />
-                    </Tab>
-                    <Tab
-                        eventKey={2}
-                        title={<TabTitleText>{t('YAML')}</TabTitleText>}
-                        isHidden={currentNode.type === 'cluster'}
-                    >
-                        {this.renderResourceURLLink(
-                            { data: { action: 'open_link', targetLink: yamlURL, name, namespace, kind: type } },
-                            t
-                        )}
-                        <YAMLContainer key={selectedNodeId} node={currentNode} t={t} />
-                    </Tab>
-                </Tabs>
+                <Fragment>
+                    {isTableView ? this.renderTable(currentNode) : this.renderTabs(currentNode, currentUpdatedNode)}
+                </Fragment>
             </div>
+        )
+    }
+
+    renderTable(node) {
+        const { t } = this.props
+        return <DetailsTable id="details-view-table" node={node} handleOpen={this.handleOpen.bind(this)} t={t} />
+    }
+
+    handleOpen(node, item) {
+        const filteredNode = getFilteredNode(node, item)
+        this.setState({ filteredNode })
+    }
+
+    renderTabs(node, currentUpdatedNode) {
+        const { options, activeFilters, t } = this.props
+        const selectedNodeId = node.id
+        const { getNodeDetails } = options
+        const details = getNodeDetails(node, currentUpdatedNode, activeFilters, t)
+        const name = node.type === 'cluster' ? '' : node.name
+        const yamlURL = createResourceURL(node, t)
+        const { namespace, type } = node
+        const isLogTabHidden = !resourcesWithPods.has(node.type)
+        const { activeTabKey } = this.state
+
+        // Only YAML tab has a key so it will get recreated when switching between nodes
+        return (
+            <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick} mountOnEnter={true} unmountOnExit={true}>
+                <Tab eventKey={0} title={<TabTitleText>{t('Details')}</TabTitleText>} isHidden={false}>
+                    {details.map((detail) => this.renderDetail(detail, t))}
+                </Tab>
+                <Tab eventKey={1} title={<TabTitleText>{t('Logs')}</TabTitleText>} isHidden={isLogTabHidden}>
+                    <LogsContainer node={node} t={t} renderResourceURLLink={this.renderResourceURLLink} />
+                </Tab>
+                <Tab eventKey={2} title={<TabTitleText>{t('YAML')}</TabTitleText>} isHidden={node.type === 'cluster'}>
+                    {this.renderResourceURLLink(
+                        { data: { action: 'open_link', targetLink: yamlURL, name, namespace, kind: type } },
+                        t
+                    )}
+                    <YAMLContainer key={selectedNodeId} node={node} t={t} />
+                </Tab>
+            </Tabs>
         )
     }
 

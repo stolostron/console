@@ -49,13 +49,14 @@ export function getArgoTopology(application, managedClusters, argoData) {
 
     const appId = `application--${name}`
     nodes.push({
-        name,
+        name: '',
         namespace,
         type: 'application',
         id: appId,
         uid: appId,
         specs: {
             isDesign: true,
+            resourceCount: relatedApps ? relatedApps.length : 0,
             raw: application.app,
             activeChannel: application.activeChannel,
             allSubscriptions: [],
@@ -73,10 +74,11 @@ export function getArgoTopology(application, managedClusters, argoData) {
     delete application.app.spec.apps
 
     // create cluster node
+    const source = get(application, 'app.spec.source.path', '')
     const clusterId = addClusters(
         appId,
-        new Set(),
         null,
+        source,
         clusterNames,
         uniqBy(clusters, 'metadata.name'),
         links,

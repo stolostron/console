@@ -21,22 +21,17 @@ export const getClusterName = (nodeId) => {
     return localClusterName
 }
 
-const getLocalClusterElement = (createdClusterElements) => {
-    let localClusterElement
-    createdClusterElements.forEach((element) => {
-        if (element.indexOf(localClusterName) > -1) {
-            localClusterElement = element
-        }
-    })
-
-    return localClusterElement
-}
-
 export const createChildNode = (parentObject, type, links, nodes) => {
     const parentType = _.get(parentObject, 'type', '')
-    const { name, namespace } = parentObject
-    const parentId = parentObject.id
+    const { name, namespace, id, specs = {} } = parentObject
+    const parentId = id
     const memberId = `member--member--deployable--member--clusters--${getClusterName(parentId)}--${type}--${name}`
+    let resources
+    if (specs.resources) {
+        resources = specs.resources.map((res) => {
+            return { ...res, kind: type }
+        })
+    }
     const node = {
         name,
         namespace,
@@ -44,10 +39,14 @@ export const createChildNode = (parentObject, type, links, nodes) => {
         id: memberId,
         uid: memberId,
         specs: {
+            resourceCount: specs.resourceCount,
+            resources,
             parent: {
                 parentId,
                 parentName: name,
                 parentType,
+                resources: specs.resources,
+                parentSpecs: _.get(specs, 'parent.parentSpecs'),
             },
         },
     }
@@ -63,8 +62,8 @@ export const createChildNode = (parentObject, type, links, nodes) => {
 // add cluster node to RHCAM application
 export const addClusters = (
     parentId,
-    createdClusterElements,
     subscription,
+    source,
     clusterNames,
     managedClusterNames,
     links,
@@ -73,42 +72,39 @@ export const addClusters = (
 ) => {
     // create element if not already created
     const sortedClusterNames = _.sortBy(clusterNames)
-    // do not use cluster names for the id or name if this is an argo app, we only know about one app here
-    const cns = subscription ? sortedClusterNames.join(',') : ''
-    let clusterId = `member--clusters--${cns}`
-    const localClusterElement =
-        clusterNames.length === 1 && clusterNames[0] === localClusterName
-            ? getLocalClusterElement(createdClusterElements)
-            : undefined
+    let clusterId = `member--clusters`
+    // do not use this for the id for argo app, we only know about one app here
+    if (subscription) {
+        const cns = sortedClusterNames.join('--')
+        const sub = _.get(subscription, 'metadata.name')
+        clusterId = `member--clusters--${cns}--${sub}`
+    }
     const topoClusterNode = topology
         ? _.find(topology.nodes, {
-              id: 'member--clusters--',
+              id: 'member--clusters',
           })
         : undefined
-    if (!createdClusterElements.has(clusterId) && !localClusterElement) {
-        const filteredClusters = managedClusterNames.filter((cluster) => {
-            const cname = _.get(cluster, metadataName)
-            return cname && clusterNames.includes(cname)
-        })
-        nodes.push({
-            name: cns,
-            namespace: '',
-            type: 'cluster',
-            id: clusterId,
-            uid: clusterId,
-            specs: {
-                cluster: subscription && filteredClusters.length === 1 ? filteredClusters[0] : undefined,
-                clusters: filteredClusters,
-                sortedClusterNames,
-                appClusters: topoClusterNode ? topoClusterNode.specs.appClusters : undefined,
-                targetNamespaces: topoClusterNode ? topoClusterNode.specs.targetNamespaces : undefined,
-            },
-        })
-        createdClusterElements.add(clusterId)
-    }
-    if (localClusterElement) {
-        clusterId = localClusterElement
-    }
+    const filteredClusters = managedClusterNames.filter((cluster) => {
+        const cname = _.get(cluster, metadataName)
+        return cname && clusterNames.includes(cname)
+    })
+    nodes.push({
+        name: clusterNames.length === 1 ? clusterNames[0] : '',
+        namespace: '',
+        type: 'cluster',
+        id: clusterId,
+        uid: clusterId,
+        specs: {
+            title: source,
+            subscription,
+            resourceCount: clusterNames.length,
+            cluster: subscription && filteredClusters.length === 1 ? filteredClusters[0] : undefined,
+            clusters: filteredClusters,
+            sortedClusterNames,
+            appClusters: topoClusterNode ? topoClusterNode.specs.appClusters : undefined,
+            targetNamespaces: topoClusterNode ? topoClusterNode.specs.targetNamespaces : undefined,
+        },
+    })
     links.push({
         from: { uid: parentId },
         to: { uid: clusterId },

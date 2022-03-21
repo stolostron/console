@@ -83,9 +83,9 @@ export default function PoliciesPage() {
     // in a useEffect hook
     const tableItems: PolicyTableItem[] = policies.map((policy) => {
         const isExternal = resolveExternalStatus(policy)
-        const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
         let source: string | JSX.Element = 'Local'
         if (isExternal) {
+            const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
             source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
         }
         return {
@@ -203,6 +203,7 @@ export default function PoliciesPage() {
                                         title: policyAutomationMatch.metadata.name,
                                         panelContent: (
                                             <AutomationDetailsSidebar
+                                                setModal={setModal}
                                                 policyAutomationMatch={policyAutomationMatch}
                                                 policy={item.policy}
                                                 onClose={() => setDrawerContext(undefined)}
@@ -786,7 +787,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                             <AcmAlert
                                 variant="danger"
                                 title={t('No policy set in given namespace')}
-                                message={t('There are no policy sets in "{0}" namespace.').replace('{0}', namespace)}
+                                message={t('There are no policy sets in "{{0}}" namespace.', [namespace])}
                                 isInline
                             />
                         )}

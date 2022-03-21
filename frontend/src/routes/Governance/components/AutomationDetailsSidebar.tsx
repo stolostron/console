@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+    Alert,
+    AlertVariant,
     Button,
     ButtonVariant,
     DescriptionList,
@@ -7,17 +9,24 @@ import {
     DescriptionListGroup,
     DescriptionListTerm,
     Stack,
+    Text,
 } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import {
+    CheckCircleIcon,
+    ExclamationCircleIcon,
+    ExclamationTriangleIcon,
+    ExternalLinkAltIcon,
+} from '@patternfly/react-icons'
 import { AcmTable } from '@stolostron/ui-components'
 import moment from 'moment'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { ansibleJobState, secretsState } from '../../../atoms'
-import { useTranslation } from '../../../lib/acm-i18next'
+import { ansibleJobState, configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
+import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { AnsibleJob, deleteResource, Policy, PolicyAutomation, Secret } from '../../../resources'
+import { AnsibleJob, deleteResource, Policy, PolicyAutomation, Secret, SubscriptionOperator } from '../../../resources'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../useGovernanceData'
 
@@ -30,6 +39,7 @@ export interface JobTableData {
 }
 
 export function AutomationDetailsSidebar(props: {
+    setModal: (modal: React.ReactNode) => void
     policyAutomationMatch: PolicyAutomation
     policy: Policy
     onClose: () => void
@@ -38,6 +48,8 @@ export function AutomationDetailsSidebar(props: {
     const { t } = useTranslation()
     const history = useHistory()
     const [ansibleJobs] = useRecoilState(ansibleJobState)
+    const [configMaps] = useRecoilState(configMapsState)
+    const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
     const [secrets] = useRecoilState(secretsState)
     const govData = useGovernanceData([policy])
     const clusterRiskScore =
@@ -46,6 +58,21 @@ export function AutomationDetailsSidebar(props: {
         govData.clusterRisks.low +
         govData.clusterRisks.unknown +
         govData.clusterRisks.synced
+
+    const [modalProps, setModalProps] = useState<IBulkActionModelProps<PolicyAutomation> | { open: false }>({
+        open: false,
+    })
+
+    const isOperatorInstalled = useMemo(() => {
+        const ansibleOp = subscriptionOperators.filter((op: SubscriptionOperator) => {
+            const conditions = op.status?.conditions[0]
+            return (
+                op.metadata.name === 'ansible-automation-platform-operator' &&
+                conditions?.reason === 'AllCatalogSourcesHealthy'
+            )
+        })
+        return ansibleOp.length > 0
+    }, [subscriptionOperators])
 
     const credential = useMemo(
         () =>
@@ -167,8 +194,34 @@ export function AutomationDetailsSidebar(props: {
         []
     )
 
+    function getOperatorError() {
+        const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
+        const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
+        return (
+            <div>
+                {t(
+                    'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the operator through the following link: '
+                )}
+                <Button
+                    isInline
+                    variant={ButtonVariant.link}
+                    onClick={() =>
+                        window.open(
+                            openShiftConsoleUrl + '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
+                        )
+                    }
+                >
+                    {t('Operator')}
+                    <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                </Button>
+            </div>
+        )
+    }
+
     return (
         <div>
+            <BulkActionModel<PolicyAutomation> {...modalProps} />
+            {!isOperatorInstalled && <Alert isInline title={getOperatorError()} variant={AlertVariant.danger} />}
             <Stack hasGutter>
                 <DescriptionList>
                     <DescriptionListGroup>
@@ -240,10 +293,45 @@ export function AutomationDetailsSidebar(props: {
                 <div style={{ width: '16px' }} />
                 <Button
                     variant="danger"
-                    onClick={() => {
-                        deleteResource(policyAutomationMatch)
-                        onClose()
-                    }}
+                    onClick={() =>
+                        setModalProps({
+                            icon: 'danger',
+                            open: true,
+                            title: t('Permanently delete policy automation?'),
+                            action: t('Delete'),
+                            processing: t('Deleting'),
+                            resources: [policyAutomationMatch],
+                            description: (
+                                <Text>
+                                    <Trans
+                                        i18nKey="Deleting <italic>{{policyAutomation}}</italic> is irreversible. Any associated Ansible job will be deleted."
+                                        values={{ policyAutomation: policyAutomationMatch.metadata.name! }}
+                                        components={{ italic: <em /> }}
+                                    />
+                                </Text>
+                            ),
+                            keyFn: (policyAutomationMatch: PolicyAutomation) =>
+                                policyAutomationMatch.metadata.uid as string,
+                            actionFn: (policyAutomationMatch) => {
+                                const jobMatches = ansibleJobs.filter(
+                                    (job) =>
+                                        job.metadata.name === policyAutomationMatch.spec.automationDef.name &&
+                                        job.metadata.namespace === policyAutomationMatch.metadata.namespace
+                                )
+                                for (const job of jobMatches) {
+                                    deleteResource(job)
+                                }
+                                return deleteResource(policyAutomationMatch)
+                            },
+                            close: () => {
+                                setModalProps({ open: false })
+                                onClose()
+                            },
+                            onCancel: () => {
+                                setModalProps({ open: false })
+                            },
+                        })
+                    }
                 >
                     {'Delete'}
                 </Button>

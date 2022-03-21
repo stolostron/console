@@ -132,6 +132,9 @@ import {
     Subscription,
     SubscriptionApiVersion,
     SubscriptionKind,
+    SubscriptionOperator,
+    SubscriptionOperatorApiVersion,
+    SubscriptionOperatorKind,
     SubscriptionReport,
     SubscriptionReportApiVersion,
     SubscriptionReportKind,
@@ -190,6 +193,7 @@ export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
 export const subscriptionsState = AtomArray<Subscription>()
+export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
 export const subscriptionReportsState = AtomArray<SubscriptionReport>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
@@ -269,6 +273,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setSettings] = useRecoilState(settingsState)
     const [, setSubmarinerConfigs] = useRecoilState(submarinerConfigsState)
     const [, setSubscriptionsState] = useRecoilState(subscriptionsState)
+    const [, setSubscriptionOperatorsState] = useRecoilState(subscriptionOperatorsState)
     const [, setSubscriptionReportsState] = useRecoilState(subscriptionReportsState)
 
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = useMemo(() => {
@@ -285,6 +290,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
         addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
         addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
+        addSetter(SubscriptionOperatorApiVersion, SubscriptionOperatorKind, setSubscriptionOperatorsState)
         addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
         addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)
         addSetter('argoproj.io/v1alpha1', 'appProjects', setAppProjectsState)
@@ -373,6 +379,7 @@ export function LoadData(props: { children?: ReactNode }) {
         setSubmarinerConfigs,
         setSubscriptionReportsState,
         setSubscriptionsState,
+        setSubscriptionOperatorsState,
     ])
 
     useEffect(() => {
