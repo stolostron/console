@@ -2,6 +2,7 @@
 
 import { get } from 'lodash'
 import { getSubscriptionApplication } from './applicationSubscription'
+import { fireManagedClusterView } from '../../../../../resources'
 
 export const getApplication = async (namespace, name, selectedChannel, recoilStates, cluster, apiversion) => {
     let app
@@ -40,11 +41,16 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
         }
     }
 
-    // get argo embedded app set
+    // get argo
     if (!app && apiVersion === 'application.argoproj.io') {
-        app = argoApplications.find((app) => {
-            return app?.metadata?.name === name && app?.metadata?.namespace === namespace
-        })
+        if (cluster) {
+            // get argo app definition from managed cluster
+            app = await getRemoteArgoApp(cluster, 'application', 'argoproj.io/v1alpha1', name, namespace)
+        } else {
+            app = argoApplications.find((app) => {
+                return app?.metadata?.name === name && app?.metadata?.namespace === namespace
+            })
+        }
     }
 
     // collect app resources
@@ -165,4 +171,18 @@ export const findCluster = (managedClusters, searchValue, findByURL) => {
     }
 
     return undefined
+}
+
+const getRemoteArgoApp = async (cluster, kind, apiVersion, name, namespace) => {
+    let response
+
+    try {
+        response = await fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
+    } catch (err) {
+        console.error('Error getting remote Argo app', err)
+    }
+
+    if (response) {
+        return response.result
+    }
 }

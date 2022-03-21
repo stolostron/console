@@ -2880,7 +2880,10 @@ describe('getPodState pod 2', () => {
 describe('getPulseStatusForCluster all ok', () => {
     const clusterNode = {
         specs: {
-            clusters: [{ status: 'ok' }, { status: 'ok' }],
+            clusters: [
+                { status: 'ok', name: 'c1' },
+                { status: 'ok', name: 'c2' },
+            ],
         },
     }
     it('should process cluster node', () => {
@@ -2891,7 +2894,10 @@ describe('getPulseStatusForCluster all ok', () => {
 describe('getPulseStatusForCluster all some offline', () => {
     const clusterNode = {
         specs: {
-            clusters: [{ status: 'ok' }, { status: 'offline' }],
+            clusters: [
+                { status: 'ok', name: 'c1' },
+                { status: 'offline', name: 'c2' },
+            ],
         },
     }
     it('should process cluster node', () => {
@@ -2902,7 +2908,10 @@ describe('getPulseStatusForCluster all some offline', () => {
 describe('getPulseStatusForCluster all pending', () => {
     const clusterNode = {
         specs: {
-            clusters: [{ status: 'pendingimport' }, { status: 'pendingimport' }],
+            clusters: [
+                { status: 'pendingimport', name: 'c1' },
+                { status: 'pendingimport', name: 'c2' },
+            ],
         },
     }
     it('should process cluster node', () => {
@@ -2913,7 +2922,10 @@ describe('getPulseStatusForCluster all pending', () => {
 describe('getPulseStatusForCluster all some ok', () => {
     const clusterNode = {
         specs: {
-            clusters: [{ status: 'ok' }, { status: 'pending' }],
+            clusters: [
+                { status: 'ok', name: 'c1' },
+                { status: 'pending', name: 'c2' },
+            ],
         },
     }
     it('should process cluster node', () => {

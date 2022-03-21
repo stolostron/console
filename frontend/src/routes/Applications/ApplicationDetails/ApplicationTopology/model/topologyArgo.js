@@ -56,7 +56,7 @@ export function getArgoTopology(application, managedClusters, argoData) {
         uid: appId,
         specs: {
             isDesign: true,
-            resourceCount: relatedApps ? relatedApps.length : 0,
+            resourceCount: 0,
             raw: application.app,
             activeChannel: application.activeChannel,
             allSubscriptions: [],
