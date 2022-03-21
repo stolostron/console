@@ -1,17 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import { Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmTable, compareStrings } from '@stolostron/ui-components'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usePolicies } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { Cluster } from '../../../resources'
-import { ClusterPolicies, getPolicyForCluster } from '../common/util'
+import { Policy } from '../../../resources'
+import { SecurityGroupViolations } from './Overview'
 
 const useStyles = makeStyles({
     body: {
@@ -31,6 +30,7 @@ const useStyles = makeStyles({
     sectionSeparator: {
         borderBottom: '1px solid #D2D2D2',
         margin: '0 -2rem 1rem -2rem',
+        paddingTop: '2rem',
     },
     toggleContainer: {
         position: 'relative',
@@ -62,41 +62,66 @@ const useStyles = makeStyles({
     },
 })
 
-export function PolicySummarySidebar(props: { cluster: Cluster; compliance: string }) {
-    const { cluster, compliance } = props
+export function SecurityGroupPolicySummarySidebar(props: {
+    violation: SecurityGroupViolations
+    secGroupName: string
+    compliance: string
+}) {
+    const { compliance, secGroupName, violation } = props
     const classes = useStyles()
     const { t } = useTranslation()
     const policies = usePolicies()
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | undefined>(
+        compliance === 'compliant' ? 'asc' : 'desc'
+    )
 
-    const clusterPolicies = useMemo(() => getPolicyForCluster(cluster, policies), [cluster, policies])
+    useEffect(() => {
+        setSortDirection(compliance === 'compliant' ? 'asc' : 'desc')
+    }, [compliance])
+
+    const secGroupPolicies: Policy[] = useMemo(() => {
+        return policies.filter((policy) => {
+            const annotation = policy.metadata.annotations?.[`policy.open-cluster-management.io/${secGroupName}`]
+            if (!annotation) {
+                return false
+            }
+            const names = annotation.split(',')
+            for (const name of names) {
+                if (name === violation.name && policy.status?.compliant) {
+                    return true
+                }
+            }
+            return false
+        })
+    }, [policies, secGroupName, violation.name])
 
     const policyColumnDefs = useMemo(
         () => [
             {
                 header: t('Policy name'),
                 search: 'policyName',
-                sort: (a: ClusterPolicies, b: ClusterPolicies) =>
+                sort: (a: Policy, b: Policy) =>
                     /* istanbul ignore next */
-                    compareStrings(a.policyName, b.policyName),
-                cell: (policy: ClusterPolicies) => {
+                    compareStrings(a.metadata.name, b.metadata.name),
+                cell: (policy: Policy) => {
                     return (
                         <Link
                             to={{
                                 pathname: NavigationPath.policyDetailsResults
-                                    .replace(':namespace', policy.policyNamespace)
-                                    .replace(':name', policy.policyName),
+                                    .replace(':namespace', policy.metadata.namespace!)
+                                    .replace(':name', policy.metadata.name!),
                             }}
                         >
-                            {policy.policyName}
+                            {policy.metadata.name}
                         </Link>
                     )
                 },
             },
             {
                 header: t('Cluster violation'),
-                sort: (a: ClusterPolicies, b: ClusterPolicies) => compareStrings(a.compliance, b.compliance),
-                cell: (policy: ClusterPolicies) => {
-                    switch (policy.compliance.toLowerCase()) {
+                sort: (a: Policy, b: Policy) => compareStrings(a.status?.compliant, b.status?.compliant),
+                cell: (policy: Policy) => {
+                    switch (policy.status?.compliant?.toLowerCase()) {
                         case 'compliant':
                             return (
                                 <div>
@@ -124,19 +149,16 @@ export function PolicySummarySidebar(props: { cluster: Cluster; compliance: stri
 
     return (
         <div className={classes.body}>
-            <TextContent className={classes.titleText}>
-                <Text component={TextVariants.h2}>{cluster.name}</Text>
-            </TextContent>
             <div className={classes.sectionSeparator} />
-            <AcmTable<ClusterPolicies>
+            <AcmTable<Policy>
                 plural="Policies"
-                items={clusterPolicies}
+                items={secGroupPolicies}
                 initialSort={{
                     index: 1, // default to sorting by violation count
-                    direction: compliance === 'compliant' ? 'asc' : 'desc',
+                    direction: sortDirection,
                 }}
                 columns={policyColumnDefs}
-                keyFn={(item: ClusterPolicies) => item.policyName!}
+                keyFn={(item: Policy) => `${item.metadata.namespace}/${item.metadata.name}`}
                 tableActions={[]}
                 rowActions={[]}
                 gridBreakPoint={TableGridBreakpoint.none}

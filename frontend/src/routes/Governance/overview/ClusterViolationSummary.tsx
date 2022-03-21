@@ -1,22 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useMemo } from 'react'
-import { NavigationPath } from '../../../NavigationPath'
+import { IAcmTableColumn } from '@stolostron/ui-components'
+import { Fragment, useMemo } from 'react'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { Policy } from '../../../resources'
-import { ViolationsCard, ViolationSummary } from './PolicyViolationSummary'
-
-export function ClusterViolationsCard(props: { clusterViolationSummaryMap: ClusterViolationSummaryMap }) {
-    const clusterViolationSummary = useClusterViolationSummary(props.clusterViolationSummaryMap)
-    return (
-        <ViolationsCard
-            title="Cluster policy violations"
-            description="Overview of cluster policy violations"
-            noncompliant={clusterViolationSummary.noncompliant}
-            compliant={clusterViolationSummary.compliant}
-            unknown={clusterViolationSummary.unknown}
-            to={NavigationPath.governanceClusters}
-        />
-    )
-}
+import { PolicyViolationIcons2 } from '../components/PolicyViolations'
+import { ViolationSummary } from './PolicyViolationSummary'
 
 export function useClusterViolationSummary(clusterViolationSummaryMap: ClusterViolationSummaryMap): ViolationSummary {
     const violations = useMemo(() => {
@@ -67,4 +55,35 @@ export function useClusterViolationSummaryMap(policies: Policy[]): ClusterViolat
         return clusterViolationSummaryMap
     }, [policies])
     return clusterViolations
+}
+
+export function usePolicySetClusterPolicyViolationsColumn(
+    clusterViolationSummaryMap: ClusterViolationSummaryMap
+): IAcmTableColumn<string> {
+    const { t } = useTranslation()
+    return {
+        header: t('Policy violations'),
+        cell: (cluster: string) => {
+            const clusterViolationSummary = clusterViolationSummaryMap[cluster ?? '']
+            if (!clusterViolationSummary) return <Fragment />
+            return (
+                <PolicyViolationIcons2
+                    compliant={clusterViolationSummary.compliant}
+                    noncompliant={clusterViolationSummary.noncompliant}
+                />
+            )
+        },
+        sort: (lhs, rhs) => {
+            const lhsViolations = clusterViolationSummaryMap[lhs ?? '']
+            const rhsViolations = clusterViolationSummaryMap[rhs ?? '']
+            if (lhsViolations === rhsViolations) return 0
+            if (!lhsViolations) return -1
+            if (!rhsViolations) return 1
+            if (lhsViolations.noncompliant > rhsViolations.noncompliant) return -1
+            if (lhsViolations.noncompliant < rhsViolations.noncompliant) return 1
+            if (lhsViolations.compliant > rhsViolations.compliant) return -1
+            if (lhsViolations.compliant < rhsViolations.compliant) return 1
+            return 0
+        },
+    }
 }
