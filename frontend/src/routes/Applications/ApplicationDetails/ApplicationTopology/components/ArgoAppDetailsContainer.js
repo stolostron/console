@@ -57,10 +57,8 @@ class ArgoAppDetailsContainer extends React.Component {
     }
 
     processActionLink = (resource) => {
-        const {
-            argoAppDetailsContainerControl: { handleErrorMsg },
-        } = this.props
-        processResourceActionLink(resource, this.toggleLinkLoading, handleErrorMsg)
+        const { t } = this.props
+        processResourceActionLink(resource, this.toggleLinkLoading, t)
     }
 
     toggleLinkLoading = () => {

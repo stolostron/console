@@ -168,3 +168,7 @@ export const getApplicationData = (nodes) => {
 
     return result
 }
+
+export const getAppSetArgoCluster = (search, clusters) => {
+    return clusters.find((cluster) => cluster.name === search || cluster.url === search)
+}

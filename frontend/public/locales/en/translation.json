@@ -1482,6 +1482,7 @@
     "next": "Next",
     "Next": "Next",
     "no": "No",
+    "No Argo route found for namespace {0} on cluster {1}": "No Argo route found for namespace {0} on cluster {1}",
     "No labels": "No labels",
     "No placement selectors found": "No placement selectors found",
     "No pods found": "No pods found",
