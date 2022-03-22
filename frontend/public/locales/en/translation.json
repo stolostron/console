@@ -1888,6 +1888,7 @@
     "status.provisionfailed.alert.title": "The cluster creation failed",
     "status.provisionfailed.message": "The cluster creation failed.",
     "status.ready": "Ready",
+    "status.ready.alert.title": "An operation is in progress",
     "status.ready.message": "The cluster is available. The Kubernetes API server and core management agents are in a healthy state.",
     "status.resuming": "Resuming",
     "status.resuming.alert.title": "The cluster is not ready",
