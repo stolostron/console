@@ -291,6 +291,10 @@ const mockClusterDeploymentInstalled: ClusterDeployment = {
     spec: {
         baseDomain: 'dev02.test-chesterfield.com',
         clusterName: clusterName,
+        clusterPoolRef: {
+            poolName: 'example-pool',
+            namespace: 'example-pool',
+        },
         installed: true,
         platform: {
             aws: {
