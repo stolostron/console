@@ -133,7 +133,7 @@ export function ApplicationTopologyPageContent(props: {
     }
 
     const processActionLink = (resource: any, toggleLoading: boolean) => {
-        processResourceActionLink(resource, toggleLoading, handleErrorMsg)
+        processResourceActionLink(resource, toggleLoading, t)
     }
 
     const canUpdateStatuses = !!statuses

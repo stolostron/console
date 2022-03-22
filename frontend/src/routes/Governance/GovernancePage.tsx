@@ -8,7 +8,6 @@ import { acmRouteState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { PageContext } from '../Infrastructure/Clusters/ClustersPage'
-import GovernanceClustersPage from './clusters/GovernanceClustersPage'
 import GovernanceOverview from './overview/Overview'
 import PoliciesPage from './policies/Policies'
 import PolicySetsPage from './policy-sets/PolicySets'
@@ -49,13 +48,6 @@ export default function GovernancePage() {
                             >
                                 <Link to={NavigationPath.policies}>{t('Policies')}</Link>
                             </AcmSecondaryNavItem>
-                            <AcmSecondaryNavItem
-                                isActive={
-                                    !isOverview && location.pathname.startsWith(NavigationPath.governanceClusters)
-                                }
-                            >
-                                <Link to={NavigationPath.governanceClusters}>{t('Clusters')}</Link>
-                            </AcmSecondaryNavItem>
                         </AcmSecondaryNav>
                     }
                     actions={actions}
@@ -68,11 +60,6 @@ export default function GovernancePage() {
                         <Route exact path={NavigationPath.governance} render={() => <GovernanceOverview />} />
                         <Route exact path={NavigationPath.policySets} render={() => <PolicySetsPage />} />
                         <Route exact path={NavigationPath.policies} render={() => <PoliciesPage />} />
-                        <Route
-                            exact
-                            path={NavigationPath.governanceClusters}
-                            render={() => <GovernanceClustersPage />}
-                        />
                     </Switch>
                 </Suspense>
             </PageContext.Provider>

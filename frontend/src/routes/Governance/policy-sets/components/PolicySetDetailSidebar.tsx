@@ -28,7 +28,6 @@ import {
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy, PolicySet } from '../../../../resources'
-import { usePolicySetClusterPolicyViolationsColumn } from '../../clusters/useClusterPolicyViolationsColumn'
 import {
     getClustersSummaryForPolicySet,
     getPolicyComplianceForPolicySet,
@@ -36,7 +35,10 @@ import {
     PolicyCompliance,
 } from '../../common/util'
 import { ClusterPolicyViolationIcons2 } from '../../components/ClusterPolicyViolations'
-import { useClusterViolationSummaryMap } from '../../overview/ClusterViolationSummary'
+import {
+    useClusterViolationSummaryMap,
+    usePolicySetClusterPolicyViolationsColumn,
+} from '../../overview/ClusterViolationSummary'
 
 function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCompliant: string[] }, t: TFunction) {
     const clusterCompliantCount = clusterComplianceSummary.compliant.length

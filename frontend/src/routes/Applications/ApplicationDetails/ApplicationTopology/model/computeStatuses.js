@@ -26,6 +26,7 @@ import {
 } from '../helpers/diagram-helpers-utils'
 import { isSearchAvailable } from '../helpers/search-helper'
 import { showAnsibleJobDetails, getPulseStatusForAnsibleNode } from '../helpers/ansible-task'
+import { getAppSetArgoCluster } from './utils'
 
 const specPulse = 'specs.pulse'
 const specShapeType = 'specs.shapeType'
@@ -271,7 +272,11 @@ export const getPulseStatusForCluster = (node) => {
         offlineCount = 0
 
     clusters.forEach((cluster) => {
-        if (!clustersNames || clustersNames.includes(cluster.name)) {
+        let clusterName = cluster.name || cluster.metadata.name
+        if (clusterName === 'in-cluster') {
+            clusterName = 'local-cluster'
+        }
+        if (!clustersNames || clustersNames.includes(clusterName)) {
             const status = cluster.status || calculateArgoClusterStatus(cluster) || ''
             if (status.toLowerCase() === 'ok' || _.get(cluster, 'ManagedClusterConditionAvailable', '') === 'True') {
                 okCount++
@@ -698,6 +703,7 @@ export const setArgoApplicationDeployStatus = (node, details, t) => {
 
 export const setAppSetDeployStatus = (node, details, t) => {
     const appSetApps = _.get(node, 'specs.appSetApps', [])
+    const appSetClusters = _.get(node, 'specs.appSetClusters', [])
     if (appSetApps.length === 0) {
         details.push({
             labelKey: 'Error',
@@ -717,13 +723,28 @@ export const setAppSetDeployStatus = (node, details, t) => {
         type: 'spacer',
     })
     // continue checking app status
-    // look at each app, display ones with status other than Healthy
     appSetApps.forEach((argoApp) => {
         const appHealth = _.get(argoApp, 'status.health.status', '')
         const appName = _.get(argoApp, metadataName)
+        const appNamespace = _.get(argoApp, 'metadata.namespace')
+        const clusterSearchStr = _.get(argoApp, 'spec.destination.name') || _.get(argoApp, 'spec.destination.server')
+        const cluster = getAppSetArgoCluster(clusterSearchStr, appSetClusters)
         details.push({
             labelKey: appName,
             value: appHealth,
+        })
+        details.push({
+            type: 'link',
+            value: {
+                label: t('Launch Argo editor'),
+                id: `argoapp-${appName}`,
+                data: {
+                    action: 'open_argo_editor',
+                    name: appName,
+                    namespace: appNamespace,
+                    cluster: cluster ? cluster.name : '',
+                },
+            },
         })
     })
 }

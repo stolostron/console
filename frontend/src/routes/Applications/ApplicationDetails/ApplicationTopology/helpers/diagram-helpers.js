@@ -16,6 +16,7 @@ import moment from 'moment'
 import { getEditLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
 import { getURLSearchData } from './diagram-helpers-argo'
+import { openArgoCDEditor } from '../model/topologyAppSet'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'
@@ -607,10 +608,10 @@ export const addNodeServiceLocationForCluster = (node, typeObject, details, t) =
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const processResourceActionLink = (resource, toggleLoading, handleErrorMsg) => {
+export const processResourceActionLink = (resource, toggleLoading, t) => {
     let targetLink = ''
     const linkPath = R.pathOr('', ['action'])(resource)
-    const { name, namespace, editLink, kind } = resource //cluster, , routeObject
+    const { name, namespace, editLink, kind, cluster } = resource //routeObject
     const nsData = namespace ? ` namespace:${namespace}` : ''
     switch (linkPath) {
         case showResourceYaml:
@@ -620,7 +621,7 @@ export const processResourceActionLink = (resource, toggleLoading, handleErrorMs
             targetLink = `/search?filters={"textsearch":"kind:${kind}${nsData} name:${name}"}`
             break
         case 'open_argo_editor': {
-            //czcz openArgoCDEditor(cluster, namespace, name, toggleLoading, handleErrorMsg) // the editor opens here
+            openArgoCDEditor(cluster, namespace, name, toggleLoading, t) // the editor opens here
             break
         }
         case 'open_route_url': {

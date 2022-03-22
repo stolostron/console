@@ -7,8 +7,8 @@ import { Link } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     Channel,
-    Cluster,
     HelmRelease,
+    ManagedCluster,
     Placement,
     PlacementBinding,
     PlacementRule,
@@ -79,13 +79,13 @@ export function getPlacementDecisionsForResource(
     return getPlacementDecisionsForPlacements(placementDecisions, resourcePlacements)
 }
 
-export function getPolicyForCluster(cluster: Cluster, policies: Policy[]) {
+export function getPolicyForCluster(cluster: ManagedCluster, policies: Policy[]) {
     const clusterPolicies: ClusterPolicies[] = []
     for (const policy of policies) {
         const policyStatus = policy.status?.status
         if (policyStatus) {
             for (const status of policyStatus) {
-                if (status.clustername === cluster.name) {
+                if (status.clustername === cluster.metadata.name) {
                     clusterPolicies.push({
                         policyName: policy.metadata.name!,
                         policyNamespace: policy.metadata.namespace!,
