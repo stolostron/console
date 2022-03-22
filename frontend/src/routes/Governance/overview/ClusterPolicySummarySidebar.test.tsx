@@ -4,8 +4,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../atoms'
 import { waitForText } from '../../../lib/test-util'
-import { Cluster, ClusterStatus, Policy } from '../../../resources'
-import { PolicySummarySidebar } from './PolicySummarySidebar'
+import { ManagedCluster, Policy } from '../../../resources'
+import { ClusterPolicySummarySidebar } from './ClusterPolicySummarySidebar'
 
 const rootPolicy0: Policy = {
     apiVersion: 'policy.open-cluster-management.io/v1',
@@ -84,21 +84,13 @@ const rootPolicy1: Policy = {
 }
 export const mockPolicy: Policy[] = [rootPolicy0, rootPolicy1]
 
-const mockCluster: Cluster = {
-    name: 'local-cluster',
-    namespace: 'local-cluster',
-    status: ClusterStatus.ready,
-    hive: {
-        isHibernatable: false,
+const mockCluster: ManagedCluster = {
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: {
+        name: 'local-cluster',
+        namespace: 'local-cluster',
     },
-    isHive: false,
-    isManaged: false,
-    isCurator: false,
-    owner: {
-        createdBy: undefined,
-        claimedBy: undefined,
-    },
-    isSNOCluster: false,
 }
 
 describe('Policies Page', () => {
@@ -110,7 +102,7 @@ describe('Policies Page', () => {
                 }}
             >
                 <MemoryRouter>
-                    <PolicySummarySidebar cluster={mockCluster} compliance={'compliant'} />
+                    <ClusterPolicySummarySidebar cluster={mockCluster} compliance={'compliant'} />
                 </MemoryRouter>
             </RecoilRoot>
         )
