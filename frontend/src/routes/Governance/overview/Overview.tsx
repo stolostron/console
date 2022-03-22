@@ -31,9 +31,9 @@ export default function GovernanceOverview() {
         <PageSection isWidthLimited>
             <Stack hasGutter>
                 <AcmMasonry minSize={415} maxColumns={3}>
-                    <ClustersCard />
                     <PolicySetViolationsCard />
                     <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
+                    <ClustersCard />
                     <SecurityGroupCard key="standards" title="Standards" group="standards" policies={policies} />
                     <SecurityGroupCard key="categories" title="Categories" group="categories" policies={policies} />
                     <SecurityGroupCard key="controls" title="Controls" group="controls" policies={policies} />
@@ -143,10 +143,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                                             </Fragment>
                                         </Tooltip>
                                     ) : (
-                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
-                                            {violation.compliant} &nbsp;
-                                            <CheckCircleIcon color="var(--pf-global--success-color--100)" />
-                                        </span>
+                                        <span />
                                     )}
                                     {violation.noncompliant ? (
                                         <Tooltip
@@ -172,10 +169,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
                                             </Fragment>
                                         </Tooltip>
                                     ) : (
-                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
-                                            {violation.noncompliant} &nbsp;
-                                            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
-                                        </span>
+                                        <span />
                                     )}
                                 </Fragment>
                             )
@@ -249,10 +243,7 @@ function ClustersCard() {
                                             </span>
                                         </Tooltip>
                                     ) : (
-                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
-                                            {clusterViolationSummary.compliant} &nbsp;
-                                            <CheckCircleIcon color="var(--pf-global--success-color--100)" />
-                                        </span>
+                                        <span />
                                     )}
                                     {clusterViolationSummary.noncompliant ? (
                                         <Tooltip
@@ -278,10 +269,7 @@ function ClustersCard() {
                                             </span>
                                         </Tooltip>
                                     ) : (
-                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
-                                            {clusterViolationSummary.noncompliant} &nbsp;
-                                            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
-                                        </span>
+                                        <span />
                                     )}
                                 </Fragment>
                             )
