@@ -26,7 +26,6 @@ import {
     Bullseye,
     ButtonVariant,
     PageSection,
-    Text,
     TextContent,
 } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
