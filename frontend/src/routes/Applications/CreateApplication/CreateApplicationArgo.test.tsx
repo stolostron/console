@@ -142,7 +142,6 @@ const argoAppSetGit: ApplicationSet = {
                 },
             },
         ],
-
         template: {
             metadata: {
                 name: 'application-01-{{name}}',
@@ -158,6 +157,7 @@ const argoAppSetGit: ApplicationSet = {
                     namespace: 'gitops-ns',
                     server: '{{server}}',
                 },
+                syncPolicy: { automated: { selfHeal: true }, syncOptions: ['CreateNamespace=true'] },
             },
         },
     },
@@ -202,6 +202,7 @@ const argoAppSetHelm: ApplicationSet = {
                     namespace: 'gitops-ns',
                     server: '{{server}}',
                 },
+                syncPolicy: { automated: { selfHeal: true }, syncOptions: ['CreateNamespace=true'] },
             },
         },
     },
