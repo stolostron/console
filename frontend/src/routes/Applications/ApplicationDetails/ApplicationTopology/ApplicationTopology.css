@@ -14,3 +14,9 @@
     margin-left: 9px;
     fill: #06c;
 }
+
+.diagram-title {
+    float: right;
+    font-weight: bold;
+    font-size: 14px;
+}
