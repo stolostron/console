@@ -32,7 +32,7 @@ import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { DOC_LINKS } from '../../../../lib/doc-util'
+import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { locationWithCancelBack, NavigationPath } from '../../../../NavigationPath'
 import {
@@ -130,14 +130,19 @@ export default function ClusterPoolsPage() {
                                         />
                                     }
                                     action={
-                                        <AcmButton
-                                            role="link"
-                                            onClick={() =>
-                                                history.push(locationWithCancelBack(NavigationPath.createClusterPool))
-                                            }
-                                        >
-                                            {t('managed.createClusterPool')}
-                                        </AcmButton>
+                                        <div>
+                                            <AcmButton
+                                                role="link"
+                                                onClick={() =>
+                                                    history.push(
+                                                        locationWithCancelBack(NavigationPath.createClusterPool)
+                                                    )
+                                                }
+                                            >
+                                                {t('managed.createClusterPool')}
+                                            </AcmButton>
+                                            <TextContent>{viewDocumentation(DOC_LINKS.CLUSTER_POOLS, t)}</TextContent>
+                                        </div>
                                     }
                                 />
                             }

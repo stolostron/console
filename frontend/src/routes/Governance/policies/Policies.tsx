@@ -46,6 +46,7 @@ import {
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
+import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     patchResource,
@@ -56,6 +57,7 @@ import {
     PolicySet,
     replaceResource,
 } from '../../../resources'
+import { getResourceLabel } from '../../Applications/helpers/resource-helper'
 import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
 import { AutomationDetailsSidebar } from '../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
@@ -68,11 +70,12 @@ import {
 
 export interface PolicyTableItem {
     policy: Policy
-    source: ReactNode | undefined
+    source: string | JSX.Element
 }
 
 export default function PoliciesPage() {
     const { t } = useTranslation()
+    const presets = transformBrowserUrlToFilterPresets(window.location.search)
     const policies = usePolicies()
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)
@@ -80,19 +83,20 @@ export default function PoliciesPage() {
     const [policyAutomations] = useRecoilState(policyAutomationState)
     const { setDrawerContext } = useContext(AcmDrawerContext)
 
-    // in a useEffect hook
-    const tableItems: PolicyTableItem[] = policies.map((policy) => {
-        const isExternal = resolveExternalStatus(policy)
-        let source: string | JSX.Element = 'Local'
-        if (isExternal) {
-            const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
-            source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
-        }
-        return {
-            policy,
-            source,
-        }
-    })
+    const tableItems: PolicyTableItem[] = useMemo(() => {
+        return policies.map((policy) => {
+            const isExternal = resolveExternalStatus(policy)
+            let source: string | JSX.Element = 'Local'
+            if (isExternal) {
+                const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
+                source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
+            }
+            return {
+                policy,
+                source,
+            }
+        })
+    }, [policies, helmReleases, channels, subscriptions, t])
 
     const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(policies)
     const history = useHistory()
@@ -155,6 +159,19 @@ export default function PoliciesPage() {
             },
             {
                 header: t('Policy set'),
+                search: (item: PolicyTableItem) => {
+                    const policySetsMatch = policySets
+                        .filter(
+                            (policySet: PolicySet) =>
+                                policySet.metadata.namespace === item.policy.metadata.namespace &&
+                                policySet.spec.policies.includes(item.policy.metadata.name!)
+                        )
+                        .map((policySet: PolicySet) => policySet.metadata.name)
+                    if (policySetsMatch.length > 0) {
+                        return policySetsMatch.join(', ')
+                    }
+                    return ''
+                },
                 cell: (item: PolicyTableItem) => {
                     const policySetsMatch = policySets.filter(
                         (policySet: PolicySet) =>
@@ -170,6 +187,19 @@ export default function PoliciesPage() {
             policyClusterViolationsColumn,
             {
                 header: t('Source'),
+                sort: (itemA: PolicyTableItem, itemB: PolicyTableItem) => {
+                    let itemAText = itemA.source as string
+                    let itemBText = itemB.source as string
+                    if (typeof itemA.source === 'object') {
+                        const type = itemA.source.props?.appRepos[0]?.type?.toLowerCase() ?? ''
+                        itemAText = getResourceLabel(type, 1, t)
+                    }
+                    if (typeof itemB.source === 'object') {
+                        const type = itemB.source.props?.appRepos[0]?.type?.toLowerCase() ?? ''
+                        itemBText = getResourceLabel(type, 1, t)
+                    }
+                    return compareStrings(itemAText, itemBText)
+                },
                 cell: (item: PolicyTableItem) => {
                     return item.source ? item.source : '-'
                 },
@@ -500,18 +530,18 @@ export default function PoliciesPage() {
                 options: [
                     {
                         label: 'Without violations',
-                        value: 'Without violations',
+                        value: 'without-violations',
                     },
                     {
                         label: 'With violations',
-                        value: 'With violations',
+                        value: 'with-violations',
                     },
                 ],
                 tableFilterFn: (selectedValues, item) => {
-                    if (selectedValues.includes('With violations')) {
+                    if (selectedValues.includes('with-violations')) {
                         if (item.policy.status?.compliant === 'NonCompliant') return true
                     }
-                    if (selectedValues.includes('Without violations')) {
+                    if (selectedValues.includes('without-violations')) {
                         if (item.policy.status?.compliant === 'Compliant') return true
                     }
                     return false
@@ -581,6 +611,9 @@ export default function PoliciesPage() {
                 items={tableItems}
                 tableActions={tableActions}
                 gridBreakPoint={TableGridBreakpoint.none}
+                initialFilters={
+                    presets.initialFilters.violations ? { violations: presets.initialFilters.violations } : undefined
+                }
                 filters={filters}
                 tableActionButtons={[
                     {

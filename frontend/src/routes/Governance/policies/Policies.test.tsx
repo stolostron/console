@@ -129,7 +129,7 @@ describe('Policies Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText('Use the following button to create a policy.')
+        await waitForText("You don't have any policies")
     })
 
     test('Should render Policies page correctly', async () => {
@@ -171,7 +171,7 @@ describe('Policies Page', () => {
             // need to use index [1] because the name column is also an "a" element
             expect(container.querySelectorAll('a')[1]).toHaveAttribute(
                 'href',
-                '/multicloud/governance/policy-sets?names%3D%5B%22policy-set-with-1-placement%22%5D%26namespaces%3D%5B%22test%22%5D'
+                '/multicloud/governance/policy-sets?search%3D%7B%22name%22%3A%5B%22policy-set-with-1-placement%22%5D%2C%22namespace%22%3A%5B%22test%22%5D%7D'
             )
         )
 

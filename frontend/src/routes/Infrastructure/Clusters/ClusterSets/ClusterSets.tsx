@@ -39,7 +39,7 @@ import {
     managedClustersState,
 } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
-import { DOC_LINKS } from '../../../../lib/doc-util'
+import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
 import { canUser } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -373,14 +373,17 @@ export function ClusterSetsTable(props: { clusters?: Cluster[]; managedClusterSe
                             />
                         }
                         action={
-                            <AcmButton
-                                role="link"
-                                onClick={() => setCreateClusterSetModalOpen(true)}
-                                isDisabled={!canCreateClusterSet}
-                                tooltip={t('rbac.unauthorized')}
-                            >
-                                {t('managed.createClusterSet')}
-                            </AcmButton>
+                            <div>
+                                <AcmButton
+                                    role="link"
+                                    onClick={() => setCreateClusterSetModalOpen(true)}
+                                    isDisabled={!canCreateClusterSet}
+                                    tooltip={t('rbac.unauthorized')}
+                                >
+                                    {t('managed.createClusterSet')}
+                                </AcmButton>
+                                <TextContent>{viewDocumentation(DOC_LINKS.CLUSTER_SETS, t)}</TextContent>
+                            </div>
                         }
                     />
                 }
