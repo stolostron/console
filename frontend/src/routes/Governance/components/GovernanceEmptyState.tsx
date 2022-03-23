@@ -16,7 +16,7 @@ export function GovernanceCreatePolicyEmptyState() {
             title={t("You don't have any policies")}
             message={
                 <Trans
-                    i18nKey="Click the <bold>Create policy</bold> button to create your resource."
+                    i18nKey="Click <bold>Create policy</bold> to create your resource."
                     components={{ bold: <strong /> }}
                 />
             }
@@ -39,7 +39,7 @@ export function GovernanceManagePoliciesEmptyState() {
             title={t("You don't have any clusters reporting policy status")}
             message={
                 <Trans
-                    i18nKey="Click the <bold>Manage policies</bold> button to manage your policies."
+                    i18nKey="Click <bold>Manage policies</bold> to manage your policies."
                     components={{ bold: <strong /> }}
                 />
             }
@@ -62,7 +62,7 @@ export function GovernanceCreatePolicysetEmptyState() {
             title={"You don't have any policy sets"}
             message={
                 <Trans
-                    i18nKey="Click the <bold>Create policy set</bold> button to create your resource."
+                    i18nKey="Click <bold>Create policy set</bold> to create your resource."
                     components={{ bold: <strong /> }}
                 />
             }

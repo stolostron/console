@@ -727,7 +727,7 @@ export default function ApplicationsOverview() {
                         message={
                             <Text>
                                 <Trans
-                                    i18nKey="Click the <bold>Create application</bold> button to create your resource."
+                                    i18nKey="Click <bold>Create application</bold> to create your resource."
                                     components={{ bold: <strong /> }}
                                 />
                             </Text>

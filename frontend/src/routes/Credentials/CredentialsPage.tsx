@@ -121,7 +121,7 @@ export function CredentialsTable(props: {
                         title={t(`You don't have any credentials`)}
                         message={
                             <Trans
-                                i18nKey="Click the <bold>Add credential</bold> button to create your resource."
+                                i18nKey="Click <bold>Add credential</bold> to create your resource."
                                 components={{ bold: <strong /> }}
                             />
                         }

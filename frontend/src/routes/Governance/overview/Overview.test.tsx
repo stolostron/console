@@ -3,7 +3,6 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState } from '../../../atoms'
-import { waitForText } from '../../../lib/test-util'
 import { Policy, PolicyApiVersion, PolicyKind } from '../../../resources'
 import GovernanceOverview from './Overview'
 
@@ -24,8 +23,8 @@ export const mockEmptyPolicy: Policy[] = []
 export const mockPoliciesNoStatus: Policy[] = [policyWithoutStatus]
 
 describe('Overview Page', () => {
-    test('Should render empty Overview page with create policy message correctly', async () => {
-        render(
+    test('Should render empty Overview page with create policy button correctly', async () => {
+        const { queryAllByText } = await render(
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(policiesState, mockEmptyPolicy)
@@ -37,10 +36,11 @@ describe('Overview Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText('Use the following button to create a policy.')
+        expect(queryAllByText('Create policy').length).toBe(2)
     })
-    test('Should render empty Overview page with manage policies message correctly', async () => {
-        render(
+
+    test('Should render empty Overview page with manage policies button correctly', async () => {
+        const { queryAllByText } = await render(
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(policiesState, mockPoliciesNoStatus)
@@ -51,7 +51,6 @@ describe('Overview Page', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-
-        await waitForText('Use the following button to manage policies.')
+        expect(queryAllByText('Manage policies').length).toBe(2)
     })
 })
