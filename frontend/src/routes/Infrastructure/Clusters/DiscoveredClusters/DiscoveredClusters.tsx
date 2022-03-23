@@ -5,8 +5,6 @@ import {
     AcmDropdown,
     AcmEmptyState,
     AcmEmptyStateImage,
-    AcmIcon,
-    AcmIconVariant,
     AcmInlineProvider,
     AcmPageContent,
     AcmTable,
@@ -117,19 +115,7 @@ function EmptyStateAwaitingDiscoveredClusters() {
     return (
         <AcmEmptyState
             title={t('emptystate.discoveryEnabled.title')}
-            message={
-                <Trans
-                    i18nKey={'emptystate.discoveryEnabled.msg'}
-                    components={{
-                        a: (
-                            <a href={DOC_LINKS.DISCOVERED_CLUSTERS} target="_blank" rel="noreferrer">
-                                {}
-                            </a>
-                        ),
-                        icon: <AcmIcon icon={AcmIconVariant.openNewTab} />,
-                    }}
-                />
-            }
+            message={t('emptystate.discoveryEnabled.msg')}
             key="dcEmptyState"
             showIcon={true}
             image={AcmEmptyStateImage.folder}
