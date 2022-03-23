@@ -3,6 +3,7 @@ import { Namespace, NamespaceApiVersion, NamespaceKind } from '.'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 import { createResource, replaceResource } from './utils/resource-request'
+import { listResources } from '.'
 
 export const ProjectApiVersion = 'project.openshift.io/v1'
 export type ProjectApiVersionType = 'project.openshift.io/v1'
@@ -60,4 +61,11 @@ export const createProject = (name: string | undefined, labels?: Metadata['label
             })
     }
     return response
+}
+
+export function listProjects() {
+    return listResources<Project>({
+        apiVersion: ProjectApiVersion,
+        kind: ProjectKind,
+    })
 }

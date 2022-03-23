@@ -11,7 +11,7 @@ import { getAppSetTopology } from './topologyAppSet'
 export const getTopology = (application, managedClusters, relatedResources, argoData) => {
     let topology
     if (application.isArgoApp) {
-        topology = getArgoTopology(application, managedClusters, argoData)
+        topology = getArgoTopology(application, argoData)
     } else if (application.isAppSet) {
         topology = getAppSetTopology(application)
     } else {
