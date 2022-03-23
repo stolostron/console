@@ -139,7 +139,7 @@ const controlDataRHV = [
                 tooltip: 'tooltip.creation.ocp.cores',
                 id: 'masterCores',
                 type: 'number',
-                initial: '2',
+                initial: '4',
                 validation: VALIDATE_NUMERIC,
             },
             ///////////////////////  sockets  /////////////////////////////////////
@@ -148,7 +148,7 @@ const controlDataRHV = [
                 tooltip: 'tooltip.creation.ocp.sockets',
                 id: 'masterSockets',
                 type: 'number',
-                initial: '1',
+                initial: '2',
                 validation: VALIDATE_NUMERIC,
             },
             ///////////////////////  memoryMB  /////////////////////////////////////
@@ -157,7 +157,7 @@ const controlDataRHV = [
                 tooltip: 'tooltip.creation.ocp.memoryMB',
                 id: 'masterMemoryMB',
                 type: 'number',
-                initial: '16384',
+                initial: '16348',
                 validation: VALIDATE_NUMERIC,
             },
             ///////////////////////  root volume  /////////////////////////////////////
@@ -211,7 +211,7 @@ const controlDataRHV = [
                 tooltip: 'tooltip.creation.ocp.cores',
                 id: 'cores',
                 type: 'number',
-                initial: '2',
+                initial: '4',
                 validation: VALIDATE_NUMERIC,
             },
             ///////////////////////  sockets  /////////////////////////////////////
@@ -229,7 +229,7 @@ const controlDataRHV = [
                 tooltip: 'tooltip.creation.ocp.memoryMB',
                 id: 'memoryMB',
                 type: 'number',
-                initial: '16384',
+                initial: '16348',
                 validation: VALIDATE_NUMERIC,
             },
             ///////////////////////  sizeGB  /////////////////////////////////////

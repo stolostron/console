@@ -310,12 +310,13 @@ spec:
   {{#case 'RHV'}}
   platform:
     ovirt:
-      cpus:
+      cpu:
         cores: {{{../../cores}}} ##workerPools.{{@index}}.cores
         sockets: {{{../../sockets}}} ##workerPools.{{@index}}.sockets
       memoryMB: {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
         sizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+      vmType: server
   {{/case}}
 
   {{#case 'OpenStack'}}
