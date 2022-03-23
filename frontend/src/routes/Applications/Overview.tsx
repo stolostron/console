@@ -664,48 +664,45 @@ export default function ApplicationsOverview() {
 
     const appCreationButton = () => {
         return (
-            <div>
-                <AcmDropdown
-                    isDisabled={!canCreateApplication}
-                    tooltip={
-                        !canCreateApplication
-                            ? 'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
-                            : ''
-                    }
-                    id={'application-create'}
-                    onSelect={(id) => {
-                        id === 'create-argo'
-                            ? history.push(NavigationPath.createApplicationArgo)
-                            : history.push(NavigationPath.createApplicationSubscription)
-                    }}
-                    text={'Create application'}
-                    dropdownItems={[
-                        {
-                            id: 'psuedo.group.label',
-                            isDisabled: true,
-                            text: <span style={{ fontSize: '14px' }}>Choose a type</span>,
-                        },
-                        {
-                            id: 'create-argo',
-                            text: 'Argo CD ApplicationSet',
-                            isDisabled: false,
-                            path: NavigationPath.createApplicationArgo,
-                        },
-                        {
-                            id: 'create-subscription',
-                            text: 'Subscription',
-                            isDisabled: false,
-                            path: NavigationPath.createApplicationSubscription,
-                        },
-                    ]}
-                    isKebab={false}
-                    isPlain={true}
-                    isPrimary={true}
-                    // tooltipPosition={tableDropdown.tooltipPosition}
-                    // dropdownPosition={DropdownPosition.left}
-                />
-                <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
-            </div>
+            <AcmDropdown
+                isDisabled={!canCreateApplication}
+                tooltip={
+                    !canCreateApplication
+                        ? 'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                        : ''
+                }
+                id={'application-create'}
+                onSelect={(id) => {
+                    id === 'create-argo'
+                        ? history.push(NavigationPath.createApplicationArgo)
+                        : history.push(NavigationPath.createApplicationSubscription)
+                }}
+                text={'Create application'}
+                dropdownItems={[
+                    {
+                        id: 'psuedo.group.label',
+                        isDisabled: true,
+                        text: <span style={{ fontSize: '14px' }}>Choose a type</span>,
+                    },
+                    {
+                        id: 'create-argo',
+                        text: 'Argo CD ApplicationSet',
+                        isDisabled: false,
+                        path: NavigationPath.createApplicationArgo,
+                    },
+                    {
+                        id: 'create-subscription',
+                        text: 'Subscription',
+                        isDisabled: false,
+                        path: NavigationPath.createApplicationSubscription,
+                    },
+                ]}
+                isKebab={false}
+                isPlain={true}
+                isPrimary={true}
+                // tooltipPosition={tableDropdown.tooltipPosition}
+                // dropdownPosition={DropdownPosition.left}
+            />
         )
     }
 
@@ -732,7 +729,12 @@ export default function ApplicationsOverview() {
                                 />
                             </Text>
                         }
-                        action={appCreationButton()}
+                        action={
+                            <>
+                                {appCreationButton()}
+                                <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
+                            </>
+                        }
                     />
                 }
                 rowActionResolver={rowActionResolver}
