@@ -46,6 +46,7 @@ import {
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
+import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     patchResource,
@@ -73,6 +74,7 @@ export interface PolicyTableItem {
 
 export default function PoliciesPage() {
     const { t } = useTranslation()
+    const presets = transformBrowserUrlToFilterPresets(window.location.search)
     const policies = usePolicies()
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)
@@ -80,19 +82,20 @@ export default function PoliciesPage() {
     const [policyAutomations] = useRecoilState(policyAutomationState)
     const { setDrawerContext } = useContext(AcmDrawerContext)
 
-    // in a useEffect hook
-    const tableItems: PolicyTableItem[] = policies.map((policy) => {
-        const isExternal = resolveExternalStatus(policy)
-        let source: string | JSX.Element = 'Local'
-        if (isExternal) {
-            const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
-            source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
-        }
-        return {
-            policy,
-            source,
-        }
-    })
+    const tableItems: PolicyTableItem[] = useMemo(() => {
+        return policies.map((policy) => {
+            const isExternal = resolveExternalStatus(policy)
+            let source: string | JSX.Element = 'Local'
+            if (isExternal) {
+                const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
+                source = policySource ? getSource(policySource, isExternal, t) : 'Managed Externally'
+            }
+            return {
+                policy,
+                source,
+            }
+        })
+    }, [policies, helmReleases, channels, subscriptions, t])
 
     const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(policies)
     const history = useHistory()
@@ -500,18 +503,18 @@ export default function PoliciesPage() {
                 options: [
                     {
                         label: 'Without violations',
-                        value: 'Without violations',
+                        value: 'without-violations',
                     },
                     {
                         label: 'With violations',
-                        value: 'With violations',
+                        value: 'with-violations',
                     },
                 ],
                 tableFilterFn: (selectedValues, item) => {
-                    if (selectedValues.includes('With violations')) {
+                    if (selectedValues.includes('with-violations')) {
                         if (item.policy.status?.compliant === 'NonCompliant') return true
                     }
-                    if (selectedValues.includes('Without violations')) {
+                    if (selectedValues.includes('without-violations')) {
                         if (item.policy.status?.compliant === 'Compliant') return true
                     }
                     return false
@@ -581,6 +584,9 @@ export default function PoliciesPage() {
                 items={tableItems}
                 tableActions={tableActions}
                 gridBreakPoint={TableGridBreakpoint.none}
+                initialFilters={
+                    presets.initialFilters.violations ? { violations: presets.initialFilters.violations } : undefined
+                }
                 filters={filters}
                 tableActionButtons={[
                     {

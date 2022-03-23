@@ -375,7 +375,7 @@ export function PolicySetList(props: { policySets: PolicySet[] }) {
         () =>
             policySets.map((policySetMatch: PolicySet, idx: number) => {
                 const urlSearch = encodeURIComponent(
-                    `names=["${policySetMatch.metadata.name}"]&namespaces=["${policySetMatch.metadata.namespace}"]`
+                    `search={"name":["${policySetMatch.metadata.name}"],"namespace":["${policySetMatch.metadata.namespace}"]}`
                 )
                 return (
                     <div key={`${idx}-${policySetMatch.metadata.name}`}>
