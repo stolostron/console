@@ -50,8 +50,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                 details.forEach((detail: PolicyStatusDetails) => {
                     const templates = policyResponse?.spec['policy-templates'] ?? []
                     const template = templates.find(
-                        (template: any) =>
-                            template.objectDefinition.metadata.name ?? 'a' === detail.templateMeta.name ?? 'b'
+                        (template: any) => template?.objectDefinition?.metadata?.name === detail?.templateMeta?.name
                     )
                     status.push({
                         templateName: detail.templateMeta.name ?? '-',
