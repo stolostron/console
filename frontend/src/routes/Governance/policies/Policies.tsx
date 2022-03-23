@@ -57,6 +57,7 @@ import {
     PolicySet,
     replaceResource,
 } from '../../../resources'
+import { getResourceLabel } from '../../Applications/helpers/resource-helper'
 import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
 import { AutomationDetailsSidebar } from '../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
@@ -69,7 +70,7 @@ import {
 
 export interface PolicyTableItem {
     policy: Policy
-    source: ReactNode | undefined
+    source: string | JSX.Element
 }
 
 export default function PoliciesPage() {
@@ -158,6 +159,19 @@ export default function PoliciesPage() {
             },
             {
                 header: t('Policy set'),
+                search: (item: PolicyTableItem) => {
+                    const policySetsMatch = policySets
+                        .filter(
+                            (policySet: PolicySet) =>
+                                policySet.metadata.namespace === item.policy.metadata.namespace &&
+                                policySet.spec.policies.includes(item.policy.metadata.name!)
+                        )
+                        .map((policySet: PolicySet) => policySet.metadata.name)
+                    if (policySetsMatch.length > 0) {
+                        return policySetsMatch.join(', ')
+                    }
+                    return ''
+                },
                 cell: (item: PolicyTableItem) => {
                     const policySetsMatch = policySets.filter(
                         (policySet: PolicySet) =>
@@ -173,6 +187,19 @@ export default function PoliciesPage() {
             policyClusterViolationsColumn,
             {
                 header: t('Source'),
+                sort: (itemA: PolicyTableItem, itemB: PolicyTableItem) => {
+                    let itemAText = itemA.source as string
+                    let itemBText = itemB.source as string
+                    if (typeof itemA.source === 'object') {
+                        const type = itemA.source.props?.appRepos[0]?.type?.toLowerCase() ?? ''
+                        itemAText = getResourceLabel(type, 1, t)
+                    }
+                    if (typeof itemB.source === 'object') {
+                        const type = itemB.source.props?.appRepos[0]?.type?.toLowerCase() ?? ''
+                        itemBText = getResourceLabel(type, 1, t)
+                    }
+                    return compareStrings(itemAText, itemBText)
+                },
                 cell: (item: PolicyTableItem) => {
                     return item.source ? item.source : '-'
                 },
