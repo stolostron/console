@@ -60,11 +60,11 @@ export function ScaleClusterAlert() {
                 message={
                     <>
                         <Trans
-                            i18nKey={`cluster:${
+                            i18nKey={
                                 totalDesiredReplicas > workerNodeCount
                                     ? 'machinePool.alert.scaling.increase.message'
                                     : 'machinePool.alert.scaling.decrease.message'
-                            }`}
+                            }
                             components={{ bold: <strong /> }}
                         />
                         <a

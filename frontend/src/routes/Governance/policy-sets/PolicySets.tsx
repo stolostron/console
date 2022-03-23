@@ -127,7 +127,8 @@ export default function PolicySetsPage() {
             if (searchFilter['Name'] && searchFilter['Name'].length > 0) {
                 match = searchFilter['Name'].indexOf(policySet.metadata.name) > -1
                 if (!match) return false
-            } else if (searchFilter['Namespace'] && searchFilter['Namespace'].length > 0) {
+            }
+            if (searchFilter['Namespace'] && searchFilter['Namespace'].length > 0) {
                 match = searchFilter['Namespace'].indexOf(policySet.metadata.namespace) > -1
                 if (!match) return false
             }
@@ -162,18 +163,22 @@ export default function PolicySetsPage() {
         }
     }, [page, actualPage])
 
-    const policySetNames: string[] = useMemo(
-        () => policySets.map((policySet: PolicySet) => policySet.metadata.name),
-        [policySets]
-    )
+    const uniquePolicySetNames: string[] = useMemo(() => {
+        const policySetNames = policySets.map((policySet: PolicySet) => policySet.metadata.name)
+        return policySetNames.filter((p, idx) => {
+            return policySetNames.indexOf(p) === idx
+        })
+    }, [policySets])
+
     const uniqueNs: string[] = useMemo(() => {
         const policySetNamespaces: string[] = policySets.map((policySet: PolicySet) => policySet.metadata.namespace)
         return policySetNamespaces.filter((p, idx) => {
             return policySetNamespaces.indexOf(p) === idx
         })
     }, [policySets])
+
     const searchData: any = {
-        Name: policySetNames,
+        Name: uniquePolicySetNames,
         Namespace: uniqueNs,
     }
     const searchDataKeyNames: string[] = ['Name', 'Namespace']

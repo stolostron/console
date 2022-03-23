@@ -900,7 +900,7 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
                 {props.item.source !== 'Local' ? (
                     <StackItem>
                         <AcmAlert
-                            variant="info"
+                            variant="warning"
                             title={t('Some selected resources are managed externally')}
                             message={t(
                                 'Any changes made here may be overridden by the content of an upstream repository.'
