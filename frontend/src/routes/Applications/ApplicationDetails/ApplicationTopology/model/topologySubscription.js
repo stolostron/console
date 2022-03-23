@@ -39,7 +39,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
 
     // get clusters names
     let managedClusterNames = managedClusters.map((cluster) => {
-        return cluster?.metadata?.name
+        return cluster?.name
     })
     // if application has subscriptions
     let clusterId

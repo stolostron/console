@@ -72,12 +72,14 @@ export const addClusters = (
 ) => {
     // create element if not already created
     const sortedClusterNames = _.sortBy(clusterNames)
-    let clusterId = `member--clusters`
+    let clusterId = 'member--clusters'
     // do not use this for the id for argo app, we only know about one app here
     if (subscription) {
         const cns = sortedClusterNames.join('--')
         const sub = _.get(subscription, 'metadata.name')
         clusterId = `member--clusters--${cns}--${sub}`
+    } else {
+        clusterId = 'member--clusters--'
     }
     const topoClusterNode = topology
         ? _.find(topology.nodes, {
