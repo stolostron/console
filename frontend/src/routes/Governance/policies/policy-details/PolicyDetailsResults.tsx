@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 import { NavigationPath } from '../../../../NavigationPath'
 import { getGroupFromApiVersion, Policy, PolicyStatusDetails } from '../../../../resources'
 
@@ -26,6 +27,7 @@ interface resultsTableData {
 
 export default function PolicyDetailsResults(props: { policy: Policy }) {
     const { t } = useTranslation()
+    const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
     const { policy } = props
     const [policies] = useRecoilState(policiesState)
 
@@ -199,6 +201,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                         index: 1,
                         direction: 'desc',
                     }}
+                    initialSearch={filterPresets.initialSearch}
                     searchPlaceholder={t('Find clusters')}
                     fuseThreshold={0}
                     plural={t('clusters')}
