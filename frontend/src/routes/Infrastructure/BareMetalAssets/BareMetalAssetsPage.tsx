@@ -20,14 +20,7 @@ import {
     AcmRoute,
     AcmTable,
 } from '@stolostron/ui-components'
-import {
-    ActionList,
-    ActionListItem,
-    Bullseye,
-    ButtonVariant,
-    PageSection,
-    TextContent,
-} from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
