@@ -2,28 +2,34 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { VALIDATE_NUMERIC, VALIDATE_IP } from 'temptifly'
+import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL, VALIDATE_URL } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
-    getSimplifiedImageName,
     clusterDetailsControlData,
     proxyControlData,
-    networkingControlData,
     automationControlData,
+    getSimplifiedImageName,
+    getOSTNetworkingControlData,
     getWorkerName,
     isHidden_lt_OCP48,
+    isHidden_gt_OCP46,
     isHidden_SNO,
     onChangeSNO,
+    onChangeConnection,
+    onChangeDisconnect,
+    addSnoText,
+    architectureData,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
-export const getControlDataRHV = (includeAutomation = true) => {
-    if (includeAutomation) return [...controlDataRHV, ...automationControlData]
-    return [...controlDataRHV]
+export const getControlDataOST = (includeAutomation = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataOST)
+    if (includeAutomation) return [...controlDataOST, ...automationControlData]
+    return [...controlDataOST]
 }
 
-const controlDataRHV = [
+const controlDataOST = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
     {
@@ -32,26 +38,26 @@ const controlDataRHV = [
         id: 'connection',
         type: 'singleselect',
         placeholder: 'creation.ocp.cloud.select.connection',
-        providerId: 'redhatvirtualization',
+        providerId: 'ost',
         validation: {
             notification: 'creation.ocp.cluster.must.select.connection',
             required: true,
         },
         available: [],
+        onSelect: onChangeConnection,
         prompts: CREATE_CLOUD_CONNECTION,
-        encode: ['cacertificate'],
     },
     ...clusterDetailsControlData,
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  imageset  /////////////////////////////////////
     {
         name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image.rhv',
+        tooltip: 'tooltip.cluster.create.ocp.image',
         id: 'imageSet',
         type: 'combobox',
         simplified: getSimplifiedImageName,
         placeholder: 'creation.ocp.cloud.select.ocp.image',
-        fetchAvailable: LOAD_OCP_IMAGES('rhv'),
+        fetchAvailable: LOAD_OCP_IMAGES('ost'),
         validation: {
             notification: 'creation.ocp.cluster.must.select.ocp.image',
             required: true,
@@ -75,30 +81,6 @@ const controlDataRHV = [
         icon: <DevPreviewLabel />,
     },
     {
-        id: 'ovirt_cluster_id',
-        name: 'creation.ocp.cluster.rhv.ovirt_cluster_id',
-        tooltip: 'tooltip.creation.ocp.cluster.rhv.ovirt_cluster_id',
-        placeholder: 'creation.ocp.cluster.rhv.ovirt_cluster_id',
-        type: 'text',
-        active: '',
-        validation: {
-            notification: 'creation.ocp.cluster.rhv.must.enter.ovirt_cluster_id',
-            required: true,
-        },
-    },
-    {
-        id: 'ovirt_storage_domain_id',
-        name: 'creation.ocp.cluster.rhv.ovirt_storage_domain_id',
-        tooltip: 'tooltip.creation.ocp.cluster.rhv.ovirt_storage_domain_id',
-        placeholder: 'creation.ocp.cluster.rhv.ovirt_storage_domain_id',
-        type: 'text',
-        active: '',
-        validation: {
-            notification: 'creation.ocp.cluster.rhv.must.enter.ovirt_storage_domain_id',
-            required: true,
-        },
-    },
-    {
         name: 'creation.ocp.addition.labels',
         id: 'additional',
         type: 'labels',
@@ -118,6 +100,8 @@ const controlDataRHV = [
         type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
+    ///////////////////////  architecture  /////////////////////////////////////
+    ...architectureData,
     ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
@@ -132,42 +116,18 @@ const controlDataRHV = [
                 subtitle: 'creation.ocp.node.controlplane.pool.title',
                 info: 'creation.ocp.node.controlplane.pool.info',
             },
-            ///////////////////////  coresPerSocket  /////////////////////////////////////
-            ///////////////////////  cores  /////////////////////////////////////
+            ///////////////////////  instance type  /////////////////////////////////////
             {
-                name: 'creation.ocp.cores',
-                tooltip: 'tooltip.creation.ocp.cores',
-                id: 'masterCores',
-                type: 'number',
-                initial: '2',
-                validation: VALIDATE_NUMERIC,
-            },
-            ///////////////////////  sockets  /////////////////////////////////////
-            {
-                name: 'creation.ocp.sockets',
-                tooltip: 'tooltip.creation.ocp.sockets',
-                id: 'masterSockets',
-                type: 'number',
-                initial: '1',
-                validation: VALIDATE_NUMERIC,
-            },
-            ///////////////////////  memoryMB  /////////////////////////////////////
-            {
-                name: 'creation.ocp.memoryMB',
-                tooltip: 'tooltip.creation.ocp.memoryMB',
-                id: 'masterMemoryMB',
-                type: 'number',
-                initial: '16384',
-                validation: VALIDATE_NUMERIC,
-            },
-            ///////////////////////  root volume  /////////////////////////////////////
-            {
-                name: 'creation.ocp.diskSizeGB',
-                tooltip: 'tooltip.creation.ocp.diskSizeGB',
-                id: 'masterRootStorage',
-                type: 'number',
-                initial: '120',
-                validation: VALIDATE_NUMERIC,
+                name: 'creation.ocp.instance.type',
+                tooltip: 'tooltip.creation.ocp.otp.instance.type',
+                id: 'masterType',
+                type: 'text',
+                active: 'm1.xlarge',
+                validation: {
+                    constraint: '[A-Za-z0-9-_.]+',
+                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
+                    required: true,
+                },
             },
         ],
     },
@@ -205,41 +165,19 @@ const controlDataRHV = [
                     required: true,
                 },
             },
-            ///////////////////////  cores  /////////////////////////////////////
+            ///////////////////////  instance type  /////////////////////////////////////
             {
-                name: 'creation.ocp.cores',
-                tooltip: 'tooltip.creation.ocp.cores',
-                id: 'cores',
-                type: 'number',
-                initial: '2',
-                validation: VALIDATE_NUMERIC,
-            },
-            ///////////////////////  sockets  /////////////////////////////////////
-            {
-                name: 'creation.ocp.sockets',
-                tooltip: 'tooltip.creation.ocp.sockets',
-                id: 'sockets',
-                type: 'number',
-                initial: '1',
-                validation: VALIDATE_NUMERIC,
-            },
-            ///////////////////////  memoryMB  /////////////////////////////////////
-            {
-                name: 'creation.ocp.memoryMB',
-                tooltip: 'tooltip.creation.ocp.memoryMB',
-                id: 'memoryMB',
-                type: 'number',
-                initial: '16384',
-                validation: VALIDATE_NUMERIC,
-            },
-            ///////////////////////  sizeGB  /////////////////////////////////////
-            {
-                name: 'creation.ocp.diskSizeGB',
-                tooltip: 'tooltip.creation.ocp.diskSizeGB',
-                id: 'diskSizeGB',
-                type: 'number',
-                initial: '120',
-                validation: VALIDATE_NUMERIC,
+                name: 'creation.ocp.instance.type',
+                tooltip: 'tooltip.creation.ocp.otp.instance.type',
+                id: 'workerType',
+                type: 'text',
+                active: 'm1.xlarge',
+                validation: {
+                    constraint: '[A-Za-z0-9-_.]+',
+                    notification: 'creation.ocp.cluster.valid.alphanumeric.period',
+                    required: true,
+                },
+                cacheUserValueKey: 'create.cluster.worker.type',
             },
             ///////////////////////  compute node count  /////////////////////////////////////
             {
@@ -253,56 +191,114 @@ const controlDataRHV = [
             },
         ],
     },
-
-    ///////////////////////  networking  /////////////////////////////////////
+    ///////////////////////  openstack  /////////////////////////////////////
     {
         id: 'networkStep',
         type: 'step',
-        title: 'Networks',
+        title: 'Networking',
     },
     {
-        id: 'ovirt_network_name',
-        name: 'creation.ocp.cluster.rhv.network.name',
-        tooltip: 'tooltip.creation.ocp.cluster.rhv.network.name',
-        placeholder: 'creation.ocp.cluster.rhv.network.name',
+        id: 'externalNetworkName',
+        name: 'creation.ocp.cluster.ost.external.network.name',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.external.network.name',
         type: 'text',
         active: '',
         validation: {
-            notification: 'creation.ocp.cluster.rhv.must.enter.network.name',
+            notification: 'creation.ocp.cluster.ost.must.enter.external.network.name',
             required: true,
         },
     },
     {
-        id: 'vnicProfileID',
-        name: 'creation.ocp.cluster.rhv.vnicprofileid',
-        tooltip: 'tooltip.creation.ocp.cluster.rhv.vnicprofileid',
-        placeholder: 'creation.ocp.cluster.rhv.vnicprofileid',
+        id: 'lbFloatingIP',
         type: 'text',
-        active: '',
-        validation: {
-            notification: 'creation.ocp.cluster.rhv.must.enter.network.name',
-            required: true,
+        name: 'creation.ocp.cluster.ost.lb.floating.ip',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.lb.floating.ip',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.lb.floating.ip',
+        hidden: (control, controlData) => {
+            if (isHidden_gt_OCP46(control, controlData)) {
+                control.active = undefined
+                return true
+            }
         },
-    },
-    {
-        id: 'apiVIP',
-        type: 'text',
-        name: 'creation.ocp.api.vip',
-        tooltip: 'tooltip.creation.ocp.api.vip',
         active: '',
         validation: VALIDATE_IP,
     },
     {
-        id: 'ingressVIP',
+        id: 'apiFloatingIP',
         type: 'text',
-        name: 'creation.ocp.ingress.vip',
-        tooltip: 'tooltip.creation.ocp.ingress.vip',
-        placeholder: 'creation.ocp.ingress.vip.placeholder',
+        name: 'creation.ocp.cluster.ost.api.floating.ip',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.api.floating.ip',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.api.floating.ip',
+        hidden: (control, controlData) => {
+            if (!isHidden_gt_OCP46(control, controlData)) {
+                control.active = undefined
+                return true
+            }
+        },
         active: '',
         validation: VALIDATE_IP,
     },
-    ...networkingControlData,
+    {
+        id: 'ingressFloatingIP',
+        type: 'text',
+        name: 'creation.ocp.cluster.ost.ingress.floating.ip',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.ingress.floating.ip',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.ingress.floating.ip',
+        active: '',
+        validation: VALIDATE_IP,
+    },
+    {
+        id: 'externalDNS',
+        type: 'values',
+        name: 'creation.ocp.cluster.ost.external.dns',
+        placeholder: 'placeholder.creation.ocp.cluster.ost.external.dns',
+        tooltip: 'tooltip.creation.ocp.cluster.ost.external.dns',
+        active: [],
+        validation: VALIDATE_IP_OPTIONAL,
+    },
+    ...getOSTNetworkingControlData(),
     ...proxyControlData,
+    ///////////////////////  openstack  /////////////////////////////////////
+    {
+        id: 'disconnectedStep',
+        type: 'step',
+        title: 'Disconnected installation',
+    },
+    {
+        id: 'disconnectedInfo',
+        type: 'title',
+        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS (RHCOS) image.',
+    },
+    {
+        name: 'Create disconnected installation',
+        id: 'isDisconnected',
+        type: 'checkbox',
+        active: false,
+        onSelect: onChangeDisconnect,
+    },
+    {
+        id: 'clusterOSImage',
+        type: 'text',
+        name: 'Cluster OS Image',
+        disabled: true,
+        tip: 'The location of the Red Hat Enterprise Linux CoreOS (RHCOS) image in your local registry.',
+        validation: VALIDATE_URL,
+    },
+    {
+        id: 'imageContentSources',
+        type: 'textarea',
+        name: 'Image Content Sources',
+        disabled: true,
+        tip: 'The imageContentSources values that were generated during mirror registry creation.',
+    },
+    {
+        id: 'disconnectedAdditionalTrustBundle',
+        type: 'textarea',
+        name: 'Additional Trust Bundle',
+        disabled: true,
+        placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
+        tip: 'The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.',
+    },
 ]
 
-export default getControlDataRHV
+export default getControlDataOST
