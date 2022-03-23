@@ -395,6 +395,7 @@
     "clusterPool.modal.scale.size.input": "Set desired cluster pool size",
     "clusterPool.modal.scale.title": "Scale cluster pool",
     "clusterPool.modal.scale.validation.greaterThanOrEqualZero": "The cluster pool size and running count must both be greater than or equal to 0.",
+    "clusterPool.modal.scale.validation.lessThanOrEqualSize": "The cluster pool running count must be less than or equal to the size.",
     "clusterPool.placeholder.creation.ocp.namespace": "Select or create a namespace",
     "clusterPool.scale": "Scale cluster pool",
     "clusterPool.selectReleaseImage": "Select release image",

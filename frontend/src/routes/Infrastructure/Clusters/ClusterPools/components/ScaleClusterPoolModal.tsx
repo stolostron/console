@@ -86,6 +86,8 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                 validation={(runningCount: Number) => {
                                     if (runningCount < 0)
                                         return t('clusterPool.modal.scale.validation.greaterThanOrEqualZero')
+                                    if (runningCount > size)
+                                        return t('clusterPool.modal.scale.validation.lessThanOrEqualSize')
                                     return undefined
                                 }}
                                 required
