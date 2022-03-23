@@ -15,6 +15,7 @@ import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { PolicySet } from '../../../resources/policy-set'
 import { GovernanceCreatePolicysetEmptyState } from '../components/GovernanceEmptyState'
@@ -41,34 +42,28 @@ function unknownStatusFilterFn(policySet: PolicySet) {
     return !policySet.status.compliant
 }
 
-function getPresetURIFilters() {
+function getPresetURIFilters(initialSearch: string | undefined) {
     let presetNames: string[] = [],
         presetNs: string[] = []
-    const urlParams = decodeURIComponent(window.location.search)?.replace('?', '')?.split('&') ?? []
-    urlParams.forEach((param) => {
-        const paramKey = param.split('=')[0]
-        const paramValue = param.split('=')[1]
-        switch (paramKey) {
-            case 'names':
-                presetNames = JSON.parse(paramValue)
-                break
-            case 'namespaces':
-                presetNs = JSON.parse(paramValue)
-                break
-        }
-    })
+    const urlParams = initialSearch?.replace('?', '')?.split('&') ?? []
+    if (urlParams[0] !== '') {
+        const parsed = JSON.parse(urlParams[0])
+        presetNames = parsed.name
+        presetNs = parsed.namespace
+    }
     return { presetNames, presetNs }
 }
 
 export default function PolicySetsPage() {
     const { t } = useTranslation()
-    const { presetNames, presetNs } = getPresetURIFilters()
+    const presets = transformBrowserUrlToFilterPresets(window.location.search)
+    const { presetNames, presetNs } = getPresetURIFilters(presets.initialSearch)
     const [policySets] = useRecoilState(policySetsState)
     const [searchFilter, setSearchFilter] = useState<Record<string, string[]>>({
         Name: presetNames,
         Namespace: presetNs,
     })
-    const [violationFilters, setViolationFilters] = useState<string[]>([])
+    const [violationFilters, setViolationFilters] = useState<string[]>(presets.initialFilters?.violation ?? [])
     const [page, setPage] = useState<number>(1)
     const [perPage, setPerPage] = useState<number>(10)
     const [filteredPolicySets, setFilteredPolicySets] = useState<PolicySet[]>(policySets)
@@ -195,7 +190,10 @@ export default function PolicySetsPage() {
                         <Fragment>
                             <ToolbarGroup variant="filter-group">
                                 <ToolbarItem variant="search-filter">
-                                    <CardViewToolbarFilter setViolationFilters={setViolationFilters} />
+                                    <CardViewToolbarFilter
+                                        setViolationFilters={setViolationFilters}
+                                        preSelectedFilters={violationFilters}
+                                    />
                                 </ToolbarItem>
                                 <ToolbarItem variant="search-filter">
                                     <CardViewToolbarSearch
