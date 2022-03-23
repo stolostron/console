@@ -280,7 +280,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         activeChannel,
                         map,
                         cluster,
-                        apiVersion
+                        apiVersion,
+                        clusters
                     )
                     const topology = getTopology(application, clusters, lastRefreshRef?.current?.relatedResources, {
                         cluster,

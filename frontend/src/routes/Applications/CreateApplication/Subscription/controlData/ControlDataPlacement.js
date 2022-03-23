@@ -27,8 +27,9 @@ import {
     getSharedSubscriptionWarning,
 } from './utils'
 import { getSourcePath } from 'temptifly'
-import { listPlacementRules, listManagedClusters } from '../../../../../resources'
+import { listPlacementRules, NamespaceApiVersion, NamespaceKind, NamespaceDefinition } from '../../../../../resources'
 import _ from 'lodash'
+import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'
 
 const existingRuleCheckbox = 'existingrule-checkbox'
 const localClusterCheckbox = 'local-cluster-checkbox'
@@ -214,20 +215,17 @@ export const summarizeOnline = (control, globalControlData, summary, i18n) => {
 
 async function getClusterStatus(name) {
     let successImportStatus = false
-    const managedClusters = await listManagedClusters().promise
-    const managedCluster = _.find(managedClusters, (cluster) => cluster.metadata.name === name)
+    const localClusterNS = {
+        apiVersion: NamespaceApiVersion,
+        kind: NamespaceKind,
+        metadata: {
+            name,
+        },
+    }
+    const authorizedNamespaces = await getAuthorizedNamespaces([rbacCreate(NamespaceDefinition)], [localClusterNS])
+    const managedCluster = authorizedNamespaces.find((ns) => ns === name)
     if (managedCluster) {
-        const managedClusterCondition = _.get(managedCluster, 'status.conditions', {})
-        if (!_.isEmpty(managedClusterCondition)) {
-            // check cluster import condition
-            const managedClusterAvailable = _.find(
-                managedClusterCondition,
-                (condition) => condition.type === 'ManagedClusterConditionAvailable'
-            )
-            if (managedClusterAvailable && _.has(managedClusterAvailable, 'status')) {
-                successImportStatus = _.get(managedClusterAvailable, 'status') === 'True' ? true : successImportStatus
-            }
-        }
+        successImportStatus = true
     }
     return successImportStatus
 }

@@ -102,10 +102,6 @@ export function getAnnotation(resource: IResource, annotationString: string) {
 
 function getAppNamespace(resource: IResource) {
     let castType
-    if (resource.kind === ApplicationSetKind) {
-        castType = resource as ApplicationSet
-        return castType.spec.template?.spec?.destination?.namespace
-    }
     if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
         castType = resource as ArgoApplication
         return castType.spec.destination.namespace
