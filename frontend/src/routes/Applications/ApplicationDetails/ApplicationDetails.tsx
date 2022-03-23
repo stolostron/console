@@ -29,7 +29,6 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
-    managedClustersState,
     placementRulesState,
     placementsState,
     subscriptionReportsState,
@@ -46,6 +45,7 @@ import {
     ApplicationSetDefinition,
     ApplicationSetKind,
 } from '../../../resources'
+import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
 import { getAppChildResources, getAppSetRelatedResources, getSearchLink } from '../helpers/resource-helper'
 import { getAppSetApps } from '../Overview'
@@ -110,6 +110,15 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     const history = useHistory()
     const isArgoApp = applicationData?.application.isArgoApp
     const isAppSet = applicationData?.application.isAppSet
+    let clusters = useAllClusters()
+    clusters = clusters.filter((cluster) => {
+        // don't show clusters in cluster pools in table
+        if (cluster.hive.clusterPool) {
+            return cluster.hive.clusterClaimName !== undefined
+        } else {
+            return true
+        }
+    })
 
     let modalWarnings: string
 
@@ -241,7 +250,6 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             placementRules: placementRulesState,
             subscriptions: subscriptionsState,
             subscriptionReports: subscriptionReportsState,
-            managedClusters: managedClustersState,
         }),
         []
     )
@@ -264,7 +272,6 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         return promise
                     })
                     await Promise.allSettled(promises)
-                    const managedClusters = map['managedClusters']
 
                     // get application object from recoil states
                     const application = await getApplication(
@@ -273,14 +280,12 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         activeChannel,
                         map,
                         cluster,
-                        apiVersion
+                        apiVersion,
+                        clusters
                     )
-                    const topology = getTopology(
-                        application,
-                        managedClusters,
-                        lastRefreshRef?.current?.relatedResources,
-                        { cluster }
-                    )
+                    const topology = getTopology(application, clusters, lastRefreshRef?.current?.relatedResources, {
+                        cluster,
+                    })
                     const appData = getApplicationData(topology.nodes)
 
                     // when first opened, refresh topology with wait statuses
@@ -302,7 +307,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         topology,
                         lastRefreshRef.current
                     )
-                    const topologyWithRelated = getTopology(application, managedClusters, relatedResources, {
+                    const topologyWithRelated = getTopology(application, clusters, relatedResources, {
                         topology,
                         cluster,
                     })
@@ -322,6 +327,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             10000
         )
         return () => clearInterval(interval)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeChannel, apiVersion, cluster, getSnapshot, match.params.name, match.params.namespace, stateMap])
 
     return (

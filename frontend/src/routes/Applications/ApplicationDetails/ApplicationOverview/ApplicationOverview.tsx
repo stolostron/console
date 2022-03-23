@@ -22,13 +22,7 @@ import {
 } from '@patternfly/react-icons'
 import { useRecoilState } from 'recoil'
 import { Fragment, useEffect, useState } from 'react'
-import {
-    argoApplicationsState,
-    channelsState,
-    managedClustersState,
-    placementRulesState,
-    subscriptionsState,
-} from '../../../../atoms'
+import { argoApplicationsState, channelsState, placementRulesState, subscriptionsState } from '../../../../atoms'
 import { createClustersText, getShortDateTime } from '../../helpers/resource-helper'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
 import { getSearchLink } from '../../helpers/resource-helper'
@@ -40,9 +34,12 @@ import {
     ApplicationSet,
     Channel,
     IResource,
-    listNamespaces,
+    listProjects,
     NamespaceDefinition,
     Subscription,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
 } from '../../../../resources'
 import ResourceLabels from '../../components/ResourceLabels'
 import '../../css/ApplicationOverview.css'
@@ -56,6 +53,7 @@ import { DiagramIcons } from '../../../../components/Topology/shapes/DiagramIcon
 import { getDiagramElements } from '../ApplicationTopology/model/topology'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 import { Link } from 'react-router-dom'
+import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
@@ -69,8 +67,17 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     const [channels] = useRecoilState(channelsState)
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [placementRules] = useRecoilState(placementRulesState)
-    const [managedClusters] = useRecoilState(managedClustersState)
-    const localCluster = managedClusters.find((cls) => cls.metadata.name === localClusterStr)
+    //const [managedClusters] = useRecoilState(managedClustersState)
+    let managedClusters = useAllClusters()
+    managedClusters = managedClusters.filter((cluster) => {
+        // don't show clusters in cluster pools in table
+        if (cluster.hive.clusterPool) {
+            return cluster.hive.clusterClaimName !== undefined
+        } else {
+            return true
+        }
+    })
+    const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
     const [showSubCards, setShowSubCards] = useState(false)
     const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
         open: false,
@@ -93,12 +100,22 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
 
     useEffect(() => {
         const fetchNamespaces = async () => {
-            return listNamespaces().promise
+            return listProjects().promise
         }
 
         fetchNamespaces().then((ns) => {
+            const namespaceArr: Namespace[] = ns.map((project) => {
+                return {
+                    apiVersion: NamespaceApiVersion,
+                    kind: NamespaceKind,
+                    metadata: project.metadata,
+                } as Namespace
+            })
             const fetchAuthorizedNamespaces = async () => {
-                const authorizedNamespaces = await getAuthorizedNamespaces([rbacCreate(NamespaceDefinition)], ns)
+                const authorizedNamespaces = await getAuthorizedNamespaces(
+                    [rbacCreate(NamespaceDefinition)],
+                    namespaceArr
+                )
                 return {
                     authorizedNamespaces,
                     namespaces: ns,
@@ -131,7 +148,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     }
 
     if (applicationData) {
-        isArgoApp = applicationData.appData.isArgoApp
+        isArgoApp = applicationData.application.isArgoApp
         isAppSet = applicationData.application.isAppSet
         isSubscription = !isArgoApp && !isAppSet
         const { name, namespace } = applicationData.application.metadata

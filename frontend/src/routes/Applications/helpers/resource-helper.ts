@@ -14,9 +14,9 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
+    Cluster,
     IResource,
     IResourceDefinition,
-    ManagedCluster,
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
@@ -54,7 +54,7 @@ const calculateClusterCount = (
     resource: ArgoApplication,
     clusterCount: any,
     clusterList: string[],
-    localCluster: ManagedCluster | undefined
+    localCluster: Cluster | undefined
 ) => {
     const isRemoteArgoApp = resource.status.cluster ? true : false
 
@@ -77,10 +77,11 @@ const calculateClusterCount = (
 }
 
 // Check if server URL matches hub URL
-function isLocalClusterURL(url: string, localCluster: ManagedCluster | undefined) {
+function isLocalClusterURL(url: string, localCluster: Cluster | undefined) {
     let argoServerURL
-    const localClusterConfigs = localCluster ? localCluster.spec?.managedClusterClientConfigs! : []
-    const localClusterURL = new URL(localClusterConfigs.length > 0 ? localClusterConfigs[0].url : '')
+    const localClusterURL = new URL(
+        localCluster ? _.get(localCluster, 'consoleURL', 'https://localhost') : 'https://localhost'
+    )
 
     try {
         argoServerURL = new URL(url)
@@ -103,7 +104,7 @@ export const createClustersText = (props: {
     argoApplications: ArgoApplication[]
     placementRules: PlacementRule[]
     subscriptions: Subscription[]
-    localCluster: ManagedCluster | undefined
+    localCluster: Cluster | undefined
 }) => {
     const { resource, clusterCount, clusterList, argoApplications, placementRules, subscriptions, localCluster } = props
     if (resource.kind === ApplicationSetKind) {

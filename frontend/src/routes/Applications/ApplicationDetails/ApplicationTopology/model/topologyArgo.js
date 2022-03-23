@@ -3,7 +3,7 @@ import { get, uniq, uniqBy } from 'lodash'
 import { getClusterName, addClusters } from './utils'
 import { createReplicaChild } from './topologySubscription'
 
-export function getArgoTopology(application, managedClusters, argoData) {
+export function getArgoTopology(application, argoData) {
     const { topology, cluster } = argoData
     const links = []
     const nodes = []

@@ -14,7 +14,6 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
-    managedClustersState,
     placementRulesState,
     subscriptionsState,
 } from '../../atoms'
@@ -50,6 +49,7 @@ import {
     hostingSubAnnotationStr,
     isResourceTypeOf,
 } from './helpers/resource-helper'
+import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -89,10 +89,6 @@ export function getAnnotation(resource: IResource, annotationString: string) {
 
 function getAppNamespace(resource: IResource) {
     let castType
-    if (resource.kind === ApplicationSetKind) {
-        castType = resource as ApplicationSet
-        return castType.spec.template?.spec?.destination?.namespace
-    }
     if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
         castType = resource as ArgoApplication
         return castType.spec.destination.namespace
@@ -178,8 +174,17 @@ export default function ApplicationsOverview() {
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [placementRules] = useRecoilState(placementRulesState)
-    const [managedClusters] = useRecoilState(managedClustersState)
-    const localCluster = managedClusters.find((cls) => cls.metadata.name === localClusterStr)
+
+    let managedClusters = useAllClusters()
+    managedClusters = managedClusters.filter((cluster) => {
+        // don't show clusters in cluster pools in table
+        if (cluster.hive.clusterPool) {
+            return cluster.hive.clusterClaimName !== undefined
+        } else {
+            return true
+        }
+    })
+    const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
     const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
         open: false,
     })

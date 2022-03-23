@@ -153,6 +153,7 @@ const getArgoRoute = async (appName, appNamespace, cluster, managedclusterviewda
             const routeObjs = routes.filter(
                 (route) =>
                     get(route, 'metadata.labels["app.kubernetes.io/part-of"]', '') === 'argocd' &&
+                    get(route, 'metadata.labels["app.kubernetes.io/name"]', '') === `${appNamespace}-server` &&
                     !get(route, 'metadata.name', '').toLowerCase().includes('grafana') &&
                     !get(route, 'metadata.name', '').toLowerCase().includes('prometheus')
             )
