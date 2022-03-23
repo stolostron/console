@@ -20,7 +20,7 @@ import {
     AcmRoute,
     AcmTable,
 } from '@stolostron/ui-components'
-import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
@@ -31,7 +31,7 @@ import { BulkActionModel, IBulkActionModelProps } from '../../../components/Bulk
 import { RbacDropdown } from '../../../components/Rbac'
 import { importBMAs } from '../../../lib/bare-metal-assets'
 import { deleteResources } from '../../../lib/delete-resources'
-import { DOC_LINKS } from '../../../lib/doc-util'
+import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
 import { canUser, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 
@@ -199,30 +199,33 @@ export function BareMetalAssetsTable(props: {
                             <Trans i18nKey={'bareMetalAsset.emptyState.subtitle'} components={{ bold: <strong /> }} />
                         }
                         action={
-                            <Bullseye>
-                                <ActionList>
-                                    <ActionListItem>
-                                        <AcmButton
-                                            variant="primary"
-                                            onClick={() => {
-                                                history.push(NavigationPath.createBareMetalAsset)
-                                            }}
-                                        >
-                                            {t('createBareMetalAsset.title')}
-                                        </AcmButton>
-                                    </ActionListItem>
-                                    <ActionListItem>
-                                        <AcmButton
-                                            variant="primary"
-                                            onClick={() => {
-                                                setImportModalProps()
-                                            }}
-                                        >
-                                            {t('importBareMetalAssets.title')}
-                                        </AcmButton>
-                                    </ActionListItem>
-                                </ActionList>
-                            </Bullseye>
+                            <div>
+                                <Bullseye>
+                                    <ActionList>
+                                        <ActionListItem>
+                                            <AcmButton
+                                                variant="primary"
+                                                onClick={() => {
+                                                    history.push(NavigationPath.createBareMetalAsset)
+                                                }}
+                                            >
+                                                {t('createBareMetalAsset.title')}
+                                            </AcmButton>
+                                        </ActionListItem>
+                                        <ActionListItem>
+                                            <AcmButton
+                                                variant="primary"
+                                                onClick={() => {
+                                                    setImportModalProps()
+                                                }}
+                                            >
+                                                {t('importBareMetalAssets.title')}
+                                            </AcmButton>
+                                        </ActionListItem>
+                                    </ActionList>
+                                </Bullseye>
+                                <TextContent>{viewDocumentation(DOC_LINKS.BARE_METAL_ASSETS, t)}</TextContent>
+                            </div>
                         }
                     />
                 }

@@ -1,5 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Text, TextVariants } from '@patternfly/react-core'
+import { TFunction } from 'i18next'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+
 export const DOC_VERSION = '2.5'
 
 export const DOC_HOME = `https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/${DOC_VERSION}`
@@ -26,12 +30,32 @@ export const DOC_LINKS = {
     CLUSTER_CLAIMS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#claiming-clusters-from-cluster-pools`,
     SUBMARINER: `${DOC_BASE_PATH}/services/submariner/services-overview#submariner`,
     CONFIG_DISCONNECTED_INSTALL: `${DOC_BASE_PATH}/credentials/credentials#disconnected`,
+    INFRASTRUCTURE_EVIRONMENTS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#creating-an-infrastructure-environment`,
     DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#discovery-intro`,
     MACHINE_POOLS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#resizing-a-cluster`,
     MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/managing-applications`,
     ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#ansible-config-cluster`,
-    POLICIES: `${DOC_BASE_PATH}/governance/governance#policy-overview` /* TODO - UPDATE LINK */,
-    POLICY_SETS: `${DOC_BASE_PATH}/governance/governance#policy-overview` /* TODO - UPDATE LINK */,
+    POLICIES: `${DOC_BASE_PATH}/governance/governance#policy-overview`,
+    POLICY_SETS: `${DOC_BASE_PATH}/governance/governance#policy-overview`,
     WEB_CONSOLE: `${DOC_BASE_PATH}/web_console/web-console`,
     MCE_INTRO: `${DOC_BASE_PATH}/multicluster_engine/mce_intro`,
+}
+
+export function viewDocumentation(doclink: string, t: TFunction) {
+    return (
+        <Text
+            component={TextVariants.a}
+            isVisitedLink
+            href={doclink}
+            target="_blank"
+            style={{
+                cursor: 'pointer',
+                display: 'inline-block',
+                padding: '15px 10px',
+                fontSize: '14px',
+            }}
+        >
+            {t('View documentation')} <ExternalLinkAltIcon />
+        </Text>
+    )
 }

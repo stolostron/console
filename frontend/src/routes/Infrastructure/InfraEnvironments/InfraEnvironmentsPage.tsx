@@ -10,7 +10,7 @@ import {
     AcmRoute,
     AcmTable,
 } from '@stolostron/ui-components'
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import isMatch from 'lodash/isMatch'
 import { CIM } from 'openshift-assisted-ui-lib'
@@ -25,6 +25,7 @@ import { RbacDropdown } from '../../../components/Rbac'
 import { deleteResources } from '../../../lib/delete-resources'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
+import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
 
 const { AGENT_LOCATION_LABEL_KEY, getAgentStatus } = CIM
 
@@ -272,9 +273,12 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                         title={t('infraEnv.emptyStateHeader')}
                         message={<Trans i18nKey={'infraEnv.emptyStateBody'} components={{ bold: <strong /> }} />}
                         action={
-                            <AcmButton component={Link} variant="primary" to={NavigationPath.createInfraEnv}>
-                                {t('infraEnv.createCluster')}
-                            </AcmButton>
+                            <div>
+                                <AcmButton component={Link} variant="primary" to={NavigationPath.createInfraEnv}>
+                                    {t('infraEnv.createCluster')}
+                                </AcmButton>
+                                <TextContent>{viewDocumentation(DOC_LINKS.INFRASTRUCTURE_EVIRONMENTS, t)}</TextContent>
+                            </div>
                         }
                     />
                 }

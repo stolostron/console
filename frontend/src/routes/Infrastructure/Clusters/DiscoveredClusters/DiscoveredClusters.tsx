@@ -5,8 +5,6 @@ import {
     AcmDropdown,
     AcmEmptyState,
     AcmEmptyStateImage,
-    AcmIcon,
-    AcmIconVariant,
     AcmInlineProvider,
     AcmPageContent,
     AcmTable,
@@ -14,7 +12,7 @@ import {
     IAcmTableColumn,
     Provider,
 } from '@stolostron/ui-components'
-import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from '@patternfly/react-core'
+import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import * as moment from 'moment'
 import { Fragment, useEffect, useState } from 'react'
@@ -22,7 +20,7 @@ import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
-import { DOC_LINKS } from '../../../../lib/doc-util'
+import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
 
@@ -42,13 +40,18 @@ function EmptyStateNoCRHCredentials() {
     return (
         <AcmEmptyState
             title={t('emptystate.defaultState.title')}
-            message={<Trans i18nKey={'emptystate.defaultState.msg'} components={{ bold: <strong /> }} />}
+            message={
+                <Trans i18nKey={'emptystate.defaultState.msg'} components={{ italic: <em />, bold: <strong /> }} />
+            }
             key="dcEmptyState"
             showIcon={true}
             action={
-                <AcmButton component={Link} to={NavigationPath.addCredentials}>
-                    {t('emptystate.addCredential')}
-                </AcmButton>
+                <div>
+                    <AcmButton component={Link} to={NavigationPath.addCredentials}>
+                        {t('emptystate.addCredential')}
+                    </AcmButton>
+                    <TextContent>{viewDocumentation(DOC_LINKS.DISCOVERED_CLUSTERS, t)}</TextContent>
+                </div>
             }
         />
     )
@@ -65,23 +68,29 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
 
     const action =
         props.credentials!.length > 1 ? (
-            <AcmDropdown
-                text={t('discovery.addDiscovery')}
-                onSelect={onSelect}
-                id="configureDiscoveryDropdown"
-                isKebab={false}
-                isPrimary={true}
-                dropdownItems={props.credentials!.map((credential) => {
-                    return {
-                        id: credential.metadata.namespace! + '/' + credential.metadata.name!,
-                        text: credential.metadata.namespace! + '/' + credential.metadata.name!,
-                    }
-                })}
-            />
+            <div>
+                <AcmDropdown
+                    text={t('discovery.addDiscovery')}
+                    onSelect={onSelect}
+                    id="configureDiscoveryDropdown"
+                    isKebab={false}
+                    isPrimary={true}
+                    dropdownItems={props.credentials!.map((credential) => {
+                        return {
+                            id: credential.metadata.namespace! + '/' + credential.metadata.name!,
+                            text: credential.metadata.namespace! + '/' + credential.metadata.name!,
+                        }
+                    })}
+                />
+                <TextContent>{viewDocumentation(DOC_LINKS.DISCOVERED_CLUSTERS, t)}</TextContent>
+            </div>
         ) : (
-            <AcmButton component={Link} to={NavigationPath.createDiscovery}>
-                {t('emptystate.enableClusterDiscovery')}
-            </AcmButton>
+            <div>
+                <AcmButton component={Link} to={NavigationPath.createDiscovery}>
+                    {t('emptystate.enableClusterDiscovery')}
+                </AcmButton>
+                <TextContent>{viewDocumentation(DOC_LINKS.DISCOVERED_CLUSTERS, t)}</TextContent>
+            </div>
         )
     return (
         <AcmEmptyState
@@ -106,45 +115,36 @@ function EmptyStateAwaitingDiscoveredClusters() {
     return (
         <AcmEmptyState
             title={t('emptystate.discoveryEnabled.title')}
-            message={
-                <Trans
-                    i18nKey={'emptystate.discoveryEnabled.msg'}
-                    components={{
-                        a: (
-                            <a href={DOC_LINKS.DISCOVERED_CLUSTERS} target="_blank" rel="noreferrer">
-                                {}
-                            </a>
-                        ),
-                        icon: <AcmIcon icon={AcmIconVariant.openNewTab} />,
-                    }}
-                />
-            }
+            message={t('emptystate.discoveryEnabled.msg')}
             key="dcEmptyState"
             showIcon={true}
             image={AcmEmptyStateImage.folder}
             action={
-                <Bullseye>
-                    <ActionList>
-                        <ActionListItem>
-                            <AcmButton
-                                variant={ButtonVariant.primary}
-                                component={Link}
-                                to={NavigationPath.configureDiscovery}
-                            >
-                                {t('discovery.configureDiscovery')}
-                            </AcmButton>
-                        </ActionListItem>
-                        <ActionListItem>
-                            <AcmButton
-                                variant={ButtonVariant.secondary}
-                                component={Link}
-                                to={NavigationPath.createDiscovery}
-                            >
-                                {t('discovery.addDiscovery')}
-                            </AcmButton>
-                        </ActionListItem>
-                    </ActionList>
-                </Bullseye>
+                <div>
+                    <Bullseye>
+                        <ActionList>
+                            <ActionListItem>
+                                <AcmButton
+                                    variant={ButtonVariant.primary}
+                                    component={Link}
+                                    to={NavigationPath.configureDiscovery}
+                                >
+                                    {t('discovery.configureDiscovery')}
+                                </AcmButton>
+                            </ActionListItem>
+                            <ActionListItem>
+                                <AcmButton
+                                    variant={ButtonVariant.secondary}
+                                    component={Link}
+                                    to={NavigationPath.createDiscovery}
+                                >
+                                    {t('discovery.addDiscovery')}
+                                </AcmButton>
+                            </ActionListItem>
+                        </ActionList>
+                    </Bullseye>
+                    <TextContent>{viewDocumentation(DOC_LINKS.DISCOVERED_CLUSTERS, t)}</TextContent>
+                </div>
             }
         />
     )
