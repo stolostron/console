@@ -1,9 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Card } from '@patternfly/react-core'
+import { AcmDonutChart } from '@stolostron/ui-components'
 import { useMemo } from 'react'
 import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { ViolationsCard } from './PolicyViolationSummary'
 
 export function PolicySetViolationsCard() {
     const violations = usePolicySetViolations()
@@ -14,7 +16,6 @@ export function PolicySetViolationsCard() {
             noncompliant={violations.noncompliant}
             compliant={violations.compliant}
             unknown={violations.unknown}
-            to={NavigationPath.policySets}
         />
     )
 }
@@ -41,4 +42,44 @@ function usePolicySetViolations() {
         return { noncompliant, compliant, unknown }
     }, [policySets])
     return violations
+}
+
+export function ViolationsCard(props: {
+    title: string
+    description: string
+    noncompliant: number
+    compliant: number
+    unknown?: number
+}) {
+    const { t } = useTranslation()
+    return (
+        <Card>
+            <AcmDonutChart
+                title={props.title}
+                description={props.description}
+                donutLabel={{
+                    title: props.noncompliant.toString(),
+                    subTitle: t('Violation', { count: props.noncompliant }),
+                }}
+                data={[
+                    {
+                        key: t('violation', { count: props.noncompliant }),
+                        value: props.noncompliant,
+                        isPrimary: true,
+                        link: props.noncompliant > 0 ? `${NavigationPath.policySets}?violation=violation` : undefined,
+                    },
+                    {
+                        key: 'without violations',
+                        value: props.compliant,
+                        link: props.compliant > 0 ? `${NavigationPath.policySets}?violation=no-violation` : undefined,
+                    },
+                ]}
+                colorScale={[
+                    'var(--pf-global--danger-color--100)',
+                    'var(--pf-global--success-color--100)',
+                    'var(--pf-global--warning-color--100)',
+                ]}
+            />
+        </Card>
+    )
 }

@@ -30,7 +30,7 @@ export function transformBrowserUrlToFilterPresets(urlSearch: string) {
     let initialSort: { index: number; direction: 'asc' | 'desc' } = { index: 0, direction: 'asc' }
     let initialPage = 1
     let initialPerPage = 10
-    const urlparams = new URLSearchParams(urlSearch)
+    const urlparams = new URLSearchParams(decodeURIComponent(urlSearch))
     const entries = urlparams.entries()
     let entry = entries.next()
     while (!entry.done) {

@@ -25,11 +25,12 @@ const useStyles = makeStyles({
 const noViolation = 'no-violation'
 
 export default function CardViewToolbarFilter(props: {
+    preSelectedFilters: string[]
     setViolationFilters: React.Dispatch<React.SetStateAction<string[]>>
 }) {
-    const { setViolationFilters } = props
+    const { setViolationFilters, preSelectedFilters } = props
     const [isFilterOpen, setIsFilterOpen] = useState(false)
-    const [selectedFilters, setSelectedFilters] = useState<string[]>([])
+    const [selectedFilters, setSelectedFilters] = useState<string[]>(preSelectedFilters ?? [])
     const [policySets] = useRecoilState(policySetsState)
     const classes = useStyles()
 

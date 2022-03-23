@@ -2,7 +2,6 @@
 import { Card } from '@patternfly/react-core'
 import { AcmDonutChart } from '@stolostron/ui-components'
 import { useMemo } from 'react'
-import { useHistory } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { Policy } from '../../../resources'
@@ -15,7 +14,6 @@ export function PolicyViolationsCard(props: { policyViolationSummary: ViolationS
             noncompliant={props.policyViolationSummary.noncompliant}
             compliant={props.policyViolationSummary.compliant}
             unknown={props.policyViolationSummary.unknown}
-            to={NavigationPath.policies}
         />
     )
 }
@@ -56,17 +54,10 @@ export function ViolationsCard(props: {
     noncompliant: number
     compliant: number
     unknown?: number
-    to?: string
 }) {
     const { t } = useTranslation()
-    const history = useHistory()
     return (
-        <Card
-            isHoverable
-            onClick={() => {
-                if (props.to) history.push(props.to)
-            }}
-        >
+        <Card>
             <AcmDonutChart
                 title={props.title}
                 description={props.description}
@@ -79,9 +70,19 @@ export function ViolationsCard(props: {
                         key: t('violation', { count: props.noncompliant }),
                         value: props.noncompliant,
                         isPrimary: true,
+                        link:
+                            props.noncompliant > 0
+                                ? `${NavigationPath.policies}?violations=with-violations`
+                                : undefined,
                     },
-                    { key: 'without violations', value: props.compliant },
-                    // { key: 'Unknown', value: props.unknown ?? 0 },
+                    {
+                        key: 'without violations',
+                        value: props.compliant,
+                        link:
+                            props.compliant > 0
+                                ? `${NavigationPath.policies}?violations=without-violations`
+                                : undefined,
+                    },
                 ]}
                 colorScale={[
                     'var(--pf-global--danger-color--100)',
