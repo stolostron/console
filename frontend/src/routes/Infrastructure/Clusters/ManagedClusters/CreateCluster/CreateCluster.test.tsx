@@ -65,6 +65,7 @@ import {
     clusterImageSet,
     mockClusterImageSet,
 } from './CreateCluster.sharedmocks'
+import { PluginContext } from '../../../../../lib/PluginContext'
 
 const bmaProjectNamespace = 'test-bare-metal-asset-namespace'
 //const awsProjectNamespace = 'test-aws-namespace'
@@ -388,7 +389,7 @@ const mockInstallConfigSecret = {
     type: 'Opaque',
     data: {
         'install-config.yaml':
-            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogdGVzdApiYXNlRG9tYWluOiBiYXNlLmRvbWFpbi5jb20KY29udHJvbFBsYW5lOgogIG5hbWU6IG1hc3RlcgogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBiYXJlbWV0YWw6IHt9CmNvbXB1dGU6CiAgLSBuYW1lOiB3b3JrZXIKICAgIHJlcGxpY2FzOiAyCm5ldHdvcmtpbmc6CiAgbmV0d29ya1R5cGU6IE9wZW5TaGlmdFNETgogIGNsdXN0ZXJOZXR3b3JrOgogICAgLSBjaWRyOiAxMC4xMjguMC4wLzE0CiAgICAgIGhvc3RQcmVmaXg6IDIzCiAgbWFjaGluZU5ldHdvcms6CiAgICAtIGNpZHI6IDEwLjAuMC4wLzE2CiAgc2VydmljZU5ldHdvcms6CiAgICAtIDE3Mi4zMC4wLjAvMTYKcGxhdGZvcm06CiAgYmFyZW1ldGFsOgogICAgbGlidmlydFVSSTogcWVtdStzc2g6Ly9saWJ2aXJ0VVJJCiAgICBwcm92aXNpb25pbmdOZXR3b3JrQ0lEUjogMTAuNC41LjMKICAgIHByb3Zpc2lvbmluZ05ldHdvcmtJbnRlcmZhY2U6IGVucDFzMAogICAgcHJvdmlzaW9uaW5nQnJpZGdlOiBwcm92aXNpb25pbmcKICAgIGV4dGVybmFsQnJpZGdlOiBiYXJlbWV0YWwKICAgIGFwaVZJUDogbnVsbAogICAgaW5ncmVzc1ZJUDogbnVsbAogICAgYm9vdHN0cmFwT1NJbWFnZTogYm9vdHN0cmFwT1NJbWFnZQogICAgY2x1c3Rlck9TSW1hZ2U6IGNsdXN0ZXJPU0ltYWdlCiAgICBob3N0czoKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMAogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IG1hc3RlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6IGV4YW1wbGUuY29tOjgwCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC0xCiAgICAgICAgbmFtZXNwYWNlOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlCiAgICAgICAgcm9sZTogbWFzdGVyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogZXhhbXBsZS5jb206ODAKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTIKICAgICAgICBuYW1lc3BhY2U6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC1uYW1lc3BhY2UKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiBleGFtcGxlLmNvbTo4MAogICAgICAgICAgZGlzYWJsZUNlcnRpZmljYXRlVmVyaWZpY2F0aW9uOiB0cnVlCiAgICAgICAgICB1c2VybmFtZTogdGVzdAogICAgICAgICAgcGFzc3dvcmQ6IHRlc3QKICAgICAgICBib290TUFDQWRkcmVzczogMDA6OTA6N0Y6MTI6REU6N0YKICAgICAgICBoYXJkd2FyZVByb2ZpbGU6IGRlZmF1bHQKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMwogICAgICAgIG5hbWVzcGFjZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LW5hbWVzcGFjZQogICAgICAgIHJvbGU6IHdvcmtlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6IGV4YW1wbGUuY29tOjgwCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC00CiAgICAgICAgbmFtZXNwYWNlOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtbmFtZXNwYWNlCiAgICAgICAgcm9sZTogd29ya2VyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogZXhhbXBsZS5jb206ODAKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IG51bGwKICAgICAgICAgIHBhc3N3b3JkOiBudWxsCiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CnB1bGxTZWNyZXQ6ICcnCnNzaEtleTogc3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20KYWRkaXRpb25hbFRydXN0QnVuZGxlOiB8LQogIC0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQogIGNlcnRkYXRhCiAgLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQppbWFnZUNvbnRlbnRTb3VyY2VzOgogIC0gbWlycm9yczoKICAgICAgLSBpbWFnZS5taXJyb3I6MTIzL2FiYwogICAgc291cmNlOiBxdWF5LmlvL29wZW5zaGlmdC1yZWxlYXNlLWRldi9vY3AtcmVsZWFzZS1uaWdodGx5CiAgLSBtaXJyb3JzOgogICAgICAtIGltYWdlLm1pcnJvcjoxMjMvYWJjCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlCiAgLSBtaXJyb3JzOgogICAgICAtIGltYWdlLm1pcnJvcjoxMjMvYWJjCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC12NC4wLWFydC1kZXYK',
+            'YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogdGVzdApiYXNlRG9tYWluOiBiYXNlLmRvbWFpbi5jb20KY29udHJvbFBsYW5lOgogIG5hbWU6IG1hc3RlcgogIHJlcGxpY2FzOiAzCiAgcGxhdGZvcm06CiAgICBiYXJlbWV0YWw6IHt9CmNvbXB1dGU6CiAgLSBuYW1lOiB3b3JrZXIKICAgIHJlcGxpY2FzOiAyCm5ldHdvcmtpbmc6CiAgbmV0d29ya1R5cGU6IE9wZW5TaGlmdFNETgogIGNsdXN0ZXJOZXR3b3JrOgogICAgLSBjaWRyOiAxMC4xMjguMC4wLzE0CiAgICAgIGhvc3RQcmVmaXg6IDIzCiAgbWFjaGluZU5ldHdvcms6CiAgICAtIGNpZHI6IDEwLjAuMC4wLzE2CiAgc2VydmljZU5ldHdvcms6CiAgICAtIDE3Mi4zMC4wLjAvMTYKcGxhdGZvcm06CiAgYmFyZW1ldGFsOgogICAgbGlidmlydFVSSTogcWVtdStzc2g6Ly9saWJ2aXJ0VVJJCiAgICBwcm92aXNpb25pbmdOZXR3b3JrQ0lEUjogMTAuNC41LjMKICAgIHByb3Zpc2lvbmluZ05ldHdvcmtJbnRlcmZhY2U6IGVucDFzMAogICAgcHJvdmlzaW9uaW5nQnJpZGdlOiBwcm92aXNpb25pbmcKICAgIGV4dGVybmFsQnJpZGdlOiBiYXJlbWV0YWwKICAgIGFwaVZJUDogbnVsbAogICAgaW5ncmVzc1ZJUDogbnVsbAogICAgYm9vdHN0cmFwT1NJbWFnZTogYm9vdHN0cmFwT1NJbWFnZQogICAgY2x1c3Rlck9TSW1hZ2U6IGNsdXN0ZXJPU0ltYWdlCiAgICBob3N0czoKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMAogICAgICAgIHJvbGU6IG1hc3RlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6IGV4YW1wbGUuY29tOjgwCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC0xCiAgICAgICAgcm9sZTogbWFzdGVyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogZXhhbXBsZS5jb206ODAKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IHRlc3QKICAgICAgICAgIHBhc3N3b3JkOiB0ZXN0CiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CiAgICAgIC0gbmFtZTogdGVzdC1iYXJlLW1ldGFsLWFzc2V0LTIKICAgICAgICByb2xlOiBtYXN0ZXIKICAgICAgICBibWM6CiAgICAgICAgICBhZGRyZXNzOiBleGFtcGxlLmNvbTo4MAogICAgICAgICAgZGlzYWJsZUNlcnRpZmljYXRlVmVyaWZpY2F0aW9uOiB0cnVlCiAgICAgICAgICB1c2VybmFtZTogdGVzdAogICAgICAgICAgcGFzc3dvcmQ6IHRlc3QKICAgICAgICBib290TUFDQWRkcmVzczogMDA6OTA6N0Y6MTI6REU6N0YKICAgICAgICBoYXJkd2FyZVByb2ZpbGU6IGRlZmF1bHQKICAgICAgLSBuYW1lOiB0ZXN0LWJhcmUtbWV0YWwtYXNzZXQtMwogICAgICAgIHJvbGU6IHdvcmtlcgogICAgICAgIGJtYzoKICAgICAgICAgIGFkZHJlc3M6IGV4YW1wbGUuY29tOjgwCiAgICAgICAgICBkaXNhYmxlQ2VydGlmaWNhdGVWZXJpZmljYXRpb246IHRydWUKICAgICAgICAgIHVzZXJuYW1lOiB0ZXN0CiAgICAgICAgICBwYXNzd29yZDogdGVzdAogICAgICAgIGJvb3RNQUNBZGRyZXNzOiAwMDo5MDo3RjoxMjpERTo3RgogICAgICAgIGhhcmR3YXJlUHJvZmlsZTogZGVmYXVsdAogICAgICAtIG5hbWU6IHRlc3QtYmFyZS1tZXRhbC1hc3NldC00CiAgICAgICAgcm9sZTogd29ya2VyCiAgICAgICAgYm1jOgogICAgICAgICAgYWRkcmVzczogZXhhbXBsZS5jb206ODAKICAgICAgICAgIGRpc2FibGVDZXJ0aWZpY2F0ZVZlcmlmaWNhdGlvbjogdHJ1ZQogICAgICAgICAgdXNlcm5hbWU6IG51bGwKICAgICAgICAgIHBhc3N3b3JkOiBudWxsCiAgICAgICAgYm9vdE1BQ0FkZHJlc3M6IDAwOjkwOjdGOjEyOkRFOjdGCiAgICAgICAgaGFyZHdhcmVQcm9maWxlOiBkZWZhdWx0CnB1bGxTZWNyZXQ6ICcnCnNzaEtleTogc3NoLXJzYSBBQUFBQjEgZmFrZUBlbWFpbC5jb20KYWRkaXRpb25hbFRydXN0QnVuZGxlOiB8LQogIC0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQogIGNlcnRkYXRhCiAgLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQppbWFnZUNvbnRlbnRTb3VyY2VzOgogIC0gbWlycm9yczoKICAgICAgLSBpbWFnZS5taXJyb3I6MTIzL2FiYwogICAgc291cmNlOiBxdWF5LmlvL29wZW5zaGlmdC1yZWxlYXNlLWRldi9vY3AtcmVsZWFzZS1uaWdodGx5CiAgLSBtaXJyb3JzOgogICAgICAtIGltYWdlLm1pcnJvcjoxMjMvYWJjCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC1yZWxlYXNlCiAgLSBtaXJyb3JzOgogICAgICAtIGltYWdlLm1pcnJvcjoxMjMvYWJjCiAgICBzb3VyY2U6IHF1YXkuaW8vb3BlbnNoaWZ0LXJlbGVhc2UtZGV2L29jcC12NC4wLWFydC1kZXYK',
     },
 }
 
@@ -1385,4 +1386,76 @@ describe('CreateCluster', () => {
         },
         2 * 60 * 1000
     )
+
+    test('can create AWS cluster without KlusterletAddonConfig on MCE', async () => {
+        window.scrollBy = () => {}
+
+        const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
+
+        // create the form
+        const { container } = render(
+            <PluginContext.Provider value={{ isACMAvailable: false }}>
+                <Component />
+            </PluginContext.Provider>
+        )
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        // step 1 -- the infrastructure
+        await clickByTestId('amazon-web-services')
+
+        // wait for tables/combos to fill in
+        await waitForNocks(initialNocks)
+
+        // connection
+        await clickByPlaceholderText('Select a credential')
+        //screen.debug(debug(), 2000000)
+        await clickByText(providerConnectionAws.metadata.name!)
+        await clickByText('Next')
+
+        // step 2 -- the name and imageset
+        await typeByTestId('eman', clusterName!)
+        await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
+        container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+        await clickByText('Next')
+
+        // step 3 -- nodes
+        await clickByText('Next')
+
+        // step 5 -- the network
+        await clickByText('Next')
+
+        // skipping private configuration
+        await clickByText('Next')
+
+        // skipping proxy
+        await clickByText('Next')
+
+        // step 6 - integration - skipping ansible template
+        await clickByText('Next')
+
+        // nocks for cluster creation
+        const createNocks = [
+            // create aws namespace (project)
+            nockCreate(mockClusterProject, mockClusterProjectResponse),
+
+            // create the managed cluster
+            nockCreate(mockManagedClusterAws),
+            nockCreate(mockMachinePoolAws),
+            nockCreate(mockProviderConnectionSecretCopiedAws),
+            nockCreate(mockPullSecretAws),
+            nockCreate(mockInstallConfigSecretAws),
+            nockCreate(mockPrivateSecretAws),
+            nockCreate(mockClusterDeploymentAws),
+        ]
+
+        // click create button
+        await clickByText('Create')
+
+        // expect(consoleInfos).hasNoConsoleLogs()
+        await waitForText('Creating cluster ...')
+
+        // make sure creating
+        await waitForNocks(createNocks)
+    })
 })

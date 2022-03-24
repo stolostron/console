@@ -65,13 +65,6 @@ const policySet: PolicySet = {
     status: {
         compliant: 'Compliant',
         placement: [{ placement: 'policy-set-with-1-placement', placementBinding: 'policy-set-with-1-placement' }],
-        results: [
-            {
-                clusters: [{ clusterName: 'local-cluster', clusterNamespace: 'local-cluster', compliant: 'Compliant' }],
-                compliant: 'Compliant',
-                policy: 'policy-set-with-1-placement-policy',
-            },
-        ],
     },
 }
 

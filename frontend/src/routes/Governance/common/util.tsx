@@ -8,6 +8,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import {
     Channel,
     HelmRelease,
+    ManagedCluster,
     Placement,
     PlacementBinding,
     PlacementRule,
@@ -17,6 +18,18 @@ import {
 } from '../../../resources'
 import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
+
+export interface PolicyCompliance {
+    policyName: string
+    policyNamespace: string
+    clusterCompliance: { clusterName: string; compliance: 'Compliant' | 'NonCompliant' }[]
+}
+
+export interface ClusterPolicies {
+    policyName: string
+    policyNamespace: string
+    compliance: string
+}
 
 export function getPlacementBindingsForResource(resource: Policy | PolicySet, placementBindings: PlacementBinding[]) {
     return placementBindings.filter(
@@ -66,12 +79,97 @@ export function getPlacementDecisionsForResource(
     return getPlacementDecisionsForPlacements(placementDecisions, resourcePlacements)
 }
 
-export function getPoliciesForPolicySet(policySet: PolicySet, policies: Policy[]) {
-    return policies.filter(
-        (policy) =>
-            policy.metadata.namespace === policySet.metadata.namespace &&
-            policySet.spec.policies.includes(policy.metadata.name ?? '')
+export function getPolicyForCluster(cluster: ManagedCluster, policies: Policy[]) {
+    const clusterPolicies: ClusterPolicies[] = []
+    for (const policy of policies) {
+        const policyStatus = policy.status?.status
+        if (policyStatus) {
+            for (const status of policyStatus) {
+                if (status.clustername === cluster.metadata.name) {
+                    clusterPolicies.push({
+                        policyName: policy.metadata.name!,
+                        policyNamespace: policy.metadata.namespace!,
+                        compliance: status.compliant,
+                    })
+                }
+            }
+        }
+    }
+    return clusterPolicies
+}
+
+export function getPolicyComplianceForPolicySet(
+    policySet: PolicySet,
+    policies: Policy[],
+    placementDecisions: PlacementDecision[],
+    resourceBindings: PlacementBinding[],
+    placements: (Placement | PlacementRule)[]
+) {
+    const policySetPlacementDecisions = getPlacementDecisionsForResource(
+        policySet,
+        placementDecisions,
+        resourceBindings,
+        placements
     )
+    const policySetPolicies = getPolicySetPolicies(policies, policySet)
+
+    const policyCompliance: PolicyCompliance[] = []
+    for (const placementDecision of policySetPlacementDecisions) {
+        for (const decision of placementDecision.status.decisions) {
+            for (const policy of policySetPolicies) {
+                const policyIdx = policyCompliance.findIndex((p) => p.policyName === policy.metadata.name!)
+                const policyClusterStatus = policy.status?.status?.find(
+                    (clusterStatus) => clusterStatus.clustername === decision.clusterName
+                )
+                if (!policyClusterStatus) {
+                    if (policyIdx < 0) {
+                        policyCompliance.push({
+                            policyName: policy.metadata.name!,
+                            policyNamespace: policy.metadata.namespace!,
+                            clusterCompliance: [],
+                        })
+                    }
+                } else if (policyClusterStatus?.compliant === 'NonCompliant') {
+                    if (policyIdx < 0) {
+                        policyCompliance.push({
+                            policyName: policy.metadata.name!,
+                            policyNamespace: policy.metadata.namespace!,
+                            clusterCompliance: [
+                                {
+                                    clusterName: decision.clusterName,
+                                    compliance: 'NonCompliant',
+                                },
+                            ],
+                        })
+                    } else {
+                        policyCompliance[policyIdx].clusterCompliance.push({
+                            clusterName: decision.clusterName,
+                            compliance: 'NonCompliant',
+                        })
+                    }
+                } else if (policyClusterStatus?.compliant === 'Compliant') {
+                    if (policyIdx < 0) {
+                        policyCompliance.push({
+                            policyName: policy.metadata.name!,
+                            policyNamespace: policy.metadata.namespace!,
+                            clusterCompliance: [
+                                {
+                                    clusterName: decision.clusterName,
+                                    compliance: 'Compliant',
+                                },
+                            ],
+                        })
+                    } else {
+                        policyCompliance[policyIdx].clusterCompliance.push({
+                            clusterName: decision.clusterName,
+                            compliance: 'Compliant',
+                        })
+                    }
+                }
+            }
+        }
+    }
+    return policyCompliance
 }
 
 export function getClustersComplianceForPolicySet(
@@ -87,7 +185,7 @@ export function getClustersComplianceForPolicySet(
         resourceBindings,
         placements
     )
-    const policySetPolicies = getPoliciesForPolicySet(policySet, policies)
+    const policySetPolicies = getPolicySetPolicies(policies, policySet)
 
     const clustersCompliance: Record<string, 'Compliant' | 'NonCompliant'> = {}
     for (const placementDecision of policySetPlacementDecisions) {
@@ -175,7 +273,7 @@ export function resolveSource(
     channels: Channel[],
     subscriptions: Subscription[]
 ) {
-    const getAnnotations = (item: any) => item.metadata.annotations ?? {}
+    const getAnnotations = (item: any) => item?.metadata?.annotations ?? {}
     const getHostingSubscription = (annotations: any) =>
         annotations['apps.open-cluster-management.io/hosting-subscription']
     const parentAnnotations = getAnnotations(policy)
@@ -277,7 +375,7 @@ export function PolicySetList(props: { policySets: PolicySet[] }) {
         () =>
             policySets.map((policySetMatch: PolicySet, idx: number) => {
                 const urlSearch = encodeURIComponent(
-                    `names=["${policySetMatch.metadata.name}"]&namespaces=["${policySetMatch.metadata.namespace}"]`
+                    `search={"name":["${policySetMatch.metadata.name}"],"namespace":["${policySetMatch.metadata.namespace}"]}`
                 )
                 return (
                     <div key={`${idx}-${policySetMatch.metadata.name}`}>
@@ -311,4 +409,15 @@ export function PolicySetList(props: { policySets: PolicySet[] }) {
         )
     }
     return <div>{policySetLinks}</div>
+}
+
+export function getPolicySetPolicies(policies: Policy[], policySet: PolicySet) {
+    const policyNameMap = policySet.spec.policies.reduce((policyNameMap, currentValue) => {
+        policyNameMap[currentValue] = true
+        return policyNameMap
+    }, {} as Record<string, true>)
+
+    return policies.filter(
+        (policy) => policyNameMap[policy.metadata.name!] && policy.metadata.namespace === policySet.metadata.namespace
+    )
 }

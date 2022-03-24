@@ -12,8 +12,8 @@ import {
     placementBindingsState,
     placementRulesState,
     placementsState,
-    policiesState,
     policySetsState,
+    usePolicies,
 } from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -26,7 +26,7 @@ export function EditPolicySet() {
     const toast = useContext(AcmToastContext)
     const params: { namespace?: string; name?: string } = useParams()
     const history = useHistory()
-    const [policies] = useRecoilState(policiesState)
+    const policies = usePolicies()
     const [policySets] = useRecoilState(policySetsState)
     const [namespaces] = useRecoilState(namespacesState)
     const [placements] = useRecoilState(placementsState)

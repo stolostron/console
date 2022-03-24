@@ -30,6 +30,22 @@ export interface AnsibleJob {
             finished: string
             started: string
         }
+        conditions?: [
+            {
+                ansibleResult?: {
+                    changed?: number
+                    completion?: string
+                    failures?: number
+                    ok?: number
+                    skipped?: number
+                }
+                lastTransitionTime?: string
+                message?: string
+                reason?: string
+                status?: string
+                type?: string
+            }
+        ]
     }
 }
 

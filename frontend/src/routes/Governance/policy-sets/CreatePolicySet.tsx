@@ -10,7 +10,7 @@ import {
     namespacesState,
     placementRulesState,
     placementsState,
-    policiesState,
+    usePolicies,
 } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -20,7 +20,7 @@ export function CreatePolicySet() {
     const { t } = useTranslation()
     const toast = useContext(AcmToastContext)
     const history = useHistory()
-    const [policies] = useRecoilState(policiesState)
+    const policies = usePolicies()
     const [namespaces] = useRecoilState(namespacesState)
     const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)

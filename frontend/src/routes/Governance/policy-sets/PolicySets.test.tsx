@@ -27,109 +27,12 @@ const policySet0: PolicySet = {
         ],
     },
     status: {
+        compliant: 'NonCompliant',
         placement: [
             {
                 placement: 'placement1',
                 placementBinding: 'binding1',
                 placementDecisions: ['placementdecision1'],
-            },
-        ],
-        results: [
-            {
-                policy: 'policy-testing',
-                compliant: 'NonCompliant',
-                clusters: [
-                    {
-                        clusterName: 'local-cluster',
-                        clusterNamespace: 'local-cluster',
-                        compliant: 'Compliant',
-                    },
-                    {
-                        clusterName: 'managed1',
-                        clusterNamespace: 'managed1',
-                        compliant: 'NonCompliant',
-                    },
-                    {
-                        clusterName: 'managed2',
-                        clusterNamespace: 'managed2',
-                        compliant: 'NonCompliant',
-                    },
-                ],
-            },
-            {
-                policy: 'policy-role',
-                compliant: 'NonCompliant',
-                clusters: [
-                    {
-                        clusterName: 'local-cluster',
-                        clusterNamespace: 'local-cluster',
-                        compliant: 'Compliant',
-                    },
-                    {
-                        clusterName: 'managed2',
-                        clusterNamespace: 'managed2',
-                        compliant: 'NonCompliant',
-                    },
-                ],
-            },
-            {
-                policy: 'policy-securitycontextconstraints',
-                compliant: 'Compliant',
-                clusters: [
-                    {
-                        clusterName: 'local-cluster',
-                        clusterNamespace: 'local-cluster',
-                        compliant: 'Compliant',
-                    },
-                ],
-            },
-            {
-                policy: 'policy-testing-1',
-                compliant: 'Compliant',
-                clusters: [
-                    {
-                        clusterName: 'local-cluster',
-                        clusterNamespace: 'local-cluster',
-                        compliant: 'Compliant',
-                    },
-                    {
-                        clusterName: 'managed1',
-                        clusterNamespace: 'managed1',
-                        compliant: 'NonCompliant',
-                    },
-                    {
-                        clusterName: 'managed2',
-                        clusterNamespace: 'managed2',
-                        compliant: 'NonCompliant',
-                    },
-                ],
-            },
-            {
-                policy: 'policy-role-1',
-                compliant: 'Compliant',
-                clusters: [
-                    {
-                        clusterName: 'local-cluster',
-                        clusterNamespace: 'local-cluster',
-                        compliant: 'Compliant',
-                    },
-                    {
-                        clusterName: 'managed2',
-                        clusterNamespace: 'managed2',
-                        compliant: 'NonCompliant',
-                    },
-                ],
-            },
-            {
-                policy: 'policy-securitycontextconstraints-1',
-                compliant: 'Compliant',
-                clusters: [
-                    {
-                        clusterName: 'local-cluster',
-                        clusterNamespace: 'local-cluster',
-                        compliant: 'Compliant',
-                    },
-                ],
             },
         ],
     },
@@ -146,34 +49,12 @@ const policySet1: PolicySet = {
         policies: ['policy-1'],
     },
     status: {
+        compliant: 'Compliant',
         placement: [
             {
                 placement: 'placement1',
                 placementBinding: 'binding1',
                 placementDecisions: ['placementdecision1'],
-            },
-        ],
-        results: [
-            {
-                policy: 'policy-1',
-                compliant: 'Compliant',
-                clusters: [
-                    {
-                        clusterName: 'local-cluster',
-                        clusterNamespace: 'local-cluster',
-                        compliant: 'Compliant',
-                    },
-                    {
-                        clusterName: 'managed1',
-                        clusterNamespace: 'managed1',
-                        compliant: 'Compliant',
-                    },
-                    {
-                        clusterName: 'managed2',
-                        clusterNamespace: 'managed2',
-                        compliant: 'NonCompliant',
-                    },
-                ],
             },
         ],
     },
@@ -195,7 +76,7 @@ describe('PolicySets Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText('Use the following button to create a policy set.')
+        await waitForText("You don't have any policy sets")
     })
 
     test('Should render PolicySet page correctly', async () => {

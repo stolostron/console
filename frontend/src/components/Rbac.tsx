@@ -3,7 +3,6 @@
 import { makeStyles } from '@material-ui/styles'
 import { createSubjectAccessReview, ResourceAttributes } from '../resources'
 import { AcmButton, AcmDropdown } from '@stolostron/ui-components'
-import { ButtonProps } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
 
@@ -57,7 +56,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
                             return {
                                 ...action,
                                 isAriaDisabled: isAriaDisabled,
-                                tooltip: isAriaDisabled ? t('rbac.unauthorized') : '',
+                                tooltip: isAriaDisabled ? t('rbac.unauthorized') : action.tooltip ?? '',
                             }
                         } else {
                             return action
@@ -86,9 +85,8 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
     )
 }
 
-type RbacButtonProps = ButtonProps & {
+type RbacButtonProps = Parameters<typeof AcmButton>[0] & {
     rbac: ResourceAttributes[]
-    to?: string
 }
 
 const useStyles = makeStyles({

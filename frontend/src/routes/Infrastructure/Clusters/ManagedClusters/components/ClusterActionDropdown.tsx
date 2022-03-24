@@ -122,7 +122,10 @@ export function getClusterActions(cluster: Cluster) {
     }
 
     if (
-        !(cluster.provider === Provider.hybrid && cluster.status === ClusterStatus.pendingimport) ||
+        !(
+            cluster.provider === Provider.hybrid &&
+            [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown].includes(cluster.status)
+        ) ||
         cluster.isSNOCluster
     ) {
         actionIds = actionIds.filter((id) => id !== 'ai-scale-up')

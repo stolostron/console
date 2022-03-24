@@ -18,6 +18,11 @@ export const defaultShapes = Object.freeze({
         className: 'design',
         nodeRadius: 30,
     },
+    applicationset: {
+        shape: 'application',
+        className: 'design',
+        nodeRadius: 30,
+    },
     cluster: {
         shape: 'cluster',
         className: 'container',

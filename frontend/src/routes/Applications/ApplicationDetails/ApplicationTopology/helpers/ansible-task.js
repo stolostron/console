@@ -11,7 +11,6 @@
 'use strict'
 
 import _ from 'lodash'
-
 import { addDetails } from '../helpers/diagram-helpers'
 
 const ansibleTaskErrorStates = ['Failed']
@@ -21,8 +20,8 @@ const ansibleJobErrorStates = ['failed', 'error']
 const ansibleJobSuccessStates = ['successful', 'running', 'new']
 const ansibleJobWarningStates = ['canceled']
 
-const ansibleStatusStr = 'specs.raw.spec.conditions'
-const ansibleJobStatusStr = 'specs.raw.spec.ansibleJobResult'
+const ansibleStatusStr = 'specs.raw.status.conditions'
+const ansibleJobStatusStr = 'specs.raw.status.ansibleJobResult'
 
 const ansibleTaskResultStr = 'ansibleResult'
 
@@ -125,12 +124,12 @@ export const showAnsibleJobDetails = (node, details, t) => {
 
     addDetails(details, [
         {
-            labelKey: 'specs.k8sJob.templateName',
-            value: _.get(node, 'specs.raw.spec.k8sJob.env.templateName'),
+            labelKey: t('Ansible Tower Job template name'),
+            value: _.get(node, 'specs.raw.status.k8sJob.env.templateName'),
         },
         {
-            labelKey: 'specs.k8sJob.secretName',
-            value: _.get(node, 'specs.raw.spec.k8sJob.env.secretNamespacedName'),
+            labelKey: t('Ansible Tower secret'),
+            value: _.get(node, 'specs.raw.status.k8sJob.env.secretNamespacedName'),
         },
     ])
 
@@ -146,7 +145,7 @@ export const showAnsibleJobDetails = (node, details, t) => {
 
         details.push({
             type: 'label',
-            labelKey: 'description.ansible.job.url',
+            labelKey: t('Ansible Tower Job URL'),
         })
 
         details.push({
@@ -180,7 +179,7 @@ export const showAnsibleJobDetails = (node, details, t) => {
         value: _.get(jobStatus, 'message', '') === '' ? t('description.ansible.job.status.empty') : jobStatus.message,
         status: getStatusFromPulse(jobStatus.pulse),
     })
-    _.get(node, 'specs.raw.spec.k8sJob.message') &&
+    _.get(node, 'specs.raw.status.k8sJob.message') &&
         details.push({
             labelValue: t('prop.details.section'),
             value: t('description.ansible.job.status.debug'),

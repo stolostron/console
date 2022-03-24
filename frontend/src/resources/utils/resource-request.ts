@@ -148,22 +148,15 @@ export async function createResources(
             abortController?.signal.addEventListener('abort', requestResult.abort)
             try {
                 await requestResult.promise
+                createdResources.push(resource)
             } finally {
                 abortController?.signal.removeEventListener('abort', requestResult.abort)
             }
         }
     } catch (err) {
-        if (options?.dryRun !== true) {
-            if (options?.deleteCreatedOnError) {
-                if (createResource.length) {
-                    for (const createdResource of createdResources) {
-                        try {
-                            deleteResource(createdResource).promise.catch(noop)
-                        } catch (err) {
-                            // Do nothing
-                        }
-                    }
-                }
+        if (options?.dryRun !== true && options?.deleteCreatedOnError) {
+            for (const createdResource of createdResources) {
+                deleteResource(createdResource).promise.catch(noop)
             }
         }
         throw err

@@ -15,6 +15,7 @@ import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { PolicySet } from '../../../resources/policy-set'
 import { GovernanceCreatePolicysetEmptyState } from '../components/GovernanceEmptyState'
@@ -22,66 +23,51 @@ import CardViewToolbarFilter from './components/CardViewToolbarFilter'
 import CardViewToolbarSearch from './components/CardViewToolbarSearch'
 import PolicySetCard from './components/PolicySetCard'
 
-function clusterViolationFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
-    return (
-        policySet.status.results.filter(
-            (result) => result.clusters && result.clusters?.some((cluster) => cluster.compliant === 'NonCompliant')
-        ).length > 0
-    )
+function violationFilterFn(policySet: PolicySet) {
+    if (!policySet.status) {
+        return false
+    }
+    return policySet.status.compliant === 'NonCompliant'
 }
-function clusterNonViolationFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
-    return policySet.status.results.every((result) => {
-        return (result.clusters && result.clusters.every((cluster) => cluster.compliant !== 'NonCompliant')) ?? false
-    })
+function nonViolationFilterFn(policySet: PolicySet) {
+    if (!policySet.status) {
+        return false
+    }
+    return policySet.status.compliant === 'Compliant'
 }
-function policyViolationFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
-    return policySet.status.results.filter((result) => result.compliant === 'NonCompliant').length > 0
-}
-function policyNonViolationFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
-    return policySet.status.results.every((result) => {
-        return (result && result.compliant && result.compliant !== 'NonCompliant') ?? false
-    })
-}
-function policyUnknownFilterFn(policySet: PolicySet) {
-    if (!policySet.status) return false
-    return policySet.status.results.filter((result) => !result.compliant).length > 0
+function unknownStatusFilterFn(policySet: PolicySet) {
+    if (!policySet.status) {
+        return true
+    }
+    return !policySet.status.compliant
 }
 
-function getPresetURIFilters() {
+function getPresetURIFilters(initialSearch: string | undefined) {
     let presetNames: string[] = [],
         presetNs: string[] = []
-    const urlParams = decodeURIComponent(window.location.search)?.replace('?', '')?.split('&') ?? []
-    urlParams.forEach((param) => {
-        const paramKey = param.split('=')[0]
-        const paramValue = param.split('=')[1]
-        switch (paramKey) {
-            case 'names':
-                presetNames = JSON.parse(paramValue)
-                break
-            case 'namespaces':
-                presetNs = JSON.parse(paramValue)
-                break
-        }
-    })
+    const urlParams = initialSearch?.replace('?', '')?.split('&') ?? []
+    if (urlParams[0] !== '') {
+        const parsed = JSON.parse(urlParams[0])
+        presetNames = parsed.name
+        presetNs = parsed.namespace
+    }
     return { presetNames, presetNs }
 }
 
 export default function PolicySetsPage() {
     const { t } = useTranslation()
-    const { presetNames, presetNs } = getPresetURIFilters()
+    const presets = transformBrowserUrlToFilterPresets(window.location.search)
+    const { presetNames, presetNs } = getPresetURIFilters(presets.initialSearch)
     const [policySets] = useRecoilState(policySetsState)
     const [searchFilter, setSearchFilter] = useState<Record<string, string[]>>({
         Name: presetNames,
         Namespace: presetNs,
     })
-    const [violationFilters, setViolationFilters] = useState<string[]>([])
+    const [violationFilters, setViolationFilters] = useState<string[]>(presets.initialFilters?.violation ?? [])
     const [page, setPage] = useState<number>(1)
     const [perPage, setPerPage] = useState<number>(10)
     const [filteredPolicySets, setFilteredPolicySets] = useState<PolicySet[]>(policySets)
+    const [selectedCardID, setSelectedCardID] = useState<string>('')
 
     const updatePerPage = useCallback(
         (newPerPage: number) => {
@@ -100,49 +86,34 @@ export default function PolicySetsPage() {
             if (violationFilters.length === 0) {
                 return true
             }
-            let clusterFilterMatch =
-                violationFilters.includes('cluster-violation') || violationFilters.includes('cluster-no-violation')
-                    ? false
-                    : true
-            let policyFilterMatch =
-                violationFilters.includes('policy-violation') ||
-                violationFilters.includes('policy-no-violation') ||
-                violationFilters.includes('policy-unknown')
+            let filterMatch =
+                violationFilters.includes('violation') ||
+                violationFilters.includes('no-violation') ||
+                violationFilters.includes('no-status')
                     ? false
                     : true
 
             for (const filter of violationFilters) {
                 switch (filter) {
-                    case 'cluster-violation':
-                        if (clusterViolationFilterFn(policySet)) {
-                            clusterFilterMatch = true
+                    case 'violation':
+                        if (violationFilterFn(policySet)) {
+                            filterMatch = true
                         }
                         break
-                    case 'cluster-no-violation':
-                        if (clusterNonViolationFilterFn(policySet)) {
-                            clusterFilterMatch = true
+                    case 'no-violation':
+                        if (nonViolationFilterFn(policySet)) {
+                            filterMatch = true
                         }
                         break
-                    case 'policy-violation':
-                        if (policyViolationFilterFn(policySet)) {
-                            policyFilterMatch = true
-                        }
-                        break
-                    case 'policy-no-violation':
-                        if (policyNonViolationFilterFn(policySet)) {
-                            policyFilterMatch = true
-                        }
-                        break
-                    case 'policy-unknown':
-                        if (policyUnknownFilterFn(policySet)) {
-                            policyFilterMatch = true
+                    case 'no-status':
+                        if (unknownStatusFilterFn(policySet)) {
+                            filterMatch = true
                         }
                         break
                 }
             }
 
-            // AND different group filter selections
-            return clusterFilterMatch && policyFilterMatch
+            return filterMatch
         })
 
         // multi values are OR, multi attributes are AND
@@ -151,7 +122,8 @@ export default function PolicySetsPage() {
             if (searchFilter['Name'] && searchFilter['Name'].length > 0) {
                 match = searchFilter['Name'].indexOf(policySet.metadata.name) > -1
                 if (!match) return false
-            } else if (searchFilter['Namespace'] && searchFilter['Namespace'].length > 0) {
+            }
+            if (searchFilter['Namespace'] && searchFilter['Namespace'].length > 0) {
                 match = searchFilter['Namespace'].indexOf(policySet.metadata.namespace) > -1
                 if (!match) return false
             }
@@ -186,18 +158,22 @@ export default function PolicySetsPage() {
         }
     }, [page, actualPage])
 
-    const policySetNames: string[] = useMemo(
-        () => policySets.map((policySet: PolicySet) => policySet.metadata.name),
-        [policySets]
-    )
+    const uniquePolicySetNames: string[] = useMemo(() => {
+        const policySetNames = policySets.map((policySet: PolicySet) => policySet.metadata.name)
+        return policySetNames.filter((p, idx) => {
+            return policySetNames.indexOf(p) === idx
+        })
+    }, [policySets])
+
     const uniqueNs: string[] = useMemo(() => {
         const policySetNamespaces: string[] = policySets.map((policySet: PolicySet) => policySet.metadata.namespace)
         return policySetNamespaces.filter((p, idx) => {
             return policySetNamespaces.indexOf(p) === idx
         })
     }, [policySets])
+
     const searchData: any = {
-        Name: policySetNames,
+        Name: uniquePolicySetNames,
         Namespace: uniqueNs,
     }
     const searchDataKeyNames: string[] = ['Name', 'Namespace']
@@ -214,7 +190,10 @@ export default function PolicySetsPage() {
                         <Fragment>
                             <ToolbarGroup variant="filter-group">
                                 <ToolbarItem variant="search-filter">
-                                    <CardViewToolbarFilter setViolationFilters={setViolationFilters} />
+                                    <CardViewToolbarFilter
+                                        setViolationFilters={setViolationFilters}
+                                        preSelectedFilters={violationFilters}
+                                    />
                                 </ToolbarItem>
                                 <ToolbarItem variant="search-filter">
                                     <CardViewToolbarSearch
@@ -250,11 +229,17 @@ export default function PolicySetsPage() {
                 ) : (
                     <PageSection isFilled isWidthLimited>
                         <AcmMasonry minSize={400}>
-                            {/* Need to compute all cards here then slice. The PolicySet card render uses usePolicySetSummary which includes a react hook.
+                            {/* Need to compute all cards here then slice. The PolicySet card render uses react hooks.
                         So paging to a page with less cards than the previous causes a react hook error if rendered in time. */}
                             {filteredPolicySets
                                 .map((policyset: PolicySet) => {
-                                    return <PolicySetCard policySet={policyset} />
+                                    return (
+                                        <PolicySetCard
+                                            policySet={policyset}
+                                            selectedCardID={selectedCardID}
+                                            setSelectedCardID={setSelectedCardID}
+                                        />
+                                    )
                                 })
                                 .slice((actualPage - 1) * perPage, (actualPage - 1) * perPage + perPage)}
                         </AcmMasonry>

@@ -176,6 +176,10 @@ export const setAvailableConnections = (control, secrets) => {
         if (replacements['osServiceAccount.json']) {
             replacements['osServiceAccountJson'] = replacements['osServiceAccount.json']
         }
+        // RHV
+        if (replacements['ovirt_ca_bundle']) {
+            replacements['ovirtCaBundle'] = replacements['ovirt_ca_bundle']
+        }
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
         control.noHandlebarReplacements = true
@@ -511,18 +515,8 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
 }
 
 export const isHidden_gt_OCP46 = (control, controlData) => {
-    const singleNodeFeatureFlag = controlData.find(({ id }) => id === 'singleNodeFeatureFlag')
     const imageSet = controlData.find(({ id }) => id === 'imageSet')
-    if (
-        singleNodeFeatureFlag &&
-        singleNodeFeatureFlag.active &&
-        imageSet &&
-        imageSet.active &&
-        imageSet.active.includes('release:4.6')
-    ) {
-        return false
-    }
-    return true
+    return !(imageSet && imageSet.active && imageSet.active.includes('release:4.6'))
 }
 
 export const isHidden_SNO = (control, controlData) => {

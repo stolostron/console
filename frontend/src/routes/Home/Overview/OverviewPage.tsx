@@ -29,7 +29,7 @@ import {
     applicationsState,
     argoApplicationsState,
     managedClustersState,
-    policiesState,
+    usePolicies,
 } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -38,41 +38,14 @@ import { ClusterManagementAddOn } from '../../../resources/cluster-management-ad
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery, useSearchResultItemsLazyQuery } from '../Search/search-sdk/search-sdk'
-
-export function mapProviderFromLabel(provider: string): Provider {
-    switch (provider.toLowerCase()) {
-        case 'amazon':
-            return Provider.aws
-        case 'azure':
-            return Provider.azure
-        case 'baremetal':
-            return Provider.baremetal
-        case 'google':
-            return Provider.gcp
-        case 'ibm':
-            return Provider.ibm
-        case 'ibmpowerplatform':
-            return Provider.ibmpower
-        case 'ibmzplatform':
-            return Provider.ibmz
-        case 'redhat':
-            return Provider.redhatcloud
-        case 'vmware':
-        case 'vsphere':
-            return Provider.vmware
-        case 'openstack':
-            return Provider.openstack
-        default:
-            return Provider.other
-    }
-}
+import { getProvider } from '../../../resources'
 
 function getClusterSummary(clusters: any, selectedCloud: string, setSelectedCloud: Dispatch<SetStateAction<string>>) {
     const clusterSummary = clusters.reduce(
         (prev: any, curr: any) => {
             // Data for Providers section.
             const cloudLabel = curr.metadata?.labels?.cloud || ''
-            const cloud = mapProviderFromLabel(cloudLabel)
+            const cloud = getProvider(curr) || Provider.other
             const provider = prev.providers.find((p: any) => p.provider === cloud)
             if (provider) {
                 provider.clusterCount = provider.clusterCount + 1
@@ -234,7 +207,7 @@ export default function OverviewPage() {
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
     const [managedClusters] = useRecoilState(managedClustersState)
-    const [policies] = useRecoilState(policiesState)
+    const policies = usePolicies()
     const [apps] = useRecoilState(applicationsState)
     const [argoApps] = useRecoilState(argoApplicationsState)
     useEffect(() => setRoute(AcmRoute.Overview), [setRoute])
@@ -651,7 +624,12 @@ export default function OverviewPage() {
                                         title: `${policyReportItems.length}`,
                                         subTitle: t('Clusters with issues'),
                                     }}
-                                    colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
+                                    colorScale={[
+                                        'var(--pf-global--danger-color--100)',
+                                        'var(--pf-global--palette--orange-300)',
+                                        'var(--pf-global--palette--orange-200)',
+                                        'var(--pf-global--warning-color--100)',
+                                    ]}
                                 />
                             </AcmChartGroup>
                         )}

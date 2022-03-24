@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
-import { PageSection } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@stolostron/ui-components'
+import { AcmToastContext } from '@stolostron/ui-components'
 import moment from 'moment-timezone'
+import { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
+    applicationSetsState,
     channelsState,
     gitOpsClustersState,
     managedClusterSetBindingsState,
@@ -19,6 +20,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
 import {
+    ApplicationSetKind,
     createResources,
     getGitChannelBranches,
     getGitChannelPaths,
@@ -26,56 +28,15 @@ import {
     unpackProviderConnection,
 } from '../../../resources'
 
-const Portals = Object.freeze({
-    editBtn: 'edit-button-portal-id',
-    createBtn: 'create-button-portal-id',
-    cancelBtn: 'cancel-button-portal-id',
-})
-
 export default function CreateArgoApplicationSetPage() {
-    const { t } = useTranslation()
-
-    // create portals for buttons in header
-    const switches = (
-        <div className="switch-controls">
-            <div id={Portals.editBtn} />
-        </div>
-    )
-
-    const portals = (
-        <div className="portal-controls">
-            <div id={Portals.cancelBtn} />
-            <div id={Portals.createBtn} />
-        </div>
-    )
-
-    return (
-        <AcmPage
-            header={
-                <AcmPageHeader
-                    title={t('Create application')}
-                    breadcrumb={[
-                        { text: t('Applications'), to: NavigationPath.applications },
-                        { text: t('Create application'), to: '' },
-                    ]}
-                    switches={switches}
-                    actions={portals}
-                />
-            }
-        >
-            <AcmErrorBoundary>
-                <AcmPageContent id="create-application">
-                    <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
-                        <CreateApplicationArgo />
-                    </PageSection>
-                </AcmPageContent>
-            </AcmErrorBoundary>
-        </AcmPage>
-    )
+    return <CreateApplicationArgo />
 }
 
 export function CreateApplicationArgo() {
+    const { t } = useTranslation()
     const history = useHistory()
+    const [applicationSets] = useRecoilState(applicationSetsState)
+    const toast = useContext(AcmToastContext)
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
     const [channels] = useRecoilState(channelsState)
@@ -104,23 +65,33 @@ export function CreateApplicationArgo() {
 
     return (
         <ArgoWizard
-            addClusterSets={NavigationPath.clusterSets}
+            createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
             ansibleCredentials={availableAnsibleCredentials}
             argoServers={availableArgoNS}
             namespaces={availableNamespace}
+            applicationSets={applicationSets}
             placements={placements}
             clusters={managedClusters}
             clusterSetBindings={managedClusterSetBindings}
-            onCancel={() => history.push('.')}
             channels={channels}
             getGitRevisions={getGitChannelBranches}
             getGitPaths={getGitChannelPaths}
-            onSubmit={(resources) =>
-                createResources(resources as IResource[]).then((error) => {
+            onCancel={() => history.push(NavigationPath.applications)}
+            onSubmit={(data) => {
+                const resources = data as IResource[]
+                return createResources(resources).then(() => {
+                    const applicationSet = resources.find((resource) => resource.kind === ApplicationSetKind)
+                    if (applicationSet) {
+                        toast.addAlert({
+                            title: t('Application set created'),
+                            message: t('{{name}} was successfully created.', { name: applicationSet.metadata?.name }),
+                            type: 'success',
+                            autoClose: true,
+                        })
+                    }
                     history.push(NavigationPath.applications)
-                    return error
                 })
-            }
+            }}
             timeZones={timeZones}
         />
     )

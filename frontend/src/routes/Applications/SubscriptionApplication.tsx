@@ -48,7 +48,7 @@ const Portals = Object.freeze({
 
 export default function CreateSubscriptionApplicationPage() {
     const { t } = useTranslation()
-    const [title, setTitle] = useState<string>(t('Create Application'))
+    const [title, setTitle] = useState<string>(t('Create application'))
 
     // create portals for buttons in header
     const switches = (
@@ -118,7 +118,11 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                         type: 'success',
                         autoClose: true,
                     })
-                    history.push(NavigationPath.applications)
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', applicationResourceJSON.metadata.namespace as string)
+                            .replace(':name', applicationResourceJSON.metadata.name as string) + location.search
+                    )
                 })
                 .catch((err) => {
                     const errorInfo = getErrorInfo(err)
@@ -210,8 +214,8 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
 
     function getEditApplication(location: Location) {
         const pathname = location.pathname
-        if (pathname.includes('/edit')) {
-            const params = pathname.replace(/(.*)edit\//, '')
+        if (pathname.includes('/edit/subscription')) {
+            const params = pathname.replace(/(.*)edit\/subscription\//, '')
             const [namespace, name] = params.split('/')
             if (name && namespace) {
                 return {

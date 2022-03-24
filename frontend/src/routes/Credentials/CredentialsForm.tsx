@@ -278,6 +278,7 @@ export function CredentialsForm(props: {
 
     // Red Hat Virtualization
     const [ovirtUrl, setOvirtUrl] = useState(() => providerConnection?.stringData?.ovirt_url ?? '')
+    const [ovirtFqdn, setOvirtFqdn] = useState(() => providerConnection?.stringData?.ovirt_fqdn ?? '')
     const [ovirtUsername, setOvirtUsername] = useState(() => providerConnection?.stringData?.ovirt_username ?? '')
     const [ovirtPassword, setOvirtPassword] = useState(() => providerConnection?.stringData?.ovirt_password ?? '')
     const [ovirtCABundle, setOvirtCABundle] = useState(() => providerConnection?.stringData?.ovirt_ca_bundle ?? '')
@@ -425,6 +426,7 @@ export function CredentialsForm(props: {
                 break
             case Provider.redhatvirtualization:
                 secret.stringData!.ovirt_url = ovirtUrl
+                secret.stringData!.ovirt_fqdn = ovirtFqdn
                 secret.stringData!.ovirt_username = ovirtUsername
                 secret.stringData!.ovirt_password = ovirtPassword
                 secret.stringData!.ovirt_ca_bundle = ovirtCABundle
@@ -943,6 +945,19 @@ export function CredentialsForm(props: {
                         // validation: (value) => validateCloudsYaml(value, cloud, t),
                     },
                     {
+                        id: 'ovirt_fqdn',
+                        isHidden: credentialsType !== Provider.redhatvirtualization,
+                        type: 'Text',
+                        label: t('credentialsForm.ovirt_fqdn.label'),
+                        placeholder: t('credentialsForm.ovirt_fqdn.placeholder'),
+                        labelHelp: t('credentialsForm.ovirt_fqdn.labelHelp'),
+                        value: ovirtFqdn,
+                        onChange: setOvirtFqdn,
+                        isRequired: true,
+                        isSecret: false,
+                        // validation: (value) => validateCloudsYaml(value, cloud, t),
+                    },
+                    {
                         id: 'ovirt_username',
                         isHidden: credentialsType !== Provider.redhatvirtualization,
                         type: 'Text',
@@ -972,12 +987,13 @@ export function CredentialsForm(props: {
                         id: 'ovirt_ca_bundle',
                         isHidden: credentialsType !== Provider.redhatvirtualization,
                         type: 'TextArea',
-                        label: t('credentialsForm.additionalTrustBundle.label'),
-                        placeholder: t('credentialsForm.additionalTrustBundle.placeholder'),
-                        labelHelp: t('credentialsForm.additionalTrustBundle.labelHelp'),
+                        label: t('credentialsForm.ovirt_ca_bundle.label'),
+                        placeholder: t('credentialsForm.ovirt_ca_bundle.placeholder'),
+                        labelHelp: t('credentialsForm.ovirt_ca_bundle.labelHelp'),
                         value: ovirtCABundle,
                         onChange: setOvirtCABundle,
                         isRequired: true,
+                        validation: (value) => validateCertificate(value, t),
                     },
                 ],
             },
@@ -1396,7 +1412,8 @@ export function CredentialsForm(props: {
                 'Secret[0].stringData.token',
                 'Secret[0].stringData.ocmAPIToken',
                 'Secret[0].stringData.additionalTrustBundle',
-                'Secret[0].stringData.ovirt_password',
+                'Secret[0].stringData.ovirt_ca_bundle',
+                'Secret[0].stringData.ovirt-config.yaml',
                 ['Secret', '0', 'stringData', 'osServicePrincipal.json'],
                 ['Secret', '0', 'stringData', 'osServiceAccount.json'],
                 ['Secret', '0', 'stringData', 'clouds.yaml'],

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, includes, concat, uniqBy, filter, keyBy, cloneDeep } from 'lodash'
+import { get, includes, concat, uniqBy, filter, keyBy, cloneDeep, groupBy } from 'lodash'
 
 import { createChildNode, addClusters } from './utils'
 
@@ -17,7 +17,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
     const allAppClusters = application.allClusters ? application.allClusters : []
     const appId = `application--${name}`
     nodes.push({
-        name,
+        name: '',
         namespace,
         type: 'application',
         id: appId,
@@ -39,13 +39,11 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
 
     // get clusters names
     let managedClusterNames = managedClusters.map((cluster) => {
-        return cluster?.metadata?.name
+        return cluster?.name
     })
     // if application has subscriptions
-    let parentId
     let clusterId
     if (application.subscriptions) {
-        const createdClusterElements = new Set()
         application.subscriptions.forEach((subscription) => {
             // get cluster placement if any
             const ruleDecisionMap = {}
@@ -74,41 +72,42 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
                 ruleDecisionMap[localClusterName] = localClusterName
             }
             const ruleClusterNames = Object.keys(ruleDecisionMap)
+
+            // get source
+            const ann = get(subscription, 'metadata.annotations', {})
+            let source =
+                ann['apps.open-cluster-management.io/git-path'] ||
+                ann['apps.open-cluster-management.io/github-path'] ||
+                ann['apps.open-cluster-management.io/bucket-path'] ||
+                get(subscription, 'spec.packageOverrides[0].packageName') ||
+                ''
+            source = source.split('/').pop()
+
+            // add cluster nodes
+            clusterId = addClusters(appId, subscription, source, ruleClusterNames, managedClusterNames, links, nodes)
+
             const isRulePlaced = ruleClusterNames.length > 0
 
             // add subscription node
-            parentId = addSubscription(appId, subscription, isRulePlaced, links, nodes)
+            const subscriptionId = addSubscription(clusterId, subscription, isRulePlaced, links, nodes)
 
             // add rules node
             if (subscription.rules) {
-                addSubscriptionRules(parentId, subscription, links, nodes)
+                addSubscriptionRules(clusterId, subscription, links, nodes)
             }
 
-            // if no cluster found by the placement, use a default empty cluster name so that the deployables are parsed and shown
-            let clusterShapes = [['']]
-            if (ruleClusterNames.length > 1) {
-                clusterShapes = [ruleClusterNames]
-            } else if (ruleClusterNames.length === 1) {
-                clusterShapes = ruleClusterNames.map((cn) => [cn])
+            // add prehooks
+            if (subscription.prehooks && subscription.prehooks.length > 0) {
+                addSubscriptionHooks(subscriptionId, subscription, links, nodes, true)
+            }
+            if (subscription.posthooks && subscription.posthooks.length > 0) {
+                addSubscriptionHooks(subscriptionId, subscription, links, nodes, false)
             }
 
-            // add cluster nodes
-            clusterShapes.forEach((clusterNames) => {
-                clusterId = addClusters(
-                    parentId,
-                    createdClusterElements,
-                    subscription,
-                    clusterNames,
-                    managedClusterNames,
-                    links,
-                    nodes
-                )
-
-                // add deployed resource nodes using subscription report
-                if (subscription.report) {
-                    processReport(subscription.report, clusterId, links, nodes, relatedResources)
-                }
-            })
+            // add deployed resource nodes using subscription report
+            if (subscription.report) {
+                processReport(subscription.report, subscriptionId, links, nodes, relatedResources)
+            }
         })
     }
 
@@ -167,17 +166,46 @@ const addSubscriptionRules = (parentId, subscription, links, nodes) => {
     })
 }
 
+const addSubscriptionHooks = (parentId, subscription, links, nodes, isPreHook) => {
+    const hookList = isPreHook ? subscription.prehooks : subscription.posthooks
+    hookList.forEach((hook) => {
+        const {
+            metadata: { name, namespace },
+            kind,
+        } = hook
+        const type = kind.toLowerCase()
+        const memberId = `member--deployed-resource--${parentId}--${namespace}--${name}--${type}`
+        hook.hookType = isPreHook ? 'pre-hook' : 'post-hook'
+
+        nodes.push({
+            name,
+            namespace,
+            type,
+            id: memberId,
+            uid: memberId,
+            specs: { isDesign: false, raw: hook },
+        })
+        links.push({
+            from: { uid: isPreHook ? memberId : parentId },
+            to: { uid: isPreHook ? parentId : memberId },
+            type: '',
+            specs: { isDesign: false },
+        })
+    })
+}
+
 const processReport = (report, clusterId, links, nodes, relatedResources) => {
     // for each resource, add what it's related to
     report = cloneDeep(report)
+    const resources = report.resources || []
     if (relatedResources) {
-        report.resources.forEach((resource) => {
+        resources.forEach((resource) => {
             const { name, namespace } = resource
             resource.template = relatedResources[`${name}-${namespace}`]
         })
     }
 
-    const serviceOwners = filter(report.resources, (obj) => {
+    const serviceOwners = filter(resources, (obj) => {
         const kind = get(obj, 'kind', '')
         return includes(['Route', 'Ingress', 'StatefulSet'], kind)
     })
@@ -185,7 +213,7 @@ const processReport = (report, clusterId, links, nodes, relatedResources) => {
     // process route and service first
     const serviceMap = processServiceOwner(clusterId, serviceOwners, links, nodes, relatedResources)
 
-    const services = filter(report.resources, (obj) => {
+    const services = filter(resources, (obj) => {
         const kind = get(obj, 'kind', '')
         return includes(['Service'], kind)
     })
@@ -194,14 +222,30 @@ const processReport = (report, clusterId, links, nodes, relatedResources) => {
     processServices(clusterId, services, links, nodes, serviceMap)
 
     // then the rest
-    const other = filter(report.resources, (obj) => {
+    const others = filter(resources, (obj) => {
         const kind = get(obj, 'kind', '')
         return !includes(['Route', 'Ingress', 'StatefulSet', 'Service'], kind)
     })
 
-    other.forEach((resource) => {
+    processMultiples(others).forEach((resource) => {
         addSubscriptionDeployedResource(clusterId, resource, links, nodes)
     })
+}
+
+const processMultiples = (resources) => {
+    if (resources.length > 5) {
+        const groupByKind = groupBy(resources, 'kind')
+        return Object.entries(groupByKind).map(([kind, _resources]) => {
+            return {
+                kind,
+                name: '',
+                namespace: '',
+                resources: _resources,
+                resourceCount: _resources.length,
+            }
+        })
+    }
+    return resources
 }
 
 // Route, Ingress, StatefulSet
@@ -240,7 +284,7 @@ const processServiceOwner = (clusterId, serviceOwners, links, nodes, relatedReso
                     }
                     break
             }
-        } else {
+        } else if (serviceOwners.length === 1) {
             servicesMap[`serviceOwner${inx}`] = node.id
         }
     })
@@ -270,10 +314,11 @@ const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
               parentId,
               parentName: parentNode.name,
               parentType: parentNode.type,
+              parentSpecs: parentNode.specs,
           }
         : undefined
 
-    const { name, namespace, template } = resource
+    const { name, namespace, template, resources, resourceCount } = resource
     const kind = resource.kind.toLowerCase()
     const memberId = `member--deployed-resource--${parentId}--${namespace}--${name}--${kind}`
 
@@ -286,6 +331,8 @@ const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
         specs: {
             parent: parentObject,
             template,
+            resources,
+            resourceCount,
         },
     }
 
@@ -315,12 +362,16 @@ export const createReplicaChild = (parentObject, template, links, nodes) => {
         if (template && template.related) {
             const relatedMap = keyBy(template.related, 'kind')
             if (relatedMap['replicaset']) {
-                return createChildNode(parentObject, type, links, nodes)
+                const pNode = createChildNode(parentObject, type, links, nodes)
+                return createChildNode(pNode, 'pod', links, nodes)
             } else if (relatedMap['pod']) {
                 return createChildNode(parentObject, 'pod', links, nodes)
             }
         } else {
-            return createChildNode(parentObject, type, links, nodes)
+            const pNode = createChildNode(parentObject, type, links, nodes)
+            if (type === 'replicaset') {
+                return createChildNode(pNode, 'pod', links, nodes)
+            }
         }
     }
 }

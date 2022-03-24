@@ -14,6 +14,7 @@ import React from 'react'
 import _ from 'lodash'
 import queryString from 'query-string'
 import { isYAMLEditAvailable } from './search-helper'
+import { getSearchLink } from '../../../helpers/resource-helper'
 /*
  * UI helpers to help with data transformations
  * */
@@ -83,24 +84,6 @@ export const getChannelLabel = (chType, count, t) => {
 }
 
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
-
-export const getSearchLink = (params = {}) => {
-    const { properties, showRelated } = params
-    let textsearch = ''
-
-    _.entries(properties).forEach(([key, value]) => {
-        textsearch = `${textsearch}${textsearch ? ' ' : ''}${key}:${Array.isArray(value) ? value.join() : value}`
-    })
-
-    const queryParams = []
-    if (textsearch) {
-        queryParams.push(`filters={"textsearch":"${encodeURIComponent(textsearch)}"}`)
-    }
-    if (showRelated) {
-        queryParams.push(`showrelated=${showRelated}`)
-    }
-    return `/search${queryParams.length ? '?' : ''}${queryParams.join('&')}`
-}
 
 export const getEditLink = ({ name, namespace, kind, apiVersion, cluster = 'local-cluster' }) => {
     return `/resources?${queryString.stringify({

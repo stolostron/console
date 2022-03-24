@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { waitForSelector, waitForText } from '../../../../lib/test-util'
+import { waitForText } from '../../../../lib/test-util'
 import { Placement, PlacementBinding, PlacementRule, PolicySet } from '../../../../resources'
 import PolicySetCard from './PolicySetCard'
 
@@ -26,18 +26,6 @@ const policySet: PolicySet = {
     status: {
         compliant: 'Compliant',
         placement: [{ placement: 'policy-set-with-1-placement', placementBinding: 'policy-set-with-1-placement' }],
-        results: [
-            {
-                clusters: [{ clusterName: 'local-cluster', clusterNamespace: 'local-cluster', compliant: 'Compliant' }],
-                compliant: 'Compliant',
-                policy: 'policy-set-with-1-placement-policy-1',
-            },
-            {
-                clusters: [{ clusterName: 'local-cluster', clusterNamespace: 'local-cluster', compliant: 'Compliant' }],
-                compliant: 'Compliant',
-                policy: 'policy-set-with-1-placement-policy-2',
-            },
-        ],
     },
 }
 
@@ -48,10 +36,10 @@ export const mockPlacementBindings: PlacementBinding[] = []
 
 describe('Policy Set Card', () => {
     test('Should render Policy Set Card content correctly', async () => {
-        const { container } = render(
+        render(
             <RecoilRoot>
                 <MemoryRouter>
-                    <PolicySetCard policySet={policySet} />
+                    <PolicySetCard policySet={policySet} selectedCardID={''} setSelectedCardID={() => {}} />
                 </MemoryRouter>
             </RecoilRoot>
         )
@@ -60,15 +48,7 @@ describe('Policy Set Card', () => {
         await waitForText('policy-set-with-1-placement')
         // wait card desc - PolicySet desc
         await waitForText('Policy set with a single Placement and PlacementBinding.')
-        // wait card cluster count - PolicySet desc
-        await waitForSelector(
-            container,
-            '#policyset-test-policy-set-with-1-placement-rule > div.pf-c-card__body > div > div:nth-child(2) > span'
-        )
-        // wait card policy count - PolicySet desc
-        await waitForSelector(
-            container,
-            '#policyset-test-policy-set-with-1-placement-rule > div.pf-c-card__body > div > div:nth-child(3) > span'
-        )
+        // wait card compliance status
+        await waitForText('No violations')
     })
 })

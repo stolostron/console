@@ -1,40 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { TextContent } from '@patternfly/react-core'
 import { AcmButton, AcmEmptyState } from '@stolostron/ui-components'
-import { TFunction } from 'i18next'
 import { Link } from 'react-router-dom'
-import { useTranslation } from '../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
+import { viewDocumentation } from '../../../lib/doc-util'
 
 // GovernanceCreatePolicysetEmptyState
-
-function viewDocumentation(doclink: string, t: TFunction) {
-    return (
-        <Text
-            component={TextVariants.a}
-            isVisitedLink
-            href={doclink}
-            target="_blank"
-            style={{
-                cursor: 'pointer',
-                display: 'inline-block',
-                padding: '15px 10px',
-                fontSize: '14px',
-            }}
-        >
-            {t('View documentation')} <ExternalLinkAltIcon />
-        </Text>
-    )
-}
 
 export function GovernanceCreatePolicyEmptyState() {
     const { t } = useTranslation()
     return (
         <AcmEmptyState
-            title={'Create policies to start monitoring cluster health'}
-            message={t('Use the following button to create a policy.')}
+            title={t("You don't have any policies")}
+            message={
+                <Trans
+                    i18nKey="Click <bold>Create policy</bold> to create your resource."
+                    components={{ bold: <strong /> }}
+                />
+            }
             action={
                 <div>
                     <AcmButton component={Link} variant="primary" to={NavigationPath.createPolicy}>
@@ -51,8 +36,13 @@ export function GovernanceManagePoliciesEmptyState() {
     const { t } = useTranslation()
     return (
         <AcmEmptyState
-            title={'Manage policies to start monitoring cluster health'}
-            message={t('Use the following button to manage policies.')}
+            title={t("You don't have any clusters reporting policy status")}
+            message={
+                <Trans
+                    i18nKey="Click <bold>Manage policies</bold> to manage your policies."
+                    components={{ bold: <strong /> }}
+                />
+            }
             action={
                 <div>
                     <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
@@ -69,12 +59,17 @@ export function GovernanceCreatePolicysetEmptyState() {
     const { t } = useTranslation()
     return (
         <AcmEmptyState
-            title={'Apply a policy set to multiple clusters'}
-            message={t('Use the following button to create a policy set.')}
+            title={"You don't have any policy sets"}
+            message={
+                <Trans
+                    i18nKey="Click <bold>Create policy set</bold> to create your resource."
+                    components={{ bold: <strong /> }}
+                />
+            }
             action={
                 <div>
                     <AcmButton component={Link} variant="primary" to={NavigationPath.createPolicySet}>
-                        {'Create policy set'}
+                        {t('Create policy set')}
                     </AcmButton>
                     <TextContent>{viewDocumentation(DOC_LINKS.POLICY_SETS, t)}</TextContent>
                 </div>

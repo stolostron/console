@@ -13,44 +13,23 @@
 import * as d3 from 'd3'
 import SVG from 'svg.js'
 import { dragLinks } from './linkHelper'
-import { attrs, styles, kubeNaming, titleBeautify, counterZoom, getTooltip } from './utilities'
-import _ from 'lodash'
+import { attrs, styles, kubeNaming, titleBeautify, counterZoom } from './utilities'
+import _, { get } from 'lodash'
 
 import { FilterResults, RELATED_OPACITY, NODE_RADIUS, NODE_SIZE } from '../constants.js'
 
-const TITLE_RADIUS = NODE_RADIUS + 28
+const TITLE_RADIUS = NODE_RADIUS + 16
 const textNodeStatus = 'text.nodeStatus'
+const textResourceCount = 'text.resourceCountText'
 const gNodeTitle = 'g.nodeTitle'
 const gNodeLabel = 'g.nodeLabel'
-const gClusterCountText = 'g.clusterCountText'
 const useNodeIcon = 'use.nodeIcon'
-const useClusterCountIcon = 'use.clusterCountIcon'
-const dotClusterCountIcon = '.clusterCountIcon'
-const useArgoAppCountIcon = 'use.argoAppCountIcon'
-const dotArgoAppCountIcon = '.argoAppCountIcon'
+const useNodeMultiplier = 'use.multiplier'
+const useResourceCountIcon = 'use.resourceCountIcon'
+const dotResourceCountIcon = '.resourceCountIcon'
+const STATUS_ICON_POSITION = { dx: -18, dy: 12, ddx: 0, width: 16, height: 16 }
+const COUNT_ICON_POSITION = { dx: 24, dy: 0, ddx: 6, width: 32, height: 24 }
 
-const hideTooltip = () => {
-    return {
-        display: 'none',
-        opacity: 0,
-    }
-}
-
-export const tooltip = d3
-    .select('body')
-    .append('div')
-    .attr('class', 'tooltip')
-    .call(styles, () => {
-        return hideTooltip()
-    })
-    .on('mouseover', () => {
-        tooltip.interrupt().style('opacity', 1)
-    })
-    .on('mouseleave', () => {
-        tooltip.call(styles, () => {
-            return hideTooltip()
-        })
-    })
 export default class NodeHelper {
     /**
      * Helper class to be used by TopologyDiagram.
@@ -101,53 +80,14 @@ export default class NodeHelper {
             })
             .style('opacity', 0.0)
             .on('click', (d) => {
-                tooltip.style('display', 'none')
                 nodeClickHandler(d)
-            })
-            // tooltip
-            .on('mouseover', ({ currentTarget }, { layout }) => {
-                const bb = currentTarget.getBoundingClientRect()
-                if (layout.tooltips && layout.tooltips.length > 0) {
-                    tooltip.style('display', undefined)
-                    tooltip.interrupt().transition().delay(200).duration(100).style('opacity', 1)
-                    tooltip
-                        .html(() => {
-                            return getTooltip(layout.tooltips)
-                        })
-                        .call(styles, (d, j, ts) => {
-                            const { width, height } = ts[j].getBoundingClientRect()
-                            if (navigator.userAgent.indexOf('Firefox') !== -1) {
-                                return {
-                                    top: bb.top - height + window.scrollY - 6 + 'px',
-                                    left: bb.left + (bb.width * 0.72) / 2 - (width * 1.02) / 2 + 'px',
-                                }
-                            } else {
-                                return {
-                                    top: bb.top - height + window.scrollY - 6 + 'px',
-                                    left: bb.left + bb.width / 2 - width / 2 + 'px',
-                                }
-                            }
-                        })
-                } else {
-                    tooltip.style('opacity', 0)
-                }
-            })
-            .on('mouseout', () => {
-                tooltip
-                    .transition()
-                    .delay(1000)
-                    .duration(100)
-                    .style('opacity', 0)
-                    .on('end', () => {
-                        tooltip.style('display', 'none')
-                    })
             })
 
         // node hover/select shape
-        this.createNodeHilites(newNodes)
+        this.createNodeSelect(newNodes)
 
-        // node pulse shape
-        this.createNodePulse(newNodes)
+        // node multiplier shape
+        this.updateNodeMultiplier(newNodes)
 
         // node shape
         this.createNodeShapes(newNodes, nodeDragHandler)
@@ -163,31 +103,25 @@ export default class NodeHelper {
         // update node icons
         this.updateNodeIcons()
 
-        // cluster count text
-        this.createClusterCountText(draw, nodes)
+        // update count icon
+        this.updateMultiplierCount()
     }
 
-    createNodePulse = (nodes) => {
-        nodes.append('use').call(attrs, () => {
-            return {
-                href: '#diagramShapes_pulse',
-                width: NODE_SIZE * 2,
-                height: NODE_SIZE * 2,
-                visibility: 'hidden',
-                tabindex: -1,
-                class: 'pulse',
-            }
-        })
-    }
-
-    createNodeHilites = (nodes) => {
-        nodes.append('use').call(attrs, () => {
-            return {
-                href: '#diagramShapes_circle',
-                width: NODE_SIZE - 4,
-                height: NODE_SIZE - 4,
-                tabindex: -1,
-                class: 'shadow',
+    createNodeSelect = (nodes) => {
+        nodes.append('use').call(attrs, (d) => {
+            const resourceCount = _.get(d, 'specs.resourceCount')
+            if (resourceCount > 1) {
+                return {
+                    href: '#diagramIcons_selectMultiplier',
+                    tabindex: -1,
+                    class: 'shadow selectMultiplier',
+                }
+            } else {
+                return {
+                    href: '#diagramShapes_select',
+                    tabindex: -1,
+                    class: 'shadow select',
+                }
             }
         })
     }
@@ -258,7 +192,7 @@ export default class NodeHelper {
 
                 // title
                 nodeTitleGroup.text((add) => {
-                    add.tspan(layout.title).addClass('counter-zoom title beg').newLine()
+                    add.tspan(layout.title).addClass('counter-zoom title beg')
                 })
 
                 return nodeTitleGroup.svg()
@@ -324,30 +258,104 @@ export default class NodeHelper {
             .call(this.layoutBackgroundRect)
     }
 
-    // Only for cluster nodes, put the cluster count text
-    createClusterCountText = (draw, nodes) => {
-        const clusterNode = nodes.filter((d) => {
-            const { layout } = d
-            return layout.type === 'cluster'
+    // update node icons
+    updateNodeIcons = () => {
+        const nodes = this.svg.select('g.nodes').selectAll('g.node')
+
+        // svg icons
+        nodes.selectAll(useNodeIcon).remove()
+        const svgIcons = nodes.selectAll(useNodeIcon).data(({ layout: { nodeIcons } }) => {
+            return nodeIcons
+                ? Object.values(nodeIcons).filter(({ icon }) => {
+                      return !!icon
+                  })
+                : []
         })
+        svgIcons
+            .enter()
+            .append('use')
+            .call(attrs, ({ icon, classType }) => {
+                return {
+                    href: `#diagramIcons_${icon}`,
+                    width: STATUS_ICON_POSITION.width,
+                    height: STATUS_ICON_POSITION.height,
+                    'pointer-events': 'none',
+                    tabindex: -1,
+                    class: `nodeIcon ${classType}`,
+                }
+            })
 
-        const clusterCountTextNodes = clusterNode.selectAll(gClusterCountText)
-        clusterCountTextNodes.remove()
+        // update disabled shape
+        nodes.selectAll('use.shape').classed('disabled', ({ layout: { isDisabled } }) => {
+            return isDisabled
+        })
+    }
 
-        clusterNode
-            .append('g')
-            .attr('class', 'clusterCountText')
-            .html(({ layout }) => {
-                const clusterCountTextGroup = draw.group()
-                // Generate text SVG on the fly
-                clusterCountTextGroup.text((add) => {
-                    add.tspan(layout.clusterCount)
-                        .addClass('count')
-                        .font({ fill: 'white', 'font-weight': 'bold' })
-                        .newLine()
-                })
+    // update node multiplier
+    updateNodeMultiplier = (nodes) => {
+        const multipliers = nodes.selectAll(useNodeMultiplier).data((d) => {
+            const resourceCount = _.get(d, 'specs.resourceCount')
+            return resourceCount > 1 ? [d] : []
+        })
+        multipliers.exit().remove()
+        multipliers
+            .enter()
+            .append('use')
+            .call(attrs, () => {
+                return {
+                    href: '#diagramShapes_multiplier',
+                    width: NODE_SIZE,
+                    height: NODE_SIZE,
+                    tabindex: -1,
+                    class: 'multiplier',
+                }
+            })
+            .call(d3.drag().on('drag', this.dragNode))
+    }
 
-                return clusterCountTextGroup.svg()
+    // Only for multiplier nodes, show the resource count
+    updateMultiplierCount = () => {
+        const nodes = this.svg.select('g.nodes').selectAll('g.node')
+        // count icon
+        const multiplierIcons = nodes.selectAll(useResourceCountIcon).data((d) => {
+            const resourceCount = _.get(d, 'specs.resourceCount')
+            return resourceCount > 1 ? [d] : []
+        })
+        multiplierIcons.exit().remove()
+        multiplierIcons
+            .enter()
+            .append('use')
+            .call(attrs, () => {
+                return {
+                    href: '#diagramIcons_clusterCount',
+                    width: COUNT_ICON_POSITION.width,
+                    height: COUNT_ICON_POSITION.height,
+                    'pointer-events': 'none',
+                    tabindex: -1,
+                    class: 'resourceCountIcon',
+                }
+            })
+
+        // count text
+        const multiplierText = nodes.selectAll(textResourceCount).data((d) => {
+            const resourceCount = _.get(d, 'specs.resourceCount')
+            return resourceCount > 1 ? [d] : []
+        })
+        multiplierText.exit().remove()
+        multiplierText
+            .enter()
+            .append('text')
+            .text((d) => {
+                return get(d, 'specs.resourceCount')
+            })
+            .call(attrs, () => {
+                return {
+                    'pointer-events': 'none',
+                    tabindex: -1,
+                    class: 'resourceCountText',
+                    'dominant-baseline': 'middle',
+                    'text-anchor': 'middle',
+                }
             })
             .call(d3.drag().on('drag', this.dragNode))
     }
@@ -366,119 +374,6 @@ export default class NodeHelper {
                         tabindex: -1,
                     }
                 })
-        })
-    }
-
-    // update node icons
-    updateNodeIcons = () => {
-        const nodes = this.svg.select('g.nodes').selectAll('g.node')
-
-        // svg icons
-        nodes.selectAll(useNodeIcon).remove()
-        const svgIcons = nodes.selectAll(useNodeIcon).data(({ layout: { nodeIcons } }) => {
-            return nodeIcons
-                ? Object.values(nodeIcons).filter(({ icon }) => {
-                      return !!icon
-                  })
-                : []
-        })
-        svgIcons
-            .enter()
-            .append('use')
-            .call(attrs, ({ icon, classType, width, height }) => {
-                return {
-                    href: `#diagramIcons_${icon}`,
-                    width: `${width}px`,
-                    height: `${height}px`,
-                    'pointer-events': 'none',
-                    tabindex: -1,
-                    class: `nodeIcon ${classType}`,
-                }
-            })
-
-        // special icon for the cluster node count
-        const clusterNode = this.svg
-            .select('g.nodes')
-            .selectAll('g.node')
-            .filter((d) => {
-                const { layout } = d
-                return layout.type === 'cluster'
-            })
-        const clusterSVGIcon = clusterNode.selectAll(useClusterCountIcon).data(({ layout: { clusterCountIcon } }) => {
-            return clusterCountIcon ? [clusterCountIcon] : []
-        })
-        clusterSVGIcon
-            .enter()
-            .append('use')
-            .call(attrs, ({ icon, classType, width, height }) => {
-                return {
-                    href: `#diagramIcons_${icon}`,
-                    width: `${width}px`,
-                    height: `${height}px`,
-                    'pointer-events': 'none',
-                    tabindex: -1,
-                    class: `clusterCountIcon ${classType}`,
-                }
-            })
-
-        // png icons
-        nodes.selectAll('image.nodeIcon').remove()
-        const pngIcons = nodes.selectAll('image.nodeIcon').data(({ layout: { nodeIcons } }) => {
-            return nodeIcons
-                ? Object.values(nodeIcons).filter(({ href }) => {
-                      return !!href
-                  })
-                : []
-        })
-        pngIcons
-            .enter()
-            .append('image')
-            .call(attrs, ({ href, width, height }) => {
-                return {
-                    href: href,
-                    width: `${width}px`,
-                    height: `${height}px`,
-                    'pointer-events': 'none',
-                    tabindex: -1,
-                    class: 'nodeIcon',
-                }
-            })
-
-        // node status message
-        const nodeStatusT = nodes
-            .selectAll(textNodeStatus)
-            .data(({ layout: { y, scale, search, nodeStatus = '', textBBox, uid } }) => {
-                return nodeStatus ? [{ y, scale, search, nodeStatus, textBBox, uid }] : []
-            })
-        nodeStatusT.exit().remove()
-        nodeStatusT
-            .enter()
-            .append('text')
-            .text(({ nodeStatus }) => {
-                return Array.isArray(nodeStatus) ? nodeStatus[0] : nodeStatus
-            })
-            .call(attrs, ({ nodeStatus }) => {
-                return {
-                    'pointer-events': 'none',
-                    tabindex: -1,
-                    class: `nodeStatus ${Array.isArray(nodeStatus) ? 'red' : ''}`,
-                }
-            })
-            .append('tspan')
-            .text(({ nodeStatus }) => {
-                return Array.isArray(nodeStatus) ? `  ${nodeStatus[1]}` : ''
-            })
-            .call(attrs, () => {
-                return {
-                    'pointer-events': 'none',
-                    tabindex: -1,
-                    class: 'nodeStatus',
-                }
-            })
-
-        // update disabled shape
-        nodes.selectAll('use.shape').classed('disabled', ({ layout: { isDisabled } }) => {
-            return isDisabled
         })
     }
 
@@ -534,17 +429,18 @@ export default class NodeHelper {
                 return false
             })
 
-        // move pulse shape
-        nodes.selectAll('use.pulse').call(attrs, ({ layout, specs }) => {
+        // move multiplier shape
+        nodes.selectAll('use.multiplier').call(attrs, ({ layout, specs }) => {
             const { x = 0, y = 0, scale = 1, search = FilterResults.nosearch } = layout
-            const pulse = specs !== null && specs.pulse
-            const sz = NODE_SIZE * scale * 2 + 20
+            const multiplier = specs !== null && (specs.resourceCount || 0) > 1
+            const wz = NODE_SIZE * 2 * scale
+            const hz = NODE_SIZE * scale
             return {
-                width: sz,
-                height: sz,
-                transform: `translate(${x - sz / 2}, ${y - sz / 2})`,
-                visibility: pulse && search !== FilterResults.hidden ? 'visible' : 'hidden',
-                class: `pulse ${pulse}`,
+                width: wz,
+                height: hz,
+                transform: `translate(${x - wz / 2}, ${y - hz / 2})`,
+                visibility: multiplier && search !== FilterResults.hidden ? 'visible' : 'hidden',
+                class: 'multiplier',
             }
         })
 
@@ -552,6 +448,7 @@ export default class NodeHelper {
         visible.selectAll('use.shape').call(attrs, ({ layout }) => {
             const { x, y, scale = 1 } = layout
             const sz = NODE_SIZE * scale
+            console.log()
             return {
                 width: sz,
                 height: sz,
@@ -560,41 +457,49 @@ export default class NodeHelper {
         })
 
         // move highlight/select shape
-        visible.selectAll('use.shadow').call(attrs, ({ layout }) => {
+        visible.selectAll('use.select').call(attrs, ({ layout }) => {
             const { x, y, scale = 1 } = layout
-            const sz = NODE_SIZE * scale + 20
+            const sz = NODE_SIZE * scale + 8
             return {
                 width: sz,
                 height: sz,
                 transform: `translate(${x - sz / 2}, ${y - sz / 2})`,
             }
         })
+        visible.selectAll('use.selectMultiplier').call(attrs, ({ layout }) => {
+            const { x, y, scale = 1 } = layout
+            const wz = 66 * scale + 8
+            const sz = NODE_SIZE * scale + 8
+            return {
+                width: wz,
+                height: sz,
+                transform: `translate(${x - sz / 2}, ${y - sz / 2 - 2})`,
+            }
+        })
 
         // move icons
-        this.moveIcons(visible, '.nodeIcon')
+        this.moveIcons(visible, '.nodeIcon', STATUS_ICON_POSITION)
 
-        // move cluster count icon
-        this.moveIcons(nodeLayer, dotClusterCountIcon)
-
-        // move argo app count icon
-        this.moveIcons(nodeLayer, dotArgoAppCountIcon)
+        // move resource count icon
+        this.moveIcons(nodeLayer, dotResourceCountIcon, COUNT_ICON_POSITION)
 
         if (this.showsShapeTitles) {
             moveTitles(this.svg)
         }
         // move labels
         moveLabels(this.svg)
-        // move clusterCountText
-        moveClusterCountText(this.svg)
+
+        // move resourceCountText
+        moveResourceCountText(this.svg)
     }
 
-    moveIcons = (nodeLayer, iconClass) => {
-        nodeLayer.selectAll(iconClass).call(attrs, ({ dx, dy, width, height }, i, ns) => {
+    moveIcons = (nodeLayer, iconClass, { dx, dy, ddx, width, height }) => {
+        nodeLayer.selectAll(iconClass).call(attrs, (d, i, ns) => {
             const {
                 layout: { x = 0, y = 0, scale = 1 },
             } = d3.select(ns[i].parentNode).datum()
             return {
-                transform: `translate(${x + dx * scale - width / 2}, ${y + dy * scale - height / 2})`,
+                transform: `translate(${x + dx * scale - width / 2 + ddx}, ${y + dy * scale - height / 2})`,
             }
         })
     }
@@ -602,7 +507,6 @@ export default class NodeHelper {
     dragNode = (evt, dp) => {
         const { layout } = dp
         const node = d3.select(`#${dp.id}`)
-        tooltip.style('display', 'none')
 
         // don't consider it dragged until more then 5 pixels away from original
         if (!layout.undragged) {
@@ -621,11 +525,12 @@ export default class NodeHelper {
                 y: layout.y - layout.section.y,
             }
 
-            // drag pulse
-            node.selectAll('use.pulse').attr('transform', () => {
+            // drag multiplier
+            node.selectAll('use.multiplier').attr('transform', () => {
                 const { x, y, scale = 1 } = layout
-                const sz = NODE_SIZE * scale * 2 + 20
-                return `translate(${x - sz / 2}, ${y - sz / 2})`
+                const wz = NODE_SIZE * 2 * scale
+                const hz = NODE_SIZE * scale
+                return `translate(${x - wz / 2}, ${y - hz / 2})`
             })
 
             // drag shape
@@ -635,32 +540,24 @@ export default class NodeHelper {
                 return `translate(${x - sz / 2}, ${y - sz / 2})`
             })
 
-            // drag hilights
-            node.selectAll('use.shadow').attr('transform', () => {
+            // drag select
+            node.selectAll('use.select').attr('transform', () => {
                 const { x, y, scale = 1 } = layout
-                const sz = NODE_SIZE * scale + 20
+                const sz = NODE_SIZE * scale + 8
                 return `translate(${x - sz / 2}, ${y - sz / 2})`
             })
 
-            // drag icons
-            this.dragIcons(node, '.nodeIcon')
-
-            // drag cluster count icon
-            this.dragIcons(node, dotClusterCountIcon)
-
-            // drag argo app count icon
-            this.dragIcons(node, dotArgoAppCountIcon)
-
-            // drag status message
-            node.selectAll(textNodeStatus).call(attrs, ({ textBBox: { dy } }, i, ns) => {
-                const {
-                    layout: { x, y },
-                } = d3.select(ns[i].parentNode).datum()
-                return {
-                    x: x,
-                    y: y + dy,
-                }
+            node.selectAll('use.selectMultiplier').attr('transform', () => {
+                const { x, y, scale = 1 } = layout
+                const sz = NODE_SIZE * scale + 8
+                return `translate(${x - sz / 2}, ${y - sz / 2 - 2})`
             })
+
+            // drag icons
+            this.dragIcons(node, '.nodeIcon', STATUS_ICON_POSITION)
+
+            // drag resource count icon
+            this.dragIcons(node, dotResourceCountIcon, COUNT_ICON_POSITION)
 
             if (this.showsShapeTitles) {
                 // drag node title if any
@@ -682,33 +579,17 @@ export default class NodeHelper {
                 })
             }
 
-            //drag cluster count text
-            const clusterCountText = node.selectAll(gClusterCountText)
-            clusterCountText.each((d, i, ns) => {
-                d3.select(ns[i])
-                    .selectAll('text')
-                    .attr('x', () => {
-                        return layout.x + NODE_RADIUS - 2
-                    })
-                    .attr('y', () => {
-                        return layout.y + 4 * (layout.scale || 1)
-                    })
-                d3.select(ns[i])
-                    .selectAll('rect')
-                    .attr('x', () => {
-                        return layout.x - layout.textBBox.width / 2
-                    })
-                    .attr('y', () => {
-                        return layout.y + NODE_RADIUS * (layout.scale || 1) + 2
-                    })
-                d3.select(ns[i])
-                    .selectAll('tspan')
-                    .attr('x', () => {
-                        return layout.x + NODE_RADIUS - 2
-                    })
-                    .attr('y', () => {
-                        return layout.y + 4 * (layout.scale || 1)
-                    })
+            //drag resource count text
+            node.selectAll(textResourceCount).call(attrs, () => {
+                const { x, y, scale = 1 } = layout
+                const { dx, dy, ddx, width, height } = COUNT_ICON_POSITION
+                let _x = x + dx * scale - width / 2 + ddx
+                let _y = y + dy * scale - height / 2
+                _x = _x + width / 2
+                _y = _y + height / 2 + 2
+                return {
+                    transform: `translate(${_x}, ${_y})`,
+                }
             })
 
             // drag node label
@@ -728,7 +609,7 @@ export default class NodeHelper {
                         return layout.x - layout.textBBox.width / 2
                     })
                     .attr('y', () => {
-                        return layout.y + NODE_RADIUS * (layout.scale || 1) + 2
+                        return layout.y + NODE_RADIUS * (layout.scale || 1)
                     })
                 d3.select(ns[i])
                     .selectAll('tspan')
@@ -742,13 +623,13 @@ export default class NodeHelper {
         }
     }
 
-    dragIcons = (node, iconClass) => {
-        node.selectAll(iconClass).call(attrs, ({ dx, dy, width, height }, i, ns) => {
+    dragIcons = (node, iconClass, { dx, dy, ddx, width, height }) => {
+        node.selectAll(iconClass).call(attrs, (d, i, ns) => {
             const {
                 layout: { x, y },
             } = d3.select(ns[i].parentNode).datum()
             return {
-                transform: `translate(${x + dx - width / 2}, ${y + dy - height / 2})`,
+                transform: `translate(${x + dx - width / 2 + ddx}, ${y + dy - height / 2})`,
             }
         })
     }
@@ -832,12 +713,9 @@ export const counterZoomLabels = (svg, currentZoom) => {
             shownLabel.selectAll('tspan.description').style('font-size', `${fontSize - 2}px`)
 
             // fix leading between lines
-            let height
             shownLabel.selectAll('tspan.beg').each((d, j, ts) => {
                 ts[j].setAttribute('dy', fontSize)
-                height = ts.length * fontSize
             })
-            layout.textBBox.height = height
 
             // fix opaque background behind label
             let padding = 2
@@ -851,13 +729,17 @@ export const counterZoomLabels = (svg, currentZoom) => {
             shownLabel.each((d, k, txt) => {
                 textRect = txt[k].getBBox()
             })
+            layout.textBBox.x = textRect.x - padding
+            layout.textBBox.y = textRect.y - padding
+            layout.textBBox.height = textRect.height + padding * 2
+            layout.textBBox.width = textRect.width + padding * 2
             nodeLabel.selectAll('rect').each((d, k, rc) => {
                 d3.select(rc[k]).call(attrs, () => {
                     return {
-                        x: textRect.x - padding,
-                        y: textRect.y - padding,
-                        height: textRect.height + padding * 2,
-                        width: textRect.width + padding * 2,
+                        x: layout.textBBox.x,
+                        y: layout.textBBox.y,
+                        height: layout.textBBox.height,
+                        width: layout.textBBox.width,
                     }
                 })
             })
@@ -873,17 +755,14 @@ export const counterZoomLabels = (svg, currentZoom) => {
             })
 
             // apply counter zoom font
-            nodeTitle.selectAll('tspan.counter-zoom').style('font-size', `${fontSize + 4}px`)
+            nodeTitle.selectAll('tspan.counter-zoom').style('font-size', `${fontSize + 2}px`)
         })
 
         //////////// ICONS /////////////////////////////
         setIconVisibility(nodeLayer, useNodeIcon)
 
-        // cluster count icon
-        setIconVisibility(nodeLayer, useClusterCountIcon)
-
-        // argo app count icon
-        setIconVisibility(nodeLayer, useArgoAppCountIcon)
+        // resource count icon
+        setIconVisibility(nodeLayer, useResourceCountIcon)
 
         ///////// STATUS //////////////////
         nodeLayer.selectAll(textNodeStatus).each(({ y, search, uid, textBBox }, i, ns) => {
@@ -1068,28 +947,21 @@ export const moveTitles = (svg) => {
         })
 }
 
-export const moveClusterCountText = (svg) => {
-    svg.select('g.nodes')
-        .selectAll(gClusterCountText)
-        .filter(({ layout: { x, y } }) => {
-            return x !== undefined && y !== undefined
-        })
-        .each(({ layout }, i, ns) => {
-            const { x, y } = layout
-            const clusterCountText = d3.select(ns[i])
-
-            clusterCountText.selectAll('text').call(attrs, () => {
-                return {
-                    x: x + NODE_RADIUS - 2,
-                    y: y + 4,
-                }
-            })
-            clusterCountText.selectAll('tspan.count').call(attrs, () => {
-                return {
-                    x: x + NODE_RADIUS - 2,
-                    y: y + 4,
-                    dy: 0,
-                }
-            })
-        })
+// move and center count in it icon
+export const moveResourceCountText = (svg) => {
+    const nodes = svg.select('g.nodes').selectAll('g.node')
+    nodes.selectAll(textResourceCount).call(attrs, (d, i, text) => {
+        // get upper left corner of icon
+        const {
+            layout: { x = 0, y = 0, scale = 1 },
+        } = d3.select(text[i].parentNode).datum()
+        const { dx, dy, ddx, width, height } = COUNT_ICON_POSITION
+        let _x = x + dx * scale - width / 2 + ddx
+        let _y = y + dy * scale - height / 2
+        _x = _x + width / 2
+        _y = _y + height / 2 + 2
+        return {
+            transform: `translate(${_x}, ${_y})`,
+        }
+    })
 }

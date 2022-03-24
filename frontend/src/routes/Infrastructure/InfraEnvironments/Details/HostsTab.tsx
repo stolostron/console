@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { useState, useMemo, useCallback } from 'react'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { AcmPageContent } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { useMemo, useState } from 'react'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
@@ -22,8 +22,11 @@ import {
     useNMStatesOfNamespace,
     useOnDeleteHost,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
+import { isBMPlatform } from '../utils'
 
 const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames, AgentAlerts } = CIM
+
+const canEditHost = (agent: CIM.AgentK8sResource) => !!agent
 
 type HostsTabProps = {
     infraEnv: CIM.InfraEnvK8sResource
@@ -45,6 +48,11 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, bareMetalHosts), [bareMetalHosts, infraAgents])
 
+    const canDelete = useCallback(
+        (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => !!nmStates && (!!agent || !!bmh),
+        [nmStates]
+    )
+
     return (
         <>
             <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
@@ -64,11 +72,9 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                                 infraEnv={infraEnv}
                                 getClusterDeploymentLink={getClusterDeploymentLink}
                                 onEditHost={setEditAgent}
-                                canEditHost={(agent) => !!agent}
+                                canEditHost={canEditHost}
                                 onApprove={onApproveAgent}
-                                canDelete={(agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) =>
-                                    !!nmStates && (!!agent || !!bmh)
-                                }
+                                canDelete={canDelete}
                                 onDeleteHost={onDeleteHost as any}
                                 onEditBMH={setEditBMH}
                                 canUnbindHost={canUnbindAgent}
@@ -76,6 +82,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                                 onChangeHostname={onSaveAgent}
                                 onChangeBMHHostname={onChangeBMHHostname}
                                 onMassDeleteHost={onMassDeleteHost}
+                                isBMPlatform={isBMPlatform(infraEnv)}
                             />
                             <EditBMHModal
                                 infraEnv={infraEnv}
