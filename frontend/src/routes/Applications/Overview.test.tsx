@@ -13,6 +13,7 @@ import {
     managedClustersState,
     placementRulesState,
     subscriptionsState,
+    managedClusterInfosState,
 } from '../../atoms'
 import { nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { waitForText } from '../../lib/test-util'
@@ -31,6 +32,9 @@ import {
     ChannelKind,
     ManagedCluster,
     ManagedClusterApiVersion,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
     ManagedClusterKind,
     PlacementRule,
     PlacementRuleApiVersion,
@@ -161,6 +165,31 @@ const mockManagedCluster0: ManagedCluster = {
     },
 }
 
+const readyManagedClusterConditions = [
+    { type: 'ManagedClusterConditionAvailable', reason: 'ManagedClusterConditionAvailable', status: 'True' },
+    { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+    { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+]
+
+const mockManagedClusterInfo0: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: { name: 'local-cluster', namespace: 'local-cluster' },
+    status: {
+        conditions: readyManagedClusterConditions,
+        version: '1.17',
+        distributionInfo: {
+            type: 'ocp',
+            ocp: {
+                version: '1.2.3',
+                availableUpdates: [],
+                desiredVersion: '1.2.3',
+                upgradeFailed: false,
+            },
+        },
+    },
+}
+
 const mockApplicationSet0: ApplicationSet = {
     apiVersion: ApplicationSetApiVersion,
     kind: ApplicationSetKind,
@@ -266,6 +295,8 @@ const mockPlacementrules: PlacementRule[] = [mockPlacementrule0]
 
 const mockManagedClusters: ManagedCluster[] = [mockManagedCluster0]
 
+const mockManagedClusterInfos = [mockManagedClusterInfo0]
+
 const mockApplicationSets: ApplicationSet[] = [mockApplicationSet0]
 
 const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoApplication1]
@@ -329,6 +360,7 @@ describe('Applications Page', () => {
                     snapshot.set(managedClustersState, mockManagedClusters)
                     snapshot.set(applicationSetsState, mockApplicationSets)
                     snapshot.set(argoApplicationsState, mockArgoApplications)
+                    snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
                 }}
             >
                 <MemoryRouter>

@@ -246,20 +246,24 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
         if (editApplication) {
             const { selectedAppName, selectedAppNamespace } = editApplication
             const allChannels = '__ALL__/__ALL__//__ALL__/__ALL__'
-            // get application object from recoil states
-            const application = getApplication(selectedAppNamespace, selectedAppName, allChannels, {
-                applications,
-                ansibleJob,
-                subscriptions,
-                channels,
-                placementRules,
-            })
-            setFetchControl({
-                resources: getApplicationResources(application),
-                isLoaded: true,
-            })
+            const fetchApplication = async () => {
+                // get application object from recoil states
+                const application = await getApplication(selectedAppNamespace, selectedAppName, allChannels, {
+                    applications,
+                    ansibleJob,
+                    subscriptions,
+                    channels,
+                    placementRules,
+                })
+                setFetchControl({
+                    resources: getApplicationResources(application),
+                    isLoaded: true,
+                })
+            }
+            fetchApplication()
         }
-    }, [ansibleJob, applications, channels, editApplication, placementRules, subscriptions])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     useEffect(() => {
         if (editApplication) {

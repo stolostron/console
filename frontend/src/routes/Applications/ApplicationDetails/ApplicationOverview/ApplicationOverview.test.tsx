@@ -25,13 +25,13 @@ import {
     ManagedCluster,
     ManagedClusterApiVersion,
     ManagedClusterKind,
-    Namespace,
-    NamespaceApiVersion,
-    NamespaceDefinition,
-    NamespaceKind,
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
+    Project,
+    ProjectApiVersion,
+    ProjectDefinition,
+    ProjectKind,
     Subscription,
     SubscriptionApiVersion,
     SubscriptionKind,
@@ -312,9 +312,9 @@ const mockApplicationData: ApplicationDataType = {
     },
 }
 
-const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
-    apiVersion: NamespaceApiVersion,
-    kind: NamespaceKind,
+const mockNamespaces: Project[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
     metadata: { name },
 }))
 
@@ -349,7 +349,7 @@ describe('Overview Tab', () => {
         )
     })
     test('should display subscription app info', async () => {
-        const initialNocks = [nockList(NamespaceDefinition, mockNamespaces)]
+        const initialNocks = [nockList(ProjectDefinition, mockNamespaces)]
         await waitForNocks(initialNocks)
         await waitForText('Name')
         // cluster

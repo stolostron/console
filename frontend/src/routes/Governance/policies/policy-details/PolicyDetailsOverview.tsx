@@ -321,24 +321,27 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                                         numLabels={2}
                                     >
                                         {Array.from(clusterList[status]).map((cluster: string, index) => {
-                                            // If there's no status, there's no point in linking to the status page
-                                            let href = ''
                                             if (status !== 'nostatus') {
-                                                href = NavigationPath.policyDetailsResults
-                                                    .replace(':namespace', policy.metadata.namespace!)
-                                                    .replace(':name', policy.metadata.name!)
-                                            } else {
-                                                href = NavigationPath.policyDetails
-                                                    .replace(':namespace', policy.metadata.namespace!)
-                                                    .replace(':name', policy.metadata.name!)
+                                                return (
+                                                    <span key={`${cluster}-link`}>
+                                                        <Link
+                                                            to={`${NavigationPath.policyDetailsResults
+                                                                .replace(':namespace', policy.metadata.namespace!)
+                                                                .replace(
+                                                                    ':name',
+                                                                    policy.metadata.name!
+                                                                )}?search=${cluster}`}
+                                                        >
+                                                            {cluster}
+                                                            {index < clusterList[status].size - 1 && ', '}
+                                                        </Link>
+                                                    </span>
+                                                )
                                             }
-                                            // Return links to status page, filtered by selected cluster
                                             return (
                                                 <span key={`${cluster}-link`}>
-                                                    <Link to={href}>
-                                                        {cluster}
-                                                        {index < clusterList[status].size - 1 && ', '}
-                                                    </Link>
+                                                    {cluster}
+                                                    {index < clusterList[status].size - 1 && ', '}
                                                 </span>
                                             )
                                         })}
