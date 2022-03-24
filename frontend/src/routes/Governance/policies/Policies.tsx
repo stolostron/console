@@ -537,7 +537,7 @@ export default function PoliciesPage() {
             }
         })
         return newOptions
-    }, [t])
+    }, [tableItems, t])
 
     const [namespaces] = useRecoilState(namespacesState)
     const filters = useMemo<ITableFilter<PolicyTableItem>[]>(
@@ -637,7 +637,7 @@ export default function PoliciesPage() {
                 },
             },
         ],
-        [namespaces, tableItems, t, getSourceOptions]
+        [namespaces, t, getSourceOptions]
     )
 
     if (tableItems.length === 0) {
