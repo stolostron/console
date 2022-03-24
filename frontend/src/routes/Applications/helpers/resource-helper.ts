@@ -183,6 +183,8 @@ export function getClusterCountString(remoteCount: number, localPlacement: boole
 
 export function getResourceType(type: String, t: (arg: String) => String) {
     switch (type) {
+        case 'github':
+            return t('Git')
         case 'git':
             return t('Git')
         case 'helmrepo':
@@ -197,7 +199,6 @@ export function getResourceType(type: String, t: (arg: String) => String) {
 }
 
 export const getResourceLabel = (type: string, count: number, t: TFunction) => {
-    // const label = t(`resource.type.${type}`)
     const label = getResourceType(type, t)
     const optionalCount = count > 1 ? ` (${count})` : ''
     return label + optionalCount
