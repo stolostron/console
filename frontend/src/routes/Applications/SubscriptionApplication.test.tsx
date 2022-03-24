@@ -118,7 +118,5 @@ describe('Create Subscription Application page', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForTestId('cancel-button-portal-id')
-        await waitForTestId('create-button-portal-id')
     })
 })
