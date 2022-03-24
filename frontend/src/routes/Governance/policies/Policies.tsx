@@ -521,7 +521,7 @@ export default function PoliciesPage() {
     )
 
     const [namespaces] = useRecoilState(namespacesState)
-
+    console.log('tableItems', tableItems)
     const filters = useMemo<ITableFilter<PolicyTableItem>[]>(
         () => [
             {
@@ -536,6 +536,10 @@ export default function PoliciesPage() {
                         label: 'With violations',
                         value: 'with-violations',
                     },
+                    {
+                        label: 'No status',
+                        value: 'no-status',
+                    },
                 ],
                 tableFilterFn: (selectedValues, item) => {
                     if (selectedValues.includes('with-violations')) {
@@ -543,6 +547,9 @@ export default function PoliciesPage() {
                     }
                     if (selectedValues.includes('without-violations')) {
                         if (item.policy.status?.compliant === 'Compliant') return true
+                    }
+                    if (selectedValues.includes('no-status')) {
+                        if (!item.policy.status?.compliant) return true
                     }
                     return false
                 },
@@ -558,6 +565,17 @@ export default function PoliciesPage() {
                     return selectedValues.includes(item.policy.metadata.namespace ?? '')
                 },
             },
+            // {
+            //     id: 'source',
+            //     label: 'Source',
+            //     options: tableItems.map((tableItem) => ({
+            //         label: tableItem.source.toString(),
+            //         value: tableItem.source.toString()
+            //     })),
+            //     tableFilterFn: (selectedValues, item) => {
+            //         return selectedValues.includes(`${item.source}` ?? '')
+            //     }
+            // },
             {
                 id: 'remediation',
                 label: 'Remediation',
