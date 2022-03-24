@@ -17,7 +17,7 @@ import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
+import { clusterClaimsState, clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
 import { nockCreate, nockDelete, nockGet, nockIgnoreRBAC, nockPatch } from '../../../../lib/nock-util'
 import {
     clickBulkAction,
@@ -249,6 +249,11 @@ describe('ClusterPools page', () => {
                         mockClusterPoolStandbyOnly,
                     ])
                     snapshot.set(clusterImageSetsState, [mockClusterImageSet])
+                    snapshot.set(clusterClaimsState, [
+                        mockClusterClaim,
+                        mockClusterClaimPending,
+                        mockClusterClaimStandbyOnly,
+                    ])
                 }}
             >
                 <MemoryRouter>
@@ -365,15 +370,11 @@ describe('ClusterPools page', () => {
         await waitForText('Close')
         await clickByText('Close')
         await waitForText(mockClusterPoolPending.metadata.name!)
-
-        // screen.debug(undefined, 100000)
-
-        // await waitForText(mockClusterClaimPending.metadata.name!)
-        // await clickByText('Delete claim')
-        // await waitForText('You are about to delete a cluster claim.')
-        // await typeByTestId('confirm', mockClusterClaimPending.metadata.name!)
-        // const deleteNocks: Scope[] = [nockDelete(mockClusterClaimPending)]
-        // await clickByText('Delete')
-        // await waitForNocks(deleteNocks)
+        await clickByText('Delete claim', 1)
+        await waitForText('You are about to delete a cluster claim.')
+        await typeByTestId('confirm', mockClusterClaimPending.metadata.name!)
+        const deleteNocks: Scope[] = [nockDelete(mockClusterClaimPending)]
+        await clickByText('Delete')
+        await waitForNocks(deleteNocks)
     })
 })
