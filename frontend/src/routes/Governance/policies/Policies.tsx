@@ -104,6 +104,7 @@ export default function PoliciesPage() {
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<PolicyTableItem> | { open: false }>({
         open: false,
     })
+
     const policyKeyFn = useCallback(
         (resource: PolicyTableItem) =>
             resource.policy.metadata.uid ?? `${resource.policy.metadata.name}/${resource.policy.metadata.namespace}`,
