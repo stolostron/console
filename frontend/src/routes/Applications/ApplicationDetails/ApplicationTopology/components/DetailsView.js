@@ -131,7 +131,10 @@ class DetailsView extends React.Component {
         const currentUpdatedNode = filteredNode || nodes.find((n) => n.uid === selectedNodeId)
         const { layout = {} } = currentNode
         const resourceType = layout.type || currentNode.type || currentUpdatedNode.type
-        const isTableView = _.get(currentNode, 'specs.resourceCount', 0) > 1 && currentNode.type !== 'cluster'
+        const isTableView =
+            _.get(currentNode, 'specs.resourceCount', 0) > 1 &&
+            currentNode.type !== 'cluster' &&
+            currentNode.type !== 'application'
         const { shape = 'other', className = 'default' } = typeToShapeMap[resourceType] || {}
         let name = isTableView || currentNode.type === 'cluster' ? '' : currentNode.name
         if (!name) {

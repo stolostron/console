@@ -8,7 +8,7 @@ import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from
 import { ClipboardCopyButton } from '@patternfly/react-core'
 import Ajv from 'ajv'
 import { debounce } from 'lodash'
-import { processForm, processUser, formatErrors, ProcessedType } from './process'
+import { processForm, processUser, formatErrors, getPathLines, ProcessedType } from './process'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
 import { SyncDiffType } from './SyncDiff'
@@ -22,6 +22,7 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     schema?: any
     secrets?: (string | string[])[]
     immutables?: (string | string[])[]
+    collapses?: (string | string[])[]
     readonly?: boolean
     onClose: () => void
     onEditorChange?: (editorResources: any) => void
@@ -36,6 +37,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         schema,
         secrets,
         immutables,
+        collapses,
         code,
         readonly,
         onEditorChange,
@@ -68,6 +70,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const [keyDownHandle, setKeyDownHandle] = useState<any>()
     const [hoverProviderHandle, setHoverProviderHandle] = useState<any>()
     const [showSecrets, setShowSecrets] = useState<boolean>(false)
+    const [showCondensed, setShowCondensed] = useState<boolean>(false)
+    const [wasCollapsed, setWasCollapsed] = useState<boolean>(false)
     const [hasUndo, setHasUndo] = useState<boolean>(false)
     const [hasRedo, setHasRedo] = useState<boolean>(false)
 
@@ -155,6 +159,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             height -= 36
         }
         editorRef?.current?.layout({ width, height })
+        setShowCondensed(width < 500)
     })
 
     useEffect(() => {
@@ -304,7 +309,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             validationRef.current
         )
         setLastUserEdits(userEdits)
-        //        if (yaml.length) {
         setProhibited(protectedRanges)
 
         // using monaco editor setValue blows away undo/redo and decorations
@@ -346,8 +350,23 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             setLastFormComparison(formComparison)
             setLastChange(change)
             setUserEdits(edits)
+
+            if (collapses && !wasCollapsed) {
+                const foldingContrib = editorRef?.current?.getContribution('editor.contrib.folding')
+                if (foldingContrib) {
+                    foldingContrib.getFoldingModel().then((foldingModel: any) => {
+                        const regions: any[] = []
+                        getPathLines(collapses, change).forEach((line) => {
+                            regions.push(foldingModel.getRegionAtLine(line))
+                        })
+                        if (regions.length) {
+                            foldingModel.toggleCollapseState(regions)
+                        }
+                        setWasCollapsed(true)
+                    })
+                }
+            }
         }, 0)
-        //        }
         setHasRedo(false)
         setHasUndo(false)
         return () => clearInterval(timeoutID)
@@ -429,25 +448,29 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             <div className="sy-c-code-editor__title">{editorTitle || 'YAML'}</div>
             <div>
                 {/* undo */}
-                <CodeEditorControl
-                    icon={<UndoIcon />}
-                    aria-label="Undo"
-                    toolTipText="Undo"
-                    isDisabled={!hasUndo}
-                    onClick={() => {
-                        editorRef?.current.trigger('source', 'undo')
-                    }}
-                />
+                {!readonly && (
+                    <CodeEditorControl
+                        icon={<UndoIcon />}
+                        aria-label="Undo"
+                        toolTipText="Undo"
+                        isDisabled={!hasUndo}
+                        onClick={() => {
+                            editorRef?.current.trigger('source', 'undo')
+                        }}
+                    />
+                )}
                 {/* redo */}
-                <CodeEditorControl
-                    icon={<RedoIcon />}
-                    aria-label="Redo"
-                    toolTipText="Redo"
-                    isDisabled={!hasRedo}
-                    onClick={() => {
-                        editorRef?.current.trigger('source', 'redo')
-                    }}
-                />
+                {!readonly && (
+                    <CodeEditorControl
+                        icon={<RedoIcon />}
+                        aria-label="Redo"
+                        toolTipText="Redo"
+                        isDisabled={!hasRedo}
+                        onClick={() => {
+                            editorRef?.current.trigger('source', 'redo')
+                        }}
+                    />
+                )}
                 {/* search */}
                 <CodeEditorControl
                     icon={<SearchIcon />}
@@ -512,7 +535,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 onEditorDidMount={onEditorDidMount}
                 options={{
                     wordWrap: 'wordWrapColumn',
-                    wordWrapColumn: 132,
+                    wordWrapColumn: showCondensed ? 512 : 256,
                     scrollBeyondLastLine: true,
                     smoothScrolling: true,
                     glyphMargin: true,
@@ -520,6 +543,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     scrollbar: {
                         verticalScrollbarSize: 17,
                         horizontalScrollbarSize: 17,
+                    },
+                    minimap: {
+                        enabled: !showCondensed,
                     },
                 }}
             />
