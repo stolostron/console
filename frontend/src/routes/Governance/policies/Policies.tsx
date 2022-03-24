@@ -521,7 +521,7 @@ export default function PoliciesPage() {
     )
 
     const getSourceOptions = (tableItems: PolicyTableItem[]) => {
-        let newOptions: { label: string; value: string }[] = []
+        const newOptions: { label: string; value: string }[] = []
         tableItems.forEach((item) => {
             let itemText = item.source as string
             if (typeof item.source === 'object') {
@@ -630,7 +630,7 @@ export default function PoliciesPage() {
                 },
             },
         ],
-        [namespaces]
+        [namespaces, getSourceOptions, t, tableItems]
     )
 
     if (tableItems.length === 0) {
