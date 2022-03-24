@@ -458,6 +458,7 @@ describe('Overview Tab', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
+
         const initialNocks = [nockList(ProjectDefinition, mockNamespaces)]
         await waitForNocks(initialNocks)
         await waitForText('Name')
