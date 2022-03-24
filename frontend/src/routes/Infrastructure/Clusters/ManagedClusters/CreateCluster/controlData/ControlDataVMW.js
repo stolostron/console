@@ -17,6 +17,7 @@ import {
     onChangeConnection,
     onChangeDisconnect,
     addSnoText,
+    architectureData,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -98,6 +99,8 @@ const controlDataVMW = [
         type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
+    ///////////////////////  architecture  /////////////////////////////////////
+    ...architectureData,
     ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',

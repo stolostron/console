@@ -31,6 +31,9 @@ controlPlane:
 
 {{#each masterPool}}
 controlPlane:
+  {{#if ../architecture}}
+  architecture: {{{../architecture}}}
+  {{/if}}
   hyperthreading: Enabled
   name: master
 {{#if ../singleNode}}
@@ -120,6 +123,9 @@ compute:
 {{#if @first}}
 compute:
 - hyperthreading: Enabled
+  {{#if ../architecture}}
+  architecture: {{{../architecture}}}
+  {{/if}}
   name: '{{{workerName}}}'
   {{#if ../singleNode}}
   replicas: 0
