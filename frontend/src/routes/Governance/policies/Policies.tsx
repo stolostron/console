@@ -520,8 +520,25 @@ export default function PoliciesPage() {
         [t, bulkModalStatusColumns, bulkModalRemediationColumns]
     )
 
+    const getSourceOptions = (tableItems: PolicyTableItem[]) => {
+        let newOptions: { label: string; value: string }[] = []
+        tableItems.forEach((item) => {
+            let itemText = item.source as string
+            if (typeof item.source === 'object') {
+                const type = item.source.props?.appRepos[0].type?.toLowerCase() ?? ''
+                itemText = getResourceLabel(type, 1, t)
+            }
+            if (newOptions.filter((option) => option.label === itemText).length === 0) {
+                newOptions.push({
+                    label: itemText,
+                    value: itemText,
+                })
+            }
+        })
+        return newOptions
+    }
+
     const [namespaces] = useRecoilState(namespacesState)
-    console.log('tableItems', tableItems)
     const filters = useMemo<ITableFilter<PolicyTableItem>[]>(
         () => [
             {
@@ -565,17 +582,19 @@ export default function PoliciesPage() {
                     return selectedValues.includes(item.policy.metadata.namespace ?? '')
                 },
             },
-            // {
-            //     id: 'source',
-            //     label: 'Source',
-            //     options: tableItems.map((tableItem) => ({
-            //         label: tableItem.source.toString(),
-            //         value: tableItem.source.toString()
-            //     })),
-            //     tableFilterFn: (selectedValues, item) => {
-            //         return selectedValues.includes(`${item.source}` ?? '')
-            //     }
-            // },
+            {
+                id: 'source',
+                label: 'Source',
+                options: getSourceOptions(tableItems),
+                tableFilterFn: (selectedValues, item) => {
+                    let itemText = item.source as string
+                    if (typeof item.source === 'object') {
+                        const type = item.source.props?.appRepos[0]?.type?.toLowerCase() ?? ''
+                        itemText = getResourceLabel(type, 1, t)
+                    }
+                    return selectedValues.includes(itemText ?? '')
+                },
+            },
             {
                 id: 'remediation',
                 label: 'Remediation',
