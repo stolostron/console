@@ -19,6 +19,7 @@ import {
 import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
 import {
     AcmAlert,
+    AcmButton,
     AcmDrawerContext,
     AcmSelect,
     AcmTable,
@@ -46,6 +47,7 @@ import {
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
+import { canUser } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -53,6 +55,8 @@ import {
     Policy,
     PolicyApiVersion,
     PolicyAutomation,
+    PolicyAutomationDefinition,
+    PolicyDefinition,
     PolicyKind,
     PolicySet,
     replaceResource,
@@ -111,6 +115,24 @@ export default function PoliciesPage() {
     )
     const policyClusterViolationsColumn = usePolicyViolationsColumn(policyClusterViolationSummaryMap)
     const [modal, setModal] = useState<ReactNode | undefined>()
+    const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
+    const [canAutomatePolicy, setCanAutomatePolicy] = useState<boolean>(false)
+
+    useEffect(() => {
+        const canCreatePolicyPromise = canUser('create', PolicyDefinition)
+        canCreatePolicyPromise.promise
+            .then((result) => setCanCreatePolicy(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canCreatePolicyPromise.abort()
+    }, [])
+
+    useEffect(() => {
+        const canAutomatePolicyPromise = canUser('update', PolicyAutomationDefinition)
+        canAutomatePolicyPromise.promise
+            .then((result) => setCanAutomatePolicy(result.status?.allowed!))
+            .catch((err) => console.error(err))
+        return () => canAutomatePolicyPromise.abort()
+    })
 
     const policyColumns = useMemo<IAcmTableColumn<PolicyTableItem>[]>(
         () => [
@@ -223,7 +245,15 @@ export default function PoliciesPage() {
                     )
                     if (policyAutomationMatch) {
                         return (
-                            <Button
+                            <AcmButton
+                                isDisabled={!canAutomatePolicy}
+                                tooltip={
+                                    !canAutomatePolicy
+                                        ? t(
+                                              'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
+                                          )
+                                        : ''
+                                }
                                 isInline
                                 variant={ButtonVariant.link}
                                 onClick={() =>
@@ -248,11 +278,21 @@ export default function PoliciesPage() {
                                 }
                             >
                                 {policyAutomationMatch.metadata.name}
-                            </Button>
+                            </AcmButton>
                         )
                     } else {
                         return (
-                            <Link
+                            <AcmButton
+                                isDisabled={!canAutomatePolicy}
+                                tooltip={
+                                    !canAutomatePolicy
+                                        ? t(
+                                              'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
+                                          )
+                                        : ''
+                                }
+                                isInline
+                                variant={ButtonVariant.link}
                                 to={{
                                     pathname: NavigationPath.createPolicyAutomation
                                         .replace(':namespace', item.policy.metadata.namespace as string)
@@ -263,7 +303,7 @@ export default function PoliciesPage() {
                                 }}
                             >
                                 {t('Configure')}
-                            </Link>
+                            </AcmButton>
                         )
                     }
                 },
@@ -286,7 +326,7 @@ export default function PoliciesPage() {
                 cellTransforms: [fitContent],
             },
         ],
-        [policyClusterViolationsColumn, policySets, policyAutomations, setDrawerContext, t]
+        [policyClusterViolationsColumn, policySets, policyAutomations, setDrawerContext, canAutomatePolicy, t]
     )
 
     const bulkModalStatusColumns = useMemo(
@@ -617,6 +657,12 @@ export default function PoliciesPage() {
                 filters={filters}
                 tableActionButtons={[
                     {
+                        isDisabled: !canCreatePolicy,
+                        tooltip: !canCreatePolicy
+                            ? t(
+                                  'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
+                              )
+                            : '',
                         variant: ButtonVariant.primary,
                         id: 'create',
                         title: 'Create policy',

@@ -303,7 +303,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                                 ) : (
                                     <Tooltip
                                         content={t(
-                                            'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                                            'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
                                         )}
                                         isContentLeftAligned
                                         position="right"
