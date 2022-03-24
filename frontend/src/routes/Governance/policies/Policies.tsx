@@ -104,6 +104,7 @@ export default function PoliciesPage() {
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<PolicyTableItem> | { open: false }>({
         open: false,
     })
+
     const policyKeyFn = useCallback(
         (resource: PolicyTableItem) =>
             resource.policy.metadata.uid ?? `${resource.policy.metadata.name}/${resource.policy.metadata.namespace}`,
@@ -520,8 +521,25 @@ export default function PoliciesPage() {
         [t, bulkModalStatusColumns, bulkModalRemediationColumns]
     )
 
-    const [namespaces] = useRecoilState(namespacesState)
+    const getSourceOptions = useCallback(() => {
+        const newOptions: { label: string; value: string }[] = []
+        tableItems.forEach((item) => {
+            let itemText = item.source as string
+            if (typeof item.source === 'object') {
+                const type = item.source.props?.appRepos[0].type?.toLowerCase() ?? ''
+                itemText = getResourceLabel(type, 1, t)
+            }
+            if (newOptions.filter((option) => option.label === itemText).length === 0) {
+                newOptions.push({
+                    label: itemText,
+                    value: itemText,
+                })
+            }
+        })
+        return newOptions
+    }, [tableItems, t])
 
+    const [namespaces] = useRecoilState(namespacesState)
     const filters = useMemo<ITableFilter<PolicyTableItem>[]>(
         () => [
             {
@@ -536,13 +554,26 @@ export default function PoliciesPage() {
                         label: 'With violations',
                         value: 'with-violations',
                     },
+                    {
+                        label: 'No status',
+                        value: 'no-status',
+                    },
                 ],
                 tableFilterFn: (selectedValues, item) => {
                     if (selectedValues.includes('with-violations')) {
-                        if (item.policy.status?.compliant === 'NonCompliant') return true
+                        if (item.policy.status?.compliant === 'NonCompliant') {
+                            return true
+                        }
                     }
                     if (selectedValues.includes('without-violations')) {
-                        if (item.policy.status?.compliant === 'Compliant') return true
+                        if (item.policy.status?.compliant === 'Compliant') {
+                            return true
+                        }
+                    }
+                    if (selectedValues.includes('no-status')) {
+                        if (!item.policy.status?.compliant) {
+                            return true
+                        }
                     }
                     return false
                 },
@@ -556,6 +587,19 @@ export default function PoliciesPage() {
                 })),
                 tableFilterFn: (selectedValues, item) => {
                     return selectedValues.includes(item.policy.metadata.namespace ?? '')
+                },
+            },
+            {
+                id: 'source',
+                label: 'Source',
+                options: getSourceOptions(),
+                tableFilterFn: (selectedValues, item) => {
+                    let itemText = item.source as string
+                    if (typeof item.source === 'object') {
+                        const type = item.source.props?.appRepos[0]?.type?.toLowerCase() ?? ''
+                        itemText = getResourceLabel(type, 1, t)
+                    }
+                    return selectedValues.includes(itemText ?? '')
                 },
             },
             {
@@ -593,7 +637,7 @@ export default function PoliciesPage() {
                 },
             },
         ],
-        [namespaces]
+        [namespaces, t, getSourceOptions]
     )
 
     if (tableItems.length === 0) {
