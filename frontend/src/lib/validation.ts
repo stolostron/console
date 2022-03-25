@@ -83,7 +83,7 @@ export function validateJSON(value: string, t: TFunction) {
 }
 export function validateBaseDnsName(value: string, t: TFunction) {
     const VALID_DNS_NAME_TESTER = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$')
-    if (value && value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substr(1))) {
+    if (value && value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substring(1))) {
         return t('validate.baseDnsName.start')
     }
     if (!VALID_DNS_NAME_TESTER.test(value)) {
@@ -138,7 +138,7 @@ export function validateImageMirror(value: string, t: TFunction) {
 export function validateBaseDomain(value: string, t: TFunction) {
     const VALID_DNS_NAME_TESTER = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/
     if (value) {
-        if (value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substr(1))) {
+        if (value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substring(1))) {
             return t('validate.baseDomain.baseDNSPeriod')
         }
         if (!VALID_DNS_NAME_TESTER.test(value)) {
