@@ -34,22 +34,17 @@ export function PolicyDetailsHistory(props: {
                 p.metadata.name === `${policyNamespace}.${policyName}` && p.metadata.namespace === clusterName
         )
         const statuses: HistoryTableData[] = []
-        let details: PolicyStatusDetails[] = policyResponse?.status?.details ?? []
-        details = details.filter((detail) => {
-            if (detail?.templateMeta?.name === templateName) {
-                return true
-            }
-            return false
-        })
-        details.forEach((detail: PolicyStatusDetails) => {
-            const history = detail.history ?? []
-            history.forEach((status) => {
-                statuses.push({
-                    message: status.message ?? '-',
-                    timestamp: status.lastTimestamp ?? '-',
+        ;(policyResponse?.status?.details ?? [])
+            .filter((detail) => detail?.templateMeta?.name === templateName)
+            .forEach((detail: PolicyStatusDetails) => {
+                const history = detail.history ?? []
+                history.forEach((status) => {
+                    statuses.push({
+                        message: status.message ?? '-',
+                        timestamp: status.lastTimestamp ?? '-',
+                    })
                 })
             })
-        })
         return statuses
     }, [policyName, policyNamespace, clusterName, templateName, policies])
 
