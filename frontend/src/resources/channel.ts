@@ -54,35 +54,56 @@ async function getChannelSecret(secretArgs?: { secretRef?: string; namespace?: s
     return channelSecret
 }
 
-function getGitConnection(secretArgs?: { secretRef?: string; namespace?: string }) {
-    return getChannelSecret(secretArgs)
-        .then(({ accessToken }) => {
-            const authBaseUrl = 'https://api.github.com'
-            const authOptions = {
-                baseUrl: authBaseUrl,
-                auth: accessToken,
-            }
-            return new Octokit(authOptions)
-        })
-        .catch(handleGitError)
+async function getGitConnection(
+    secretArgs?: { secretRef?: string; namespace?: string },
+    accessData?: { user?: string; accessToken?: string }
+) {
+    if (accessData && accessData.user && accessData.accessToken) {
+        const authBaseUrl = 'https://api.github.com'
+        const authOptions = {
+            baseUrl: authBaseUrl,
+            auth: accessData.accessToken,
+        }
+        return new Octokit(authOptions)
+    } else {
+        return getChannelSecret(secretArgs)
+            .then(({ accessToken }) => {
+                const authBaseUrl = 'https://api.github.com'
+                const authOptions = {
+                    baseUrl: authBaseUrl,
+                    auth: accessToken,
+                }
+                return new Octokit(authOptions)
+            })
+            .catch(handleGitError)
+    }
 }
 
-export function getGitChannelBranches(channelPath: string, secretArgs?: { secretRef?: string; namespace?: string }) {
+export function getGitChannelBranches(
+    channelPath: string,
+    secretArgs?: { secretRef?: string; namespace?: string },
+    accessData?: { user?: string; accessToken?: string }
+) {
     const gitInfo = getGitInformation(channelPath)
-    return getGitConnection(secretArgs)
+    console.log('checking access data: ', accessData)
+    return getGitConnection(secretArgs, accessData)
         .then((octokit) =>
             octokit?.repos.listBranches(gitInfo).then(({ data }) => (data ? data.map((branch) => branch.name) : []))
         )
-        .catch(handleGitError)
+        .catch((err) => {
+            handleGitError(err)
+            return []
+        })
 }
 
 export function getGitChannelPaths(
     channelPath: string,
     branch: string,
-    secretArgs?: { secretRef?: string; namespace?: string }
+    secretArgs?: { secretRef?: string; namespace?: string },
+    accessData?: { user?: string; accessToken?: string }
 ) {
     const gitInfo = getGitInformation(channelPath)
-    return getGitConnection(secretArgs)
+    return getGitConnection(secretArgs, accessData)
         .then((octokit) =>
             octokit?.repos
                 .getBranch({
@@ -118,5 +139,5 @@ function getGitInformation(path: string) {
 }
 
 const handleGitError = (err: any) => {
-    console.log(Error(err))
+    console.log(err)
 }
