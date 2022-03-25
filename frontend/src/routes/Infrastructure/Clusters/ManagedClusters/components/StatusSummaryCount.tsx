@@ -35,7 +35,9 @@ export function StatusSummaryCount() {
         } else {
             return {
                 promise: Promise.resolve({ data: { searchResult: [] } } as ISearchResult),
-                abort: () => {},
+                abort: () => {
+                    // nothing to abort
+                },
             }
         }
     })
