@@ -473,11 +473,12 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         label: t('Enable Globalnet'),
                         value: globalnetEnabled,
                         isDisabled: isGlobalnetAlreadyConfigured,
+                        labelHelp: t('globalnet.description'),
                         helperText: isGlobalnetAlreadyConfigured
                             ? globalnetEnabled
                                 ? t('globalnet.enabled')
                                 : t('globalnet.disabled')
-                            : t('globalnet.description'),
+                            : '',
                         onChange: (value: boolean) => {
                             setGlobalnetEnabled(value)
                         },
