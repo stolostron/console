@@ -19,7 +19,7 @@ import {
 } from '../../atoms'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
-import { canUser } from '../../lib/rbac-util'
+import { getAuthorizedNamespaces, rbacCreate, rbacDelete } from '../../lib/rbac-util'
 import { queryRemoteArgoApps } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
@@ -36,6 +36,11 @@ import {
     Channel,
     IResource,
     Subscription,
+    listProjects,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    ResourceAttributes,
 } from '../../resources'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
@@ -163,6 +168,34 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
             ]
         }
     }
+}
+
+export async function checkPermission(resourceAttributes: ResourceAttributes, setStateFn: (state: boolean) => void) {
+    // Require hub to run on OCP
+    const fetchProjects = async () => {
+        return listProjects().promise
+    }
+
+    fetchProjects().then((projects) => {
+        const namespaceArr: Namespace[] = projects.map((project) => {
+            return {
+                apiVersion: NamespaceApiVersion,
+                kind: NamespaceKind,
+                metadata: project.metadata,
+            } as Namespace
+        })
+        const fetchAuthorizedNamespaces = async () => {
+            const authorizedNamespaces = await getAuthorizedNamespaces([resourceAttributes], namespaceArr)
+            return authorizedNamespaces
+        }
+        fetchAuthorizedNamespaces().then((authorizedNamespaces) => {
+            if (authorizedNamespaces?.length > 0) {
+                setStateFn(true)
+            } else {
+                setStateFn(false)
+            }
+        })
+    })
 }
 
 export default function ApplicationsOverview() {
@@ -646,25 +679,13 @@ export default function ApplicationsOverview() {
     }
 
     useEffect(() => {
-        const canCreateApplicationPromise = canUser('create', ApplicationDefinition)
-        canCreateApplicationPromise.promise
-            .then((result) => setCanCreateApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateApplicationPromise.abort()
+        checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication)
     }, [])
     useEffect(() => {
-        const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
-        canDeleteApplicationPromise.promise
-            .then((result) => setCanDeleteApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationPromise.abort()
+        checkPermission(rbacDelete(ApplicationDefinition), setCanDeleteApplication)
     }, [])
     useEffect(() => {
-        const canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
-        canDeleteApplicationSetPromise.promise
-            .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationSetPromise.abort()
+        checkPermission(rbacDelete(ApplicationSetDefinition), setCanDeleteApplicationSet)
     }, [])
 
     const appCreationButton = () => {
