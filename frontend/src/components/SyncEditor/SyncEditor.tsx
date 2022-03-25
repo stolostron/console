@@ -348,7 +348,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         }
     }, [JSON.stringify(resources), code, showSecrets, immutables])
 
-    // react to changes from editing yaml
+    // react to changes from user editing yaml
     const editorChanged = (value: string, e: { isFlush: any }) => {
         if (!e.isFlush) {
             // parse/validate/secrets
