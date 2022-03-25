@@ -34,8 +34,8 @@ export function StatusSummaryCount() {
             return queryStatusCount(cluster?.name!)
         } else {
             return {
-                promise: Promise.resolve({ data: { searchResult: [] }} as ISearchResult),
-                abort: () => {}
+                promise: Promise.resolve({ data: { searchResult: [] } } as ISearchResult),
+                abort: () => {},
             }
         }
     })
