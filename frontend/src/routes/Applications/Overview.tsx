@@ -671,11 +671,7 @@ export default function ApplicationsOverview() {
         return (
             <AcmDropdown
                 isDisabled={!canCreateApplication}
-                tooltip={
-                    !canCreateApplication
-                        ? 'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
-                        : ''
-                }
+                tooltip={!canCreateApplication ? t('rbac.unauthorized') : ''}
                 id={'application-create'}
                 onSelect={(id) => {
                     id === 'create-argo'

@@ -15,9 +15,10 @@ import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { canUser } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
-import { PolicySet } from '../../../resources/policy-set'
+import { PolicySet, PolicySetDefinition } from '../../../resources/policy-set'
 import { GovernanceCreatePolicysetEmptyState } from '../components/GovernanceEmptyState'
 import CardViewToolbarFilter from './components/CardViewToolbarFilter'
 import CardViewToolbarSearch from './components/CardViewToolbarSearch'
@@ -68,6 +69,19 @@ export default function PolicySetsPage() {
     const [perPage, setPerPage] = useState<number>(10)
     const [filteredPolicySets, setFilteredPolicySets] = useState<PolicySet[]>(policySets)
     const [selectedCardID, setSelectedCardID] = useState<string>('')
+    const [canCreatePolicySet, setCanCreatePolicySet] = useState<boolean>(false)
+
+    useEffect(() => {
+        const canCreatePolicySetPromise = canUser('create', PolicySetDefinition)
+        canCreatePolicySetPromise.promise
+            .then((result) => {
+                if (result.status?.allowed) {
+                    setCanCreatePolicySet(true)
+                }
+            })
+            .catch((err) => console.error(err))
+        return () => canCreatePolicySetPromise.abort()
+    }, [])
 
     const updatePerPage = useCallback(
         (newPerPage: number) => {
@@ -205,7 +219,13 @@ export default function PolicySetsPage() {
                                 </ToolbarItem>
                             </ToolbarGroup>
                             <ToolbarItem key={`create-policy-set-toolbar-item`}>
-                                <AcmButton component={Link} variant="primary" to={NavigationPath.createPolicySet}>
+                                <AcmButton
+                                    isDisabled={!canCreatePolicySet}
+                                    tooltip={!canCreatePolicySet ? t('rbac.unauthorized') : ''}
+                                    component={Link}
+                                    variant="primary"
+                                    to={NavigationPath.createPolicySet}
+                                >
                                     {t('Create policy set')}
                                 </AcmButton>
                             </ToolbarItem>
