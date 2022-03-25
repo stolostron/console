@@ -3,6 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import moment from 'moment'
+import nock from 'nock'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
@@ -39,6 +40,9 @@ import {
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
     Subscription,
     SubscriptionApiVersion,
     SubscriptionKind,
@@ -346,10 +350,20 @@ const mockSearchResponse = {
     },
 }
 
+const mockProjects: Project[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: { name },
+}))
+
 describe('Applications Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
+        nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+            .persist()
+            .get('/apis/project.openshift.io/v1/projects')
+            .reply(200, mockProjects)
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
