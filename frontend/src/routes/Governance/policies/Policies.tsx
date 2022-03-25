@@ -654,9 +654,7 @@ export default function PoliciesPage() {
                 tableActionButtons={[
                     {
                         isDisabled: !canCreatePolicy,
-                        tooltip: !canCreatePolicy
-                            ? t('rbac.unauthorized')
-                            : '',
+                        tooltip: !canCreatePolicy ? t('rbac.unauthorized') : '',
                         variant: ButtonVariant.primary,
                         id: 'create',
                         title: 'Create policy',

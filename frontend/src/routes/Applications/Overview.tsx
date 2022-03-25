@@ -671,11 +671,7 @@ export default function ApplicationsOverview() {
         return (
             <AcmDropdown
                 isDisabled={!canCreateApplication}
-                tooltip={
-                    !canCreateApplication
-                        ? t('rbac.unauthorized')
-                        : ''
-                }
+                tooltip={!canCreateApplication ? t('rbac.unauthorized') : ''}
                 id={'application-create'}
                 onSelect={(id) => {
                     id === 'create-argo'
