@@ -218,16 +218,7 @@ function ClustersCard() {
                                 <Fragment>
                                     <span>{cluster.metadata.name}</span>
                                     {clusterViolationSummary.compliant ? (
-                                        <Tooltip
-                                            content={t(
-                                                clusterViolationSummary.compliant === 1
-                                                    ? 'cluster.without.violations'
-                                                    : 'clusters.without.violations',
-                                                {
-                                                    count: clusterViolationSummary.compliant,
-                                                }
-                                            )}
-                                        >
+                                        <Tooltip content={t('policies.noviolations', { count: clusterViolationSummary.compliant})}>
                                             <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                                                 <Fragment>
                                                     <Button
@@ -246,16 +237,7 @@ function ClustersCard() {
                                         <span />
                                     )}
                                     {clusterViolationSummary.noncompliant ? (
-                                        <Tooltip
-                                            content={t(
-                                                clusterViolationSummary.noncompliant === 1
-                                                    ? 'cluster.with.violations'
-                                                    : 'clusters.with.violations',
-                                                {
-                                                    count: clusterViolationSummary.noncompliant,
-                                                }
-                                            )}
-                                        >
+                                        <Tooltip content={t('policy.violations', { count: clusterViolationSummary.noncompliant })}>
                                             <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                                                 <Button
                                                     isInline
