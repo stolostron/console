@@ -31,6 +31,9 @@ controlPlane:
 
 {{#each masterPool}}
 controlPlane:
+  {{#if ../architecture}}
+  architecture: {{{../architecture}}}
+  {{/if}}
   hyperthreading: Enabled
   name: master
 {{#if ../singleNode}}
@@ -90,6 +93,7 @@ controlPlane:
       memoryMB:  {{{../../masterMemoryMB}}} ##masterPool.{{@index}}.masterMemoryMB
       osDisk:
         sizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+      vmType: high_performance
   {{/case}}
 
   {{#case 'OpenStack'}}
@@ -119,6 +123,9 @@ compute:
 {{#if @first}}
 compute:
 - hyperthreading: Enabled
+  {{#if ../architecture}}
+  architecture: {{{../architecture}}}
+  {{/if}}
   name: '{{{workerName}}}'
   {{#if ../singleNode}}
   replicas: 0
@@ -183,6 +190,7 @@ compute:
       memoryMB:  {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
         sizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+      vmType: server
   {{/case}}
 
   {{#case 'OpenStack'}}

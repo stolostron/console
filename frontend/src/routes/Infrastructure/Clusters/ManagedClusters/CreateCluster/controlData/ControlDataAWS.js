@@ -17,6 +17,7 @@ import {
     onChangeSNO,
     onChangeConnection,
     addSnoText,
+    architectureData,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -686,6 +687,8 @@ const controlDataAWS = [
         onSelect: setAWSZones,
         reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
+    ///////////////////////  architecture  /////////////////////////////////////
+    ...architectureData,
     ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',

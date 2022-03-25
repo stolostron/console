@@ -22,9 +22,9 @@ export interface MappingType {
     $r: number //what line is it on in the yaml
     $l: number // how many lines does it use in the yaml
     $v: any // what's its value
-    $s: boolean // is a secret
-    $gk: any // the start/stop of the key in the yaml
-    $gv: any // what's the start/stop of the value in yaml
+    $s?: boolean // is a secret
+    $gk?: any // the start/stop of the key in the yaml
+    $gv?: any // what's the start/stop of the value in yaml
 }
 
 export interface SecretsValuesType {
@@ -138,31 +138,13 @@ const process = (
             hiddenSecretsValues,
         }
 
-        // expand wildcard secrets
-        const allSecrets: any = []
-        secrets.forEach((secret) => {
-            if (Array.isArray(secret)) {
-                if (mappings[secret[0]] && secret[1] === '*') {
-                    Array.from(Array(mappings[secret[0]].length)).forEach((_d, inx) => {
-                        allSecrets.push([secret[0], inx, ...secret.slice(2)])
-                    })
-                }
-            } else if (secret.includes('[*]')) {
-                const arr = secret.split('[*]')
-                if (mappings[arr[0]]) {
-                    Array.from(Array(mappings[arr[0]].length)).forEach((_d, inx) => {
-                        allSecrets.push(`${arr[0]}[${inx}]${arr[1]}`)
-                    })
-                }
-            } else {
-                allSecrets.push(secret)
-            }
-        })
+        // expand wildcards in declared secret paths
+        const allSecrets: any = getAllPaths(secrets, mappings, parsed)
 
         // stuff secrets with '*******'
         allSecrets.forEach((secret: PropertyPath) => {
             const value = get(parsed, secret)
-            if (value) {
+            if (value && typeof value === 'string') {
                 hiddenSecretsValues.push({ path: secret, value })
                 set(parsed, secret, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
             }
@@ -346,7 +328,7 @@ function getMappings(documents: any[]) {
             if (json) {
                 const key = json?.kind || 'root'
                 let arr = mappings[key] || []
-                const rangeObj: { [name: string]: { $k: string; $r: any; $l: any; $v: any; $gk: any; $gv: any } } = {}
+                const rangeObj: { [name: string]: MappingType } = {}
                 const contents: any = document?.contents
                 getMappingItems(contents?.items, rangeObj)
                 arr.push(rangeObj)
@@ -361,22 +343,31 @@ function getMappings(documents: any[]) {
     return { mappings, parsed, resources }
 }
 
-function getMappingItems(
-    items: any[],
-    rangeObj: { [name: string]: { $k: string; $r: any; $l: any; $v: any; $gk: any; $gv: any } }
-) {
+function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType } | MappingType[]) {
     items?.forEach((item: any) => {
         const key = item?.key?.value || 'unknown'
         let value
         if (item.items || item.value) {
             if (item.items ?? item.value.items) {
-                value = {}
+                value = item?.value?.type === 'SEQ' ? [] : {}
                 getMappingItems(item.items ?? item.value.items, value)
             } else {
                 value = item?.value?.value
             }
         }
-        if (item.key) {
+        if (Array.isArray(rangeObj)) {
+            const valuePos = item?.cstNode.rangeAsLinePos
+            const firstRow = valuePos?.start.line ?? 1
+            const lastRow = valuePos?.end.line ?? firstRow
+            const length = Math.max(1, lastRow - firstRow)
+            rangeObj.push({
+                $k: `${rangeObj.length}`,
+                $r: firstRow,
+                $l: length,
+                $v: value,
+                $gv: valuePos,
+            })
+        } else if (item.key) {
             const keyPos = item.key.cstNode.rangeAsLinePos
             const valuePos = item?.value?.cstNode.rangeAsLinePos
             const firstRow = keyPos?.start.line ?? 1
@@ -397,12 +388,8 @@ function getMappingItems(
 export const getPathArray = (path: string[] | string) => {
     const pathArr: string[] = []
     if (!Array.isArray(path)) {
+        path = path.replace(/\[/g, '.').replace(/\]./g, '.')
         path = path.split('.')
-        const convert = path[0].replace('[', '.').replace(']', '').split('.')
-        if (convert.length) {
-            path.shift()
-            path = [...convert, ...path]
-        }
     }
     path.forEach((seg: any, idx: number) => {
         pathArr.push(seg)
@@ -449,4 +436,82 @@ export const formatErrors = (errors: ErrorMessageType[], warnings?: boolean) => 
                 message: error.message,
             }
         })
+}
+
+// if a path has a wildcard fill in the exact path
+export const getPathLines = (
+    paths: (string | string[])[],
+    change: {
+        mappings: { [name: string]: any[] }
+        parsed: { [name: string]: any[] }
+    }
+) => {
+    const pathLines: number[] = []
+    const allPaths = getAllPaths(paths, change.mappings, change.parsed)
+    allPaths.forEach((path) => {
+        const value = get(change.mappings, getPathArray(path))
+        if (value) {
+            pathLines.push(value.$r)
+        }
+    })
+    return pathLines
+}
+
+// if a path has a wildcard fill in the exact path
+const getAllPaths = (
+    paths: (string | any[])[],
+    mappings: { [x: string]: string | any[] },
+    parsed: { [x: string]: string | any[] }
+) => {
+    let allPaths: (string | any[])[] = []
+    paths.forEach((path: string | any[]) => {
+        if (Array.isArray(path)) {
+            //
+            // [Resource, '*', 'key', ...]
+            //
+            if (mappings[path[0]] && path[1] === '*') {
+                Array.from(Array(mappings[path[0]].length)).forEach((_d, inx) => {
+                    allPaths.push([path[0], inx, ...path.slice(2)])
+                })
+            }
+            //
+            // 'Resource[*].key']
+            //
+        } else if (path.includes('[*]')) {
+            const arr = path.split('[*]')
+            if (mappings[arr[0]]) {
+                Array.from(Array(mappings[arr[0]].length)).forEach((_d, inx) => {
+                    allPaths.push(`${arr[0]}[${inx}]${arr[1]}`)
+                })
+            }
+            //
+            // '*.key.key'
+            //
+        } else if (path.startsWith('*.')) {
+            allPaths = [...allPaths, ...findAllPaths(parsed, path.substring(2))]
+        } else {
+            allPaths.push(path)
+        }
+    })
+    return allPaths
+}
+
+const findAllPaths = (object: { [x: string]: any; hasOwnProperty?: any }, searchKey: string, parentKeys = '') => {
+    let ret: any = []
+    if (parentKeys.endsWith(searchKey)) {
+        ret = [...ret, parentKeys]
+    }
+    Object.entries(object).forEach(([k, v]) => {
+        if (typeof v === 'object' && v !== null) {
+            let pk = k
+            if (parentKeys) {
+                pk = isNaN(parseInt(k)) ? `${parentKeys}.${k}` : `${parentKeys}[${k}]`
+            }
+            const o: any = findAllPaths(v, searchKey, pk)
+            if (o != null && o instanceof Array) {
+                ret = [...ret, ...o]
+            }
+        }
+    })
+    return ret
 }
