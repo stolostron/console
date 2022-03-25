@@ -122,7 +122,7 @@ export function PolicyDetailsHistory(props: {
                         columns={columns}
                         keyFn={(item) => `${item.message}.${item.timestamp}`}
                         initialSort={{
-                            index: 1,
+                            index: 2,
                             direction: 'desc',
                         }}
                         fuseThreshold={0}
