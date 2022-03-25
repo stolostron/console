@@ -352,7 +352,7 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
                 value = item?.value?.type === 'SEQ' ? [] : {}
                 getMappingItems(item.items ?? item.value.items, value)
             } else {
-                value = item?.value?.value
+                value = item?.value?.value || item?.value
             }
         }
         if (Array.isArray(rangeObj)) {
