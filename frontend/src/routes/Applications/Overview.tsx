@@ -536,7 +536,9 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.applicationOverview
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string)
+                            .replace(':name', resource.metadata?.name as string) +
+                            '?' +
+                            encodeURIComponent('apiVersion=application.app.k8s.io')
                     )
                 },
             })
