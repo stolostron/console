@@ -29,19 +29,14 @@ export function PolicyDetailsHistory(props: {
         if (!(policyName && policyNamespace && clusterName && templateName)) {
             return []
         }
-        const policyResponses: Policy[] = policies.filter(
-            (p: Policy) => p.metadata.name === `${policyNamespace}.${policyName}`
+        const policyResponse = policies.find(
+            (p: Policy) =>
+                p.metadata.name === `${policyNamespace}.${policyName}` && p.metadata.namespace === clusterName
         )
         const statuses: HistoryTableData[] = []
-        policyResponses.forEach((policyResponse) => {
-            let details: PolicyStatusDetails[] = policyResponse.status?.details ?? []
-            details = details.filter((detail) => {
-                if (detail?.templateMeta?.name === templateName) {
-                    return true
-                }
-                return false
-            })
-            details.forEach((detail: PolicyStatusDetails) => {
+        ;(policyResponse?.status?.details ?? [])
+            .filter((detail) => detail?.templateMeta?.name === templateName)
+            .forEach((detail: PolicyStatusDetails) => {
                 const history = detail.history ?? []
                 history.forEach((status) => {
                     statuses.push({
@@ -50,7 +45,6 @@ export function PolicyDetailsHistory(props: {
                     })
                 })
             })
-        })
         return statuses
     }, [policyName, policyNamespace, clusterName, templateName, policies])
 
