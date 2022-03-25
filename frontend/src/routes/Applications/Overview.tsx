@@ -34,6 +34,7 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
+    DiscoveredArgoApplicationDefinition,
     IResource,
     Subscription,
 } from '../../resources'
@@ -526,7 +527,6 @@ export default function ApplicationsOverview() {
     let modalWarnings: string
 
     const rowActionResolver = (resource: IResource) => {
-        debugger
         const actions: IAcmRowAction<any>[] = []
 
         if (isResourceTypeOf(resource, ApplicationDefinition)) {
@@ -578,6 +578,22 @@ export default function ApplicationsOverview() {
                         NavigationPath.editApplicationArgo
                             .replace(':namespace', resource.metadata?.namespace as string)
                             .replace(':name', resource.metadata?.name as string)
+                    )
+                },
+            })
+        }
+
+        if (isResourceTypeOf(resource, DiscoveredArgoApplicationDefinition)) {
+            actions.push({
+                id: 'viewApplication',
+                title: t('View application'),
+                click: () => {
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', resource.metadata?.namespace as string)
+                            .replace(':name', resource.metadata?.name as string) +
+                            '?' +
+                            'apiVersion=application.argoproj.io'.replace(/\./g, '%2E')
                     )
                 },
             })
