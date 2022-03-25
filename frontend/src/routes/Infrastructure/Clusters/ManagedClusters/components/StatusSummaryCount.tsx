@@ -7,7 +7,7 @@ import { useRecoilState } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { queryStatusCount } from '../../../../../lib/search'
+import { ISearchResult, queryStatusCount } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
@@ -29,7 +29,16 @@ export function StatusSummaryCount() {
     const { isSearchAvailable, isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
     const { push } = useHistory()
     /* istanbul ignore next */
-    const { data, loading, startPolling } = useQuery(() => queryStatusCount(cluster?.name!))
+    const { data, loading, startPolling } = useQuery(() => {
+        if (isSearchAvailable) {
+            return queryStatusCount(cluster?.name!)
+        } else {
+            return {
+                promise: Promise.resolve({ data: { searchResult: [] }} as ISearchResult),
+                abort: () => {}
+            }
+        }
+    })
     useEffect(startPolling, [startPolling])
 
     const policyReport = policyReports.filter(
