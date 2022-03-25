@@ -271,12 +271,16 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
         const gitControl = groupControlData.find(({ id }) => id === 'githubURL')
         const branchCtrl = groupControlData.find(({ id }) => id === 'githubBranch')
         const githubPathCtrl = groupControlData.find(({ id }) => id === 'githubPath')
+        const githubAccessIdCtrl = groupControlData.find(({ id }) => id === 'githubAccessId')
+        const githubUserCtrl = groupControlData.find(({ id }) => id === 'githubUser')
 
         const selectedChannel = _.get(gitControl, 'availableData', {})[_.get(gitControl, 'active', '')]
         // get git repository path from channel object if this is an existing channel, use the combo value otherwise
         const gitUrl = selectedChannel ? _.get(selectedChannel, 'spec.pathname', '') : _.get(gitControl, 'active', '')
         const namespace = _.get(selectedChannel, 'metadata.namespace', '')
         const secretRef = _.get(selectedChannel, 'secretRef', '')
+        const accessToken = _.get(githubAccessIdCtrl, 'active')
+        const user = _.get(githubUserCtrl, 'active')
 
         if (!gitUrl) {
             branchCtrl.active = ''
@@ -296,7 +300,7 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
         if (branchName) {
             //get folders for branch
             setLoadingState(githubPathCtrl, true)
-            getGitChannelPaths(gitUrl, branchName, { secretRef, namespace }).then(
+            getGitChannelPaths(gitUrl, branchName, { secretRef, namespace }, { user, accessToken }).then(
                 (result) => {
                     githubPathCtrl.available = result.sort()
                     setLoadingState(githubPathCtrl, false)
@@ -314,7 +318,7 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
                 setLoadingState(branchCtrl, false)
             }
 
-            getGitChannelBranches(gitUrl, { secretRef, namespace }).then((result) => {
+            getGitChannelBranches(gitUrl, { secretRef, namespace }, { user, accessToken }).then((result) => {
                 if (_.get(result, 'errors')) {
                     onError()
                 } else {
