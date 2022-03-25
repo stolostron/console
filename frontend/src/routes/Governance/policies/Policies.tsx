@@ -290,6 +290,7 @@ export default function PoliciesPage() {
                                 tooltip={!canAutomatePolicy ? t('rbac.unauthorized') : ''}
                                 isInline
                                 variant={ButtonVariant.link}
+                                component={Link}
                                 to={{
                                     pathname: NavigationPath.createPolicyAutomation
                                         .replace(':namespace', item.policy.metadata.namespace as string)
