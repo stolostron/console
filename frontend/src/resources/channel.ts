@@ -85,7 +85,6 @@ export function getGitChannelBranches(
     accessData?: { user?: string; accessToken?: string }
 ) {
     const gitInfo = getGitInformation(channelPath)
-    console.log('checking access data: ', accessData)
     return getGitConnection(secretArgs, accessData)
         .then((octokit) =>
             octokit?.repos.listBranches(gitInfo).then(({ data }) => (data ? data.map((branch) => branch.name) : []))
