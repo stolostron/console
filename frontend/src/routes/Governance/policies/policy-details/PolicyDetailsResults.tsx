@@ -174,7 +174,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
             },
             {
                 header: 'Last report',
-                sort: 'desc',
+                sort: 'timestamp',
                 cell: (item: resultsTableData) =>
                     item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
             },
