@@ -344,7 +344,7 @@ export default function ApplicationsOverview() {
                     return (
                         <span style={{ whiteSpace: 'nowrap' }}>
                             <Link
-                                to={
+                                to={(
                                     NavigationPath.applicationDetails
                                         .replace(':namespace', application.metadata?.namespace as string)
                                         .replace(':name', application.metadata?.name as string) +
@@ -353,7 +353,7 @@ export default function ApplicationsOverview() {
                                     '.' +
                                     application.apiVersion.split('/')[0] +
                                     clusterQuery
-                                }
+                                ).replace(/\./g, '%2E')}
                             >
                                 {application.metadata?.name}
                             </Link>
@@ -526,6 +526,7 @@ export default function ApplicationsOverview() {
     let modalWarnings: string
 
     const rowActionResolver = (resource: IResource) => {
+        debugger
         const actions: IAcmRowAction<any>[] = []
 
         if (isResourceTypeOf(resource, ApplicationDefinition)) {
@@ -538,7 +539,7 @@ export default function ApplicationsOverview() {
                             .replace(':namespace', resource.metadata?.namespace as string)
                             .replace(':name', resource.metadata?.name as string) +
                             '?' +
-                            encodeURIComponent('apiVersion=application.app.k8s.io')
+                            'apiVersion=application.app.k8s.io'.replace(/\./g, '%2E')
                     )
                 },
             })
@@ -565,7 +566,7 @@ export default function ApplicationsOverview() {
                             .replace(':namespace', resource.metadata?.namespace as string)
                             .replace(':name', resource.metadata?.name as string) +
                             '?' +
-                            encodeURIComponent('apiVersion=applicationset.argoproj.io')
+                            'apiVersion=applicationset.argoproj.io'.replace(/\./g, '%2E')
                     )
                 },
             })
