@@ -74,7 +74,11 @@ export default function PolicySetsPage() {
     useEffect(() => {
         const canCreatePolicySetPromise = canUser('create', PolicySetDefinition)
         canCreatePolicySetPromise.promise
-            .then((result) => setCanCreatePolicySet(result.status?.allowed!))
+            .then((result) => {
+                if (result.status?.allowed) {
+                    setCanCreatePolicySet(true)
+                }
+            })
             .catch((err) => console.error(err))
         return () => canCreatePolicySetPromise.abort()
     }, [])
@@ -217,13 +221,7 @@ export default function PolicySetsPage() {
                             <ToolbarItem key={`create-policy-set-toolbar-item`}>
                                 <AcmButton
                                     isDisabled={!canCreatePolicySet}
-                                    tooltip={
-                                        !canCreatePolicySet
-                                            ? t(
-                                                  'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
-                                              )
-                                            : ''
-                                    }
+                                    tooltip={!canCreatePolicySet ? t('rbac.unauthorized') : ''}
                                     component={Link}
                                     variant="primary"
                                     to={NavigationPath.createPolicySet}

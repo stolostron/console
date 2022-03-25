@@ -673,7 +673,7 @@ export default function ApplicationsOverview() {
                 isDisabled={!canCreateApplication}
                 tooltip={
                     !canCreateApplication
-                        ? 'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
+                        ? t('rbac.unauthorized')
                         : ''
                 }
                 id={'application-create'}

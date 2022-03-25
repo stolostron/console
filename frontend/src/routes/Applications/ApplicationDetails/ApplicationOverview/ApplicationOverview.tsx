@@ -302,9 +302,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                                     createSyncButton(applicationData.application.allSubscriptions, setModalProps, t)
                                 ) : (
                                     <Tooltip
-                                        content={t(
-                                            'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
-                                        )}
+                                        content={t('rbac.unauthorized')}
                                         isContentLeftAligned
                                         position="right"
                                     >

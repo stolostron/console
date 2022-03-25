@@ -121,7 +121,11 @@ export default function PoliciesPage() {
     useEffect(() => {
         const canCreatePolicyPromise = canUser('create', PolicyDefinition)
         canCreatePolicyPromise.promise
-            .then((result) => setCanCreatePolicy(result.status?.allowed!))
+            .then((result) => {
+                if (result.status?.allowed) {
+                    setCanCreatePolicy(true)
+                }
+            })
             .catch((err) => console.error(err))
         return () => canCreatePolicyPromise.abort()
     }, [])
@@ -129,7 +133,11 @@ export default function PoliciesPage() {
     useEffect(() => {
         const canAutomatePolicyPromise = canUser('update', PolicyAutomationDefinition)
         canAutomatePolicyPromise.promise
-            .then((result) => setCanAutomatePolicy(result.status?.allowed!))
+            .then((result) => {
+                if (result.status?.allowed) {
+                    setCanAutomatePolicy(true)
+                }
+            })
             .catch((err) => console.error(err))
         return () => canAutomatePolicyPromise.abort()
     })
@@ -247,13 +255,7 @@ export default function PoliciesPage() {
                         return (
                             <AcmButton
                                 isDisabled={!canAutomatePolicy}
-                                tooltip={
-                                    !canAutomatePolicy
-                                        ? t(
-                                              'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
-                                          )
-                                        : ''
-                                }
+                                tooltip={!canAutomatePolicy ? t('rbac.unauthorized') : ''}
                                 isInline
                                 variant={ButtonVariant.link}
                                 onClick={() =>
@@ -284,13 +286,7 @@ export default function PoliciesPage() {
                         return (
                             <AcmButton
                                 isDisabled={!canAutomatePolicy}
-                                tooltip={
-                                    !canAutomatePolicy
-                                        ? t(
-                                              'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
-                                          )
-                                        : ''
-                                }
+                                tooltip={!canAutomatePolicy ? t('rbac.unauthorized') : ''}
                                 isInline
                                 variant={ButtonVariant.link}
                                 to={{
@@ -659,9 +655,7 @@ export default function PoliciesPage() {
                     {
                         isDisabled: !canCreatePolicy,
                         tooltip: !canCreatePolicy
-                            ? t(
-                                  'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
-                              )
+                            ? t('rbac.unauthorized')
                             : '',
                         variant: ButtonVariant.primary,
                         id: 'create',
