@@ -1282,7 +1282,7 @@ describe('CreateCluster', () => {
         await typeByPlaceholderText('Enter one or more subnet IDs', 'subnet-02216dd4dae7c45d0')
         await clickByText('Service Endpoints')
         await typeByPlaceholderText('Enter AWS service endpoint name', 'endpoint-1')
-        await typeByPlaceholderText('Enter AWS service endpoint url', 'aws.endpoint-1.com')
+        await typeByPlaceholderText('Enter AWS service endpoint URL', 'aws.endpoint-1.com')
         await clickByText('Next')
 
         // skipping proxy
