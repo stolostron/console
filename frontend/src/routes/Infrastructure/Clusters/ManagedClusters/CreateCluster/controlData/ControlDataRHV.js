@@ -267,7 +267,7 @@ const controlDataRHV = [
         id: 'ovirt_network_name',
         name: 'creation.ocp.cluster.rhv.network.name',
         tooltip: 'tooltip.creation.ocp.cluster.rhv.network.name',
-        placeholder: 'creation.ocp.cluster.rhv.network.name',
+        placeholder: 'creation.ocp.cluster.rhv.network.name.placeholder',
         type: 'text',
         active: '',
         validation: {
@@ -279,7 +279,7 @@ const controlDataRHV = [
         id: 'vnicProfileID',
         name: 'creation.ocp.cluster.rhv.vnicprofileid',
         tooltip: 'tooltip.creation.ocp.cluster.rhv.vnicprofileid',
-        placeholder: 'creation.ocp.cluster.rhv.vnicprofileid',
+        placeholder: 'creation.ocp.cluster.rhv.vnicprofileid.placeholder',
         type: 'text',
         active: '',
         validation: {
@@ -292,6 +292,7 @@ const controlDataRHV = [
         type: 'text',
         name: 'creation.ocp.api.vip',
         tooltip: 'tooltip.creation.ocp.api.vip',
+        placeholder: 'creation.ocp.api.vip.placeholder',
         active: '',
         validation: VALIDATE_IP,
     },
