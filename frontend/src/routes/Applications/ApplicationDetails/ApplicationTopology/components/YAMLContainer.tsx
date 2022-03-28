@@ -110,7 +110,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                 id="code-content"
                 editorTitle={editorTitle}
                 resources={[resource]}
-                collapses={['*.metadata.managedFields']}
+                filterKube={true}
                 readonly={true}
                 hideCloseButton={true}
             />

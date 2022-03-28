@@ -4,11 +4,19 @@ import { ReactNode, useRef, useEffect, useState, useCallback, useMemo } from 're
 import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
-import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons/dist/js/icons'
+import {
+    RedoIcon,
+    UndoIcon,
+    SearchIcon,
+    EyeIcon,
+    EyeSlashIcon,
+    FilterIcon,
+    CloseIcon,
+} from '@patternfly/react-icons/dist/js/icons'
 import { ClipboardCopyButton } from '@patternfly/react-core'
 import Ajv from 'ajv'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
-import { processForm, processUser, formatErrors, getPathLines, ProcessedType } from './process'
+import { processForm, processUser, formatErrors, ProcessedType } from './process'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
 import { SyncDiffType } from './SyncDiff'
@@ -22,10 +30,10 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     schema?: any
     secrets?: (string | string[])[]
     immutables?: (string | string[])[]
-    collapses?: (string | string[])[]
     readonly?: boolean
     onClose?: () => void
     onEditorChange?: (editorResources: any) => void
+    filterKube?: boolean
     hideCloseButton?: boolean
 }
 
@@ -37,12 +45,12 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         schema,
         secrets,
         immutables,
-        collapses,
         code,
         readonly,
         onEditorChange,
         onClose,
         hideCloseButton,
+        filterKube,
     } = props
     const pageRef = useRef(null)
     const editorRef = useRef<any | null>(null)
@@ -71,8 +79,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const [keyDownHandle, setKeyDownHandle] = useState<any>()
     const [hoverProviderHandle, setHoverProviderHandle] = useState<any>()
     const [showSecrets, setShowSecrets] = useState<boolean>(false)
+    const [filterResources, setFilterResources] = useState<boolean>(!!filterKube)
     const [showCondensed, setShowCondensed] = useState<boolean>(false)
-    const [wasCollapsed, setWasCollapsed] = useState<boolean>(false)
     const [hasUndo, setHasUndo] = useState<boolean>(false)
     const [hasRedo, setHasRedo] = useState<boolean>(false)
 
@@ -274,6 +282,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     resources,
                     changeStack,
                     showSecrets ? undefined : secrets,
+                    filterResources,
                     immutables,
                     userEdits,
                     validationRef.current
@@ -320,22 +329,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     setLastFormComparison(formComparison)
                     setLastChange(change)
                     setUserEdits(edits)
-
-                    if (collapses && !wasCollapsed) {
-                        const foldingContrib = editorRef?.current?.getContribution('editor.contrib.folding')
-                        if (foldingContrib) {
-                            foldingContrib.getFoldingModel().then((foldingModel: any) => {
-                                const regions: any[] = []
-                                getPathLines(collapses, change).forEach((line) => {
-                                    regions.push(foldingModel.getRegionAtLine(line))
-                                })
-                                if (regions.length) {
-                                    foldingModel.toggleCollapseState(regions)
-                                }
-                                setWasCollapsed(true)
-                            })
-                        }
-                    }
                 }, 0)
                 setHasRedo(false)
                 setHasUndo(false)
@@ -346,7 +339,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             clearTimeout(changeTimeoutId)
             clearTimeout(decorationTimeoutId)
         }
-    }, [JSON.stringify(resources), code, showSecrets, immutables])
+    }, [JSON.stringify(resources), code, showSecrets, filterResources, JSON.stringify(immutables)])
 
     // react to changes from user editing yaml
     const editorChanged = (value: string, e: { isFlush: any }) => {
@@ -363,6 +356,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 value,
                 showSecrets ? undefined : secrets,
                 lastChangeWithSecrets?.hiddenSecretsValues,
+                filterResources,
                 immutables,
                 validationRef.current
             )
@@ -516,6 +510,17 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                         toolTipText="Show Secrets"
                         onClick={() => {
                             setShowSecrets(!showSecrets)
+                        }}
+                    />
+                )}
+                {/* kube filter */}
+                {filterKube && (
+                    <CodeEditorControl
+                        icon={<FilterIcon />}
+                        aria-label="Kube Filter"
+                        toolTipText={filterResources ? 'Unfilter Kube' : 'Kube Filter'}
+                        onClick={() => {
+                            setFilterResources(!filterResources)
                         }}
                     />
                 )}
