@@ -9,7 +9,6 @@ import installConfigHbs from '../templates/install-config.hbs'
 import cimTemplateHbs from '../templates/assisted-installer/cim-template.hbs'
 import aiTemplateHbs from '../templates/assisted-installer/ai-template.hbs'
 import { AcmIconVariant, AcmIcon } from '@stolostron/ui-components'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { ConnectedIcon } from '@patternfly/react-icons'
 
 import getControlDataAWS from './ControlDataAWS'
@@ -22,8 +21,6 @@ import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo } from './Logos'
 import ServerIcon from '@patternfly/react-icons/dist/js/icons/server-icon'
 import { controlDataCIM, controlDataAI } from './ControlDataAI'
-
-const { TechnologyPreview, PreviewBadgePosition } = CIM
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -165,7 +162,6 @@ export const getControlData = (
                 logo: <AcmIcon icon={AcmIconVariant.hybrid} />, // TODO(mlibra): change icon (requests graphics by UXD)
                 title: 'cluster.create.cim.subtitle',
                 tooltip: 'cluster.create.cim.tooltip',
-                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
                 change: {
                     insertControlData: controlDataCIM,
                     replacements: {},
@@ -178,7 +174,6 @@ export const getControlData = (
                 logo: <ConnectedIcon />,
                 title: 'cluster.create.ai.subtitle',
                 tooltip: 'cluster.create.ai.tooltip',
-                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
                 change: {
                     insertControlData: controlDataAI,
                     replacements: {},
