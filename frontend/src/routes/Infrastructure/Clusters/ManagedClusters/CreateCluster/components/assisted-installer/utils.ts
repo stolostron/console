@@ -322,7 +322,10 @@ export const useClusterDeployment = ({
 }): CIM.ClusterDeploymentK8sResource | undefined => {
     const [clusterDeployments] = useRecoilValue(waitForAll([clusterDeploymentsState]))
     return useMemo(
-        () => clusterDeployments.find((cd) => cd.metadata.name === name && cd.metadata.namespace === namespace),
+        () =>
+            name
+                ? clusterDeployments.find((cd) => cd.metadata.name === name && cd.metadata.namespace === namespace)
+                : undefined,
         [name, namespace, clusterDeployments]
     )
 }
