@@ -11,7 +11,7 @@ import {
     ClusterPoolApiVersion,
     ClusterPoolKind,
 } from '../../../../resources'
-// import { screen } from '@testing-library/react'
+//  import { screen } from '@testing-library/react'
 
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
@@ -307,11 +307,11 @@ describe('ClusterPools page', () => {
         await clickByLabel('Actions', 0)
         await clickByText('Scale cluster pool')
         await waitForText('Scale cluster pool')
-        await clickByLabel('Plus', 1)
+        await clickByLabel('Minus', 1)
         const patchNocks: Scope[] = [
             nockPatch(mockClusterPool, [
                 { op: 'replace', path: '/spec/size', value: 2 },
-                { op: 'replace', path: '/spec/runningCount', value: 3 },
+                { op: 'replace', path: '/spec/runningCount', value: 1 },
             ]),
         ]
         await clickByText('Scale')
@@ -353,17 +353,26 @@ describe('ClusterPools page', () => {
         await clickByText('Claim cluster', 2)
         await waitForText('Cluster claim name')
         await typeByTestId('clusterClaimName', mockClusterClaimStandbyOnly.metadata.name!)
-        const createNocks: Scope[] = [nockCreate(mockClusterClaimStandbyOnly), nockGet(mockClusterClaimStandbyOnly)]
+        const createNocks: Scope[] = [
+            nockCreate(mockClusterClaimStandbyOnly),
+            nockGet(mockClusterClaim),
+            nockGet(mockClusterClaimStandbyOnly),
+        ]
         await clickByText('Claim')
         await waitForNocks(createNocks)
     })
 
-    test('should be able to claim a cluster and delete pending claim', async () => {
+    test('should be able to claim a cluster, view pending claim, and delete pending claim', async () => {
         await waitForText(mockClusterPoolPending.metadata.name!)
         await clickByText('Claim cluster', 1)
         await waitForText('Cluster claim name')
         await typeByTestId('clusterClaimName', mockClusterClaimPending.metadata.name!)
-        const createNocks: Scope[] = [nockCreate(mockClusterClaimPending), nockGet(mockClusterClaimPending)]
+        const createNocks: Scope[] = [
+            nockCreate(mockClusterClaimPending),
+            nockGet(mockClusterClaim),
+            nockGet(mockClusterClaimStandbyOnly),
+            nockGet(mockClusterClaimPending),
+        ]
         await clickByText('Claim')
         await waitForNocks(createNocks)
         await wait(5000)

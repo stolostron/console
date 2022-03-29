@@ -622,7 +622,10 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
                         cell: (claim: ClusterClaim) => {
                             return claim.metadata.annotations ? (
                                 <div>
-                                    {atob(claim.metadata.annotations!['open-cluster-management.io/user-identity'])}
+                                    {Buffer.from(
+                                        claim.metadata.annotations!['open-cluster-management.io/user-identity'],
+                                        'base64'
+                                    ).toString('ascii')}
                                 </div>
                             ) : (
                                 <span style={{ whiteSpace: 'nowrap' }}>-</span>
