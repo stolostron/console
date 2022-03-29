@@ -5,7 +5,7 @@ import { CIM } from 'openshift-assisted-ui-lib'
 
 import { agentsState } from '../../../../../../atoms'
 import { patchResource } from '../../../../../../resources/utils/resource-request'
-import { useClusterDeployment } from '../../CreateCluster/components/assisted-installer/utils'
+import { useClusterDeployment, onSaveAgent } from '../../CreateCluster/components/assisted-installer/utils'
 
 const { ScaleUpModal } = CIM
 
@@ -61,6 +61,7 @@ const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps)
             clusterDeployment={clusterDeployment}
             agents={agents}
             addHostsToCluster={addHostsToCluster}
+            onChangeHostname={onSaveAgent}
         />
     )
 }

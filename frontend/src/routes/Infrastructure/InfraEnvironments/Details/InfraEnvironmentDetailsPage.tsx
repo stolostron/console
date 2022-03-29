@@ -17,6 +17,7 @@ import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import {
     acmRouteState,
     agentsState,
+    agentClusterInstallsState,
     bareMetalHostsState,
     configMapsState,
     infrastructuresState,
@@ -47,8 +48,8 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
     const [isoModalOpen, setISOModalOpen] = useState(false)
 
-    const [agents, bareMetalHosts, configMaps, infrastructures] = useRecoilValue(
-        waitForAll([agentsState, bareMetalHostsState, configMapsState, infrastructuresState])
+    const [agentClusterInstalls, agents, bareMetalHosts, configMaps, infrastructures] = useRecoilValue(
+        waitForAll([agentsState, bareMetalHostsState, configMapsState, infrastructuresState, agentClusterInstallsState])
     )
 
     const infraEnv = useInfraEnv({ name: match.params.name, namespace: match.params.namespace })
@@ -157,6 +158,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentHosts}>
                             <HostsTab
+                                agentClusterInstalls={agentClusterInstalls}
                                 infraEnv={infraEnv}
                                 infraAgents={infraAgents}
                                 bareMetalHosts={infraBMHs}

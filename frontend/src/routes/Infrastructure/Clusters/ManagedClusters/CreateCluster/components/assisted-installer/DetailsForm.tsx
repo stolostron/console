@@ -134,7 +134,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 }
                 labelHelp={t('import.form.managedClusterSet.labelHelp')}
                 value={managedClusterSet}
-                onChange={(mcs) => setManagedClusterSet(mcs)}
+                onChange={setManagedClusterSet}
                 isDisabled={canJoinClusterSets === undefined || canJoinClusterSets.length === 0}
                 hidden={canJoinClusterSets === undefined}
                 helperText={
