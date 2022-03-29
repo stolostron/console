@@ -19,6 +19,7 @@ import {
 } from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicyKind, reconcileResources } from '../../../resources'
 import {
@@ -27,11 +28,6 @@ import {
     resolveExternalStatus,
     resolveSource,
 } from '../common/util'
-
-function useSearchParams() {
-    const { search } = useLocation()
-    return useMemo(() => new URLSearchParams(search), [search])
-}
 
 export function EditPolicy() {
     const { t } = useTranslation()

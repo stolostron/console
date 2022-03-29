@@ -33,6 +33,7 @@ import { ansibleJobState, applicationsState, channelsState, placementRulesState,
 import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
 import { getApplication } from './ApplicationDetails/ApplicationTopology/model/application'
 import { getErrorInfo } from '../../components/ErrorPage'
+import { useSearchParams } from '../../lib/search'
 
 interface CreationStatus {
     status: string
@@ -170,6 +171,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                             type: 'success',
                             autoClose: true,
                         })
+
                         history.push(NavigationPath.applications)
                     })
                     .catch((err) => {
@@ -203,7 +205,15 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
 
     // cancel button
     const cancelCreate = () => {
-        history.push(NavigationPath.applications)
+        if (searchParams.get('context') === 'applications') {
+            history.push(NavigationPath.applications)
+        } else {
+            history.push(
+                NavigationPath.applicationOverview
+                    .replace(':namespace', editApplication?.selectedAppNamespace ?? '')
+                    .replace(':name', editApplication?.selectedAppName ?? '')
+            )
+        }
     }
 
     // setup translation
@@ -242,6 +252,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     const [placementRules] = useRecoilState(placementRulesState)
     const location = useLocation()
     const editApplication = getEditApplication(location)
+    const searchParams = useSearchParams()
     useEffect(() => {
         if (editApplication) {
             const { selectedAppName, selectedAppNamespace } = editApplication

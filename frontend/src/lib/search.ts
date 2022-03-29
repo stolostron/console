@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { useMemo } from 'react'
+import { useLocation } from 'react-router-dom'
 import { getBackendUrl, IRequestResult, postRequest } from '../resources'
 
 export const apiSearchUrl = '/proxy/search'
@@ -70,4 +72,9 @@ export function queryRemoteArgoApps(): IRequestResult<ISearchResult> {
         },
         query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
     })
+}
+
+export function useSearchParams() {
+    const { search } = useLocation()
+    return useMemo(() => new URLSearchParams(search), [search])
 }

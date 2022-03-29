@@ -56,6 +56,7 @@ import {
     isResourceTypeOf,
 } from './helpers/resource-helper'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { argoAppSetApiVersion, subscriptionAppApiVersion } from './CreateApplication/actions'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -570,9 +571,7 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.applicationOverview
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string) +
-                            '?' +
-                            'apiVersion=application.app.k8s.io'.replace(/\./g, '%2E')
+                            .replace(':name', resource.metadata?.name as string) + subscriptionAppApiVersion
                     )
                 },
             })
@@ -583,7 +582,7 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.editApplicationSubscription
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string)
+                            .replace(':name', resource.metadata?.name as string) + '?context=applications'
                     )
                 },
             })
@@ -597,9 +596,7 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.applicationOverview
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string) +
-                            '?' +
-                            'apiVersion=applicationset.argoproj.io'.replace(/\./g, '%2E')
+                            .replace(':name', resource.metadata?.name as string) + argoAppSetApiVersion
                     )
                 },
             })
@@ -610,7 +607,7 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.editApplicationArgo
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string)
+                            .replace(':name', resource.metadata?.name as string) + '?context=applicationsets'
                     )
                 },
             })
