@@ -364,6 +364,7 @@ export const getNameWithoutPodHash = (relatedKind) => {
     let nameNoHash = relatedKind.name
     let podHash = null
     let deployableName = null
+    let podTemplateHashLabelFound = false
 
     if (_.get(relatedKind, 'kind', '') === 'helmrelease') {
         //for helm releases use hosting deployable to match parent
@@ -375,9 +376,10 @@ export const getNameWithoutPodHash = (relatedKind) => {
         const values = R.split('=')(resLabel)
         if (values.length === 2) {
             const labelKey = values[0].trim()
+            const isControllerRevision = labelKey === 'controller-revision-hash'
             if (
                 labelKey === 'pod-template-hash' ||
-                labelKey === 'controller-revision-hash' ||
+                isControllerRevision ||
                 labelKey === 'controller.kubernetes.io/hash'
             ) {
                 podHash = values[1].trim()
@@ -387,6 +389,11 @@ export const getNameWithoutPodHash = (relatedKind) => {
                     podHash = hashValues[hashValues.length - 1]
                 }
                 nameNoHash = nameNoHash.split(`-${podHash}`)[0]
+                if (isControllerRevision && relatedKind.kind === 'pod') {
+                    // need to remove additional pod suffix
+                    nameNoHash = nameNoHash.substring(0, nameNoHash.lastIndexOf('-'))
+                }
+                podTemplateHashLabelFound = true
             }
             if (labelKey === 'openshift.io/deployment-config.name' || R.includes('deploymentconfig')(resLabel)) {
                 //look for deployment config info in the label; the name of the resource could be different than the one defined by the deployable
@@ -396,6 +403,12 @@ export const getNameWithoutPodHash = (relatedKind) => {
             }
         }
     })
+
+    if (!podTemplateHashLabelFound && relatedKind.kind === 'pod' && relatedKind._ownerUID) {
+        // standalone pods has no ownerUID and no hash at the end
+        nameNoHash = nameNoHash.substring(0, nameNoHash.lastIndexOf('-'))
+    }
+
     //return podHash as well, it will be used to map pods with parent resource
     return { nameNoHash, deployableName, podHash }
 }

@@ -8,6 +8,8 @@ import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { AcmAlert, AcmLoadingPage } from '@stolostron/ui-components'
 import { getResource } from '../../../../../resources'
 
+const typesWithoutDefaultName = ['replicaset', 'pod', 'replicationcontroller', 'controllerrevision']
+
 export interface IYAMLContainerProps {
     node: any[]
     t: TFunction
@@ -26,12 +28,11 @@ export function YAMLContainer(props: IYAMLContainerProps) {
     const [resourceError, setResourceError] = useState({ message: '', stack: '' })
     const t = props.t
 
-    if (type === 'replicaset') {
-        const replicasetModel = _.get(props.node, `specs.${kind}Model`)
-        if (replicasetModel && Object.keys(replicasetModel).length > 0) {
-            const modelArray = replicasetModel[Object.keys(replicasetModel)[0]]
+    if (typesWithoutDefaultName.includes(type)) {
+        const typeModel = _.get(props.node, `specs.${kind}Model`)
+        if (typeModel && Object.keys(typeModel).length > 0) {
+            const modelArray = typeModel[Object.keys(typeModel)[0]]
             name = _.get(modelArray[0], 'name')
-            apiVersion = _.get(modelArray[0], 'apigroup') + '/' + _.get(modelArray[0], 'apiversion')
         }
     }
 
@@ -61,7 +62,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                     }
                 })
                 .catch((err) => {
-                    console.error('Error getting ersource: ', err)
+                    console.error('Error getting resource: ', err)
                     setResourceError(err.message)
                 })
             return () => {
@@ -80,7 +81,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                     }
                 })
                 .catch((err) => {
-                    console.error('Error getting ersource: ', err)
+                    console.error('Error getting resource: ', err)
                     setResourceError(err)
                 })
             return () => {

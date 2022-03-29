@@ -92,7 +92,7 @@ describe('getApplicationData', () => {
         ]
         const result = {
             isArgoApp: false,
-            relatedKinds: ['application', 'subscription', 'cluster', 'replicaset', 'pod'],
+            relatedKinds: ['application', 'subscription', 'cluster', 'replicaset'],
             subscription: 'my-subscription',
         }
         expect(getApplicationData(nodes)).toEqual(result)
@@ -118,7 +118,7 @@ describe('getApplicationData', () => {
         const result = {
             cluster: 'local-cluster',
             isArgoApp: true,
-            relatedKinds: ['replicaset', 'pod'],
+            relatedKinds: ['replicaset'],
             source: {},
             subscription: null,
         }

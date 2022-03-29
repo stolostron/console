@@ -275,6 +275,11 @@ export const syncControllerRevisionPodStatusMap = (resourceMap) => {
                     ..._.get(parentResource, `specs.${parentResource.type}Model`, ''),
                 }
                 if (parentModel) {
+                    const currentModel = _.get(controllerRevision, 'specs.controllerrevisionModel')
+                    if (currentModel) {
+                        parentModel[Object.keys(parentModel)[0]][0].name =
+                            currentModel[Object.keys(currentModel)[0]][0].name
+                    }
                     _.set(controllerRevision, 'specs.controllerrevisionModel', parentModel)
                 }
             }

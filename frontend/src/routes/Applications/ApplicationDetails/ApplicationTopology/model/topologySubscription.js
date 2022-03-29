@@ -5,6 +5,7 @@ import { get, includes, concat, uniqBy, filter, keyBy, cloneDeep, groupBy } from
 import { createChildNode, addClusters } from './utils'
 
 const localClusterName = 'local-cluster'
+const typesWithPods = ['replicaset', 'replicationcontroller', 'statefulset', 'daemonset']
 
 export const getSubscriptionTopology = (application, managedClusters, relatedResources) => {
     const links = []
@@ -352,6 +353,9 @@ const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
     // create route subobject, if this object is an ingress
     createIngressRouteChild(node, links, nodes)
 
+    // for replicaset and replicationcontroller
+    createPodChild(node, links, nodes)
+
     return node
 }
 
@@ -361,7 +365,7 @@ export const createReplicaChild = (parentObject, template, links, nodes) => {
         const type = parentType === 'deploymentconfig' ? 'replicationcontroller' : 'replicaset'
         if (template && template.related) {
             const relatedMap = keyBy(template.related, 'kind')
-            if (relatedMap['replicaset']) {
+            if (relatedMap['replicaset'] || relatedMap['replicationcontroller']) {
                 const pNode = createChildNode(parentObject, type, links, nodes)
                 return createChildNode(pNode, 'pod', links, nodes)
             } else if (relatedMap['pod']) {
@@ -369,7 +373,7 @@ export const createReplicaChild = (parentObject, template, links, nodes) => {
             }
         } else {
             const pNode = createChildNode(parentObject, type, links, nodes)
-            if (type === 'replicaset') {
+            if (typesWithPods.includes(type)) {
                 return createChildNode(pNode, 'pod', links, nodes)
             }
         }
@@ -388,6 +392,14 @@ const createControllerRevisionChild = (parentObject, links, nodes) => {
     const parentType = get(parentObject, 'type', '')
     if (parentType === 'daemonset' || parentType === 'statefulset') {
         // create only for daemonset or statefulset types
-        return createChildNode(parentObject, 'controllerrevision', links, nodes)
+        const pNode = createChildNode(parentObject, 'controllerrevision', links, nodes)
+        return createChildNode(pNode, 'pod', links, nodes)
+    }
+}
+
+const createPodChild = (parentObject, links, nodes) => {
+    const parentType = get(parentObject, 'type', '')
+    if (parentType === 'replicaset' || parentType === 'replicationcontroller') {
+        return createChildNode(parentObject, 'pod', links, nodes)
     }
 }
