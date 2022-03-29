@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { AcmPageContent } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
@@ -33,11 +33,18 @@ const {
 type HostsTabProps = {
     infraEnv: CIM.InfraEnvK8sResource
     infraAgents: CIM.AgentK8sResource[]
+    agentClusterInstalls: CIM.AgentClusterInstallK8sResource[]
     bareMetalHosts: CIM.BareMetalHostK8sResource[]
     aiConfigMap: CIM.ConfigMapK8sResource
 }
 
-const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts, aiConfigMap }) => {
+const HostsTab: React.FC<HostsTabProps> = ({
+    infraEnv,
+    infraAgents,
+    agentClusterInstalls,
+    bareMetalHosts,
+    aiConfigMap,
+}) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
     const [isDiscoveryHintModalOpen, setDiscoveryHintModalOpen] = useState(false)
@@ -81,6 +88,7 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                         <CardBody>
                             <InfraEnvAgentTable
                                 agents={infraAgents}
+                                agentClusterInstalls={agentClusterInstalls}
                                 bareMetalHosts={bareMetalHosts}
                                 infraEnv={infraEnv}
                                 getClusterDeploymentLink={getClusterDeploymentLink}
