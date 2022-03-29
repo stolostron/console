@@ -241,11 +241,13 @@ export function PolicyActionDropdown(props: {
                 tooltip: t('Edit policy'),
                 addSeparator: true,
                 click: (item: PolicyTableItem) => {
-                    history.push(
-                        NavigationPath.editPolicy
-                            .replace(':namespace', item.policy.metadata.namespace!)
-                            .replace(':name', item.policy.metadata.name!)
-                    )
+                    let path = NavigationPath.editPolicy
+                        .replace(':namespace', item.policy.metadata.namespace!)
+                        .replace(':name', item.policy.metadata.name!)
+                    if (props.isKebab) {
+                        path += '?context=policies'
+                    }
+                    history.push(path)
                 },
                 rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
@@ -268,6 +270,7 @@ export function PolicyActionDropdown(props: {
             item.policy.metadata.namespace,
             item.policy.spec.disabled,
             item.policy.spec.remediationAction,
+            props.isKebab,
             setModal,
             t,
         ]
