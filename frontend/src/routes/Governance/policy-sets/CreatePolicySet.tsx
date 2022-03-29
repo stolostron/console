@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicySet/PolicySetWizard'
+import { PolicySetWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicySet/PolicySetWizard'
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useMemo } from 'react'
@@ -16,6 +16,7 @@ import {
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicySetKind, reconcileResources } from '../../../resources'
+import schema from './schema.json'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
 export function WizardSyncEditor() {
@@ -26,7 +27,7 @@ export function WizardSyncEditor() {
             variant="toolbar"
             resources={resources}
             hideCloseButton={true}
-            // schema={schema}
+            schema={schema}
             onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
                 update(changes?.resources)
             }}

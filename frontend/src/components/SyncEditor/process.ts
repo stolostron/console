@@ -312,6 +312,7 @@ function validateResource(
                     case 'pattern':
                         errorMsg.linePos.start.col = mapping.$gv.start.col
                         errorMsg.linePos.end.col = mapping.$gv.end.col
+                        errorMsg.isWarning = false
                         break
                     // value wrong enum
                     case 'enum':

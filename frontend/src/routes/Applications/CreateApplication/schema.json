@@ -10,7 +10,10 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string" },
+                        "name": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$"
+                        },
                         "namespace": { "type": "string" }
                     },
                     "required": ["name", "namespace"]
@@ -102,7 +105,10 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string" },
+                        "name": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$"
+                        },
                         "namespace": { "type": "string" }
                     },
                     "required": ["name", "namespace"]

@@ -21,6 +21,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicySetKind, reconcileResources } from '../../../resources'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
+import schema from './schema.json'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
 export function WizardSyncEditor() {
@@ -31,7 +32,7 @@ export function WizardSyncEditor() {
             variant="toolbar"
             resources={resources}
             hideCloseButton={true}
-            // schema={schema}
+            schema={schema}
             immutables={['PolicySet[0].metadata.name', 'PolicySet[0].metadata.namespace']}
             filterKube={true}
             onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {

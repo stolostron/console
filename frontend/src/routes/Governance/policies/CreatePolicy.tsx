@@ -16,6 +16,7 @@ import {
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicyKind, reconcileResources } from '../../../resources'
+import schema from './schema.json'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
 export function WizardSyncEditor() {
@@ -26,7 +27,7 @@ export function WizardSyncEditor() {
             variant="toolbar"
             resources={resources}
             hideCloseButton={true}
-            // schema={schema}
+            schema={schema}
             onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
                 update(changes?.resources)
             }}

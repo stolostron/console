@@ -28,6 +28,7 @@ import {
     resolveExternalStatus,
     resolveSource,
 } from '../common/util'
+import schema from './schema.json'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
 export function WizardSyncEditor() {
@@ -39,7 +40,7 @@ export function WizardSyncEditor() {
             resources={resources}
             hideCloseButton={true}
             immutables={['Policy[0].metadata.name', 'Policy[0].metadata.namespace']}
-            // schema={schema}
+            schema={schema}
             filterKube={true}
             onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
                 update(changes?.resources)
