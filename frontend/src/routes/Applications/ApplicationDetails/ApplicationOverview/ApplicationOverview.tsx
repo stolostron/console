@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmActionGroup, AcmButton, AcmDescriptionList, AcmPageContent, ListItems } from '@stolostron/ui-components'
+import {
+    AcmActionGroup,
+    AcmButton,
+    AcmDescriptionList,
+    AcmInlineStatusGroup,
+    AcmPageContent,
+    ListItems,
+} from '@stolostron/ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import {
     Button,
@@ -49,7 +56,6 @@ import { ApplicationDataType } from '../ApplicationDetails'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
 import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
-import { DiagramIcons } from '../../../../components/Topology/shapes/DiagramIcons'
 import { getDiagramElements } from '../ApplicationTopology/model/topology'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 import { Link } from 'react-router-dom'
@@ -447,31 +453,12 @@ function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
         // render the status of the application
         return (
             <Fragment>
-                <DiagramIcons />
-                <div className="status-icon-container green-status" id="green-resources">
-                    <svg className="status-icon">
-                        <use href={'#diagramIcons_checkmark'} style={{ fill: '#3E8635' }} />
-                    </svg>
-                    <div className="status-count">{nodeStatuses.green}</div>
-                </div>
-                <div className="status-icon-container orange-status" id="orange-resources">
-                    <svg className="status-icon">
-                        <use href={'#diagramIcons_pending'} />
-                    </svg>
-                    <div className="status-count">{nodeStatuses.orange}</div>
-                </div>
-                <div className="status-icon-container yellow-status" id="yellow-resources">
-                    <svg className="status-icon">
-                        <use href={'#diagramIcons_warning'} />
-                    </svg>
-                    <div className="status-count">{nodeStatuses.yellow}</div>
-                </div>
-                <div className="status-icon-container red-status" id="red-resources">
-                    <svg className="status-icon">
-                        <use href={'#diagramIcons_failure'} />
-                    </svg>
-                    <div className="status-count">{nodeStatuses.red}</div>
-                </div>
+                <AcmInlineStatusGroup
+                    healthy={nodeStatuses.green}
+                    progress={nodeStatuses.orange}
+                    warning={nodeStatuses.yellow}
+                    danger={nodeStatuses.red}
+                />
             </Fragment>
         )
     }

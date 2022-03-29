@@ -51,44 +51,6 @@
     cursor: pointer;
 }
 
-.overview-cards-container .status-icon-container {
-    display: inline-block;
-    width: 40px;
-    height: 24px;
-    border-radius: 12px;
-    padding: 1px 2px 1px 6px;
-    margin-right: 8px;
-}
-
-.green-status {
-    background-color: #f3faf2;
-}
-
-.yellow-status {
-    background-color: #fdf7e7;
-}
-
-.red-status {
-    background-color: #faeae8;
-}
-
-.orange-status {
-    background-color: #f0f0f0;
-}
-
-.overview-cards-container .status-icon {
-    width: 12px;
-    height: 12px;
-}
-
-.status-count {
-    display: inline-block;
-    font-size: 12px;
-    margin-left: 4px;
-    padding-top: 2px;
-    vertical-align: top;
-}
-
 .app-name-container {
     display: flex;
     align-items: baseline;
