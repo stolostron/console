@@ -799,7 +799,7 @@ export function getClusterStatus(
                 )
                 cdStatus = ClusterStatus.notstarted
                 statusMessage = invalidInstallConfigCondition?.message
-            } } else if (authenticationError) {
+            } else if (authenticationError) {
                 const authenticationErrorCondition = cdConditions.find((c) => c.type === 'AuthenticationFailure')
                 cdStatus = ClusterStatus.provisionfailed
                 statusMessage = authenticationErrorCondition?.message
