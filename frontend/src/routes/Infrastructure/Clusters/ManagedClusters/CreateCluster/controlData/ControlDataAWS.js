@@ -94,6 +94,21 @@ const setAWSZones = (control, controlData) => {
     setZones('workerPools', 'workerZones')
 }
 
+export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataAWS)
+    let controlData = [...controlDataAWS]
+    if (includeAwsPrivate) {
+        controlData.push(...awsPrivateControlData)
+        const regionObject = controlData.find((object) => object.id === 'region')
+        if (regionObject && regionObject.available) {
+            awsRegions = { ...awsRegions, ...awsGovRegions }
+            regionObject.available = regionObject.available.concat(Object.keys(awsRegions))
+        }
+    }
+    if (includeAutomation) controlData.push(...automationControlData)
+    return controlData
+}
+
 const AWSmasterInstanceTypes = [
     { value: 'm5.large', description: gp2Cpu8Gib },
     { value: 'm5.xlarge', description: gp4Cpu16Gib },
@@ -594,14 +609,6 @@ export const AWSworkerInstanceTypes = [
         ],
     },
 ]
-
-export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
-    if (includeSno) addSnoText(controlDataAWS)
-    let controlData = [...controlDataAWS]
-    if (includeAwsPrivate) controlData.push(...awsPrivateControlData)
-    if (includeAutomation) controlData.push(...automationControlData)
-    return controlData
-}
 
 const controlDataAWS = [
     ////////////////////////////////////////////////////////////////////////////////////
