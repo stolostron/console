@@ -39,12 +39,12 @@ export const nodeMustHavePods = (node) => {
     if (
         R.includes(R.pathOr('', ['type'])(node), [
             'pod',
-            'replicaset',
+            //'replicaset',
             'daemonset',
             'statefulset',
-            'replicationcontroller',
-            'deployment',
-            'deploymentconfig',
+            //'replicationcontroller',
+            //'deployment',
+            //'deploymentconfig',
             'controllerrevision',
         ])
     ) {

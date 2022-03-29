@@ -26,7 +26,7 @@ import {
     subscriptionInputNotPlaced,
     genericNodeInputRed,
     genericNodeInputRed2,
-    deploymentNodeYellow3,
+    deploymentNodeRed,
     deploymentNodeYellow4,
     deploymentNodeYellow2,
     deploymentNodeNoPODS,
@@ -1126,8 +1126,8 @@ describe('computeNodeStatus', () => {
     it('return computeNodeStatus rules node green2', () => {
         expect(computeNodeStatus(ruleNodeGreen2, true, t)).toEqual('green')
     })
-    it('return computeNodeStatus deploymentNodeYellow3', () => {
-        expect(computeNodeStatus(deploymentNodeYellow3, true, t)).toEqual('yellow')
+    it('return computeNodeStatus deploymentNodeRed', () => {
+        expect(computeNodeStatus(deploymentNodeRed, true, t)).toEqual('red')
     })
     it('return computeNodeStatus deploymentNodeYellow4', () => {
         expect(computeNodeStatus(deploymentNodeYellow4, true, t)).toEqual('yellow')
