@@ -99,8 +99,6 @@ const setAWSZones = (control, controlData) => {
 export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
     if (includeSno) addSnoText(controlDataAWS)
     let controlData = [...controlDataAWS]
-    if (includeAutomation) controlData.push(...automationControlData)
-
     if (includeAwsPrivate) {
         controlData.push(...awsPrivateControlData)
         const regionObject = controlData.find((object) => object.id === 'region')
@@ -109,6 +107,7 @@ export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = 
             regionObject.available = regionObject.available.concat(Object.keys(awsRegions))
         }
     }
+    if (includeAutomation) controlData.push(...automationControlData)
     return controlData
 }
 
