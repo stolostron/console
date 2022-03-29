@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode } from '@patternfly-labs/react-form-wizard'
 import { PolicySetWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicySet/PolicySetWizard'
+import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
@@ -20,6 +21,29 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicySetKind, reconcileResources } from '../../../resources'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
+
+export function WizardSyncEditor() {
+    const resources = useItem() // Wizard framework sets this context
+    const { update } = useData() // Wizard framework sets this context
+    return (
+        <SyncEditor
+            variant="toolbar"
+            resources={resources}
+            hideCloseButton={true}
+            // schema={schema}
+            immutables={['PolicySet[0].metadata.name', 'PolicySet[0].metadata.namespace']}
+            filterKube={true}
+            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+                update(changes?.resources)
+            }}
+        />
+    )
+}
+
+function getWizardSyncEditor() {
+    return <WizardSyncEditor />
+}
 
 export function EditPolicySet() {
     const { t } = useTranslation()
@@ -68,6 +92,7 @@ export function EditPolicySet() {
             namespaces={namespaceNames}
             placementRules={placementRules}
             clusterSetBindings={clusterSetBindings}
+            yamlEditor={getWizardSyncEditor}
             editMode={EditMode.Edit}
             resources={existingResources}
             onSubmit={(data) => {

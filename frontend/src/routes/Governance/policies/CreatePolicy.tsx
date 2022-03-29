@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Policy/PolicyWizard'
+import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -15,6 +16,27 @@ import {
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicyKind, reconcileResources } from '../../../resources'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
+
+export function WizardSyncEditor() {
+    const resources = useItem() // Wizard framework sets this context
+    const { update } = useData() // Wizard framework sets this context
+    return (
+        <SyncEditor
+            variant="toolbar"
+            resources={resources}
+            hideCloseButton={true}
+            // schema={schema}
+            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+                update(changes?.resources)
+            }}
+        />
+    )
+}
+
+function getWizardSyncEditor() {
+    return <WizardSyncEditor />
+}
 
 export function CreatePolicy() {
     const { t } = useTranslation()
@@ -32,6 +54,7 @@ export function CreatePolicy() {
             title={t('Create policy')}
             policies={policies}
             clusters={managedClusters}
+            yamlEditor={getWizardSyncEditor}
             namespaces={namespaceNames}
             placements={placements}
             placementRules={placementRules}

@@ -80,7 +80,7 @@
                                             }
                                         }
                                     },
-                                    "required": ["project", "source", "destination", "syncPolicy"]
+                                    "required": ["project", "source", "destination"]
                                 }
                             },
                             "required": ["metadata", "spec"]
