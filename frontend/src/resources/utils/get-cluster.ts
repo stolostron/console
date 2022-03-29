@@ -394,6 +394,7 @@ export function getProvider(
             provider = Provider.vmware
             break
         case 'RHV':
+        case 'OVIRT':
             provider = Provider.redhatvirtualization
             break
         case 'AUTO-DETECT':

@@ -19,7 +19,7 @@ import {
 } from '../../atoms'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
-import { canUser } from '../../lib/rbac-util'
+import { getAuthorizedNamespaces, rbacCreate, rbacDelete } from '../../lib/rbac-util'
 import { queryRemoteArgoApps } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
@@ -34,8 +34,14 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
+    DiscoveredArgoApplicationDefinition,
     IResource,
     Subscription,
+    listProjects,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    ResourceAttributes,
 } from '../../resources'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
@@ -163,6 +169,34 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
             ]
         }
     }
+}
+
+export async function checkPermission(resourceAttributes: ResourceAttributes, setStateFn: (state: boolean) => void) {
+    // Require hub to run on OCP
+    const fetchProjects = async () => {
+        return listProjects().promise
+    }
+
+    fetchProjects().then((projects) => {
+        const namespaceArr: Namespace[] = projects.map((project) => {
+            return {
+                apiVersion: NamespaceApiVersion,
+                kind: NamespaceKind,
+                metadata: project.metadata,
+            } as Namespace
+        })
+        const fetchAuthorizedNamespaces = async () => {
+            const authorizedNamespaces = await getAuthorizedNamespaces([resourceAttributes], namespaceArr)
+            return authorizedNamespaces
+        }
+        fetchAuthorizedNamespaces().then((authorizedNamespaces) => {
+            if (authorizedNamespaces?.length > 0) {
+                setStateFn(true)
+            } else {
+                setStateFn(false)
+            }
+        })
+    })
 }
 
 export default function ApplicationsOverview() {
@@ -344,7 +378,7 @@ export default function ApplicationsOverview() {
                     return (
                         <span style={{ whiteSpace: 'nowrap' }}>
                             <Link
-                                to={
+                                to={(
                                     NavigationPath.applicationDetails
                                         .replace(':namespace', application.metadata?.namespace as string)
                                         .replace(':name', application.metadata?.name as string) +
@@ -353,7 +387,7 @@ export default function ApplicationsOverview() {
                                     '.' +
                                     application.apiVersion.split('/')[0] +
                                     clusterQuery
-                                }
+                                ).replace(/\./g, '%2E')}
                             >
                                 {application.metadata?.name}
                             </Link>
@@ -536,7 +570,9 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.applicationOverview
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string)
+                            .replace(':name', resource.metadata?.name as string) +
+                            '?' +
+                            'apiVersion=application.app.k8s.io'.replace(/\./g, '%2E')
                     )
                 },
             })
@@ -562,7 +598,8 @@ export default function ApplicationsOverview() {
                         NavigationPath.applicationOverview
                             .replace(':namespace', resource.metadata?.namespace as string)
                             .replace(':name', resource.metadata?.name as string) +
-                            '?apiVersion=applicationset.argoproj.io'
+                            '?' +
+                            'apiVersion=applicationset.argoproj.io'.replace(/\./g, '%2E')
                     )
                 },
             })
@@ -574,6 +611,22 @@ export default function ApplicationsOverview() {
                         NavigationPath.editApplicationArgo
                             .replace(':namespace', resource.metadata?.namespace as string)
                             .replace(':name', resource.metadata?.name as string)
+                    )
+                },
+            })
+        }
+
+        if (isResourceTypeOf(resource, DiscoveredArgoApplicationDefinition)) {
+            actions.push({
+                id: 'viewApplication',
+                title: t('View application'),
+                click: () => {
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', resource.metadata?.namespace as string)
+                            .replace(':name', resource.metadata?.name as string) +
+                            '?' +
+                            'apiVersion=application.argoproj.io'.replace(/\./g, '%2E')
                     )
                 },
             })
@@ -646,36 +699,20 @@ export default function ApplicationsOverview() {
     }
 
     useEffect(() => {
-        const canCreateApplicationPromise = canUser('create', ApplicationDefinition)
-        canCreateApplicationPromise.promise
-            .then((result) => setCanCreateApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateApplicationPromise.abort()
+        checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication)
     }, [])
     useEffect(() => {
-        const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
-        canDeleteApplicationPromise.promise
-            .then((result) => setCanDeleteApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationPromise.abort()
+        checkPermission(rbacDelete(ApplicationDefinition), setCanDeleteApplication)
     }, [])
     useEffect(() => {
-        const canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
-        canDeleteApplicationSetPromise.promise
-            .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationSetPromise.abort()
+        checkPermission(rbacDelete(ApplicationSetDefinition), setCanDeleteApplicationSet)
     }, [])
 
     const appCreationButton = () => {
         return (
             <AcmDropdown
                 isDisabled={!canCreateApplication}
-                tooltip={
-                    !canCreateApplication
-                        ? 'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
-                        : ''
-                }
+                tooltip={!canCreateApplication ? t('rbac.unauthorized') : ''}
                 id={'application-create'}
                 onSelect={(id) => {
                     id === 'create-argo'

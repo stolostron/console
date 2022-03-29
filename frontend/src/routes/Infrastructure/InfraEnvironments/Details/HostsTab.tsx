@@ -24,7 +24,14 @@ import {
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import { isBMPlatform } from '../utils'
 
-const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames, AgentAlerts } = CIM
+const {
+    HostsNotShowingLink,
+    InfraEnvAgentTable,
+    EditBMHModal,
+    getAgentsHostsNames,
+    AgentAlerts,
+    DiscoveryTroubleshootingModal,
+} = CIM
 
 const canEditHost = (agent: CIM.AgentK8sResource) => !!agent
 
@@ -38,6 +45,7 @@ type HostsTabProps = {
 const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts, aiConfigMap }) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
+    const [isDiscoveryHintModalOpen, setDiscoveryHintModalOpen] = useState(false)
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
         { open: false }
     )
@@ -64,6 +72,22 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                         docVersion={DOC_VERSION}
                         aiConfigMap={aiConfigMap}
                     />
+                    {!!infraAgents.length && (
+                        <Card isPlain isCompact>
+                            <CardBody>
+                                <HostsNotShowingLink
+                                    key="hosts-not-showing"
+                                    setDiscoveryHintModalOpen={setDiscoveryHintModalOpen}
+                                />
+                                {isDiscoveryHintModalOpen && (
+                                    <DiscoveryTroubleshootingModal
+                                        isOpen={isDiscoveryHintModalOpen}
+                                        setDiscoveryHintModalOpen={setDiscoveryHintModalOpen}
+                                    />
+                                )}
+                            </CardBody>
+                        </Card>
+                    )}
                     <Card>
                         <CardBody>
                             <InfraEnvAgentTable

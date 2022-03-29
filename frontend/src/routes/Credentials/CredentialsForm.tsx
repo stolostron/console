@@ -166,9 +166,7 @@ export default function CredentialsFormPage() {
                     <PageSection variant="light" isFilled>
                         <AcmEmptyState
                             title={t('Unauthorized')}
-                            message={t(
-                                'You are not authorized to complete this action. There is currently no namespace that allows you to create this resource. See your cluster administrator for role-based access control information.'
-                            )}
+                            message={t('rbac.unauthorized.namespace')}
                             showIcon={false}
                         />
                     </PageSection>

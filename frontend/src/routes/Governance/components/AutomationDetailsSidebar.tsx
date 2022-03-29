@@ -252,7 +252,7 @@ export function AutomationDetailsSidebar(props: {
                             <strong>{t('Ansible tower URL')}</strong>
                         </DescriptionListTerm>
                         <DescriptionListDescription>
-                            <Button isInline variant={ButtonVariant.link} href={towerURL}>
+                            <Button isInline variant={ButtonVariant.link} onClick={() => window.open(towerURL)}>
                                 {towerURL}
                             </Button>
                         </DescriptionListDescription>

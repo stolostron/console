@@ -7,6 +7,7 @@ import {
     VALIDATE_BASE_DNS_NAME_REQUIRED,
     VALID_DNS_LABEL,
     VALIDATE_URL,
+    VALIDATE_ALPHANUMERIC,
 } from 'temptifly'
 import { listClusterImageSets } from '../../../../../../resources'
 import { unpackProviderConnection } from '../../../../../../resources'
@@ -493,6 +494,18 @@ export const automationControlData = [
             required: false,
         },
         prompts: CREATE_AUTOMATION_TEMPLATE,
+    },
+]
+
+export const architectureData = [
+    {
+        name: 'Architecture',
+        tooltip: 'tooltip.architecture',
+        id: 'architecture',
+        type: 'combobox',
+        available: ['amd64'],
+        validation: VALIDATE_ALPHANUMERIC,
+        cacheUserValueKey: 'create.cluster.architecture',
     },
 ]
 

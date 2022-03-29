@@ -42,7 +42,7 @@ export function getErrorInfo(error: unknown): AcmAlertInfo {
             case ResourceErrorCode.Forbidden:
                 title = 'Forbidden'
                 message =
-                    'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                    'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
                 break
             case ResourceErrorCode.GatewayTimeout:
                 title = 'Gateway timeout'
