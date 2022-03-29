@@ -580,7 +580,7 @@ export const setAvailableSecrets = (control, result) => {
         control.availableMap = {}
         control.availableData = []
     }
-    if (control.available.length === 0 && (error || secrets)) {
+    if (control.available.length === 0 && (error || secrets.length)) {
         if (error) {
             control.isFailed = true
         } else if (secrets.length) {
