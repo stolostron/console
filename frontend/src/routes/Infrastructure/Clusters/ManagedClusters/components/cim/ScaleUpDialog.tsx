@@ -18,7 +18,6 @@ type ScaleUpDialogProps = {
 const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps) => {
     const [agents] = useRecoilValue(waitForAll([agentsState]))
     const clusterDeployment = useClusterDeployment({ name: clusterName, namespace: clusterName })
-    console.log('--- clusterDeployment: ', clusterDeployment)
 
     const addHostsToCluster = useCallback(
         async (agentsToAdd: CIM.AgentK8sResource[]) => {
