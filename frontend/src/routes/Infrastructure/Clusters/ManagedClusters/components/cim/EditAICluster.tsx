@@ -11,13 +11,11 @@ import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolo
 import { patchResource } from '../../../../../../resources'
 import { agentsState, clusterImageSetsState, configMapsState } from '../../../../../../atoms'
 import {
-    canEditHost,
     fetchNMState,
     fetchSecret,
     getAIConfigMap,
     getClusterDeploymentLink,
     getOnCreateBMH,
-    useOnDeleteHost,
     getOnSaveISOParams,
     onApproveAgent,
     onDiscoveryHostsNext,
@@ -25,7 +23,6 @@ import {
     onSaveAgent,
     onSaveBMH,
     onSaveNetworking,
-    useBMHsOfAIFlow,
     useClusterDeployment,
     useAgentClusterInstall,
     useInfraEnv,
@@ -33,12 +30,13 @@ import {
     fetchInfraEnv,
     fetchManagedClusters,
     fetchKlusterletAddonConfig,
+    useOnDeleteHost,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { isBMPlatform } from '../../../../InfraEnvironments/utils'
+import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 
 const {
     ClusterDeploymentWizard,
@@ -75,14 +73,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const agentClusterInstall = useAgentClusterInstall({ name, namespace })
     const infraEnv = useInfraEnv({ name, namespace })
 
-    // TODO(mlibra): Arn't we missing Bare Metal Hosts in the tables???
-    const filteredBMHs = useBMHsOfAIFlow({ name, namespace })
-
-    const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
-        { open: false }
-    )
     const nmStates = useNMStatesOfNamespace(infraEnv?.metadata?.namespace)
-    const onDeleteHost = useOnDeleteHost(setBulkModalProps, filteredBMHs, agentClusterInstall, nmStates)
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
 
@@ -110,12 +101,15 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
         [agents, infraEnv]
     )
 
+    const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
+        { open: false }
+    )
+    const onDeleteHost = useOnDeleteHost(setBulkModalProps, [], agentClusterInstall, nmStates)
+
     const hostActions = {
-        canEditHost: () => true,
         onEditHost: (agent: CIM.AgentK8sResource) => {
             setEditAgent(agent)
         },
-        canEditRole: () => true,
         onEditRole: (agent: CIM.AgentK8sResource, role: string | undefined) => {
             return patchResource(agent, [
                 {
@@ -125,6 +119,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                 },
             ]).promise
         },
+        onDeleteHost,
     }
 
     useEffect(() => {
@@ -205,8 +200,8 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
             <AcmErrorBoundary>
                 <AcmPageContent id="edit-cluster">
                     <PageSection variant="light" type="wizard" isFilled>
+                        <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
                         <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
-                            <BulkActionModel<CIM.AgentK8sResource> {...bulkModalProps} />
                             <ClusterDeploymentWizard
                                 className="cluster-deployment-wizard"
                                 clusterImages={clusterImageSets}
@@ -221,18 +216,12 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                     onHostsNext({ values, clusterDeployment, agents, agentClusterInstall })
                                 }
                                 onApproveAgent={onApproveAgent}
-                                onDeleteHost={onDeleteHost as any}
-                                canDeleteAgent={(agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) =>
-                                    !!nmStates && (!!agent || !!bmh)
-                                }
                                 onSaveAgent={onSaveAgent}
-                                canEditHost={canEditHost}
                                 onSaveBMH={onSaveBMH}
                                 onCreateBMH={getOnCreateBMH(infraEnv) /* AI Flow specific. Not called for CIM. */}
                                 onSaveISOParams={
                                     getOnSaveISOParams(infraEnv) /* AI Flow specific. Not called for CIM. */
                                 }
-                                // onFormSaveError={setErrorHandler}
                                 onSaveHostsDiscovery={(values) =>
                                     onDiscoveryHostsNext({
                                         values,

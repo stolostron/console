@@ -1,6 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { createKlusterletAddonConfig, createManagedCluster, managedClusterSetLabel } from '../resources'
+import {
+    createKlusterletAddonConfig,
+    createManagedCluster,
+    managedClusterSetLabel,
+    ResourceError,
+    ResourceErrorCode,
+} from '../resources'
 
 export const createImportResources = (clusterName: string, clusterSet?: string) => {
     const clusterLabels: Record<string, string> = {
@@ -15,7 +21,14 @@ export const createImportResources = (clusterName: string, clusterSet?: string) 
         promise: new Promise(async (resolve, reject) => {
             try {
                 const managedCluster = await createManagedCluster({ clusterName, clusterLabels }).promise
-                await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise
+                try {
+                    await createKlusterletAddonConfig({ clusterName, clusterLabels }).promise
+                } catch (err) {
+                    // ignore conflict if KlusterletAddonConfig already exists
+                    if (!(err instanceof ResourceError && err.code === ResourceErrorCode.Conflict)) {
+                        reject(err)
+                    }
+                }
                 resolve(managedCluster)
             } catch (err) {
                 reject(err)

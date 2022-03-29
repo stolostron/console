@@ -2,6 +2,7 @@
 import { Metadata } from './metadata'
 import { Selector } from './selector'
 import { IResource, IResourceDefinition } from './resource'
+import { ApplicationSetApiVersion } from './application-set'
 
 export const ApplicationApiVersion = 'app.k8s.io/v1beta1'
 export type ApplicationApiVersionType = 'app.k8s.io/v1beta1'
@@ -11,6 +12,11 @@ export type ApplicationKindType = 'Application'
 
 export const ApplicationDefinition: IResourceDefinition = {
     apiVersion: ApplicationApiVersion,
+    kind: ApplicationKind,
+}
+
+export const DiscoveredArgoApplicationDefinition: IResourceDefinition = {
+    apiVersion: ApplicationSetApiVersion,
     kind: ApplicationKind,
 }
 

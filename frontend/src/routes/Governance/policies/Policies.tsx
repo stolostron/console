@@ -290,6 +290,7 @@ export default function PoliciesPage() {
                                 tooltip={!canAutomatePolicy ? t('rbac.unauthorized') : ''}
                                 isInline
                                 variant={ButtonVariant.link}
+                                component={Link}
                                 to={{
                                     pathname: NavigationPath.createPolicyAutomation
                                         .replace(':namespace', item.policy.metadata.namespace as string)
@@ -1009,7 +1010,7 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
                         id="delete-placements"
                         isChecked={deletePlacements}
                         onChange={setDeletePlacements}
-                        label={t('policy.modal.delete.associatedResources.placementRule')}
+                        label={t('policy.modal.delete.associatedResources.placement')}
                     />
                 </StackItem>
                 {props.item.source !== 'Local' ? (

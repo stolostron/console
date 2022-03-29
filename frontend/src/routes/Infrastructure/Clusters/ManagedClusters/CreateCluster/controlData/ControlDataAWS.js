@@ -838,7 +838,7 @@ const awsPrivateControlData = [
     {
         id: 'privateAWS',
         type: 'step',
-        title: 'AWS private configuration',
+        title: 'creation.aws.privateAWS',
     },
     {
         id: 'privateAWSTitle',
@@ -846,7 +846,7 @@ const awsPrivateControlData = [
         info: 'creation.aws.privateAWS.info',
     },
     {
-        name: 'amiID',
+        name: 'creation.aws.ami',
         tooltip: 'creation.aws.ami.tooltip',
         id: 'amiID',
         type: 'text',
@@ -855,7 +855,7 @@ const awsPrivateControlData = [
         validation: VALIDATE_ALPHANUMERIC,
     },
     {
-        name: 'Hosted Zone',
+        name: 'creation.aws.hostedZone',
         tooltip: 'creation.aws.hostedZone.tooltip',
         id: 'hostedZone',
         type: 'text',

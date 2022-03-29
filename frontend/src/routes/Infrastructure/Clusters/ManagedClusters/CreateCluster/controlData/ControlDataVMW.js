@@ -255,6 +255,7 @@ const controlDataVMW = [
         type: 'text',
         name: 'creation.ocp.api.vip',
         tooltip: 'tooltip.creation.ocp.api.vip',
+        placeholder: 'creation.ocp.api.vip.placeholder',
         active: '',
         validation: VALIDATE_IP,
     },

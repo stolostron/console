@@ -322,7 +322,10 @@ export const useClusterDeployment = ({
 }): CIM.ClusterDeploymentK8sResource | undefined => {
     const [clusterDeployments] = useRecoilValue(waitForAll([clusterDeploymentsState]))
     return useMemo(
-        () => clusterDeployments.find((cd) => cd.metadata.name === name && cd.metadata.namespace === namespace),
+        () =>
+            name
+                ? clusterDeployments.find((cd) => cd.metadata.name === name && cd.metadata.namespace === namespace)
+                : undefined,
         [name, namespace, clusterDeployments]
     )
 }
@@ -360,11 +363,6 @@ export const onApproveAgent = (agent: CIM.AgentK8sResource) =>
 
 export const getClusterDeploymentLink = ({ name }: { name: string }) =>
     NavigationPath.clusterDetails.replace(':id', name)
-
-// export const canDeleteAgent = (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => !!agent || !!bmh
-
-// TODO(mlibra): Is that state-dependent in our flow?
-export const canEditHost = () => true
 
 export const fetchNMState = async (namespace: string, bmhName: string) => {
     const nmStates = await listNamespacedResources(
@@ -433,7 +431,7 @@ export const getDeleteHostAction =
     }
 
 export const getAgentName = (resource: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource): string =>
-    resource.spec?.hostname || resource.spec?.bmc?.address || resource.metadata?.name || '-'
+    resource.spec?.hostname || resource.metadata?.name || '-'
 
 export const agentNameSortFunc = (
     a: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource,

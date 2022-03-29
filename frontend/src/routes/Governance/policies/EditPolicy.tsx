@@ -3,7 +3,7 @@ import { EditMode } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Policy/PolicyWizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     channelsState,
@@ -28,6 +28,11 @@ import {
     resolveSource,
 } from '../common/util'
 
+function useSearchParams() {
+    const { search } = useLocation()
+    return useMemo(() => new URLSearchParams(search), [search])
+}
+
 export function EditPolicy() {
     const { t } = useTranslation()
     const toast = useContext(AcmToastContext)
@@ -46,6 +51,8 @@ export function EditPolicy() {
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [gitSource, setGitSource] = useState('')
+    const searchParams = useSearchParams()
+
     useEffect(() => {
         const policy = policies.find(
             (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
@@ -107,11 +114,34 @@ export function EditPolicy() {
                             type: 'success',
                             autoClose: true,
                         })
+                        if (searchParams.get('context') === 'policies') {
+                            history.push(NavigationPath.policies)
+                        } else {
+                            history.push(
+                                NavigationPath.policyDetails
+                                    .replace(':namespace', policy.metadata?.namespace ?? '')
+                                    .replace(':name', policy.metadata?.name ?? '')
+                            )
+                        }
                     }
-                    history.push(NavigationPath.policies)
                 })
             }}
-            onCancel={() => history.push(NavigationPath.policies)}
+            onCancel={() => {
+                if (searchParams.get('context') === 'policies') {
+                    history.push(NavigationPath.policies)
+                } else {
+                    const policy = existingResources.find((resource) => resource.kind === PolicyKind)
+                    if (policy) {
+                        history.push(
+                            NavigationPath.policyDetails
+                                .replace(':namespace', policy.metadata?.namespace ?? '')
+                                .replace(':name', policy.metadata?.name ?? '')
+                        )
+                    } else {
+                        history.push(NavigationPath.policies)
+                    }
+                }
+            }}
         />
     )
 }

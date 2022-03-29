@@ -265,7 +265,7 @@ function DeletePolicySetModal(props: { item: PolicySet; onClose: () => void }) {
                         id="delete-placements"
                         isChecked={deletePlacements}
                         onChange={setDeletePlacements}
-                        label={t('policy.modal.delete.associatedResources.placementRule')}
+                        label={t('policy.modal.delete.associatedResources.placement')}
                     />
                 </StackItem>
                 {error && (

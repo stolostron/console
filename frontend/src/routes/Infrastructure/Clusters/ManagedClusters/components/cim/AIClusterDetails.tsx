@@ -9,12 +9,7 @@ import { ClusterContext } from '../../ClusterDetails/ClusterDetails'
 import { getBackendUrl, fetchGet, getResource, Secret, SecretApiVersion, SecretKind } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
-import { useCanUnbindAgent, useOnUnbindHost } from '../../CreateCluster/components/assisted-installer/unbindHost'
-import {
-    useBMHsOfAIFlow,
-    useNMStatesOfNamespace,
-    useOnDeleteHost,
-} from '../../CreateCluster/components/assisted-installer/utils'
+import { useOnUnbindHost } from '../../CreateCluster/components/assisted-installer/unbindHost'
 
 const {
     ClusterDeploymentProgress,
@@ -35,8 +30,6 @@ const {
     ClusterDeploymentValidationsOverview,
     getClusterStatus,
     shouldShowClusterDeploymentValidationOverview,
-    isAIFlowInfraEnv,
-    isInstallationInProgress,
 } = CIM
 
 const fetchSecret: CIM.FetchSecret = (name, namespace) =>
@@ -56,7 +49,7 @@ const fetchEvents = async (url: string) => {
 }
 
 const AIClusterDetails: React.FC = () => {
-    const { clusterDeployment, agentClusterInstall, agents, infraEnvAIFlow } = useContext(ClusterContext)
+    const { clusterDeployment, agentClusterInstall, agents } = useContext(ClusterContext)
     const [aiNamespace, setAiNamespace] = useState<string>('')
     const [namespaceError, setNamespaceError] = useState<boolean>()
     const history = useHistory()
@@ -64,16 +57,11 @@ const AIClusterDetails: React.FC = () => {
     const cdName = clusterDeployment?.metadata?.name
     const cdNamespace = clusterDeployment?.metadata?.namespace
 
-    const isAIFlow = isAIFlowInfraEnv(infraEnvAIFlow)
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
         { open: false }
     )
 
-    const filteredBMHs = useBMHsOfAIFlow({ name: cdName, namespace: cdNamespace })
-    const nmStates = useNMStatesOfNamespace(infraEnvAIFlow?.metadata?.namespace)
-    const canUnbindAgent = useCanUnbindAgent(infraEnvAIFlow)
     const onUnbindHost = useOnUnbindHost(setBulkModalProps, clusterDeployment?.metadata?.name, agentClusterInstall)
-    const onDeleteHost = useOnDeleteHost(setBulkModalProps, filteredBMHs, agentClusterInstall, nmStates)
 
     useEffect(() => {
         const checkNs = async () => {
@@ -117,7 +105,6 @@ const AIClusterDetails: React.FC = () => {
     )
 
     const fallbackEventsURL = namespaceError === true ? agentClusterInstall?.status?.debugInfo?.eventsURL : undefined
-    const isClusterInstallationRunning = isInstallationInProgress(agentClusterInstall)
 
     return (
         <>
@@ -209,13 +196,8 @@ const AIClusterDetails: React.FC = () => {
                         <AgentTable
                             agents={clusterAgents}
                             className="agents-table"
-                            canUnbindHost={canUnbindAgent}
-                            canDelete={(agent?: CIM.AgentK8sResource) =>
-                                // TODO(mlibra): Instead of hiding, use the new UX pattern by just disabling the action and showing reason
-                                !isClusterInstallationRunning && isAIFlow && !!agent
-                            }
                             onUnbindHost={onUnbindHost}
-                            onDeleteHost={onDeleteHost as any}
+                            agentClusterInstall={agentClusterInstall}
                         />
                     </>
                 </AcmExpandableCard>

@@ -228,7 +228,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         []
     )
 
-    const urlParams = location.search ? location.search.substring(1).split('&') : []
+    const urlParams = location.search ? decodeURIComponent(location.search).substring(1).split('&') : []
     let apiVersion: string | undefined
     let cluster: string | undefined
     urlParams.forEach((param) => {
