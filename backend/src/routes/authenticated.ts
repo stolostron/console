@@ -1,22 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { Agent } from 'https'
-import { fetchRetry } from '../lib/fetch-retry'
+import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { logger } from '../lib/logger'
 import { respondInternalServerError, unauthorized } from '../lib/respond'
-import { getToken } from '../lib/token'
-
-const { HTTP2_HEADER_AUTHORIZATION } = constants
-const agent = new Agent({ rejectUnauthorized: false })
+import { getToken, isAuthenticated } from '../lib/token'
 
 export async function authenticated(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const token = getToken(req)
     if (!token) return unauthorized(req, res)
     try {
-        const response = await fetchRetry(process.env.CLUSTER_API_URL + '/apis', {
-            headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}` },
-            agent,
-        })
+        const response = await isAuthenticated(token)
         res.writeHead(response.status).end()
         void response.blob()
     } catch (err) {
