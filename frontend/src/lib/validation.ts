@@ -257,7 +257,7 @@ export function validateHttpProxy(value: string, t: TFunction) {
             })
         )
             return undefined
-        return t('validate.ansible.url.not.valid')
+        return t('validate.http.proxy.url.not.valid')
     }
     return undefined
 }
@@ -268,12 +268,12 @@ export function validateHttpsProxy(value: string, t: TFunction) {
             validator.isURL(value, {
                 require_protocol: true,
                 require_valid_protocol: true,
-                protocols: ['https'],
+                protocols: ['http', 'https'],
                 require_host: true,
             })
         )
             return undefined
-        return t('validate.ansible.url.not.valid')
+        return t('validate.https.proxy.url.not.valid')
     }
     return undefined
 }
