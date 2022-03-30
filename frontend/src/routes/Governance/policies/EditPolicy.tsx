@@ -4,7 +4,7 @@ import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Pol
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory, useLocation, useParams } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     channelsState,
@@ -20,6 +20,7 @@ import {
 } from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicyKind, reconcileResources } from '../../../resources'
 import {
@@ -51,11 +52,6 @@ export function WizardSyncEditor() {
 
 function getWizardSyncEditor() {
     return <WizardSyncEditor />
-}
-
-function useSearchParams() {
-    const { search } = useLocation()
-    return useMemo(() => new URLSearchParams(search), [search])
 }
 
 export function EditPolicy() {

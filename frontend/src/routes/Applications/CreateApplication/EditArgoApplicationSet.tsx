@@ -21,6 +21,7 @@ import {
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
+import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     ApplicationSetKind,
@@ -33,6 +34,7 @@ import {
 } from '../../../resources'
 import schema from './schema.json'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
+import { argoAppSetQueryString } from './actions'
 
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
@@ -59,6 +61,7 @@ function getWizardSyncEditor() {
 export function EditArgoApplicationSet() {
     const { t } = useTranslation()
     const history = useHistory()
+    const searchParams = useSearchParams()
     const toast = useContext(AcmToastContext)
     const params: { namespace?: string; name?: string } = useParams()
     const [applicationSets] = useRecoilState(applicationSetsState)
@@ -71,7 +74,6 @@ export function EditArgoApplicationSet() {
     const [managedClusters] = useRecoilState(managedClustersState)
     const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const providerConnections = secrets.map(unpackProviderConnection)
-
     const availableArgoNS = gitOpsClusters
         .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
         .filter(isType)
@@ -135,7 +137,17 @@ export function EditArgoApplicationSet() {
             yamlEditor={getWizardSyncEditor}
             clusters={managedClusters}
             clusterSetBindings={managedClusterSetBindings}
-            onCancel={() => history.push(NavigationPath.applications)}
+            onCancel={() => {
+                if (searchParams.get('context') === 'applicationsets') {
+                    history.push(NavigationPath.applications)
+                } else {
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', params.namespace ?? '')
+                            .replace(':name', params.name ?? '') + argoAppSetQueryString
+                    )
+                }
+            }}
             channels={channels}
             getGitRevisions={getGitChannelBranches}
             getGitPaths={getGitChannelPaths}
@@ -150,8 +162,16 @@ export function EditArgoApplicationSet() {
                             type: 'success',
                             autoClose: true,
                         })
+                        if (searchParams.get('context') === 'applicationsets') {
+                            history.push(NavigationPath.applications)
+                        } else {
+                            history.push(
+                                NavigationPath.applicationOverview
+                                    .replace(':namespace', applicationSet.metadata?.namespace ?? '')
+                                    .replace(':name', applicationSet.metadata?.name ?? '') + argoAppSetQueryString
+                            )
+                        }
                     }
-                    history.push(NavigationPath.applications)
                 })
             }}
             timeZones={timeZones}

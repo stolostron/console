@@ -28,6 +28,7 @@ import {
     IResource,
     unpackProviderConnection,
 } from '../../../resources'
+import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
@@ -113,7 +114,11 @@ export function CreateApplicationArgo() {
                             autoClose: true,
                         })
                     }
-                    history.push(NavigationPath.applications)
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', applicationSet?.metadata?.namespace ?? '')
+                            .replace(':name', applicationSet?.metadata?.name ?? '') + argoAppSetQueryString
+                    )
                 })
             }}
             timeZones={timeZones}

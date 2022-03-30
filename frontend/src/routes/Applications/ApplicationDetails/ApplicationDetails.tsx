@@ -286,7 +286,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                     const topology = getTopology(application, clusters, lastRefreshRef?.current?.relatedResources, {
                         cluster,
                     })
-                    const appData = getApplicationData(topology.nodes)
+                    const appData = getApplicationData(topology?.nodes)
 
                     // when first opened, refresh topology with wait statuses
                     if (!lastRefreshRef?.current?.resourceStatuses) {

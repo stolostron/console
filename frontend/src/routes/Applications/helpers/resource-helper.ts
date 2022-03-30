@@ -237,7 +237,7 @@ export const getSearchLink = (params: any) => {
     if (showRelated) {
         queryParams.showrelated = showRelated
     }
-    const query = queryString.stringify(queryParams, { strict: true }).replace(/\./g, '%2E')
+    const query = queryString.stringify(queryParams, { strict: true })
     const search = query ? `?${query}` : ''
     return `${NavigationPath.search}${search}`
 }

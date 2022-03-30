@@ -10,7 +10,7 @@ const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=60
 
 export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     try {
-        let url = req.url
+        let url = req.url.split('?')[0]
 
         let ext = extname(url)
         if (ext === '') {

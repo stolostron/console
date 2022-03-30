@@ -56,6 +56,7 @@ import {
     isResourceTypeOf,
 } from './helpers/resource-helper'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { argoAppSetQueryString, subscriptionAppQueryString } from './CreateApplication/actions'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -378,7 +379,7 @@ export default function ApplicationsOverview() {
                     return (
                         <span style={{ whiteSpace: 'nowrap' }}>
                             <Link
-                                to={(
+                                to={
                                     NavigationPath.applicationDetails
                                         .replace(':namespace', application.metadata?.namespace as string)
                                         .replace(':name', application.metadata?.name as string) +
@@ -387,7 +388,7 @@ export default function ApplicationsOverview() {
                                     '.' +
                                     application.apiVersion.split('/')[0] +
                                     clusterQuery
-                                ).replace(/\./g, '%2E')}
+                                }
                             >
                                 {application.metadata?.name}
                             </Link>
@@ -570,9 +571,7 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.applicationOverview
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string) +
-                            '?' +
-                            'apiVersion=application.app.k8s.io'.replace(/\./g, '%2E')
+                            .replace(':name', resource.metadata?.name as string) + subscriptionAppQueryString
                     )
                 },
             })
@@ -583,7 +582,7 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.editApplicationSubscription
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string)
+                            .replace(':name', resource.metadata?.name as string) + '?context=applications'
                     )
                 },
             })
@@ -597,9 +596,7 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.applicationOverview
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string) +
-                            '?' +
-                            'apiVersion=applicationset.argoproj.io'.replace(/\./g, '%2E')
+                            .replace(':name', resource.metadata?.name as string) + argoAppSetQueryString
                     )
                 },
             })
@@ -610,7 +607,7 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.editApplicationArgo
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string)
+                            .replace(':name', resource.metadata?.name as string) + '?context=applicationsets'
                     )
                 },
             })
@@ -626,7 +623,7 @@ export default function ApplicationsOverview() {
                             .replace(':namespace', resource.metadata?.namespace as string)
                             .replace(':name', resource.metadata?.name as string) +
                             '?' +
-                            'apiVersion=application.argoproj.io'.replace(/\./g, '%2E')
+                            'apiVersion=application.argoproj.io'
                     )
                 },
             })
