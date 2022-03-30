@@ -136,7 +136,6 @@ export default function ImportClusterPage() {
                                 <SyncEditor
                                     variant="toolbar"
                                     id="code-content"
-                                    editorTitle={t('import.cluster.yaml')}
                                     schema={schema}
                                     resources={importResources}
                                     onClose={(): void => {
