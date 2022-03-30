@@ -11,7 +11,6 @@ import {
     ClusterPoolApiVersion,
     ClusterPoolKind,
 } from '../../../../resources'
-//  import { screen } from '@testing-library/react'
 
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
@@ -22,14 +21,11 @@ import { nockCreate, nockDelete, nockGet, nockIgnoreRBAC, nockPatch } from '../.
 import {
     clickBulkAction,
     clickByLabel,
-    // clickByRole,
-    // clickByTestId,
     clickByText,
     clickRowAction,
     selectTableRow,
     typeByTestId,
     typeByText,
-    wait,
     waitForNocks,
     waitForText,
 } from '../../../../lib/test-util'
@@ -205,7 +201,7 @@ const mockClusterClaim: ClusterClaim = {
     apiVersion: ClusterClaimApiVersion,
     kind: ClusterClaimKind,
     metadata: {
-        name: 'mycluster-test',
+        name: 'mycluster-claim',
         namespace: mockClusterPool.metadata.namespace!,
     },
     spec: {
@@ -213,11 +209,24 @@ const mockClusterClaim: ClusterClaim = {
     },
 }
 
+const mockClusterClaimFulfilled: ClusterClaim = {
+    apiVersion: ClusterClaimApiVersion,
+    kind: ClusterClaimKind,
+    metadata: {
+        name: mockClusterClaim.metadata.name!,
+        namespace: mockClusterPool.metadata.namespace!,
+    },
+    spec: {
+        clusterPoolName: mockClusterPool.metadata.name!,
+        namespace: `${mockClusterPool.metadata.name!}-XXXXX`,
+    },
+}
+
 const mockClusterClaimStandbyOnly: ClusterClaim = {
     apiVersion: ClusterClaimApiVersion,
     kind: ClusterClaimKind,
     metadata: {
-        name: 'mycluster-standby',
+        name: 'mycluster-standby-claim',
         namespace: mockClusterPoolStandbyOnly.metadata.namespace!,
     },
     spec: {
@@ -229,7 +238,7 @@ const mockClusterClaimPending: ClusterClaim = {
     apiVersion: ClusterClaimApiVersion,
     kind: ClusterClaimKind,
     metadata: {
-        name: 'mycluster-pending',
+        name: 'mycluster-pending-claim',
         namespace: mockClusterPoolPending.metadata.namespace!,
     },
     spec: {
@@ -343,9 +352,11 @@ describe('ClusterPools page', () => {
         await clickByText('Claim cluster', 0)
         await waitForText('Cluster claim name')
         await typeByTestId('clusterClaimName', mockClusterClaim.metadata.name!)
-        const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaim)]
+        const createNocks: Scope[] = [nockCreate(mockClusterClaim), nockGet(mockClusterClaimFulfilled)]
         await clickByText('Claim')
         await waitForNocks(createNocks)
+        await waitForText('View cluster')
+        await clickByText('Close')
     })
 
     test('should be able to claim a cluster with only standby clusters', async () => {
@@ -353,13 +364,12 @@ describe('ClusterPools page', () => {
         await clickByText('Claim cluster', 2)
         await waitForText('Cluster claim name')
         await typeByTestId('clusterClaimName', mockClusterClaimStandbyOnly.metadata.name!)
-        const createNocks: Scope[] = [
-            nockCreate(mockClusterClaimStandbyOnly),
-            nockGet(mockClusterClaim),
-            nockGet(mockClusterClaimStandbyOnly),
-        ]
+        const createNocks: Scope[] = [nockCreate(mockClusterClaimStandbyOnly)]
         await clickByText('Claim')
         await waitForNocks(createNocks)
+        await waitForText('Cluster claim name')
+        await waitForText(mockClusterClaimStandbyOnly.metadata.name!, true)
+        await clickByText('Close')
     })
 
     test('should be able to claim a cluster, view pending claim, and delete pending claim', async () => {
@@ -367,18 +377,12 @@ describe('ClusterPools page', () => {
         await clickByText('Claim cluster', 1)
         await waitForText('Cluster claim name')
         await typeByTestId('clusterClaimName', mockClusterClaimPending.metadata.name!)
-        const createNocks: Scope[] = [
-            nockCreate(mockClusterClaimPending),
-            nockGet(mockClusterClaim),
-            nockGet(mockClusterClaimStandbyOnly),
-            nockGet(mockClusterClaimPending),
-        ]
+        const createNocks: Scope[] = [nockCreate(mockClusterClaimPending)]
         await clickByText('Claim')
         await waitForNocks(createNocks)
-        await wait(5000)
-        await waitForText('Close')
+        await waitForText('Cluster claim name')
+        await waitForText(mockClusterPoolPending.metadata.name!, true)
         await clickByText('Close')
-        await waitForText(mockClusterPoolPending.metadata.name!)
         await clickByText('Delete claim', 1)
         await waitForText('You are about to delete a cluster claim.')
         await typeByTestId('confirm', mockClusterClaimPending.metadata.name!)
