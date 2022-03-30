@@ -32,7 +32,7 @@ import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { DOC_LINKS } from '../../../../lib/doc-util'
+import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { locationWithCancelBack, NavigationPath } from '../../../../NavigationPath'
 import {
@@ -130,14 +130,19 @@ export default function ClusterPoolsPage() {
                                         />
                                     }
                                     action={
-                                        <AcmButton
-                                            role="link"
-                                            onClick={() =>
-                                                history.push(locationWithCancelBack(NavigationPath.createClusterPool))
-                                            }
-                                        >
-                                            {t('managed.createClusterPool')}
-                                        </AcmButton>
+                                        <div>
+                                            <AcmButton
+                                                role="link"
+                                                onClick={() =>
+                                                    history.push(
+                                                        locationWithCancelBack(NavigationPath.createClusterPool)
+                                                    )
+                                                }
+                                            >
+                                                {t('managed.createClusterPool')}
+                                            </AcmButton>
+                                            <TextContent>{viewDocumentation(DOC_LINKS.CLUSTER_POOLS, t)}</TextContent>
+                                        </div>
                                     }
                                 />
                             }
@@ -233,53 +238,46 @@ export function ClusterPoolsTable(props: {
                     const clusterPoolClaims = clusterClaims.filter((claim) => {
                         return claim.spec?.clusterPoolName === clusterPool.metadata.name && !claim.spec?.namespace
                     })
-                    if (clusterPoolClusters.length === 0) {
-                        return undefined
-                    } else {
-                        const available = clusterPoolClusters.filter((cpc) => cpc.hive.clusterClaimName === undefined)
-                        return [
-                            {
-                                cells: [
-                                    {
-                                        title: (
-                                            <>
-                                                {available.length > 0 && (
-                                                    <div style={{ marginTop: '16px', marginBottom: '16px' }}>
-                                                        <TextContent>
-                                                            <Text component={TextVariants.h3}>
-                                                                {t('clusterPool.clusters')}
-                                                            </Text>
-                                                        </TextContent>
-                                                        <ClusterPoolClustersTable clusters={available} />
-                                                    </div>
-                                                )}
-                                            </>
-                                        ),
-                                    },
-                                ],
-                            },
-                            {
-                                cells: [
-                                    {
-                                        title: (
-                                            <>
-                                                {clusterPoolClaims.length > 0 && (
-                                                    <div style={{ marginTop: '16px', marginBottom: '16px' }}>
-                                                        <TextContent>
-                                                            <Text component={TextVariants.h3}>
-                                                                {t('pending.cluster.claims')}
-                                                            </Text>
-                                                        </TextContent>
-                                                        <ClusterPoolClaimsTable claims={clusterPoolClaims} />
-                                                    </div>
-                                                )}
-                                            </>
-                                        ),
-                                    },
-                                ],
-                            },
-                        ]
+                    const subRows = []
+                    if (clusterPoolClusters.length > 0) {
+                        subRows.push({
+                            cells: [
+                                {
+                                    title: (
+                                        <>
+                                            <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+                                                <TextContent>
+                                                    <Text component={TextVariants.h3}>{t('clusterPool.clusters')}</Text>
+                                                </TextContent>
+                                                <ClusterPoolClustersTable clusters={clusterPoolClusters} />
+                                            </div>
+                                        </>
+                                    ),
+                                },
+                            ],
+                        })
                     }
+                    if (clusterPoolClaims.length > 0) {
+                        subRows.push({
+                            cells: [
+                                {
+                                    title: (
+                                        <>
+                                            <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+                                                <TextContent>
+                                                    <Text component={TextVariants.h3}>
+                                                        {t('pending.cluster.claims')}
+                                                    </Text>
+                                                </TextContent>
+                                                <ClusterPoolClaimsTable claims={clusterPoolClaims} />
+                                            </div>
+                                        </>
+                                    ),
+                                },
+                            ],
+                        })
+                    }
+                    return subRows
                 }}
                 columns={[
                     {

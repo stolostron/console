@@ -2,8 +2,9 @@
 
 import { get } from 'lodash'
 import { getSubscriptionApplication } from './applicationSubscription'
+import { fireManagedClusterView } from '../../../../../resources'
 
-export const getApplication = async (namespace, name, selectedChannel, recoilStates, cluster, apiversion) => {
+export const getApplication = async (namespace, name, selectedChannel, recoilStates, cluster, apiversion, clusters) => {
     let app
     let model
     let placement
@@ -40,11 +41,16 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
         }
     }
 
-    // get argo embedded app set
+    // get argo
     if (!app && apiVersion === 'application.argoproj.io') {
-        app = argoApplications.find((app) => {
-            return app?.metadata?.name === name && app?.metadata?.namespace === namespace
-        })
+        if (cluster) {
+            // get argo app definition from managed cluster
+            app = await getRemoteArgoApp(cluster, 'application', 'argoproj.io/v1alpha1', name, namespace)
+        } else {
+            app = argoApplications.find((app) => {
+                return app?.metadata?.name === name && app?.metadata?.namespace === namespace
+            })
+        }
     }
 
     // collect app resources
@@ -65,7 +71,7 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
         }
 
         if (isAppSet) {
-            return getAppSetApplication(model, app, recoilStates)
+            return getAppSetApplication(model, app, recoilStates, clusters)
         }
 
         return await getSubscriptionApplication(model, app, selectedChannel, recoilStates, cluster, apiversion)
@@ -73,8 +79,8 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
     return model
 }
 
-export const getAppSetApplication = (model, app, recoilStates) => {
-    const { argoApplications, managedClusters } = recoilStates
+export const getAppSetApplication = (model, app, recoilStates, clusters) => {
+    const { argoApplications } = recoilStates
     const appSetApps = []
     const appSetClusters = []
 
@@ -91,52 +97,32 @@ export const getAppSetApplication = (model, app, recoilStates) => {
                         serverName = 'local-cluster'
                     }
                     // find cluster by name
-                    cluster = findCluster(managedClusters, serverName, false)
+                    cluster = findCluster(clusters, serverName, false)
                 }
 
                 if (serverURL) {
                     // find cluster by URL
-                    cluster = findCluster(managedClusters, serverURL, true)
+                    cluster = findCluster(clusters, serverURL, true)
                 }
 
                 // we only want certain data from the YAML
                 // is it possible no cluster is found?
                 if (cluster) {
-                    const managedClusterClientConfigs = cluster.spec.managedClusterClientConfigs
-                    const url = managedClusterClientConfigs[0].url
-                    let clusterAccepted
-                    let clusterJoined
-                    let clusterAvailable
+                    const url = cluster.kubeApiServer
                     let status
-                    const clusterConditions = cluster.status.conditions
-                    // parse conditions
-                    if (clusterConditions) {
-                        clusterConditions.forEach((condition) => {
-                            if (condition.type === 'HubAcceptedManagedCluster' && condition.status === 'True') {
-                                clusterAccepted = true
-                            }
-                            if (condition.type === 'ManagedClusterJoined' && condition.status === 'True') {
-                                clusterJoined = true
-                            }
-                            if (condition.type === 'ManagedClusterConditionAvailable' && condition.status === 'True') {
-                                clusterAvailable = true
-                            }
-
-                            if (!clusterAccepted) {
-                                status = 'notaccepted'
-                            } else if (!clusterJoined) {
-                                status = 'pendingimport'
-                            } else {
-                                status = clusterAvailable ? 'ok' : 'offline'
-                            }
-                        })
+                    if (cluster.status === 'ready') {
+                        status = 'ok'
+                    } else if (cluster.status === 'unknown') {
+                        status = 'offline'
+                    } else {
+                        status = cluster.status
                     }
                     appSetClusters.push({
-                        name: cluster.metadata.name,
-                        namespace: cluster.metadata.namespace,
+                        name: cluster.name,
+                        namespace: cluster.namespace,
                         url,
                         status,
-                        created: cluster.metadata.creationTimestamp,
+                        created: cluster.creationTimestamp,
                     })
                 }
             }
@@ -152,12 +138,11 @@ export const getAppSetApplication = (model, app, recoilStates) => {
 export const findCluster = (managedClusters, searchValue, findByURL) => {
     for (let i = 0; i < managedClusters.length; i++) {
         if (!findByURL) {
-            if (managedClusters[i].metadata.name === searchValue) {
+            if (managedClusters[i].name === searchValue) {
                 return managedClusters[i]
             }
         } else {
-            const managedClusterClientConfig = managedClusters[i].spec.managedClusterClientConfigs
-            const url = managedClusterClientConfig[0].url
+            const url = managedClusters[i].kubeApiServer
             if (url === searchValue) {
                 return managedClusters[i]
             }
@@ -165,4 +150,18 @@ export const findCluster = (managedClusters, searchValue, findByURL) => {
     }
 
     return undefined
+}
+
+const getRemoteArgoApp = async (cluster, kind, apiVersion, name, namespace) => {
+    let response
+
+    try {
+        response = await fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
+    } catch (err) {
+        console.error('Error getting remote Argo app', err)
+    }
+
+    if (response) {
+        return response.result
+    }
 }

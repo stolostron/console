@@ -80,13 +80,12 @@ export enum NavigationPath {
     applicationDetails = '/multicloud/applications/details/:namespace/:name',
     applicationOverview = '/multicloud/applications/details/:namespace/:name/overview',
     applicationTopology = '/multicloud/applications/details/:namespace/:name/topology',
-    editApplicationSubscription = '/multicloud/applications/edit/:namespace/:name',
+    editApplicationSubscription = '/multicloud/applications/edit/subscription/:namespace/:name',
 
     // Governance
     governance = '/multicloud/governance',
     policies = '/multicloud/governance/policies',
     policySets = '/multicloud/governance/policy-sets',
-    governanceClusters = '/multicloud/governance/clusters',
     createPolicy = '/multicloud/governance/policies/create',
     editPolicy = '/multicloud/governance/policies/edit/:namespace/:name',
     createPolicyAutomation = '/multicloud/governance/policyautomation/create/:namespace/:name',

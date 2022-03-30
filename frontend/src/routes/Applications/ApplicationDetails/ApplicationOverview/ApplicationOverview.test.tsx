@@ -15,6 +15,7 @@ import { waitForNocks, waitForText } from '../../../../lib/test-util'
 import {
     ApplicationApiVersion,
     ApplicationKind,
+    ApplicationSetApiVersion,
     ApplicationSetKind,
     ArgoApplication,
     ArgoApplicationApiVersion,
@@ -25,13 +26,13 @@ import {
     ManagedCluster,
     ManagedClusterApiVersion,
     ManagedClusterKind,
-    Namespace,
-    NamespaceApiVersion,
-    NamespaceDefinition,
-    NamespaceKind,
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
+    Project,
+    ProjectApiVersion,
+    ProjectDefinition,
+    ProjectKind,
     Subscription,
     SubscriptionApiVersion,
     SubscriptionKind,
@@ -53,7 +54,7 @@ const mockSubscription1: Subscription = {
         channel: 'ggithubcom-app-samples-ns/ggithubcom-app-samples',
         placement: {
             placementRef: {
-                kind: 'PlacementRule',
+                kind: PlacementRuleKind,
                 name: 'helloworld-simple-placement-1',
             },
         },
@@ -71,7 +72,7 @@ const mockSubscription2: Subscription = {
         channel: 'ggithubcom-app-samples-ns/ggithubcom-app-samples',
         placement: {
             placementRef: {
-                kind: 'PlacementRule',
+                kind: PlacementRuleKind,
                 name: 'helloworld-simple-placement-2',
             },
         },
@@ -154,7 +155,7 @@ const mockArgoApplication0: ArgoApplication = {
         namespace: 'openshift-gitops',
         ownerReferences: [
             {
-                apiVersion: 'argoproj.io/v1alpha1',
+                apiVersion: ApplicationSetApiVersion,
                 kind: ApplicationSetKind,
                 name: 'applicationset-0',
             },
@@ -199,7 +200,7 @@ const mockArgoApplication1: ArgoApplication = {
     status: {},
 }
 
-const mockApplicationData: ApplicationDataType = {
+const mockApplicationDataSubscription: ApplicationDataType = {
     refreshTime: 1646925212170,
     activeChannel: 'demo-etherpad/demo-etherpad//demo-etherpad-repos/github-redhat-sa-brazil-demo-summitgov-cy20',
     allChannels: ['demo-etherpad/demo-etherpad//demo-etherpad-repos/github-redhat-sa-brazil-demo-summitgov-cy20'],
@@ -312,9 +313,91 @@ const mockApplicationData: ApplicationDataType = {
     },
 }
 
-const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
-    apiVersion: NamespaceApiVersion,
-    kind: NamespaceKind,
+const mockApplicationDataArgo: ApplicationDataType = {
+    refreshTime: 1648135176039,
+    activeChannel: undefined,
+    allChannels: undefined,
+    appData: {
+        relatedKinds: ['applicationset', 'placement', 'cluster', 'service', 'deployment', 'replicaset', 'pod', 'route'],
+        subscription: null,
+    },
+    application: {
+        app: {
+            apiVersion: ApplicationSetApiVersion,
+            kind: ApplicationSetKind,
+            metadata: {
+                creationTimestamp: '2022-03-14T17:19:03Z',
+                generation: 1,
+                name: 'appset-helm',
+                namespace: 'openshift-gitops',
+                resourceVersion: '85929954',
+            },
+            status: {
+                reconciledAt: '2022-03-14T17:19:03Z',
+            },
+
+            spec: {
+                generators: [],
+                template: {
+                    metadata: {
+                        name: 'appset-helm-{{name}}',
+                    },
+                    spec: {
+                        destination: { namespace: 'helm-appset', server: '{{server}}' },
+                        project: 'default',
+                        source: {
+                            chart: 'helloworld-helm',
+                            repoURL: 'https://raw.githubusercontent.com/fxiang1/app-samples/main',
+                            targetRevision: '0.2.0',
+                        },
+                    },
+                },
+            },
+        },
+        appSetApps: [
+            {
+                apiVersion: ArgoApplicationApiVersion,
+                kind: ArgoApplicationKind,
+                metadata: {
+                    creationTimestamp: '2022-03-14T17:19:03Z',
+                    finalizers: ['resources-finalizer.argocd.argoproj.io'],
+                    generation: 1623,
+                    name: 'appset-helm-local-cluster',
+                    namespace: 'openshift-gitops',
+                },
+            },
+        ],
+        name: 'appset-helm',
+        namespace: 'openshift-gitops',
+        metadata: {
+            creationTimestamp: '2022-03-14T17:19:03Z',
+            generation: 1,
+            name: 'appset-helm',
+            namespace: 'openshift-gitops',
+            resourceVersion: '85929954',
+        },
+        appSetClusters: [
+            {
+                created: undefined,
+                name: 'local-cluster',
+                namespace: 'local-cluster',
+                status: 'ok',
+                url: 'https://mockdata.com:6443',
+            },
+        ],
+
+        isAppSet: true,
+        isArgoApp: false,
+    },
+    topology: {
+        links: [],
+        nodes: [],
+    },
+}
+
+const mockNamespaces: Project[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
     metadata: { name },
 }))
 
@@ -332,6 +415,8 @@ const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoA
 describe('Overview Tab', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+    })
+    test('should display subscription app info', async () => {
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -343,13 +428,11 @@ describe('Overview Tab', () => {
                 }}
             >
                 <MemoryRouter>
-                    <ApplicationOverviewPageContent applicationData={mockApplicationData} />
+                    <ApplicationOverviewPageContent applicationData={mockApplicationDataSubscription} />
                 </MemoryRouter>
             </RecoilRoot>
         )
-    })
-    test('should display subscription app info', async () => {
-        const initialNocks = [nockList(NamespaceDefinition, mockNamespaces)]
+        const initialNocks = [nockList(ProjectDefinition, mockNamespaces)]
         await waitForNocks(initialNocks)
         await waitForText('Name')
         // cluster
@@ -357,5 +440,32 @@ describe('Overview Tab', () => {
         await waitForText('None')
         // created
         await waitForText('Mar 1, 9:30 pm')
+    })
+
+    test('should display AppSet app info', async () => {
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(subscriptionsState, mockSubscriptions)
+                    snapshot.set(channelsState, mockChannels)
+                    snapshot.set(placementRulesState, mockPlacementrules)
+                    snapshot.set(managedClustersState, mockManagedClusters)
+                    snapshot.set(argoApplicationsState, mockArgoApplications)
+                }}
+            >
+                <MemoryRouter>
+                    <ApplicationOverviewPageContent applicationData={mockApplicationDataArgo} />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
+
+        const initialNocks = [nockList(ProjectDefinition, mockNamespaces)]
+        await waitForNocks(initialNocks)
+        await waitForText('Name')
+        // cluster
+        await waitForText('Clusters')
+        await waitForText('None')
+        // created
+        await waitForText(mockApplicationDataArgo.application.name, true)
     })
 })

@@ -1,15 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
 import { AcmPageContent } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
-import {
-    useCanUnbindAgent,
-    useOnUnbindHost,
-} from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/unbindHost'
+import { useOnUnbindHost } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/unbindHost'
 import {
     fetchNMState,
     fetchSecret,
@@ -24,34 +21,41 @@ import {
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import { isBMPlatform } from '../utils'
 
-const { InfraEnvAgentTable, EditBMHModal, getAgentsHostsNames, AgentAlerts } = CIM
-
-const canEditHost = (agent: CIM.AgentK8sResource) => !!agent
+const {
+    HostsNotShowingLink,
+    InfraEnvAgentTable,
+    EditBMHModal,
+    getAgentsHostsNames,
+    AgentAlerts,
+    DiscoveryTroubleshootingModal,
+} = CIM
 
 type HostsTabProps = {
     infraEnv: CIM.InfraEnvK8sResource
     infraAgents: CIM.AgentK8sResource[]
+    agentClusterInstalls: CIM.AgentClusterInstallK8sResource[]
     bareMetalHosts: CIM.BareMetalHostK8sResource[]
     aiConfigMap: CIM.ConfigMapK8sResource
 }
 
-const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHosts, aiConfigMap }) => {
+const HostsTab: React.FC<HostsTabProps> = ({
+    infraEnv,
+    infraAgents,
+    agentClusterInstalls,
+    bareMetalHosts,
+    aiConfigMap,
+}) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
+    const [isDiscoveryHintModalOpen, setDiscoveryHintModalOpen] = useState(false)
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
         { open: false }
     )
     const nmStates = useNMStatesOfNamespace(infraEnv.metadata.namespace)
     const onDeleteHost = useOnDeleteHost(setBulkModalProps, bareMetalHosts, undefined, nmStates)
     const onUnbindHost = useOnUnbindHost(setBulkModalProps, undefined, undefined)
-    const canUnbindAgent = useCanUnbindAgent(infraEnv)
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, bareMetalHosts), [bareMetalHosts, infraAgents])
-
-    const canDelete = useCallback(
-        (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => !!nmStates && (!!agent || !!bmh),
-        [nmStates]
-    )
 
     return (
         <>
@@ -64,20 +68,34 @@ const HostsTab: React.FC<HostsTabProps> = ({ infraEnv, infraAgents, bareMetalHos
                         docVersion={DOC_VERSION}
                         aiConfigMap={aiConfigMap}
                     />
+                    {!!infraAgents.length && (
+                        <Card isPlain isCompact>
+                            <CardBody>
+                                <HostsNotShowingLink
+                                    key="hosts-not-showing"
+                                    setDiscoveryHintModalOpen={setDiscoveryHintModalOpen}
+                                />
+                                {isDiscoveryHintModalOpen && (
+                                    <DiscoveryTroubleshootingModal
+                                        isOpen={isDiscoveryHintModalOpen}
+                                        setDiscoveryHintModalOpen={setDiscoveryHintModalOpen}
+                                    />
+                                )}
+                            </CardBody>
+                        </Card>
+                    )}
                     <Card>
                         <CardBody>
                             <InfraEnvAgentTable
                                 agents={infraAgents}
+                                agentClusterInstalls={agentClusterInstalls}
                                 bareMetalHosts={bareMetalHosts}
                                 infraEnv={infraEnv}
                                 getClusterDeploymentLink={getClusterDeploymentLink}
                                 onEditHost={setEditAgent}
-                                canEditHost={canEditHost}
                                 onApprove={onApproveAgent}
-                                canDelete={canDelete}
-                                onDeleteHost={onDeleteHost as any}
+                                onDeleteHost={onDeleteHost}
                                 onEditBMH={setEditBMH}
-                                canUnbindHost={canUnbindAgent}
                                 onUnbindHost={onUnbindHost}
                                 onChangeHostname={onSaveAgent}
                                 onChangeBMHHostname={onChangeBMHHostname}

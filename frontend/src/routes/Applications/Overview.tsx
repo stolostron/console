@@ -4,7 +4,6 @@ import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
-import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
@@ -15,13 +14,12 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
-    managedClustersState,
     placementRulesState,
     subscriptionsState,
 } from '../../atoms'
-import { useTranslation } from '../../lib/acm-i18next'
-import { DOC_LINKS } from '../../lib/doc-util'
-import { canUser } from '../../lib/rbac-util'
+import { Trans, useTranslation } from '../../lib/acm-i18next'
+import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
+import { getAuthorizedNamespaces, rbacCreate, rbacDelete } from '../../lib/rbac-util'
 import { queryRemoteArgoApps } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
@@ -36,8 +34,14 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
+    DiscoveredArgoApplicationDefinition,
     IResource,
     Subscription,
+    listProjects,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    ResourceAttributes,
 } from '../../resources'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
@@ -51,6 +55,7 @@ import {
     hostingSubAnnotationStr,
     isResourceTypeOf,
 } from './helpers/resource-helper'
+import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -72,18 +77,6 @@ function getResourceType(resource: IResource) {
     }
 }
 
-function getEmptyMessage(t: TFunction) {
-    return (
-        <p>
-            <span
-                dangerouslySetInnerHTML={{ __html: t('Click the Create application button to create your resource.') }}
-            />
-            <br />
-            {t('View the documentation for more information.')}
-        </p>
-    )
-}
-
 export function getAppSetApps(argoApps: IResource[], appSetName: string) {
     const appSetApps: string[] = []
 
@@ -102,10 +95,6 @@ export function getAnnotation(resource: IResource, annotationString: string) {
 
 function getAppNamespace(resource: IResource) {
     let castType
-    if (resource.kind === ApplicationSetKind) {
-        castType = resource as ApplicationSet
-        return castType.spec.template?.spec?.destination?.namespace
-    }
     if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
         castType = resource as ArgoApplication
         return castType.spec.destination.namespace
@@ -182,6 +171,34 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
     }
 }
 
+export async function checkPermission(resourceAttributes: ResourceAttributes, setStateFn: (state: boolean) => void) {
+    // Require hub to run on OCP
+    const fetchProjects = async () => {
+        return listProjects().promise
+    }
+
+    fetchProjects().then((projects) => {
+        const namespaceArr: Namespace[] = projects.map((project) => {
+            return {
+                apiVersion: NamespaceApiVersion,
+                kind: NamespaceKind,
+                metadata: project.metadata,
+            } as Namespace
+        })
+        const fetchAuthorizedNamespaces = async () => {
+            const authorizedNamespaces = await getAuthorizedNamespaces([resourceAttributes], namespaceArr)
+            return authorizedNamespaces
+        }
+        fetchAuthorizedNamespaces().then((authorizedNamespaces) => {
+            if (authorizedNamespaces?.length > 0) {
+                setStateFn(true)
+            } else {
+                setStateFn(false)
+            }
+        })
+    })
+}
+
 export default function ApplicationsOverview() {
     const { t } = useTranslation()
 
@@ -191,8 +208,17 @@ export default function ApplicationsOverview() {
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [placementRules] = useRecoilState(placementRulesState)
-    const [managedClusters] = useRecoilState(managedClustersState)
-    const localCluster = managedClusters.find((cls) => cls.metadata.name === localClusterStr)
+
+    let managedClusters = useAllClusters()
+    managedClusters = managedClusters.filter((cluster) => {
+        // don't show clusters in cluster pools in table
+        if (cluster.hive.clusterPool) {
+            return cluster.hive.clusterClaimName !== undefined
+        } else {
+            return true
+        }
+    })
+    const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
     const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
         open: false,
     })
@@ -340,23 +366,34 @@ export default function ApplicationsOverview() {
                 sort: 'metadata.name',
                 search: 'metadata.name',
                 transforms: [cellWidth(20)],
-                cell: (application) => (
-                    <span style={{ whiteSpace: 'nowrap' }}>
-                        <Link
-                            to={
-                                NavigationPath.applicationDetails
-                                    .replace(':namespace', application.metadata?.namespace as string)
-                                    .replace(':name', application.metadata?.name as string) +
-                                '?apiVersion=' +
-                                application.kind.toLowerCase() +
-                                '.' +
-                                application.apiVersion.split('/')[0]
-                            }
-                        >
-                            {application.metadata?.name}
-                        </Link>
-                    </span>
-                ),
+                cell: (application) => {
+                    let clusterQuery = ''
+                    if (
+                        application.apiVersion === ArgoApplicationApiVersion &&
+                        application.kind === ArgoApplicationKind
+                    ) {
+                        const cluster = _.get(application, 'status.cluster')
+                        clusterQuery = cluster ? `&cluster=${cluster}` : ''
+                    }
+                    return (
+                        <span style={{ whiteSpace: 'nowrap' }}>
+                            <Link
+                                to={(
+                                    NavigationPath.applicationDetails
+                                        .replace(':namespace', application.metadata?.namespace as string)
+                                        .replace(':name', application.metadata?.name as string) +
+                                    '?apiVersion=' +
+                                    application.kind.toLowerCase() +
+                                    '.' +
+                                    application.apiVersion.split('/')[0] +
+                                    clusterQuery
+                                ).replace(/\./g, '%2E')}
+                            >
+                                {application.metadata?.name}
+                            </Link>
+                        </span>
+                    )
+                },
             },
             {
                 header: t('Type'),
@@ -533,7 +570,9 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.applicationOverview
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string)
+                            .replace(':name', resource.metadata?.name as string) +
+                            '?' +
+                            'apiVersion=application.app.k8s.io'.replace(/\./g, '%2E')
                     )
                 },
             })
@@ -559,7 +598,8 @@ export default function ApplicationsOverview() {
                         NavigationPath.applicationOverview
                             .replace(':namespace', resource.metadata?.namespace as string)
                             .replace(':name', resource.metadata?.name as string) +
-                            '?apiVersion=applicationset.argoproj.io'
+                            '?' +
+                            'apiVersion=applicationset.argoproj.io'.replace(/\./g, '%2E')
                     )
                 },
             })
@@ -571,6 +611,22 @@ export default function ApplicationsOverview() {
                         NavigationPath.editApplicationArgo
                             .replace(':namespace', resource.metadata?.namespace as string)
                             .replace(':name', resource.metadata?.name as string)
+                    )
+                },
+            })
+        }
+
+        if (isResourceTypeOf(resource, DiscoveredArgoApplicationDefinition)) {
+            actions.push({
+                id: 'viewApplication',
+                title: t('View application'),
+                click: () => {
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', resource.metadata?.namespace as string)
+                            .replace(':name', resource.metadata?.name as string) +
+                            '?' +
+                            'apiVersion=application.argoproj.io'.replace(/\./g, '%2E')
                     )
                 },
             })
@@ -594,7 +650,7 @@ export default function ApplicationsOverview() {
             },
         })
 
-        if (isResourceTypeOf(resource, ApplicationDefinition)) {
+        if (isResourceTypeOf(resource, ApplicationDefinition) || isResourceTypeOf(resource, ApplicationSetDefinition)) {
             actions.push({
                 id: 'deleteApplication',
                 title: t('Delete application'),
@@ -638,40 +694,25 @@ export default function ApplicationsOverview() {
                 isDisabled: resource.kind === ApplicationSetKind ? !canDeleteApplicationSet : !canDeleteApplication,
             })
         }
+
         return actions
     }
 
     useEffect(() => {
-        const canCreateApplicationPromise = canUser('create', ApplicationDefinition)
-        canCreateApplicationPromise.promise
-            .then((result) => setCanCreateApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canCreateApplicationPromise.abort()
+        checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication)
     }, [])
     useEffect(() => {
-        const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)
-        canDeleteApplicationPromise.promise
-            .then((result) => setCanDeleteApplication(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationPromise.abort()
+        checkPermission(rbacDelete(ApplicationDefinition), setCanDeleteApplication)
     }, [])
     useEffect(() => {
-        const canDeleteApplicationSetPromise = canUser('delete', ApplicationSetDefinition)
-        canDeleteApplicationSetPromise.promise
-            .then((result) => setCanDeleteApplicationSet(result.status?.allowed!))
-            .catch((err) => console.error(err))
-        return () => canDeleteApplicationSetPromise.abort()
+        checkPermission(rbacDelete(ApplicationSetDefinition), setCanDeleteApplicationSet)
     }, [])
 
     const appCreationButton = () => {
         return (
             <AcmDropdown
                 isDisabled={!canCreateApplication}
-                tooltip={
-                    !canCreateApplication
-                        ? 'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
-                        : ''
-                }
+                tooltip={!canCreateApplication ? t('rbac.unauthorized') : ''}
                 id={'application-create'}
                 onSelect={(id) => {
                     id === 'create-argo'
@@ -721,9 +762,21 @@ export default function ApplicationsOverview() {
                 emptyState={
                     <AcmEmptyState
                         key="appOverviewEmptyState"
-                        title={t('You don’t have any applications')}
-                        message={getEmptyMessage(t)}
-                        action={appCreationButton()}
+                        title={t("You don't have any applications")}
+                        message={
+                            <Text>
+                                <Trans
+                                    i18nKey="Click <bold>Create application</bold> to create your resource."
+                                    components={{ bold: <strong /> }}
+                                />
+                            </Text>
+                        }
+                        action={
+                            <>
+                                {appCreationButton()}
+                                <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
+                            </>
+                        }
                     />
                 }
                 rowActionResolver={rowActionResolver}

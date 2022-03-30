@@ -57,7 +57,7 @@ export interface ClusterDeployment {
             }
         }
         clusterPoolRef?: {
-            claimName: string
+            claimName?: string
             namespace: string
             poolName: string
         }

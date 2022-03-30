@@ -17,6 +17,7 @@ import {
     onChangeSNO,
     onChangeConnection,
     addSnoText,
+    architectureData,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -53,7 +54,7 @@ const mo48Cpu64Gib = '48 vCPU, 384 GiB RAM - Memory Optimized'
 const mo64Cpu64Gib = '64 vCPU, 512 GiB RAM - Memory Optimized'
 const mo96Cpu64Gib = '96 vCPU, 768 GiB RAM - Memory Optimized'
 
-export const awsRegions = {
+export let awsRegions = {
     'us-east-1': [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],
     'us-east-2': ['us-east-2a', 'us-east-2b', 'us-east-2c'],
     'us-west-1': ['us-west-1a', 'us-west-1c'],
@@ -75,6 +76,9 @@ export const awsRegions = {
     'eu-west-3': ['eu-west-3a', 'eu-west-3b', 'eu-west-3c'],
     'me-south-1': ['me-south-1a', 'me-south-1b', 'me-south-1c'],
     'sa-east-1': ['sa-east-1a', 'sa-east-1b', 'sa-east-1c'],
+}
+
+export const awsGovRegions = {
     'us-gov-west-1': ['us-gov-west-1a', 'us-gov-west-1b', 'us-gov-west-1c'],
     'us-gov-east-1': ['us-gov-east-1a', 'us-gov-east-1b', 'us-gov-east-1c'],
 }
@@ -91,6 +95,21 @@ const setAWSZones = (control, controlData) => {
 
     setZones('masterPool', 'masterZones')
     setZones('workerPools', 'workerZones')
+}
+
+export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataAWS)
+    let controlData = [...controlDataAWS]
+    if (includeAwsPrivate) {
+        controlData.push(...awsPrivateControlData)
+        const regionObject = controlData.find((object) => object.id === 'region')
+        if (regionObject && regionObject.available) {
+            awsRegions = { ...awsRegions, ...awsGovRegions }
+            regionObject.available = regionObject.available.concat(Object.keys(awsRegions))
+        }
+    }
+    if (includeAutomation) controlData.push(...automationControlData)
+    return controlData
 }
 
 const AWSmasterInstanceTypes = [
@@ -594,14 +613,6 @@ export const AWSworkerInstanceTypes = [
     },
 ]
 
-export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
-    if (includeSno) addSnoText(controlDataAWS)
-    let controlData = [...controlDataAWS]
-    if (includeAwsPrivate) controlData.push(...awsPrivateControlData)
-    if (includeAutomation) controlData.push(...automationControlData)
-    return controlData
-}
-
 const controlDataAWS = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -686,6 +697,8 @@ const controlDataAWS = [
         onSelect: setAWSZones,
         reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
+    ///////////////////////  architecture  /////////////////////////////////////
+    ...architectureData,
     ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
@@ -835,7 +848,7 @@ const awsPrivateControlData = [
     {
         id: 'privateAWS',
         type: 'step',
-        title: 'AWS private configuration',
+        title: 'creation.aws.privateAWS',
     },
     {
         id: 'privateAWSTitle',
@@ -843,7 +856,7 @@ const awsPrivateControlData = [
         info: 'creation.aws.privateAWS.info',
     },
     {
-        name: 'amiID',
+        name: 'creation.aws.ami',
         tooltip: 'creation.aws.ami.tooltip',
         id: 'amiID',
         type: 'text',
@@ -852,7 +865,7 @@ const awsPrivateControlData = [
         validation: VALIDATE_ALPHANUMERIC,
     },
     {
-        name: 'Hosted Zone',
+        name: 'creation.aws.hostedZone',
         tooltip: 'creation.aws.hostedZone.tooltip',
         id: 'hostedZone',
         type: 'text',

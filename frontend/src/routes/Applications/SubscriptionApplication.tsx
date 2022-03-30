@@ -48,7 +48,7 @@ const Portals = Object.freeze({
 
 export default function CreateSubscriptionApplicationPage() {
     const { t } = useTranslation()
-    const [title, setTitle] = useState<string>(t('Create Application'))
+    const [title, setTitle] = useState<string>(t('Create application'))
 
     // create portals for buttons in header
     const switches = (
@@ -214,8 +214,8 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
 
     function getEditApplication(location: Location) {
         const pathname = location.pathname
-        if (pathname.includes('/edit')) {
-            const params = pathname.replace(/(.*)edit\//, '')
+        if (pathname.includes('/edit/subscription')) {
+            const params = pathname.replace(/(.*)edit\/subscription\//, '')
             const [namespace, name] = params.split('/')
             if (name && namespace) {
                 return {
@@ -246,20 +246,24 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
         if (editApplication) {
             const { selectedAppName, selectedAppNamespace } = editApplication
             const allChannels = '__ALL__/__ALL__//__ALL__/__ALL__'
-            // get application object from recoil states
-            const application = getApplication(selectedAppNamespace, selectedAppName, allChannels, {
-                applications,
-                ansibleJob,
-                subscriptions,
-                channels,
-                placementRules,
-            })
-            setFetchControl({
-                resources: getApplicationResources(application),
-                isLoaded: true,
-            })
+            const fetchApplication = async () => {
+                // get application object from recoil states
+                const application = await getApplication(selectedAppNamespace, selectedAppName, allChannels, {
+                    applications,
+                    ansibleJob,
+                    subscriptions,
+                    channels,
+                    placementRules,
+                })
+                setFetchControl({
+                    resources: getApplicationResources(application),
+                    isLoaded: true,
+                })
+            }
+            fetchApplication()
         }
-    }, [ansibleJob, applications, channels, editApplication, placementRules, subscriptions])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     useEffect(() => {
         if (editApplication) {

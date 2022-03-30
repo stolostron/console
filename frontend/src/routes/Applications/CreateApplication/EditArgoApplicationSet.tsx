@@ -101,10 +101,11 @@ export function EditArgoApplicationSet() {
 
     return (
         <ArgoWizard
-            addClusterSets={NavigationPath.clusterSets}
+            createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
             ansibleCredentials={availableAnsibleCredentials}
             argoServers={availableArgoNS}
             namespaces={availableNamespace}
+            applicationSets={applicationSets}
             placements={placements}
             clusters={managedClusters}
             clusterSetBindings={managedClusterSetBindings}

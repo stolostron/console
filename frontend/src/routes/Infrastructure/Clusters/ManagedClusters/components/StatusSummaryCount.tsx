@@ -1,15 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmCountCardSection, AcmDrawerContext } from '@stolostron/ui-components'
-import { useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policyreportState } from '../../../../../atoms'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { queryStatusCount } from '../../../../../lib/search'
+import { ISearchResult, queryStatusCount } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
 import { NavigationPath } from '../../../../../NavigationPath'
+import { IRequestResult } from '../../../../../resources'
 import { ClusterContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 
@@ -28,8 +29,20 @@ export function StatusSummaryCount() {
     const { t } = useTranslation()
     const { isSearchAvailable, isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
     const { push } = useHistory()
+    const queryFunction = useCallback<() => IRequestResult<ISearchResult>>(() => {
+        if (isSearchAvailable && cluster?.name) {
+            return queryStatusCount(cluster?.name)
+        } else {
+            return {
+                promise: Promise.resolve({ data: { searchResult: [] } } as ISearchResult),
+                abort: () => {
+                    // nothing to abort
+                },
+            }
+        }
+    }, [isSearchAvailable, cluster])
     /* istanbul ignore next */
-    const { data, loading, startPolling } = useQuery(() => queryStatusCount(cluster?.name!))
+    const { data, loading, startPolling } = useQuery(queryFunction)
     useEffect(startPolling, [startPolling])
 
     const policyReport = policyReports.filter(

@@ -48,8 +48,12 @@ export function CreatePolicy() {
                             type: 'success',
                             autoClose: true,
                         })
+                        history.push(
+                            NavigationPath.policyDetails
+                                .replace(':namespace', policy.metadata?.namespace ?? '')
+                                .replace(':name', policy.metadata?.name ?? '')
+                        )
                     }
-                    history.push(NavigationPath.policies)
                 })
             }}
         />

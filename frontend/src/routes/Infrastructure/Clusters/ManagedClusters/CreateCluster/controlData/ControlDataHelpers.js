@@ -7,6 +7,7 @@ import {
     VALIDATE_BASE_DNS_NAME_REQUIRED,
     VALID_DNS_LABEL,
     VALIDATE_URL,
+    VALIDATE_ALPHANUMERIC,
 } from 'temptifly'
 import { listClusterImageSets } from '../../../../../../resources'
 import { unpackProviderConnection } from '../../../../../../resources'
@@ -496,6 +497,18 @@ export const automationControlData = [
     },
 ]
 
+export const architectureData = [
+    {
+        name: 'Architecture',
+        tooltip: 'tooltip.architecture',
+        id: 'architecture',
+        type: 'combobox',
+        available: ['amd64'],
+        validation: VALIDATE_ALPHANUMERIC,
+        cacheUserValueKey: 'create.cluster.architecture',
+    },
+]
+
 export const isHidden_lt_OCP48 = (control, controlData) => {
     const singleNodeFeatureFlag = controlData.find(({ id }) => id === 'singleNodeFeatureFlag')
     const imageSet = controlData.find(({ id }) => id === 'imageSet')
@@ -515,18 +528,8 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
 }
 
 export const isHidden_gt_OCP46 = (control, controlData) => {
-    const singleNodeFeatureFlag = controlData.find(({ id }) => id === 'singleNodeFeatureFlag')
     const imageSet = controlData.find(({ id }) => id === 'imageSet')
-    if (
-        singleNodeFeatureFlag &&
-        singleNodeFeatureFlag.active &&
-        imageSet &&
-        imageSet.active &&
-        imageSet.active.includes('release:4.6')
-    ) {
-        return false
-    }
-    return true
+    return !(imageSet && imageSet.active && imageSet.active.includes('release:4.6'))
 }
 
 export const isHidden_SNO = (control, controlData) => {

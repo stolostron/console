@@ -3,6 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import moment from 'moment'
+import nock from 'nock'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
@@ -13,6 +14,7 @@ import {
     managedClustersState,
     placementRulesState,
     subscriptionsState,
+    managedClusterInfosState,
 } from '../../atoms'
 import { nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { waitForText } from '../../lib/test-util'
@@ -31,10 +33,16 @@ import {
     ChannelKind,
     ManagedCluster,
     ManagedClusterApiVersion,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
     ManagedClusterKind,
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
     Subscription,
     SubscriptionApiVersion,
     SubscriptionKind,
@@ -161,6 +169,31 @@ const mockManagedCluster0: ManagedCluster = {
     },
 }
 
+const readyManagedClusterConditions = [
+    { type: 'ManagedClusterConditionAvailable', reason: 'ManagedClusterConditionAvailable', status: 'True' },
+    { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+    { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+]
+
+const mockManagedClusterInfo0: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: { name: 'local-cluster', namespace: 'local-cluster' },
+    status: {
+        conditions: readyManagedClusterConditions,
+        version: '1.17',
+        distributionInfo: {
+            type: 'ocp',
+            ocp: {
+                version: '1.2.3',
+                availableUpdates: [],
+                desiredVersion: '1.2.3',
+                upgradeFailed: false,
+            },
+        },
+    },
+}
+
 const mockApplicationSet0: ApplicationSet = {
     apiVersion: ApplicationSetApiVersion,
     kind: ApplicationSetKind,
@@ -266,6 +299,8 @@ const mockPlacementrules: PlacementRule[] = [mockPlacementrule0]
 
 const mockManagedClusters: ManagedCluster[] = [mockManagedCluster0]
 
+const mockManagedClusterInfos = [mockManagedClusterInfo0]
+
 const mockApplicationSets: ApplicationSet[] = [mockApplicationSet0]
 
 const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoApplication1]
@@ -315,10 +350,20 @@ const mockSearchResponse = {
     },
 }
 
+const mockProjects: Project[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: { name },
+}))
+
 describe('Applications Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
+        nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+            .persist()
+            .get('/apis/project.openshift.io/v1/projects')
+            .reply(200, mockProjects)
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {
@@ -329,6 +374,7 @@ describe('Applications Page', () => {
                     snapshot.set(managedClustersState, mockManagedClusters)
                     snapshot.set(applicationSetsState, mockApplicationSets)
                     snapshot.set(argoApplicationsState, mockArgoApplications)
+                    snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
                 }}
             >
                 <MemoryRouter>

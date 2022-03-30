@@ -15,8 +15,10 @@ import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { canUser } from '../../../lib/rbac-util'
+import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
-import { PolicySet } from '../../../resources/policy-set'
+import { PolicySet, PolicySetDefinition } from '../../../resources/policy-set'
 import { GovernanceCreatePolicysetEmptyState } from '../components/GovernanceEmptyState'
 import CardViewToolbarFilter from './components/CardViewToolbarFilter'
 import CardViewToolbarSearch from './components/CardViewToolbarSearch'
@@ -41,38 +43,45 @@ function unknownStatusFilterFn(policySet: PolicySet) {
     return !policySet.status.compliant
 }
 
-function getPresetURIFilters() {
+function getPresetURIFilters(initialSearch: string | undefined) {
     let presetNames: string[] = [],
         presetNs: string[] = []
-    const urlParams = decodeURIComponent(window.location.search)?.replace('?', '')?.split('&') ?? []
-    urlParams.forEach((param) => {
-        const paramKey = param.split('=')[0]
-        const paramValue = param.split('=')[1]
-        switch (paramKey) {
-            case 'names':
-                presetNames = JSON.parse(paramValue)
-                break
-            case 'namespaces':
-                presetNs = JSON.parse(paramValue)
-                break
-        }
-    })
+    const urlParams = initialSearch?.replace('?', '')?.split('&') ?? []
+    if (urlParams[0] !== '') {
+        const parsed = JSON.parse(urlParams[0])
+        presetNames = parsed.name
+        presetNs = parsed.namespace
+    }
     return { presetNames, presetNs }
 }
 
 export default function PolicySetsPage() {
     const { t } = useTranslation()
-    const { presetNames, presetNs } = getPresetURIFilters()
+    const presets = transformBrowserUrlToFilterPresets(window.location.search)
+    const { presetNames, presetNs } = getPresetURIFilters(presets.initialSearch)
     const [policySets] = useRecoilState(policySetsState)
     const [searchFilter, setSearchFilter] = useState<Record<string, string[]>>({
         Name: presetNames,
         Namespace: presetNs,
     })
-    const [violationFilters, setViolationFilters] = useState<string[]>([])
+    const [violationFilters, setViolationFilters] = useState<string[]>(presets.initialFilters?.violation ?? [])
     const [page, setPage] = useState<number>(1)
     const [perPage, setPerPage] = useState<number>(10)
     const [filteredPolicySets, setFilteredPolicySets] = useState<PolicySet[]>(policySets)
     const [selectedCardID, setSelectedCardID] = useState<string>('')
+    const [canCreatePolicySet, setCanCreatePolicySet] = useState<boolean>(false)
+
+    useEffect(() => {
+        const canCreatePolicySetPromise = canUser('create', PolicySetDefinition)
+        canCreatePolicySetPromise.promise
+            .then((result) => {
+                if (result.status?.allowed) {
+                    setCanCreatePolicySet(true)
+                }
+            })
+            .catch((err) => console.error(err))
+        return () => canCreatePolicySetPromise.abort()
+    }, [])
 
     const updatePerPage = useCallback(
         (newPerPage: number) => {
@@ -127,7 +136,8 @@ export default function PolicySetsPage() {
             if (searchFilter['Name'] && searchFilter['Name'].length > 0) {
                 match = searchFilter['Name'].indexOf(policySet.metadata.name) > -1
                 if (!match) return false
-            } else if (searchFilter['Namespace'] && searchFilter['Namespace'].length > 0) {
+            }
+            if (searchFilter['Namespace'] && searchFilter['Namespace'].length > 0) {
                 match = searchFilter['Namespace'].indexOf(policySet.metadata.namespace) > -1
                 if (!match) return false
             }
@@ -162,18 +172,22 @@ export default function PolicySetsPage() {
         }
     }, [page, actualPage])
 
-    const policySetNames: string[] = useMemo(
-        () => policySets.map((policySet: PolicySet) => policySet.metadata.name),
-        [policySets]
-    )
+    const uniquePolicySetNames: string[] = useMemo(() => {
+        const policySetNames = policySets.map((policySet: PolicySet) => policySet.metadata.name)
+        return policySetNames.filter((p, idx) => {
+            return policySetNames.indexOf(p) === idx
+        })
+    }, [policySets])
+
     const uniqueNs: string[] = useMemo(() => {
         const policySetNamespaces: string[] = policySets.map((policySet: PolicySet) => policySet.metadata.namespace)
         return policySetNamespaces.filter((p, idx) => {
             return policySetNamespaces.indexOf(p) === idx
         })
     }, [policySets])
+
     const searchData: any = {
-        Name: policySetNames,
+        Name: uniquePolicySetNames,
         Namespace: uniqueNs,
     }
     const searchDataKeyNames: string[] = ['Name', 'Namespace']
@@ -190,7 +204,10 @@ export default function PolicySetsPage() {
                         <Fragment>
                             <ToolbarGroup variant="filter-group">
                                 <ToolbarItem variant="search-filter">
-                                    <CardViewToolbarFilter setViolationFilters={setViolationFilters} />
+                                    <CardViewToolbarFilter
+                                        setViolationFilters={setViolationFilters}
+                                        preSelectedFilters={violationFilters}
+                                    />
                                 </ToolbarItem>
                                 <ToolbarItem variant="search-filter">
                                     <CardViewToolbarSearch
@@ -202,7 +219,13 @@ export default function PolicySetsPage() {
                                 </ToolbarItem>
                             </ToolbarGroup>
                             <ToolbarItem key={`create-policy-set-toolbar-item`}>
-                                <AcmButton component={Link} variant="primary" to={NavigationPath.createPolicySet}>
+                                <AcmButton
+                                    isDisabled={!canCreatePolicySet}
+                                    tooltip={!canCreatePolicySet ? t('rbac.unauthorized') : ''}
+                                    component={Link}
+                                    variant="primary"
+                                    to={NavigationPath.createPolicySet}
+                                >
                                     {t('Create policy set')}
                                 </AcmButton>
                             </ToolbarItem>

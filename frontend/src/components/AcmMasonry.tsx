@@ -1,42 +1,94 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Stack, StackItem } from '@patternfly/react-core'
+import { Grid, GridItem, gridSpans, Stack } from '@patternfly/react-core'
 import useResizeObserver from '@react-hook/resize-observer'
-import { Children, ReactNode, useMemo, useRef, useState } from 'react'
+import { Children, Dispatch, ReactNode, SetStateAction, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
-export function AcmMasonry(props: { children: ReactNode; minSize?: number; maxColumns?: number }) {
-    const minSize = props.minSize ?? 700
-    const ref = useRef(null)
-    const [columnCount, setColumnCount] = useState(1)
-
-    useResizeObserver(ref, (entry) => {
-        let columns = 1
-        while ((columns + 1) * minSize + columns * 16 < entry.contentRect.width) {
-            columns++
-        }
-        if (props.maxColumns && columns > props.maxColumns) columns = props.maxColumns
-        setColumnCount(columns)
+export function AcmMasonry(props: { minSize: number; maxColumns?: number; children?: ReactNode }) {
+    const target = useRef(null)
+    const [columns, setColumns] = useState(1)
+    useResizeObserver(target, (entry) => {
+        setColumns(Math.min(props.maxColumns ?? 12, Math.max(Math.floor(entry.contentRect.width / props.minSize), 1)))
     })
+    const [span, setSpan] = useState<gridSpans>(12)
 
-    const columns = useMemo(() => {
-        if (columnCount === 0) return []
-        const columns: ReactNode[][] = new Array(columnCount).fill([]).map(() => [])
+    const [sizes, setSizes] = useState<Record<number, number>>({})
+    useLayoutEffect(() => {
+        switch (columns) {
+            case 1:
+                setSpan(12)
+                break
+            case 2:
+                setSpan(6)
+                break
+            case 3:
+                setSpan(4)
+                break
+            case 4:
+                setSpan(3)
+                break
+            case 5:
+                setSpan(2)
+                break
+            case 6:
+                setSpan(2)
+                break
+            default:
+                setSpan(1)
+                break
+        }
+    }, [columns])
+
+    const realColumns = 12 / span
+
+    const itemColumns = useMemo(() => {
+        const itemColumns: ReactNode[][] = new Array(realColumns).fill(0).map(() => [])
+        const columnHeights: number[] = new Array(realColumns).fill(0)
         Children.forEach(props.children, (child, index) => {
-            columns[index % columnCount].push(child)
+            const smallest = Math.min(...columnHeights)
+            const columnIndex = columnHeights.findIndex((column) => column === smallest)
+            if (columnIndex !== undefined && columnIndex !== -1) {
+                itemColumns[columnIndex].push(
+                    <MasonryItem key={index} index={index} sizes={sizes} setSizes={setSizes}>
+                        {child}
+                    </MasonryItem>
+                )
+                const height = sizes[index]
+                if (height !== undefined) {
+                    columnHeights[columnIndex] += height + 16
+                }
+            }
         })
-        return columns
-    }, [columnCount, props.children])
+        return itemColumns
+    }, [props.children, realColumns, sizes])
 
     return (
-        <div ref={ref} style={{ display: 'flex', width: '100%', columnGap: 16 }}>
-            {columns.map((column, index) => (
-                <div style={{ flex: 1 }} key={index}>
-                    <Stack hasGutter>
-                        {column.map((child, index) => (
-                            <StackItem key={index}>{child}</StackItem>
-                        ))}
-                    </Stack>
-                </div>
-            ))}
+        <div ref={target}>
+            <Grid hasGutter style={{ maxWidth: realColumns * props.minSize }}>
+                {itemColumns.map((column, index) => (
+                    <GridItem span={span} key={index}>
+                        <Stack hasGutter>{column}</Stack>
+                    </GridItem>
+                ))}
+            </Grid>
         </div>
     )
+}
+
+function MasonryItem(props: {
+    children?: ReactNode
+    index: number
+    sizes: Record<number, number>
+    setSizes: Dispatch<SetStateAction<Record<number, number>>>
+}) {
+    const target = useRef(null)
+    useResizeObserver(target, (entry) => {
+        props.setSizes((sizes) => {
+            if (props.sizes[props.index] !== entry.contentRect.height) {
+                sizes = { ...sizes }
+                sizes[props.index] = entry.contentRect.height
+            }
+            return sizes
+        })
+    })
+    return <div ref={target}>{props.children}</div>
 }

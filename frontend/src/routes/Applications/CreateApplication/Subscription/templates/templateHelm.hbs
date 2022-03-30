@@ -41,10 +41,18 @@ metadata:
   name: {{{channelName}}}-auth
   namespace: {{{channelName}}}-ns
 data:
+{{#if @root.showSecrets}}
   user: {{{helmUser}}}
-  password: {{{helmPassword}}}
+{{else}}
+  user: # injected on create
 {{/if}}
-{{/unless}}      
+{{#if @root.showSecrets}}
+  password: {{{helmPassword}}} 
+{{else}}
+  user: # injected on create
+{{/if}}
+{{/if}}
+{{/unless}}    
 ---
 apiVersion: apps.open-cluster-management.io/v1
 kind: Subscription

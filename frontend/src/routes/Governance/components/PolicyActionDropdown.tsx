@@ -8,7 +8,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { patchResource, Policy, PolicyApiVersion, PolicyDefinition, PolicyKind } from '../../../resources'
-import { DeletePolicyModal, PolicyTableItem } from '../policies/Policies'
+import { AddToPolicySetModal, DeletePolicyModal, PolicyTableItem } from '../policies/Policies'
 
 export function PolicyActionDropdown(props: {
     setModal: (modal: React.ReactNode) => void
@@ -71,9 +71,18 @@ export function PolicyActionDropdown(props: {
     const actions = useMemo(
         () => [
             {
+                id: 'add-to-set',
+                text: t('Add to policy set'),
+                tooltip: t('Add to policy set'),
+                addSeparator: true,
+                click: (policy: PolicyTableItem) => {
+                    setModal(<AddToPolicySetModal policyTableItems={[policy]} onClose={() => setModal(undefined)} />)
+                },
+            },
+            {
                 id: 'enable-policy',
                 text: t('Enable'),
-                tooltip: item.policy.spec.disabled ? 'Enable policy' : 'Policy is already enabled',
+                tooltip: item.policy.spec.disabled ? t('Enable policy') : t('Policy is already enabled'),
                 isAriaDisabled: item.policy.spec.disabled === false,
                 click: (item: PolicyTableItem) => {
                     setModalProps({
@@ -111,7 +120,7 @@ export function PolicyActionDropdown(props: {
             {
                 id: 'disable-policy',
                 text: t('policy.table.actions.disable'),
-                tooltip: item.policy.spec.disabled ? 'Policy is already disabled' : 'Disable policy',
+                tooltip: item.policy.spec.disabled ? t('Policy is already disabled') : t('Disable policy'),
                 isAriaDisabled: item.policy.spec.disabled === true,
                 click: (item: PolicyTableItem) => {
                     setModalProps({
@@ -149,7 +158,7 @@ export function PolicyActionDropdown(props: {
             {
                 id: 'inform-policy',
                 text: t('policy.table.actions.inform'),
-                tooltip: item.policy.spec.remediationAction === 'inform' ? 'Already informing' : 'Inform policy',
+                tooltip: item.policy.spec.remediationAction === 'inform' ? t('Already informing') : t('Inform policy'),
                 addSeparator: true,
                 isAriaDisabled: item.policy.spec.remediationAction === 'inform',
                 click: (item: PolicyTableItem) => {
@@ -189,7 +198,8 @@ export function PolicyActionDropdown(props: {
             {
                 id: 'enforce-policy',
                 text: t('policy.table.actions.enforce'),
-                tooltip: item.policy.spec.remediationAction === 'enforce' ? 'Already enforcing' : 'Enforce policy',
+                tooltip:
+                    item.policy.spec.remediationAction === 'enforce' ? t('Already enforcing') : t('Enforce policy'),
                 isAriaDisabled: item.policy.spec.remediationAction === 'enforce',
                 click: (item: PolicyTableItem) => {
                     setModalProps({
@@ -228,21 +238,23 @@ export function PolicyActionDropdown(props: {
             {
                 id: 'edit-policy',
                 text: t('Edit'),
-                tooltip: 'Edit policy',
+                tooltip: t('Edit policy'),
                 addSeparator: true,
                 click: (item: PolicyTableItem) => {
-                    history.push(
-                        NavigationPath.editPolicy
-                            .replace(':namespace', item.policy.metadata.namespace!)
-                            .replace(':name', item.policy.metadata.name!)
-                    )
+                    let path = NavigationPath.editPolicy
+                        .replace(':namespace', item.policy.metadata.namespace!)
+                        .replace(':name', item.policy.metadata.name!)
+                    if (props.isKebab) {
+                        path += '?context=policies'
+                    }
+                    history.push(path)
                 },
                 rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
             {
                 id: 'delete-policy',
                 text: t('Delete'),
-                tooltip: 'Delete policy',
+                tooltip: t('Delete policy'),
                 addSeparator: true,
                 click: (policy: PolicyTableItem) => {
                     setModal(<DeletePolicyModal item={policy} onClose={() => setModal(undefined)} />)
@@ -258,6 +270,7 @@ export function PolicyActionDropdown(props: {
             item.policy.metadata.namespace,
             item.policy.spec.disabled,
             item.policy.spec.remediationAction,
+            props.isKebab,
             setModal,
             t,
         ]

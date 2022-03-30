@@ -1,13 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection, Title } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmTable, AcmTablePaginationContextProvider } from '@stolostron/ui-components'
+import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '@stolostron/ui-components'
 import moment from 'moment'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 import { NavigationPath } from '../../../../NavigationPath'
 import { getGroupFromApiVersion, Policy, PolicyStatusDetails } from '../../../../resources'
 
@@ -26,6 +27,7 @@ interface resultsTableData {
 
 export default function PolicyDetailsResults(props: { policy: Policy }) {
     const { t } = useTranslation()
+    const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
     const { policy } = props
     const [policies] = useRecoilState(policiesState)
 
@@ -50,8 +52,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                 details.forEach((detail: PolicyStatusDetails) => {
                     const templates = policyResponse?.spec['policy-templates'] ?? []
                     const template = templates.find(
-                        (template: any) =>
-                            template.objectDefinition.metadata.name ?? 'a' === detail.templateMeta.name ?? 'b'
+                        (template: any) => template?.objectDefinition?.metadata?.name === detail?.templateMeta?.name
                     )
                     status.push({
                         templateName: detail.templateMeta.name ?? '-',
@@ -74,6 +75,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
         () => [
             {
                 header: 'Cluster',
+                sort: 'clusterNamespace',
                 cell: (item: resultsTableData) => (
                     <Link
                         to={{
@@ -87,6 +89,13 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
             },
             {
                 header: 'Violations',
+                sort: (itemA: any, itemB: any) => {
+                    const messageA = itemA.message ?? '-'
+                    const compliantA = messageA && typeof messageA === 'string' ? messageA.split(';')[0] : '-'
+                    const messageB = itemB.message ?? '-'
+                    const compliantB = messageB && typeof messageB === 'string' ? messageB.split(';')[0] : '-'
+                    return compareStrings(compliantA, compliantB)
+                },
                 cell: (item: resultsTableData) => {
                     const message = item.message ?? '-'
                     let compliant = message && typeof message === 'string' ? message.split(';')[0] : '-'
@@ -118,11 +127,13 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
             },
             {
                 header: 'Template',
+                sort: 'templateName',
                 cell: (item: resultsTableData) => item.templateName,
                 search: (item: resultsTableData) => item.templateName,
             },
             {
                 header: 'Message',
+                sort: 'message',
                 cell: (item: resultsTableData) => {
                     const policyName = item?.policyName
                     const policyNamespace = item?.policyNamespace
@@ -163,6 +174,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
             },
             {
                 header: 'Last report',
+                sort: 'timestamp',
                 cell: (item: resultsTableData) =>
                     item.timestamp ? moment(item.timestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow() : '-',
             },
@@ -200,6 +212,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                         index: 1,
                         direction: 'desc',
                     }}
+                    initialSearch={filterPresets.initialSearch}
                     searchPlaceholder={t('Find clusters')}
                     fuseThreshold={0}
                     plural={t('clusters')}

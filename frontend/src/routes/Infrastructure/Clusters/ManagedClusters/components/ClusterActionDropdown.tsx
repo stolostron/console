@@ -122,7 +122,10 @@ export function getClusterActions(cluster: Cluster) {
     }
 
     if (
-        !(cluster.provider === Provider.hybrid && cluster.status === ClusterStatus.pendingimport) ||
+        !(
+            cluster.provider === Provider.hybrid &&
+            [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown].includes(cluster.status)
+        ) ||
         cluster.isSNOCluster
     ) {
         actionIds = actionIds.filter((id) => id !== 'ai-scale-up')
@@ -137,7 +140,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
-    const [scaleUpModalOpen, setScaleUpModalOpen] = useState<boolean>(false)
+    const [scaleUpModalOpen, setScaleUpModalOpen] = useState<string | undefined>(undefined)
     const [modalProps, setModalProps] = useState<IBulkActionModelProps<Cluster> | { open: false }>({
         open: false,
     })
@@ -409,7 +412,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             {
                 id: 'ai-scale-up',
                 text: t('managed.ai.scaleUp'),
-                click: () => setScaleUpModalOpen(true),
+                click: (cluster: Cluster) => setScaleUpModalOpen(cluster.name),
             },
         ],
         [cluster, destroyRbac, history, isSearchAvailable, modalColumns, t]
@@ -443,7 +446,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                     actions={actions}
                 />
             )}
-            <ScaleUpDialog isOpen={scaleUpModalOpen} closeDialog={() => setScaleUpModalOpen(false)} />
+            <ScaleUpDialog
+                isOpen={!!scaleUpModalOpen}
+                clusterName={scaleUpModalOpen}
+                closeDialog={() => setScaleUpModalOpen(undefined)}
+            />
         </>
     )
 }

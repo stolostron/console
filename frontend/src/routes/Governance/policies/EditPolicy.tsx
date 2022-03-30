@@ -3,22 +3,35 @@ import { EditMode } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Policy/PolicyWizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory, useLocation, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
+    channelsState,
+    helmReleaseState,
     managedClusterSetBindingsState,
     managedClustersState,
     namespacesState,
     placementBindingsState,
     placementRulesState,
     placementsState,
+    subscriptionsState,
     usePolicies,
 } from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicyKind, reconcileResources } from '../../../resources'
-import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
+import {
+    getPlacementBindingsForResource,
+    getPlacementsForResource,
+    resolveExternalStatus,
+    resolveSource,
+} from '../common/util'
+
+function useSearchParams() {
+    const { search } = useLocation()
+    return useMemo(() => new URLSearchParams(search), [search])
+}
 
 export function EditPolicy() {
     const { t } = useTranslation()
@@ -34,6 +47,11 @@ export function EditPolicy() {
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
     const [existingResources, setExistingResources] = useState<IResource[]>()
+    const [helmReleases] = useRecoilState(helmReleaseState)
+    const [subscriptions] = useRecoilState(subscriptionsState)
+    const [channels] = useRecoilState(channelsState)
+    const [gitSource, setGitSource] = useState('')
+    const searchParams = useSearchParams()
 
     useEffect(() => {
         const policy = policies.find(
@@ -46,8 +64,28 @@ export function EditPolicy() {
         const policyPlacementBindings = getPlacementBindingsForResource(policy, placementBindings)
         const policyPlacements = getPlacementsForResource(policy, policyPlacementBindings, placements)
         const policyPlacementRules = getPlacementsForResource(policy, policyPlacementBindings, placementRules)
+
+        const isExternal = resolveExternalStatus(policy)
+        if (isExternal) {
+            const policySource = resolveSource(policy, helmReleases, channels, subscriptions)
+            setGitSource(policySource?.pathName ?? '')
+        }
+
         setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
-    }, [history, params.name, params.namespace, placementBindings, placementRules, placements, policies])
+        setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
+    }, [
+        channels,
+        helmReleases,
+        history,
+        params.name,
+        params.namespace,
+        placementBindings,
+        placementRules,
+        placements,
+        policies,
+        subscriptions,
+        t,
+    ])
 
     if (existingResources === undefined) {
         return <LoadingPage />
@@ -64,6 +102,7 @@ export function EditPolicy() {
             clusterSetBindings={clusterSetBindings}
             editMode={EditMode.Edit}
             resources={existingResources}
+            gitSource={gitSource}
             onSubmit={(data) => {
                 const resources = data as IResource[]
                 return reconcileResources(resources, existingResources).then(() => {
@@ -75,11 +114,34 @@ export function EditPolicy() {
                             type: 'success',
                             autoClose: true,
                         })
+                        if (searchParams.get('context') === 'policies') {
+                            history.push(NavigationPath.policies)
+                        } else {
+                            history.push(
+                                NavigationPath.policyDetails
+                                    .replace(':namespace', policy.metadata?.namespace ?? '')
+                                    .replace(':name', policy.metadata?.name ?? '')
+                            )
+                        }
                     }
-                    history.push(NavigationPath.policies)
                 })
             }}
-            onCancel={() => history.push(NavigationPath.policies)}
+            onCancel={() => {
+                if (searchParams.get('context') === 'policies') {
+                    history.push(NavigationPath.policies)
+                } else {
+                    const policy = existingResources.find((resource) => resource.kind === PolicyKind)
+                    if (policy) {
+                        history.push(
+                            NavigationPath.policyDetails
+                                .replace(':namespace', policy.metadata?.namespace ?? '')
+                                .replace(':name', policy.metadata?.name ?? '')
+                        )
+                    } else {
+                        history.push(NavigationPath.policies)
+                    }
+                }
+            }}
         />
     )
 }

@@ -158,7 +158,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                             }
                             switches={
                                 <Fragment>
-                                    {process.env.NODE_ENV === 'development' && (
+                                    {(editorTitle || process.env.NODE_ENV === 'development') && (
                                         <Switch
                                             label="YAML"
                                             isChecked={drawerExpanded}

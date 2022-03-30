@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { makeStyles } from '@material-ui/styles'
-import { ButtonVariant, Hint, PageSection } from '@patternfly/react-core'
+import { ButtonVariant, Hint, PageSection, TextContent } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import {
@@ -22,6 +22,7 @@ import { BulkActionModel, IBulkActionModelProps } from '../../../components/Bulk
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
+import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
 import { rbacDelete, rbacPatch } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -328,18 +329,21 @@ function AnsibleJobTemplateTable() {
                         title={t('template.emptyStateHeader')}
                         message={<Trans i18nKey={'template.emptyStateMsg'} components={{ bold: <strong /> }} />}
                         action={
-                            <AcmButton
-                                role="link"
-                                onClick={() => {
-                                    // TODO: make sure addtemplate can handle new ansible Automations
-                                    history.push(NavigationPath.addAnsibleAutomation)
-                                }}
-                                // disabled={}
-                                // tooltip={t('rbac.unauthorized')}
-                                hidden
-                            >
-                                {t('template.create')}
-                            </AcmButton>
+                            <div>
+                                <AcmButton
+                                    role="link"
+                                    onClick={() => {
+                                        // TODO: make sure addtemplate can handle new ansible Automations
+                                        history.push(NavigationPath.addAnsibleAutomation)
+                                    }}
+                                    // disabled={}
+                                    // tooltip={t('rbac.unauthorized')}
+                                    hidden
+                                >
+                                    {t('template.create')}
+                                </AcmButton>
+                                <TextContent>{viewDocumentation(DOC_LINKS.ANSIBLE_JOBS, t)}</TextContent>
+                            </div>
                         }
                     />
                 }

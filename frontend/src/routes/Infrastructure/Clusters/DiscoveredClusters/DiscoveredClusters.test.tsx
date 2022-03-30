@@ -48,7 +48,7 @@ describe('DiscoveredClusters', () => {
     })
 
     test('No provider connections or discoveryconfig (Empty State 1)', async () => {
-        render(
+        const { queryAllByText } = await render(
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(discoveredClusterState, [])
@@ -61,9 +61,9 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('No discovered clusters found')
+        await waitForText("You don't have any discovered clusters")
         await waitForText('Red Hat OpenShift Cluster Manager')
-        await waitForText('Add credential')
+        expect(queryAllByText('Add credential').length).toBe(2)
     })
 
     test('CRH credentials exist, but no discoveryconfig (Empty State 2)', async () => {
@@ -86,7 +86,7 @@ describe('DiscoveredClusters', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        await waitForText('No discovered clusters found')
+        await waitForText("You don't have any discovered clusters")
         await waitForText('Configure Discovery')
         await waitForText('Create discovery settings')
         await clickByText('Create discovery settings')
@@ -115,8 +115,7 @@ describe('DiscoveredClusters', () => {
             </RecoilRoot>
         )
 
-        await waitForText('No discovered clusters found')
-        await waitForText('view documentation')
+        await waitForText("You don't have any discovered clusters")
         await waitForText('Configure discovery settings')
         await waitForText('Create discovery settings')
     })

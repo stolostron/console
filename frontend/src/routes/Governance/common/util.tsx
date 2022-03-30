@@ -7,8 +7,8 @@ import { Link } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     Channel,
-    Cluster,
     HelmRelease,
+    ManagedCluster,
     Placement,
     PlacementBinding,
     PlacementRule,
@@ -79,21 +79,13 @@ export function getPlacementDecisionsForResource(
     return getPlacementDecisionsForPlacements(placementDecisions, resourcePlacements)
 }
 
-export function getPoliciesForPolicySet(policySet: PolicySet, policies: Policy[]) {
-    return policies.filter(
-        (policy) =>
-            policy.metadata.namespace === policySet.metadata.namespace &&
-            policySet.spec.policies.includes(policy.metadata.name ?? '')
-    )
-}
-
-export function getPolicyForCluster(cluster: Cluster, policies: Policy[]) {
+export function getPolicyForCluster(cluster: ManagedCluster, policies: Policy[]) {
     const clusterPolicies: ClusterPolicies[] = []
     for (const policy of policies) {
         const policyStatus = policy.status?.status
         if (policyStatus) {
             for (const status of policyStatus) {
-                if (status.clustername === cluster.name) {
+                if (status.clustername === cluster.metadata.name) {
                     clusterPolicies.push({
                         policyName: policy.metadata.name!,
                         policyNamespace: policy.metadata.namespace!,
@@ -119,7 +111,7 @@ export function getPolicyComplianceForPolicySet(
         resourceBindings,
         placements
     )
-    const policySetPolicies = getPoliciesForPolicySet(policySet, policies)
+    const policySetPolicies = getPolicySetPolicies(policies, policySet)
 
     const policyCompliance: PolicyCompliance[] = []
     for (const placementDecision of policySetPlacementDecisions) {
@@ -129,7 +121,15 @@ export function getPolicyComplianceForPolicySet(
                 const policyClusterStatus = policy.status?.status?.find(
                     (clusterStatus) => clusterStatus.clustername === decision.clusterName
                 )
-                if (policyClusterStatus?.compliant === 'NonCompliant') {
+                if (!policyClusterStatus) {
+                    if (policyIdx < 0) {
+                        policyCompliance.push({
+                            policyName: policy.metadata.name!,
+                            policyNamespace: policy.metadata.namespace!,
+                            clusterCompliance: [],
+                        })
+                    }
+                } else if (policyClusterStatus?.compliant === 'NonCompliant') {
                     if (policyIdx < 0) {
                         policyCompliance.push({
                             policyName: policy.metadata.name!,
@@ -185,7 +185,7 @@ export function getClustersComplianceForPolicySet(
         resourceBindings,
         placements
     )
-    const policySetPolicies = getPoliciesForPolicySet(policySet, policies)
+    const policySetPolicies = getPolicySetPolicies(policies, policySet)
 
     const clustersCompliance: Record<string, 'Compliant' | 'NonCompliant'> = {}
     for (const placementDecision of policySetPlacementDecisions) {
@@ -375,7 +375,7 @@ export function PolicySetList(props: { policySets: PolicySet[] }) {
         () =>
             policySets.map((policySetMatch: PolicySet, idx: number) => {
                 const urlSearch = encodeURIComponent(
-                    `names=["${policySetMatch.metadata.name}"]&namespaces=["${policySetMatch.metadata.namespace}"]`
+                    `search={"name":["${policySetMatch.metadata.name}"],"namespace":["${policySetMatch.metadata.namespace}"]}`
                 )
                 return (
                     <div key={`${idx}-${policySetMatch.metadata.name}`}>
@@ -409,4 +409,15 @@ export function PolicySetList(props: { policySets: PolicySet[] }) {
         )
     }
     return <div>{policySetLinks}</div>
+}
+
+export function getPolicySetPolicies(policies: Policy[], policySet: PolicySet) {
+    const policyNameMap = policySet.spec.policies.reduce((policyNameMap, currentValue) => {
+        policyNameMap[currentValue] = true
+        return policyNameMap
+    }, {} as Record<string, true>)
+
+    return policies.filter(
+        (policy) => policyNameMap[policy.metadata.name!] && policy.metadata.namespace === policySet.metadata.namespace
+    )
 }

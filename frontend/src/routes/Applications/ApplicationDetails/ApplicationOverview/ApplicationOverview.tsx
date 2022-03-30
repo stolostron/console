@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmActionGroup, AcmButton, AcmDescriptionList, AcmPageContent, ListItems } from '@stolostron/ui-components'
+import {
+    AcmActionGroup,
+    AcmButton,
+    AcmDescriptionList,
+    AcmInlineStatusGroup,
+    AcmPageContent,
+    ListItems,
+} from '@stolostron/ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import {
     Button,
@@ -22,13 +29,7 @@ import {
 } from '@patternfly/react-icons'
 import { useRecoilState } from 'recoil'
 import { Fragment, useEffect, useState } from 'react'
-import {
-    argoApplicationsState,
-    channelsState,
-    managedClustersState,
-    placementRulesState,
-    subscriptionsState,
-} from '../../../../atoms'
+import { argoApplicationsState, channelsState, placementRulesState, subscriptionsState } from '../../../../atoms'
 import { createClustersText, getShortDateTime } from '../../helpers/resource-helper'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
 import { getSearchLink } from '../../helpers/resource-helper'
@@ -40,9 +41,12 @@ import {
     ApplicationSet,
     Channel,
     IResource,
-    listNamespaces,
+    listProjects,
     NamespaceDefinition,
     Subscription,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
 } from '../../../../resources'
 import ResourceLabels from '../../components/ResourceLabels'
 import '../../css/ApplicationOverview.css'
@@ -52,9 +56,10 @@ import { ApplicationDataType } from '../ApplicationDetails'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
 import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
-import { DiagramIcons } from '../../../../components/Topology/shapes/DiagramIcons'
 import { getDiagramElements } from '../ApplicationTopology/model/topology'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
+import { Link } from 'react-router-dom'
+import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
@@ -68,8 +73,17 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     const [channels] = useRecoilState(channelsState)
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [placementRules] = useRecoilState(placementRulesState)
-    const [managedClusters] = useRecoilState(managedClustersState)
-    const localCluster = managedClusters.find((cls) => cls.metadata.name === localClusterStr)
+    //const [managedClusters] = useRecoilState(managedClustersState)
+    let managedClusters = useAllClusters()
+    managedClusters = managedClusters.filter((cluster) => {
+        // don't show clusters in cluster pools in table
+        if (cluster.hive.clusterPool) {
+            return cluster.hive.clusterClaimName !== undefined
+        } else {
+            return true
+        }
+    })
+    const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
     const [showSubCards, setShowSubCards] = useState(false)
     const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
         open: false,
@@ -90,17 +104,24 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     let disableBtn
     let subsList = []
 
-    let getUrl = window.location.href
-    getUrl = getUrl.substring(0, getUrl.indexOf('/multicloud/applications/'))
-
     useEffect(() => {
         const fetchNamespaces = async () => {
-            return listNamespaces().promise
+            return listProjects().promise
         }
 
         fetchNamespaces().then((ns) => {
+            const namespaceArr: Namespace[] = ns.map((project) => {
+                return {
+                    apiVersion: NamespaceApiVersion,
+                    kind: NamespaceKind,
+                    metadata: project.metadata,
+                } as Namespace
+            })
             const fetchAuthorizedNamespaces = async () => {
-                const authorizedNamespaces = await getAuthorizedNamespaces([rbacCreate(NamespaceDefinition)], ns)
+                const authorizedNamespaces = await getAuthorizedNamespaces(
+                    [rbacCreate(NamespaceDefinition)],
+                    namespaceArr
+                )
                 return {
                     authorizedNamespaces,
                     namespaces: ns,
@@ -133,7 +154,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     }
 
     if (applicationData) {
-        isArgoApp = applicationData.appData.isArgoApp
+        isArgoApp = applicationData.application.isArgoApp
         isAppSet = applicationData.application.isAppSet
         isSubscription = !isArgoApp && !isAppSet
         const { name, namespace } = applicationData.application.metadata
@@ -286,13 +307,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                                 hasSyncPermission ? (
                                     createSyncButton(applicationData.application.allSubscriptions, setModalProps, t)
                                 ) : (
-                                    <Tooltip
-                                        content={t(
-                                            'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
-                                        )}
-                                        isContentLeftAligned
-                                        position="right"
-                                    >
+                                    <Tooltip content={t('rbac.unauthorized')} isContentLeftAligned position="right">
                                         {createSyncButton(
                                             applicationData.application.allSubscriptions,
                                             setModalProps,
@@ -344,7 +359,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                     isArgoApp,
                     isAppSet,
                     t,
-                    getUrl,
                     openTabIcon,
                 })}
 
@@ -439,31 +453,12 @@ function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
         // render the status of the application
         return (
             <Fragment>
-                <DiagramIcons />
-                <div className="status-icon-container green-status" id="green-resources">
-                    <svg className="status-icon">
-                        <use href={'#diagramIcons_checkmark'} style={{ fill: '#3E8635' }} />
-                    </svg>
-                    <div className="status-count">{nodeStatuses.green}</div>
-                </div>
-                <div className="status-icon-container orange-status" id="orange-resources">
-                    <svg className="status-icon">
-                        <use href={'#diagramIcons_pending'} />
-                    </svg>
-                    <div className="status-count">{nodeStatuses.orange}</div>
-                </div>
-                <div className="status-icon-container yellow-status" id="yellow-resources">
-                    <svg className="status-icon">
-                        <use href={'#diagramIcons_warning'} />
-                    </svg>
-                    <div className="status-count">{nodeStatuses.yellow}</div>
-                </div>
-                <div className="status-icon-container red-status" id="red-resources">
-                    <svg className="status-icon">
-                        <use href={'#diagramIcons_failure'} />
-                    </svg>
-                    <div className="status-count">{nodeStatuses.red}</div>
-                </div>
+                <AcmInlineStatusGroup
+                    healthy={nodeStatuses.green}
+                    progress={nodeStatuses.orange}
+                    warning={nodeStatuses.yellow}
+                    danger={nodeStatuses.red}
+                />
             </Fragment>
         )
     }
@@ -477,12 +472,11 @@ interface IRenderCardsSectionProps {
     isArgoApp: boolean
     t: TFunction
     resource: IResource
-    getUrl: string
     openTabIcon: string
 }
 
 function renderCardsSection(props: IRenderCardsSectionProps) {
-    const { isSubscription, isAppSet, isArgoApp, t, resource, getUrl, openTabIcon } = props
+    const { isSubscription, isAppSet, isArgoApp, t, resource, openTabIcon } = props
     if (resource) {
         const [apigroup, apiversion] = resource.apiVersion.split('/')
         const targetLink = getSearchLink({
@@ -498,22 +492,12 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
             return (
                 <Card>
                     <CardBody>
-                        <AcmButton
-                            id="search-resource"
-                            target="_blank"
-                            component="a"
-                            href={getUrl + targetLink}
-                            variant={ButtonVariant.link}
-                            rel="noreferrer"
-                            icon={
-                                <svg className="new-tab-icon">
-                                    <use href={openTabIcon} />
-                                </svg>
-                            }
-                            iconPosition="right"
-                        >
-                            {t('Search resource')}
-                        </AcmButton>
+                        <Link to={targetLink}>
+                            {t('Search resource')}{' '}
+                            <svg className="new-tab-icon">
+                                <use href={openTabIcon} />
+                            </svg>
+                        </Link>
                     </CardBody>
                 </Card>
             )
@@ -525,40 +509,21 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
                             {isSearchAvailable() && (
                                 <Fragment>
                                     <AcmActionGroup>
-                                        <AcmButton
-                                            href={getUrl + targetLink}
-                                            variant={ButtonVariant.link}
+                                        <Link id="search-resource" to={targetLink}>
+                                            {t('Search resource')}{' '}
+                                            <svg className="new-tab-icon">
+                                                <use href={openTabIcon} />
+                                            </svg>
+                                        </Link>
+                                        <Link
                                             id="app-search-argo-apps-link"
-                                            component="a"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            icon={
-                                                <svg className="new-tab-icon argo-app-link">
-                                                    <use href={openTabIcon} />
-                                                </svg>
-                                            }
-                                            iconPosition="right"
+                                            to={getSearchLinkForArgoApplications(resource, isArgoApp, isAppSet)}
                                         >
-                                            {t('Search Resource')}
-                                        </AcmButton>
-                                        <AcmButton
-                                            href={
-                                                getUrl + getSearchLinkForArgoApplications(resource, isArgoApp, isAppSet)
-                                            }
-                                            variant={ButtonVariant.link}
-                                            id="app-search-argo-apps-link"
-                                            component="a"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            icon={
-                                                <svg className="new-tab-icon argo-app-link">
-                                                    <use href={openTabIcon} />
-                                                </svg>
-                                            }
-                                            iconPosition="right"
-                                        >
-                                            {t('Search all related applications')}
-                                        </AcmButton>
+                                            {t('Search all related applications')}{' '}
+                                            <svg className="new-tab-icon">
+                                                <use href={openTabIcon} />
+                                            </svg>
+                                        </Link>
                                     </AcmActionGroup>
                                 </Fragment>
                             )}

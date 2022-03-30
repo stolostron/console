@@ -15,6 +15,7 @@ import {
     isHidden_lt_OCP48,
     isHidden_SNO,
     onChangeSNO,
+    architectureData,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -118,6 +119,8 @@ const controlDataRHV = [
         type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
+    ///////////////////////  architecture  /////////////////////////////////////
+    ...architectureData,
     ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
@@ -139,7 +142,7 @@ const controlDataRHV = [
                 tooltip: 'tooltip.creation.ocp.cores',
                 id: 'masterCores',
                 type: 'number',
-                initial: '2',
+                initial: '4',
                 validation: VALIDATE_NUMERIC,
             },
             ///////////////////////  sockets  /////////////////////////////////////
@@ -148,7 +151,7 @@ const controlDataRHV = [
                 tooltip: 'tooltip.creation.ocp.sockets',
                 id: 'masterSockets',
                 type: 'number',
-                initial: '1',
+                initial: '2',
                 validation: VALIDATE_NUMERIC,
             },
             ///////////////////////  memoryMB  /////////////////////////////////////
@@ -157,7 +160,7 @@ const controlDataRHV = [
                 tooltip: 'tooltip.creation.ocp.memoryMB',
                 id: 'masterMemoryMB',
                 type: 'number',
-                initial: '16384',
+                initial: '16348',
                 validation: VALIDATE_NUMERIC,
             },
             ///////////////////////  root volume  /////////////////////////////////////
@@ -211,7 +214,7 @@ const controlDataRHV = [
                 tooltip: 'tooltip.creation.ocp.cores',
                 id: 'cores',
                 type: 'number',
-                initial: '2',
+                initial: '4',
                 validation: VALIDATE_NUMERIC,
             },
             ///////////////////////  sockets  /////////////////////////////////////
@@ -229,7 +232,7 @@ const controlDataRHV = [
                 tooltip: 'tooltip.creation.ocp.memoryMB',
                 id: 'memoryMB',
                 type: 'number',
-                initial: '16384',
+                initial: '16348',
                 validation: VALIDATE_NUMERIC,
             },
             ///////////////////////  sizeGB  /////////////////////////////////////
@@ -264,7 +267,19 @@ const controlDataRHV = [
         id: 'ovirt_network_name',
         name: 'creation.ocp.cluster.rhv.network.name',
         tooltip: 'tooltip.creation.ocp.cluster.rhv.network.name',
-        placeholder: 'creation.ocp.cluster.rhv.network.name',
+        placeholder: 'creation.ocp.cluster.rhv.network.name.placeholder',
+        type: 'text',
+        active: '',
+        validation: {
+            notification: 'creation.ocp.cluster.rhv.must.enter.network.name',
+            required: true,
+        },
+    },
+    {
+        id: 'vnicProfileID',
+        name: 'creation.ocp.cluster.rhv.vnicprofileid',
+        tooltip: 'tooltip.creation.ocp.cluster.rhv.vnicprofileid',
+        placeholder: 'creation.ocp.cluster.rhv.vnicprofileid.placeholder',
         type: 'text',
         active: '',
         validation: {
@@ -277,6 +292,7 @@ const controlDataRHV = [
         type: 'text',
         name: 'creation.ocp.api.vip',
         tooltip: 'tooltip.creation.ocp.api.vip',
+        placeholder: 'creation.ocp.api.vip.placeholder',
         active: '',
         validation: VALIDATE_IP,
     },

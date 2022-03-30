@@ -4,6 +4,7 @@ import { TFunction } from 'i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import queryString from 'query-string'
+import { NavigationPath } from '../../../NavigationPath'
 import {
     Application,
     ApplicationKind,
@@ -13,9 +14,9 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
+    Cluster,
     IResource,
     IResourceDefinition,
-    ManagedCluster,
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
@@ -53,7 +54,7 @@ const calculateClusterCount = (
     resource: ArgoApplication,
     clusterCount: any,
     clusterList: string[],
-    localCluster: ManagedCluster | undefined
+    localCluster: Cluster | undefined
 ) => {
     const isRemoteArgoApp = resource.status.cluster ? true : false
 
@@ -76,10 +77,11 @@ const calculateClusterCount = (
 }
 
 // Check if server URL matches hub URL
-function isLocalClusterURL(url: string, localCluster: ManagedCluster | undefined) {
+function isLocalClusterURL(url: string, localCluster: Cluster | undefined) {
     let argoServerURL
-    const localClusterConfigs = localCluster ? localCluster.spec?.managedClusterClientConfigs! : []
-    const localClusterURL = new URL(localClusterConfigs.length > 0 ? localClusterConfigs[0].url : '')
+    const localClusterURL = new URL(
+        localCluster ? _.get(localCluster, 'consoleURL', 'https://localhost') : 'https://localhost'
+    )
 
     try {
         argoServerURL = new URL(url)
@@ -102,7 +104,7 @@ export const createClustersText = (props: {
     argoApplications: ArgoApplication[]
     placementRules: PlacementRule[]
     subscriptions: Subscription[]
-    localCluster: ManagedCluster | undefined
+    localCluster: Cluster | undefined
 }) => {
     const { resource, clusterCount, clusterList, argoApplications, placementRules, subscriptions, localCluster } = props
     if (resource.kind === ApplicationSetKind) {
@@ -181,6 +183,8 @@ export function getClusterCountString(remoteCount: number, localPlacement: boole
 
 export function getResourceType(type: String, t: (arg: String) => String) {
     switch (type) {
+        case 'github':
+            return t('Git')
         case 'git':
             return t('Git')
         case 'helmrepo':
@@ -195,7 +199,6 @@ export function getResourceType(type: String, t: (arg: String) => String) {
 }
 
 export const getResourceLabel = (type: string, count: number, t: TFunction) => {
-    // const label = t(`resource.type.${type}`)
     const label = getResourceType(type, t)
     const optionalCount = count > 1 ? ` (${count})` : ''
     return label + optionalCount
@@ -234,9 +237,9 @@ export const getSearchLink = (params: any) => {
     if (showRelated) {
         queryParams.showrelated = showRelated
     }
-    const query = queryString.stringify(queryParams)
+    const query = queryString.stringify(queryParams, { strict: true }).replace(/\./g, '%2E')
     const search = query ? `?${query}` : ''
-    return `/multicloud/home/search${search}`
+    return `${NavigationPath.search}${search}`
 }
 
 export const getEditLink = (params: {
