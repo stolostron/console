@@ -56,13 +56,7 @@ export function PolicyActionDropdown(props: {
             },
             {
                 header: t('policy.table.actionGroup.status'),
-                cell: (item: PolicyTableItem) => (
-                    <span>
-                        {item.policy.spec.remediationAction === t('policy.table.actions.inform').toLowerCase()
-                            ? t('policy.table.actions.inform')
-                            : t('policy.table.actions.enforce')}
-                    </span>
-                ),
+                cell: (item: PolicyTableItem) => item.policy.spec.remediationAction ?? '-',
             },
         ],
         [t]
