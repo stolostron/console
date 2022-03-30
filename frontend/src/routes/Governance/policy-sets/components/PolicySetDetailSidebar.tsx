@@ -143,15 +143,20 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
             placementBindings,
             placements
         )
-
         const psClusterCompliance: {
             compliant: string[]
             nonCompliant: string[]
+            unknown: string[]
         } = {
             compliant: [...placementRuleClusterCompliance.compliant, ...placementClusterCompliance.compliant],
             nonCompliant: [...placementRuleClusterCompliance.nonCompliant, ...placementClusterCompliance.nonCompliant],
+            unknown: [...placementRuleClusterCompliance.unknown, ...placementClusterCompliance.unknown],
         }
-        const psClusters: string[] = [...psClusterCompliance.compliant, ...psClusterCompliance.nonCompliant]
+        const psClusters: string[] = [
+            ...psClusterCompliance.compliant,
+            ...psClusterCompliance.nonCompliant,
+            ...psClusterCompliance.unknown,
+        ]
         const psPolicies: PolicyCompliance[] = [...placementRulePolicyCompliance, ...placementPolicyCompliance]
 
         return {
@@ -267,22 +272,22 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                     return compareNumbers(violationCountA, violationCountB)
                 },
                 cell: (policy: PolicyCompliance) => {
-                    let violationCount = 0
-                    // Get total count of cluster violations for a specific policy
-                    const hasCompliance = policy?.clusterCompliance?.filter((cluster) => cluster.compliance) ?? []
-                    if (hasCompliance.length > 0) {
-                        const currentPolicy = policies.find((p: Policy) => p.metadata.name === policy.policyName)
-                        hasCompliance.forEach((c) => {
-                            if (c.compliance === 'NonCompliant') {
-                                violationCount++
-                            }
-                        })
+                    const currentPolicy = policies.find((p: Policy) => p.metadata.name === policy.policyName)
+                    const violationCount =
+                        currentPolicy?.status?.status?.filter((status) => status.compliant === 'NonCompliant').length ??
+                        0
+                    const compliantCount =
+                        currentPolicy?.status?.status?.filter((status) => status.compliant === 'Compliant').length ?? 0
+                    const unknownCount =
+                        currentPolicy?.status?.status?.filter((status) => !status.compliant).length ?? 0
+                    if (violationCount !== 0 || compliantCount !== 0 || unknownCount !== 0) {
                         return (
                             <ClusterPolicyViolationIcons2
-                                compliant={hasCompliance.length - violationCount}
+                                compliant={compliantCount}
                                 compliantHref={`/multicloud/governance/policies/details/${currentPolicy?.metadata.namespace}/${currentPolicy?.metadata.name}/results`}
                                 noncompliant={violationCount}
                                 violationHref={`/multicloud/governance/policies/details/${currentPolicy?.metadata.namespace}/${currentPolicy?.metadata.name}/results`}
+                                unknown={unknownCount}
                             />
                         )
                     }
@@ -374,7 +379,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                     plural="Policies"
                     items={policySetPolicyCompliance}
                     initialSort={{
-                        index: 0, // default to sorting by violation count
+                        index: 1, // default to sorting by violation count
                         direction: 'desc',
                     }}
                     columns={policyColumnDefs}

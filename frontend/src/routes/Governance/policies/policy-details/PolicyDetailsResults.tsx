@@ -208,10 +208,14 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                     items={policiesDeployedOnCluster}
                     columns={columns}
                     keyFn={(item) => `${item.clusterNamespace}.${item.templateName}`}
-                    initialSort={{
-                        index: 1,
-                        direction: 'desc',
-                    }}
+                    initialSort={
+                        window.location.search === ''
+                            ? {
+                                  index: 1,
+                                  direction: 'desc',
+                              }
+                            : filterPresets.initialSort
+                    }
                     initialSearch={filterPresets.initialSearch}
                     searchPlaceholder={t('Find clusters')}
                     fuseThreshold={0}

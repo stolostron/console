@@ -70,6 +70,7 @@ export function usePolicySetClusterPolicyViolationsColumn(
                 <PolicyViolationIcons2
                     compliant={clusterViolationSummary.compliant}
                     noncompliant={clusterViolationSummary.noncompliant}
+                    unknown={clusterViolationSummary.unknown}
                 />
             )
         },
