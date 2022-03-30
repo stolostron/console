@@ -31,7 +31,7 @@ import {
     resourceMatchesSelector,
     unpackProviderConnection,
 } from '../../../resources'
-import { argoAppSetApiVersion } from './actions'
+import { argoAppSetQueryString } from './actions'
 
 export function EditArgoApplicationSet() {
     const { t } = useTranslation()
@@ -118,7 +118,7 @@ export function EditArgoApplicationSet() {
                     history.push(
                         NavigationPath.applicationOverview
                             .replace(':namespace', params.namespace ?? '')
-                            .replace(':name', params.name ?? '') + argoAppSetApiVersion
+                            .replace(':name', params.name ?? '') + argoAppSetQueryString
                     )
                 }
             }}
@@ -142,7 +142,7 @@ export function EditArgoApplicationSet() {
                             history.push(
                                 NavigationPath.applicationOverview
                                     .replace(':namespace', applicationSet.metadata?.namespace ?? '')
-                                    .replace(':name', applicationSet.metadata?.name ?? '') + argoAppSetApiVersion
+                                    .replace(':name', applicationSet.metadata?.name ?? '') + argoAppSetQueryString
                             )
                         }
                     }

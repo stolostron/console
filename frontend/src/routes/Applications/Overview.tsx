@@ -56,7 +56,7 @@ import {
     isResourceTypeOf,
 } from './helpers/resource-helper'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { argoAppSetApiVersion, subscriptionAppApiVersion } from './CreateApplication/actions'
+import { argoAppSetQueryString, subscriptionAppQueryString } from './CreateApplication/actions'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -571,7 +571,7 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.applicationOverview
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string) + subscriptionAppApiVersion
+                            .replace(':name', resource.metadata?.name as string) + subscriptionAppQueryString
                     )
                 },
             })
@@ -596,7 +596,7 @@ export default function ApplicationsOverview() {
                     history.push(
                         NavigationPath.applicationOverview
                             .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string) + argoAppSetApiVersion
+                            .replace(':name', resource.metadata?.name as string) + argoAppSetQueryString
                     )
                 },
             })

@@ -27,7 +27,7 @@ import {
     IResource,
     unpackProviderConnection,
 } from '../../../resources'
-import { argoAppSetApiVersion } from './actions'
+import { argoAppSetQueryString } from './actions'
 
 export default function CreateArgoApplicationSetPage() {
     return <CreateApplicationArgo />
@@ -93,7 +93,7 @@ export function CreateApplicationArgo() {
                     history.push(
                         NavigationPath.applicationOverview
                             .replace(':namespace', applicationSet?.metadata?.namespace ?? '')
-                            .replace(':name', applicationSet?.metadata?.name ?? '') + argoAppSetApiVersion
+                            .replace(':name', applicationSet?.metadata?.name ?? '') + argoAppSetQueryString
                     )
                 })
             }}
