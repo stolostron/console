@@ -764,17 +764,17 @@ function usePolicyViolationsColumn(
                 clusterViolationSummary.noncompliant ||
                 clusterViolationSummary.unknown
             ) {
-                // TODO - add url search params when ready to soort/filter by violation type
                 return (
                     <ClusterPolicyViolationIcons2
                         compliant={clusterViolationSummary.compliant}
                         compliantHref={`${NavigationPath.policyDetailsResults
                             .replace(':namespace', item.policy.metadata?.namespace ?? '')
-                            .replace(':name', item.policy.metadata?.name ?? '')}`}
+                            .replace(':name', item.policy.metadata?.name ?? '')}?sort=-1`}
                         noncompliant={clusterViolationSummary.noncompliant}
                         violationHref={`${NavigationPath.policyDetailsResults
                             .replace(':namespace', item.policy.metadata?.namespace ?? '')
-                            .replace(':name', item.policy.metadata?.name ?? '')}`}
+                            .replace(':name', item.policy.metadata?.name ?? '')}?sort=1`}
+                        unknown={clusterViolationSummary.unknown}
                     />
                 )
             } else {

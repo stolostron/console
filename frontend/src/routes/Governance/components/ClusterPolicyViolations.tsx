@@ -31,6 +31,7 @@ export function ClusterPolicyViolationIcons(props: {
 export function ClusterPolicyViolationIcons2(props: {
     compliant: number
     noncompliant: number
+    unknown?: number
     compliantHref?: string
     violationHref?: string
 }) {
@@ -43,6 +44,8 @@ export function ClusterPolicyViolationIcons2(props: {
             violations={props.noncompliant}
             violationsTooltip={t('{{count}} clusters with violations', { count: props.noncompliant })}
             violationHref={props.violationHref}
+            unknown={props.unknown}
+            unknownTooltip={t('{{count}} clusters with unknown status', { count: props.unknown })}
         />
     )
 }
