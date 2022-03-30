@@ -175,9 +175,7 @@ const getArgoRoute = async (appName, appNamespace, cluster, managedclusterviewda
         fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
             .then((viewResponse) => {
                 if (viewResponse.message) {
-                    console.log(viewResponse.message)
                 } else {
-                    console.log(viewResponse.result)
                     openArgoEditorWindow(viewResponse.result, appName)
                 }
             })
