@@ -320,10 +320,10 @@ function AboutModalVersion() {
     const [version, setVersion] = useState<string | undefined>()
 
     useEffect(() => {
-        getMCHVersion().promise.then(result => setVersion(result?.mchVersion))
+        getMCHVersion().promise.then((result) => setVersion(result?.mchVersion))
     }, [])
 
-    return <span className="version-details__no">{ version ? version : (<Spinner size="md" />) }</span>
+    return <span className="version-details__no">{version ? version : <Spinner size="md" />}</span>
 }
 
 function AboutContent() {
