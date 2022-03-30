@@ -277,7 +277,8 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
             }
             fetchApplication()
         }
-    }, [ansibleJob, applications, channels, editApplication, placementRules, subscriptions])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     useEffect(() => {
         if (editApplication) {
