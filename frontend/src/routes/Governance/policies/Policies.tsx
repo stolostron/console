@@ -185,7 +185,7 @@ export default function PoliciesPage() {
             },
             {
                 header: t('Remediation'),
-                cell: 'policy.spec.remediationAction',
+                cell: (item: PolicyTableItem) => item.policy.spec.remediationAction ?? '-',
                 sort: 'policy.spec.remediationAction',
             },
             {
