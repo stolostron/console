@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Policy/PolicyWizard'
+import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router-dom'
@@ -27,6 +28,30 @@ import {
     resolveExternalStatus,
     resolveSource,
 } from '../common/util'
+import schema from './schema.json'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
+
+export function WizardSyncEditor() {
+    const resources = useItem() // Wizard framework sets this context
+    const { update } = useData() // Wizard framework sets this context
+    return (
+        <SyncEditor
+            variant="toolbar"
+            resources={resources}
+            hideCloseButton={true}
+            immutables={['Policy[0].metadata.name', 'Policy[0].metadata.namespace']}
+            schema={schema}
+            filterKube={true}
+            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+                update(changes?.resources)
+            }}
+        />
+    )
+}
+
+function getWizardSyncEditor() {
+    return <WizardSyncEditor />
+}
 
 function useSearchParams() {
     const { search } = useLocation()
@@ -97,6 +122,7 @@ export function EditPolicy() {
             policies={policies}
             clusters={managedClusters}
             placements={placements}
+            yamlEditor={getWizardSyncEditor}
             namespaces={namespaceNames}
             placementRules={placementRules}
             clusterSetBindings={clusterSetBindings}
