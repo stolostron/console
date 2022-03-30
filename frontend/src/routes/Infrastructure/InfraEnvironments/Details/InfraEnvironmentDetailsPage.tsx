@@ -49,7 +49,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     const [isoModalOpen, setISOModalOpen] = useState(false)
 
     const [agentClusterInstalls, agents, bareMetalHosts, configMaps, infrastructures] = useRecoilValue(
-        waitForAll([agentsState, bareMetalHostsState, configMapsState, infrastructuresState, agentClusterInstallsState])
+        waitForAll([agentClusterInstallsState, agentsState, bareMetalHostsState, configMapsState, infrastructuresState])
     )
 
     const infraEnv = useInfraEnv({ name: match.params.name, namespace: match.params.namespace })
