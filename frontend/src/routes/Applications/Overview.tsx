@@ -379,7 +379,7 @@ export default function ApplicationsOverview() {
                     return (
                         <span style={{ whiteSpace: 'nowrap' }}>
                             <Link
-                                to={(
+                                to={
                                     NavigationPath.applicationDetails
                                         .replace(':namespace', application.metadata?.namespace as string)
                                         .replace(':name', application.metadata?.name as string) +
@@ -388,7 +388,7 @@ export default function ApplicationsOverview() {
                                     '.' +
                                     application.apiVersion.split('/')[0] +
                                     clusterQuery
-                                ).replace(/\./g, '%2E')}
+                                }
                             >
                                 {application.metadata?.name}
                             </Link>
@@ -623,7 +623,7 @@ export default function ApplicationsOverview() {
                             .replace(':namespace', resource.metadata?.namespace as string)
                             .replace(':name', resource.metadata?.name as string) +
                             '?' +
-                            'apiVersion=application.argoproj.io'.replace(/\./g, '%2E')
+                            'apiVersion=application.argoproj.io'
                     )
                 },
             })
