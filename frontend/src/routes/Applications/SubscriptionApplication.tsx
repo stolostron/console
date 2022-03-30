@@ -171,8 +171,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                             type: 'success',
                             autoClose: true,
                         })
-
-                        history.push(NavigationPath.applications)
+                        redirectRoute()
                     })
                     .catch((err) => {
                         const errorInfo = getErrorInfo(err)
@@ -205,6 +204,10 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
 
     // cancel button
     const cancelCreate = () => {
+        redirectRoute()
+    }
+
+    const redirectRoute = () => {
         if (searchParams.get('context') === 'applications') {
             history.push(NavigationPath.applications)
         } else {
@@ -266,6 +269,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                     channels,
                     placementRules,
                 })
+
                 setFetchControl({
                     resources: getApplicationResources(application),
                     isLoaded: true,
@@ -273,8 +277,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
             }
             fetchApplication()
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [ansibleJob, applications, channels, editApplication, placementRules, subscriptions])
 
     useEffect(() => {
         if (editApplication) {
@@ -292,7 +295,8 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     }
 
     return (
-        controlData && (
+        controlData &&
+        fetchControl && (
             <TemplateEditor
                 type={'application'}
                 title={t('application.create.yaml')}
