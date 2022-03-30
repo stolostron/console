@@ -41,8 +41,6 @@ DetailsViewDecorator.propTypes = {
     shape: PropTypes.string,
 }
 
-const resourcesWithPods = new Set(['pod', 'replicaset', 'replicationcontroller', 'statefulset', 'daemonset'])
-
 class DetailsView extends React.Component {
     constructor(props) {
         super(props)
@@ -193,7 +191,7 @@ class DetailsView extends React.Component {
         const name = node.type === 'cluster' ? '' : node.name
         const yamlURL = createResourceURL(node, t)
         const { namespace, type } = node
-        const isLogTabHidden = !resourcesWithPods.has(node.type)
+        const isLogTabHidden = node.type !== 'pod'
         const { activeTabKey } = this.state
 
         // Only YAML tab has a key so it will get recreated when switching between nodes

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
+import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import moment from 'moment-timezone'
 import { useContext } from 'react'
@@ -28,9 +29,31 @@ import {
     unpackProviderConnection,
 } from '../../../resources'
 import { argoAppSetQueryString } from './actions'
+import schema from './schema.json'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
 export default function CreateArgoApplicationSetPage() {
     return <CreateApplicationArgo />
+}
+
+export function WizardSyncEditor() {
+    const resources = useItem() // Wizard framework sets this context
+    const { update } = useData() // Wizard framework sets this context
+    return (
+        <SyncEditor
+            variant="toolbar"
+            resources={resources}
+            hideCloseButton={true}
+            schema={schema}
+            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+                update(changes?.resources)
+            }}
+        />
+    )
+}
+
+function getWizardSyncEditor() {
+    return <WizardSyncEditor />
 }
 
 export function CreateApplicationArgo() {
@@ -77,6 +100,7 @@ export function CreateApplicationArgo() {
             channels={channels}
             getGitRevisions={getGitChannelBranches}
             getGitPaths={getGitChannelPaths}
+            yamlEditor={getWizardSyncEditor}
             onCancel={() => history.push(NavigationPath.applications)}
             onSubmit={(data) => {
                 const resources = data as IResource[]

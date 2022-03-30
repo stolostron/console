@@ -448,7 +448,6 @@ export default class NodeHelper {
         visible.selectAll('use.shape').call(attrs, ({ layout }) => {
             const { x, y, scale = 1 } = layout
             const sz = NODE_SIZE * scale
-            console.log()
             return {
                 width: sz,
                 height: sz,

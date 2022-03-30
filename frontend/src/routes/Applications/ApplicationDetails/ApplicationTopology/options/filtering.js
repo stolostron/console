@@ -352,9 +352,10 @@ export const filterRelationshipNodes = (nodes, activeFilters) => {
     })
 
     if (parentList.size > 0) {
+        const idMap = _.keyBy(nodes, 'id')
         nodes.forEach((node) => {
             const { id } = node
-            if (parentList.has(id)) {
+            if (parentList.has(id) && !idMap[id]) {
                 filteredNodes.push(node)
             }
         })

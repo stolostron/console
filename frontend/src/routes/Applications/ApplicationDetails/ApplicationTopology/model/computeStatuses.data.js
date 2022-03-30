@@ -476,7 +476,7 @@ export const deploymentNodeYellow = {
     },
 }
 
-export const deploymentNodeYellow3 = {
+export const deploymentNodeRed = {
     id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
     uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
     name: 'mortgage-app-deploy',

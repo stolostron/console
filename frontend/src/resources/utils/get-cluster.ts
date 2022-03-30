@@ -759,6 +759,7 @@ export function getClusterStatus(
             'InstallConfigValidationFailed',
             cdConditions
         )
+        const authenticationError = checkForCondition('AuthenticationFailure', cdConditions)
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
@@ -843,6 +844,10 @@ export function getClusterStatus(
                 )
                 cdStatus = ClusterStatus.notstarted
                 statusMessage = invalidInstallConfigCondition?.message
+            } else if (authenticationError) {
+                const authenticationErrorCondition = cdConditions.find((c) => c.type === 'AuthenticationFailure')
+                cdStatus = ClusterStatus.provisionfailed
+                statusMessage = authenticationErrorCondition?.message
             } else if (provisionFailed) {
                 const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
                 const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''

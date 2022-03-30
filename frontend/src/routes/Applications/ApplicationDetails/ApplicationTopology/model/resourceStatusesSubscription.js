@@ -84,8 +84,12 @@ async function getRelatedResources(reports) {
                 }
                 switch (kind) {
                     case 'Deployment':
-                    case 'DeploymentConfig':
                         promises.push(getSearchPromise(cluster, kind, name, namespace, ['replicaset', 'pod']))
+                        break
+                    case 'DeploymentConfig':
+                        promises.push(
+                            getSearchPromise(cluster, kind, name, namespace, ['replicationcontroller', 'pod'])
+                        )
                         break
                     case 'Route':
                         promises.push(

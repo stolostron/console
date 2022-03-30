@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
+import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
@@ -31,7 +32,31 @@ import {
     resourceMatchesSelector,
     unpackProviderConnection,
 } from '../../../resources'
+import schema from './schema.json'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { argoAppSetQueryString } from './actions'
+
+export function WizardSyncEditor() {
+    const resources = useItem() // Wizard framework sets this context
+    const { update } = useData() // Wizard framework sets this context
+    return (
+        <SyncEditor
+            variant="toolbar"
+            resources={resources}
+            hideCloseButton={true}
+            filterKube={true}
+            schema={schema}
+            immutables={['ApplicationSet[0].metadata.name', 'ApplicationSet[0].metadata.namespace']}
+            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+                update(changes?.resources)
+            }}
+        />
+    )
+}
+
+function getWizardSyncEditor() {
+    return <WizardSyncEditor />
+}
 
 export function EditArgoApplicationSet() {
     const { t } = useTranslation()
@@ -109,6 +134,7 @@ export function EditArgoApplicationSet() {
             namespaces={availableNamespace}
             applicationSets={applicationSets}
             placements={placements}
+            yamlEditor={getWizardSyncEditor}
             clusters={managedClusters}
             clusterSetBindings={managedClusterSetBindings}
             onCancel={() => {

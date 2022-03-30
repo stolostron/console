@@ -36,8 +36,11 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
             <TechPreviewAlert
                 i18nKey={isACMAvailable ? 'preview.dynamicPluginsACM' : 'preview.dynamicPluginsMCE'}
                 docHref={isACMAvailable ? DOC_LINKS.WEB_CONSOLE : DOC_LINKS.MCE_INTRO}
+                disableBottomPadding
             />
-            {props.children}
+            <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+                <div style={{ position: 'absolute', height: '100%', width: '100%' }}>{props.children}</div>
+            </div>
         </PluginContext.Provider>
     )
 }

@@ -27,6 +27,9 @@ export interface MappingType {
     $gv?: any // what's the start/stop of the value in yaml
 }
 
+// remove the kube stuff
+const kube = ['managedFields', 'creationTimestamp', 'status', 'uid', 'livenessProbe', 'resourceVersion', 'generation']
+
 export interface SecretsValuesType {
     path: string
     value: string
@@ -49,6 +52,7 @@ export const processForm = (
         customResources: any[]
     },
     secrets?: (string | string[])[],
+    filterResources?: boolean,
     immutables?: (string | string[])[],
     userEdits?: ChangeType[],
     validators?: any
@@ -63,6 +67,8 @@ export const processForm = (
             yaml = stringify(resourceArr)
         }
     }
+
+    // get initial parse errors
     let documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
     let errors = getErrors(documents)
     const { parsed, resources } = getMappings(documents)
@@ -79,7 +85,10 @@ export const processForm = (
     }
 
     // and the rest
-    return { comparison, ...process(monacoRef, yaml, documents, errors, secrets, [], immutables, validators) }
+    return {
+        comparison,
+        ...process(monacoRef, yaml, documents, errors, secrets, [], filterResources, immutables, validators),
+    }
 }
 
 export const processUser = (
@@ -87,6 +96,7 @@ export const processUser = (
     yaml: string,
     secrets?: (string | string[])[],
     secretsValues?: SecretsValuesType[],
+    filterResources?: boolean,
     immutables?: (string | string[])[],
     validators?: any
 ) => {
@@ -101,7 +111,7 @@ export const processUser = (
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, secretsValues, immutables, validators),
+        ...process(monacoRef, yaml, documents, errors, secrets, secretsValues, filterResources, immutables, validators),
     }
 }
 
@@ -112,6 +122,7 @@ const process = (
     errors: any[],
     secrets?: (string | string[])[],
     secretsValues?: SecretsValuesType[],
+    filterResources?: boolean,
     immutables?: (string | string[])[],
     validators?: any
 ) => {
@@ -129,7 +140,8 @@ const process = (
 
     // hide and remember secret values
     const protectedRanges: any[] = []
-    if (secrets && !isEmpty(parsed) && !isEmpty(secrets)) {
+    const hideSecrets = secrets && !isEmpty(parsed) && !isEmpty(secrets)
+    if (hideSecrets) {
         changeWithSecrets = {
             yaml,
             mappings: cloneDeep(mappings),
@@ -150,6 +162,11 @@ const process = (
             }
         })
 
+        // filter kube resources
+        if (filterResources) {
+            resources = filterKubeResources(resources)
+        }
+
         // create yaml with '****'
         yaml = stringify(resources)
         documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
@@ -163,6 +180,12 @@ const process = (
                 value.$s = true
             }
         })
+    } else if (filterResources) {
+        // filter kube resources
+        resources = filterKubeResources(resources)
+        yaml = stringify(resources)
+        documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
+        ;({ mappings, parsed, resources } = getMappings(documents))
     }
 
     // prevent typing on immutables
@@ -289,6 +312,7 @@ function validateResource(
                     case 'pattern':
                         errorMsg.linePos.start.col = mapping.$gv.start.col
                         errorMsg.linePos.end.col = mapping.$gv.end.col
+                        errorMsg.isWarning = false
                         break
                     // value wrong enum
                     case 'enum':
@@ -352,7 +376,7 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
                 value = item?.value?.type === 'SEQ' ? [] : {}
                 getMappingItems(item.items ?? item.value.items, value)
             } else {
-                value = item?.value?.value
+                value = item?.value?.value || item?.value
             }
         }
         if (Array.isArray(rangeObj)) {
@@ -514,4 +538,41 @@ const findAllPaths = (object: { [x: string]: any; hasOwnProperty?: any }, search
         }
     })
     return ret
+}
+
+// filter kube resources
+export const filterKubeResources = (resources: any[]) => {
+    const _resources: any[] = []
+    resources.forEach((resource: any) => {
+        _resources.push(filterDeep(resource))
+    })
+    return _resources
+}
+
+const filterDeep = (resource: any) => {
+    let newResource: { [index: string]: any | any[] }
+    if (Array.isArray(resource)) {
+        newResource = []
+        Object.entries(resource || {}).forEach(([k, v]) => {
+            if (!kube.includes(k)) {
+                newResource.push(filter(v))
+            }
+        })
+        return newResource
+    } else {
+        newResource = {}
+        Object.entries(resource || {}).forEach(([k, v]) => {
+            if (!kube.includes(k)) {
+                newResource[k] = filter(v)
+            }
+        })
+    }
+    return newResource
+}
+
+const filter = (value: unknown) => {
+    if (typeof value === 'object') {
+        return filterDeep(value)
+    }
+    return value
 }
