@@ -310,6 +310,7 @@ const processServices = (clusterId, services, links, nodes, servicesMap) => {
 
 const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
     const parentNode = nodes.find((n) => n.id === parentId)
+    const parentObject = parentNode
         ? {
               parentId,
               parentName: parentNode.name,
@@ -329,6 +330,7 @@ const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
         id: memberId,
         uid: memberId,
         specs: {
+            parent: parentObject,
             template,
             resources,
             resourceCount,
