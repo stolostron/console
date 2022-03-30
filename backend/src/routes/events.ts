@@ -14,7 +14,7 @@ import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-import { getServiceAcccountToken } from './liveness'
+import { getServiceAccountToken } from './liveness'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -185,7 +185,7 @@ async function listAndWatch(options: IWatchOptions) {
 }
 
 async function listKubernetesObjects(options: IWatchOptions) {
-    const serviceAcccountToken = getServiceAcccountToken()
+    const serviceAcccountToken = getServiceAccountToken()
     let resourceVersion = ''
     let _continue: string | undefined
     let items: IResource[] = []
@@ -253,7 +253,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
 }
 
 async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: string) {
-    const serviceAcccountToken = getServiceAcccountToken()
+    const serviceAcccountToken = getServiceAccountToken()
     while (!stopping) {
         logger.debug({
             msg: 'watch',
