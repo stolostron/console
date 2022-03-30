@@ -103,14 +103,14 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
     })
 }
 
-function apiNoJSON(url: string, headers?: Record<string, unknown>): Promise<unknown> {
-    return fetch(url, headers).then((response) => {
-        if (!response.ok) {
-            throw new Error(response.statusText)
-        }
-        return response.text() as Promise<unknown>
-    })
-}
+// function apiNoJSON(url: string, headers?: Record<string, unknown>): Promise<unknown> {
+//     return fetch(url, headers).then((response) => {
+//         if (!response.ok) {
+//             throw new Error(response.statusText)
+//         }
+//         return response.text() as Promise<unknown>
+//     })
+// }
 
 function launchToOCP(urlSuffix: string, newTab: boolean) {
     api<{ data: { consoleURL: string } }>(
@@ -154,7 +154,7 @@ function UserDropdownToggle() {
         const resp = getUsername()
         resp.promise
             .then((payload) => {
-                payload && payload.body && payload.body.username ? setName(payload.body.username) : setName('undefined')
+                payload && payload.username ? setName(payload.username) : setName('undefined')
             })
             .catch((error) => {
                 // eslint-disable-next-line no-console
@@ -226,12 +226,17 @@ function UserDropdown() {
 
     function logout() {
         // Get username so we know if user is kube:admin
-        let admin = false
+        let isKubeAdmin = false
+        // let username = 'undefined'
+        // let oauthTokenEndpoint = ''
+        /*
         const userResp = getUsername()
         userResp.promise
             .then((payload) => {
-                if (payload && payload.body && payload.body.username) {
-                    admin = payload.body.username === 'kube:admin'
+                if (payload && payload.username) {
+                    username = payload.username
+                    isKubeAdmin = username === 'kube:admin'
+                    console.log("===> frontend:logout - got username as kube:admin")
                 }
             })
             .catch((error) => {
@@ -245,24 +250,39 @@ function UserDropdown() {
             .then((payload) => {
                 if (payload && payload.token_endpoint) {
                     oauthTokenEndpoint = payload.token_endpoint
+                    console.log("===> frontend:logout - got oauthTokenEndpoint")
                 }
             })
             .catch((error) => {
                 // eslint-disable-next-line no-console
                 console.error(error)
             })
+        */
         const logoutUrl = getBackendUrl() + '/logout'
 
-        apiNoJSON(logoutUrl)
-            .then(() => {
+        console.log('===> frontend:logout - calling backend logout route')
+        // apiNoJSON(logoutUrl)
+        api<{ admin: boolean; logoutPath: string }>(logoutUrl)
+            .then(({ admin, logoutPath }) => {
                 const onLogout = (delay = 0, isAdmin = false) => {
+                    console.log(
+                        '===> frontend:logout - redirect following backend logout (and form submission in kube:admin case)'
+                    )
+                    console.log('===> frontend:logout - in onLogout callback, isAdmin = ' + isAdmin)
                     return setTimeout(() => {
                         isAdmin ? (location.pathname = '/') : location.reload()
                     }, delay)
                 }
-                if (admin) {
+                isKubeAdmin = admin
+                const adminLogoutPath = logoutPath
+                console.log('===> frontend:logout - back from backend... admin = ' + isKubeAdmin)
+                console.log('===> frontend:logout - back from backend... adminLogoutPath = ' + adminLogoutPath)
+                if (isKubeAdmin) {
                     // strip the oauthTokenEndpoint back to just the domain host to create the oauth logout endpoint
-                    const adminLogoutPath = oauthTokenEndpoint.substring(0, oauthTokenEndpoint.length - 12) + '/logout'
+                    console.log(
+                        '===> frontend:logout - getting ready to submit hidden form for admin case (after calling backned logout)'
+                    )
+                    // const adminLogoutPath = oauthTokenEndpoint.substring(0, oauthTokenEndpoint.length - 12) + '/logout'
                     const form = document.createElement('form')
                     form.target = 'hidden-form'
                     form.method = 'POST'
@@ -270,16 +290,23 @@ function UserDropdown() {
                     const iframe = document.createElement('iframe')
                     iframe.setAttribute('type', 'hidden')
                     iframe.name = 'hidden-form'
-                    iframe.onload = () => onLogout(500, admin)
+                    iframe.onload = () => onLogout(500, isKubeAdmin)
+                    iframe.appendChild(form)
                     document.body.appendChild(iframe)
-                    document.body.appendChild(form)
+                    // const input = document.createElement('input')
+                    // input.type = 'hidden'
+                    // input.name = 'then'
+                    // input.value = 'https://localhost:3000/'
+                    // form.appendChild(input)
+                    // document.body.appendChild(form)
                     form.submit()
                 } else {
-                    onLogout(500, admin)
+                    onLogout(500, isKubeAdmin)
                 }
             })
             .catch((error) => {
                 // eslint-disable-next-line no-console
+                console.log('===> frontend:logout - caught error on backend logout call ' + error)
                 console.error(error)
             })
     }

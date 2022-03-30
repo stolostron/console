@@ -20,6 +20,13 @@ export function setCookie(res: Http2ServerResponse, cookie: string, value: strin
     res.setHeader('Set-Cookie', `${cookie}=${value}; Secure; HttpOnly; Path=${path ? path : '/'}`)
 }
 
-export function deleteCookie(res: Http2ServerResponse, cookie: string, path?: string): void {
-    res.setHeader('Set-Cookie', `${cookie}=; Secure; HttpOnly; Path=${path ? path : '/'}` + `; max-age=0`)
+export function deleteCookie(res: Http2ServerResponse, cookie: string, path?: string, domain?: string): void {
+    if (domain) {
+        res.setHeader(
+            'Set-Cookie',
+            `${cookie}=; Secure; HttpOnly; Domain=${domain}; Path=${path ? path : '/'}` + `; max-age=0`
+        )
+    } else {
+        res.setHeader('Set-Cookie', `${cookie}=; Secure; HttpOnly; Path=${path ? path : '/'}` + `; max-age=0`)
+    }
 }

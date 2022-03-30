@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { Agent } from 'https'
-import { readFileSync } from 'fs'
+import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
+import { getServiceAcccountToken } from './liveness'
 
 // Type of ApplicationMenu in a ConsoleLink object
 interface ApplicationMenu {
@@ -28,33 +27,16 @@ interface FormatedConsoleLink {
     icon: string
 }
 
-const { HTTP2_HEADER_AUTHORIZATION } = constants
-const agent = new Agent({ rejectUnauthorized: false })
-
 export async function consoleLinks(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-    const serviceAccountPath = '/var/run/secrets/kubernetes.io/serviceaccount'
     const token = getToken(req)
     if (!token) return unauthorized(req, res)
 
-    let serviceaccountToken = null
-    try {
-        if (process.env.NODE_ENV === 'production') {
-            serviceaccountToken = readFileSync(`${serviceAccountPath}/token`, 'utf8')
-        } else {
-            serviceaccountToken = process.env.TOKEN || ''
-        }
-    } catch (err: unknown) {
-        if (err instanceof Error) {
-            logger.error('Error reading service account token', err && err.message)
-        } else {
-            logger.error({ msg: 'Error reading service account token', err: err })
-        }
-    }
+    const serviceAcccountToken = getServiceAcccountToken()
 
     try {
         const body = await jsonRequest<{ items: ConsoleLink[] }>(
             process.env.CLUSTER_API_URL + '/apis/console.openshift.io/v1/consolelinks',
-            serviceaccountToken
+            serviceAcccountToken
         )
         const consoleLinks = body.items ? body.items : []
         const formattedLinks: Record<string, [FormatedConsoleLink]> = {}

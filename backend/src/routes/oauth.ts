@@ -1,18 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { createHash } from 'crypto'
 import { IncomingMessage } from 'http'
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Agent, request } from 'https'
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
 import { deleteCookie } from '../lib/cookies'
 import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
-import { redirect, respondInternalServerError, unauthorized } from '../lib/respond'
-import { getToken } from '../lib/token'
+import { redirect, respondInternalServerError, respondOK, unauthorized } from '../lib/respond'
+import { getToken, getUserFromTokenReview, isKubeAdmin } from '../lib/token'
 import { setDead } from './liveness'
 
 type OAuthInfo = { authorization_endpoint: string; token_endpoint: string }
 let oauthInfoPromise: Promise<OAuthInfo>
+
+const { HTTP_STATUS_OK } = constants
 
 export function getOauthInfoPromise() {
     if (oauthInfoPromise === undefined) {
@@ -76,8 +78,9 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
     }
 }
 
-export function logout(req: Http2ServerRequest, res: Http2ServerResponse): void {
+export async function logout(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const token = getToken(req)
+    console.log('===> backend:logout - getting token = ' + token)
     if (!token) return unauthorized(req, res)
 
     let tokenName = token
@@ -91,6 +94,17 @@ export function logout(req: Http2ServerRequest, res: Http2ServerResponse): void 
             .replace(/\//g, '_')}`
     }
 
+    // Get username to know whether special kube:admin processing is needed
+    // let isAdmin = false
+    const userTokenReview = await getUserFromTokenReview(req)
+    const isAdmin = isKubeAdmin(userTokenReview)
+    const oauthInfo = await getOauthInfoPromise()
+    const logoutUrl = oauthInfo.token_endpoint.substring(0, oauthInfo.token_endpoint.length - 12) + '/logout'
+
+    console.log('===> backend:logout - checking if user is kube:admin: ' + isAdmin.toString())
+    console.log('===> backend:logout url - the oauth token endpoint: ' + logoutUrl)
+
+    console.log('===> backend:logout - deleting user bearer token via oauth api')
     const clientRequest = request(
         process.env.CLUSTER_API_URL + `/apis/oauth.openshift.io/v1/oauthaccesstokens/${tokenName}?gracePeriodSeconds=0`,
         {
@@ -99,11 +113,17 @@ export function logout(req: Http2ServerRequest, res: Http2ServerResponse): void 
             agent: new Agent({ rejectUnauthorized: false }),
         },
         (response: IncomingMessage) => {
+            console.log('===> backend:logout - deleting acm-access-token-cookie in response handling')
             deleteCookie(res, 'acm-access-token-cookie')
-            res.writeHead(response.statusCode).end()
+            deleteCookie(res, '_oauth_proxy', '/', req.headers.host)
+            const logoutInfo = JSON.stringify({ admin: isAdmin, logoutPath: logoutUrl })
+            res.writeHead(response.statusCode, { 'Content-Type': 'application/json' }).end(logoutInfo)
+            req.stream.session.destroy(undefined, HTTP_STATUS_OK)
         }
     )
     clientRequest.on('error', (err) => {
+        console.log('===> backend:logout delete of bearer token error: ')
+        console.dir(err)
         respondInternalServerError(req, res)
     })
     clientRequest.end()
