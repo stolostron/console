@@ -1140,7 +1140,7 @@ export function CredentialsForm(props: {
                         ].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('HTTP Proxy'),
-                        placeholder: t('Enter the HTTP Proxy url'),
+                        placeholder: t('Enter the HTTP Proxy URL'),
                         labelHelp: t(
                             'A proxy URL to use for creating HTTP connections outside the cluster. The URL scheme must be http.'
                         ),
@@ -1161,7 +1161,7 @@ export function CredentialsForm(props: {
                         ].includes(credentialsType as Provider),
                         type: 'Text',
                         label: t('HTTPS Proxy'),
-                        placeholder: t('Enter the HTTPS Proxy url'),
+                        placeholder: t('Enter the HTTPS Proxy URL'),
                         labelHelp: t(
                             'A proxy URL to use for creating HTTPS connections outside the cluster. If this is not specified, then httpProxy is used for both HTTP and HTTPS connections.'
                         ),
