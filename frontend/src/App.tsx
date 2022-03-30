@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 import { useMediaQuery } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { getBackendUrl, listMultiClusterHubs } from './resources'
+import { getBackendUrl } from './resources'
 import { getApplinks, IAppSwitcherData } from './lib/applinks'
 import { configure } from './lib/configure'
 import { getUsername } from './lib/username'
