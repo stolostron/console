@@ -47,7 +47,7 @@ const controlDataRHV = [
     ///////////////////////  imageset  /////////////////////////////////////
     {
         name: 'cluster.create.ocp.image',
-        tooltip: 'tooltip.cluster.create.ocp.image.rhv',
+        tooltip: 'tooltip.cluster.create.ocp.image',
         id: 'imageSet',
         type: 'combobox',
         simplified: getSimplifiedImageName,
