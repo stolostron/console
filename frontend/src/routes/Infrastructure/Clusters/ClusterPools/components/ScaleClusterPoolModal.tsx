@@ -2,6 +2,7 @@
 
 import { ClusterPool, patchResource } from '../../../../../resources'
 import {
+    AcmAlert,
     AcmAlertContext,
     AcmAlertGroup,
     AcmButton,
@@ -23,6 +24,7 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
     const { t } = useTranslation()
     const [size, setSize] = useState<number>(0)
     const [runningCount, setRunningCount] = useState<number>(0)
+    const [runningCountError, setRunningCountError] = useState<boolean>(false)
 
     useEffect(() => {
         if (props.clusterPool) {
@@ -36,6 +38,14 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
             setRunningCount(0)
         }
     }, [props.clusterPool])
+
+    useEffect(() => {
+        if (size < runningCount) {
+            setRunningCountError(true)
+        } else {
+            setRunningCountError(false)
+        }
+    }, [size, runningCount])
 
     function reset() {
         props.onClose?.()
@@ -86,19 +96,26 @@ export function ScaleClusterPoolModal(props: ScaleClusterPoolModalProps) {
                                 validation={(runningCount: Number) => {
                                     if (runningCount < 0)
                                         return t('clusterPool.modal.scale.validation.greaterThanOrEqualZero')
-                                    if (runningCount > size)
-                                        return t('clusterPool.modal.scale.validation.lessThanOrEqualSize')
                                     return undefined
                                 }}
                                 required
                             />
                             <AcmAlertGroup isInline canClose />
+                            {runningCountError && (
+                                <AcmAlert
+                                    isInline
+                                    title={t('clusterPool.modal.scale.validation.lessThanOrEqualSize')}
+                                    variant={'danger'}
+                                    noClose={true}
+                                />
+                            )}
                             <ActionGroup>
                                 <AcmSubmit
                                     id="claim"
                                     variant="primary"
                                     label={t('scale')}
                                     processingLabel={t('scaling')}
+                                    isDisabled={!!runningCountError}
                                     onClick={() => {
                                         alertContext.clearAlerts()
                                         return patchResource(props.clusterPool!, [
