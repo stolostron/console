@@ -14,7 +14,7 @@ import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-import { getServiceAcccountToken } from './liveness'
+import { getServiceAccountToken } from './liveness'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -185,7 +185,7 @@ async function listAndWatch(options: IWatchOptions) {
 }
 
 async function listKubernetesObjects(options: IWatchOptions) {
-    const serviceAcccountToken = getServiceAcccountToken()
+    const serviceAccountToken = getServiceAccountToken()
     let resourceVersion = ''
     let _continue: string | undefined
     let items: IResource[] = []
@@ -193,7 +193,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
         const url = resourceUrl(options, { limit: '100', continue: _continue })
         const request = got
             .get(url, {
-                headers: { authorization: `Bearer ${serviceAcccountToken}` },
+                headers: { authorization: `Bearer ${serviceAccountToken}` },
                 https: { rejectUnauthorized: false },
             })
             .json<{
@@ -253,7 +253,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
 }
 
 async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: string) {
-    const serviceAcccountToken = getServiceAcccountToken()
+    const serviceAccountToken = getServiceAccountToken()
     while (!stopping) {
         logger.debug({
             msg: 'watch',
@@ -266,7 +266,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
         try {
             const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
             const request = got.stream(url, {
-                headers: { authorization: `Bearer ${serviceAcccountToken}` },
+                headers: { authorization: `Bearer ${serviceAccountToken}` },
                 https: { rejectUnauthorized: false },
                 timeout: { socket: 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000) },
             })
