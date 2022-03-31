@@ -314,6 +314,14 @@ function validateResource(
                         errorMsg.linePos.end.col = mapping.$gv.end.col
                         errorMsg.isWarning = false
                         break
+                    // validateDNSName
+                    case 'validateDNSName':
+                        errorMsg.message =
+                            'Name must start/end alphanumerically, can contain dashes, and must be less then 63 characters'
+                        errorMsg.linePos.start.col = mapping.$gv.start.col
+                        errorMsg.linePos.end.col = mapping.$gv.end.col
+                        errorMsg.isWarning = false
+                        break
                     // value wrong enum
                     case 'enum':
                         errorMsg.message = `${message}: ${params.allowedValues

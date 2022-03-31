@@ -11,10 +11,9 @@
                     "type": "object",
                     "properties": {
                         "name": {
-                            "type": "string",
-                            "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$"
+                            "validateDNSName": true
                         },
-                        "namespace": { "type": "string" }
+                        "namespace": { "validateDNSName": true }
                     },
                     "required": ["name", "namespace"]
                 },
@@ -40,8 +39,8 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string" },
-                        "namespace": { "type": "string" }
+                        "name": { "validateDNSName": true },
+                        "namespace": { "validateDNSName": true }
                     },
                     "required": ["name", "namespace"]
                 },
@@ -72,15 +71,15 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string" },
-                        "namespace": { "type": "string" }
+                        "name": { "validateDNSName": true },
+                        "namespace": { "validateDNSName": true }
                     },
                     "required": ["name", "namespace"]
                 },
                 "placementRef": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string" },
+                        "name": { "validateDNSName": true },
                         "apiGroup": { "type": "string" },
                         "kind": { "type": "string", "const": "PlacementRule" }
                     },
@@ -93,7 +92,7 @@
                         "properties": {
                             "apiGroup": { "type": "string" },
                             "kind": { "const": "PolicySet" },
-                            "name": { "type": "string" }
+                            "name": { "validateDNSName": true }
                         },
                         "required": ["apiGroup", "kind", "name"]
                     }
