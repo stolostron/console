@@ -161,15 +161,12 @@ export const onHostsNext = async ({ values, clusterDeployment, agents, agentClus
 }
 
 /** AI-specific version for the CIM-flow's onHostsNext() callback */
-export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClusterInstall }: OnDiscoverHostsNext) => {
-    // TODO(mlibra): So far we do not need "values" of the Formik - options the user will choose from will come later (like CNV or OCS)
-    // So far no need to "release" agents since the user either deletes the agent or keep the list untouched. Reconsider when "disable" gets in place.
-
+export const onDiscoveryHostsNext = async ({ values,clusterDeployment, agents, agentClusterInstall }: OnDiscoverHostsNext) => {
     const name = clusterDeployment.metadata.name
     const namespace = clusterDeployment.metadata.namespace
-
+    
     await addAgentsToCluster({
-        agents,
+        agents: agents.filter((a) => !values.selectedHostIds.includes(a.metadata.uid)),
         name,
         namespace,
         hostIds: agents.map((a: CIM.AgentK8sResource) => a.metadata.uid),
