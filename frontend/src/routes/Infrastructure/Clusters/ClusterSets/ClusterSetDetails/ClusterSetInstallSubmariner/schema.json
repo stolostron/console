@@ -11,10 +11,9 @@
                     "type": "object",
                     "properties": {
                         "name": {
-                            "type": "string",
-                            "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$"
+                            "validateDNSName": true
                         },
-                        "namespace": { "type": "string" }
+                        "namespace": { "validateDNSName": true }
                     },
                     "required": ["name", "namespace"]
                 },
