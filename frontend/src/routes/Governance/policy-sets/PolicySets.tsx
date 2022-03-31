@@ -15,7 +15,7 @@ import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { canUser } from '../../../lib/rbac-util'
+import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { PolicySet, PolicySetDefinition } from '../../../resources/policy-set'
@@ -72,15 +72,7 @@ export default function PolicySetsPage() {
     const [canCreatePolicySet, setCanCreatePolicySet] = useState<boolean>(false)
 
     useEffect(() => {
-        const canCreatePolicySetPromise = canUser('create', PolicySetDefinition)
-        canCreatePolicySetPromise.promise
-            .then((result) => {
-                if (result.status?.allowed) {
-                    setCanCreatePolicySet(true)
-                }
-            })
-            .catch((err) => console.error(err))
-        return () => canCreatePolicySetPromise.abort()
+        checkPermission(rbacCreate(PolicySetDefinition), setCanCreatePolicySet)
     }, [])
 
     const updatePerPage = useCallback(
