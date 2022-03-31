@@ -295,9 +295,11 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
         creationMsg: creationStatus?.messages,
     }
 
+    const isFetchControl = editApplication ? fetchControl : true
+
     return (
         controlData &&
-        fetchControl && (
+        isFetchControl && (
             <TemplateEditor
                 type={'application'}
                 title={t('application.create.yaml')}
