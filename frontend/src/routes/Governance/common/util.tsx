@@ -124,16 +124,16 @@ export function getPolicyComplianceForPolicySet(
                 if (!policyClusterStatus) {
                     if (policyIdx < 0) {
                         policyCompliance.push({
-                            policyName: policy.metadata.name!,
-                            policyNamespace: policy.metadata.namespace!,
+                            policyName: policy.metadata.name ?? '',
+                            policyNamespace: policy.metadata.namespace ?? '',
                             clusterCompliance: [],
                         })
                     }
                 } else if (policyClusterStatus?.compliant === 'NonCompliant') {
                     if (policyIdx < 0) {
                         policyCompliance.push({
-                            policyName: policy.metadata.name!,
-                            policyNamespace: policy.metadata.namespace!,
+                            policyName: policy.metadata.name ?? '',
+                            policyNamespace: policy.metadata.namespace ?? '',
                             clusterCompliance: [
                                 {
                                     clusterName: decision.clusterName,
@@ -150,8 +150,8 @@ export function getPolicyComplianceForPolicySet(
                 } else if (policyClusterStatus?.compliant === 'Compliant') {
                     if (policyIdx < 0) {
                         policyCompliance.push({
-                            policyName: policy.metadata.name!,
-                            policyNamespace: policy.metadata.namespace!,
+                            policyName: policy.metadata.name ?? '',
+                            policyNamespace: policy.metadata.namespace ?? '',
                             clusterCompliance: [
                                 {
                                     clusterName: decision.clusterName,
@@ -168,8 +168,8 @@ export function getPolicyComplianceForPolicySet(
                 } else if (!policyClusterStatus?.compliant) {
                     if (policyIdx < 0) {
                         policyCompliance.push({
-                            policyName: policy.metadata.name!,
-                            policyNamespace: policy.metadata.namespace!,
+                            policyName: policy.metadata.name ?? '',
+                            policyNamespace: policy.metadata.namespace ?? '',
                             clusterCompliance: [
                                 {
                                     clusterName: decision.clusterName,
