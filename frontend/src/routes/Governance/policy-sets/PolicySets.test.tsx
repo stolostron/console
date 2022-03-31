@@ -7,7 +7,14 @@ import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
-import { PolicySet, PolicySetApiVersion, PolicySetKind, Project, ProjectApiVersion, ProjectKind } from '../../../resources'
+import {
+    PolicySet,
+    PolicySetApiVersion,
+    PolicySetKind,
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+} from '../../../resources'
 import PolicySetsPage from './PolicySets'
 
 const policySet0: PolicySet = {
