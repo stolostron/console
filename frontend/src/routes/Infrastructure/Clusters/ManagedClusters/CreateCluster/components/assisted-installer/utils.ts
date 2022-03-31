@@ -161,15 +161,15 @@ export const onHostsNext = async ({ values, clusterDeployment, agents, agentClus
 }
 
 /** AI-specific version for the CIM-flow's onHostsNext() callback */
-export const onDiscoveryHostsNext = async ({ values,clusterDeployment, agents, agentClusterInstall }: OnDiscoverHostsNext) => {
+export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClusterInstall }: OnDiscoverHostsNext) => {
     const name = clusterDeployment.metadata.name
     const namespace = clusterDeployment.metadata.namespace
-    
+
     await addAgentsToCluster({
-        agents: agents.filter((a) => !values.selectedHostIds.includes(a.metadata.uid)),
+        agents,
         name,
         namespace,
-        hostIds: agents.map((a: CIM.AgentK8sResource) => a.metadata.uid),
+        hostIds: agents.map((a) => a.metadata.uid),
     })
 
     const masterCount = agentClusterInstall.spec?.provisionRequirements?.controlPlaneAgents
@@ -179,11 +179,6 @@ export const onDiscoveryHostsNext = async ({ values,clusterDeployment, agents, a
 
         await setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
     }
-
-    // In the AI flow, the agents are automatically approved
-    await Promise.all(agents.map((agent) => onApproveAgent(agent)))
-
-    // No need to update ClusterDeployment annotations - they stay static after ccreation by template
 }
 
 const appendPatch = (patches: any, path: string, newVal: object | string | boolean, existingVal?: object | string) => {
