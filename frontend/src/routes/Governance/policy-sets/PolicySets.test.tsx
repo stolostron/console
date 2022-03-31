@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
+import nock from 'nock'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
-import { PolicySet, PolicySetApiVersion, PolicySetKind } from '../../../resources'
+import { PolicySet, PolicySetApiVersion, PolicySetKind, Project, ProjectApiVersion, ProjectKind } from '../../../resources'
 import PolicySetsPage from './PolicySets'
 
 const policySet0: PolicySet = {
@@ -63,9 +64,19 @@ const policySet1: PolicySet = {
 export const mockEmptyPolicySets: PolicySet[] = []
 export const mockPolicySets: PolicySet[] = [policySet0, policySet1]
 
+const mockProjects: Project[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: { name },
+}))
+
 describe('PolicySets Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
+        nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+            .persist()
+            .get('/apis/project.openshift.io/v1/projects')
+            .reply(200, mockProjects)
     })
     test('Should render empty PolicySet page correctly', async () => {
         render(
