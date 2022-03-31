@@ -59,7 +59,7 @@ import {
     PolicyDefinition,
     PolicyKind,
     PolicySet,
-    replaceResource
+    replaceResource,
 } from '../../../resources'
 import { getResourceLabel } from '../../Applications/helpers/resource-helper'
 import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
