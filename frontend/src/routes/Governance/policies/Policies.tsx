@@ -47,7 +47,7 @@ import {
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
-import { canUser } from '../../../lib/rbac-util'
+import { checkPermission, rbacCreate, rbacUpdate } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -120,28 +120,12 @@ export default function PoliciesPage() {
     const [canAutomatePolicy, setCanAutomatePolicy] = useState<boolean>(false)
 
     useEffect(() => {
-        const canCreatePolicyPromise = canUser('create', PolicyDefinition)
-        canCreatePolicyPromise.promise
-            .then((result) => {
-                if (result.status?.allowed) {
-                    setCanCreatePolicy(true)
-                }
-            })
-            .catch((err) => console.error(err))
-        return () => canCreatePolicyPromise.abort()
+        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy)
     }, [])
 
     useEffect(() => {
-        const canAutomatePolicyPromise = canUser('update', PolicyAutomationDefinition)
-        canAutomatePolicyPromise.promise
-            .then((result) => {
-                if (result.status?.allowed) {
-                    setCanAutomatePolicy(true)
-                }
-            })
-            .catch((err) => console.error(err))
-        return () => canAutomatePolicyPromise.abort()
-    })
+        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanAutomatePolicy)
+    }, [])
 
     const policyColumns = useMemo<IAcmTableColumn<PolicyTableItem>[]>(
         () => [
