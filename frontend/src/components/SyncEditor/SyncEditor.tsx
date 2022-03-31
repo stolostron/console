@@ -23,6 +23,7 @@ import { SyncDiffType } from './SyncDiff'
 import './SyncEditor.css'
 
 export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
+    containerRef?: HTMLDivElement
     variant?: string
     editorTitle?: string
     code?: string
@@ -45,6 +46,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         schema,
         secrets,
         immutables,
+        containerRef,
         code,
         readonly,
         onEditorChange,
@@ -173,9 +175,16 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         monacoRef.current = monaco
     }
 
-    useResizeObserver(pageRef, (entry) => {
+    useResizeObserver(containerRef ?? pageRef, (entry) => {
         const { width } = entry.contentRect
         let { height } = entry.contentRect
+
+        // if editor is part of a larger div
+        // subtract the height of the stuff that comes before the editor
+        if (pageRef.current && containerRef) {
+            height -= pageRef.current.getBoundingClientRect().y - containerRef.getBoundingClientRect().y
+        }
+
         if (variant === 'toolbar') {
             height -= 36
         }
@@ -572,7 +581,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     )
 
     return (
-        <div ref={pageRef} style={{ width: '100%', height: '100%' }} className="sync-editor__container">
+        <div ref={pageRef} className="sync-editor__container">
             <CodeEditor
                 isLineNumbersVisible={true}
                 isReadOnly={readonly}
