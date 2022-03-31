@@ -22,7 +22,7 @@ import ResourceLabels from '../../Applications/components/ResourceLabels'
 export interface PolicyCompliance {
     policyName: string
     policyNamespace: string
-    clusterCompliance: { clusterName: string; compliance: 'Compliant' | 'NonCompliant' }[]
+    clusterCompliance: { clusterName: string; compliance: 'Compliant' | 'NonCompliant' | 'Unknown' }[]
 }
 
 export interface ClusterPolicies {
@@ -163,6 +163,24 @@ export function getPolicyComplianceForPolicySet(
                         policyCompliance[policyIdx].clusterCompliance.push({
                             clusterName: decision.clusterName,
                             compliance: 'Compliant',
+                        })
+                    }
+                } else if (!policyClusterStatus?.compliant) {
+                    if (policyIdx < 0) {
+                        policyCompliance.push({
+                            policyName: policy.metadata.name!,
+                            policyNamespace: policy.metadata.namespace!,
+                            clusterCompliance: [
+                                {
+                                    clusterName: decision.clusterName,
+                                    compliance: 'Unknown',
+                                },
+                            ],
+                        })
+                    } else {
+                        policyCompliance[policyIdx].clusterCompliance.push({
+                            clusterName: decision.clusterName,
+                            compliance: 'Unknown',
                         })
                     }
                 }
