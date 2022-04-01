@@ -68,6 +68,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                 return formRef?.current?.errors
             })
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const infraEnvNames = useMemo(() => infraEnvironments.map((ie) => ie.metadata.name), [infraEnvironments])

@@ -52,7 +52,6 @@ type OnHostsNext = {
 }
 
 type OnDiscoverHostsNext = {
-    values: CIM.ClusterDeploymentHostsDiscoveryValues
     clusterDeployment: CIM.ClusterDeploymentK8sResource
     agentClusterInstall: CIM.AgentClusterInstallK8sResource
     agents: CIM.AgentK8sResource[]
