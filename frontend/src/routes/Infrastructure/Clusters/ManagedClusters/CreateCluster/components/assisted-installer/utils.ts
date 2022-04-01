@@ -52,7 +52,6 @@ type OnHostsNext = {
 }
 
 type OnDiscoverHostsNext = {
-    values: CIM.ClusterDeploymentHostsDiscoveryValues
     clusterDeployment: CIM.ClusterDeploymentK8sResource
     agentClusterInstall: CIM.AgentClusterInstallK8sResource
     agents: CIM.AgentK8sResource[]
@@ -162,9 +161,6 @@ export const onHostsNext = async ({ values, clusterDeployment, agents, agentClus
 
 /** AI-specific version for the CIM-flow's onHostsNext() callback */
 export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClusterInstall }: OnDiscoverHostsNext) => {
-    // TODO(mlibra): So far we do not need "values" of the Formik - options the user will choose from will come later (like CNV or OCS)
-    // So far no need to "release" agents since the user either deletes the agent or keep the list untouched. Reconsider when "disable" gets in place.
-
     const name = clusterDeployment.metadata.name
     const namespace = clusterDeployment.metadata.namespace
 
@@ -172,7 +168,7 @@ export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClu
         agents,
         name,
         namespace,
-        hostIds: agents.map((a: CIM.AgentK8sResource) => a.metadata.uid),
+        hostIds: agents.map((a) => a.metadata.uid),
     })
 
     const masterCount = agentClusterInstall.spec?.provisionRequirements?.controlPlaneAgents
@@ -182,11 +178,6 @@ export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClu
 
         await setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
     }
-
-    // In the AI flow, the agents are automatically approved
-    await Promise.all(agents.map((agent) => onApproveAgent(agent)))
-
-    // No need to update ClusterDeployment annotations - they stay static after ccreation by template
 }
 
 const appendPatch = (patches: any, path: string, newVal: object | string | boolean, existingVal?: object | string) => {
