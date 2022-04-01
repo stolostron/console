@@ -53,6 +53,7 @@
     "Additional information:": "Additional information:",
     "Additional trust bundle": "Additional trust bundle",
     "Advanced configuration": "Advanced configuration",
+    "advancedConfiguration.empty.subtitle": "Click <bold>Create application</bold> to create your resource.",
     "alert.created.header": "{{credentialName}} discovery setting was created successfully",
     "alert.deleted.header": "{{credentialName}} discovery setting was removed successfully",
     "alert.msg": "You can configure settings in Clusters > Discovered clusters",

@@ -12,7 +12,6 @@ import {
     TextContent,
     TextVariants,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
 import _ from 'lodash'
@@ -21,7 +20,7 @@ import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
-import { DOC_LINKS } from '../../lib/doc-util'
+import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
 import {
     ChannelApiVersion,
@@ -681,21 +680,7 @@ export default function AdvancedConfiguration() {
                             padding: '1.5rem 1rem 0',
                         }}
                     >
-                        <Text
-                            component={TextVariants.a}
-                            isVisitedLink
-                            href={DOC_LINKS.MANAGE_APPLICATIONS}
-                            target="_blank"
-                            style={{
-                                cursor: 'pointer',
-                                display: 'inline-block',
-                                padding: '0px 10px',
-                                fontSize: '14px',
-                                color: '#0066cc',
-                            }}
-                        >
-                            {t('View documentation')} <ExternalLinkAltIcon />
-                        </Text>
+                        <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
                     </Text>
                 </TextContent>
             </AcmExpandableCard>
