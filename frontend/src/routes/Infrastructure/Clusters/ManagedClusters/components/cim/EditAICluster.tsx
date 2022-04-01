@@ -222,9 +222,8 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                 onSaveISOParams={
                                     getOnSaveISOParams(infraEnv) /* AI Flow specific. Not called for CIM. */
                                 }
-                                onSaveHostsDiscovery={(values) =>
+                                onSaveHostsDiscovery={() =>
                                     onDiscoveryHostsNext({
-                                        values,
                                         clusterDeployment,
                                         agents: agentsOfSingleInfraEnvCluster,
                                         agentClusterInstall,
