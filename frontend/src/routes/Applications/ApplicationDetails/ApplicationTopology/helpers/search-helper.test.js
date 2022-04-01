@@ -1,6 +1,6 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import { 
+import {
     convertStringToQuery,
     formatNumber,
     searchFailure,
@@ -9,7 +9,7 @@ import {
     shouldTrySearch,
     isSearchAvailable,
     isYAMLEditAvailable,
-} from "./search-helper";
+} from './search-helper'
 
 describe('convertStringToQuery', () => {
     const string1 = 'kind:subscription name:test'
@@ -17,32 +17,36 @@ describe('convertStringToQuery', () => {
     const string3 = 'kind:placementrule name:test'
 
     const result1 = {
-        "filters": [
+        filters: [
             {
-                "property": "kind",
-                "values": [
-                    "subscription"
-                ]
+                property: 'kind',
+                values: ['subscription'],
             },
             {
-                "property": "name",
-                "values": [
-                    "test"
-                ]
-            }
+                property: 'name',
+                values: ['test'],
+            },
         ],
-        "keywords": [],
-        "relatedKinds": [
-            "placementrule",
-            "deployable",
-            "application",
-            "subscription",
-            "channel"
-        ]
+        keywords: [],
+        relatedKinds: ['placementrule', 'deployable', 'application', 'subscription', 'channel'],
     }
 
-    const result2 = {"filters": [{"property": "kind", "values": ["channel"]}, {"property": "name", "values": ["test"]}], "keywords": [], "relatedKinds": ["subscription"]}
-    const result3 = {"filters": [{"property": "kind", "values": ["placementrule"]}, {"property": "name", "values": ["test"]}], "keywords": [], "relatedKinds": ["subscription"]}
+    const result2 = {
+        filters: [
+            { property: 'kind', values: ['channel'] },
+            { property: 'name', values: ['test'] },
+        ],
+        keywords: [],
+        relatedKinds: ['subscription'],
+    }
+    const result3 = {
+        filters: [
+            { property: 'kind', values: ['placementrule'] },
+            { property: 'name', values: ['test'] },
+        ],
+        keywords: [],
+        relatedKinds: ['subscription'],
+    }
     it('convert string to query', () => {
         expect(convertStringToQuery(string1)).toEqual(result1)
         expect(convertStringToQuery(string2)).toEqual(result2)

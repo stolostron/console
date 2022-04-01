@@ -5,10 +5,9 @@ import {
     groupByChannelType,
     getChannelLabel,
     createEditLink,
-    getResourceType
+    getResourceType,
 } from './resource-helper'
-import { render, screen, waitFor } from '@testing-library/react'
-import { groupBy } from 'lodash'
+import { render } from '@testing-library/react'
 
 const t = (string, arg) => {
     switch (string) {
@@ -38,7 +37,7 @@ describe('getClusterCount', () => {
                 namespace: 'cluster1-ns',
                 kind: 'cluster',
                 apigroup: 'apps.open-cluster-management.io',
-                clusterNames: ['local-cluster']
+                clusterNames: ['local-cluster'],
             })
         ).toEqual('Local')
     })
@@ -52,7 +51,7 @@ describe('getClusterCount', () => {
                 namespace: 'cluster1-ns',
                 kind: 'cluster',
                 apigroup: 'apps.open-cluster-management.io',
-                clusterNames: ['local-cluster']
+                clusterNames: ['local-cluster'],
             })
         ).toEqual('None')
     })
@@ -66,10 +65,10 @@ describe('getClusterCount', () => {
                 namespace: 'cluster1-ns',
                 kind: 'cluster',
                 apigroup: 'apps.open-cluster-management.io',
-                clusterNames: ['local-cluster', 'cluster1']
+                clusterNames: ['local-cluster', 'cluster1'],
             })
         )
-        expect(getByText(('1 Remote, 1 Local'))).toBeTruthy()
+        expect(getByText('1 Remote, 1 Local')).toBeTruthy()
     })
     it('return the cluster count remote argo app', () => {
         const { getByText } = render(
@@ -81,32 +80,32 @@ describe('getClusterCount', () => {
                 namespace: 'cluster1-ns',
                 kind: 'cluster',
                 apigroup: 'argoproj.io',
-                clusterNames: ['cluster1']
+                clusterNames: ['cluster1'],
             })
         )
-        expect(getByText(('Remote'))).toBeTruthy()
+        expect(getByText('Remote')).toBeTruthy()
     })
 })
 
 describe('groupByChannelType', () => {
     const channels = [
         {
-            type: 'github'
+            type: 'github',
         },
         {
-            type: 'helm'
-        }
+            type: 'helm',
+        },
     ]
 
     const result = {
-        "git":  [
+        git: [
             {
-            "type": "github",
+                type: 'github',
             },
         ],
-        "helm":  [
+        helm: [
             {
-            "type": "helm",
+                type: 'helm',
             },
         ],
     }
@@ -132,12 +131,10 @@ describe('createEditLink', () => {
             namespace: 'app1-ns',
             kind: 'application',
             apiVersion: 'v1',
-            cluster: 'local-cluster'
+            cluster: 'local-cluster',
         }
 
-        const { getByText } = render(
-            createEditLink(item)
-        )
+        const { getByText } = render(createEditLink(item))
         expect(getByText('app1')).toBeTruthy()
     })
 })
@@ -145,7 +142,7 @@ describe('createEditLink', () => {
 describe('getResourceType', () => {
     it('get the resource type', () => {
         const item = {
-            resourceType: 'git'
+            resourceType: 'git',
         }
         expect(getResourceType(item)).toEqual('git')
     })
@@ -153,8 +150,8 @@ describe('getResourceType', () => {
         const item = {
             key: 'spec.type',
             spec: {
-                type: 'blah'
-            }
+                type: 'blah',
+            },
         }
         expect(getResourceType(item, undefined, item.key)).toEqual('blah')
     })
