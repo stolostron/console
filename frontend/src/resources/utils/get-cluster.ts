@@ -89,6 +89,7 @@ export type Cluster = {
         claimedBy?: string
     }
     isSNOCluster: boolean
+    creationTimestamp?: string
 }
 
 export type DistributionInfo = {
@@ -238,6 +239,10 @@ export function getCluster(
             managedClusterInfo?.metadata?.labels?.[managedClusterSetLabel] ||
             clusterDeployment?.metadata?.labels?.[managedClusterSetLabel],
         owner: getOwner(clusterDeployment, clusterClaim),
+        creationTimestamp:
+            clusterDeployment?.metadata.creationTimestamp ??
+            managedCluster?.metadata.creationTimestamp ??
+            managedClusterInfo?.metadata.creationTimestamp,
     }
 }
 
