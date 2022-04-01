@@ -1,13 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { AcmTable, AcmEmptyState, AcmTablePaginationContextProvider } from '@stolostron/ui-components'
-import { ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
+import { AcmTable, AcmEmptyState, AcmTablePaginationContextProvider, AcmButton } from '@stolostron/ui-components'
+import { TextContent, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { TFunction } from 'i18next'
-import { useHistory } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import queryString from 'query-string'
-import { IResource } from '../../../resources'
+import { ApplicationDefinition, IResource } from '../../../resources'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './DeleteResourceModal'
+import { NavigationPath } from '../../../NavigationPath'
+import { Fragment, useEffect, useState } from 'react'
+import { rbacCreate } from '../../../lib/rbac-util'
+import { checkPermission } from '../Overview'
+import { Trans } from '../../../lib/acm-i18next'
+import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
 
 export interface IToggleSelectorProps<T = any> {
     keyFn: (item: T) => string
@@ -25,9 +31,14 @@ export function ToggleSelector(props: IToggleSelectorProps) {
         { id: 'placements', title: 'Placements' },
         { id: 'placementrules', title: 'Placement rules' },
     ]
-
+    const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
     const selectedId = getSelectedId({ location, options, defaultOption, queryParam: 'resources' })
     const selectedResources = _.get(props.table, `${selectedId}`)
+
+    useEffect(() => {
+        checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication)
+    }, [])
+
     return (
         <AcmTablePaginationContextProvider localStorageKey="advanced-tables-pagination">
             <DeleteResourceModal {...props.modalProps} />
@@ -55,12 +66,34 @@ export function ToggleSelector(props: IToggleSelectorProps) {
                 rowActionResolver={selectedResources.rowActionResolver}
                 emptyState={
                     <AcmEmptyState
-                        message={t('View the documentation for more information.')}
+                        message={
+                            selectedId === 'subscriptions' ? (
+                                <Trans
+                                    i18nKey={'advancedConfiguration.empty.subtitle'}
+                                    components={{ italic: <em />, bold: <strong /> }}
+                                />
+                            ) : null
+                        }
                         title={t(
                             `You don't have any ${options
                                 .find((option) => option.id === selectedId)
                                 ?.title.toLowerCase()}`
                         )}
+                        action={
+                            <Fragment>
+                                {selectedId === 'subscriptions' && (
+                                    <AcmButton
+                                        isDisabled={!canCreateApplication}
+                                        tooltip={!canCreateApplication ? t('rbac.unauthorized') : ''}
+                                        component={Link}
+                                        to={NavigationPath.createApplicationSubscription}
+                                    >
+                                        {t('Create application')}
+                                    </AcmButton>
+                                )}
+                                <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
+                            </Fragment>
+                        }
                     />
                 }
             />
