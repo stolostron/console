@@ -12,7 +12,6 @@ import {
     TextContent,
     TextVariants,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
 import _ from 'lodash'
