@@ -21,6 +21,7 @@ export async function request(
     const headers: IncomingHttpHeaders = {
         [constants.HTTP2_HEADER_METHOD]: method,
         [constants.HTTP2_HEADER_PATH]: path,
+        [constants.HTTP2_HEADER_AUTHORIZATION]: 'Bearer <token>',
     }
     if (body) {
         headers[constants.HTTP2_HEADER_CONTENT_TYPE] = 'application/json'

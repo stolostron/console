@@ -22,7 +22,7 @@ import ResourceLabels from '../../Applications/components/ResourceLabels'
 export interface PolicyCompliance {
     policyName: string
     policyNamespace: string
-    clusterCompliance: { clusterName: string; compliance: 'Compliant' | 'NonCompliant' }[]
+    clusterCompliance: { clusterName: string; compliance: 'Compliant' | 'NonCompliant' | 'Unknown' }[]
 }
 
 export interface ClusterPolicies {
@@ -124,16 +124,16 @@ export function getPolicyComplianceForPolicySet(
                 if (!policyClusterStatus) {
                     if (policyIdx < 0) {
                         policyCompliance.push({
-                            policyName: policy.metadata.name!,
-                            policyNamespace: policy.metadata.namespace!,
+                            policyName: policy.metadata.name ?? '',
+                            policyNamespace: policy.metadata.namespace ?? '',
                             clusterCompliance: [],
                         })
                     }
                 } else if (policyClusterStatus?.compliant === 'NonCompliant') {
                     if (policyIdx < 0) {
                         policyCompliance.push({
-                            policyName: policy.metadata.name!,
-                            policyNamespace: policy.metadata.namespace!,
+                            policyName: policy.metadata.name ?? '',
+                            policyNamespace: policy.metadata.namespace ?? '',
                             clusterCompliance: [
                                 {
                                     clusterName: decision.clusterName,
@@ -150,8 +150,8 @@ export function getPolicyComplianceForPolicySet(
                 } else if (policyClusterStatus?.compliant === 'Compliant') {
                     if (policyIdx < 0) {
                         policyCompliance.push({
-                            policyName: policy.metadata.name!,
-                            policyNamespace: policy.metadata.namespace!,
+                            policyName: policy.metadata.name ?? '',
+                            policyNamespace: policy.metadata.namespace ?? '',
                             clusterCompliance: [
                                 {
                                     clusterName: decision.clusterName,
@@ -163,6 +163,24 @@ export function getPolicyComplianceForPolicySet(
                         policyCompliance[policyIdx].clusterCompliance.push({
                             clusterName: decision.clusterName,
                             compliance: 'Compliant',
+                        })
+                    }
+                } else if (!policyClusterStatus?.compliant) {
+                    if (policyIdx < 0) {
+                        policyCompliance.push({
+                            policyName: policy.metadata.name ?? '',
+                            policyNamespace: policy.metadata.namespace ?? '',
+                            clusterCompliance: [
+                                {
+                                    clusterName: decision.clusterName,
+                                    compliance: 'Unknown',
+                                },
+                            ],
+                        })
+                    } else {
+                        policyCompliance[policyIdx].clusterCompliance.push({
+                            clusterName: decision.clusterName,
+                            compliance: 'Unknown',
                         })
                     }
                 }
@@ -186,8 +204,7 @@ export function getClustersComplianceForPolicySet(
         placements
     )
     const policySetPolicies = getPolicySetPolicies(policies, policySet)
-
-    const clustersCompliance: Record<string, 'Compliant' | 'NonCompliant'> = {}
+    const clustersCompliance: Record<string, 'Compliant' | 'NonCompliant' | 'Unknown'> = {}
     for (const placementDecision of policySetPlacementDecisions) {
         for (const decision of placementDecision.status.decisions) {
             if (clustersCompliance[decision.clusterName] === 'NonCompliant') {
@@ -199,7 +216,16 @@ export function getClustersComplianceForPolicySet(
                 )
                 if (policyClusterStatus?.compliant === 'NonCompliant') {
                     clustersCompliance[decision.clusterName] = 'NonCompliant'
-                } else if (policyClusterStatus?.compliant === 'Compliant') {
+                } else if (
+                    !policyClusterStatus?.compliant &&
+                    clustersCompliance[decision.clusterName] !== 'NonCompliant'
+                ) {
+                    clustersCompliance[decision.clusterName] = 'Unknown'
+                } else if (
+                    policyClusterStatus?.compliant === 'Compliant' &&
+                    clustersCompliance[decision.clusterName] !== 'NonCompliant' &&
+                    clustersCompliance[decision.clusterName] !== 'Unknown'
+                ) {
                     clustersCompliance[decision.clusterName] = 'Compliant'
                 }
             }
@@ -224,6 +250,7 @@ export function getClustersSummaryForPolicySet(
     )
     const compliant: string[] = []
     const nonCompliant: string[] = []
+    const unknown: string[] = []
     for (const clusterName in clustersCompliance) {
         switch (clustersCompliance[clusterName]) {
             case 'Compliant':
@@ -232,10 +259,13 @@ export function getClustersSummaryForPolicySet(
             case 'NonCompliant':
                 nonCompliant.push(clusterName)
                 break
+            case 'Unknown':
+                unknown.push(clusterName)
+                break
         }
     }
 
-    return { compliant, nonCompliant }
+    return { compliant, nonCompliant, unknown }
 }
 
 export function resolveExternalStatus(policy: Policy) {

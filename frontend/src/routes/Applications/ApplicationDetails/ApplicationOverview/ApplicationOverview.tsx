@@ -154,8 +154,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     }
 
     if (applicationData) {
-        isArgoApp = applicationData.application.isArgoApp
-        isAppSet = applicationData.application.isAppSet
+        isArgoApp = applicationData.application?.isArgoApp
+        isAppSet = applicationData.application?.isAppSet
         isSubscription = !isArgoApp && !isAppSet
         const { name, namespace } = applicationData.application.metadata
         const applicationResource = applicationData.application.app

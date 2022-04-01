@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { readFileSync } from 'fs'
 import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
 import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
@@ -6,6 +7,7 @@ import { URL } from 'url'
 import { logger } from '../lib/logger'
 import { notFound, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
+import { getMultiClusterHub } from './mchVersion'
 
 const proxyHeaders = [
     constants.HTTP2_HEADER_ACCEPT,
@@ -15,7 +17,23 @@ const proxyHeaders = [
     constants.HTTP2_HEADER_CONTENT_TYPE,
 ]
 
-export function search(req: Http2ServerRequest, res: Http2ServerResponse): void {
+let namespace: string
+function getNamespace(): string {
+    if (namespace === undefined) {
+        try {
+            namespace = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/namespace', 'utf-8')
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                logger.error('Error reading service account token', err && err.message)
+            } else {
+                logger.error({ msg: 'Error reading service account token', err: err })
+            }
+        }
+    }
+    return namespace
+}
+
+export async function search(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     const token = getToken(req)
     if (!token) return unauthorized(req, res)
 
@@ -24,7 +42,15 @@ export function search(req: Http2ServerRequest, res: Http2ServerResponse): void 
         if (req.headers[header]) headers[header] = req.headers[header]
     }
 
-    const searchUrl = process.env.SEARCH_API_URL || 'https://search-search-api:4010'
+    const mch = await getMultiClusterHub()
+    const namespace = getNamespace()
+    const searchService =
+        mch && namespace && namespace !== mch.metadata.namespace
+            ? `https://search-search-api.${mch.metadata.namespace}.svc.cluster.local:4010`
+            : undefined
+
+    const searchUrl = process.env.SEARCH_API_URL || searchService || 'https://search-search-api:4010'
+
     const url = new URL(searchUrl + '/searchapi/graphql')
     headers.authorization = `Bearer ${token}`
     headers.host = url.hostname

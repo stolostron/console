@@ -47,7 +47,7 @@ import {
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'
-import { canUser } from '../../../lib/rbac-util'
+import { checkPermission, rbacCreate, rbacUpdate } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -120,28 +120,12 @@ export default function PoliciesPage() {
     const [canAutomatePolicy, setCanAutomatePolicy] = useState<boolean>(false)
 
     useEffect(() => {
-        const canCreatePolicyPromise = canUser('create', PolicyDefinition)
-        canCreatePolicyPromise.promise
-            .then((result) => {
-                if (result.status?.allowed) {
-                    setCanCreatePolicy(true)
-                }
-            })
-            .catch((err) => console.error(err))
-        return () => canCreatePolicyPromise.abort()
+        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy)
     }, [])
 
     useEffect(() => {
-        const canAutomatePolicyPromise = canUser('update', PolicyAutomationDefinition)
-        canAutomatePolicyPromise.promise
-            .then((result) => {
-                if (result.status?.allowed) {
-                    setCanAutomatePolicy(true)
-                }
-            })
-            .catch((err) => console.error(err))
-        return () => canAutomatePolicyPromise.abort()
-    })
+        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanAutomatePolicy)
+    }, [])
 
     const policyColumns = useMemo<IAcmTableColumn<PolicyTableItem>[]>(
         () => [
@@ -185,7 +169,7 @@ export default function PoliciesPage() {
             },
             {
                 header: t('Remediation'),
-                cell: 'policy.spec.remediationAction',
+                cell: (item: PolicyTableItem) => item.policy.spec.remediationAction ?? '-',
                 sort: 'policy.spec.remediationAction',
             },
             {
@@ -764,17 +748,17 @@ function usePolicyViolationsColumn(
                 clusterViolationSummary.noncompliant ||
                 clusterViolationSummary.unknown
             ) {
-                // TODO - add url search params when ready to soort/filter by violation type
                 return (
                     <ClusterPolicyViolationIcons2
                         compliant={clusterViolationSummary.compliant}
                         compliantHref={`${NavigationPath.policyDetailsResults
                             .replace(':namespace', item.policy.metadata?.namespace ?? '')
-                            .replace(':name', item.policy.metadata?.name ?? '')}`}
+                            .replace(':name', item.policy.metadata?.name ?? '')}?sort=-1`}
                         noncompliant={clusterViolationSummary.noncompliant}
                         violationHref={`${NavigationPath.policyDetailsResults
                             .replace(':namespace', item.policy.metadata?.namespace ?? '')
-                            .replace(':name', item.policy.metadata?.name ?? '')}`}
+                            .replace(':name', item.policy.metadata?.name ?? '')}?sort=1`}
+                        unknown={clusterViolationSummary.unknown}
                     />
                 )
             } else {

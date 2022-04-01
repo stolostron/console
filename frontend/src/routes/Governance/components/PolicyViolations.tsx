@@ -42,6 +42,9 @@ export function PolicyViolationIcons2(props: {
     noncompliant: number
     violationHref?: string
     violationOnClick?: () => void
+    unknown?: number
+    unknownHref?: string
+    unknownOnClick?: () => void
 }) {
     const { t } = useTranslation()
     return (
@@ -54,6 +57,10 @@ export function PolicyViolationIcons2(props: {
             violationsTooltip={t('policy.violations', { count: props.noncompliant })}
             violationHref={props.violationHref}
             violationOnClick={props.violationOnClick}
+            unknown={props.unknown}
+            unknownTooltip={t('policies.unknown', { count: props.unknown })}
+            unknownHref={props.unknownHref}
+            unknownOnClick={props.unknownOnClick}
         />
     )
 }

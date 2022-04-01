@@ -397,6 +397,11 @@ export function getProvider(
         case 'OVIRT':
             provider = Provider.redhatvirtualization
             break
+        case 'ALIBABA':
+        case 'ALICLOUD':
+        case 'ALIBABACLOUD':
+            provider = Provider.alibaba
+            break
         case 'AUTO-DETECT':
             provider = undefined
             break

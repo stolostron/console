@@ -123,7 +123,7 @@ export const getApplicationData = (nodes) => {
     const nodeTypes = []
     const result = {}
     let isArgoApp = false
-    const appNode = nodes.find((r) => r.type === 'application')
+    const appNode = nodes?.find((r) => r.type === 'application')
     if (appNode) {
         isArgoApp = _.get(appNode, ['specs', 'raw', 'apiVersion'], '').indexOf('argo') !== -1
         result.isArgoApp = isArgoApp
@@ -144,7 +144,7 @@ export const getApplicationData = (nodes) => {
             result.source = _.get(appNode, ['specs', 'raw', 'spec', 'source'], {})
         }
     }
-    nodes.forEach((node) => {
+    nodes?.forEach((node) => {
         const nodeType = _.get(node, 'type', '')
         if (!(isArgoApp && _.includes(['application', 'cluster'], nodeType))) {
             nodeTypes.push(nodeType) //ask for this related object type

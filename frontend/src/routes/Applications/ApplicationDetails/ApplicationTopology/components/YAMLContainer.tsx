@@ -107,13 +107,13 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                 />
             )}
             <SyncEditor
+                variant="toolbar"
                 id="code-content"
                 editorTitle={editorTitle}
                 resources={[resource]}
-                collapses={['*.metadata.managedFields']}
-                onClose={(): void => {}}
+                filterKube={true}
                 readonly={true}
-                onEditorChange={(): void => {}}
+                hideCloseButton={true}
             />
         </div>
     )

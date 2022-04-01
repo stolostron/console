@@ -166,7 +166,6 @@ const getChanges = (
     lastComparison: { [name: string]: any[] }
 ) => {
     const changes: any[] = []
-    //    if (!isEmpty(lastChange.parsed)) {
     const ignorePaths: any = []
     normalize(lastComparison, comparison)
     const diffs = diff(lastComparison, comparison)
@@ -252,7 +251,6 @@ const getChanges = (
             }
         })
     }
-    //    }
     return changes
 }
 

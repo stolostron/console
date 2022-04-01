@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, ButtonVariant, Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmDrawerContext, compareStrings } from '@stolostron/ui-components'
 import { Fragment, useCallback, useContext, useMemo } from 'react'
 import { useRecoilState } from 'recoil'
@@ -210,13 +210,34 @@ function ClustersCard() {
             <Card isRounded>
                 <CardTitle>{'Clusters'}</CardTitle>
                 <CardBody>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 16 }}>
                         {clusters.map((cluster) => {
                             const clusterViolationSummary = clusterViolationSummaryMap[cluster.metadata.name ?? '']
                             if (!clusterViolationSummary) return <Fragment />
                             return (
                                 <Fragment>
                                     <span>{cluster.metadata.name}</span>
+                                    {clusterViolationSummary.unknown ? (
+                                        <Tooltip
+                                            content={t('policies.unknown', {
+                                                count: clusterViolationSummary.unknown,
+                                            })}
+                                        >
+                                            <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                <Button
+                                                    isInline
+                                                    variant={ButtonVariant.link}
+                                                    onClick={() => onClick(cluster, 'unknown')}
+                                                >
+                                                    {clusterViolationSummary.unknown}
+                                                </Button>{' '}
+                                                &nbsp;
+                                                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                                            </span>
+                                        </Tooltip>
+                                    ) : (
+                                        <span />
+                                    )}
                                     {clusterViolationSummary.compliant ? (
                                         <Tooltip
                                             content={t('policies.noviolations', {

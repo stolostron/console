@@ -7,7 +7,10 @@ import {
     getResourceGroup,
     getResourcePlural,
     IResource,
+    listProjects,
     Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
     ResourceAttributes,
 } from '../resources'
 
@@ -163,4 +166,32 @@ export function canUser(
     const resourceAttributes = rbacResource(verb, resource, namespace, name, _subresource)
     const selfSubjectAccessReview = createSubjectAccessReview(resourceAttributes)
     return selfSubjectAccessReview
+}
+
+export async function checkPermission(resourceAttributes: ResourceAttributes, setStateFn: (state: boolean) => void) {
+    // Require hub to run on OCP
+    const fetchProjects = async () => {
+        return listProjects().promise
+    }
+
+    fetchProjects().then((projects) => {
+        const namespaceArr: Namespace[] = projects.map((project) => {
+            return {
+                apiVersion: NamespaceApiVersion,
+                kind: NamespaceKind,
+                metadata: project.metadata,
+            } as Namespace
+        })
+        const fetchAuthorizedNamespaces = async () => {
+            const authorizedNamespaces = await getAuthorizedNamespaces([resourceAttributes], namespaceArr)
+            return authorizedNamespaces
+        }
+        fetchAuthorizedNamespaces().then((authorizedNamespaces) => {
+            if (authorizedNamespaces?.length > 0) {
+                setStateFn(true)
+            } else {
+                setStateFn(false)
+            }
+        })
+    })
 }

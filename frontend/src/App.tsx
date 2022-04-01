@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 import { useMediaQuery } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { getBackendUrl, listMultiClusterHubs } from './resources'
+import { getBackendUrl } from './resources'
 import { getApplinks, IAppSwitcherData } from './lib/applinks'
 import { configure } from './lib/configure'
 import { getUsername } from './lib/username'
@@ -60,6 +60,7 @@ import { LoadingPage } from './components/LoadingPage'
 import './lib/i18n'
 import { NavigationPath } from './NavigationPath'
 import { DOC_HOME } from './lib/doc-util'
+import { getMCHVersion } from './lib/mchVersion'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -316,22 +317,13 @@ function UserDropdown() {
 }
 
 function AboutModalVersion() {
-    const [version, setVersion] = useState<string>('undefined')
+    const [version, setVersion] = useState<string | undefined>()
 
     useEffect(() => {
-        const mchs = listMultiClusterHubs()
-        mchs.promise
-            .then((hubs) => {
-                hubs.length > 0 ? setVersion(hubs[0].status.currentVersion) : setVersion('undefined')
-            })
-            .catch((error) => {
-                // eslint-disable-next-line no-console
-                console.error(error)
-                setVersion('undefined')
-            })
+        getMCHVersion().promise.then((result) => setVersion(result?.mchVersion))
     }, [])
 
-    return <span className="version-details__no">{version === 'undefined' ? <Spinner size="md" /> : version}</span>
+    return <span className="version-details__no">{version ? version : <Spinner size="md" />}</span>
 }
 
 function AboutContent() {

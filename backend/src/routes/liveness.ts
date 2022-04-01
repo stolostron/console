@@ -26,28 +26,32 @@ export function setDead(): void {
     }
 }
 
-export function getServiceAcccountToken(): string {
-    if (serviceAcccountToken === undefined) {
+export function getServiceAccountToken(): string {
+    if (serviceAccountToken === undefined) {
         try {
-            serviceAcccountToken = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token').toString()
-        } catch (err) {
-            serviceAcccountToken = process.env.TOKEN
-            if (!serviceAcccountToken) {
-                logger.error('service account token not found')
+            serviceAccountToken = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/token', 'utf-8')
+        } catch (err: unknown) {
+            serviceAccountToken = process.env.TOKEN
+            if (!serviceAccountToken) {
+                if (err instanceof Error) {
+                    logger.error('Error reading service account token', err && err.message)
+                } else {
+                    logger.error({ msg: 'Error reading service account token', err: err })
+                }
                 process.exit(1)
             }
         }
     }
-    return serviceAcccountToken
+    return serviceAccountToken
 }
-let serviceAcccountToken: string
+let serviceAccountToken: string
 
 const agent = new Agent({ rejectUnauthorized: false })
 
 export async function apiServerPing(): Promise<void> {
     try {
         const response = await fetchRetry(process.env.CLUSTER_API_URL + '/apis', {
-            headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${serviceAcccountToken}` },
+            headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${serviceAccountToken}` },
             agent,
         })
         if (response.status !== 200) {
