@@ -174,8 +174,10 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                 uniqueAnsibleSecretNames.forEach((name) => {
                     // check if a secret with this name already exists in the app ns
                     const existingSecret = ansibleCredentials.find((ac) => {
-                        ac.metadata.name === name &&
+                        return (
+                            ac.metadata.name === name &&
                             ac.metadata.namespace === applicationResourceJSON?.metadata?.namespace
+                        )
                     })
                     if (!existingSecret) {
                         const originalAnsibleSecret = ansibleCredentials.find((ac) => ac.metadata.name === name)
