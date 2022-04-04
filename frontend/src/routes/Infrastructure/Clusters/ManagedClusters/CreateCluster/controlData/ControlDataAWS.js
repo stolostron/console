@@ -103,6 +103,24 @@ const AWSmasterInstanceTypes = [
     { value: 'm5.16xlarge', description: gp64Cpu256Gib },
 ]
 
+const onChangeAWSPrivate = (control, controlData) => {
+    const awsPrivateFields = []
+    const awsPrivateSections = []
+
+    controlData.forEach((controlItem) => {
+        const id = controlItem.id
+        if (id === 'amiID' || id === 'hostedZone') awsPrivateFields.push(controlItem)
+        if (id === 'privateLink' || id === 'serviceEndpoints') awsPrivateSections.push(controlItem)
+    })
+
+    awsPrivateFields.forEach((controlItem) => {
+        controlItem.disabled = !controlItem.disabled
+    })
+    awsPrivateSections.forEach((controlItem) => {
+        controlItem.hidden = !controlItem.hidden
+    })
+}
+
 export const AWSworkerInstanceTypes = [
     {
         label: 'General Purpose',
@@ -846,10 +864,18 @@ const awsPrivateControlData = [
         info: 'creation.aws.privateAWS.info',
     },
     {
+        name: 'Use Private Configuration',
+        id: 'hasPrivateConfig',
+        type: 'checkbox',
+        active: false,
+        onSelect: onChangeAWSPrivate,
+    },
+    {
         name: 'creation.aws.ami',
         tooltip: 'creation.aws.ami.tooltip',
         id: 'amiID',
         type: 'text',
+        disabled: true,
         placeholder: 'creation.aws.ami.placeholder',
         active: '',
         validation: VALIDATE_ALPHANUMERIC,
@@ -859,6 +885,7 @@ const awsPrivateControlData = [
         tooltip: 'creation.aws.hostedZone.tooltip',
         id: 'hostedZone',
         type: 'text',
+        disabled: true,
         placeholder: 'creation.aws.hostedZone.placeholder',
         active: '',
         validation: VALIDATE_ALPHANUMERIC,
@@ -868,6 +895,7 @@ const awsPrivateControlData = [
         id: 'privateLink',
         type: 'group',
         onlyOne: true,
+        hidden: true,
         controlData: [
             {
                 id: 'subnetSection',
@@ -892,6 +920,7 @@ const awsPrivateControlData = [
         id: 'serviceEndpoints',
         type: 'group',
         onlyOne: false,
+        hidden: true,
         prompts: {
             nameId: 'tester',
             baseName: 'Subnet ID',
