@@ -121,10 +121,6 @@ class DetailsView extends React.Component {
         this.setState({ filteredNode: undefined })
     }
 
-    setContainerRef = (container) => {
-        this.containerRef = container
-    }
-
     render() {
         const { filteredNode, activeTabKey } = this.state
         const { getLayoutNodes, options, selectedNodeId, nodes, t } = this.props
@@ -146,11 +142,7 @@ class DetailsView extends React.Component {
         const searchLink = createResourceSearchLink(currentNode, t)
 
         return (
-            <div
-                className="topologyDetails"
-                style={{ overflow: activeTabKey !== 2 ? 'auto' : 'hidden' }}
-                ref={this.setContainerRef}
-            >
+            <div className="topologyDetails" style={{ overflow: activeTabKey !== 2 ? 'auto' : 'hidden' }}>
                 <div class="detailsHeader">
                     {filteredNode && (
                         <div style={{ margin: '0 0 20px 10px' }}>
@@ -177,7 +169,7 @@ class DetailsView extends React.Component {
                     </div>
                     {!isTableView && this.renderTabs(currentNode)}
                 </div>
-                <section>
+                <section style={{ height: activeTabKey !== 2 ? undefined : '100%' }}>
                     {isTableView
                         ? this.renderTableContents(currentNode)
                         : this.renderTabContents(currentNode, currentUpdatedNode)}
@@ -234,7 +226,7 @@ class DetailsView extends React.Component {
                         t
                     )
                 }
-                return <YAMLContainer key={selectedNodeId} node={node} containerRef={this.containerRef} t={t} />
+                return <YAMLContainer key={selectedNodeId} node={node} t={t} />
         }
     }
 
