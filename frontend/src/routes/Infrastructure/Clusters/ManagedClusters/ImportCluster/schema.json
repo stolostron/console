@@ -10,7 +10,7 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string" },
+                        "name": { "validateDNSName": true },
                         "labels": {
                             "type": "object",
                             "properties": {
@@ -45,8 +45,8 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string" },
-                        "namespace": { "type": "string" }
+                        "name": { "validateDNSName": true },
+                        "namespace": { "validateDNSName": true }
                     },
                     "required": ["name", "namespace"]
                 },
@@ -74,15 +74,15 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string" },
-                        "namespace": { "type": "string" }
+                        "name": { "validateDNSName": true },
+                        "namespace": { "validateDNSName": true }
                     }
                 },
                 "spec": {
                     "type": "object",
                     "properties": {
-                        "clusterName": { "type": "string" },
-                        "clusterNamespace": { "type": "string" },
+                        "clusterName": { "validateDNSName": true },
+                        "clusterNamespace": { "validateDNSName": true },
                         "clusterLabels": {
                             "type": "object",
                             "properties": {

@@ -2,7 +2,7 @@
 
 import { TFunction } from 'i18next'
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { AcmAlert, AcmLoadingPage } from '@stolostron/ui-components'
@@ -12,6 +12,7 @@ const typesWithoutDefaultName = ['replicaset', 'pod', 'replicationcontroller', '
 
 export interface IYAMLContainerProps {
     node: any[]
+    containerRef: HTMLDivElement
     t: TFunction
 }
 
@@ -96,7 +97,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
 
     // need to set height for div below or else SyncEditor height will increaase indefinitely
     return (
-        <div style={{ height: '100vh' }}>
+        <Fragment>
             {resourceError.message !== '' && (
                 <AcmAlert
                     noClose={true}
@@ -115,6 +116,6 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                 readonly={true}
                 hideCloseButton={true}
             />
-        </div>
+        </Fragment>
     )
 }
