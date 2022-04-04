@@ -28,7 +28,7 @@ export interface PolicyCompliance {
 export interface ClusterPolicies {
     policyName: string
     policyNamespace: string
-    compliance: string
+    compliance?: string
 }
 
 export function getPlacementBindingsForResource(resource: Policy | PolicySet, placementBindings: PlacementBinding[]) {
