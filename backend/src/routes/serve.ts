@@ -30,7 +30,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             res.setHeader('X-DNS-Prefetch-Control', 'off')
             res.setHeader('Expect-CT', 'enforce, max-age=30')
             // res.setHeader('Content-Security-Policy', ["default-src 'self'"].join(';'))
-        } else if (url === '/plugin-entry.js' || url === '/plugin-manifest.json') {
+        } else if (url === '/plugin/plugin-entry.js' || url === '/plugin/plugin-manifest.json') {
             res.setHeader('Cache-Control', 'no-cache')
         } else {
             res.setHeader('Cache-Control', cacheControl)
