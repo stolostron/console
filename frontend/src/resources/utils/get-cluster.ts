@@ -768,7 +768,6 @@ export function getClusterStatus(
         const authenticationError = checkForCondition('AuthenticationFailure', cdConditions)
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
-        const resourceLimitError = checkForCondition('FallbackResourceLimitExceeded', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
 
         // deprovision failure
@@ -784,8 +783,6 @@ export function getClusterStatus(
             cdStatus = ClusterStatus.provisionfailed
 
             // provision success
-        } else if (resourceLimitError) {
-            cdStatus = ClusterStatus.provisionfailed
         } else if (clusterDeployment.spec?.installed) {
             cdStatus = ClusterStatus.detached
             const powerState = clusterDeployment?.status?.powerState
@@ -862,15 +859,12 @@ export function getClusterStatus(
                 const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''
                 if (
                     provisionFailedCondition?.message?.includes(currentProvisionRef) ||
-                    provisionFailedCondition?.reason === 'InvalidInstallConfig'
+                    provisionFailedCondition?.reason === 'InvalidInstallConfig' ||
+                    provisionFailedCondition?.reason === 'FallbackInvalidInstallConfig'
                 ) {
                     cdStatus = ClusterStatus.provisionfailed
                 } else {
-                    if (installRestarts && installRestarts > 0) {
-                        cdStatus = ClusterStatus.provisionfailed
-                    } else {
-                        cdStatus = ClusterStatus.creating
-                    }
+                    cdStatus = ClusterStatus.creating
                 }
             } else if (isDraft(agentClusterInstall)) {
                 cdStatus = ClusterStatus.draft
