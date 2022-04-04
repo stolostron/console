@@ -755,6 +755,7 @@ export function getClusterStatus(
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
         const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment?.status?.conditions ?? []
+        const installRestarts = clusterDeployment?.status?.installRestarts
         //const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)
         const hasInvalidImageSet = checkForRequirementsMetConditionFailureReason(
             'ClusterImageSetNotFound',
@@ -767,6 +768,7 @@ export function getClusterStatus(
         const authenticationError = checkForCondition('AuthenticationFailure', cdConditions)
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
+        const resourceLimitError = checkForCondition('FallbackResourceLimitExceeded', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
 
         // deprovision failure
@@ -782,6 +784,8 @@ export function getClusterStatus(
             cdStatus = ClusterStatus.provisionfailed
 
             // provision success
+        } else if (resourceLimitError) {
+            cdStatus = ClusterStatus.provisionfailed
         } else if (clusterDeployment.spec?.installed) {
             cdStatus = ClusterStatus.detached
             const powerState = clusterDeployment?.status?.powerState
@@ -862,7 +866,11 @@ export function getClusterStatus(
                 ) {
                     cdStatus = ClusterStatus.provisionfailed
                 } else {
-                    cdStatus = ClusterStatus.creating
+                    if (installRestarts && installRestarts > 0) {
+                        cdStatus = ClusterStatus.provisionfailed
+                    } else {
+                        cdStatus = ClusterStatus.creating
+                    }
                 }
             } else if (isDraft(agentClusterInstall)) {
                 cdStatus = ClusterStatus.draft
