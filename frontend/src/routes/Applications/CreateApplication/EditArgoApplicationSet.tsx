@@ -41,7 +41,7 @@ export function WizardSyncEditor() {
     const { update } = useData() // Wizard framework sets this context
     return (
         <SyncEditor
-            editorTitle={'Argo YAML'}
+            editorTitle={'Application set YAML'}
             variant="toolbar"
             resources={resources}
             filterKube={true}
