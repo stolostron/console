@@ -963,7 +963,7 @@ const awsPrivateControlData = [
                 validation: VALIDATE_ALPHANUMERIC,
             },
             {
-                name: 'Url',
+                name: 'URL',
                 tooltip: 'creation.aws.serviceEndpointUrl.tooltip',
                 id: 'endpointURL',
                 type: 'text',
