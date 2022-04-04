@@ -44,7 +44,6 @@ export function WizardSyncEditor() {
             editorTitle={'Argo YAML'}
             variant="toolbar"
             resources={resources}
-            hideCloseButton={true}
             filterKube={true}
             schema={schema}
             immutables={['ApplicationSet[0].metadata.name', 'ApplicationSet[0].metadata.namespace']}

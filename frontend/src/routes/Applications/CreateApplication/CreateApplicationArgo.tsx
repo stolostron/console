@@ -44,7 +44,6 @@ export function WizardSyncEditor() {
             editorTitle={'Argo YAML'}
             variant="toolbar"
             resources={resources}
-            hideCloseButton={true}
             schema={schema}
             onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
                 update(changes?.resources)

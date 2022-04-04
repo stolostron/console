@@ -32,7 +32,6 @@ export function WizardSyncEditor() {
             editorTitle={'Policy Set YAML'}
             variant="toolbar"
             resources={resources}
-            hideCloseButton={true}
             schema={schema}
             immutables={['PolicySet[0].metadata.name', 'PolicySet[0].metadata.namespace']}
             filterKube={true}

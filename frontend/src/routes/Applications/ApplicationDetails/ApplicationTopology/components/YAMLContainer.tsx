@@ -114,7 +114,6 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                 resources={[resource]}
                 filterKube={true}
                 readonly={true}
-                hideCloseButton={true}
             />
         </Fragment>
     )
