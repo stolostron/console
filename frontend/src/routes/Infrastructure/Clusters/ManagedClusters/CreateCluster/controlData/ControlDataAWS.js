@@ -121,7 +121,6 @@ const onChangeAWSPrivate = (control, controlData) => {
         controlItem.active.forEach((section) => {
             section.forEach((item) => {
                 if (item.controlId === 'subnetID') {
-                    // section.active.length = 0
                     item.active = []
                 }
                 if (item.id === 'endpointName') {
