@@ -199,7 +199,6 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
             }
 
             if (editApplication) {
-                const { createResources } = resourceJSON
                 // set resourceVersion
                 createResources.forEach((resource) => {
                     const name = resource.metadata?.name
@@ -223,7 +222,6 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
 
                 updateAppResources(createResources)
                     .then(() => {
-                        const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
                         toastContext.addAlert({
                             title: t('Application updated'),
                             message: t('{{name}} was successfully updated.', {
