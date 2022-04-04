@@ -755,7 +755,6 @@ export function getClusterStatus(
     let cdStatus = ClusterStatus.pending
     if (clusterDeployment) {
         const cdConditions: V1CustomResourceDefinitionCondition[] = clusterDeployment?.status?.conditions ?? []
-        const installRestarts = clusterDeployment?.status?.installRestarts
         //const hasInvalidImageSet = checkForCondition('ClusterImageSetNotFound', cdConditions)
         const hasInvalidImageSet = checkForRequirementsMetConditionFailureReason(
             'ClusterImageSetNotFound',

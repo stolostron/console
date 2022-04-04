@@ -103,7 +103,6 @@ export interface ClusterDeployment {
             versionHash: string
         }
         conditions: V1CustomResourceDefinitionCondition[]
-        installRestarts?: number
         installedTimestamp?: string
         installerImage: string
         powerState: string
