@@ -108,7 +108,6 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                 />
             )}
             <SyncEditor
-                containerRef={props.containerRef}
                 variant="toolbar"
                 id="code-content"
                 editorTitle={editorTitle}

@@ -23,7 +23,6 @@ import { SyncDiffType } from './SyncDiff'
 import './SyncEditor.css'
 
 export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
-    containerRef?: HTMLDivElement
     variant?: string
     editorTitle?: string
     code?: string
@@ -46,7 +45,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         schema,
         secrets,
         immutables,
-        containerRef,
         code,
         readonly,
         onEditorChange,
@@ -174,23 +172,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         editorRef.current = editor
         monacoRef.current = monaco
     }
-
-    useResizeObserver(containerRef ?? pageRef, (entry) => {
-        const { width } = entry.contentRect
-        let { height } = entry.contentRect
-
-        // if editor is part of a larger div
-        // subtract the height of the stuff that comes before the editor
-        if (pageRef.current && containerRef) {
-            height -= pageRef.current.getBoundingClientRect().y - containerRef.getBoundingClientRect().y
-        }
-
-        if (variant === 'toolbar') {
-            height -= 36
-        }
-        editorRef?.current?.layout({ width, height })
-        setShowCondensed(width < 500)
-    })
 
     useEffect(() => {
         monacoRef.current.editor.setTheme(readonly ? 'readonly-resource-editor' : 'resource-editor')
@@ -579,6 +560,21 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             </div>
         </>
     )
+
+    useResizeObserver(pageRef, (entry) => {
+        const { width } = entry.contentRect
+        let { height } = entry.contentRect
+
+        if (pageRef.current) {
+            height = window.innerHeight - pageRef.current?.getBoundingClientRect().top
+        }
+
+        if (variant === 'toolbar') {
+            height -= 36
+        }
+        editorRef?.current?.layout({ width, height })
+        setShowCondensed(width < 500)
+    })
 
     return (
         <div ref={pageRef} className="sync-editor__container">
