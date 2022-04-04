@@ -304,8 +304,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                     const { resourceStatuses, relatedResources, appDataWithStatuses } = await getResourceStatuses(
                         application,
                         appData,
-                        topology,
-                        lastRefreshRef.current
+                        topology
                     )
                     const topologyWithRelated = getTopology(application, clusters, relatedResources, {
                         topology,
@@ -324,7 +323,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 })()
                 return refresh
             })(),
-            10000
+            15000
         )
         return () => clearInterval(interval)
         // eslint-disable-next-line react-hooks/exhaustive-deps
