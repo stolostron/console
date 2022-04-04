@@ -14,6 +14,7 @@ import {
     Fragment,
     ReactNode,
     Suspense,
+    useCallback,
     useContext,
     useEffect,
     useMemo,
@@ -92,12 +93,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     const location = useLocation()
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
-    const [applicationSets] = useRecoilState(applicationSetsState)
-    const [applications] = useRecoilState(applicationsState)
-    const [argoApplications] = useRecoilState(argoApplicationsState)
-    const [subscriptions] = useRecoilState(subscriptionsState)
-    const [channels] = useRecoilState(channelsState)
-    const [placementRules] = useRecoilState(placementRulesState)
+    const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
     const [activeChannel, setActiveChannel] = useState<string>()
     const [applicationData, setApplicationData] = useState<ApplicationDataType>()
     const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
@@ -121,6 +117,41 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     })
 
     let modalWarnings: string
+
+    const getSnapshot = useRecoilCallback(
+        ({ snapshot }) =>
+            () =>
+                snapshot,
+        []
+    )
+    const stateMap = useMemo(
+        () => ({
+            applications: applicationsState,
+            applicationSets: applicationSetsState,
+            argoApplications: argoApplicationsState,
+            ansibleJob: ansibleJobState,
+            channels: channelsState,
+            placements: placementsState,
+            placementRules: placementRulesState,
+            subscriptions: subscriptionsState,
+            subscriptionReports: subscriptionReportsState,
+        }),
+        []
+    )
+
+    const getRecoilStates = useCallback(async () => {
+        const map: Record<string, any> = {}
+        const snapshot = getSnapshot()
+        const promises = Object.entries(stateMap).map(([key, state]) => {
+            const promise = snapshot.getPromise(state as any)
+            promise.then((data) => {
+                map[key] = data
+            })
+            return promise
+        })
+        await Promise.allSettled(promises)
+        return map
+    }, [getSnapshot, stateMap])
 
     const actions: any = [
         {
@@ -172,14 +203,22 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         actions.push({
             id: 'delete-application',
             text: t('Delete application'),
-            click: () => {
+            click: async () => {
+                const recoilStates = await getRecoilStates()
+
                 const appChildResources =
                     selectedApp.kind === ApplicationKind
-                        ? getAppChildResources(selectedApp, applications, subscriptions, placementRules, channels)
+                        ? getAppChildResources(
+                              selectedApp,
+                              recoilStates.applications,
+                              recoilStates.subscriptions,
+                              recoilStates.placementRules,
+                              recoilStates.channels
+                          )
                         : [[], []]
                 const appSetRelatedResources =
                     selectedApp.kind === ApplicationSetKind
-                        ? getAppSetRelatedResources(selectedApp, applicationSets)
+                        ? getAppSetRelatedResources(selectedApp, recoilStates.applicationSets)
                         : ['', []]
                 setModalProps({
                     open: true,
@@ -193,7 +232,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                     appSetPlacement: appSetRelatedResources[0],
                     appSetsSharingPlacement: appSetRelatedResources[1],
                     appKind: selectedApp.kind,
-                    appSetApps: getAppSetApps(argoApplications, selectedApp.metadata?.name),
+                    appSetApps: getAppSetApps(recoilStates.argoApplications, selectedApp.metadata?.name),
                     close: () => {
                         setModalProps({ open: false })
                     },
@@ -221,13 +260,6 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         return () => canDeleteApplicationSetPromise.abort()
     }, [])
 
-    const getSnapshot = useRecoilCallback(
-        ({ snapshot }) =>
-            () =>
-                snapshot,
-        []
-    )
-
     const urlParams = location.search ? decodeURIComponent(location.search).substring(1).split('&') : []
     let apiVersion: string | undefined
     let cluster: string | undefined
@@ -239,20 +271,6 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             cluster = param.split('=')[1]
         }
     })
-    const stateMap = useMemo(
-        () => ({
-            applications: applicationsState,
-            applicationSets: applicationSetsState,
-            argoApplications: argoApplicationsState,
-            ansibleJob: ansibleJobState,
-            channels: channelsState,
-            placements: placementsState,
-            placementRules: placementRulesState,
-            subscriptions: subscriptionsState,
-            subscriptionReports: subscriptionReportsState,
-        }),
-        []
-    )
 
     // refresh application the first time and then every n seconds
     useEffect(() => {
@@ -261,24 +279,14 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         const interval = setInterval(
             (function refresh() {
                 ;(async () => {
-                    // fetch states from recoil
-                    const map: Record<string, any> = {}
-                    const snapshot = getSnapshot()
-                    const promises = Object.entries(stateMap).map(([key, state]) => {
-                        const promise = snapshot.getPromise(state as any)
-                        promise.then((data) => {
-                            map[key] = data
-                        })
-                        return promise
-                    })
-                    await Promise.allSettled(promises)
+                    const recoilStates = await getRecoilStates()
 
                     // get application object from recoil states
                     const application = await getApplication(
                         match.params.namespace,
                         match.params.name,
                         activeChannel,
-                        map,
+                        recoilStates,
                         cluster,
                         apiVersion,
                         clusters
