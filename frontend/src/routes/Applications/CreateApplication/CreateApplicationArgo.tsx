@@ -41,6 +41,7 @@ export function WizardSyncEditor() {
     const { update } = useData() // Wizard framework sets this context
     return (
         <SyncEditor
+            editorTitle={'Argo YAML'}
             variant="toolbar"
             resources={resources}
             hideCloseButton={true}

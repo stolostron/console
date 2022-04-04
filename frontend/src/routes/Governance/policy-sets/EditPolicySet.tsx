@@ -29,6 +29,7 @@ export function WizardSyncEditor() {
     const { update } = useData() // Wizard framework sets this context
     return (
         <SyncEditor
+            editorTitle={'Policy Set YAML'}
             variant="toolbar"
             resources={resources}
             hideCloseButton={true}
