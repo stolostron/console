@@ -586,7 +586,7 @@ function AppHeader() {
                             isExternal
                             icon={<AcmIcon icon={AcmIconVariant.redhat} />}
                             component="button"
-                            onClick={() => window.open('https://cloud.redhat.com/openshift/', '_blank')}
+                            onClick={() => window.open('https://console.redhat.com/openshift', '_blank')}
                         >
                             Openshift Cluster Manager
                         </ApplicationLauncherItem>
