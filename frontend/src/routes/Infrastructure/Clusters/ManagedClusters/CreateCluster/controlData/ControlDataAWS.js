@@ -115,8 +115,23 @@ const onChangeAWSPrivate = (control, controlData) => {
 
     awsPrivateFields.forEach((controlItem) => {
         controlItem.disabled = !controlItem.disabled
+        controlItem.active = ''
     })
     awsPrivateSections.forEach((controlItem) => {
+        controlItem.active.forEach((section) => {
+            section.forEach((item) => {
+                if (item.controlId === 'subnetID') {
+                    // section.active.length = 0
+                    item.active = []
+                }
+                if (item.id === 'endpointName') {
+                    item.active = ''
+                }
+                if (item.id === 'endpointURL') {
+                    item.active = ''
+                }
+            })
+        })
         controlItem.hidden = !controlItem.hidden
     })
 }
