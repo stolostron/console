@@ -34,7 +34,6 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     onClose?: () => void
     onEditorChange?: (editorResources: any) => void
     filterKube?: boolean
-    hideCloseButton?: boolean
 }
 
 export function SyncEditor(props: SyncEditorProps): JSX.Element {
@@ -49,7 +48,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         readonly,
         onEditorChange,
         onClose,
-        hideCloseButton,
         filterKube,
     } = props
     const pageRef = useRef<HTMLDivElement>(null)
@@ -440,11 +438,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     ) => {
         const editor = editorRef?.current
         const monaco = monacoRef?.current
-        const _resources = lastValidResources || resources
-        if (errors.length) {
+        const isArr = Array.isArray(resources)
+        let _resources = isArr ? resources : [resources]
+        _resources = lastValidResources || _resources
+        if (errors.length || changeWithSecrets.resources.length === 0) {
             // if errors, use last valid resources
             setEditorChanges({
-                resources: _resources,
+                resources: isArr ? _resources : _resources[0],
                 warnings: formatErrors(errors, true),
                 errors: formatErrors(errors),
                 changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
@@ -457,7 +457,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 errors: formatErrors(errors),
                 changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
             })
-            setLastValidResources(cloneDeep(changeWithSecrets.resources))
+            setLastValidResources(cloneDeep(isArr ? changeWithSecrets.resources : changeWithSecrets.resources[0]))
         }
     }
 
@@ -549,7 +549,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 >
                     {copyHint}
                 </ClipboardCopyButton>
-                {!hideCloseButton && (
+                {!!onClose && (
                     <CodeEditorControl
                         icon={<CloseIcon />}
                         aria-label="Close"

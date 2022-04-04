@@ -37,9 +37,9 @@ export function WizardSyncEditor() {
     const { update } = useData() // Wizard framework sets this context
     return (
         <SyncEditor
+            editorTitle={'Policy YAML'}
             variant="toolbar"
             resources={resources}
-            hideCloseButton={true}
             immutables={['Policy[0].metadata.name', 'Policy[0].metadata.namespace']}
             schema={schema}
             filterKube={true}

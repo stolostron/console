@@ -136,7 +136,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
         setDrawerMaxSize(inline ? `${Math.round((entry.contentRect.width * 2) / 3)}px` : undefined)
     })
 
-    const readOnly = mode === 'form' && props.edit !== undefined ? immutables : undefined
+    const readOnly = mode === 'form' ? immutables : undefined
     return (
         <div ref={pageRef} style={{ height: '100%' }}>
             <Page
@@ -203,6 +203,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                         editorTitle={editorTitle}
                                         readonly={mode === 'details'}
                                         resources={formData.stateToData()}
+                                        filterKube={mode === 'form'}
                                         schema={schema}
                                         immutables={readOnly}
                                         secrets={secrets}
