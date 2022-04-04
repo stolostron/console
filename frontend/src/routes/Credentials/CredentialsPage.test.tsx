@@ -204,13 +204,13 @@ describe('provider connections page', () => {
         await waitForNotText('Cancel')
     })
 
-    test('If cloud.redhat.com credential and no discoveryconfig configured, show action available', async () => {
+    test('If console.redhat.com credential and no discoveryconfig configured, show action available', async () => {
         render(<TestProviderConnectionsPage providerConnections={[cloudRedHatProviderConnection]} />)
         await waitForText(cloudRedHatProviderConnection.metadata!.name!)
         await waitForText('Create cluster discovery')
     })
 
-    test('If cloud.redhat.com providerconnection and discoveryconfig configured, do not show action available', async () => {
+    test('If console.redhat.com providerconnection and discoveryconfig configured, do not show action available', async () => {
         render(
             <TestProviderConnectionsPage
                 providerConnections={[cloudRedHatProviderConnection]}
