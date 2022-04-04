@@ -589,7 +589,7 @@ export const setAvailableSecrets = (control, result) => {
                 (providerConnection) =>
                     providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
             )
-            control.available = ansibleCredentials.map((secret) => secret.metadata.name).sort()
+            control.available = Array.from(new Set([..._.map(ansibleCredentials, 'metadata.name')])).sort()
             return control
         }
     } else {

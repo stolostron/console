@@ -7,7 +7,17 @@ import Handlebars from 'handlebars'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Location } from 'history'
-import { ApplicationKind, createResources as createKubeResources, IResource, updateAppResources } from '../../resources'
+import {
+    ApplicationKind,
+    createResources as createKubeResources,
+    IResource,
+    ProviderConnection,
+    SubscriptionKind,
+    unpackProviderConnection,
+    updateAppResources,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+} from '../../resources'
 import '../Applications/CreateApplication/Subscription/style.css'
 
 // Template Data
@@ -28,7 +38,14 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import _ from 'lodash'
 import { useRecoilState } from 'recoil'
-import { ansibleJobState, applicationsState, channelsState, placementRulesState, subscriptionsState } from '../../atoms'
+import {
+    ansibleJobState,
+    applicationsState,
+    channelsState,
+    placementRulesState,
+    secretsState,
+    subscriptionsState,
+} from '../../atoms'
 
 import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
 import { getApplication } from './ApplicationDetails/ApplicationTopology/model/application'
@@ -91,6 +108,12 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     const history = useHistory()
     const toastContext = useContext(AcmToastContext)
     const [controlData, setControlData] = useState<any>('')
+    const [secrets] = useRecoilState(secretsState)
+    const providerConnections = secrets.map(unpackProviderConnection)
+    const ansibleCredentials = providerConnections.filter(
+        (providerConnection) =>
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+    )
     useEffect(() => {
         getControlData()
             .then((cd) => {
@@ -137,8 +160,45 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     }
     function handleCreate(resourceJSON: { createResources: IResource[] }) {
         if (resourceJSON) {
+            // create ansible secrets if any are used and not yet available in the app ns
+            // get all subscriptions using an ansible provider
+            const { createResources } = resourceJSON
+            const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
+            const subsUsingAnsible = resourceJSON.createResources.filter(
+                (resource) => resource.kind === SubscriptionKind && _.get(resource, 'spec.hooksecretref.name')
+            )
+            if (subsUsingAnsible) {
+                const uniqueAnsibleSecretNames = Array.from(
+                    new Set([..._.map(subsUsingAnsible, 'spec.hooksecretref.name')])
+                )
+                uniqueAnsibleSecretNames.forEach((name) => {
+                    // check if a secret with this name already exists in the app ns
+                    const existingSecret = ansibleCredentials.find((ac) => {
+                        return (
+                            ac.metadata.name === name &&
+                            ac.metadata.namespace === applicationResourceJSON?.metadata?.namespace
+                        )
+                    })
+                    if (!existingSecret) {
+                        const originalAnsibleSecret = ansibleCredentials.find((ac) => ac.metadata.name === name)
+                        const ansibleSecret: ProviderConnection = {
+                            apiVersion: ProviderConnectionApiVersion,
+                            kind: ProviderConnectionKind,
+                            metadata: {
+                                name,
+                                namespace: applicationResourceJSON?.metadata?.namespace,
+                                labels: _.get(originalAnsibleSecret, 'metadata.labels', []),
+                            },
+                            stringData: _.get(originalAnsibleSecret, 'stringData', {}),
+                            type: 'Opaque',
+                        }
+                        // add resource
+                        createResources.push(ansibleSecret)
+                    }
+                })
+            }
+
             if (editApplication) {
-                const { createResources } = resourceJSON
                 // set resourceVersion
                 createResources.forEach((resource) => {
                     const name = resource.metadata?.name
@@ -162,7 +222,6 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
 
                 updateAppResources(createResources)
                     .then(() => {
-                        const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
                         toastContext.addAlert({
                             title: t('Application updated'),
                             message: t('{{name}} was successfully updated.', {
