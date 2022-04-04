@@ -55,7 +55,10 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
         if (values.enableNtpSources) {
             control.active = {
                 ...control.active,
-                additionalNtpSources: values.additionalNtpSources.split(',').map((s) => s.trim()),
+                additionalNtpSources: values.additionalNtpSources
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter(Boolean),
             }
         }
         handleChange(control)

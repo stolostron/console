@@ -15,7 +15,7 @@ spec:
   pullSecretRef:
     name: pullsecret-{{{ai.name}}}
   sshAuthorizedKey: {{{ai.sshPublicKey}}}
-  {{#if ai.enableNtpSources}}
+  {{#if (checkNtpSources ai.enableNtpSources ai.additionalNtpSources)}}
   additionalNTPSources:
   {{#each ai.additionalNtpSources}}
     - {{this}}
