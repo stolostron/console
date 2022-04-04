@@ -51,6 +51,6 @@ async function getResourceStatuses(name, namespace, appSetApps, appData) {
             input: [{ ...query }],
             limit: 10000,
         },
-        fetchPolicy: 'cache-first',
+        fetchPolicy: 'network-only',
     })
 }
