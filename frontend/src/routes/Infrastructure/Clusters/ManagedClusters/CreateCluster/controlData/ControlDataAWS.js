@@ -125,6 +125,7 @@ const onChangeAWSPrivate = (control, controlData) => {
                     item.active = []
                 }
                 if (item.id === 'endpointName') {
+                    controlItem.active.length = 1
                     item.active = ''
                 }
                 if (item.id === 'endpointURL') {
