@@ -364,8 +364,8 @@ export const getPulseForNodeWithPodStatus = (node, t) => {
     const namespace = _.get(node, 'namespace', '')
     const clusterNames = R.split(',', getClusterName(node.id, node, true))
     const onlineClusters = getOnlineClusters(node)
-
-    if (!resourceMap || onlineClusters.length === 0) {
+    const onlineClustersIncludeClusterNames = onlineClusters.some((cls) => clusterNames.includes(cls))
+    if (!resourceMap || onlineClusters.length === 0 || !onlineClustersIncludeClusterNames) {
         pulse = 'orange' //resource not available
         return pulse
     }
@@ -523,6 +523,7 @@ const getPulseStatusForGenericNode = (node, t) => {
     const resourceMap = _.get(node, `specs.${node.type}Model`)
     const clusterNames = R.split(',', getClusterName(node.id, node, true))
     const onlineClusters = getOnlineClusters(node)
+
     if (!resourceMap || onlineClusters.length === 0) {
         pulse = 'orange' //resource not available
         if (nodeType === 'placement') {
@@ -1128,13 +1129,18 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
     const podDataPerCluster = {} //pod details list for each cluster name
     // list of target namespaces per cluster
     const targetNamespaces = _.get(node, 'clusters.specs.targetNamespaces', {})
-    const resourceName = _.get(node, 'name', '')
+    let resourceName = _.get(node, 'name', '')
     const resourceNamespace = _.get(node, 'namespace', '')
     const resourceMap = _.get(node, `specs.${node.type}Model`, {})
 
     const clusterNames = R.split(',', getClusterName(node.id, node, true))
     const onlineClusters = getOnlineClusters(node)
     clusterNames.forEach((clusterName) => {
+        const podClusterData = resourceMap[`${resourceName}-${clusterName}`] || []
+        const podObj = podClusterData.find((cls) => cls.cluster === clusterName)
+        if (podObj) {
+            resourceName = podObj.name
+        }
         clusterName = R.trim(clusterName)
         if (!_.includes(onlineClusters, clusterName)) {
             // offline cluster or argo destination server we could  not map to a cluster name, so skip

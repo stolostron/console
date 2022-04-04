@@ -292,8 +292,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                     if (!lastRefreshRef?.current?.resourceStatuses) {
                         setApplicationData({
                             refreshTime: Date.now(),
-                            activeChannel: application.activeChannel,
-                            allChannels: application.channels,
+                            activeChannel: application ? application.activeChannel : '',
+                            allChannels: application ? application.channels : [],
                             application,
                             topology,
                             appData,
