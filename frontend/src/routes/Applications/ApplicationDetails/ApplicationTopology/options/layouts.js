@@ -27,7 +27,13 @@ export const getConnectedLayoutOptions = ({ elements }) => {
             return ndata.node.type === 'application' || ndata.node.type === 'applicationset'
         })
         .toArray()
+    const leaves = nodes.leaves()
     positionApplicationRows(roots, typeToShapeMap)
+    if (nodes.length < 40 && roots.length === 1 && leaves.length > 2 && leaves.length < 20) {
+        return {
+            name: 'preset',
+        }
+    }
 
     // let cola position them, nicely
     return {
