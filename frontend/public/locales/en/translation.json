@@ -73,6 +73,7 @@
     "Ansible Tower secret": "Ansible Tower secret",
     "Ansible Tower token": "Ansible Tower token",
     "Ansible tower URL": "Ansible tower URL",
+    "Ansible YAML": "Ansible YAML",
     "Any changes made here may be overridden by the content of an upstream repository.": "Any changes made here may be overridden by the content of an upstream repository.",
     "API groups": "API groups",
     "API Version": "API Version",
