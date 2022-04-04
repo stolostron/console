@@ -692,7 +692,7 @@ export default function ApplicationsOverview() {
                     },
                     {
                         id: 'create-argo',
-                        text: 'Argo CD ApplicationSet',
+                        text: 'ApplicationSet',
                         isDisabled: false,
                         path: NavigationPath.createApplicationArgo,
                     },
