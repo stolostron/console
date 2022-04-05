@@ -1276,6 +1276,7 @@ describe('CreateCluster', () => {
 
         // private configuration
         await clickByText('Next')
+        await clickByTestId('hasPrivateConfig')
         await typeByText('Hosted zone', 'aws-hosted-zone.com')
         await typeByPlaceholderText('Enter AMI ID', 'ami-0876eacb38191e91f')
         await clickByText('Subnets')
