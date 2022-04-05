@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyAutomationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicyAutomation/PolicyAutomationWizard'
+import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { secretsState, usePolicies } from '../../../atoms'
-import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -19,6 +18,7 @@ import {
     Secret,
 } from '../../../resources'
 import schema from './schemaAutomation.json'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
@@ -87,7 +87,6 @@ export function CreatePolicyAutomation() {
             onSubmit={(data) => {
                 const resource = data as PolicyAutomation
                 return reconcileResources([resource], []).then(() => {
-                    // TODO move secret creation to reconcileresources??
                     if (resource) {
                         // Copy the cedential to the namespace of the policy
                         const credToCopy: Secret[] = secrets.filter(
