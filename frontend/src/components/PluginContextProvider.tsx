@@ -1,9 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { isHrefNavItem, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
 import { ReactNode, useCallback, useMemo } from 'react'
-import { DOC_LINKS } from '../lib/doc-util'
 import { PluginContext } from '../lib/PluginContext'
-import { TechPreviewAlert } from './TechPreviewAlert'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
     const [hrefs] = useResolvedExtensions(isHrefNavItem)
