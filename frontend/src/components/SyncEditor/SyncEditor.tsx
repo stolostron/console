@@ -34,7 +34,6 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     onClose?: () => void
     onEditorChange?: (editorResources: any) => void
     filterKube?: boolean
-    hideCloseButton?: boolean
 }
 
 export function SyncEditor(props: SyncEditorProps): JSX.Element {
@@ -49,14 +48,14 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         readonly,
         onEditorChange,
         onClose,
-        hideCloseButton,
         filterKube,
     } = props
-    const pageRef = useRef(null)
+    const pageRef = useRef<HTMLDivElement>(null)
     const editorRef = useRef<any | null>(null)
     const monacoRef = useRef<any | null>(null)
     const defaultCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Copy</span>
-    const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Copied</span>
+    const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Selection copied</span>
+    const allCopiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>All copied</span>
     const [copyHint, setCopyHint] = useState<ReactNode>(defaultCopy)
     const [prohibited, setProhibited] = useState<any>([])
     const [newKeyCount, setNewKeyCount] = useState<number>(1)
@@ -89,6 +88,17 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (schema && !validationRef.current) {
         try {
             const ajv = new Ajv({ allErrors: true, verbose: true })
+            ajv.addKeyword({
+                keyword: 'validateDNSName',
+                schemaType: 'boolean',
+                validate: (_schema: null, data: any) => {
+                    return (
+                        !data ||
+                        (/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/.test(data) &&
+                            data.length <= 63)
+                    )
+                },
+            })
             if (!Array.isArray(schema)) {
                 validationRef.current = [{ validator: ajv.compile(schema) }]
             } else {
@@ -160,16 +170,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         editorRef.current = editor
         monacoRef.current = monaco
     }
-
-    useResizeObserver(pageRef, (entry) => {
-        const { width } = entry.contentRect
-        let { height } = entry.contentRect
-        if (variant === 'toolbar') {
-            height -= 36
-        }
-        editorRef?.current?.layout({ width, height })
-        setShowCondensed(width < 500)
-    })
 
     useEffect(() => {
         monacoRef.current.editor.setTheme(readonly ? 'readonly-resource-editor' : 'resource-editor')
@@ -438,11 +438,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     ) => {
         const editor = editorRef?.current
         const monaco = monacoRef?.current
-        const _resources = lastValidResources || resources
-        if (errors.length) {
+        const isArr = Array.isArray(resources)
+        let _resources = isArr ? resources : [resources]
+        _resources = lastValidResources || _resources
+        if (errors.length || changeWithSecrets.resources.length === 0) {
             // if errors, use last valid resources
             setEditorChanges({
-                resources: _resources,
+                resources: isArr ? _resources : _resources[0],
                 warnings: formatErrors(errors, true),
                 errors: formatErrors(errors),
                 changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
@@ -455,7 +457,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 errors: formatErrors(errors),
                 changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
             })
-            setLastValidResources(cloneDeep(changeWithSecrets.resources))
+            setLastValidResources(cloneDeep(isArr ? changeWithSecrets.resources : changeWithSecrets.resources[0]))
         }
     }
 
@@ -537,7 +539,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                         navigator.clipboard.writeText(
                             selectedText.length === 0 ? lastChangeWithSecrets?.yaml : selectedText
                         )
-                        setCopyHint(copiedCopy)
+                        setCopyHint(selectedText.length === 0 ? allCopiedCopy : copiedCopy)
                         setTimeout(() => {
                             setCopyHint(defaultCopy)
                         }, 800)
@@ -547,7 +549,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 >
                     {copyHint}
                 </ClipboardCopyButton>
-                {!hideCloseButton && (
+                {!!onClose && (
                     <CodeEditorControl
                         icon={<CloseIcon />}
                         aria-label="Close"
@@ -558,6 +560,21 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             </div>
         </>
     )
+
+    useResizeObserver(pageRef, (entry) => {
+        const { width } = entry.contentRect
+        let { height } = entry.contentRect
+
+        if (pageRef.current) {
+            height = window.innerHeight - pageRef.current?.getBoundingClientRect().top
+        }
+
+        if (variant === 'toolbar') {
+            height -= 36
+        }
+        editorRef?.current?.layout({ width, height })
+        setShowCondensed(width < 500)
+    })
 
     return (
         <div ref={pageRef} className="sync-editor__container">

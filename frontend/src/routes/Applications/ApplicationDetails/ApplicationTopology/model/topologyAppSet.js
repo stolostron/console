@@ -197,7 +197,7 @@ const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t) => {
                 input: [{ ...query }],
                 limit: 10000,
             },
-            fetchPolicy: 'cache-first',
+            fetchPolicy: 'network-only',
         })
         .then((result) => {
             if (result.errors) {

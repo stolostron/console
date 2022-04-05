@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PolicyAutomationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicyAutomation/PolicyAutomationWizard'
+import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
@@ -16,6 +17,28 @@ import {
     reconcileResources,
     Secret,
 } from '../../../resources'
+import schema from './schemaAutomation.json'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
+
+export function WizardSyncEditor() {
+    const resources = useItem() // Wizard framework sets this context
+    const { update } = useData() // Wizard framework sets this context
+    return (
+        <SyncEditor
+            editorTitle={'Automation YAML'}
+            variant="toolbar"
+            resources={resources}
+            schema={schema}
+            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+                update(changes?.resources)
+            }}
+        />
+    )
+}
+
+function getWizardSyncEditor() {
+    return <WizardSyncEditor />
+}
 
 export function CreatePolicyAutomation() {
     const { t } = useTranslation()
@@ -44,6 +67,7 @@ export function CreatePolicyAutomation() {
         <PolicyAutomationWizard
             title={t('Create policy automation')}
             policy={currentPolicy ?? {}}
+            yamlEditor={getWizardSyncEditor}
             credentials={credentials}
             createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
             resource={{

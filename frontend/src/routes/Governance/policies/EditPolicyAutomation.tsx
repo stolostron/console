@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode } from '@patternfly-labs/react-form-wizard'
 import { PolicyAutomationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicyAutomation/PolicyAutomationWizard'
+import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
@@ -10,6 +11,29 @@ import { LoadingPage } from '../../../components/LoadingPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { createResource, listAnsibleTowerJobs, PolicyAutomation, reconcileResources, Secret } from '../../../resources'
+import schema from './schemaAutomation.json'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
+
+export function WizardSyncEditor() {
+    const resources = useItem() // Wizard framework sets this context
+    const { update } = useData() // Wizard framework sets this context
+    return (
+        <SyncEditor
+            editorTitle={'Automation YAML'}
+            variant="toolbar"
+            filterKube={true}
+            resources={resources}
+            schema={schema}
+            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+                update(changes?.resources)
+            }}
+        />
+    )
+}
+
+function getWizardSyncEditor() {
+    return <WizardSyncEditor />
+}
 
 export function EditPolicyAutomation() {
     const { t } = useTranslation()
@@ -50,6 +74,7 @@ export function EditPolicyAutomation() {
             title={t('Edit policy automation')}
             editMode={EditMode.Edit}
             policy={currentPolicy ?? {}}
+            yamlEditor={getWizardSyncEditor}
             credentials={credentials}
             createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
             resource={currentPolicyAutomation}

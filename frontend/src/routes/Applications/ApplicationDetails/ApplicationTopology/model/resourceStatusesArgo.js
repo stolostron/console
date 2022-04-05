@@ -57,7 +57,7 @@ async function getArgoSource(application, appData) {
             input: [{ ...query }],
             limit: 10000,
         },
-        fetchPolicy: 'cache-first',
+        fetchPolicy: 'network-only',
     })
 }
 
@@ -135,7 +135,7 @@ async function getResourceStatuses(name, namespace, appData, topology, argoSourc
             input: [{ ...query }],
             limit: 10000,
         },
-        fetchPolicy: 'cache-first',
+        fetchPolicy: 'network-only',
     })
 }
 
@@ -191,7 +191,7 @@ export const getArgoSecret = (appData, resourceStatuses = {}) => {
                     input: [{ ...query }],
                     limit: 10000,
                 },
-                fetchPolicy: 'cache-first',
+                fetchPolicy: 'network-only',
             })
         }
     }
