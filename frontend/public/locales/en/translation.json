@@ -563,6 +563,7 @@
     "creation.aws.hostedZone": "Hosted zone",
     "creation.aws.hostedZone.placeholder": "Enter hosted zone ID",
     "creation.aws.hostedZone.tooltip": "The ID of your existing Route 53 private hosted zone.",
+    "creation.aws.private.enable": "Use private configuration",
     "creation.aws.privateAWS": "AWS private configuration",
     "creation.aws.privateAWS.info": "(Optional) Configuration for private AWS cluster provision",
     "creation.aws.serviceEndpoint.addPrompt": "Add Service Endpoint",
