@@ -47,12 +47,7 @@ export default function PolicySetCard(props: {
     const history = useHistory()
     const cardID = `policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`
 
-    function onClick(event: React.MouseEvent) {
-        const newSelectedCard = event.currentTarget.id === selectedCardID ? '' : event.currentTarget.id
-        setSelectedCardID(newSelectedCard)
-        if (!event.currentTarget.contains(event.target as Node)) {
-            return
-        }
+    function onClick(cardId: string) {
         setDrawerContext({
             isExpanded: true,
             onCloseClick: () => {
@@ -74,7 +69,7 @@ export default function PolicySetCard(props: {
         })
         // Introduce a delay (400ms) until scroll to selected card to wait for sidebar to transition.
         setTimeout(() => {
-            const cardElement = document.querySelector(`#${newSelectedCard}`)
+            const cardElement = document.querySelector(`#${cardId}`)
             cardElement?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
         }, 400)
     }
@@ -104,7 +99,14 @@ export default function PolicySetCard(props: {
                 id={cardID}
                 key={cardID}
                 style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
-                onClick={onClick}
+                onClick={(event) => {
+                    const newSelectedCard = cardID === selectedCardID ? '' : cardID
+                    setSelectedCardID(newSelectedCard)
+                    if (!event.currentTarget.contains(event.target as Node)) {
+                        return
+                    }
+                    onClick(cardID)
+                }}
             >
                 <CardHeader isToggleRightAligned={true}>
                     <CardActions>
@@ -117,14 +119,9 @@ export default function PolicySetCard(props: {
                                 <DropdownItem
                                     key="view details"
                                     onClick={() => {
-                                        setDrawerContext({
-                                            isExpanded: true,
-                                            onCloseClick: () => setDrawerContext(undefined),
-                                            panelContent: <PolicySetDetailSidebar policySet={policySet} />,
-                                            panelContentProps: { defaultSize: '40%' },
-                                            isInline: true,
-                                            isResizable: true,
-                                        })
+                                        const newSelectedCard = cardID === selectedCardID ? '' : cardID
+                                        setSelectedCardID(newSelectedCard)
+                                        onClick(cardID)
                                     }}
                                 >
                                     {t('View details')}
