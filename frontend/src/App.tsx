@@ -345,7 +345,7 @@ const useStyles = makeStyles({
     perspective: {
         // 'font-size': '$co-side-nav-font-size',
         // 'justify-content': 'space-between',
-        // width: '100%',
+        width: '100%',
         padding: 0,
         color: 'var(--pf-global--Color--light-100)',
 
@@ -709,13 +709,18 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                             <Dropdown
                                 onSelect={onSelect}
                                 toggle={
-                                    <DropdownToggle id="toggle-id" onToggle={onToggle} className={classes.perspective}>
-                                        <Title headingLevel="h2" size="md">
-                                            <span style={{ fill: 'currentColor' }} className="oc-nav-header__icon">
+                                    <DropdownToggle
+                                        id="toggle-id"
+                                        onToggle={onToggle}
+                                        className={classes.perspective}
+                                        icon={
+                                            <span style={{ fill: 'currentColor' }}>
                                                 <ACMPerspectiveIcon />
                                             </span>
-                                            <span style={{ fontSize: '13.5px' }}>Advanced Cluster Management</span>
-                                        </Title>
+                                        }
+                                        style={{ fontSize: 'small' }}
+                                    >
+                                        Advanced Cluster Management
                                     </DropdownToggle>
                                 }
                                 isOpen={open}
