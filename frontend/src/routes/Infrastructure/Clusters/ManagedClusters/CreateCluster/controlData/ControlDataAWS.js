@@ -99,6 +99,15 @@ const setAWSZones = (control, controlData) => {
     setZones('workerPools', 'workerZones')
 }
 
+const updateWorkerZones = (control, controlData) => {
+    const region = controlData.find(({ name }) => name === 'Region').active
+    const worker = control.active[control.active.length - 1]
+    const typeZones = worker.find(({ id }) => id === 'workerZones')
+    const zones = awsRegions[region]
+    typeZones.available = zones || []
+    typeZones.active = []
+}
+
 export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
     if (includeSno) addSnoText(controlDataAWS)
     let controlData = [...controlDataAWS]
@@ -800,6 +809,7 @@ const controlDataAWS = [
             addPrompt: 'creation.ocp.cluster.add.node.pool',
             deletePrompt: 'creation.ocp.cluster.delete.node.pool',
         },
+        onChange: updateWorkerZones,
         controlData: [
             {
                 id: 'workerPool',
