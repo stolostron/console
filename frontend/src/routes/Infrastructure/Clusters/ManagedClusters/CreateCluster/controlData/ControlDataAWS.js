@@ -113,6 +113,15 @@ export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = 
     return controlData
 }
 
+const updateWorkerZones = (control, controlData) => {
+    const region = controlData.find(({ name }) => name === 'Region').active
+    const worker = control.active[control.active.length - 1]
+    const typeZones = worker.find(({ id }) => id === 'workerZones')
+    const zones = awsRegions[region]
+    typeZones.available = zones || []
+    typeZones.active = []
+}
+
 const AWSmasterInstanceTypes = [
     { value: 'm5.large', description: gp2Cpu8Gib },
     { value: 'm5.xlarge', description: gp4Cpu16Gib },
@@ -764,6 +773,7 @@ const controlDataAWS = [
             addPrompt: 'creation.ocp.cluster.add.node.pool',
             deletePrompt: 'creation.ocp.cluster.delete.node.pool',
         },
+        onChange: updateWorkerZones,
         controlData: [
             {
                 id: 'workerPool',
