@@ -49,7 +49,7 @@ export function getArgoTopology(application, argoData) {
 
     const appId = `application--${name}`
     nodes.push({
-        name: '',
+        name,
         namespace,
         type: 'application',
         id: appId,
