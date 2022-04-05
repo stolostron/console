@@ -325,46 +325,47 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                                     getAgentStatus(a).status.key
                                                 )
                                             )
-                                            return (
-                                                 infraAgents.length ? (
-                                                        <Flex>
-                                                            <FlexItem>
-                                                                <AcmInlineStatusGroup
-                                                                    healthy={
-                                                                        infraAgents.length -
-                                                                        errorAgents.length -
-                                                                        warningAgents.length
-                                                                    }
-                                                                    danger={errorAgents.length}
-                                                                    warning={warningAgents.length}
-                                                                />
-                                                            </FlexItem>
-                                                            <FlexItem align={{ default: 'alignRight' }}>
-                                                                <Popover
-                                                                    aria-label="Infraenv cannot be deleted popover"
-                                                                    headerContent={<div>Cannot be deleted</div>}
-                                                                    bodyContent={
-                                                                        <div>
-                                                                            {t('infraEnv.rowAction.delete.desc')}
-                                                                        </div>
-                                                                    }
-                                                                >
-                                                                    <Button
-                                                                        variant="link"
-                                                                        icon={
-                                                                            <InfoCircleIcon
-                                                                                color={blueInfoColor.value}
-                                                                            />
-                                                                        }
-                                                                    >
-                                                                        Cannot be deleted
-                                                                    </Button>
-                                                                </Popover>
-                                                            </FlexItem>
-                                                        </Flex>                                                        
+
+                                            const HostsStatusGroupCell = (
+                                                <Link to={`${getDetailsLink(infraEnv)}/hosts`}>
+                                                    {infraAgents.length ? (
+                                                        <AcmInlineStatusGroup
+                                                            healthy={
+                                                                infraAgents.length -
+                                                                errorAgents.length -
+                                                                warningAgents.length
+                                                            }
+                                                            danger={errorAgents.length}
+                                                            warning={warningAgents.length}
+                                                        />
                                                     ) : (
                                                         0
-                                                    )                                              
+                                                    )}
+                                                </Link>
+                                            )
+
+                                            return infraAgents.length ? (
+                                                <Flex>
+                                                    <FlexItem>{HostsStatusGroupCell}</FlexItem>
+                                                    <FlexItem align={{ default: 'alignRight' }}>
+                                                        <Popover
+                                                            aria-label="Infraenv cannot be deleted popover"
+                                                            headerContent={<div>Cannot be deleted</div>}
+                                                            bodyContent={
+                                                                <div>{t('infraEnv.rowAction.delete.desc')}</div>
+                                                            }
+                                                        >
+                                                            <Button
+                                                                variant="link"
+                                                                icon={<InfoCircleIcon color={blueInfoColor.value} />}
+                                                            >
+                                                                Cannot be deleted
+                                                            </Button>
+                                                        </Popover>
+                                                    </FlexItem>
+                                                </Flex>
+                                            ) : (
+                                                HostsStatusGroupCell
                                             )
                                         },
                                     },
