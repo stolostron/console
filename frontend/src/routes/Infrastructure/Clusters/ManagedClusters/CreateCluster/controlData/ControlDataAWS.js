@@ -879,7 +879,7 @@ const awsPrivateControlData = [
         info: 'creation.aws.privateAWS.info',
     },
     {
-        name: 'Use Private Configuration',
+        name: 'creation.aws.private.enable',
         id: 'hasPrivateConfig',
         type: 'checkbox',
         active: false,
