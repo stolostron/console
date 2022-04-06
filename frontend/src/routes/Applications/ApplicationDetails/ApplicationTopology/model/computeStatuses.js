@@ -638,7 +638,7 @@ export const setApplicationDeployStatus = (node, details, t) => {
                 ),
                 status: failureStatus,
             })
-            const subscrSearchLink = `/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${'local-cluster'}"}`
+            const subscrSearchLink = `/multicloud/home/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${'local-cluster'}"}`
             details.push({
                 type: 'link',
                 value: {
@@ -956,7 +956,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
             status: failureStatus,
         })
         if (isSearchAvailable()) {
-            const ruleSearchLink = `/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${
+            const ruleSearchLink = `/multicloud/home/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${
                 node.namespace
             }%20cluster%3A${'local-cluster'}"}`
             details.push({

@@ -817,7 +817,7 @@ describe('setSubscriptionDeployStatus with no sub error', () => {
                 data: {
                     action: 'open_link',
                     targetLink:
-                        '/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Ans%20cluster%3Alocal-cluster"}',
+                        '/multicloud/home/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Ans%20cluster%3Alocal-cluster"}',
                 },
                 id: 'undefined-subscrSearch',
                 label: 'View all placement rules in {{0}} namespace',
@@ -997,7 +997,7 @@ describe('setSubscriptionDeployStatus for details yellow', () => {
                 data: {
                     action: 'open_link',
                     targetLink:
-                        '/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Ans%20cluster%3Alocal-cluster"}',
+                        '/multicloud/home/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Ans%20cluster%3Alocal-cluster"}',
                 },
                 id: 'undefined-subscrSearch',
                 label: 'View all placement rules in {{0}} namespace',
@@ -1275,7 +1275,7 @@ describe('setResourceDeployStatus ansiblejob', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch123&namespace=default',
+                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch123&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1345,7 +1345,7 @@ describe('setResourceDeployStatus ansiblejob', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1405,7 +1405,7 @@ describe('setResourceDeployStatus ansiblejob no specs.raw.spec', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1464,7 +1464,7 @@ describe('setResourceDeployStatus ansiblejob no status', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1493,7 +1493,7 @@ describe('setResourceDeployStatus ansiblejob no status', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1521,7 +1521,7 @@ describe('setResourceDeployStatus ansiblejob no status', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
-                    editLink: '/resources?cluster=local-cluster&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=local-cluster&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1599,7 +1599,8 @@ describe('setResourceDeployStatus 2', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
+                    editLink:
+                        '/multicloud/home/search/resources?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1679,7 +1680,8 @@ describe('setResourceDeployStatus 2 with filter green', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
+                    editLink:
+                        '/multicloud/home/search/resources?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -2061,7 +2063,7 @@ describe('setApplicationDeployStatus application', () => {
                 data: {
                     action: 'open_link',
                     targetLink:
-                        '/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Adefault%20cluster%3Alocal-cluster"}',
+                        '/multicloud/home/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Adefault%20cluster%3Alocal-cluster"}',
                 },
                 id: 'member--application-subscrSearch',
                 label: 'View all subscriptions in {{0}} namespace',
@@ -2101,7 +2103,7 @@ describe('setApplicationDeployStatus no selector', () => {
                 data: {
                     action: 'open_link',
                     targetLink:
-                        '/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Adefault%20cluster%3Alocal-cluster"}',
+                        '/multicloud/home/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Adefault%20cluster%3Alocal-cluster"}',
                 },
                 id: 'member--clusters--braveman, possiblereptile, sharingpenguin, relievedox--default--guestbook-app-cassandra-cassandra-service--service--cassandra-subscrSearch',
                 label: 'View all subscriptions in {{0}} namespace',
@@ -2237,7 +2239,7 @@ describe('setPodDeployStatus  with pod less then desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -2419,7 +2421,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -2472,7 +2474,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -2525,7 +2527,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -2676,7 +2678,7 @@ describe('setPodDeployStatus - pod as desired with green filter', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },

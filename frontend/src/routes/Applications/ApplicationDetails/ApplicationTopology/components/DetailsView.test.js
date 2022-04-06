@@ -209,12 +209,12 @@ const mockLaidoutNodes = {
                     {
                         name: 'Application',
                         value: 'mortgage-app',
-                        href: "/search?filters={'textsearch':'kind:application name:mortgage-app'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:application name:mortgage-app'}",
                     },
                     {
                         name: 'Namespace',
                         value: 'default',
-                        href: "/search?filters={'textsearch':'kind:namespace name:default'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:namespace name:default'}",
                     },
                 ],
                 x: 76.5,
@@ -258,12 +258,12 @@ const mockLaidoutNodes = {
                     {
                         name: 'Subscription',
                         value: 'mortgage-app-subscription',
-                        href: "/search?filters={'textsearch':'kind:subscription name:mortgage-app-subscription'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:subscription name:mortgage-app-subscription'}",
                     },
                     {
                         name: 'Namespace',
                         value: 'default',
-                        href: "/search?filters={'textsearch':'kind:namespace name:default'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:namespace name:default'}",
                     },
                 ],
                 x: 76.5,
@@ -305,12 +305,12 @@ const mockLaidoutNodes = {
                     {
                         name: 'Placements',
                         value: 'mortgage-app-placement',
-                        href: "/search?filters={'textsearch':'kind:placementrule name:mortgage-app-placement'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:placementrule name:mortgage-app-placement'}",
                     },
                     {
                         name: 'Namespace',
                         value: 'default',
-                        href: "/search?filters={'textsearch':'kind:namespace name:default'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:namespace name:default'}",
                     },
                 ],
                 x: 226.5,
@@ -398,7 +398,7 @@ const mockLaidoutNodes = {
                     {
                         name: 'Cluster',
                         value: 'localcluster',
-                        href: "/search?filters={'textsearch':'kind:cluster name:localcluster'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:cluster name:localcluster'}",
                     },
                 ],
                 x: 76.5,
@@ -441,12 +441,12 @@ const mockLaidoutNodes = {
                     {
                         name: 'Deployable',
                         value: 'mortgage-app-deployable',
-                        href: "/search?filters={'textsearch':'kind:deployable name:mortgage-app-deployable'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:deployable name:mortgage-app-deployable'}",
                     },
                     {
                         name: 'Namespace',
                         value: 'default',
-                        href: "/search?filters={'textsearch':'kind:namespace name:default'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:namespace name:default'}",
                     },
                 ],
                 x: 151.5,
@@ -497,7 +497,7 @@ const mockLaidoutNodes = {
                     {
                         name: 'Deployment',
                         value: 'mortgage-app-deploy',
-                        href: "/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
                     },
                 ],
                 x: 151.5,
@@ -573,7 +573,7 @@ const mockLaidoutNodes = {
                     {
                         name: 'Pod',
                         value: 'mortgage-app-deploy',
-                        href: "/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}&showrelated=pod",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}&showrelated=pod",
                     },
                 ],
                 x: 151.5,
@@ -607,12 +607,12 @@ const mockLaidoutNodes = {
                     {
                         name: 'Deployable',
                         value: 'mortgage-app-svc',
-                        href: "/search?filters={'textsearch':'kind:deployable name:mortgage-app-svc'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:deployable name:mortgage-app-svc'}",
                     },
                     {
                         name: 'Namespace',
                         value: 'default',
-                        href: "/search?filters={'textsearch':'kind:namespace name:default'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:namespace name:default'}",
                     },
                 ],
                 x: 1.5,
@@ -654,7 +654,7 @@ const mockLaidoutNodes = {
                     {
                         name: 'Service',
                         value: 'mortgage-app-svc',
-                        href: "/search?filters={'textsearch':'kind:service name:mortgage-app-svc'}",
+                        href: "/multicloud/home/search?filters={'textsearch':'kind:service name:mortgage-app-svc'}",
                     },
                 ],
                 x: 1.5,
