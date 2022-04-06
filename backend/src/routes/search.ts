@@ -23,10 +23,12 @@ function getNamespace(): string {
         try {
             namespace = readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/namespace', 'utf-8')
         } catch (err: unknown) {
-            if (err instanceof Error) {
-                logger.error('Error reading service account token', err && err.message)
-            } else {
-                logger.error({ msg: 'Error reading service account token', err: err })
+            if (!process.env.SEARCH_API_URL) {
+                if (err instanceof Error) {
+                    logger.error('Error reading service account namespace', err && err.message)
+                } else {
+                    logger.error({ msg: 'Error reading service account namespace', err: err })
+                }
             }
         }
     }
