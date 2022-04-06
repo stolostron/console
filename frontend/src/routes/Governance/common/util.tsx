@@ -211,22 +211,26 @@ export function getClustersComplianceForPolicySet(
                 continue
             }
             for (const policy of policySetPolicies) {
-                const policyClusterStatus = policy.status?.status?.find(
-                    (clusterStatus) => clusterStatus.clustername === decision.clusterName
-                )
-                if (policyClusterStatus?.compliant === 'NonCompliant') {
-                    clustersCompliance[decision.clusterName] = 'NonCompliant'
-                } else if (
-                    !policyClusterStatus?.compliant &&
-                    clustersCompliance[decision.clusterName] !== 'NonCompliant'
-                ) {
-                    clustersCompliance[decision.clusterName] = 'Unknown'
-                } else if (
-                    policyClusterStatus?.compliant === 'Compliant' &&
-                    clustersCompliance[decision.clusterName] !== 'NonCompliant' &&
-                    clustersCompliance[decision.clusterName] !== 'Unknown'
-                ) {
+                if (policy.spec.disabled) {
                     clustersCompliance[decision.clusterName] = 'Compliant'
+                } else {
+                    const policyClusterStatus = policy.status?.status?.find(
+                        (clusterStatus) => clusterStatus.clustername === decision.clusterName
+                    )
+                    if (policyClusterStatus?.compliant === 'NonCompliant') {
+                        clustersCompliance[decision.clusterName] = 'NonCompliant'
+                    } else if (
+                        !policyClusterStatus?.compliant &&
+                        clustersCompliance[decision.clusterName] !== 'NonCompliant'
+                    ) {
+                        clustersCompliance[decision.clusterName] = 'Unknown'
+                    } else if (
+                        policyClusterStatus?.compliant === 'Compliant' &&
+                        clustersCompliance[decision.clusterName] !== 'NonCompliant' &&
+                        clustersCompliance[decision.clusterName] !== 'Unknown'
+                    ) {
+                        clustersCompliance[decision.clusterName] = 'Compliant'
+                    }
                 }
             }
         }

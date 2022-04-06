@@ -65,6 +65,11 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
         name: `${d.value} ${d.key}`,
     }))
 
+    const donutTitle =
+        clusterCompliantCount + clusterNonCompliantCount === 0
+            ? '0%'
+            : `${((clusterCompliantCount / (clusterCompliantCount + clusterNonCompliantCount)) * 100).toFixed(0)}%`
+
     return (
         <div style={{ height: 230, marginTop: -16, marginBottom: -16 }}>
             <ChartDonut
@@ -85,9 +90,7 @@ function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCo
                 padding={{
                     right: 300,
                 }}
-                title={`${((clusterCompliantCount / (clusterCompliantCount + clusterNonCompliantCount)) * 100).toFixed(
-                    0
-                )}%`}
+                title={donutTitle}
                 width={450}
                 colorScale={['var(--pf-global--success-color--100)', 'var(--pf-global--danger-color--100)']}
             />
