@@ -17,8 +17,8 @@ export function parseCookies(req: Http2ServerRequest): Record<string, string> {
 }
 
 export function setCookie(res: Http2ServerResponse, cookie: string, value: string, path?: string): void {
-    let cookieString = `${cookie}=${value}; Secure; HttpOnly; Path=${path ? path : '/'}`
-    let cookieHeader = res.getHeader('Set-Cookie')
+    const cookieString = `${cookie}=${value}; Secure; HttpOnly; Path=${path ? path : '/'}`
+    const cookieHeader = res.getHeader('Set-Cookie')
     if (cookieHeader) {
         if (Array.isArray(cookieHeader)) {
             res.setHeader('Set-Cookie', [...cookieHeader, cookieString])
@@ -31,8 +31,8 @@ export function setCookie(res: Http2ServerResponse, cookie: string, value: strin
 }
 
 export function deleteCookie(res: Http2ServerResponse, cookie: string, path?: string): void {
-    let cookieString = `${cookie}=; Secure; HttpOnly; Path=${path ? path : '/'}` + `; max-age=0`
-    let cookieHeader = res.getHeader('Set-Cookie')
+    const cookieString = `${cookie}=; Secure; HttpOnly; Path=${path ? path : '/'}` + `; max-age=0`
+    const cookieHeader = res.getHeader('Set-Cookie')
     if (cookieHeader) {
         if (Array.isArray(cookieHeader)) {
             res.setHeader('Set-Cookie', [...cookieHeader, cookieString])
