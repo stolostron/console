@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { uniqBy, get } from 'lodash'
+import { uniqBy, get, set } from 'lodash'
 import { getClusterName, addClusters } from './utils'
 import { createReplicaChild } from './topologySubscription'
 import { fireManagedClusterView, listResources } from '../../../../../resources'
@@ -18,7 +18,7 @@ export function getAppSetTopology(application) {
 
     const appId = `application--${name}`
     nodes.push({
-        name: '',
+        name,
         namespace,
         type: 'applicationset',
         id: appId,
@@ -36,12 +36,18 @@ export function getAppSetTopology(application) {
         },
     })
 
+    const appSetPlacementName = get(
+        application.app,
+        'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
+    )
     delete application.app.spec.apps
 
     // create placement node
+    let isPlacementFound = false
     const placement = get(application, 'placement', '')
     const placementId = `member--placements--${namespace}--${name}`
     if (placement) {
+        isPlacementFound = true
         const {
             metadata: { name, namespace },
         } = placement
@@ -63,7 +69,13 @@ export function getAppSetTopology(application) {
             type: '',
             specs: { isDesign: true },
         })
+    } else {
+        if (!appSetPlacementName && appSetPlacementName !== '') {
+            isPlacementFound = true
+        }
     }
+
+    set(nodes[0], 'isPlacementFound', isPlacementFound)
 
     const clusterParentId = placement ? placementId : appId
     const source = get(application, 'app.spec.template.spec.source.path', '')
