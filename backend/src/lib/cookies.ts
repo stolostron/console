@@ -17,9 +17,29 @@ export function parseCookies(req: Http2ServerRequest): Record<string, string> {
 }
 
 export function setCookie(res: Http2ServerResponse, cookie: string, value: string, path?: string): void {
-    res.setHeader('Set-Cookie', `${cookie}=${value}; Secure; HttpOnly; Path=${path ? path : '/'}`)
+    let cookieString = `${cookie}=${value}; Secure; HttpOnly; Path=${path ? path : '/'}`
+    let cookieHeader = res.getHeader('Set-Cookie')
+    if (cookieHeader) {
+        if (Array.isArray(cookieHeader)) {
+            res.setHeader('Set-Cookie', [...cookieHeader, cookieString])
+        } else {
+            res.setHeader('Set-Cookie', [cookieHeader, cookieString])
+        }
+    } else {
+        res.setHeader('Set-Cookie', cookieString)
+    }
 }
 
 export function deleteCookie(res: Http2ServerResponse, cookie: string, path?: string): void {
-    res.setHeader('Set-Cookie', `${cookie}=; Secure; HttpOnly; Path=${path ? path : '/'}` + `; max-age=0`)
+    let cookieString = `${cookie}=; Secure; HttpOnly; Path=${path ? path : '/'}` + `; max-age=0`
+    let cookieHeader = res.getHeader('Set-Cookie')
+    if (cookieHeader) {
+        if (Array.isArray(cookieHeader)) {
+            res.setHeader('Set-Cookie', [...cookieHeader, cookieString])
+        } else {
+            res.setHeader('Set-Cookie', [cookieHeader, cookieString])
+        }
+    } else {
+        res.setHeader('Set-Cookie', cookieString)
+    }
 }
