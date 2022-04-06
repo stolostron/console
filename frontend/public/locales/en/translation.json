@@ -1319,6 +1319,7 @@
     "infraEnv.delete.plural": "Delete infrastructure environments",
     "infraEnv.emptyStateBody": "Click <bold>Create infrastructure environment</bold> to create your resource.  You can discover, provision, and add hosts to the infrastructure environment after creation.",
     "infraEnv.emptyStateHeader": "You don't have any infrastructure environments",
+    "infraEnv.rowAction.delete.desc": "The infrastructure environment cannot be deleted because it contains hosts.",
     "infraEnv.rowAction.delete.title": "Delete infrastructure environment",
     "infraEnv.tableHeader.hosts": "Hosts",
     "infraEnv.tableHeader.labels": "Labels",
