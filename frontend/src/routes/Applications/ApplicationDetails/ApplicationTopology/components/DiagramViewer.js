@@ -283,7 +283,7 @@ class DiagramViewer extends React.Component {
             if (selectedResourceType) {
                 this.props.setDrawerContent(
                     t('Details'),
-                    true, // inline
+                    false, // inline
                     true, // resizable
                     true, // no drawerhead
                     true, // no padding for drawerpanelbody
