@@ -87,14 +87,25 @@ const setAWSZones = (control, controlData) => {
     const setZones = (poolKey, zoneKey) => {
         const region = control.active
         const pool = controlData.find(({ id }) => id === poolKey)
-        const typeZones = pool.active[0].find(({ id }) => id === zoneKey)
-        const zones = awsRegions[region]
-        typeZones.available = zones || []
-        typeZones.active = []
+        pool.active.forEach((worker) => {
+            const typeZones = worker.find(({ id }) => id === zoneKey)
+            const zones = awsRegions[region]
+            typeZones.available = zones || []
+            typeZones.active = []
+        })
     }
 
     setZones('masterPool', 'masterZones')
     setZones('workerPools', 'workerZones')
+}
+
+const updateWorkerZones = (control, controlData) => {
+    const region = controlData.find(({ name }) => name === 'Region').active
+    const worker = control.active[control.active.length - 1]
+    const typeZones = worker.find(({ id }) => id === 'workerZones')
+    const zones = awsRegions[region]
+    typeZones.available = zones || []
+    typeZones.active = []
 }
 
 export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
@@ -798,6 +809,7 @@ const controlDataAWS = [
             addPrompt: 'creation.ocp.cluster.add.node.pool',
             deletePrompt: 'creation.ocp.cluster.delete.node.pool',
         },
+        onChange: updateWorkerZones,
         controlData: [
             {
                 id: 'workerPool',
