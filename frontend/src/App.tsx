@@ -15,20 +15,19 @@ import {
     Nav,
     NavExpandable,
     NavItem,
-    NavItemSeparator,
     NavList,
     Page,
     PageHeader,
     PageHeaderTools,
     PageHeaderToolsGroup,
     PageHeaderToolsItem,
-    PageSection,
     PageSidebar,
     Spinner,
     TextContent,
     TextList,
     TextListItem,
     Title,
+    Truncate,
 } from '@patternfly/react-core'
 import {
     CaretDownIcon,
@@ -47,7 +46,7 @@ import {
     AcmToastProvider,
 } from '@stolostron/ui-components'
 import { noop } from 'lodash'
-import { Fragment, lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
 import './App.css'
 import ACMPerspectiveIcon from './assets/ACM-icon.svg'
@@ -299,37 +298,39 @@ const useStyles = makeStyles({
         height: 'min-content',
     },
     perspective: {
-        'font-size': '$co-side-nav-font-size',
-        'justify-content': 'space-between',
+        // 'font-size': '$co-side-nav-font-size',
+        // 'justify-content': 'space-between',
         width: '100%',
+        padding: 0,
+        color: 'var(--pf-global--Color--light-100)',
 
         '& .pf-c-dropdown__toggle-icon': {
-            color: 'var(--pf-global--Color--light-100)',
-            'font-size': '$co-side-nav-section-font-size',
-            'margin-right': 'var(--pf-c-dropdown__toggle-icon--MarginRight)',
-            'margin-left': 'var(--pf-c-dropdown__toggle-icon--MarginLeft)',
-            'line-height': 'var(--pf-c-dropdown__toggle-icon--LineHeight)',
+            // color: 'var(--pf-global--Color--light-100)',
+            // 'font-size': '$co-side-nav-section-font-size',
+            // 'margin-right': 'var(--pf-c-dropdown__toggle-icon--MarginRight)',
+            // 'margin-left': 'var(--pf-c-dropdown__toggle-icon--MarginLeft)',
+            // 'line-height': 'var(--pf-c-dropdown__toggle-icon--LineHeight)',
         },
 
-        '& .pf-c-dropdown__menu-item': {
-            'padding-left': '7px',
-            '& h2': {
-                'font-size': '12px',
-                'padding-left': '7px',
-            },
-        },
+        // '& .pf-c-dropdown__menu-item': {
+        //     'padding-left': '7px',
+        //     '& h2': {
+        //         'font-size': '12px',
+        //         'padding-left': '7px',
+        //     },
+        // },
 
         '& .pf-c-title': {
-            color: 'var(--pf-global--Color--light-100)',
-            'font-family': 'var(--pf-global--FontFamily--sans-serif)',
+            // color: 'var(--pf-global--Color--light-100)',
+            // 'font-family': 'var(--pf-global--FontFamily--sans-serif)',
             '& .oc-nav-header__icon': {
                 'margin-right': 'var(--pf-global--spacer--sm)',
                 'vertical-align': '-0.125em',
             },
-            '& h2': {
-                'font-size': '$co-side-nav-section-font-size',
-                'font-family': 'var(--pf-global--FontFamily--sans-serif)',
-            },
+            // '& h2': {
+            //     'font-size': '$co-side-nav-section-font-size',
+            // 'font-family': 'var(--pf-global--FontFamily--sans-serif)',
+            // },
         },
 
         '&::before': {
@@ -606,7 +607,7 @@ function AppHeader() {
                             Red Hat
                         </Title>
                         <Title headingLevel="h3" style={{ fontWeight: 'lighter', lineHeight: 1.2 }}>
-                            Advanced Cluster Management for Kubernetes
+                            <Truncate content="Advanced Cluster Management for Kubernetes" />
                         </Title>
                     </div>
                 </div>
@@ -624,13 +625,27 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
     const [open, setOpen] = useState(false)
     const classes = useStyles()
     const dropdownItems = [
-        <DropdownItem icon={<ACMPerspectiveIcon />} key="cluster-management">
-            Cluster Management
+        <DropdownItem
+            icon={<ACMPerspectiveIcon />}
+            key="cluster-management"
+            style={{ fontSize: 'smaller', fontWeight: 'bold' }}
+        >
+            Advanced Cluster Management
         </DropdownItem>,
-        <DropdownItem icon={<CogsIcon />} key="administrator" onClick={() => launchToOCP('?perspective=admin', false)}>
+        <DropdownItem
+            icon={<CogsIcon />}
+            key="administrator"
+            onClick={() => launchToOCP('?perspective=admin', false)}
+            style={{ fontSize: 'smaller', fontWeight: 'bold' }}
+        >
             Administrator
         </DropdownItem>,
-        <DropdownItem icon={<CodeIcon />} key="developer" onClick={() => launchToOCP('?perspective=dev', false)}>
+        <DropdownItem
+            icon={<CodeIcon />}
+            key="developer"
+            onClick={() => launchToOCP('?perspective=dev', false)}
+            style={{ fontSize: 'smaller', fontWeight: 'bold' }}
+        >
             Developer
         </DropdownItem>,
     ]
@@ -643,56 +658,56 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
     return (
         <PageSidebar
             nav={
-                <Fragment>
-                    <Nav>
-                        <NavItemSeparator style={{ margin: 0 }} />
-                    </Nav>
-                    <PageSection variant="dark" style={{ paddingLeft: 8, paddingRight: 8 }}>
-                        <Dropdown
-                            onSelect={onSelect}
-                            toggle={
-                                <DropdownToggle id="toggle-id" onToggle={onToggle} className={classes.perspective}>
-                                    <Title headingLevel="h2" size="md">
-                                        <span style={{ fill: 'currentColor' }} className="oc-nav-header__icon">
-                                            <ACMPerspectiveIcon />
-                                        </span>
-                                        Cluster Management
-                                    </Title>
-                                </DropdownToggle>
-                            }
-                            isOpen={open}
-                            dropdownItems={dropdownItems}
-                            width="100%"
-                        />
-                    </PageSection>
-                    <Nav>
-                        <NavItemSeparator style={{ marginTop: 0 }} />
-                        <NavList>
-                            {routes.map((route) =>
-                                route.type === 'group' ? (
-                                    <NavExpandable
-                                        key={route.title}
-                                        title={route.title}
-                                        isExpanded
-                                        isActive={!!route.routes.find((route) => location.pathname === route.route)}
+                <Nav>
+                    <NavList>
+                        <NavItem>
+                            <Dropdown
+                                onSelect={onSelect}
+                                toggle={
+                                    <DropdownToggle
+                                        id="toggle-id"
+                                        onToggle={onToggle}
+                                        className={classes.perspective}
+                                        icon={
+                                            <span style={{ fill: 'currentColor' }}>
+                                                <ACMPerspectiveIcon />
+                                            </span>
+                                        }
+                                        style={{ fontSize: 'small' }}
                                     >
-                                        {route.routes.map((route) => (
-                                            <NavItem key={route.route} isActive={location.pathname === route.route}>
-                                                <Link to={route.route}>{route.title}</Link>
-                                            </NavItem>
-                                        ))}
-                                    </NavExpandable>
-                                ) : (
-                                    <NavItem key={route.route} isActive={location.pathname === route.route}>
-                                        <Link to={route.route}>{route.title}</Link>
-                                    </NavItem>
-                                )
-                            )}
-                        </NavList>
-                    </Nav>
-                </Fragment>
+                                        Advanced Cluster Management
+                                    </DropdownToggle>
+                                }
+                                isOpen={open}
+                                dropdownItems={dropdownItems}
+                                width="100%"
+                            />
+                        </NavItem>
+                        {/* <NavItemSeparator style={{ marginTop: 0 }} /> */}
+                        {routes.map((route) =>
+                            route.type === 'group' ? (
+                                <NavExpandable
+                                    key={route.title}
+                                    title={route.title}
+                                    isExpanded
+                                    isActive={!!route.routes.find((route) => location.pathname === route.route)}
+                                >
+                                    {route.routes.map((route) => (
+                                        <NavItem key={route.route} isActive={location.pathname === route.route}>
+                                            <Link to={route.route}>{route.title}</Link>
+                                        </NavItem>
+                                    ))}
+                                </NavExpandable>
+                            ) : (
+                                <NavItem key={route.route} isActive={location.pathname === route.route}>
+                                    <Link to={route.route}>{route.title}</Link>
+                                </NavItem>
+                            )
+                        )}
+                    </NavList>
+                </Nav>
             }
-            className="sidebar"
+            // className="sidebar"
         />
     )
 }

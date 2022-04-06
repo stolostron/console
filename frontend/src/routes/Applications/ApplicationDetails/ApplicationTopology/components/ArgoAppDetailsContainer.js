@@ -365,7 +365,7 @@ class ArgoAppDetailsContainer extends React.Component {
             display: 'block',
         }
         for (let i = startIdx; i < displayArgoAppList.length && i < page * perPage; i++) {
-            const { name, cluster, namespace, destinationCluster, destinationNamespace, status } = displayArgoAppList[i]
+            const { name, cluster, namespace, destinationName, destinationNamespace, status } = displayArgoAppList[i]
             const statusIcon = this.mapArgoStatusToStatusIcon(status)
             const parentDivStyle =
                 i === startIdx
@@ -433,7 +433,7 @@ class ArgoAppDetailsContainer extends React.Component {
                             </div>
                             <div className={divClass}>
                                 <span className={labelClass}>{t('Destination cluster')}: </span>
-                                <span className={valueClass}>{destinationCluster}</span>
+                                <span className={valueClass}>{destinationName}</span>
                             </div>
                             <div className={divClass}>
                                 <span className={labelClass}>{t('Destination namespace')}: </span>

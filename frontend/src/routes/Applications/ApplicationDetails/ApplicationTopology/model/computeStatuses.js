@@ -204,11 +204,13 @@ export const getPulseStatusForArgoApp = (node, isAppSet) => {
     let healthyCount = 0,
         missingUnknownProgressingSuspendedCount = 0,
         degradedCount = 0
+    let appWithConditions = 0
 
     relatedApps.forEach((app) => {
         const relatedAppHealth = isAppSet
             ? _.get(app, 'status.health.status', argoAppUnknownStatus)
             : _.get(app, 'status', '')
+        const relatedAppConditions = isAppSet ? _.get(app, 'status.conditions', []) : []
         if (relatedAppHealth === argoAppHealthyStatus) {
             healthyCount++
         } else if (
@@ -221,8 +223,15 @@ export const getPulseStatusForArgoApp = (node, isAppSet) => {
         } else if (relatedAppHealth === argoAppDegradedStatus) {
             degradedCount++
         }
+
+        if (relatedAppConditions.length > 0) {
+            appWithConditions++
+        }
     })
 
+    if (appWithConditions > 0) {
+        return pulseValueArr[warningCode]
+    }
     if (degradedCount === relatedApps.length) {
         return pulseValueArr[failureCode]
     }
@@ -638,7 +647,7 @@ export const setApplicationDeployStatus = (node, details, t) => {
                 ),
                 status: failureStatus,
             })
-            const subscrSearchLink = `/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${'local-cluster'}"}`
+            const subscrSearchLink = `/multicloud/home/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${'local-cluster'}"}`
             details.push({
                 type: 'link',
                 value: {
@@ -702,6 +711,18 @@ export const setArgoApplicationDeployStatus = (node, details, t) => {
 }
 
 export const setAppSetDeployStatus = (node, details, t) => {
+    const isPlacementFound = _.get(node, 'isPlacementFound')
+    if (!isPlacementFound) {
+        details.push({
+            labelKey: 'Error',
+            value: t(
+                'The placement referenced in the ApplicationSet is not found. Make sure the placement is configured properly.'
+            ),
+            status: failureStatus,
+        })
+        return
+    }
+
     const appSetApps = _.get(node, 'specs.appSetApps', [])
     if (appSetApps.length === 0) {
         details.push({
@@ -724,11 +745,24 @@ export const setAppSetDeployStatus = (node, details, t) => {
     // continue checking app status
     appSetApps.forEach((argoApp) => {
         const appHealth = _.get(argoApp, 'status.health.status', '')
+        const appSync = _.get(argoApp, 'status.sync.status', '')
         const appName = _.get(argoApp, metadataName)
         const appNamespace = _.get(argoApp, 'metadata.namespace')
+        const appStatusConditions = _.get(argoApp, 'status.conditions', [])
         details.push({
             labelKey: appName,
             value: appHealth,
+        })
+        details.push({
+            labelKey: t('Sync status'),
+            value: appSync,
+        })
+        appStatusConditions.forEach((condition) => {
+            details.push({
+                labelKey: condition.type,
+                value: condition.message,
+                status: failureStatus,
+            })
         })
         details.push({
             type: 'link',
@@ -742,6 +776,9 @@ export const setAppSetDeployStatus = (node, details, t) => {
                     cluster: 'local-cluster',
                 },
             },
+        })
+        details.push({
+            type: 'spacer',
         })
     })
 }
@@ -956,7 +993,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
             status: failureStatus,
         })
         if (isSearchAvailable()) {
-            const ruleSearchLink = `/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${
+            const ruleSearchLink = `/multicloud/home/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${
                 node.namespace
             }%20cluster%3A${'local-cluster'}"}`
             details.push({

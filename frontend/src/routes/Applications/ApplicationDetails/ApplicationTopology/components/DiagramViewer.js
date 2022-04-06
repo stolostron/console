@@ -57,6 +57,7 @@ class DiagramViewer extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
+            hasSpinners: true,
             svgLinks: _.uniqBy(props.links, 'uid'),
             svgNodes: _.uniqBy(props.nodes, 'uid'),
             observer: new ResizeObserver(() => {
@@ -210,6 +211,7 @@ class DiagramViewer extends React.Component {
     }
 
     render() {
+        const { hasSpinners } = this.state
         const { secondaryLoad, title, channelControl, showChannelsControl } = this.props
         const pointerEventStyle = secondaryLoad ? { pointerEvents: 'none' } : {}
         return (
@@ -227,6 +229,14 @@ class DiagramViewer extends React.Component {
                         role="region"
                         aria-label="zoom"
                     >
+                        {hasSpinners && (
+                            <svg width="0" height="0" ref={this.setSpinnerSymbol}>
+                                <symbol className="spinner" viewBox="0 0 40 40" id="diagramIcons_spinner">
+                                    <circle cx="20" cy="20" r="18" fill="white"></circle>
+                                    <circle className="swirly" cx="20" cy="20" r="18"></circle>
+                                </symbol>
+                            </svg>
+                        )}
                         <svg id={c.DIAGRAM_SVG_ID} className="topologyDiagram" style={pointerEventStyle} />
                     </div>
                     {secondaryLoad && (
@@ -392,6 +402,13 @@ class DiagramViewer extends React.Component {
 
             linkHelper.updateDiagramLinks(currentZoom)
             linkHelper.moveLinks(transition, currentZoom, searchChanged)
+
+            setTimeout(() => {
+                const hasSpinners = laidoutNodes.some(({ specs = {} }) => {
+                    return specs.pulse === 'spinner'
+                })
+                this.setState({ hasSpinners })
+            }, 1000)
 
             // Create or refresh the nodes in the diagram.
             const nodeHelper = new NodeHelper(

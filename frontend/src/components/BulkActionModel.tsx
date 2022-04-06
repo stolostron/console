@@ -49,6 +49,7 @@ export interface IBulkActionModelProps<T = undefined> {
     hideTableAfterSubmit?: boolean
     icon?: 'success' | 'danger' | 'warning' | 'info' | 'default'
     hasExternalResources?: boolean
+    disableSubmitButton?: boolean
 }
 
 export interface ItemError<T> {
@@ -196,7 +197,8 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
                                   id="submit-button"
                                   isDisabled={
                                       !props.resources?.length ||
-                                      (props.confirmText !== undefined && confirm !== props.confirmText)
+                                      (props.confirmText !== undefined && confirm !== props.confirmText) ||
+                                      props.disableSubmitButton
                                   }
                                   variant={props.isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                                   onClick={async () => {

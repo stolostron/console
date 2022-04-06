@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Alert } from '@patternfly/react-core'
 import {
     AcmActionGroup,
     AcmPage,
@@ -14,6 +15,7 @@ import {
     Fragment,
     ReactNode,
     Suspense,
+    useCallback,
     useContext,
     useEffect,
     useMemo,
@@ -92,12 +94,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     const location = useLocation()
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
-    const [applicationSets] = useRecoilState(applicationSetsState)
-    const [applications] = useRecoilState(applicationsState)
-    const [argoApplications] = useRecoilState(argoApplicationsState)
-    const [subscriptions] = useRecoilState(subscriptionsState)
-    const [channels] = useRecoilState(channelsState)
-    const [placementRules] = useRecoilState(placementRulesState)
+    const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
     const [activeChannel, setActiveChannel] = useState<string>()
     const [applicationData, setApplicationData] = useState<ApplicationDataType>()
     const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
@@ -108,8 +105,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
 
     const lastRefreshRef = useRef<any>()
     const history = useHistory()
-    const isArgoApp = applicationData?.application.isArgoApp
-    const isAppSet = applicationData?.application.isAppSet
+    const isArgoApp = applicationData?.application?.isArgoApp
+    const isAppSet = applicationData?.application?.isAppSet
     let clusters = useAllClusters()
     clusters = clusters.filter((cluster) => {
         // don't show clusters in cluster pools in table
@@ -121,6 +118,41 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     })
 
     let modalWarnings: string
+
+    const getSnapshot = useRecoilCallback(
+        ({ snapshot }) =>
+            () =>
+                snapshot,
+        []
+    )
+    const stateMap = useMemo(
+        () => ({
+            applications: applicationsState,
+            applicationSets: applicationSetsState,
+            argoApplications: argoApplicationsState,
+            ansibleJob: ansibleJobState,
+            channels: channelsState,
+            placements: placementsState,
+            placementRules: placementRulesState,
+            subscriptions: subscriptionsState,
+            subscriptionReports: subscriptionReportsState,
+        }),
+        []
+    )
+
+    const getRecoilStates = useCallback(async () => {
+        const map: Record<string, any> = {}
+        const snapshot = getSnapshot()
+        const promises = Object.entries(stateMap).map(([key, state]) => {
+            const promise = snapshot.getPromise(state as any)
+            promise.then((data) => {
+                map[key] = data
+            })
+            return promise
+        })
+        await Promise.allSettled(promises)
+        return map
+    }, [getSnapshot, stateMap])
 
     const actions: any = [
         {
@@ -172,14 +204,22 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         actions.push({
             id: 'delete-application',
             text: t('Delete application'),
-            click: () => {
+            click: async () => {
+                const recoilStates = await getRecoilStates()
+
                 const appChildResources =
                     selectedApp.kind === ApplicationKind
-                        ? getAppChildResources(selectedApp, applications, subscriptions, placementRules, channels)
+                        ? getAppChildResources(
+                              selectedApp,
+                              recoilStates.applications,
+                              recoilStates.subscriptions,
+                              recoilStates.placementRules,
+                              recoilStates.channels
+                          )
                         : [[], []]
                 const appSetRelatedResources =
                     selectedApp.kind === ApplicationSetKind
-                        ? getAppSetRelatedResources(selectedApp, applicationSets)
+                        ? getAppSetRelatedResources(selectedApp, recoilStates.applicationSets)
                         : ['', []]
                 setModalProps({
                     open: true,
@@ -193,7 +233,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                     appSetPlacement: appSetRelatedResources[0],
                     appSetsSharingPlacement: appSetRelatedResources[1],
                     appKind: selectedApp.kind,
-                    appSetApps: getAppSetApps(argoApplications, selectedApp.metadata?.name),
+                    appSetApps: getAppSetApps(recoilStates.argoApplications, selectedApp.metadata?.name),
                     close: () => {
                         setModalProps({ open: false })
                     },
@@ -221,13 +261,6 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         return () => canDeleteApplicationSetPromise.abort()
     }, [])
 
-    const getSnapshot = useRecoilCallback(
-        ({ snapshot }) =>
-            () =>
-                snapshot,
-        []
-    )
-
     const urlParams = location.search ? decodeURIComponent(location.search).substring(1).split('&') : []
     let apiVersion: string | undefined
     let cluster: string | undefined
@@ -239,20 +272,6 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             cluster = param.split('=')[1]
         }
     })
-    const stateMap = useMemo(
-        () => ({
-            applications: applicationsState,
-            applicationSets: applicationSetsState,
-            argoApplications: argoApplicationsState,
-            ansibleJob: ansibleJobState,
-            channels: channelsState,
-            placements: placementsState,
-            placementRules: placementRulesState,
-            subscriptions: subscriptionsState,
-            subscriptionReports: subscriptionReportsState,
-        }),
-        []
-    )
 
     // refresh application the first time and then every n seconds
     useEffect(() => {
@@ -261,65 +280,60 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         const interval = setInterval(
             (function refresh() {
                 ;(async () => {
-                    // fetch states from recoil
-                    const map: Record<string, any> = {}
-                    const snapshot = getSnapshot()
-                    const promises = Object.entries(stateMap).map(([key, state]) => {
-                        const promise = snapshot.getPromise(state as any)
-                        promise.then((data) => {
-                            map[key] = data
-                        })
-                        return promise
-                    })
-                    await Promise.allSettled(promises)
+                    const recoilStates = await getRecoilStates()
 
                     // get application object from recoil states
                     const application = await getApplication(
                         match.params.namespace,
                         match.params.name,
                         activeChannel,
-                        map,
+                        recoilStates,
                         cluster,
                         apiVersion,
                         clusters
                     )
-                    const topology = getTopology(application, clusters, lastRefreshRef?.current?.relatedResources, {
-                        cluster,
-                    })
-                    const appData = getApplicationData(topology?.nodes)
+                    if (!application) {
+                        setApplicationNotFound(true)
+                    } else {
+                        setApplicationNotFound(false)
+                        const topology = getTopology(application, clusters, lastRefreshRef?.current?.relatedResources, {
+                            cluster,
+                        })
+                        const appData = getApplicationData(topology?.nodes)
 
-                    // when first opened, refresh topology with wait statuses
-                    if (!lastRefreshRef?.current?.resourceStatuses) {
+                        // when first opened, refresh topology with wait statuses
+                        if (!lastRefreshRef?.current?.resourceStatuses) {
+                            setApplicationData({
+                                refreshTime: Date.now(),
+                                activeChannel: application ? application.activeChannel : '',
+                                allChannels: application ? application.channels : [],
+                                application,
+                                topology,
+                                appData,
+                            })
+                        }
+
+                        // from then on, only refresh topology with new statuses
+                        const { resourceStatuses, relatedResources, appDataWithStatuses } = await getResourceStatuses(
+                            application,
+                            appData,
+                            topology
+                        )
+                        const topologyWithRelated = getTopology(application, clusters, relatedResources, {
+                            topology,
+                            cluster,
+                        })
                         setApplicationData({
                             refreshTime: Date.now(),
-                            activeChannel: application ? application.activeChannel : '',
-                            allChannels: application ? application.channels : [],
+                            activeChannel: application.activeChannel,
+                            allChannels: application.channels,
                             application,
-                            topology,
-                            appData,
+                            topology: topologyWithRelated,
+                            appData: appDataWithStatuses,
+                            statuses: resourceStatuses,
                         })
+                        lastRefreshRef.current = { application, resourceStatuses, relatedResources }
                     }
-
-                    // from then on, only refresh topology with new statuses
-                    const { resourceStatuses, relatedResources, appDataWithStatuses } = await getResourceStatuses(
-                        application,
-                        appData,
-                        topology
-                    )
-                    const topologyWithRelated = getTopology(application, clusters, relatedResources, {
-                        topology,
-                        cluster,
-                    })
-                    setApplicationData({
-                        refreshTime: Date.now(),
-                        activeChannel: application.activeChannel,
-                        allChannels: application.channels,
-                        application,
-                        topology: topologyWithRelated,
-                        appData: appDataWithStatuses,
-                        statuses: resourceStatuses,
-                    })
-                    lastRefreshRef.current = { application, resourceStatuses, relatedResources }
                 })()
                 return refresh
             })(),
@@ -380,44 +394,54 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         </AcmSecondaryNav>
                     }
                     actions={
-                        <AcmActionGroup>
-                            {[
-                                <RbacDropdown<Application>
-                                    id={`${applicationData?.application.app?.metadata.name ?? 'app'}-actions`}
-                                    item={applicationData?.application.app}
-                                    isKebab={false}
-                                    text={t('actions')}
-                                    actions={actions}
-                                />,
-                            ]}
-                        </AcmActionGroup>
+                        applicationNotFound ? (
+                            <Fragment />
+                        ) : (
+                            <AcmActionGroup>
+                                {[
+                                    <RbacDropdown<Application>
+                                        id={`${applicationData?.application.app?.metadata.name ?? 'app'}-actions`}
+                                        item={applicationData?.application.app}
+                                        isKebab={false}
+                                        text={t('actions')}
+                                        actions={actions}
+                                    />,
+                                ]}
+                            </AcmActionGroup>
+                        )
                     }
                 />
             }
         >
-            <DeleteResourceModal {...modalProps} />
-            <Suspense fallback={<Fragment />}>
-                <Switch>
-                    <Route exact path={NavigationPath.applicationOverview}>
-                        <ApplicationOverviewPageContent applicationData={applicationData} />
-                    </Route>
-                    <Route exact path={NavigationPath.applicationTopology}>
-                        <ApplicationTopologyPageContent
-                            applicationData={applicationData}
-                            setActiveChannel={setActiveChannel}
-                        />
-                    </Route>
-                    <Route exact path={NavigationPath.applicationDetails}>
-                        <Redirect
-                            to={
-                                NavigationPath.applicationOverview
-                                    .replace(namespaceString, match.params.namespace)
-                                    .replace(nameString, match.params.name) + location.search
-                            }
-                        />
-                    </Route>
-                </Switch>
-            </Suspense>
+            {applicationNotFound ? (
+                <Alert isInline variant="danger" title={t('Application not found!')} />
+            ) : (
+                <Fragment>
+                    <DeleteResourceModal {...modalProps} />
+                    <Suspense fallback={<Fragment />}>
+                        <Switch>
+                            <Route exact path={NavigationPath.applicationOverview}>
+                                <ApplicationOverviewPageContent applicationData={applicationData} />
+                            </Route>
+                            <Route exact path={NavigationPath.applicationTopology}>
+                                <ApplicationTopologyPageContent
+                                    applicationData={applicationData}
+                                    setActiveChannel={setActiveChannel}
+                                />
+                            </Route>
+                            <Route exact path={NavigationPath.applicationDetails}>
+                                <Redirect
+                                    to={
+                                        NavigationPath.applicationOverview
+                                            .replace(namespaceString, match.params.namespace)
+                                            .replace(nameString, match.params.name) + location.search
+                                    }
+                                />
+                            </Route>
+                        </Switch>
+                    </Suspense>
+                </Fragment>
+            )}
         </AcmPage>
     )
 }
