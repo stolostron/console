@@ -444,7 +444,12 @@ function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
 
             if (pulse) {
                 // Get cluster resource statuses
-                nodeStatuses[pulse]++
+                if (
+                    _.get(node, 'id', '').indexOf('--deployed') !== -1 ||
+                    _.get(node, 'id', '').indexOf('--deployable') !== -1
+                ) {
+                    nodeStatuses[pulse]++
+                }
             }
         })
     }
