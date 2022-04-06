@@ -30,8 +30,12 @@ export function setCookie(res: Http2ServerResponse, cookie: string, value: strin
     }
 }
 
-export function deleteCookie(res: Http2ServerResponse, cookie: string, path?: string): void {
-    const cookieString = `${cookie}=; Secure; HttpOnly; Path=${path ? path : '/'}` + `; max-age=0`
+export function deleteCookie(
+    res: Http2ServerResponse,
+    options: { cookie: string; path?: string; domain?: string }
+): void {
+    let cookieString = `${options.cookie}=; Secure; HttpOnly; Path=${options.path ? options.path : '/'}` + `; max-age=0`
+    if (options.domain) cookieString += `; Domain=${options.domain}`
     const cookieHeader = res.getHeader('Set-Cookie')
     if (cookieHeader) {
         if (Array.isArray(cookieHeader)) {

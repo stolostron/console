@@ -99,6 +99,7 @@
     "app.enter.subfolder": "Optional: Enter the Amazon S3 or MinIO subfolder bucket path",
     "Application created": "Application created",
     "Application deploy status": "Application deploy status",
+    "Application not found!": "Application not found!",
     "Application set created": "Application set created",
     "Application set updated": "Application set updated",
     "Application updated": "Application updated",
