@@ -93,7 +93,6 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     const location = useLocation()
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
-    const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
     const [activeChannel, setActiveChannel] = useState<string>()
     const [applicationData, setApplicationData] = useState<ApplicationDataType>()
     const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
