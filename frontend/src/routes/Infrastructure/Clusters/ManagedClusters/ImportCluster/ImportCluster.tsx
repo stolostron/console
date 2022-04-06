@@ -134,6 +134,7 @@ export default function ImportClusterPage() {
                                 colorVariant={DrawerColorVariant.light200}
                             >
                                 <SyncEditor
+                                    editorTitle={'Import cluster YAML'}
                                     variant="toolbar"
                                     id="code-content"
                                     schema={schema}

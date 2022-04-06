@@ -41,9 +41,9 @@ export function WizardSyncEditor() {
     const { update } = useData() // Wizard framework sets this context
     return (
         <SyncEditor
+            editorTitle={'Application set YAML'}
             variant="toolbar"
             resources={resources}
-            hideCloseButton={true}
             filterKube={true}
             schema={schema}
             immutables={['ApplicationSet[0].metadata.name', 'ApplicationSet[0].metadata.namespace']}

@@ -1,16 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection, Title } from '@patternfly/react-core'
+import { PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmTable, AcmTablePaginationContextProvider, compareStrings } from '@stolostron/ui-components'
 import moment from 'moment'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
 import { NavigationPath } from '../../../../NavigationPath'
-import { getGroupFromApiVersion, Policy, PolicyStatusDetails } from '../../../../resources'
+import { getGroupFromApiVersion, Policy, PolicyDefinition, PolicyStatusDetails } from '../../../../resources'
 
 interface resultsTableData {
     templateName: string
@@ -30,6 +31,11 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
     const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
     const { policy } = props
     const [policies] = useRecoilState(policiesState)
+    const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
+
+    useEffect(() => {
+        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy)
+    }, [])
 
     const policiesDeployedOnCluster: resultsTableData[] = useMemo(() => {
         const policyName = policy.metadata.name ?? ''
@@ -164,7 +170,17 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                             <div>
                                 {/* message may need to be limited to 300 chars? */}
                                 {prunedMessage}{' '}
-                                {templateDetailURL && <Link to={templateDetailURL}>{t('View details')}</Link>}
+                                {canCreatePolicy ? (
+                                    templateDetailURL && (
+                                        <span>
+                                            -<Link to={templateDetailURL}>{` ${t('View details')}`}</Link>
+                                        </span>
+                                    )
+                                ) : (
+                                    <Tooltip content={t('rbac.unauthorized')}>
+                                        <span className="link-disabled">{`- ${t('View details')}`}</span>
+                                    </Tooltip>
+                                )}
                             </div>
                         )
                     }
@@ -197,7 +213,7 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
                 },
             },
         ],
-        [t]
+        [canCreatePolicy, t]
     )
 
     return (

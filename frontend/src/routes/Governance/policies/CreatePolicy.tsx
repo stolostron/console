@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Policy/PolicyWizard'
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
+import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Policy/PolicyWizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
@@ -13,20 +13,20 @@ import {
     placementsState,
     usePolicies,
 } from '../../../atoms'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicyKind, reconcileResources } from '../../../resources'
 import schema from './schema.json'
-import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
     const { update } = useData() // Wizard framework sets this context
     return (
         <SyncEditor
+            editorTitle={'Policy YAML'}
             variant="toolbar"
             resources={resources}
-            hideCloseButton={true}
             schema={schema}
             onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
                 update(changes?.resources)
@@ -49,7 +49,16 @@ export function CreatePolicy() {
     const [placementRules] = useRecoilState(placementRulesState)
     const [managedClusters] = useRecoilState(managedClustersState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
-    const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
+    const namespaceNames = useMemo(
+        () =>
+            namespaces
+                .filter(
+                    (namespace) => !namespace.metadata.labels?.['cluster.open-cluster-management.io/managedCluster']
+                )
+                .map((namespace) => namespace.metadata.name ?? ''),
+        [namespaces]
+    )
+
     return (
         <PolicyWizard
             title={t('Create policy')}

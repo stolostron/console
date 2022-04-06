@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EditMode } from '@patternfly-labs/react-form-wizard'
+import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Policy/PolicyWizard'
-import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
@@ -19,6 +18,7 @@ import {
     usePolicies,
 } from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
@@ -30,16 +30,15 @@ import {
     resolveSource,
 } from '../common/util'
 import schema from './schema.json'
-import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
     const { update } = useData() // Wizard framework sets this context
     return (
         <SyncEditor
+            editorTitle={'Policy YAML'}
             variant="toolbar"
             resources={resources}
-            hideCloseButton={true}
             immutables={['Policy[0].metadata.name', 'Policy[0].metadata.namespace']}
             schema={schema}
             filterKube={true}
@@ -66,7 +65,15 @@ export function EditPolicy() {
     const [managedClusters] = useRecoilState(managedClustersState)
     const [placementBindings] = useRecoilState(placementBindingsState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
-    const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
+    const namespaceNames = useMemo(
+        () =>
+            namespaces
+                .filter(
+                    (namespace) => !namespace.metadata.labels?.['cluster.open-cluster-management.io/managedCluster']
+                )
+                .map((namespace) => namespace.metadata.name ?? ''),
+        [namespaces]
+    )
     const [existingResources, setExistingResources] = useState<IResource[]>()
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)

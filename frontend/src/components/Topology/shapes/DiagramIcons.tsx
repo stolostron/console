@@ -97,10 +97,6 @@ export const DiagramIcons = () => (
                 />
             </g>
         </symbol>
-        <symbol className="spinner" viewBox="0 0 40 40" id="diagramIcons_spinner">
-            <circle cx="20" cy="20" r="18" fill="white"></circle>
-            <circle className="swirly" cx="20" cy="20" r="18"></circle>
-        </symbol>
         <svg viewBox="0 0 1024 1024" id="diagramIcons_open-new-tab">
             <title>open-new-tab</title>
             <g id="open-new-tab" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">

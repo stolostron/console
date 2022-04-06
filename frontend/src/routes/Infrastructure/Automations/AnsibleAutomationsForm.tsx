@@ -35,6 +35,7 @@ import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { validateKubernetesDnsName } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
+import schema from './schema.json'
 import _ from 'lodash'
 
 export default function AnsibleAutomationsFormPage({
@@ -505,7 +506,15 @@ export function AnsibleAutomationsForm(props: {
 
     return (
         <Fragment>
-            <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
+            <AcmDataFormPage
+                editorTitle={t('Ansible YAML')}
+                formData={formData}
+                schema={schema}
+                immutables={
+                    isEditing ? ['ClusterCurator[0].metadata.name', 'ClusterCurator[0].metadata.namespace'] : []
+                }
+                mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
+            />
             <EditAnsibleJobModal
                 ansibleJob={editAnsibleJob}
                 ansibleSelection={ansibleSelection}

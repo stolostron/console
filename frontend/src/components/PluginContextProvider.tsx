@@ -1,9 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { isHrefNavItem, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
 import { ReactNode, useCallback, useMemo } from 'react'
-import { DOC_LINKS } from '../lib/doc-util'
 import { PluginContext } from '../lib/PluginContext'
-import { TechPreviewAlert } from './TechPreviewAlert'
 
 export function PluginContextProvider(props: { children?: ReactNode }) {
     const [hrefs] = useResolvedExtensions(isHrefNavItem)
@@ -33,11 +31,6 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
                 isSubmarinerAvailable,
             }}
         >
-            <TechPreviewAlert
-                i18nKey={isACMAvailable ? 'preview.dynamicPluginsACM' : 'preview.dynamicPluginsMCE'}
-                docHref={isACMAvailable ? DOC_LINKS.WEB_CONSOLE : DOC_LINKS.MCE_INTRO}
-                disableBottomPadding
-            />
             <div style={{ position: 'relative', height: '100%', width: '100%' }}>
                 <div style={{ position: 'absolute', height: '100%', width: '100%' }}>{props.children}</div>
             </div>

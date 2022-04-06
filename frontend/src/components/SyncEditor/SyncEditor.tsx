@@ -14,9 +14,9 @@ import {
     CloseIcon,
 } from '@patternfly/react-icons/dist/js/icons'
 import { ClipboardCopyButton } from '@patternfly/react-core'
-import Ajv from 'ajv'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
-import { processForm, processUser, formatErrors, ProcessedType } from './process'
+import { processForm, processUser, ProcessedType } from './process'
+import { compileAjvSchemas, formatErrors } from './validation'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
 import { SyncDiffType } from './SyncDiff'
@@ -34,7 +34,6 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     onClose?: () => void
     onEditorChange?: (editorResources: any) => void
     filterKube?: boolean
-    hideCloseButton?: boolean
 }
 
 export function SyncEditor(props: SyncEditorProps): JSX.Element {
@@ -49,7 +48,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         readonly,
         onEditorChange,
         onClose,
-        hideCloseButton,
         filterKube,
     } = props
     const pageRef = useRef<HTMLDivElement>(null)
@@ -88,33 +86,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     // compile schema(s) just once
     const validationRef = useRef<unknown>()
     if (schema && !validationRef.current) {
-        try {
-            const ajv = new Ajv({ allErrors: true, verbose: true })
-            ajv.addKeyword({
-                keyword: 'validateDNSName',
-                schemaType: 'boolean',
-                validate: (_schema: null, data: any) => {
-                    return (
-                        !data ||
-                        (/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/.test(data) &&
-                            data.length <= 63)
-                    )
-                },
-            })
-            if (!Array.isArray(schema)) {
-                validationRef.current = [{ validator: ajv.compile(schema) }]
-            } else {
-                const schemas: any = []
-                schema.forEach(({ type, required, schema }) => {
-                    schemas.push({
-                        type,
-                        required,
-                        validator: ajv.compile(schema),
-                    })
-                })
-                validationRef.current = schemas
-            }
-        } catch (e) {}
+        validationRef.current = compileAjvSchemas(schema)
     }
 
     function onEditorDidMount(editor: any, monaco: any) {
@@ -238,11 +210,20 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     const editor = editorRef.current
                     const model = editor.getModel()
                     const pos = editor.getPosition()
+                    const lines = model.getLineCount()
                     const thisLine = model.getLineContent(pos.lineNumber)
-                    const nextLine = model.getLineContent(pos.lineNumber + 1)
-                    const times = Math.max(thisLine.search(/\S/), nextLine.search(/\S/))
+                    let times
+                    const isLastLine = lines <= pos.lineNumber + 1
+                    if (isLastLine) {
+                        times = thisLine.search(/\S/)
+                    } else {
+                        const nextLine = model.getLineContent(pos.lineNumber + 1)
+                        times = Math.max(thisLine.search(/\S/), nextLine.search(/\S/))
+                    }
                     const count = `${newKeyCount}`.padStart(4, '0')
-                    const newLine = `${' '.repeat(times)}key${count}:  \n`
+                    const newLine = `${isLastLine ? '\n' : ''}${' '.repeat(times)}key${count}:  ${
+                        !isLastLine ? '\n' : ''
+                    }`
                     let range = new monacoRef.current.Range(pos.lineNumber + 1, 0, pos.lineNumber + 1, 0)
                     editor.executeEdits('new-key', [{ identifier: 'new-key', range, text: newLine }])
                     range = new monacoRef.current.Range(pos.lineNumber + 1, times + 1, pos.lineNumber + 1, times + 8)
@@ -440,11 +421,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     ) => {
         const editor = editorRef?.current
         const monaco = monacoRef?.current
-        const _resources = lastValidResources || resources
-        if (errors.length) {
+        const isArr = Array.isArray(resources)
+        let _resources = isArr ? resources : [resources]
+        _resources = lastValidResources || _resources
+        if (errors.length || changeWithSecrets.resources.length === 0) {
             // if errors, use last valid resources
             setEditorChanges({
-                resources: _resources,
+                resources: isArr ? _resources : _resources[0],
                 warnings: formatErrors(errors, true),
                 errors: formatErrors(errors),
                 changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
@@ -457,7 +440,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 errors: formatErrors(errors),
                 changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
             })
-            setLastValidResources(cloneDeep(changeWithSecrets.resources))
+            setLastValidResources(cloneDeep(isArr ? changeWithSecrets.resources : changeWithSecrets.resources[0]))
         }
     }
 
@@ -549,7 +532,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 >
                     {copyHint}
                 </ClipboardCopyButton>
-                {!hideCloseButton && (
+                {!!onClose && (
                     <CodeEditorControl
                         icon={<CloseIcon />}
                         aria-label="Close"

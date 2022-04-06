@@ -68,10 +68,10 @@ export function PolicyActionDropdown(props: {
                 id: 'add-to-set',
                 text: t('Add to policy set'),
                 tooltip: t('Add to policy set'),
-                addSeparator: true,
                 click: (policy: PolicyTableItem) => {
                     setModal(<AddToPolicySetModal policyTableItems={[policy]} onClose={() => setModal(undefined)} />)
                 },
+                rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
             },
             {
                 id: 'enable-policy',
