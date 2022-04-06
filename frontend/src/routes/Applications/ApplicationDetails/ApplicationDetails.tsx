@@ -317,7 +317,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         const { resourceStatuses, relatedResources, appDataWithStatuses } = await getResourceStatuses(
                             application,
                             appData,
-                        topology
+                            topology
                         )
                         const topologyWithRelated = getTopology(application, clusters, relatedResources, {
                             topology,
