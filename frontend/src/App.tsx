@@ -2,23 +2,12 @@
 /* istanbul ignore file */
 import { useMediaQuery } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import { getBackendUrl } from './resources'
-import { getApplinks, IAppSwitcherData } from './lib/applinks'
-import { configure } from './lib/configure'
-import { getUsername } from './lib/username'
-import {
-    AcmIcon,
-    AcmIconVariant,
-    AcmTablePaginationContextProvider,
-    AcmToastGroup,
-    AcmToastProvider,
-} from '@stolostron/ui-components'
 import {
     AboutModal,
     ApplicationLauncher,
     ApplicationLauncherGroup,
-    ApplicationLauncherSeparator,
     ApplicationLauncherItem,
+    ApplicationLauncherSeparator,
     Button,
     Dropdown,
     DropdownItem,
@@ -50,17 +39,29 @@ import {
     QuestionCircleIcon,
     RedhatIcon,
 } from '@patternfly/react-icons'
-import ACMPerspectiveIcon from './assets/ACM-icon.svg'
-import logo from './assets/RHACM-Logo.svg'
+import {
+    AcmIcon,
+    AcmIconVariant,
+    AcmTablePaginationContextProvider,
+    AcmToastGroup,
+    AcmToastProvider,
+} from '@stolostron/ui-components'
+import { noop } from 'lodash'
 import { Fragment, lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
 import './App.css'
+import ACMPerspectiveIcon from './assets/ACM-icon.svg'
+import logo from './assets/RHACM-Logo.svg'
 import { LoadData } from './atoms'
 import { LoadingPage } from './components/LoadingPage'
-import './lib/i18n'
-import { NavigationPath } from './NavigationPath'
+import { getApplinks, IAppSwitcherData } from './lib/applinks'
+import { configure } from './lib/configure'
 import { DOC_HOME } from './lib/doc-util'
+import './lib/i18n'
 import { getMCHVersion } from './lib/mchVersion'
+import { getUsername } from './lib/username'
+import { NavigationPath } from './NavigationPath'
+import { fetchGet, getBackendUrl } from './resources'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -101,15 +102,6 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
             throw new Error(response.statusText)
         }
         return response.json() as Promise<T>
-    })
-}
-
-function apiNoJSON(url: string, headers?: Record<string, unknown>): Promise<unknown> {
-    return fetch(url, headers).then((response) => {
-        if (!response.ok) {
-            throw new Error(response.statusText)
-        }
-        return response.text() as Promise<unknown>
     })
 }
 
@@ -225,69 +217,32 @@ function UserDropdown() {
             })
     }
 
-    function logout() {
-        // Get username so we know if user is kube:admin
-        let admin = false
-        const userResp = getUsername()
-        userResp.promise
-            .then((payload) => {
-                if (payload && payload.body && payload.body.username) {
-                    admin = payload.body.username === 'kube:admin'
-                }
-            })
-            .catch((error) => {
-                // eslint-disable-next-line no-console
-                console.error(error)
-            })
-        // Get user's oauth token endpoint
-        let oauthTokenEndpoint = ''
-        const configResp = configure()
-        configResp.promise
-            .then((payload) => {
-                if (payload && payload.token_endpoint) {
-                    oauthTokenEndpoint = payload.token_endpoint
-                }
-            })
-            .catch((error) => {
-                // eslint-disable-next-line no-console
-                console.error(error)
-            })
-        const logoutUrl = getBackendUrl() + '/logout'
+    async function logout() {
+        const tokenEndpointResult = await fetchGet<{ token_endpoint: string }>(getBackendUrl() + '/configure')
+        await fetchGet(getBackendUrl() + '/logout').catch(noop)
 
-        apiNoJSON(logoutUrl)
-            .then(() => {
-                const onLogout = (delay = 0, isAdmin = false) => {
-                    return setTimeout(() => {
-                        isAdmin ? (location.pathname = '/') : location.reload()
-                    }, delay)
-                }
-                if (admin) {
-                    // strip the oauthTokenEndpoint back to just the domain host to create the oauth logout endpoint
-                    const adminLogoutPath = oauthTokenEndpoint.substring(0, oauthTokenEndpoint.length - 12) + '/logout'
-                    const form = document.createElement('form')
-                    form.target = 'hidden-form'
-                    form.method = 'POST'
-                    form.action = adminLogoutPath
-                    const iframe = document.createElement('iframe')
-                    iframe.setAttribute('type', 'hidden')
-                    iframe.name = 'hidden-form'
-                    iframe.onload = () => onLogout(500, admin)
-                    document.body.appendChild(iframe)
-                    document.body.appendChild(form)
-                    form.submit()
-                } else {
-                    onLogout(500, admin)
-                }
-            })
-            .catch((error) => {
-                // eslint-disable-next-line no-console
-                console.error(error)
-            })
+        const iframe = document.createElement('iframe')
+        iframe.setAttribute('type', 'hidden')
+        iframe.name = 'hidden-form'
+        document.body.appendChild(iframe)
+
+        const form = document.createElement('form')
+        form.method = 'POST'
+        form.target = 'hidden-form'
+        const url = new URL(tokenEndpointResult.data.token_endpoint)
+        form.action = `${url.protocol}//${url.host}/logout`
+        document.body.appendChild(form)
+
+        form.submit()
+
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        location.pathname = '/'
     }
 
     function LogoutButton() {
         return (
-            <ApplicationLauncherItem component="button" id="logout" onClick={() => logout()}>
+            <ApplicationLauncherItem component="button" id="logout" onClick={logout}>
                 Logout
             </ApplicationLauncherItem>
         )
