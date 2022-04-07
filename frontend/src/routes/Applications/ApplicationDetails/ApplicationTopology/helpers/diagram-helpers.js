@@ -400,6 +400,7 @@ export const getNameWithoutPodHash = (relatedKind) => {
                 //openshift.io/deployment-config.name
                 deployableName = values[1].trim()
                 nameNoHash = deployableName
+                podTemplateHashLabelFound = true
             }
         }
     })

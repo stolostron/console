@@ -85,7 +85,10 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
             source = source.split('/').pop()
 
             // add cluster nodes
-            clusterId = addClusters(appId, subscription, source, ruleClusterNames, [], links, nodes)
+            const filteredClusters = managedClusters.filter((cluster) => {
+                return ruleClusterNames.includes(cluster.name)
+            })
+            clusterId = addClusters(appId, subscription, source, ruleClusterNames, filteredClusters, links, nodes)
 
             const isRulePlaced = ruleClusterNames.length > 0
 

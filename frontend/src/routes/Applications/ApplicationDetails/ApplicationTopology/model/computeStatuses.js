@@ -18,11 +18,9 @@ import {
     getClusterName,
     getActiveFilterCodes,
     filterSubscriptionObject,
-    fixMissingStateOptions,
     showMissingClusterDetails,
     getTargetNsForNode,
     nodesWithNoNS,
-    allClustersAreOnline,
 } from '../helpers/diagram-helpers-utils'
 import { isSearchAvailable } from '../helpers/search-helper'
 import { showAnsibleJobDetails, getPulseStatusForAnsibleNode } from '../helpers/ansible-task'
@@ -129,7 +127,7 @@ export const getPulseStatusForSubscription = (node) => {
 
     const resourceMap = _.get(node, `specs.${node.type}Model`)
     if (!resourceMap) {
-        pulse = 'orange' //resource not available
+        pulse = node.type === 'subscription' ? 'red' : 'orange' //resource not available
         return pulse
     }
     let isPlaced = false
@@ -140,7 +138,7 @@ export const getPulseStatusForSubscription = (node) => {
             if (R.includes('Failed', subscriptionItem.status)) {
                 pulse = 'red'
             }
-            if (subscriptionItem.status === 'Subscribed') {
+            if (subscriptionItem.status === 'Subscribed' || subscriptionItem.status === 'Propagated') {
                 isPlaced = true // at least one cluster placed
             }
             if (
@@ -277,8 +275,12 @@ export const getPulseStatusForCluster = (node) => {
             clusterName = 'local-cluster'
         }
         if (!clustersNames || clustersNames.includes(clusterName)) {
-            const status = cluster.status || calculateArgoClusterStatus(cluster) || ''
-            if (status.toLowerCase() === 'ok' || _.get(cluster, 'ManagedClusterConditionAvailable', '') === 'True') {
+            const status = (cluster.status || calculateArgoClusterStatus(cluster) || '').toLowerCase()
+            if (
+                status === 'ok' ||
+                status === 'ready' ||
+                _.get(cluster, 'ManagedClusterConditionAvailable', '') === 'True'
+            ) {
                 okCount++
             } else if (status === 'pendingimport') {
                 pendingCount++
@@ -287,7 +289,7 @@ export const getPulseStatusForCluster = (node) => {
             }
         }
     })
-    if (offlineCount > 0) {
+    if (offlineCount > 0 || (pendingCount === clusters.length && pendingCount === 0)) {
         return 'red'
     }
     if (pendingCount === clusters.length) {
@@ -371,11 +373,6 @@ const getPulseStatusForGenericNode = (node, t) => {
         if (nodeType === 'placement') {
             pulse = 'green'
         }
-        return pulse
-    }
-    // if its clusters aren't online, show warning
-    if (!allClustersAreOnline(clusterNames, onlineClusters)) {
-        pulse = 'yellow'
         return pulse
     }
 
@@ -1082,12 +1079,11 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
             : [resourceNamespace]
         const resourceNSString = _.includes(nodesWithNoNS, 'pod') ? 'name' : 'namespace'
         targetNSList.forEach((targetNS) => {
-            //const res = podStatusModel[`${clusterName}-${targetNS}-${node.type}-${resourceName}`]
             const res = _.find(resourcesForCluster, (obj) => _.get(obj, resourceNSString, '') === targetNS)
             let pulse = 'orange'
             let valueStr = notDeployedStr
             if (res) {
-                pulse = res.pulse
+                pulse = res.status === 'Running' ? 'green' : 'yellow'
                 valueStr = res.resStatus
             }
             let statusStr
@@ -1373,6 +1369,19 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
                 if (!res.apiversion) {
                     _.assign(res, { apiversion: _.get(node, apiVersionPath) })
                 }
+
+                details.push({
+                    type: 'link',
+                    value: {
+                        label: t('View resource YAML'),
+                        data: {
+                            action: showResourceYaml,
+                            cluster: res.cluster,
+                            editLink: createEditLink(res),
+                        },
+                    },
+                    indent: true,
+                })
             }
         })
     })

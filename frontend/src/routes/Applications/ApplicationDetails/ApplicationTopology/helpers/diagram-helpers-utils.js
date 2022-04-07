@@ -192,8 +192,7 @@ export const namespaceMatchTargetServer = (relatedKind, resourceMapForObject) =>
 
 // try to match app destination clusters with hub clusters using search data
 export const updateAppClustersMatchingSearch = (node, searchClusters) => {
-    const nodeId = _.get(node, 'id', '')
-    if (nodeId !== 'member--clusters--') {
+    if (node.type !== 'cluster') {
         //acm cluster node
         _.set(node, 'specs.clusters', searchClusters)
         return node
@@ -243,7 +242,6 @@ export const updateAppClustersMatchingSearch = (node, searchClusters) => {
         }
     })
     _.set(node, 'specs.appClusters', _.sortBy(appClusters))
-    _.set(node, 'specs.clusters', searchClusters)
     return node
 }
 
