@@ -20,30 +20,7 @@ export interface Policy {
     metadata: Metadata
     spec: {
         disabled: boolean
-        'policy-templates'?: {
-            objectDefinition: {
-                apiVersion: string
-                kind: string
-                metadata: { name: string }
-                spec: {
-                    namespaceSelector: { exclude?: string[]; include?: string[] }
-                    objecttemplates?: {
-                        complianceType: string
-                        objectDefinition: {
-                            apiVersion: string
-                            kind: string
-                            metadata: { name: string }
-                            rules?: { apiGroups?: string[]; resources?: string[]; verbs?: string[] }[]
-                            roleRef?: ResourceRef
-                            subjects?: ResourceRef[]
-                        }
-                    }[]
-                    remediationAction: string
-                    severity: string
-                    maxClusterRoleBindingUsers?: number
-                }
-            }
-        }[]
+        'policy-templates'?: PolicyTemplate[]
         remediationAction: string
     }
     status?: {
@@ -51,6 +28,31 @@ export interface Policy {
         details?: PolicyStatusDetails[]
         placement?: { placementBinding: string; placementRule?: string; placement?: string; policySet?: string }[]
         status?: { clustername: string; clusternamespace: string; compliant: string }[]
+    }
+}
+
+export interface PolicyTemplate {
+    objectDefinition: {
+        apiVersion: string
+        kind: string
+        metadata: { name: string }
+        spec: {
+            namespaceSelector: { exclude?: string[]; include?: string[] }
+            objecttemplates?: {
+                complianceType: string
+                objectDefinition: {
+                    apiVersion: string
+                    kind: string
+                    metadata: { name: string }
+                    rules?: { apiGroups?: string[]; resources?: string[]; verbs?: string[] }[]
+                    roleRef?: ResourceRef
+                    subjects?: ResourceRef[]
+                }
+            }[]
+            remediationAction: string
+            severity: string
+            maxClusterRoleBindingUsers?: number
+        }
     }
 }
 

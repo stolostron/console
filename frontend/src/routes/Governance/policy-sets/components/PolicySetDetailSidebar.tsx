@@ -31,6 +31,7 @@ import { Policy, PolicySet } from '../../../../resources'
 import {
     getClustersSummaryForPolicySet,
     getPolicyComplianceForPolicySet,
+    getPolicyRemediation,
     getPolicySetPolicies,
     PolicyCompliance,
 } from '../../common/util'
@@ -316,12 +317,14 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 sort: (a: PolicyCompliance, b: PolicyCompliance) => {
                     const policyA = policies.find((p: Policy) => p.metadata.name === a.policyName)
                     const policyB = policies.find((p: Policy) => p.metadata.name === b.policyName)
+                    const policyARemediation = getPolicyRemediation(policyA)
+                    const policyBRemediation = getPolicyRemediation(policyB)
                     /* istanbul ignore next */
-                    return compareStrings(policyA?.spec.remediationAction, policyB?.spec.remediationAction)
+                    return compareStrings(policyARemediation, policyBRemediation)
                 },
                 cell: (policyStatus: PolicyCompliance) => {
                     const policy = policies.find((p: Policy) => p.metadata.name === policyStatus.policyName)
-                    return policy?.spec.remediationAction ?? '-'
+                    return getPolicyRemediation(policy)
                 },
             },
         ],

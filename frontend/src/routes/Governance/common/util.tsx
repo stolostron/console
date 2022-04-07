@@ -14,6 +14,7 @@ import {
     PlacementRule,
     Policy,
     PolicySet,
+    PolicyTemplate,
     Subscription,
 } from '../../../resources'
 import { PlacementDecision } from '../../../resources/placement-decision'
@@ -454,4 +455,28 @@ export function getPolicySetPolicies(policies: Policy[], policySet: PolicySet) {
     return policies.filter(
         (policy) => policyNameMap[policy.metadata.name!] && policy.metadata.namespace === policySet.metadata.namespace
     )
+}
+
+export function getPolicyRemediation(policy: Policy | undefined) {
+    if (!policy) {
+        return ''
+    }
+    if (policy.spec?.remediationAction) {
+        return policy.spec.remediationAction
+    }
+    const templates = policy.spec['policy-templates']
+    let remediationAggregation = '-'
+    templates?.forEach((template: PolicyTemplate) => {
+        const templateRemediation = template.objectDefinition.spec.remediationAction
+        if (remediationAggregation === 'inform/enforce') {
+            return
+        } else if (remediationAggregation !== '-' && remediationAggregation !== templateRemediation) {
+            remediationAggregation = 'inform/enforce'
+            return
+        } else if (remediationAggregation !== templateRemediation) {
+            remediationAggregation = templateRemediation
+            return
+        }
+    })
+    return remediationAggregation
 }
