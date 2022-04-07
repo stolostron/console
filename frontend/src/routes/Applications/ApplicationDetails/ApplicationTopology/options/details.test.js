@@ -965,18 +965,6 @@ describe('getNodeDetails deployment node', () => {
             status: 'checkmark',
         },
         {
-            type: 'link',
-            value: {
-                label: 'View Pod YAML and Logs',
-                data: {
-                    action: 'show_resource_yaml',
-                    cluster: 'feng',
-                    editLink: '/resources?cluster=feng&kind=pod&name=mortgagedc-deploy-1-q9b5r&namespace=default',
-                },
-            },
-            indent: true,
-        },
-        {
             type: 'label',
             indent: undefined,
             labelKey: 'Restarts',
@@ -1026,18 +1014,6 @@ describe('getNodeDetails deployment node', () => {
             labelValue: undefined,
             value: 'Running',
             status: 'checkmark',
-        },
-        {
-            type: 'link',
-            value: {
-                label: 'View Pod YAML and Logs',
-                data: {
-                    action: 'show_resource_yaml',
-                    cluster: 'feng',
-                    editLink: '/resources?cluster=feng&kind=pod&name=mortgagedc-deploy-1-q9b5rr&namespace=default',
-                },
-            },
-            indent: true,
         },
         {
             type: 'label',

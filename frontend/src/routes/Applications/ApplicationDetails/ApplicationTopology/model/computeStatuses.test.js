@@ -2231,18 +2231,6 @@ describe('setPodDeployStatus  with pod less then desired', () => {
             value: 'err',
         },
         {
-            indent: true,
-            type: 'link',
-            value: {
-                data: {
-                    action: 'show_resource_yaml',
-                    cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
-                },
-                label: 'View Pod YAML and Logs',
-            },
-        },
-        {
             indent: undefined,
             labelKey: 'Restarts',
             labelValue: undefined,
@@ -2413,18 +2401,6 @@ describe('setPodDeployStatus  with pod as desired', () => {
             value: 'Running',
         },
         {
-            indent: true,
-            type: 'link',
-            value: {
-                data: {
-                    action: 'show_resource_yaml',
-                    cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
-                },
-                label: 'View Pod YAML and Logs',
-            },
-        },
-        {
             indent: undefined,
             labelKey: 'Restarts',
             labelValue: undefined,
@@ -2466,18 +2442,6 @@ describe('setPodDeployStatus  with pod as desired', () => {
             value: 'Pending',
         },
         {
-            indent: true,
-            type: 'link',
-            value: {
-                data: {
-                    action: 'show_resource_yaml',
-                    cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
-                },
-                label: 'View Pod YAML and Logs',
-            },
-        },
-        {
             indent: undefined,
             labelKey: 'Restarts',
             labelValue: undefined,
@@ -2517,18 +2481,6 @@ describe('setPodDeployStatus  with pod as desired', () => {
             status: 'failure',
             type: 'label',
             value: 'CrashLoopBackOff',
-        },
-        {
-            indent: true,
-            type: 'link',
-            value: {
-                data: {
-                    action: 'show_resource_yaml',
-                    cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
-                },
-                label: 'View Pod YAML and Logs',
-            },
         },
         {
             indent: undefined,
@@ -2668,18 +2620,6 @@ describe('setPodDeployStatus - pod as desired with green filter', () => {
             status: 'checkmark',
             type: 'label',
             value: 'Running',
-        },
-        {
-            indent: true,
-            type: 'link',
-            value: {
-                data: {
-                    action: 'show_resource_yaml',
-                    cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
-                },
-                label: 'View Pod YAML and Logs',
-            },
         },
         {
             indent: undefined,

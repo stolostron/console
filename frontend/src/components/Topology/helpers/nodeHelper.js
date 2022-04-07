@@ -79,7 +79,7 @@ export default class NodeHelper {
                 return d.id
             })
             .style('opacity', 0.0)
-            .on('click', (d) => {
+            .on('mousedown', (d) => {
                 nodeClickHandler(d)
             })
 
