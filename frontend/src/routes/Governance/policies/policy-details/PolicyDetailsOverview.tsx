@@ -36,7 +36,7 @@ import {
     PolicySet,
 } from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
-import { getPlacementDecisionsForPlacements, getPlacementsForResource } from '../../common/util'
+import { getPlacementDecisionsForPlacements, getPlacementsForResource, getPolicyRemediation } from '../../common/util'
 import { AutomationDetailsSidebar } from '../../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
@@ -87,7 +87,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             },
             {
                 key: 'Remediation',
-                value: policy.spec.remediationAction ?? '-',
+                value: getPolicyRemediation(policy),
             },
             {
                 key: 'Cluster violations',
