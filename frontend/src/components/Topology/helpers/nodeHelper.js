@@ -42,7 +42,22 @@ export default class NodeHelper {
         this.typeToShapeMap = typeToShapeMap
         this.getClientRef = getClientRef
         this.showsShapeTitles = showsShapeTitles
+        this.setWasDragged = this.setWasDragged.bind(this)
         this.t = t
+    }
+
+    setWasDragged = (dx, dy) => {
+        if (dx !== undefined) {
+            if (!this.dragged) {
+                this.dragged = { dx: 0, dy: 0 }
+            }
+            this.dragged.dx += dx
+            this.dragged.dy += dy
+        } else {
+            const wasDragged = Math.abs(this.dragged.dx) + Math.abs(this.dragged.dy) > 10
+            delete this.dragged
+            return wasDragged
+        }
     }
 
     // add or remove nodes based on data in this.nodes
@@ -79,8 +94,8 @@ export default class NodeHelper {
                 return d.id
             })
             .style('opacity', 0.0)
-            .on('mousedown', (d) => {
-                nodeClickHandler(d)
+            .on('click', (e) => {
+                e.stopPropagation()
             })
 
         // node hover/select shape
@@ -90,7 +105,7 @@ export default class NodeHelper {
         this.updateNodeMultiplier(newNodes)
 
         // node shape
-        this.createNodeShapes(newNodes, nodeDragHandler)
+        this.createNodeShapes(newNodes, nodeClickHandler, nodeDragHandler)
 
         // node labels
         if (draw) {
@@ -126,7 +141,7 @@ export default class NodeHelper {
         })
     }
 
-    addElementsForNodes = (nodes, nodeDragHandler) => {
+    addElementsForNodes = (nodes, nodeClickHandler, nodeDragHandler) => {
         nodes
             .append('use')
             .call(attrs, (d) => {
@@ -148,19 +163,23 @@ export default class NodeHelper {
                     .on('drag', this.dragNode)
                     .on('start', () => {
                         if (nodeDragHandler) {
+                            this.setWasDragged(0, 0)
                             nodeDragHandler(true)
                         }
                     })
-                    .on('end', () => {
+                    .on('end', (e) => {
                         if (nodeDragHandler) {
                             nodeDragHandler(false)
+                            if (!this.setWasDragged()) {
+                                nodeClickHandler(e)
+                            }
                         }
                     })
             )
     }
 
-    createNodeShapes = (nodes, nodeDragHandler) => {
-        this.addElementsForNodes(nodes, nodeDragHandler)
+    createNodeShapes = (nodes, nodeClickHandler, nodeDragHandler) => {
+        this.addElementsForNodes(nodes, nodeClickHandler, nodeDragHandler)
 
         //Make sure the subscription node updates
         const subscriptionNode = this.svg
@@ -176,7 +195,7 @@ export default class NodeHelper {
         })
         const subscriptionNodeShapeEnter = subscriptionNodeShape.enter()
 
-        this.addElementsForNodes(subscriptionNodeShapeEnter, nodeDragHandler)
+        this.addElementsForNodes(subscriptionNodeShapeEnter, nodeClickHandler, nodeDragHandler)
     }
 
     createTitles = (draw, nodes) => {
@@ -504,6 +523,7 @@ export default class NodeHelper {
     }
 
     dragNode = (evt, dp) => {
+        this.setWasDragged(evt.dx, evt.dy)
         const { layout } = dp
         const node = d3.select(`#${dp.id}`)
 
