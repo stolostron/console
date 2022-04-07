@@ -86,7 +86,7 @@ export const getChannelLabel = (chType, count, t) => {
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
 
 export const getEditLink = ({ name, namespace, kind, apiVersion, cluster = 'local-cluster' }) => {
-    return `/resources?${queryString.stringify({
+    return `/multicloud/home/search/resources?${queryString.stringify({
         cluster,
         name,
         namespace,

@@ -631,7 +631,7 @@ export const processResourceActionLink = (resource, toggleLoading, t) => {
             targetLink = editLink
             break
         case 'show_search':
-            targetLink = `/search?filters={"textsearch":"kind:${kind}${nsData} name:${name}"}`
+            targetLink = `/multicloud/home/search?filters={"textsearch":"kind:${kind}${nsData} name:${name}"}`
             break
         case 'open_argo_editor': {
             openArgoCDEditor(cluster, namespace, name, toggleLoading, t) // the editor opens here

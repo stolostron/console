@@ -444,7 +444,12 @@ function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
 
             if (pulse) {
                 // Get cluster resource statuses
-                nodeStatuses[pulse]++
+                if (
+                    _.get(node, 'id', '').indexOf('--deployed') !== -1 ||
+                    _.get(node, 'id', '').indexOf('--deployable') !== -1
+                ) {
+                    nodeStatuses[pulse]++
+                }
             }
         })
     }
@@ -631,13 +636,14 @@ function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolea
     } else if (isAppSet) {
         sourcePath = 'spec.template.spec.source'
     }
-    const { path, repoURL } = _.get(resource, sourcePath)
+    const { path, repoURL, chart } = _.get(resource, sourcePath)
     const [apigroup, apiversion] = resource.apiVersion.split('/')
     if (resource) {
         return getSearchLink({
             properties: {
                 kind: ApplicationKind.toLowerCase(),
                 path,
+                chart,
                 repoURL,
                 apigroup,
                 apiversion,

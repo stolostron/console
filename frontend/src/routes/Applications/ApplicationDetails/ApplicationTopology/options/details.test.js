@@ -37,7 +37,7 @@ describe('getNodeDetails no clusters or violation', () => {
                 {
                     name: 'Cluster',
                     value: 'c1',
-                    href: "/search?filters={'textsearch':'kind:cluster name:c1'}",
+                    href: "/multicloud/home/search?filters={'textsearch':'kind:cluster name:c1'}",
                 },
             ],
             x: 76.5,
@@ -160,7 +160,7 @@ describe('getNodeDetails application node', () => {
                 data: {
                     action: 'open_link',
                     targetLink:
-                        '/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Ans-sub-1%20cluster%3Alocal-cluster"}',
+                        '/multicloud/home/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Ans-sub-1%20cluster%3Alocal-cluster"}',
                 },
                 id: 'application--nginx-app-3-subscrSearch',
                 label: 'View all subscriptions in {{0}} namespace',
@@ -234,7 +234,7 @@ describe('getNodeDetails cluster node 1', () => {
                 {
                     name: 'Cluster',
                     value: 'feng',
-                    href: "/search?filters={'textsearch':'kind:cluster name:feng'}",
+                    href: "/multicloud/home/search?filters={'textsearch':'kind:cluster name:feng'}",
                 },
             ],
             x: 76.5,
@@ -372,7 +372,7 @@ describe('getNodeDetails clusters node', () => {
                 {
                     name: 'Cluster',
                     value: 'feng',
-                    href: "/search?filters={'textsearch':'kind:cluster name:feng'}",
+                    href: "/multicloud/home/search?filters={'textsearch':'kind:cluster name:feng'}",
                 },
             ],
             x: 76.5,
@@ -621,7 +621,7 @@ describe('getNodeDetails subscription', () => {
                 data: {
                     action: 'open_link',
                     targetLink:
-                        '/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Asahar-test-ns%20cluster%3Alocal-cluster"}',
+                        '/multicloud/home/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Asahar-test-ns%20cluster%3Alocal-cluster"}',
                 },
             },
         },
@@ -786,7 +786,7 @@ describe('getNodeDetails deployment node', () => {
                 {
                     name: 'Deployment',
                     value: 'mortgage-app-deploy',
-                    href: "/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+                    href: "/multicloud/home/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
                 },
             ],
             x: 151.5,
@@ -965,6 +965,19 @@ describe('getNodeDetails deployment node', () => {
             status: 'checkmark',
         },
         {
+            type: 'link',
+            value: {
+                label: 'View Pod YAML and Logs',
+                data: {
+                    action: 'show_resource_yaml',
+                    cluster: 'feng',
+                    editLink:
+                        '/multicloud/home/search/resources?cluster=feng&kind=pod&name=mortgagedc-deploy-1-q9b5r&namespace=default',
+                },
+            },
+            indent: true,
+        },
+        {
             type: 'label',
             indent: undefined,
             labelKey: 'Restarts',
@@ -1014,6 +1027,19 @@ describe('getNodeDetails deployment node', () => {
             labelValue: undefined,
             value: 'Running',
             status: 'checkmark',
+        },
+        {
+            type: 'link',
+            value: {
+                label: 'View Pod YAML and Logs',
+                data: {
+                    action: 'show_resource_yaml',
+                    cluster: 'feng',
+                    editLink:
+                        '/multicloud/home/search/resources?cluster=feng&kind=pod&name=mortgagedc-deploy-1-q9b5rr&namespace=default',
+                },
+            },
+            indent: true,
         },
         {
             type: 'label',
