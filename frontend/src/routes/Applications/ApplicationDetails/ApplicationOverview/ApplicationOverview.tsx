@@ -60,6 +60,7 @@ import { getDiagramElements } from '../ApplicationTopology/model/topology'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 import { Link } from 'react-router-dom'
 import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { DiagramIcons } from '../../../../components/Topology/shapes/DiagramIcons'
 
 let leftItems: ListItems[] = []
 let rightItems: ListItems[] = []
@@ -345,6 +346,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     return (
         <AcmPageContent id="overview">
             <SyncResourceModal {...modalProps} />
+            <DiagramIcons />
             <PageSection>
                 <div className="overview-cards-container">
                     <AcmDescriptionList
