@@ -150,6 +150,7 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
             //generate a unique name for this channel
             const channelName = getUniqueChannelName(active, groupControlData)
             const channelNS = `${channelName}-ns`
+            const isChannelNS = nsControl.available.includes(channelNS)
 
             originalChannelControl = findOriginalChannelControl(globalControl, channelName, nameControl)
 
@@ -157,6 +158,10 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
                 // if existing channel, reuse channel name and namespace
                 nameControl.active = channelName
                 namespaceControl.active = channelNS
+                namespaceControlExists.active = true
+            } else if (isChannelNS) {
+                nameControl.active = channelName
+                namespaceControl.active = ''
                 namespaceControlExists.active = true
             } else {
                 nameControl.active = channelName
