@@ -67,7 +67,7 @@ export function getAppSetTopology(application) {
 
     const clusterParentId = placement ? placementId : appId
     const source = get(application, 'app.spec.template.spec.source.path', '')
-    const clusterId = addClusters(clusterParentId, null, source, clusterNames, clusterNames, links, nodes)
+    const clusterId = addClusters(clusterParentId, null, source, clusterNames, appSetClusters, links, nodes)
     const resources = appSetApps.length > 0 ? get(appSetApps[0], 'status.resources', []) : [] // what if first app doesn't have resources?
 
     resources.forEach((deployable) => {
@@ -103,6 +103,7 @@ export function getAppSetTopology(application) {
             specs: {
                 isDesign: false,
                 raw,
+                clustersNames: clusterNames,
                 parent: {
                     clusterId,
                 },
@@ -118,7 +119,7 @@ export function getAppSetTopology(application) {
 
         const template = { metadata: {} }
         // create replica subobject, if this object defines a replicas
-        createReplicaChild(deployableObj, template, links, nodes)
+        createReplicaChild(deployableObj, clusterNames, template, links, nodes)
     })
 
     return { nodes: uniqBy(nodes, 'uid'), links }

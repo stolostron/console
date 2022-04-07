@@ -23,7 +23,7 @@ export const getConnectedLayoutOptions = ({ elements }) => {
     const nodes = elements.nodes()
     nodes.forEach((n) => {
         const ndata = n.data()
-        if (ndata.node.type === 'subscription') {
+        if (ndata.node.type === 'subscription' || ndata.node.type === 'ansiblejob') {
             subscriptions++
         }
     })

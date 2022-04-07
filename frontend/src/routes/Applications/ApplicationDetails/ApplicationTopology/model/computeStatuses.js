@@ -318,7 +318,7 @@ export const calculateArgoClusterStatus = (clusterData) => {
 }
 
 export const getOnlineClusters = (node) => {
-    const clusterNames = R.split(',', getClusterName(_.get(node, 'id', ''), node))
+    const clusterNames = _.get(node, 'specs.clustersNames', [])
     const prClusters = _.get(node, 'clusters.specs.clusters', [])
     const searchClusters = _.get(node, 'specs.searchClusters', [])
     const clusterObjs = prClusters.length > searchClusters.length ? prClusters : searchClusters

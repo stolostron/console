@@ -44,28 +44,16 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
         const hasMultipleSubs = _.get(appNode, 'specs.allSubscriptions', []).length > 1
 
         topology.nodes.forEach((node) => {
-            const nodeId = _.get(node, 'id', '')
-            if (nodeId.startsWith('member--clusters--')) {
+            if (node.type === 'cluster') {
                 // only do this for Argo clusters
                 //cluster node, set search found clusters objects here
                 updateAppClustersMatchingSearch(node, clustersObjects)
             }
-            const nodeClusters = nodeId.startsWith('member--subscription')
-                ? clusterNamesList
-                : getClusterName(nodeId).split(',')
-            _.set(
-                node,
-                'specs.clustersNames',
-                hasMultipleSubs
-                    ? nodeClusters
-                    : nodeId.includes('clusters----') || nodeId === 'member--clusters--'
-                    ? clusterNamesList
-                    : _.sortBy(_.uniq(_.union(nodeClusters, clusterNamesList)))
-            )
+            const nodeClusters = node.type === 'subscription' ? clusterNamesList : _.get(node, 'specs.clustersNames')
             _.set(
                 node,
                 'specs.searchClusters',
-                hasMultipleSubs && !nodeId.startsWith('application--')
+                hasMultipleSubs && node.type === 'application'
                     ? _.filter(clustersObjects, (cls) => _.includes(nodeClusters, _.get(cls, 'name', '')))
                     : clustersObjects // get all search clusters when one cluster node or this is the main app node
             )

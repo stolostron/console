@@ -116,7 +116,7 @@ export function ApplicationTopologyPageContent(props: {
                     className="how-to-read-text"
                     tabIndex={0}
                     onClick={() =>
-                        setDrawerContent(t('How to read topology'), true, false, false, false, <LegendView t={t} />)
+                        setDrawerContent(t('How to read topology'), false, false, false, false, <LegendView t={t} />)
                     }
                     onKeyPress={() => {
                         // noop function
