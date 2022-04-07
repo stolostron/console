@@ -205,7 +205,7 @@ class Topology extends React.Component {
         const { t } = this.props
         this.props.setDrawerContent(
             t('Filters'),
-            true,
+            false,
             <ResourceFilterView
                 ref={this.ResourceFilterView}
                 availableFilters={availableFilters}
