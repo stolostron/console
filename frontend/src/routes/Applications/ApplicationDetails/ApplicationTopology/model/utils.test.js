@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getClusterName, createChildNode, addClusters, getApplicationData } from './utils'
+import { getClusterName, addClusters, getApplicationData } from './utils'
 
 describe('getClusterName', () => {
     it('get the cluster name from the id', () => {
