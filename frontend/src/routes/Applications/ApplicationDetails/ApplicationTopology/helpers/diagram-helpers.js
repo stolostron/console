@@ -613,7 +613,7 @@ export const addNodeServiceLocationForCluster = (node, typeObject, details, t) =
 
         const location = `${typeObject.clusterIP}:${port}`
         details.push({
-            labelKey: t('Location'),
+            labelKey: 'Location',
             value: location,
         })
     }
