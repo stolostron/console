@@ -400,6 +400,7 @@ export const getNameWithoutPodHash = (relatedKind) => {
                 //openshift.io/deployment-config.name
                 deployableName = values[1].trim()
                 nameNoHash = deployableName
+                podTemplateHashLabelFound = true
             }
         }
     })
@@ -580,7 +581,7 @@ export const addIngressNodeInfo = (node, details, t) => {
 
 //for service
 export const addNodeServiceLocation = (node, clusterName, targetNS, details, t) => {
-    if (R.pathOr('', ['specs', 'raw', 'kind'])(node) === 'Service') {
+    if (node.type === 'service') {
         return addNodeInfoPerCluster(node, clusterName, targetNS, details, addNodeServiceLocationForCluster, t) //process only services
     }
     return details
@@ -588,7 +589,7 @@ export const addNodeServiceLocation = (node, clusterName, targetNS, details, t) 
 
 //generic function to write location info
 export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getDetailsFunction, t) => {
-    const resourceName = _.get(node, 'namespace', '')
+    const resourceName = _.get(node, 'name', '')
     const resourceMap = _.get(node, `specs.${node.type}Model`, {})
 
     const locationDetails = []
