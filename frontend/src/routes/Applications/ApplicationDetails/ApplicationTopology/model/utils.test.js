@@ -36,7 +36,7 @@ describe('createChildNode', () => {
             type: 'service',
             uid: 'member--member--deployable--member--clusters--local-cluster--service--test-cluster',
         }
-        expect(createChildNode(parent, 'service', [], [])).toEqual(result)
+        expect(createChildNode(parent, ['local-cluster'], 'service', [], [])).toEqual(result)
     })
 })
 
