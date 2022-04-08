@@ -6,7 +6,6 @@ import _ from 'lodash'
 import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
 
 const localClusterName = 'local-cluster'
-const metadataName = 'metadata.name'
 
 export const getClusterName = (nodeId) => {
     if (nodeId === undefined) {
@@ -78,10 +77,10 @@ export const addClusters = (parentId, subscription, source, clusterNames, manage
               id: 'member--clusters',
           })
         : undefined
-//    const filteredClusters = managedClusterNames.filter((cluster) => {
-//        const cname = _.get(cluster, metadataName)
-//        return cname && clusterNames.includes(cname)
-//    })
+    //    const filteredClusters = managedClusterNames.filter((cluster) => {
+    //        const cname = _.get(cluster, metadataName)
+    //        return cname && clusterNames.includes(cname)
+    //    })
     nodes.push({
         name: clusterNames.length === 1 ? clusterNames[0] : '',
         namespace: '',
@@ -92,8 +91,8 @@ export const addClusters = (parentId, subscription, source, clusterNames, manage
             title: source,
             subscription,
             resourceCount: clusterNames.length,
-//            cluster: subscription && filteredClusters.length === 1 ? filteredClusters[0] : undefined,
-//            clusters: filteredClusters,
+            //            cluster: subscription && filteredClusters.length === 1 ? filteredClusters[0] : undefined,
+            //            clusters: filteredClusters,
             clustersNames: clusterNames,
             clusters: _.cloneDeep(managedClusters),
             sortedClusterNames,

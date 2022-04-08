@@ -4,7 +4,6 @@ import R from 'ramda'
 import _ from 'lodash'
 import {
     addResourceToModel,
-    checkAndObjects,
     checkNotOrObjects,
     getNameWithoutPodHash,
     getNameWithoutChartRelease,
@@ -13,10 +12,8 @@ import {
 import {
     getClusterName,
     getRouteNameWithoutIngressHash,
-    namespaceMatchTargetServer,
     updateAppClustersMatchingSearch,
     getResourcesClustersForApp,
-    findParentForOwnerID,
 } from '../helpers/diagram-helpers-utils'
 
 ///////////////////////////////////////////////////////////////////////////
@@ -120,18 +117,18 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
                                 return spec.name === nameNoHash && spec.namespace === relatedKind.namespace
                             }) !== -1
                         )
-                } else {
+                    } else {
                         return false
-                }
-            } else {
+                    }
+                } else {
                     return (
                         (kind === 'subscription' ? name === resourceName : name === nameNoHash) &&
                         namespace === relatedKind.namespace &&
                         type === relatedKind.kind &&
                         (specs.clustersNames || []).includes(relatedKind.cluster)
                     )
-                    }
-                })
+                }
+            })
             if (resourceMapForObject) {
                 addResourceToModel(resourceMapForObject, kind, relatedKind, nameWithoutChartRelease)
             }
