@@ -50,7 +50,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
 import './App.css'
 import ACMPerspectiveIcon from './assets/ACM-icon.svg'
-import logo from './assets/RHACM-Logo.svg'
+import logo from './assets/RHACM-Logo.svg?url'
 import { LoadData } from './atoms'
 import { LoadingPage } from './components/LoadingPage'
 import { getApplinks, IAppSwitcherData } from './lib/applinks'
