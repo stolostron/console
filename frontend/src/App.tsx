@@ -303,6 +303,7 @@ const useStyles = makeStyles({
         width: '100%',
         padding: 0,
         color: 'var(--pf-global--Color--light-100)',
+        minHeight: '24px',
 
         '& .pf-c-dropdown__toggle-icon': {
             // color: 'var(--pf-global--Color--light-100)',
