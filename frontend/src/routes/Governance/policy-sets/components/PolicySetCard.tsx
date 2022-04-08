@@ -24,36 +24,30 @@ import {
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { AcmDrawerContext } from '@stolostron/ui-components'
-import { ReactNode, useCallback, useContext, useEffect, useState } from 'react'
+import { ReactNode, useCallback, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { placementBindingsState, placementRulesState, placementsState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
-import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import { PolicySet, PolicySetDefinition } from '../../../../resources'
+import { PolicySet } from '../../../../resources'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
 
 export default function PolicySetCard(props: {
     policySet: PolicySet
     selectedCardID: string
     setSelectedCardID: React.Dispatch<React.SetStateAction<string>>
+    canEditPolicySet: boolean
+    canDeletePolicySet: boolean
 }) {
-    const { policySet, selectedCardID, setSelectedCardID } = props
+    const { policySet, selectedCardID, setSelectedCardID, canEditPolicySet, canDeletePolicySet } = props
     const { t } = useTranslation()
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const [isKebabOpen, setIsKebabOpen] = useState<boolean>(false)
     const [modal, setModal] = useState<ReactNode | undefined>()
     const history = useHistory()
     const cardID = `policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`
-    const [canEditPolicySet, setCanEditPolicySet] = useState<boolean>(false)
-    const [canDeletePolicySet, setCanDeletePolicySet] = useState<boolean>(false)
-
-    useEffect(() => {
-        checkPermission(rbacCreate(PolicySetDefinition), setCanEditPolicySet)
-        checkPermission(rbacCreate(PolicySetDefinition), setCanDeletePolicySet)
-    }, [])
 
     function onClick(cardId: string) {
         setDrawerContext({

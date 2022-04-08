@@ -15,7 +15,7 @@ import { useRecoilState } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
+import { checkPermission, rbacCreate, rbacDelete, rbacUpdate } from '../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../lib/urlQuery'
 import { NavigationPath } from '../../../NavigationPath'
 import { PolicySet, PolicySetDefinition } from '../../../resources/policy-set'
@@ -70,9 +70,13 @@ export default function PolicySetsPage() {
     const [filteredPolicySets, setFilteredPolicySets] = useState<PolicySet[]>(policySets)
     const [selectedCardID, setSelectedCardID] = useState<string>('')
     const [canCreatePolicySet, setCanCreatePolicySet] = useState<boolean>(false)
+    const [canEditPolicySet, setCanEditPolicySet] = useState<boolean>(false)
+    const [canDeletePolicySet, setCanDeletePolicySet] = useState<boolean>(false)
 
     useEffect(() => {
         checkPermission(rbacCreate(PolicySetDefinition), setCanCreatePolicySet)
+        checkPermission(rbacUpdate(PolicySetDefinition), setCanEditPolicySet)
+        checkPermission(rbacDelete(PolicySetDefinition), setCanDeletePolicySet)
     }, [])
 
     const updatePerPage = useCallback(
@@ -250,6 +254,8 @@ export default function PolicySetsPage() {
                                             policySet={policyset}
                                             selectedCardID={selectedCardID}
                                             setSelectedCardID={setSelectedCardID}
+                                            canEditPolicySet={canEditPolicySet}
+                                            canDeletePolicySet={canDeletePolicySet}
                                         />
                                     )
                                 })
