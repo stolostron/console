@@ -135,7 +135,6 @@ export default function PolicySetCard(props: {
                                     {t('View details')}
                                 </DropdownItem>,
                                 <DropdownItem
-                                    isDisabled={!canEditPolicySet}
                                     isAriaDisabled={!canEditPolicySet}
                                     tooltip={!canEditPolicySet ? t('rbac.unauthorized') : ''}
                                     key="edit"
@@ -151,7 +150,6 @@ export default function PolicySetCard(props: {
                                 </DropdownItem>,
                                 <DropdownSeparator key="separator" />,
                                 <DropdownItem
-                                    isDisabled={!canDeletePolicySet}
                                     isAriaDisabled={!canDeletePolicySet}
                                     tooltip={!canDeletePolicySet ? t('rbac.unauthorized') : ''}
                                     key="delete"
