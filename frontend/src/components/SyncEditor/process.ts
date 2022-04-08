@@ -28,7 +28,7 @@ export interface MappingType {
 }
 
 // remove the kube stuff
-const kube = ['managedFields', 'creationTimestamp', 'status', 'uid', 'livenessProbe', 'resourceVersion', 'generation']
+const kube = ['managedFields', 'creationTimestamp', 'uid', 'livenessProbe', 'resourceVersion', 'generation']
 
 export interface SecretsValuesType {
     path: string

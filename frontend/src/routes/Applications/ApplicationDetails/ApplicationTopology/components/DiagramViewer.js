@@ -261,8 +261,7 @@ class DiagramViewer extends React.Component {
     }
 
     handleNodeClick = (evt) => {
-        evt.stopPropagation()
-        const node = d3.select(evt.target).datum()
+        const node = evt.subject
 
         // clear any currently selected nodes
         const svg = d3.select(`#${c.DIAGRAM_SVG_ID}`)
@@ -283,7 +282,7 @@ class DiagramViewer extends React.Component {
             if (selectedResourceType) {
                 this.props.setDrawerContent(
                     t('Details'),
-                    true, // inline
+                    false, // inline
                     true, // resizable
                     true, // no drawerhead
                     true, // no padding for drawerpanelbody
