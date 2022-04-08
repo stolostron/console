@@ -14,32 +14,6 @@ describe('getClusterName', () => {
     })
 })
 
-describe('createChildNode', () => {
-    it('create child node from given data', () => {
-        const parent = {
-            type: 'cluster',
-            id: 'member--clusters--local-cluster',
-            name: 'test-cluster',
-            namespace: 'test-ns',
-        }
-        const result = {
-            id: 'member--member--deployable--member--clusters--local-cluster--service--test-cluster',
-            name: 'test-cluster',
-            namespace: 'test-ns',
-            specs: {
-                parent: {
-                    parentId: 'member--clusters--local-cluster',
-                    parentName: 'test-cluster',
-                    parentType: 'cluster',
-                },
-            },
-            type: 'service',
-            uid: 'member--member--deployable--member--clusters--local-cluster--service--test-cluster',
-        }
-        expect(createChildNode(parent, ['local-cluster'], 'service', [], [])).toEqual(result)
-    })
-})
-
 describe('addClusters', () => {
     it('create cluster from given data', () => {
         const parentId = 'member--subscription--feng-error-app--feng-error-app-subscription-1'
