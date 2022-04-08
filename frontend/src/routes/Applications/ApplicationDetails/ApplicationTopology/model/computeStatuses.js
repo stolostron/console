@@ -127,7 +127,7 @@ export const getPulseStatusForSubscription = (node) => {
 
     const resourceMap = _.get(node, `specs.${node.type}Model`)
     if (!resourceMap) {
-        pulse = node.type === 'subscription' ? 'red' : 'orange' //resource not available
+        pulse = 'orange' //resource not available
         return pulse
     }
     let isPlaced = false
@@ -390,7 +390,7 @@ const getPulseStatusForGenericNode = (node, t) => {
         targetNSList.forEach((targetNS) => {
             const resourceItems = _.filter(resourcesForCluster, (obj) => _.get(obj, resourceNSString, '') === targetNS)
             if (resourceItems.length === 0) {
-                pulse = 'yellow'
+                pulse = 'orange' // search didn't find this resource in this cluster so mark it unknown
             } else {
                 resourceItems.forEach((resourceItem) => {
                     // does resource have a desired resource count?
@@ -460,7 +460,7 @@ export const getPodState = (podItem, clusterName, types) => {
 }
 
 export const getPulseForData = (available, desired, podsUnavailable) => {
-    if (podsUnavailable > 0) {
+    if (podsUnavailable > 0 || available === 0) {
         return 'red'
     }
 
@@ -474,10 +474,6 @@ export const getPulseForData = (available, desired, podsUnavailable) => {
 
     if (!desired && available === 0) {
         return 'orange'
-    }
-
-    if (desired === 'NA' && available === 0) {
-        return 'red'
     }
 
     return 'green'
@@ -1033,113 +1029,31 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
         return details //process only resources with pods
     }
 
-    details.push({
-        type: 'spacer',
-    })
-    details.push({
-        type: 'label',
-        labelKey: t('Cluster deploy status for pods'),
-    })
-
     const podModel = _.get(node, 'specs.podModel', [])
     const podObjects = _.flatten(Object.values(podModel))
     const podDataPerCluster = {} //pod details list for each cluster name
-    // list of target namespaces per cluster
-    const targetNamespaces = _.get(node, 'clusters.specs.targetNamespaces', {})
-    let resourceName = _.get(node, 'name', '')
-    const resourceNamespace = _.get(node, 'namespace', '')
-    const resourceMap = _.get(node, `specs.${node.type}Model`, {})
 
     const clusterNames = R.split(',', getClusterName(node.id, node, true))
-    const onlineClusters = getOnlineClusters(node)
     clusterNames.forEach((clusterName) => {
-        const podClusterData = resourceMap[`${resourceName}-${clusterName}`] || []
-        const podObj = podClusterData.find((cls) => cls.cluster === clusterName)
-        if (podObj) {
-            resourceName = podObj.name
-        }
-        clusterName = R.trim(clusterName)
-        if (!_.includes(onlineClusters, clusterName)) {
-            // offline cluster or argo destination server we could  not map to a cluster name, so skip
-            return showMissingClusterDetails(clusterName, node, details, t)
-        }
-        details.push({
-            labelValue: t('Cluster name'),
-            value: clusterName,
-        })
-        const resourcesForCluster = _.filter(
-            _.flatten(Object.values(resourceMap)),
-            (obj) => _.get(obj, 'cluster', '') === clusterName
-        )
-        //get cluster target namespaces
-        const targetNSList = targetNamespaces[clusterName]
-            ? _.union(targetNamespaces[clusterName], _.uniq(_.map(resourcesForCluster, 'namespace')))
-            : resourcesForCluster.length > 0
-            ? _.uniq(_.map(resourcesForCluster, 'namespace'))
-            : [resourceNamespace]
-        const resourceNSString = _.includes(nodesWithNoNS, 'pod') ? 'name' : 'namespace'
-        targetNSList.forEach((targetNS) => {
-            const res = _.find(resourcesForCluster, (obj) => _.get(obj, resourceNSString, '') === targetNS)
-            let pulse = 'orange'
-            let valueStr = notDeployedStr
-            if (res) {
-                pulse = res.status === 'Running' ? 'green' : 'yellow'
-                valueStr = res.resStatus
-            }
-            let statusStr
-            switch (pulse) {
-                case 'red':
-                    statusStr = failureStatus
-                    break
-                case 'yellow':
-                    statusStr = warningStatus
-                    break
-                case 'orange':
-                    statusStr = pendingStatus
-                    break
-                default:
-                    statusStr = checkmarkStatus
-                    break
-            }
-
-            let addItemToDetails = false
-            if (resourceStatuses.size > 0) {
-                const pendingOrWanrning = statusStr === pendingStatus || statusStr === warningStatus
-                if (
-                    (statusStr === checkmarkStatus && activeFilterCodes.has(checkmarkCode)) ||
-                    (statusStr === warningStatus && activeFilterCodes.has(warningCode)) ||
-                    (pendingOrWanrning && activeFilterCodes.has(pendingCode)) ||
-                    (statusStr === failureStatus && activeFilterCodes.has(failureCode))
-                ) {
-                    addItemToDetails = true
-                }
-            } else {
-                addItemToDetails = true
-            }
-
-            if (addItemToDetails) {
-                details.push({
-                    labelValue: targetNS,
-                    value: valueStr,
-                    status: statusStr,
-                })
-            }
-
-            podDataPerCluster[clusterName] = []
-        })
+        podDataPerCluster[clusterName] = []
     })
 
-    details.push({
-        type: 'spacer',
-    })
-
+    let addedDetails = false
     podObjects.forEach((pod) => {
         const { status, restarts, hostIP, podIP, startedAt, cluster } = pod
-
-        const podError = getPodState(pod, undefined, resErrorStates)
-        const podWarning = getPodState(pod, undefined, resWarningStates)
+        const podError = [
+            'Error',
+            'Failed',
+            'Terminating',
+            'ImagePullBackOff',
+            'CrashLoopBackOff',
+            'RunContainerError',
+        ].includes(status)
+        const podWarning = ['Pending', 'Creating', 'Terminating'].includes(status)
+        pendingStatus, 'creating', 'terminating'
         const clusterDetails = podDataPerCluster[cluster]
         if (clusterDetails) {
+            addedDetails = true
             const statusStr = podError ? failureStatus : podWarning ? warningStatus : checkmarkStatus
 
             let addPodDetails = false
@@ -1203,6 +1117,23 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
             }
         }
     })
+
+    if (!addedDetails) {
+        details.push({
+            type: 'spacer',
+        })
+        details.push({
+            type: 'label',
+            labelKey: t('Cluster deploy status for pods'),
+        })
+        clusterNames.forEach((clusterName) => {
+            details.push({ labelValue: 'Cluster name', value: clusterName })
+            details.push({ labelValue: 'default', status: 'pending', value: notDeployedStr })
+            details.push({
+                type: 'spacer',
+            })
+        })
+    }
 
     clusterNames.forEach((clusterName) => {
         clusterName = R.trim(clusterName)
@@ -1362,7 +1293,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
                 if (addItemToDetails) {
                     details.push({
                         labelValue: targetNS,
-                        value: `${deployedKey} ${res && res.desired !== undefined ? res.resStatus : ''}`,
+                        value: `${deployedKey}${res && res.desired !== undefined ? '  ' + res.resStatus : ''}`,
                         status: statusStr,
                     })
                 } else {
