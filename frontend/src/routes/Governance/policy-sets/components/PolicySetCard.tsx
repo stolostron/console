@@ -24,14 +24,15 @@ import {
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { AcmDrawerContext } from '@stolostron/ui-components'
-import { ReactNode, useCallback, useContext, useState } from 'react'
+import { ReactNode, useCallback, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { placementBindingsState, placementRulesState, placementsState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
+import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import { PolicySet } from '../../../../resources'
+import { PolicySet, PolicySetDefinition } from '../../../../resources'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
 
 export default function PolicySetCard(props: {
@@ -46,6 +47,13 @@ export default function PolicySetCard(props: {
     const [modal, setModal] = useState<ReactNode | undefined>()
     const history = useHistory()
     const cardID = `policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`
+    const [canEditPolicySet, setCanEditPolicySet] = useState<boolean>(false)
+    const [canDeletePolicySet, setCanDeletePolicySet] = useState<boolean>(false)
+
+    useEffect(() => {
+        checkPermission(rbacCreate(PolicySetDefinition), setCanEditPolicySet)
+        checkPermission(rbacCreate(PolicySetDefinition), setCanDeletePolicySet)
+    }, [])
 
     function onClick(cardId: string) {
         setDrawerContext({
@@ -127,6 +135,9 @@ export default function PolicySetCard(props: {
                                     {t('View details')}
                                 </DropdownItem>,
                                 <DropdownItem
+                                    isDisabled={!canEditPolicySet}
+                                    isAriaDisabled={!canEditPolicySet}
+                                    tooltip={!canEditPolicySet ? t('rbac.unauthorized') : ''}
                                     key="edit"
                                     onClick={() => {
                                         history.push(
@@ -140,6 +151,9 @@ export default function PolicySetCard(props: {
                                 </DropdownItem>,
                                 <DropdownSeparator key="separator" />,
                                 <DropdownItem
+                                    isDisabled={!canDeletePolicySet}
+                                    isAriaDisabled={!canDeletePolicySet}
+                                    tooltip={!canDeletePolicySet ? t('rbac.unauthorized') : ''}
                                     key="delete"
                                     onClick={() => {
                                         setIsKebabOpen(false)
