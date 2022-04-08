@@ -509,7 +509,7 @@ export default function ApplicationsOverview() {
                     value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
                 },
                 {
-                    label: t('ArgoCD'),
+                    label: t('Argo CD'),
                     value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
                 },
                 {
