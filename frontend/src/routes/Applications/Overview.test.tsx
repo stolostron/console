@@ -407,12 +407,12 @@ describe('Applications Page', () => {
     test('should filter subscription apps', async () => {
         // Open filter
         userEvent.click(screen.getByText('Filter'))
-        expect(screen.getByTestId('app.k8s.io/application')).toBeTruthy()
-        userEvent.click(screen.getByTestId('app.k8s.io/application'))
+        expect(screen.getByTestId('app.k8s.io/Application')).toBeTruthy()
+        userEvent.click(screen.getByTestId('app.k8s.io/Application'))
 
         // Close filter
         userEvent.click(screen.getByText('Filter'))
-        const subscriptionCheckBox = screen.queryByTestId('app.k8s.io/application')
+        const subscriptionCheckBox = screen.queryByTestId('app.k8s.io/Application')
         expect(subscriptionCheckBox).toBeNull()
         const applicationSetType = screen.queryByText(ApplicationSetKind)
         expect(applicationSetType).toBeNull()
@@ -424,12 +424,12 @@ describe('Applications Page', () => {
     test('should filter argo apps', async () => {
         // Open filter
         userEvent.click(screen.getByText('Filter'))
-        expect(screen.getByTestId('argoproj.io/application')).toBeTruthy()
-        userEvent.click(screen.getByTestId('argoproj.io/application'))
+        expect(screen.getByTestId('argoproj.io/Application')).toBeTruthy()
+        userEvent.click(screen.getByTestId('argoproj.io/Application'))
 
         // Close filter
         userEvent.click(screen.getByText('Filter'))
-        const argoCheckBox = screen.queryByTestId('argoproj.io/application')
+        const argoCheckBox = screen.queryByTestId('argoproj.io/Application')
         expect(argoCheckBox).toBeNull()
         const applicationType = screen.queryByText(ApplicationKind)
         expect(applicationType).toBeNull()
@@ -441,12 +441,12 @@ describe('Applications Page', () => {
     test('should filter appset apps', async () => {
         // Open filter
         userEvent.click(screen.getByText('Filter'))
-        expect(screen.getByTestId('argoproj.io/applicationset')).toBeTruthy()
-        userEvent.click(screen.getByTestId('argoproj.io/applicationset'))
+        expect(screen.getByTestId('argoproj.io/ApplicationSet')).toBeTruthy()
+        userEvent.click(screen.getByTestId('argoproj.io/ApplicationSet'))
 
         // Close filter
         userEvent.click(screen.getByText('Filter'))
-        const argoCheckBox = screen.queryByTestId('argoproj.io/applicationset')
+        const argoCheckBox = screen.queryByTestId('argoproj.io/ApplicationSet')
         expect(argoCheckBox).toBeNull()
         const applicationType = screen.queryByText(ApplicationKind)
         expect(applicationType).toBeNull()
