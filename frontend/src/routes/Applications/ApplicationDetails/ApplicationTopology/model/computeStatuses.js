@@ -1050,7 +1050,6 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
             'RunContainerError',
         ].includes(status)
         const podWarning = ['Pending', 'Creating', 'Terminating'].includes(status)
-        pendingStatus, 'creating', 'terminating'
         const clusterDetails = podDataPerCluster[cluster]
         if (clusterDetails) {
             addedDetails = true
