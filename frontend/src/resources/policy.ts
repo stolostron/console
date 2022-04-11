@@ -27,7 +27,7 @@ export interface Policy {
         compliant?: 'Compliant' | 'NonCompliant'
         details?: PolicyStatusDetails[]
         placement?: { placementBinding: string; placementRule?: string; placement?: string; policySet?: string }[]
-        status?: { clustername: string; clusternamespace: string; compliant: string }[]
+        status?: { clustername: string; clusternamespace: string; compliant?: string }[]
     }
 }
 
