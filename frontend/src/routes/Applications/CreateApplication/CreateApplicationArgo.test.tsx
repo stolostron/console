@@ -6,6 +6,7 @@ import {
     channelsState,
     gitOpsClustersState,
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     namespacesState,
     placementsState,
     secretsState,
@@ -29,9 +30,12 @@ import {
     GitOpsCluster,
     GitOpsClusterApiVersion,
     GitOpsClusterKind,
+    ManagedClusterSet,
+    ManagedClusterSetApiVersion,
     ManagedClusterSetBinding,
     ManagedClusterSetBindingApiVersion,
     ManagedClusterSetBindingKind,
+    ManagedClusterSetKind,
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
@@ -231,6 +235,14 @@ const placementHelm: Placement = {
     },
 }
 
+const managedClusterSet: ManagedClusterSet = {
+    apiVersion: ManagedClusterSetApiVersion,
+    kind: ManagedClusterSetKind,
+    metadata: {
+        name: 'cluster-set-01',
+    },
+}
+
 describe('Create Argo Application Set', () => {
     const AddApplicationSet = () => {
         return (
@@ -242,6 +254,7 @@ describe('Create Argo Application Set', () => {
                     snapshot.set(namespacesState, [namespace])
                     snapshot.set(secretsState, [])
                     snapshot.set(managedClusterSetBindingsState, [clusterSetBinding])
+                    snapshot.set(managedClusterSetsState, [managedClusterSet])
                 }}
             >
                 <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
