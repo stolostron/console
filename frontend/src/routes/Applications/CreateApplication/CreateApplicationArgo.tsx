@@ -12,6 +12,7 @@ import {
     channelsState,
     gitOpsClustersState,
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     managedClustersState,
     namespacesState,
     placementsState,
@@ -69,6 +70,10 @@ export function CreateApplicationArgo() {
     const [managedClusters] = useRecoilState(managedClustersState)
     const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const providerConnections = secrets.map(unpackProviderConnection)
+    const clusterSetNames = useRecoilState(managedClusterSetsState)[0].map((clusterSet) => clusterSet.metadata.name)
+    const filteredManagedClusterSetBindings = managedClusterSetBindings.filter((clusterSetBinding) =>
+        clusterSetNames.includes(clusterSetBinding.spec.clusterSet)
+    )
 
     const availableArgoNS = gitOpsClusters
         .map((gitOpsCluster) => gitOpsCluster.spec?.argoServer?.argoNamespace)
@@ -96,7 +101,7 @@ export function CreateApplicationArgo() {
             applicationSets={applicationSets}
             placements={placements}
             clusters={managedClusters}
-            clusterSetBindings={managedClusterSetBindings}
+            clusterSetBindings={filteredManagedClusterSetBindings}
             channels={channels}
             getGitRevisions={getGitChannelBranches}
             getGitPaths={getGitChannelPaths}
