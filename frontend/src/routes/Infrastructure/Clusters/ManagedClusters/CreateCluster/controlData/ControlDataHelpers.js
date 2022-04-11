@@ -442,7 +442,7 @@ export const proxyControlData = [
     {
         id: 'httpProxy',
         type: 'text',
-        name: 'Http Proxy',
+        name: 'HTTP proxy',
         disabled: true,
         tip: 'Requires this format: http://<username>:<pswd>@<ip>:<port>',
         validation: VALIDATE_URL,
@@ -450,7 +450,7 @@ export const proxyControlData = [
     {
         id: 'httpsProxy',
         type: 'text',
-        name: 'Https Proxy',
+        name: 'HTTPS proxy',
         tip: 'Requires this format: https://<username>:<pswd>@<ip>:<port>',
         disabled: true,
         validation: VALIDATE_URL,
@@ -459,7 +459,7 @@ export const proxyControlData = [
         active: [],
         id: 'noProxy',
         type: 'values',
-        name: 'No Proxy',
+        name: 'No proxy',
         disabled: true,
         tip: 'Add comma separated sites to bypass the proxy. By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs.',
     },

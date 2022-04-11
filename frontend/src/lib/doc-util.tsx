@@ -23,7 +23,7 @@ export const DOC_LINKS = {
     CREATE_CONNECTION_BAREMETAL: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-bare-metal`,
     CREATE_CONNECTION_ANSIBLE: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-ansible`,
     CREATE_CONNECTION_REDHATCLOUD: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-openshift-cluster-manager`,
-    CREATE_CONNECTION_PROXY: `${DOC_BASE_PATH}/credentials/credentials#proxy`,
+    CREATE_CONNECTION_PROXY: `${DOC_BASE_PATH}/credentials/credentials#proxy`, // TODO: this link goes nowhere, update ASAP
     CREATE_CLUSTER: `${DOC_BASE_PATH}/clusters/managing-your-clusters#creating-a-cluster`,
     IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/managing-your-clusters#importing-a-target-managed-cluster-to-the-hub-cluster`,
     CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#managedclustersets`,
