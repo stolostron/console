@@ -103,7 +103,7 @@ export function ClusterPolicySummarySidebar(props: { cluster: ManagedCluster; co
                 header: t('Cluster violation'),
                 sort: (a: ClusterPolicies, b: ClusterPolicies) => compareStrings(a.compliance, b.compliance),
                 cell: (policy: ClusterPolicies) => {
-                    switch (policy.compliance?.toLowerCase()) {
+                    switch (policy?.compliance?.toLowerCase()) {
                         case 'compliant':
                             return (
                                 <div>
