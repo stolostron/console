@@ -9,6 +9,7 @@ import {
     channelsState,
     helmReleaseState,
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     managedClustersState,
     namespacesState,
     placementBindingsState,
@@ -64,6 +65,7 @@ export function EditPolicy() {
     const [placementRules] = useRecoilState(placementRulesState)
     const [managedClusters] = useRecoilState(managedClustersState)
     const [placementBindings] = useRecoilState(placementBindingsState)
+    const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(
         () =>
@@ -128,6 +130,7 @@ export function EditPolicy() {
             yamlEditor={getWizardSyncEditor}
             namespaces={namespaceNames}
             placementRules={placementRules}
+            clusterSets={clusterSets}
             clusterSetBindings={clusterSetBindings}
             editMode={EditMode.Edit}
             resources={existingResources}
