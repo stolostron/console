@@ -924,7 +924,7 @@ export function CredentialsForm(props: {
                 title: t('credentialsForm.rhvCredentials.title'),
                 wizardTitle: t('credentialsForm.rhvCredentials.wizardTitle'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION_OPENSTACK} target="_blank" rel="noreferrer">
+                    <a href={DOC_LINKS.CREATE_CONNECTION_VIRTUALIZATION} target="_blank" rel="noreferrer">
                         {t('credentialsForm.rhvCredentials.wizardDescription')}
                     </a>
                 ),
