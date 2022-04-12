@@ -221,7 +221,10 @@ const argoAppSetHelm: ApplicationSet = {
                     namespace: 'gitops-ns',
                     server: '{{server}}',
                 },
-                syncPolicy: { automated: { selfHeal: true }, syncOptions: ['CreateNamespace=true'] },
+                syncPolicy: {
+                    automated: { selfHeal: true, prune: true },
+                    syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+                },
             },
         },
     },
