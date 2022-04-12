@@ -2,6 +2,7 @@
 import YAML from 'yaml'
 import { isEmpty, get, set, cloneDeep, has, PropertyPath } from 'lodash'
 import { getErrors, validate } from './validation'
+import { getAllPaths, getPathArray } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 
@@ -276,21 +277,6 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
     })
 }
 
-export const getPathArray = (path: string[] | string) => {
-    const pathArr: string[] = []
-    if (!Array.isArray(path)) {
-        path = path.replace(/\[/g, '.').replace(/\]./g, '.')
-        path = path.split('.')
-    }
-    path.forEach((seg: any, idx: number) => {
-        pathArr.push(seg)
-        if (idx > 1 && idx < path.length - 1) {
-            pathArr.push('$v')
-        }
-    })
-    return pathArr
-}
-
 export const stringify = (resources: any[]) => {
     const yamls: string[] = []
     resources.forEach((resource: any) => {
@@ -302,84 +288,6 @@ export const stringify = (resources: any[]) => {
         }
     })
     return yamls.join('---\n')
-}
-
-// if a path has a wildcard fill in the exact path
-export const getPathLines = (
-    paths: (string | string[])[],
-    change: {
-        mappings: { [name: string]: any[] }
-        parsed: { [name: string]: any[] }
-    }
-) => {
-    const pathLines: number[] = []
-    const allPaths = getAllPaths(paths, change.mappings, change.parsed)
-    allPaths.forEach((path) => {
-        const value = get(change.mappings, getPathArray(path))
-        if (value) {
-            pathLines.push(value.$r)
-        }
-    })
-    return pathLines
-}
-
-// if a path has a wildcard fill in the exact path
-const getAllPaths = (
-    paths: (string | any[])[],
-    mappings: { [x: string]: string | any[] },
-    parsed: { [x: string]: string | any[] }
-) => {
-    let allPaths: (string | any[])[] = []
-    paths.forEach((path: string | any[]) => {
-        if (Array.isArray(path)) {
-            //
-            // [Resource, '*', 'key', ...]
-            //
-            if (mappings[path[0]] && path[1] === '*') {
-                Array.from(Array(mappings[path[0]].length)).forEach((_d, inx) => {
-                    allPaths.push([path[0], inx, ...path.slice(2)])
-                })
-            }
-            //
-            // 'Resource[*].key']
-            //
-        } else if (path.includes('[*]')) {
-            const arr = path.split('[*]')
-            if (mappings[arr[0]]) {
-                Array.from(Array(mappings[arr[0]].length)).forEach((_d, inx) => {
-                    allPaths.push(`${arr[0]}[${inx}]${arr[1]}`)
-                })
-            }
-            //
-            // '*.key.key'
-            //
-        } else if (path.startsWith('*.')) {
-            allPaths = [...allPaths, ...findAllPaths(parsed, path.substring(2))]
-        } else {
-            allPaths.push(path)
-        }
-    })
-    return allPaths
-}
-
-const findAllPaths = (object: { [x: string]: any; hasOwnProperty?: any }, searchKey: string, parentKeys = '') => {
-    let ret: any = []
-    if (parentKeys.endsWith(searchKey)) {
-        ret = [...ret, parentKeys]
-    }
-    Object.entries(object).forEach(([k, v]) => {
-        if (typeof v === 'object' && v !== null) {
-            let pk = k
-            if (parentKeys) {
-                pk = isNaN(parseInt(k)) ? `${parentKeys}.${k}` : `${parentKeys}[${k}]`
-            }
-            const o: any = findAllPaths(v, searchKey, pk)
-            if (o != null && o instanceof Array) {
-                ret = [...ret, ...o]
-            }
-        }
-    })
-    return ret
 }
 
 // filter kube resources

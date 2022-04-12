@@ -2,12 +2,13 @@
 import YAML from 'yaml'
 import { diff } from 'deep-diff'
 import { get, isEmpty, keyBy } from 'lodash'
-import { getPathArray } from './process'
+import { getPathArray } from './synchronize'
 import { normalize } from './reconcile'
 import { MappingType } from './process'
 
 export interface ChangeType {
     $t: string // type of change (N, E)
+    $u?: any // the value the user has changed it to
     $f?: any // the previous value in the form when the user has edited
     $a: string | string[] // the path to the value in a mapped object
     $p: string | string[] // the path to the value in a parsed object
@@ -37,7 +38,7 @@ export const getFormChanges = (
     },
     lastComparison?: { [name: string]: any[] }
 ) => {
-    let changes = userEdits
+    let changes = [] //userEdits
 
     // changes to yaml
     if (errors.length === 0 || !errors.every(({ isWarning }) => !isWarning)) {
@@ -51,7 +52,7 @@ export const getFormChanges = (
                     return JSON.stringify(edit.$p)
                 })
                 userEdits = userEdits.filter((edit: ChangeType) => {
-                    const { $a, $f, $p } = edit
+                    const { $a, $u, $p } = edit
                     const val = get(change.mappings, $a) as MappingType
                     // if there's no value at this path anymore, just filter out this user edit (may have deleted)
                     if (val) {
@@ -60,7 +61,7 @@ export const getFormChanges = (
                         const chng = changeMap[key]
                         if (chng) {
                             // however if the latest form change equals the user edit, just delete the user edit
-                            if ($f === val.$v) {
+                            if ($u === val.$v) {
                                 return false
                             } else {
                                 delete changeMap[key]
@@ -91,7 +92,7 @@ export const getUserChanges = (
     },
     lastComparison?: { [name: string]: any[] }
 ) => {
-    let changes = lastUserEdits
+    let changes = [] //lastUserEdits
 
     // changes to yaml
     if (errors.length === 0 || !errors.every(({ isWarning }) => !isWarning)) {
@@ -233,7 +234,8 @@ const getChanges = (
                             if ((obj.$v || obj.$v === false) && rhs !== undefined) {
                                 chng = { $t: 'E', $a: pathArr, $p: path }
                                 if (isCustomEdit) {
-                                    chng.$f = lhs
+                                    chng.$u = rhs // what user changed it to
+                                    chng.$f = lhs // what form had it as
                                 }
                                 changes.push(chng)
                             }
