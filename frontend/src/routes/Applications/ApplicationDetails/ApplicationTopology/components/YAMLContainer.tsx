@@ -18,7 +18,7 @@ export interface IYAMLContainerProps {
 
 export function YAMLContainer(props: IYAMLContainerProps) {
     let name = _.get(props.node, 'name', '')
-    const cluster = _.get(props.node, 'specs.clustersNames', [''])[0]
+    let cluster = _.get(props.node, 'specs.clustersNames', [''])[0]
     const namespace = _.get(props.node, 'namespace', '')
     const type = _.get(props.node, 'type', '')
     const kind = type === 'placements' ? 'placementrule' : type
@@ -34,6 +34,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
         if (typeModel && Object.keys(typeModel).length > 0) {
             const modelArray = typeModel[Object.keys(typeModel)[0]]
             name = _.get(modelArray[0], 'name')
+            cluster = _.get(modelArray[0], 'cluster')
         }
     }
 
