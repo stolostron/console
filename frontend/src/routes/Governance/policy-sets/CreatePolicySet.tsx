@@ -1,23 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PolicySetWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicySet/PolicySetWizard'
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
+import { PolicySetWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicySet/PolicySetWizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     managedClustersState,
     namespacesState,
     placementRulesState,
     placementsState,
     usePolicies,
 } from '../../../atoms'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicySetKind, reconcileResources } from '../../../resources'
 import schema from './schema.json'
-import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
@@ -48,6 +49,7 @@ export function CreatePolicySet() {
     const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [managedClusters] = useRecoilState(managedClustersState)
+    const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
     return (
@@ -59,6 +61,7 @@ export function CreatePolicySet() {
             namespaces={namespaceNames}
             placementRules={placementRules}
             yamlEditor={getWizardSyncEditor}
+            clusterSets={clusterSets}
             clusterSetBindings={clusterSetBindings}
             onSubmit={(data) => {
                 const resources = data as IResource[]

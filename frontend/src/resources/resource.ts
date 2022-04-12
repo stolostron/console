@@ -26,6 +26,14 @@ export function getResourcePlural(resourceDefinition: IResourceDefinition) {
         : resourceDefinition.kind?.toLowerCase() + 's'
 }
 
+export function getApiVersionResourceGroup(apiVersion: string) {
+    if (apiVersion.includes('/')) {
+        return apiVersion.split('/')[0]
+    } else {
+        return ''
+    }
+}
+
 export function getResourceGroup(resourceDefinition: IResourceDefinition) {
     if (resourceDefinition.apiVersion.includes('/')) {
         return resourceDefinition.apiVersion.split('/')[0]

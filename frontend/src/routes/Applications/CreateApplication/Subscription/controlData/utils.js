@@ -139,6 +139,7 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
     )
     let existingChannel = false
     let originalChannelControl = null
+    let isChannel = false
     // change channel name and namespace to reflect repository path
     if (active) {
         // if existing channel, reuse channel name and namespace
@@ -150,6 +151,7 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
             //generate a unique name for this channel
             const channelName = getUniqueChannelName(active, groupControlData)
             const channelNS = `${channelName}-ns`
+            const isChannelNS = nsControl.available.includes(channelNS)
 
             originalChannelControl = findOriginalChannelControl(globalControl, channelName, nameControl)
 
@@ -157,6 +159,19 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
                 // if existing channel, reuse channel name and namespace
                 nameControl.active = channelName
                 namespaceControl.active = channelNS
+                namespaceControlExists.active = true
+            } else if (isChannelNS) {
+                nameControl.active = channelName
+                for (const [key, value] of Object.entries(availableData)) {
+                    if (
+                        value.metadata.name === channelName &&
+                        value.metadata.namespace === channelNS &&
+                        key.includes(active)
+                    ) {
+                        isChannel = true
+                    }
+                }
+                namespaceControl.active = isChannel ? channelNS : ''
                 namespaceControlExists.active = true
             } else {
                 nameControl.active = channelName

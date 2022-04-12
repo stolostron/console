@@ -39,7 +39,13 @@ describe('Policy Set Card', () => {
         render(
             <RecoilRoot>
                 <MemoryRouter>
-                    <PolicySetCard policySet={policySet} selectedCardID={''} setSelectedCardID={() => {}} />
+                    <PolicySetCard
+                        policySet={policySet}
+                        selectedCardID={''}
+                        setSelectedCardID={() => {}}
+                        canEditPolicySet={true}
+                        canDeletePolicySet={true}
+                    />
                 </MemoryRouter>
             </RecoilRoot>
         )

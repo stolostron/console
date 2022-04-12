@@ -28,6 +28,7 @@ import {
     ApplicationDefinition,
     ApplicationKind,
     ApplicationSet,
+    ApplicationSetApiVersion,
     ApplicationSetDefinition,
     ApplicationSetKind,
     ArgoApplication,
@@ -35,11 +36,14 @@ import {
     ArgoApplicationKind,
     Channel,
     DiscoveredArgoApplicationDefinition,
+    getApiVersionResourceGroup,
     IResource,
     Subscription,
 } from '../../resources'
+import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
+import { argoAppSetQueryString, subscriptionAppQueryString } from './CreateApplication/actions'
 import {
     createClustersText,
     getAge,
@@ -50,8 +54,6 @@ import {
     hostingSubAnnotationStr,
     isResourceTypeOf,
 } from './helpers/resource-helper'
-import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { argoAppSetQueryString, subscriptionAppQueryString } from './CreateApplication/actions'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -504,19 +506,19 @@ export default function ApplicationsOverview() {
             options: [
                 {
                     label: t('Subscription'),
-                    value: t('application.app.k8s.io/v1beta1'),
+                    value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
                 },
                 {
                     label: t('Argo CD'),
-                    value: t('application.argoproj.io/v1alpha1'),
+                    value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
                 },
                 {
-                    label: t('ApplicationSet'),
-                    value: t('applicationset.argoproj.io/v1alpha1'),
+                    label: t('Application Set'),
+                    value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
                 },
             ],
             tableFilterFn: (selectedValues: string[], item: IResource) => {
-                return selectedValues.includes(`${item.kind.toLocaleLowerCase()}.${item.apiVersion}`)
+                return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
             },
         },
     ]

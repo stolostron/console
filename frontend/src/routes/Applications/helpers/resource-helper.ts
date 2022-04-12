@@ -228,7 +228,9 @@ export const getSearchLink = (params: any) => {
     let textSearch = ''
 
     _.entries(properties).forEach(([key, value]) => {
-        textSearch = `${textSearch}${textSearch ? ' ' : ''}${key}:${Array.isArray(value) ? value.join() : value}`
+        if (value) {
+            textSearch = `${textSearch}${textSearch ? ' ' : ''}${key}:${Array.isArray(value) ? value.join() : value}`
+        }
     })
 
     if (textSearch) {
