@@ -63,7 +63,7 @@ import kac from './kac.json'
 
 const minWizardSize = 1000
 const defaultPanelSize = 600
-const EDITOR_CHANGES = 'Editor changes'
+const EDITOR_CHANGES = 'Other YAML changes'
 
 const acmSchema = [...schema, ...kac]
 
