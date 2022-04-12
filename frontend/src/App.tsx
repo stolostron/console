@@ -50,7 +50,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
 import './App.css'
 import ACMPerspectiveIcon from './assets/ACM-icon.svg'
-import logo from './assets/RHACM-Logo.svg'
+import logo from './assets/RHACM-Logo.svg?url'
 import { LoadData } from './atoms'
 import { LoadingPage } from './components/LoadingPage'
 import { getApplinks, IAppSwitcherData } from './lib/applinks'
@@ -303,6 +303,7 @@ const useStyles = makeStyles({
         width: '100%',
         padding: 0,
         color: 'var(--pf-global--Color--light-100)',
+        minHeight: '24px',
 
         '& .pf-c-dropdown__toggle-icon': {
             // color: 'var(--pf-global--Color--light-100)',
@@ -612,6 +613,7 @@ function AppHeader() {
                     </div>
                 </div>
             }
+            logoProps={{ style: { textDecoration: 'none', cursor: 'default' } }}
             headerTools={headerTools}
             showNavToggle
             isNavOpen={isNavOpen}

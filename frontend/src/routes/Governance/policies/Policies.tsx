@@ -62,7 +62,7 @@ import {
     replaceResource,
 } from '../../../resources'
 import { getResourceLabel } from '../../Applications/helpers/resource-helper'
-import { getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
+import { getPolicyRemediation, getSource, PolicySetList, resolveExternalStatus, resolveSource } from '../common/util'
 import { AutomationDetailsSidebar } from '../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
@@ -169,8 +169,14 @@ export default function PoliciesPage() {
             },
             {
                 header: t('Remediation'),
-                cell: (item: PolicyTableItem) => item.policy.spec.remediationAction ?? '-',
-                sort: 'policy.spec.remediationAction',
+                cell: (item: PolicyTableItem) => {
+                    return getPolicyRemediation(item.policy)
+                },
+                sort: (itemA: PolicyTableItem, itemB: PolicyTableItem) => {
+                    const itemARemediation = getPolicyRemediation(itemA.policy)
+                    const itemBRemediation = getPolicyRemediation(itemB.policy)
+                    return compareStrings(itemARemediation, itemBRemediation)
+                },
             },
             {
                 header: t('Policy set'),
@@ -341,13 +347,7 @@ export default function PoliciesPage() {
             },
             {
                 header: t('policy.table.actionGroup.status'),
-                cell: (item: PolicyTableItem) => (
-                    <span>
-                        {item.policy.spec.remediationAction === t('policy.table.actions.inform').toLowerCase()
-                            ? t('policy.table.actions.inform')
-                            : t('policy.table.actions.enforce')}
-                    </span>
-                ),
+                cell: (item: PolicyTableItem) => getPolicyRemediation(item.policy),
             },
         ],
         [t]
@@ -629,9 +629,11 @@ export default function PoliciesPage() {
                 options: [
                     { label: 'Inform', value: 'inform' },
                     { label: 'Enforce', value: 'enforce' },
+                    { label: 'Inform/Enforce', value: 'inform/enforce' },
                 ],
                 tableFilterFn: (selectedValues, item) => {
-                    return selectedValues.includes(item.policy.spec.remediationAction)
+                    const policyRemediation = getPolicyRemediation(item.policy)
+                    return selectedValues.includes(policyRemediation)
                 },
             },
             {

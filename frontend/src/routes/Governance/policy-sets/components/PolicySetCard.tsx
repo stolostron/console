@@ -38,8 +38,10 @@ export default function PolicySetCard(props: {
     policySet: PolicySet
     selectedCardID: string
     setSelectedCardID: React.Dispatch<React.SetStateAction<string>>
+    canEditPolicySet: boolean
+    canDeletePolicySet: boolean
 }) {
-    const { policySet, selectedCardID, setSelectedCardID } = props
+    const { policySet, selectedCardID, setSelectedCardID, canEditPolicySet, canDeletePolicySet } = props
     const { t } = useTranslation()
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const [isKebabOpen, setIsKebabOpen] = useState<boolean>(false)
@@ -127,6 +129,8 @@ export default function PolicySetCard(props: {
                                     {t('View details')}
                                 </DropdownItem>,
                                 <DropdownItem
+                                    isAriaDisabled={!canEditPolicySet}
+                                    tooltip={!canEditPolicySet ? t('rbac.unauthorized') : ''}
                                     key="edit"
                                     onClick={() => {
                                         history.push(
@@ -140,6 +144,8 @@ export default function PolicySetCard(props: {
                                 </DropdownItem>,
                                 <DropdownSeparator key="separator" />,
                                 <DropdownItem
+                                    isAriaDisabled={!canDeletePolicySet}
+                                    tooltip={!canDeletePolicySet ? t('rbac.unauthorized') : ''}
                                     key="delete"
                                     onClick={() => {
                                         setIsKebabOpen(false)

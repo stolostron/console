@@ -9,7 +9,6 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { Location } from 'history'
 import {
     ApplicationKind,
-    createResources as createKubeResources,
     IResource,
     ProviderConnection,
     SubscriptionKind,
@@ -17,6 +16,7 @@ import {
     updateAppResources,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
+    reconcileResources,
 } from '../../resources'
 import '../Applications/CreateApplication/Subscription/style.css'
 
@@ -132,7 +132,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
             // change create cluster to create application
             const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
-            createKubeResources(createResources as IResource[])
+            reconcileResources(createResources as IResource[], [])
                 .then(() => {
                     toastContext.addAlert({
                         title: t('Application created'),

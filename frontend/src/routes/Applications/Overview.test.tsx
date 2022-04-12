@@ -11,10 +11,10 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
+    managedClusterInfosState,
     managedClustersState,
     placementRulesState,
     subscriptionsState,
-    managedClusterInfosState,
 } from '../../atoms'
 import { nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { waitForText } from '../../lib/test-util'
@@ -407,12 +407,12 @@ describe('Applications Page', () => {
     test('should filter subscription apps', async () => {
         // Open filter
         userEvent.click(screen.getByText('Filter'))
-        expect(screen.getByTestId('application.app.k8s.io/v1beta1')).toBeTruthy()
-        userEvent.click(screen.getByTestId('application.app.k8s.io/v1beta1'))
+        expect(screen.getByTestId('app.k8s.io/Application')).toBeTruthy()
+        userEvent.click(screen.getByTestId('app.k8s.io/Application'))
 
         // Close filter
         userEvent.click(screen.getByText('Filter'))
-        const subscriptionCheckBox = screen.queryByTestId('application.app.k8s.io/v1beta1')
+        const subscriptionCheckBox = screen.queryByTestId('app.k8s.io/Application')
         expect(subscriptionCheckBox).toBeNull()
         const applicationSetType = screen.queryByText(ApplicationSetKind)
         expect(applicationSetType).toBeNull()
@@ -424,12 +424,12 @@ describe('Applications Page', () => {
     test('should filter argo apps', async () => {
         // Open filter
         userEvent.click(screen.getByText('Filter'))
-        expect(screen.getByTestId('application.argoproj.io/v1alpha1')).toBeTruthy()
-        userEvent.click(screen.getByTestId('application.argoproj.io/v1alpha1'))
+        expect(screen.getByTestId('argoproj.io/Application')).toBeTruthy()
+        userEvent.click(screen.getByTestId('argoproj.io/Application'))
 
         // Close filter
         userEvent.click(screen.getByText('Filter'))
-        const argoCheckBox = screen.queryByTestId('application.argoproj.io/v1alpha1')
+        const argoCheckBox = screen.queryByTestId('argoproj.io/Application')
         expect(argoCheckBox).toBeNull()
         const applicationType = screen.queryByText(ApplicationKind)
         expect(applicationType).toBeNull()
@@ -441,12 +441,12 @@ describe('Applications Page', () => {
     test('should filter appset apps', async () => {
         // Open filter
         userEvent.click(screen.getByText('Filter'))
-        expect(screen.getByTestId('applicationset.argoproj.io/v1alpha1')).toBeTruthy()
-        userEvent.click(screen.getByTestId('applicationset.argoproj.io/v1alpha1'))
+        expect(screen.getByTestId('argoproj.io/ApplicationSet')).toBeTruthy()
+        userEvent.click(screen.getByTestId('argoproj.io/ApplicationSet'))
 
         // Close filter
         userEvent.click(screen.getByText('Filter'))
-        const argoCheckBox = screen.queryByTestId('applicationset.argoproj.io/v1alpha1')
+        const argoCheckBox = screen.queryByTestId('argoproj.io/ApplicationSet')
         expect(argoCheckBox).toBeNull()
         const applicationType = screen.queryByText(ApplicationKind)
         expect(applicationType).toBeNull()

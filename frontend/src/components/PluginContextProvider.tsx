@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { isHrefNavItem, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '@stolostron/ui-components'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 
@@ -32,7 +33,14 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
             }}
         >
             <div style={{ position: 'relative', height: '100%', width: '100%' }}>
-                <div style={{ position: 'absolute', height: '100%', width: '100%' }}>{props.children}</div>
+                <div style={{ position: 'absolute', height: '100%', width: '100%' }}>
+                    <AcmToastProvider>
+                        <AcmToastGroup />
+                        <AcmTablePaginationContextProvider localStorageKey="clusters">
+                            {props.children}
+                        </AcmTablePaginationContextProvider>
+                    </AcmToastProvider>
+                </div>
             </div>
         </PluginContext.Provider>
     )

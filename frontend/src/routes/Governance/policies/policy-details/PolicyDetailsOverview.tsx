@@ -36,7 +36,7 @@ import {
     PolicySet,
 } from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
-import { getPlacementDecisionsForPlacements, getPlacementsForResource } from '../../common/util'
+import { getPlacementDecisionsForPlacements, getPlacementsForResource, getPolicyRemediation } from '../../common/util'
 import { AutomationDetailsSidebar } from '../../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
@@ -87,7 +87,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             },
             {
                 key: 'Remediation',
-                value: policy.spec.remediationAction ?? '-',
+                value: getPolicyRemediation(policy),
             },
             {
                 key: 'Cluster violations',
@@ -253,7 +253,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                     // Gather status list from policy status
                     const rawStatusList: {
                         clustername: string
-                        compliant: string
+                        compliant?: string
                     }[] = item.policy.status?.status ?? []
                     // Build lists of clusters, organized by status keys
                     const clusterList: Record<string, Set<string>> = {}
@@ -271,7 +271,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                                 compliant: 'nostatus',
                             })
                         }
-                        let compliant = statusObject[0].compliant ?? 'nostatus'
+                        let compliant = statusObject[0]?.compliant ?? 'nostatus'
                         compliant = compliant.toLowerCase()
                         const clusterName = statusObject[0].clustername
                         // Add cluster to its associated status list in the clusterList object
