@@ -19,6 +19,7 @@ import { processForm, processUser, ProcessedType } from './process'
 import { compileAjvSchemas, formatErrors } from './validation'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
+import { syncChangesWithForm } from './synchronize'
 import { SyncDiffType } from './SyncDiff'
 import './SyncEditor.css'
 
@@ -30,6 +31,7 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     schema?: any
     secrets?: (string | string[])[]
     immutables?: (string | string[])[]
+    syncs?: [{ path: string | string[]; setState: () => unknown }] | undefined
     readonly?: boolean
     onClose?: () => void
     onEditorChange?: (editorResources: any) => void
@@ -45,6 +47,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         secrets,
         immutables,
         code,
+        syncs,
         readonly,
         onEditorChange,
         onClose,
@@ -62,6 +65,22 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const [showsFormChanges, setShowsFormChanges] = useState<boolean>(false)
     const [userEdits, setUserEdits] = useState<any>([])
     const [editorChanges, setEditorChanges] = useState<SyncDiffType>()
+    const [reportChanges, setReportChanges] = useState<{
+        changes: any[]
+        changeWithSecrets: {
+            yaml: string
+            mappings: { [name: string]: any[] }
+            parsed: { [name: string]: any[] }
+            resources: any[]
+            hiddenSecretsValues: any[]
+        }
+        changeWithoutSecrets: {
+            mappings: { [name: string]: any[] }
+            parsed: { [name: string]: any[] }
+            resources: any[]
+        }
+        errors: any[]
+    }>()
     const [lastUserEdits, setLastUserEdits] = useState<any>([])
     const [squigglyTooltips, setSquigglyTooltips] = useState<any>([])
     const [lastChange, setLastChange] = useState<ProcessedType>()
@@ -250,72 +269,72 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         let decorationTimeoutId: NodeJS.Timeout
         // debounce changes from form
         const changeTimeoutId = setTimeout(() => {
-            if (!isEqual(resources, editorChanges?.resources)) {
-                // parse/validate/secrets
-                const {
-                    yaml,
-                    protectedRanges,
-                    errors,
-                    comparison: formComparison,
-                    change,
-                    changeWithSecrets,
-                } = processForm(
+            // parse/validate/secrets
+            const {
+                yaml,
+                protectedRanges,
+                errors,
+                comparison: formComparison,
+                change,
+                changeWithSecrets,
+            } = processForm(
+                monacoRef,
+                code,
+                resources,
+                changeStack,
+                showSecrets ? undefined : secrets,
+                filterResources,
+                immutables,
+                userEdits,
+                validationRef.current
+            )
+            setLastUserEdits(userEdits)
+            setProhibited(protectedRanges)
+
+            // using monaco editor setValue blows away undo/redo and decorations
+            // but the design decision is the editor is agnostic of its form
+            // so form changes aren't articulated into individual line changes
+            const model = editorRef.current?.getModel()
+            const saveDecorations = getResourceEditorDecorations(editorRef)
+            const savePosition = editorRef.current?.getPosition()
+            model.setValue(yaml)
+            editorRef.current?.setPosition(savePosition)
+            editorRef.current.deltaDecorations([], saveDecorations)
+            setLastChangeWithSecrets(changeWithSecrets)
+
+            // determine what changes were made by form so we can decorate
+            const { changes, userEdits: edits } = getFormChanges(
+                errors,
+                change,
+                userEdits,
+                formComparison,
+                lastChange,
+                lastFormComparison
+            )
+
+            // report to form
+            setReportChanges(cloneDeep({ changes: edits, changeWithSecrets, changeWithoutSecrets: change, errors }))
+
+            decorationTimeoutId = setTimeout(() => {
+                // decorate errors, changes
+                const squigglyTooltips = decorate(
+                    false,
+                    editorRef,
                     monacoRef,
-                    code,
-                    resources,
-                    changeStack,
-                    showSecrets ? undefined : secrets,
-                    filterResources,
-                    immutables,
-                    userEdits,
-                    validationRef.current
-                )
-                setLastUserEdits(userEdits)
-                setProhibited(protectedRanges)
-
-                // using monaco editor setValue blows away undo/redo and decorations
-                // but the design decision is the editor is agnostic of its form
-                // so form changes aren't articulated into individual line changes
-                const model = editorRef.current?.getModel()
-                const saveDecorations = getResourceEditorDecorations(editorRef)
-                model.setValue(yaml)
-                editorRef.current.deltaDecorations([], saveDecorations)
-                setLastChangeWithSecrets(changeWithSecrets)
-
-                // determine what changes were made by form so we can decorate
-                const { changes, userEdits: edits } = getFormChanges(
                     errors,
+                    changes,
                     change,
-                    userEdits,
-                    formComparison,
-                    lastChange,
-                    lastFormComparison
+                    edits,
+                    protectedRanges
                 )
-
-                // report to form
-                onReportChange(edits, changeWithSecrets, change, errors)
-
-                decorationTimeoutId = setTimeout(() => {
-                    // decorate errors, changes
-                    const squigglyTooltips = decorate(
-                        false,
-                        editorRef,
-                        monacoRef,
-                        errors,
-                        changes,
-                        change,
-                        edits,
-                        protectedRanges
-                    )
-                    setShowsFormChanges(!!lastChange)
-                    setSquigglyTooltips(squigglyTooltips)
-                    setLastFormComparison(formComparison)
-                    setLastChange(change)
-                    setUserEdits(edits)
-                }, 0)
-                setHasRedo(false)
-                setHasUndo(false)
-            }
+                setShowsFormChanges(!!lastChange)
+                setSquigglyTooltips(squigglyTooltips)
+                setLastFormComparison(formComparison)
+                setLastChange(change)
+                setUserEdits(edits)
+            }, 0)
+            setHasRedo(false)
+            setHasUndo(false)
         }, 100)
 
         return () => {
@@ -358,7 +377,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             )
 
             // report to form
-            onReportChange(changes, changeWithSecrets, change, errors)
+            setReportChanges(cloneDeep({ changes, changeWithSecrets, changeWithoutSecrets: change, errors }))
 
             // decorate errors, changes
             const squigglyTooltips = decorate(
@@ -393,7 +412,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     }
 
     const debouncedEditorChange = useMemo(
-        () => debounce(editorChanged, 100),
+        () => debounce(editorChanged, 300),
         [lastChange, lastFormComparison, userEdits]
     )
 
@@ -403,46 +422,43 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         }
     }, [])
 
-    const onReportChange = (
-        changes: any[],
-        changeWithSecrets: {
-            yaml: string
-            mappings: { [name: string]: any[] }
-            parsed: { [name: string]: any[] }
-            resources: any[]
-            hiddenSecretsValues: any[]
-        },
-        changeWithoutSecrets: {
-            mappings: { [name: string]: any[] }
-            parsed: { [name: string]: any[] }
-            resources: any[]
-        },
-        errors: any[]
-    ) => {
-        const editor = editorRef?.current
-        const monaco = monacoRef?.current
-        const isArr = Array.isArray(resources)
-        let _resources = isArr ? resources : [resources]
-        _resources = lastValidResources || _resources
-        if (errors.length || changeWithSecrets.resources.length === 0) {
-            // if errors, use last valid resources
-            setEditorChanges({
-                resources: isArr ? _resources : _resources[0],
-                warnings: formatErrors(errors, true),
-                errors: formatErrors(errors),
-                changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
-            })
-        } else if (!isEqual(changeWithSecrets.resources, _resources)) {
-            // only report if resources changed
-            setEditorChanges({
-                resources: changeWithSecrets.resources,
-                warnings: formatErrors(errors, true),
-                errors: formatErrors(errors),
-                changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
-            })
-            setLastValidResources(cloneDeep(isArr ? changeWithSecrets.resources : changeWithSecrets.resources[0]))
+    // report changes to form
+    useEffect(() => {
+        // debounce report of changes to form
+        const changeTimeoutId = setTimeout(() => {
+            if (reportChanges) {
+                const { changes, changeWithSecrets, changeWithoutSecrets, errors } = reportChanges
+                const editor = editorRef?.current
+                const monaco = monacoRef?.current
+                const isArr = Array.isArray(resources)
+                let _resources = isArr ? resources : [resources]
+                _resources = lastValidResources || _resources
+                if (errors.length || changeWithSecrets.resources.length === 0) {
+                    // if errors, use last valid resources
+                    setEditorChanges({
+                        resources: isArr ? _resources : _resources[0],
+                        warnings: formatErrors(errors, true),
+                        errors: formatErrors(errors),
+                        changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
+                    })
+                } else if (!isEqual(changeWithSecrets.resources, _resources)) {
+                    // only report if resources changed
+                    setEditorChanges({
+                        resources: changeWithSecrets.resources,
+                        warnings: formatErrors(errors, true),
+                        errors: formatErrors(errors),
+                        changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
+                    })
+                    setLastValidResources(
+                        cloneDeep(isArr ? changeWithSecrets.resources : changeWithSecrets.resources[0])
+                    )
+                }
+            }
+        }, 500)
+        return () => {
+            clearTimeout(changeTimeoutId)
         }
-    }
+    }, [reportChanges, onEditorChange])
 
     useEffect(() => {
         if (onEditorChange && editorChanges) {
