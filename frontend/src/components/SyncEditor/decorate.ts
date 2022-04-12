@@ -20,7 +20,7 @@ export const decorate = (
     // errors/warnings
     addErrorDecorations(monacoRef, errors, decorations, squigglyTooltips)
 
-    // add the decorations
+    // add change decorations
     addChangeDecorations(isCustomEdit, monacoRef, changes, change, decorations)
 
     // if form is making changes, layer any editor changes decorations on top of form changes
@@ -108,28 +108,18 @@ const addChangeDecorations = (
     decorations: any[]
 ) => {
     changes.forEach((chng) => {
-        const { $t, $a, $f } = chng
+        const { $t, $a } = chng
         const obj: any = get(change.mappings, $a)
         if (obj) {
             decorations.push({
                 range: new monacoRef.current.Range(obj.$r, 0, obj.$r + ($t === 'N' ? obj.$l - 1 : 0), 0),
                 options: {
                     isWholeLine: true,
-                    linesDecorationsClassName: isCustomEdit ? 'customLineDecoration' : 'insertedLineDecoration',
-                    overviewRuler: isCustomEdit ? { color: '#0000ff', position: 1 } : {},
-                    minimap: { color: isCustomEdit ? '#0000ff' : '#c0c0ff', position: 2 },
+                    linesDecorationsClassName: 'insertedLineDecoration',
+                    minimap: { color: '#c0c0ff', position: 2 },
                     description: 'resource-editor',
                 },
             })
-            if ($f !== undefined && $f.toString().length < 32 && !obj.$s) {
-                decorations.push({
-                    range: new monacoRef.current.Range(obj.$r, 0, obj.$r, 132),
-                    options: {
-                        after: { content: `  # ${$f}`, inlineClassName: 'protectedDecoration' },
-                        description: 'resource-editor',
-                    },
-                })
-            }
         }
     })
 }

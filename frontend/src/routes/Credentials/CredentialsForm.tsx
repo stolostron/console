@@ -461,6 +461,14 @@ export function CredentialsForm(props: {
         return secret
         // return packProviderConnection(secret)
     }
+    function stateToSyncs() {
+        const syncs = [
+            { path: 'Secret[0].metadata.name', setState: setName },
+            { path: 'Secret[0].metadata.namespace', setState: setNamespace },
+            { path: 'Secret[0].stringData.baseDomain', setState: setBaseDomain },
+        ]
+        return syncs
+    }
     const title = isViewing ? name : isEditing ? t('Edit credential') : t('Add credential')
     const titleTooltip = (
         <Fragment>
@@ -1393,6 +1401,7 @@ export function CredentialsForm(props: {
         nextLabel: t('Next'),
         backLabel: t('Back'),
         cancel: () => history.push(NavigationPath.credentials),
+        stateToSyncs,
         stateToData,
     }
     return (

@@ -62,7 +62,7 @@ import schema from './schema.json'
 
 const minWizardSize = 1000
 const defaultPanelSize = 600
-const EDITOR_CHANGES = 'Editor changes'
+const EDITOR_CHANGES = 'Other YAML changes'
 
 export default function ImportClusterPage() {
     const { t } = useTranslation()

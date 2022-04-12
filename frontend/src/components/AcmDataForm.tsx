@@ -115,7 +115,7 @@ function requiredValidationMessage() {
 const minWizardSize = 1000
 const defaultPanelSize = 600
 
-const EDITOR_CHANGES = 'Editor changes'
+const EDITOR_CHANGES = 'Other YAML changes'
 
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
@@ -207,6 +207,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                         schema={schema}
                                         immutables={readOnly}
                                         secrets={secrets}
+                                        syncs={formData.stateToSyncs()}
                                         onClose={(): void => {
                                             setDrawerExpanded(false)
                                         }}

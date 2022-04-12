@@ -19,7 +19,7 @@ import { processForm, processUser, ProcessedType } from './process'
 import { compileAjvSchemas, formatErrors } from './validation'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
-import { syncChangesWithForm } from './synchronize'
+import { setFormStates } from './synchronize'
 import { SyncDiffType } from './SyncDiff'
 import './SyncEditor.css'
 
@@ -324,7 +324,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     errors,
                     changes,
                     change,
-                    edits,
+                    [], //edits,
                     protectedRanges
                 )
                 setShowsFormChanges(!!lastChange)
@@ -385,9 +385,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 editorRef,
                 monacoRef,
                 errors,
-                changes,
+                [], //changes,
                 change,
-                userEdits,
+                [], //userEdits,
                 protectedRanges
             )
             setSquigglyTooltips(squigglyTooltips)
@@ -452,13 +452,14 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     setLastValidResources(
                         cloneDeep(isArr ? changeWithSecrets.resources : changeWithSecrets.resources[0])
                     )
+                    setFormStates(syncs, changeWithSecrets)
                 }
             }
         }, 500)
         return () => {
             clearTimeout(changeTimeoutId)
         }
-    }, [reportChanges, onEditorChange])
+    }, [reportChanges])
 
     useEffect(() => {
         if (onEditorChange && editorChanges) {
