@@ -728,7 +728,7 @@ export const setAppSetDeployStatus = (node, details, t) => {
         details.push({
             labelKey: 'Error',
             value: t(
-                'There are no Argo applications created. Check the following resources and make sure they are configured properly: applicationset placement, gitopscluster, gitopcluster placement, managedclusterset'
+                'There are no Argo applications created. Check the following resources and make sure they are configured properly: applicationset placement, gitopscluster, gitopcluster placement, managedclusterset. Also make sure the ApplicationSet feature is enabled if Gitops is deployed to a namespace other than openshift-gitops.'
             ),
             status: failureStatus,
         })
