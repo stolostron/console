@@ -343,7 +343,7 @@ export const clusterDetailsControlData = [
         id: 'fips',
         type: 'checkbox',
         active: false,
-        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with RHCOS instead of the default Kubernetes cryptography suite.',
+        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.',
     },
 ]
 
