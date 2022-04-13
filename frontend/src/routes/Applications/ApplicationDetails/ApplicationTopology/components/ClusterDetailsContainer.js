@@ -399,7 +399,8 @@ class ClusterDetailsContainer extends React.Component {
                 displayClusterList[i].status || this.calculateClusterStatus(displayClusterList[i]) || 'unknown'
             const statusIcon = this.mapClusterStatusToIcon(status)
             const clusterName = displayClusterList[i].name || metadata.name
-            const clusterNamespace = displayClusterList[i]._clusterNamespace || metadata.namespace
+            const clusterNamespace =
+                displayClusterList[i].namespace || displayClusterList[i]._clusterNamespace || metadata.namespace
             const creationTimestamp = displayClusterList[i].created || metadata.creationTimestamp
             const cc = displayClusterList[i].cpu ? displayClusterList[i].cpu.toString() : capacity.cpu
             const cm = displayClusterList[i].memory ? displayClusterList[i].memory.toString() : capacity.memory

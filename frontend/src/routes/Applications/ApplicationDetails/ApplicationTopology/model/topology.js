@@ -105,9 +105,7 @@ export const processNodeData = (node, topoResourceMap, isClusterGrouped, hasHelm
         // if this node represents multiple resources, create an entry for each resource in the map
         const resources = _.get(node, 'specs.resources')
         if (resources) {
-            resources.forEach(({ name }) => {
-                topoResourceMap[`${type}-${name}-${clusterName}`] = node
-            })
+            topoResourceMap[`${type}-${clusterName}`] = node
         } else {
             topoResourceMap[`${type}-${keyName}-${clusterName}`] = node
         }
