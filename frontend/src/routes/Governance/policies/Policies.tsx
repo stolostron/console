@@ -121,9 +121,6 @@ export default function PoliciesPage() {
 
     useEffect(() => {
         checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy)
-    }, [])
-
-    useEffect(() => {
         checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanAutomatePolicy)
     }, [])
 
