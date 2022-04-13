@@ -27,6 +27,7 @@ class ChannelControl extends React.Component {
             changeTheChannel: PropTypes.func,
         }),
         t: PropTypes.func,
+        setDrawerContent: PropTypes.func,
     }
 
     constructor(props) {
@@ -78,6 +79,7 @@ class ChannelControl extends React.Component {
         this.changeSubscriptionChannels(selectedItem.chn)
         // Set the current channel to the selected channel
         this.setState({ currentChannel: selectedItem })
+        this.props.setDrawerContent('Close', false, true, true, true, undefined, true)
     }
 
     selectChannelByNumber(channelNb) {
