@@ -11,7 +11,6 @@ export const decorate = (
         parsed: { [name: string]: any[] }
         mappings: { [name: string]: any[] }
     },
-    userEdits: any[],
     protectedRanges: any[]
 ) => {
     const decorations: any[] = []
@@ -21,12 +20,7 @@ export const decorate = (
     addErrorDecorations(monacoRef, errors, decorations, squigglyTooltips)
 
     // add change decorations
-    addChangeDecorations(isCustomEdit, monacoRef, changes, change, decorations)
-
-    // if form is making changes, layer any editor changes decorations on top of form changes
-    if (!isCustomEdit && userEdits.length) {
-        addChangeDecorations(true, monacoRef, userEdits, change, decorations)
-    }
+    addChangeDecorations(monacoRef, changes, change, decorations)
 
     // add protected decorations
     addProtectedDecorations(monacoRef, protectedRanges, decorations)
@@ -98,7 +92,6 @@ const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], 
 }
 
 const addChangeDecorations = (
-    isCustomEdit: boolean,
     monacoRef: any,
     changes: any[],
     change: {

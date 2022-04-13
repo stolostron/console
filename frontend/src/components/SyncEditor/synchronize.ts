@@ -4,7 +4,7 @@ import { MappingType } from './process'
 
 // set form/wizard inputs to yaml changes
 export const setFormStates = (
-    syncs: any[] | undefined,
+    syncs: unknown,
     resources: {
         mappings: { [x: string]: any[] }
     }
