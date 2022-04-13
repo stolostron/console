@@ -31,7 +31,7 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     schema?: any
     secrets?: (string | string[])[]
     immutables?: (string | string[])[]
-    syncs?: [{ path: string | string[]; setState: () => unknown }] | undefined
+    syncs?: unknown
     readonly?: boolean
     onClose?: () => void
     onEditorChange?: (editorResources: any) => void
@@ -268,74 +268,83 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     useEffect(() => {
         let decorationTimeoutId: NodeJS.Timeout
         // debounce changes from form
-        const changeTimeoutId = setTimeout(() => {
-            // parse/validate/secrets
-            const {
-                yaml,
-                protectedRanges,
-                errors,
-                comparison: formComparison,
-                change,
-                changeWithSecrets,
-            } = processForm(
-                monacoRef,
-                code,
-                resources,
-                changeStack,
-                showSecrets ? undefined : secrets,
-                filterResources,
-                immutables,
-                userEdits,
-                validationRef.current
-            )
-            setLastUserEdits(userEdits)
-            setProhibited(protectedRanges)
+        const changeTimeoutId = setTimeout(
+            () => {
+                // ignore echo from form
+                // (user types, form is updated, form change comes here)
+                if (!isEqual(Array.isArray(resources) ? resources : [resources], editorChanges?.resources)) {
+                    //if (!editorRef.current.hasTextFocus()) {
+                    // parse/validate/secrets
+                    const {
+                        yaml,
+                        protectedRanges,
+                        errors,
+                        comparison: formComparison,
+                        change,
+                        changeWithSecrets,
+                    } = processForm(
+                        monacoRef,
+                        code,
+                        resources,
+                        changeStack,
+                        showSecrets ? undefined : secrets,
+                        filterResources,
+                        immutables,
+                        userEdits,
+                        validationRef.current
+                    )
+                    setLastUserEdits(userEdits)
+                    setProhibited(protectedRanges)
 
-            // using monaco editor setValue blows away undo/redo and decorations
-            // but the design decision is the editor is agnostic of its form
-            // so form changes aren't articulated into individual line changes
-            const model = editorRef.current?.getModel()
-            const saveDecorations = getResourceEditorDecorations(editorRef)
-            const savePosition = editorRef.current?.getPosition()
-            model.setValue(yaml)
-            editorRef.current?.setPosition(savePosition)
-            editorRef.current.deltaDecorations([], saveDecorations)
-            setLastChangeWithSecrets(changeWithSecrets)
+                    // using monaco editor setValue blows away undo/redo and decorations
+                    // but the design decision is the editor is agnostic of its form
+                    // so form changes aren't articulated into individual line changes
+                    const model = editorRef.current?.getModel()
+                    const saveDecorations = getResourceEditorDecorations(editorRef)
+                    const savePosition = editorRef.current?.getPosition()
+                    model.setValue(yaml)
+                    editorRef.current?.setPosition(savePosition)
+                    editorRef.current.deltaDecorations([], saveDecorations)
+                    setLastChangeWithSecrets(changeWithSecrets)
 
-            // determine what changes were made by form so we can decorate
-            const { changes, userEdits: edits } = getFormChanges(
-                errors,
-                change,
-                userEdits,
-                formComparison,
-                lastChange,
-                lastFormComparison
-            )
+                    // determine what changes were made by form so we can decorate
+                    const { changes, userEdits: edits } = getFormChanges(
+                        errors,
+                        change,
+                        userEdits,
+                        formComparison,
+                        lastChange,
+                        lastFormComparison
+                    )
 
-            // report to form
-            setReportChanges(cloneDeep({ changes: edits, changeWithSecrets, changeWithoutSecrets: change, errors }))
+                    // report to form
+                    setReportChanges(
+                        cloneDeep({ changes: edits, changeWithSecrets, changeWithoutSecrets: change, errors })
+                    )
 
-            decorationTimeoutId = setTimeout(() => {
-                // decorate errors, changes
-                const squigglyTooltips = decorate(
-                    false,
-                    editorRef,
-                    monacoRef,
-                    errors,
-                    changes,
-                    change,
-                    [], //edits,
-                    protectedRanges
-                )
-                setShowsFormChanges(!!lastChange)
-                setSquigglyTooltips(squigglyTooltips)
-                setLastFormComparison(formComparison)
-                setLastChange(change)
-                setUserEdits(edits)
-            }, 0)
-            setHasRedo(false)
-            setHasUndo(false)
-        }, 100)
+                    decorationTimeoutId = setTimeout(() => {
+                        // decorate errors, changes
+                        const squigglyTooltips = decorate(
+                            false,
+                            editorRef,
+                            monacoRef,
+                            errors,
+                            changes,
+                            change,
+                            protectedRanges
+                        )
+                        setShowsFormChanges(!!lastChange)
+                        setSquigglyTooltips(squigglyTooltips)
+                        setLastFormComparison(formComparison)
+                        setLastChange(change)
+                        setUserEdits(edits)
+                    }, 0)
+                    setHasRedo(false)
+                    setHasUndo(false)
+                }
+            },
+            editorRef.current.hasTextFocus() ? 2000 : 100
+        )
 
         return () => {
             clearTimeout(changeTimeoutId)
@@ -387,7 +396,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 errors,
                 [], //changes,
                 change,
-                [], //userEdits,
                 protectedRanges
             )
             setSquigglyTooltips(squigglyTooltips)

@@ -207,7 +207,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                         schema={schema}
                                         immutables={readOnly}
                                         secrets={secrets}
-                                        syncs={formData.stateToSyncs()}
+                                        syncs={formData.stateToSyncs && formData.stateToSyncs()}
                                         onClose={(): void => {
                                             setDrawerExpanded(false)
                                         }}

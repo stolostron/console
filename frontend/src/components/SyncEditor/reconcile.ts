@@ -108,7 +108,10 @@ const mergeResources = (
                             break
                         }
                         case 'D': {
-                            unset(resource, path)
+                            const userEdit = userEditsMap[JSON.stringify([...basePath, ...path])]
+                            if (!userEdit) {
+                                unset(resource, path)
+                            }
                             break
                         }
                     }
