@@ -1426,13 +1426,17 @@ export function CredentialsForm(props: {
                 ['Secret', '0', 'stringData', 'osServiceAccount.json'],
                 ['Secret', '0', 'stringData', 'clouds.yaml'],
             ]}
-            immutables={[
-                'Secret[0].apiVersion',
-                'Secret[0].kind',
-                'Secret[0].type',
-                'Secret[0].metadata.*',
-                'Secret[0].stringData',
-            ]}
+            immutables={
+                isEditing
+                    ? [
+                          'Secret[0].apiVersion',
+                          'Secret[0].kind',
+                          'Secret[0].type',
+                          'Secret[0].metadata.*',
+                          'Secret[0].stringData',
+                      ]
+                    : undefined
+            }
             edit={() => {
                 if (providerConnection) {
                     history.push(

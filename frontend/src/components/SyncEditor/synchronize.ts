@@ -34,67 +34,69 @@ export const getPathArray = (path: string[] | string) => {
 }
 
 // if a path has a wildcard fill in the exact path
-export const getPathLines = (
-    paths: (string | string[])[],
-    change: {
-        mappings: { [name: string]: any[] }
-        parsed: { [name: string]: any[] }
-    }
-) => {
-    const pathLines: number[] = []
-    const allPaths = getAllPaths(paths, change.mappings, change.parsed)
-    allPaths.forEach((path) => {
-        const value = get(change.mappings, getPathArray(path))
-        if (value) {
-            pathLines.push(value.$r)
-        }
-    })
-    return pathLines
-}
-
-// if a path has a wildcard fill in the exact path
 export const getAllPaths = (
     paths: (string | any[])[],
     mappings: { [x: string]: string | any[] },
     parsed: { [x: string]: string | any[] }
 ) => {
-    let allPaths: (string | any[])[] = []
+    let allPaths: { path: string | any[]; isRange: boolean }[] = []
     paths.forEach((path: string | any[]) => {
+        // if ends with *, include all objects below this path
+        let isRange = false
+        if (Array.isArray(path)) {
+            isRange = path[path.length - 1] === '*'
+            if (isRange) {
+                path.pop()
+            }
+        } else {
+            isRange = path.endsWith('*')
+            if (isRange) {
+                path = path.slice(0, path.endsWith('.*') ? -2 : -1)
+            }
+        }
         if (Array.isArray(path)) {
             //
             // [Resource, '*', 'key', ...]
             //
             if (mappings[path[0]] && path[1] === '*') {
                 Array.from(Array(mappings[path[0]].length)).forEach((_d, inx) => {
-                    allPaths.push([path[0], inx, ...path.slice(2)])
+                    if (Array.isArray(path)) {
+                        allPaths.push({ path: [path[0], inx, ...path.slice(2)], isRange })
+                    }
                 })
             }
             //
             // 'Resource[*].key']
             //
         } else if (path.includes('[*]')) {
+            // if ends with *, include all objects below this path
             const arr = path.split('[*]')
             if (mappings[arr[0]]) {
                 Array.from(Array(mappings[arr[0]].length)).forEach((_d, inx) => {
-                    allPaths.push(`${arr[0]}[${inx}]${arr[1]}`)
+                    allPaths.push({ path: `${arr[0]}[${inx}]${arr[1]}`, isRange })
                 })
             }
             //
             // '*.key.key'
             //
         } else if (path.startsWith('*.')) {
-            allPaths = [...allPaths, ...findAllPaths(parsed, path.substring(2))]
+            allPaths = [...allPaths, ...findAllPaths(parsed, path.substring(2), isRange)]
         } else {
-            allPaths.push(path)
+            allPaths.push({ path, isRange })
         }
     })
     return allPaths
 }
 
-const findAllPaths = (object: { [x: string]: any; hasOwnProperty?: any }, searchKey: string, parentKeys = '') => {
-    let ret: any = []
+const findAllPaths = (
+    object: { [x: string]: any; hasOwnProperty?: any },
+    searchKey: string,
+    isRange: boolean,
+    parentKeys = ''
+) => {
+    let ret: any[] = []
     if (parentKeys.endsWith(searchKey)) {
-        ret = [...ret, parentKeys]
+        ret = [...ret, { path: parentKeys, isRange }]
     }
     Object.entries(object).forEach(([k, v]) => {
         if (typeof v === 'object' && v !== null) {
@@ -102,7 +104,7 @@ const findAllPaths = (object: { [x: string]: any; hasOwnProperty?: any }, search
             if (parentKeys) {
                 pk = isNaN(parseInt(k)) ? `${parentKeys}.${k}` : `${parentKeys}[${k}]`
             }
-            const o: any = findAllPaths(v, searchKey, pk)
+            const o: any = findAllPaths(v, searchKey, isRange, pk)
             if (o != null && o instanceof Array) {
                 ret = [...ret, ...o]
             }
