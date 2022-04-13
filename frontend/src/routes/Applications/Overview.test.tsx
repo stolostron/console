@@ -360,10 +360,6 @@ describe('Applications Page', () => {
     beforeEach(async () => {
         nockIgnoreRBAC()
         nockSearch(mockSearchQuery, mockSearchResponse)
-        // nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-        //     .persist()
-        //     .get('/apis/project.openshift.io/v1/projects')
-        //     .reply(200, mockProjects)
         render(
             <RecoilRoot
                 initializeState={(snapshot) => {

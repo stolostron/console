@@ -16,6 +16,7 @@ import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
+    namespacesState,
     placementBindingsState,
     placementDecisionsState,
     placementRulesState,
@@ -61,6 +62,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     const [placementRules] = useRecoilState(placementRulesState)
     const [placementDecisions] = useRecoilState(placementDecisionsState)
     const [policyAutomations] = useRecoilState(policyAutomationState)
+    const [namespaces] = useRecoilState(namespacesState)
     const govData = useGovernanceData([policy])
     const clusterRiskScore =
         govData.clusterRisks.high +
@@ -75,8 +77,8 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     const [canAutomatePolicy, setCanAutomatePolicy] = useState<boolean>(false)
 
     useEffect(() => {
-        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanAutomatePolicy)
-    }, [])
+        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanAutomatePolicy, namespaces)
+    }, [namespaces])
 
     const { leftItems, rightItems } = useMemo(() => {
         const leftItems = [

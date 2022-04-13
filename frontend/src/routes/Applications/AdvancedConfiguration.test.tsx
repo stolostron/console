@@ -89,8 +89,6 @@ describe('advanced configuration page', () => {
 
     test('should render the table with subscriptions', async () => {
         render(<TestAdvancedConfigurationPage />)
-        // const initialNocks = [nockList(NamespaceDefinition, mockNamespaces)]
-        // await waitForNocks(initialNocks)
         await waitForText(mockSubscription1.metadata!.name!)
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
