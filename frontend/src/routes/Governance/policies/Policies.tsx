@@ -85,6 +85,7 @@ export default function PoliciesPage() {
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [policyAutomations] = useRecoilState(policyAutomationState)
+    const [namespaces] = useRecoilState(namespacesState)
     const { setDrawerContext } = useContext(AcmDrawerContext)
 
     const tableItems: PolicyTableItem[] = useMemo(() => {
@@ -120,12 +121,12 @@ export default function PoliciesPage() {
     const [canAutomatePolicy, setCanAutomatePolicy] = useState<boolean>(false)
 
     useEffect(() => {
-        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy)
-    }, [])
+        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
+    }, [namespaces])
 
     useEffect(() => {
-        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanAutomatePolicy)
-    }, [])
+        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanAutomatePolicy, namespaces)
+    }, [namespaces])
 
     const policyColumns = useMemo<IAcmTableColumn<PolicyTableItem>[]>(
         () => [
@@ -560,7 +561,6 @@ export default function PoliciesPage() {
         return newOptions
     }, [tableItems, t])
 
-    const [namespaces] = useRecoilState(namespacesState)
     const filters = useMemo<ITableFilter<PolicyTableItem>[]>(
         () => [
             {

@@ -7,10 +7,7 @@ import {
     getResourceGroup,
     getResourcePlural,
     IResource,
-    listProjects,
     Namespace,
-    NamespaceApiVersion,
-    NamespaceKind,
     ResourceAttributes,
 } from '../resources'
 
@@ -168,22 +165,14 @@ export function canUser(
     return selfSubjectAccessReview
 }
 
-export async function checkPermission(resourceAttributes: ResourceAttributes, setStateFn: (state: boolean) => void) {
-    // Require hub to run on OCP
-    const fetchProjects = async () => {
-        return listProjects().promise
-    }
-
-    fetchProjects().then((projects) => {
-        const namespaceArr: Namespace[] = projects.map((project) => {
-            return {
-                apiVersion: NamespaceApiVersion,
-                kind: NamespaceKind,
-                metadata: project.metadata,
-            } as Namespace
-        })
+export async function checkPermission(
+    resourceAttributes: ResourceAttributes,
+    setStateFn: (state: boolean) => void,
+    namespaces: Namespace[]
+) {
+    if (namespaces.length) {
         const fetchAuthorizedNamespaces = async () => {
-            const authorizedNamespaces = await getAuthorizedNamespaces([resourceAttributes], namespaceArr)
+            const authorizedNamespaces = await getAuthorizedNamespaces([resourceAttributes], namespaces)
             return authorizedNamespaces
         }
         fetchAuthorizedNamespaces().then((authorizedNamespaces) => {
@@ -193,5 +182,7 @@ export async function checkPermission(resourceAttributes: ResourceAttributes, se
                 setStateFn(false)
             }
         })
-    })
+    } else {
+        setStateFn(false)
+    }
 }
