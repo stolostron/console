@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
-import { isEmpty, get, set, cloneDeep, has, PropertyPath } from 'lodash'
+import { isEmpty, get, set, cloneDeep, has } from 'lodash'
 import { getErrors, validate } from './validation'
 import { getAllPaths, getPathArray } from './synchronize'
 import { reconcile } from './reconcile'
@@ -144,14 +144,14 @@ const process = (
         }
 
         // expand wildcards in declared secret paths
-        const allSecrets: any = getAllPaths(secrets, mappings, parsed)
+        const allSecrets = getAllPaths(secrets, mappings, parsed)
 
         // stuff secrets with '*******'
-        allSecrets.forEach((secret: PropertyPath) => {
-            const value = get(parsed, secret)
+        allSecrets.forEach(({ path }) => {
+            const value = get(parsed, path) as unknown as string
             if (value && typeof value === 'string') {
-                hiddenSecretsValues.push({ path: secret, value })
-                set(parsed, secret, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
+                hiddenSecretsValues.push({ path: path, value })
+                set(parsed, path, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
             }
         })
 
@@ -166,8 +166,8 @@ const process = (
         ;({ mappings, parsed, resources } = getMappings(documents))
 
         // prevent typing on secrets
-        allSecrets.forEach((secret: string | string[]) => {
-            const value = get(mappings, getPathArray(secret))
+        allSecrets.forEach(({ path }) => {
+            const value = get(mappings, getPathArray(path))
             if (value && value.$v) {
                 protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
                 value.$s = true
@@ -183,22 +183,11 @@ const process = (
 
     // prevent typing on immutables
     if (immutables) {
-        immutables.forEach((immutable) => {
-            let allFlag = false
-            if (Array.isArray(immutable)) {
-                allFlag = immutable[immutable.length - 1] === '*'
-                if (allFlag) {
-                    immutable.pop()
-                }
-            } else {
-                allFlag = immutable.endsWith('*')
-                if (allFlag) {
-                    immutable = immutable.slice(0, -2)
-                }
-            }
-            const value = get(mappings, getPathArray(immutable))
-            if (value && value.$v) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + (allFlag ? value.$l : 1), 0))
+        const allImmutables = getAllPaths(immutables, mappings, parsed)
+        allImmutables.forEach(({ path, isRange }) => {
+            const value = get(mappings, getPathArray(path))
+            if (value && value.$v !== undefined) {
+                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + (isRange ? value.$l : 1), 0))
             }
         })
     }

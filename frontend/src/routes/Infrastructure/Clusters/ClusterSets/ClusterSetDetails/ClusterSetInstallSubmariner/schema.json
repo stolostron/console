@@ -73,7 +73,8 @@
                     "properties": {
                         "name": { "type": "string" },
                         "namespace": { "type": "string" }
-                    }
+                    },
+                    "required": ["name", "namespace"]
                 },
                 "spec": {
                     "type": "object",

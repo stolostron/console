@@ -62,7 +62,6 @@ export const getFormChanges = (
                         if (chng) {
                             // however if the latest form change equals the user edit, just delete the user edit
                             if ($u === val.$v || (!$u && !val.$v)) {
-                                delete changeMap[key]
                                 return false
                             } else {
                                 delete changeMap[key]
