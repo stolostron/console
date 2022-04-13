@@ -120,6 +120,7 @@ export function getArgoTopology(application, argoData) {
             specs: {
                 isDesign: false,
                 raw,
+                clustersNames: clusterNames,
                 parent: {
                     clusterId,
                 },
@@ -135,7 +136,7 @@ export function getArgoTopology(application, argoData) {
 
         const template = { metadata: {} }
         // create replica subobject, if this object defines a replicas
-        createReplicaChild(deployableObj, template, links, nodes)
+        createReplicaChild(deployableObj, clusterNames, template, links, nodes)
     })
 
     return { nodes: uniqBy(nodes, 'uid'), links }
