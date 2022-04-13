@@ -1,14 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ApolloError } from '@apollo/client'
 import { Alert } from '@patternfly/react-core'
 import {
     AcmActionGroup,
+    AcmAlert,
     AcmPage,
     AcmPageHeader,
     AcmRoute,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@stolostron/ui-components'
+import { TFunction } from 'i18next'
 import {
     createContext,
     ElementType,
@@ -47,6 +50,8 @@ import {
     ApplicationSetDefinition,
     ApplicationSetKind,
 } from '../../../resources'
+import { searchClient } from '../../Home/Search/search-sdk/search-client'
+import { useSearchCompleteQuery } from '../../Home/Search/search-sdk/search-sdk'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
 import { getAppChildResources, getAppSetRelatedResources, getSearchLink } from '../helpers/resource-helper'
@@ -88,6 +93,20 @@ export type ApplicationDataType = {
     appData: any
     topology: any
     statuses?: any
+}
+
+function searchError(completeError: ApolloError | undefined, t: TFunction) {
+    if (completeError && completeError.message.includes('not enabled')) {
+        return (
+            <AcmAlert
+                noClose
+                variant="info"
+                isInline
+                title={t('Info')}
+                subtitle={`${completeError?.message} ${t('Enable search to display application statuses properly.')}`}
+            />
+        )
+    }
 }
 
 export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ name: string; namespace: string }>) {
@@ -243,6 +262,19 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             },
         })
     }
+
+    const searchCompleteResults = useSearchCompleteQuery({
+        skip: false,
+        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+        variables: {
+            property: '',
+            query: {
+                filters: [],
+                keywords: [],
+                limit: 10000,
+            },
+        },
+    })
 
     useEffect(() => setRoute(AcmRoute.Applications), [setRoute])
 
@@ -417,6 +449,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 <Alert isInline variant="danger" title={t('Application not found!')} />
             ) : (
                 <Fragment>
+                    {searchError(searchCompleteResults.error, t)}
                     <DeleteResourceModal {...modalProps} />
                     <Suspense fallback={<Fragment />}>
                         <Switch>

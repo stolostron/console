@@ -12,6 +12,7 @@ import {
     channelsState,
     gitOpsClustersState,
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     managedClustersState,
     namespacesState,
     placementDecisionsState,
@@ -72,6 +73,7 @@ export function EditArgoApplicationSet() {
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const [managedClusters] = useRecoilState(managedClustersState)
+    const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const providerConnections = secrets.map(unpackProviderConnection)
     const availableArgoNS = gitOpsClusters
@@ -136,6 +138,7 @@ export function EditArgoApplicationSet() {
             placements={placements}
             yamlEditor={getWizardSyncEditor}
             clusters={managedClusters}
+            clusterSets={clusterSets}
             clusterSetBindings={managedClusterSetBindings}
             onCancel={() => {
                 if (searchParams.get('context') === 'applicationsets') {

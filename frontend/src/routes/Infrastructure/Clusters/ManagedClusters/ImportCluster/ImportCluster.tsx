@@ -59,14 +59,18 @@ import {
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 import { ImportCommand, pollImportYamlSecret } from '../components/ImportCommand'
 import schema from './schema.json'
+import kac from './kac.json'
 
 const minWizardSize = 1000
 const defaultPanelSize = 600
 const EDITOR_CHANGES = 'Other YAML changes'
 
+const acmSchema = [...schema, ...kac]
+
 export default function ImportClusterPage() {
     const { t } = useTranslation()
     const pageRef = useRef(null)
+    const { isACMAvailable } = useContext(PluginContext)
     const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('import-cluster-yaml') === 'true')
     const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>('1400px')
 
@@ -137,7 +141,7 @@ export default function ImportClusterPage() {
                                     editorTitle={'Import cluster YAML'}
                                     variant="toolbar"
                                     id="code-content"
-                                    schema={schema}
+                                    schema={isACMAvailable ? acmSchema : schema}
                                     resources={importResources}
                                     onClose={(): void => {
                                         setDrawerExpanded(false)

@@ -1,10 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
+import nock from 'nock'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { placementBindingsState, placementDecisionsState, placementsState, policySetsState } from '../../../../atoms'
+import { nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
-import { Placement, PlacementBinding, PlacementDecision, Policy, PolicySet } from '../../../../resources'
+import {
+    Placement,
+    PlacementBinding,
+    PlacementDecision,
+    Policy,
+    PolicySet,
+    Project,
+    ProjectApiVersion,
+    ProjectKind,
+} from '../../../../resources'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
 
 const rootPolicy: Policy = {
@@ -154,7 +165,20 @@ export const mockPlacements: Placement[] = [placement]
 export const mockPlacementBindings: PlacementBinding[] = [placementBinding]
 export const mockPlacementDecision: PlacementDecision[] = [placementDecision]
 
+const mockProjects: Project[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
+    apiVersion: ProjectApiVersion,
+    kind: ProjectKind,
+    metadata: { name },
+}))
+
 describe('Policy Details Results', () => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+        nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+            .persist()
+            .get('/apis/project.openshift.io/v1/projects')
+            .reply(200, mockProjects)
+    })
     test('Should render Policy Details Results Page content correctly', async () => {
         render(
             <RecoilRoot

@@ -90,7 +90,7 @@ export function getPolicyForCluster(cluster: ManagedCluster, policies: Policy[])
                     clusterPolicies.push({
                         policyName: policy.metadata.name!,
                         policyNamespace: policy.metadata.namespace!,
-                        compliance: status.compliant,
+                        compliance: status?.compliant ?? 'unknown',
                     })
                 }
             }
