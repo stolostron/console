@@ -22,8 +22,8 @@ import {
 } from '@stolostron/ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { clusterCuratorsState, clusterManagementAddonsState } from '../../../../atoms'
+import { useRecoilState, useRecoilValue } from 'recoil'
+import { clusterCuratorsState, clusterImageSetsState, clusterManagementAddonsState } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
@@ -65,6 +65,7 @@ function InfraEnvLinkButton() {
 export default function ManagedClusters() {
     const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
+    const clusterImageSets = useRecoilValue(clusterImageSetsState)
     let clusters = useAllClusters()
     clusters = clusters.filter((cluster) => {
         // don't show clusters in cluster pools in table
@@ -108,8 +109,8 @@ export default function ManagedClusters() {
                                     id: 'createCluster',
                                     title: t('managed.createCluster'),
                                     click: () => history.push(NavigationPath.createCluster),
-                                    isDisabled: !canCreateCluster,
-                                    tooltip: t('rbac.unauthorized'),
+                                    isDisabled: !canCreateCluster || !clusterImageSets.length,
+                                    tooltip: !canCreateCluster ? t('rbac.unauthorized') : t('managed.noClusterImages'),
                                     variant: ButtonVariant.primary,
                                 },
                                 {
