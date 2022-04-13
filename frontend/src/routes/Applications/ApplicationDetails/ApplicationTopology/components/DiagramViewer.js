@@ -249,7 +249,13 @@ class DiagramViewer extends React.Component {
                     </div>
                 </div>
                 <span className="diagramControls">
-                    {showChannelsControl && <ChannelControl channelControl={channelControl} t={this.props.t} />}
+                    {showChannelsControl && (
+                        <ChannelControl
+                            channelControl={channelControl}
+                            t={this.props.t}
+                            setDrawerContent={this.props.setDrawerContent}
+                        />
+                    )}
                     <Zoom
                         getZoomHelper={this.getZoomHelper}
                         getViewContainer={this.getViewContainer}
@@ -296,7 +302,8 @@ class DiagramViewer extends React.Component {
                         argoAppDetailsContainerControl={argoAppDetailsContainerControl}
                         activeFilters={activeFilters}
                         t={t}
-                    />
+                    />,
+                    false
                 )
             }
         }
