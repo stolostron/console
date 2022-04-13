@@ -408,7 +408,7 @@ export const setAvailableNSSpecs = (control, result) => {
             control.isFailed = true
         } else if (data) {
             control.isLoaded = true
-            control.available = data
+            control.available = data.map((d) => d.metadata.name)
             control.available.sort()
         }
     } else {

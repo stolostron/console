@@ -1718,6 +1718,7 @@
     "Resource nodes": "Resource nodes",
     "Resource status": "Resource status",
     "Resource Types": "Resource Types",
+    "resource.empty": "No available namespaces found",
     "resource.labels": "Labels",
     "resource.none": "None",
     "Resources with \"failed\" or \"pending\" status.": "Resources with \"failed\" or \"pending\" status.",
