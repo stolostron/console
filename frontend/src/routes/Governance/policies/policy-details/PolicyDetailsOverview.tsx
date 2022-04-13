@@ -10,9 +10,9 @@ import {
     TextVariants,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmDescriptionList, AcmDrawerContext, AcmTable } from '@stolostron/ui-components'
+import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '@stolostron/ui-components'
 import moment from 'moment'
-import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -24,6 +24,7 @@ import {
     policySetsState,
 } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { checkPermission, rbacUpdate } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
     Placement,
@@ -33,6 +34,7 @@ import {
     PlacementRuleStatus,
     Policy,
     PolicyAutomation,
+    PolicyAutomationDefinition,
     PolicySet,
 } from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
@@ -70,6 +72,11 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
         (pa: PolicyAutomation) => pa.spec.policyRef === policy.metadata.name
     )
     const [modal, setModal] = useState<ReactNode | undefined>()
+    const [canAutomatePolicy, setCanAutomatePolicy] = useState<boolean>(false)
+
+    useEffect(() => {
+        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanAutomatePolicy)
+    }, [])
 
     const { leftItems, rightItems } = useMemo(() => {
         const leftItems = [
@@ -148,7 +155,12 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                         {policyAutomationMatch.metadata.name}
                     </Button>
                 ) : (
-                    <Link
+                    <AcmButton
+                        isDisabled={!canAutomatePolicy}
+                        tooltip={!canAutomatePolicy ? t('rbac.unauthorized') : ''}
+                        isInline
+                        variant={ButtonVariant.link}
+                        component={Link}
                         to={{
                             pathname: NavigationPath.createPolicyAutomation
                                 .replace(':namespace', policy.metadata.namespace as string)
@@ -161,12 +173,12 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                         }}
                     >
                         {t('Configure')}
-                    </Link>
+                    </AcmButton>
                 ),
             },
         ]
         return { leftItems, rightItems }
-    }, [clusterRiskScore, govData.clusterRisks, policy, policyAutomationMatch, setDrawerContext, t])
+    }, [clusterRiskScore, govData.clusterRisks, policy, policyAutomationMatch, setDrawerContext, canAutomatePolicy, t])
 
     // Need to get bindings for all policysets a policy is included in
     const associatedPolicySets = policySets.filter(
