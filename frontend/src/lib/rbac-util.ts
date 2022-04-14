@@ -172,7 +172,7 @@ export async function checkPermission(
 ) {
     if (namespaces.length) {
         const fetchAuthorizedNamespaces = async () => {
-            return await getAuthorizedNamespaces([resourceAttributes], namespaces)
+            return getAuthorizedNamespaces([resourceAttributes], namespaces)
         }
         fetchAuthorizedNamespaces().then((authorizedNamespaces) => {
             if (authorizedNamespaces?.length > 0) {
