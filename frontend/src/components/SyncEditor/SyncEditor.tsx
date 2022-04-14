@@ -101,6 +101,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const [showCondensed, setShowCondensed] = useState<boolean>(false)
     const [hasUndo, setHasUndo] = useState<boolean>(false)
     const [hasRedo, setHasRedo] = useState<boolean>(false)
+    const formChangeRef = useRef<any>({})
 
     // compile schema(s) just once
     const validationRef = useRef<unknown>()
@@ -264,11 +265,21 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         setKeyDownHandle(handle)
     }, [prohibited])
 
+    // if editor loses focus, do form changes immediately
+    useEffect(() => {
+        editorRef.current.onDidBlurEditorWidget(() => {
+            const parent = document.getElementsByClassName('sync-editor__container')[0]
+            if (!parent.contains(document.activeElement)) {
+                clearTimeout(formChangeRef.current.changeTimeoutId)
+                formChangeRef.current.formChange()
+            }
+        })
+    }, [])
+
     // react to changes from form
     useEffect(() => {
-        let decorationTimeoutId: NodeJS.Timeout
         // debounce changes from form
-        const changeTimeoutId = setTimeout(() => {
+        formChangeRef.current.formChange = () => {
             // ignore echo from form
             // (user types, form is updated, form change comes here)
             const isEcho = isEqual(Array.isArray(resources) ? resources : [resources], editorChanges?.resources)
@@ -318,40 +329,33 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 lastFormComparison
             )
 
-            // report to form
+            // report to form since we may have merged form resources with custom edits
             setReportChanges(cloneDeep({ changes: edits, changeWithSecrets, changeWithoutSecrets: change, errors }))
 
-            decorationTimeoutId = setTimeout(() => {
-                // decorate errors, changes
-                if (!isEcho && !editorRef.current.hasTextFocus()) {
-                    const squigglyTooltips = decorate(
-                        false,
-                        editorRef,
-                        monacoRef,
-                        errors,
-                        changes,
-                        change,
-                        protectedRanges
-                    )
-                    setSquigglyTooltips(squigglyTooltips)
-                }
-                setShowsFormChanges(!!lastChange)
-                setLastFormComparison(formComparison)
-                setLastChange(change)
-                setUserEdits(edits)
-            }, 0)
+            // decorate errors, changes
+            if (!isEcho || changes.length > 1) {
+                const squigglyTooltips = decorate(false, editorRef, monacoRef, errors, changes, change, protectedRanges)
+                setSquigglyTooltips(squigglyTooltips)
+            }
+            setShowsFormChanges(!!lastChange)
+            setLastFormComparison(formComparison)
+            setLastChange(change)
+            setUserEdits(edits)
 
             if (!isEcho) {
                 setHasRedo(false)
                 setHasUndo(false)
             }
-        }, 300)
+        }
+        formChangeRef.current.changeTimeoutId = setTimeout(
+            formChangeRef.current.formChange,
+            editorRef.current.hasTextFocus() ? 1000 : 100
+        )
 
         return () => {
-            clearTimeout(changeTimeoutId)
-            clearTimeout(decorationTimeoutId)
+            clearTimeout(formChangeRef.current.changeTimeoutId)
         }
-    }, [JSON.stringify(resources), code, showSecrets, filterResources, JSON.stringify(immutables)])
+    }, [JSON.stringify(resources), code, showSecrets, filterResources, changeStack, JSON.stringify(immutables)])
 
     // react to changes from user editing yaml
     const editorChanged = (value: string, e: { isFlush: any }) => {
@@ -448,15 +452,15 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                         resources: isArr ? _resources : _resources[0],
                         warnings: formatErrors(errors, true),
                         errors: formatErrors(errors),
-                        changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
+                        changes: formatChanges(editor, monaco, changes, changeWithoutSecrets, syncs),
                     })
-                } else if (!isEqual(changeWithSecrets.resources, _resources)) {
+                } else if (!isEqual(changeWithSecrets.resources, _resources) || !editorChanges) {
                     // only report if resources changed
                     setEditorChanges({
                         resources: changeWithSecrets.resources,
                         warnings: formatErrors(errors, true),
                         errors: formatErrors(errors),
-                        changes: formatChanges(editor, monaco, changes, changeWithoutSecrets),
+                        changes: formatChanges(editor, monaco, changes, changeWithoutSecrets, syncs),
                     })
                     setLastValidResources(
                         cloneDeep(isArr ? changeWithSecrets.resources : changeWithSecrets.resources[0])

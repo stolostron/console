@@ -260,10 +260,24 @@ export const formatChanges = (
     editor: { revealLineInCenter: (arg0: any) => void; setSelection: (arg0: any) => void },
     monaco: { Selection: new (arg0: any, arg1: number, arg2: any, arg3: number) => any },
     changes: any[],
-    changeWithoutSecrets: { mappings: any; parsed: any; resources?: any[] }
+    changeWithoutSecrets: { mappings: any; parsed: any; resources?: any[] },
+    syncs: unknown
 ) => {
+    const syncPathSet = new Set()
+    if (Array.isArray(syncs)) {
+        syncs.forEach(({ path }) => {
+            syncPathSet.add(getPathArray(path).join('/'))
+        })
+    }
     changes = changes
-        .filter((change: ChangeType) => get(changeWithoutSecrets.parsed, change.$p) !== undefined)
+        .filter((change: ChangeType) => {
+            // don't include change if it's already being sent to form
+            // or if the value is undefined
+            return (
+                !syncPathSet.has((change.$a as string[]).join('/')) &&
+                get(changeWithoutSecrets.parsed, change.$p) !== undefined
+            )
+        })
         .map((change: ChangeType) => {
             const obj = get(changeWithoutSecrets.parsed, change.$p)
             const objVs = get(changeWithoutSecrets.mappings, change.$a)
