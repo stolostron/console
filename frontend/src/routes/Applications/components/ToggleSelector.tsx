@@ -6,7 +6,7 @@ import { TextContent, ToggleGroup, ToggleGroupItem } from '@patternfly/react-cor
 import { TFunction } from 'i18next'
 import { Link, useHistory } from 'react-router-dom'
 import queryString from 'query-string'
-import { ApplicationDefinition, IResource } from '../../../resources'
+import { ApplicationDefinition, IResource, Namespace } from '../../../resources'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './DeleteResourceModal'
 import { NavigationPath } from '../../../NavigationPath'
 import { Fragment, useEffect, useState } from 'react'
@@ -19,6 +19,7 @@ export interface IToggleSelectorProps<T = any> {
     modalProps: IDeleteResourceModalProps | { open: false }
     table: any
     t: TFunction
+    namespaces: Namespace[]
 }
 
 export function ToggleSelector(props: IToggleSelectorProps) {
@@ -35,8 +36,8 @@ export function ToggleSelector(props: IToggleSelectorProps) {
     const selectedResources = _.get(props.table, `${selectedId}`)
 
     useEffect(() => {
-        checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication)
-    }, [])
+        checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication, props.namespaces)
+    }, [props.namespaces])
 
     return (
         <AcmTablePaginationContextProvider localStorageKey="advanced-tables-pagination">

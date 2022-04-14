@@ -6,7 +6,7 @@ import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { policiesState } from '../../../../atoms'
+import { namespacesState, policiesState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { checkPermission, rbacCreate } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
@@ -31,11 +31,12 @@ export default function PolicyDetailsResults(props: { policy: Policy }) {
     const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
     const { policy } = props
     const [policies] = useRecoilState(policiesState)
+    const [namespaces] = useRecoilState(namespacesState)
     const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
 
     useEffect(() => {
-        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy)
-    }, [])
+        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
+    }, [namespaces])
 
     const policiesDeployedOnCluster: resultsTableData[] = useMemo(() => {
         const policyName = policy.metadata.name ?? ''

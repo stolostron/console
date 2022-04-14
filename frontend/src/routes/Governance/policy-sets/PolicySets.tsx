@@ -12,7 +12,7 @@ import { AcmButton, AcmEmptyState } from '@stolostron/ui-components'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { policySetsState } from '../../../atoms'
+import { namespacesState, policySetsState } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { checkPermission, rbacCreate, rbacDelete, rbacUpdate } from '../../../lib/rbac-util'
@@ -60,6 +60,7 @@ export default function PolicySetsPage() {
     const presets = transformBrowserUrlToFilterPresets(window.location.search)
     const { presetNames, presetNs } = getPresetURIFilters(presets.initialSearch)
     const [policySets] = useRecoilState(policySetsState)
+    const [namespaces] = useRecoilState(namespacesState)
     const [searchFilter, setSearchFilter] = useState<Record<string, string[]>>({
         Name: presetNames,
         Namespace: presetNs,
@@ -74,10 +75,10 @@ export default function PolicySetsPage() {
     const [canDeletePolicySet, setCanDeletePolicySet] = useState<boolean>(false)
 
     useEffect(() => {
-        checkPermission(rbacCreate(PolicySetDefinition), setCanCreatePolicySet)
-        checkPermission(rbacUpdate(PolicySetDefinition), setCanEditPolicySet)
-        checkPermission(rbacDelete(PolicySetDefinition), setCanDeletePolicySet)
-    }, [])
+        checkPermission(rbacCreate(PolicySetDefinition), setCanCreatePolicySet, namespaces)
+        checkPermission(rbacUpdate(PolicySetDefinition), setCanEditPolicySet, namespaces)
+        checkPermission(rbacDelete(PolicySetDefinition), setCanDeletePolicySet, namespaces)
+    }, [namespaces])
 
     const updatePerPage = useCallback(
         (newPerPage: number) => {

@@ -14,6 +14,7 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
+    namespacesState,
     placementRulesState,
     subscriptionsState,
 } from '../../atoms'
@@ -178,6 +179,7 @@ export default function ApplicationsOverview() {
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [placementRules] = useRecoilState(placementRulesState)
+    const [namespaces] = useRecoilState(namespacesState)
 
     let managedClusters = useAllClusters()
     managedClusters = managedClusters.filter((cluster) => {
@@ -665,14 +667,14 @@ export default function ApplicationsOverview() {
     }
 
     useEffect(() => {
-        checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication)
-    }, [])
+        checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication, namespaces)
+    }, [namespaces])
     useEffect(() => {
-        checkPermission(rbacDelete(ApplicationDefinition), setCanDeleteApplication)
-    }, [])
+        checkPermission(rbacDelete(ApplicationDefinition), setCanDeleteApplication, namespaces)
+    }, [namespaces])
     useEffect(() => {
-        checkPermission(rbacDelete(ApplicationSetDefinition), setCanDeleteApplicationSet)
-    }, [])
+        checkPermission(rbacDelete(ApplicationSetDefinition), setCanDeleteApplicationSet, namespaces)
+    }, [namespaces])
 
     const appCreationButton = () => {
         return (

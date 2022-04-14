@@ -18,7 +18,14 @@ import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } from '../../atoms'
+import {
+    applicationsState,
+    channelsState,
+    namespacesState,
+    placementRulesState,
+    placementsState,
+    subscriptionsState,
+} from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
@@ -49,6 +56,8 @@ export default function AdvancedConfiguration() {
     const [placementrules] = useRecoilState(placementRulesState)
     const [placements] = useRecoilState(placementsState)
     const [subscriptions] = useRecoilState(subscriptionsState)
+    const [namespaces] = useRecoilState(namespacesState)
+
     const subscriptionsWithoutLocal = subscriptions.filter((subscription) => {
         return !_.endsWith(subscription.metadata.name, '-local')
     })
@@ -731,7 +740,17 @@ export default function AdvancedConfiguration() {
                 <StackItem>
                     <ApplicationDeploymentHighlights />
                 </StackItem>
-                <StackItem>{<ToggleSelector modalProps={modalProps} table={table} keyFn={keyFn} t={t} />}</StackItem>
+                <StackItem>
+                    {
+                        <ToggleSelector
+                            modalProps={modalProps}
+                            table={table}
+                            keyFn={keyFn}
+                            t={t}
+                            namespaces={namespaces}
+                        />
+                    }
+                </StackItem>
             </Stack>
         </PageSection>
     )
