@@ -50,8 +50,7 @@
                         "clusterSets": { "type": "array" },
                         "numberOfClusters": { "type": "number" },
                         "predicates": { "type": "array" }
-                    },
-                    "required": ["clusterSets", "numberOfClusters", "predicates"]
+                    }
                 }
             },
             "required": ["apiVersion", "kind", "metadata", "spec"]
