@@ -79,15 +79,10 @@
                 "spec": {
                     "type": "object",
                     "properties": {
-                        "clusterSelector": {
-                            "type": "object",
-                            "properties": {
-                                "matchExpressions": { "type": "array" }
-                            },
-                            "required": ["matchExpressions"]
-                        }
-                    },
-                    "required": ["clusterSelector"]
+                        "clusterSets": { "type": "array" },
+                        "numberOfClusters": { "type": "number" },
+                        "predicates": { "type": "array" }
+                    }
                 }
             },
             "required": ["apiVersion", "kind", "metadata", "spec"]
