@@ -115,7 +115,7 @@ function requiredValidationMessage() {
 const minWizardSize = 1000
 const defaultPanelSize = 600
 
-const EDITOR_CHANGES = 'Editor changes'
+const EDITOR_CHANGES = 'Other YAML changes'
 
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
@@ -136,7 +136,6 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
         setDrawerMaxSize(inline ? `${Math.round((entry.contentRect.width * 2) / 3)}px` : undefined)
     })
 
-    const readOnly = mode === 'form' ? immutables : undefined
     return (
         <div ref={pageRef} style={{ height: '100%' }}>
             <Page
@@ -205,8 +204,9 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                         resources={formData.stateToData()}
                                         filterKube={mode === 'form'}
                                         schema={schema}
-                                        immutables={readOnly}
+                                        immutables={immutables}
                                         secrets={secrets}
+                                        syncs={formData.stateToSyncs && formData.stateToSyncs()}
                                         onClose={(): void => {
                                             setDrawerExpanded(false)
                                         }}

@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
-import { isEmpty, get, set, cloneDeep, has, PropertyPath } from 'lodash'
+import { isEmpty, get, set, cloneDeep, has } from 'lodash'
 import { getErrors, validate } from './validation'
+import { getAllPaths, getPathArray } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 
@@ -143,14 +144,14 @@ const process = (
         }
 
         // expand wildcards in declared secret paths
-        const allSecrets: any = getAllPaths(secrets, mappings, parsed)
+        const allSecrets = getAllPaths(secrets, mappings, parsed)
 
         // stuff secrets with '*******'
-        allSecrets.forEach((secret: PropertyPath) => {
-            const value = get(parsed, secret)
+        allSecrets.forEach(({ path }) => {
+            const value = get(parsed, path) as unknown as string
             if (value && typeof value === 'string') {
-                hiddenSecretsValues.push({ path: secret, value })
-                set(parsed, secret, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
+                hiddenSecretsValues.push({ path: path, value })
+                set(parsed, path, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
             }
         })
 
@@ -165,8 +166,8 @@ const process = (
         ;({ mappings, parsed, resources } = getMappings(documents))
 
         // prevent typing on secrets
-        allSecrets.forEach((secret: string | string[]) => {
-            const value = get(mappings, getPathArray(secret))
+        allSecrets.forEach(({ path }) => {
+            const value = get(mappings, getPathArray(path))
             if (value && value.$v) {
                 protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
                 value.$s = true
@@ -182,22 +183,11 @@ const process = (
 
     // prevent typing on immutables
     if (immutables) {
-        immutables.forEach((immutable) => {
-            let allFlag = false
-            if (Array.isArray(immutable)) {
-                allFlag = immutable[immutable.length - 1] === '*'
-                if (allFlag) {
-                    immutable.pop()
-                }
-            } else {
-                allFlag = immutable.endsWith('*')
-                if (allFlag) {
-                    immutable = immutable.slice(0, -2)
-                }
-            }
-            const value = get(mappings, getPathArray(immutable))
-            if (value && value.$v) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + (allFlag ? value.$l : 1), 0))
+        const allImmutables = getAllPaths(immutables, mappings, parsed)
+        allImmutables.forEach(({ path, isRange }) => {
+            const value = get(mappings, getPathArray(path))
+            if (value && value.$v !== undefined) {
+                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + (isRange ? value.$l : 1), 0))
             }
         })
     }
@@ -243,7 +233,7 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
                 value = item?.value?.type === 'SEQ' ? [] : {}
                 getMappingItems(item.items ?? item.value.items, value)
             } else {
-                value = item?.value?.value || item?.value
+                value = item?.value?.value ?? item?.value
             }
         }
         if (Array.isArray(rangeObj)) {
@@ -276,21 +266,6 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
     })
 }
 
-export const getPathArray = (path: string[] | string) => {
-    const pathArr: string[] = []
-    if (!Array.isArray(path)) {
-        path = path.replace(/\[/g, '.').replace(/\]./g, '.')
-        path = path.split('.')
-    }
-    path.forEach((seg: any, idx: number) => {
-        pathArr.push(seg)
-        if (idx > 1 && idx < path.length - 1) {
-            pathArr.push('$v')
-        }
-    })
-    return pathArr
-}
-
 export const stringify = (resources: any[]) => {
     const yamls: string[] = []
     resources.forEach((resource: any) => {
@@ -302,84 +277,6 @@ export const stringify = (resources: any[]) => {
         }
     })
     return yamls.join('---\n')
-}
-
-// if a path has a wildcard fill in the exact path
-export const getPathLines = (
-    paths: (string | string[])[],
-    change: {
-        mappings: { [name: string]: any[] }
-        parsed: { [name: string]: any[] }
-    }
-) => {
-    const pathLines: number[] = []
-    const allPaths = getAllPaths(paths, change.mappings, change.parsed)
-    allPaths.forEach((path) => {
-        const value = get(change.mappings, getPathArray(path))
-        if (value) {
-            pathLines.push(value.$r)
-        }
-    })
-    return pathLines
-}
-
-// if a path has a wildcard fill in the exact path
-const getAllPaths = (
-    paths: (string | any[])[],
-    mappings: { [x: string]: string | any[] },
-    parsed: { [x: string]: string | any[] }
-) => {
-    let allPaths: (string | any[])[] = []
-    paths.forEach((path: string | any[]) => {
-        if (Array.isArray(path)) {
-            //
-            // [Resource, '*', 'key', ...]
-            //
-            if (mappings[path[0]] && path[1] === '*') {
-                Array.from(Array(mappings[path[0]].length)).forEach((_d, inx) => {
-                    allPaths.push([path[0], inx, ...path.slice(2)])
-                })
-            }
-            //
-            // 'Resource[*].key']
-            //
-        } else if (path.includes('[*]')) {
-            const arr = path.split('[*]')
-            if (mappings[arr[0]]) {
-                Array.from(Array(mappings[arr[0]].length)).forEach((_d, inx) => {
-                    allPaths.push(`${arr[0]}[${inx}]${arr[1]}`)
-                })
-            }
-            //
-            // '*.key.key'
-            //
-        } else if (path.startsWith('*.')) {
-            allPaths = [...allPaths, ...findAllPaths(parsed, path.substring(2))]
-        } else {
-            allPaths.push(path)
-        }
-    })
-    return allPaths
-}
-
-const findAllPaths = (object: { [x: string]: any; hasOwnProperty?: any }, searchKey: string, parentKeys = '') => {
-    let ret: any = []
-    if (parentKeys.endsWith(searchKey)) {
-        ret = [...ret, parentKeys]
-    }
-    Object.entries(object).forEach(([k, v]) => {
-        if (typeof v === 'object' && v !== null) {
-            let pk = k
-            if (parentKeys) {
-                pk = isNaN(parseInt(k)) ? `${parentKeys}.${k}` : `${parentKeys}[${k}]`
-            }
-            const o: any = findAllPaths(v, searchKey, pk)
-            if (o != null && o instanceof Array) {
-                ret = [...ret, ...o]
-            }
-        }
-    })
-    return ret
 }
 
 // filter kube resources

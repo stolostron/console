@@ -2,7 +2,7 @@
 import Ajv from 'ajv'
 import stringSimilarity from 'string-similarity'
 import { isEmpty, get, set, keyBy, cloneDeep } from 'lodash'
-import { getPathArray } from './process'
+import { getPathArray } from './synchronize'
 
 export interface ErrorMessageType {
     linePos: {

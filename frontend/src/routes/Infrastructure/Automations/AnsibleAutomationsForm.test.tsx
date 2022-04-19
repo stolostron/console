@@ -69,6 +69,7 @@ const mockClusterCurator: ClusterCurator = {
     metadata: {
         name: 'test-curator',
         namespace: 'namespace-1',
+        resourceVersion: '',
     },
     spec: {
         install: {

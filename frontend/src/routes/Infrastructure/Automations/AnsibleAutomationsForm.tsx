@@ -189,7 +189,7 @@ export function AnsibleAutomationsForm(props: {
             metadata: {
                 name: templateName,
                 namespace: ansibleSecretNamespace,
-                resourceVersion: resourceVersion,
+                resourceVersion: resourceVersion ?? '',
             },
             spec: {
                 install: {
@@ -215,6 +215,10 @@ export function AnsibleAutomationsForm(props: {
             },
         }
         return curator
+    }
+    function stateToSyncs() {
+        const syncs = [{ path: 'ClusterCurator[0].metadata.name', setState: setTemplateName }]
+        return syncs
     }
 
     function cellsFn(ansibleJob: ClusterCuratorAnsibleJob) {
@@ -501,6 +505,7 @@ export function AnsibleAutomationsForm(props: {
         submitText: isEditing ? t('save') : t('add'),
         submittingText: isEditing ? t('saving') : t('adding'),
         cancel: () => history.push(NavigationPath.ansibleAutomations),
+        stateToSyncs,
         stateToData,
     }
 

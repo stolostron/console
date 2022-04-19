@@ -461,6 +461,54 @@ export function CredentialsForm(props: {
         return secret
         // return packProviderConnection(secret)
     }
+    function stateToSyncs() {
+        const syncs = [
+            { path: 'Secret[0].metadata.name', setState: setName },
+            { path: 'Secret[0].metadata.namespace', setState: setNamespace },
+            { path: 'Secret[0].stringData.baseDomain', setState: setBaseDomain },
+            { path: 'Secret[0].stringData.pullSecret', setState: setPullSecret },
+            { path: 'Secret[0].stringData.ssh-publickey', setState: setSshPublickey },
+            { path: 'Secret[0].stringData.ssh-privatekey', setState: setSshPrivatekey },
+            { path: 'Secret[0].stringData.httpProxy', setState: setHttpProxy },
+            { path: 'Secret[0].stringData.httpsProxy', setState: setHttpsProxy },
+            { path: 'Secret[0].stringData.noProxy', setState: setNoProxy },
+            { path: 'Secret[0].stringData.aws_access_key_id', setState: setAwsAccessKeyID },
+            { path: 'Secret[0].stringData.aws_secret_access_key', setState: setAwsSecretAccessKeyID },
+            { path: 'Secret[0].stringData.baseDomainResourceGroupName', setState: setBaseDomainResourceGroupName },
+            { path: 'Secret[0].stringData.cloudName', setState: setCloudName },
+            { path: 'Secret[0].stringData.baseDomain', setState: setClientId },
+            { path: 'Secret[0].stringData.baseDomain', setState: setClientSecret },
+            { path: 'Secret[0].stringData.baseDomain', setState: setTenantId },
+            { path: 'Secret[0].stringData.baseDomain', setState: setSubscriptionId },
+            { path: 'Secret[0].stringData.projectID', setState: setGcProjectID },
+            { path: ['Secret', '0', 'stringData', 'osServiceAccount.json'], setState: setGcServiceAccountKey },
+            { path: 'Secret[0].stringData.vCenter', setState: setVcenter },
+            { path: 'Secret[0].stringData.username', setState: setUsername },
+            { path: 'Secret[0].stringData.password', setState: setPassword },
+            { path: 'Secret[0].stringData.cacertificate', setState: setCacertificate },
+            { path: 'Secret[0].stringData.cluster', setState: setVmClusterName },
+            { path: 'Secret[0].stringData.datacenter', setState: setDatacenter },
+            { path: 'Secret[0].stringData.defaultDatastore', setState: setDatastore },
+            { path: ['Secret', '0', 'stringData', 'clouds.yaml'], setState: setOpenstackCloudsYaml },
+            { path: 'Secret[0].stringData.cloud', setState: setOpenstackCloud },
+            { path: 'Secret[0].stringData.ovirt_url', setState: setOvirtUrl },
+            { path: 'Secret[0].stringData.ovirt_fqdn', setState: setOvirtFqdn },
+            { path: 'Secret[0].stringData.ovirt_username', setState: setOvirtUsername },
+            { path: 'Secret[0].stringData.ovirt_password', setState: setOvirtPassword },
+            { path: 'Secret[0].stringData.ovirt_ca_bundle', setState: setOvirtCABundle },
+            { path: 'Secret[0].stringData.libvirtURI', setState: setLibvirtURI },
+            { path: 'Secret[0].stringData.sshKnownHosts', setState: setSshKnownHosts },
+            { path: 'Secret[0].stringData.bootstrapOSImage', setState: setBootstrapOSImage },
+            { path: 'Secret[0].stringData.imageMirror', setState: setImageMirror },
+            { path: 'Secret[0].stringData.clusterOSImage', setState: setClusterOSImage },
+            { path: 'Secret[0].stringData.additionalTrustBundle', setState: setAdditionalTrustBundle },
+            { path: 'Secret[0].stringData.imageContentSources', setState: setImageContentSources },
+            { path: 'Secret[0].stringData.host', setState: setAnsibleHost },
+            { path: 'Secret[0].stringData.token', setState: setAnsibleToken },
+            { path: 'Secret[0].stringData.ocmAPIToken', setState: setOcmAPIToken },
+        ]
+        return syncs
+    }
     const title = isViewing ? name : isEditing ? t('Edit credential') : t('Add credential')
     const titleTooltip = (
         <Fragment>
@@ -1393,6 +1441,7 @@ export function CredentialsForm(props: {
         nextLabel: t('Next'),
         backLabel: t('Back'),
         cancel: () => history.push(NavigationPath.credentials),
+        stateToSyncs,
         stateToData,
     }
     return (
@@ -1411,18 +1460,23 @@ export function CredentialsForm(props: {
                 'Secret[0].stringData.ocmAPIToken',
                 'Secret[0].stringData.additionalTrustBundle',
                 'Secret[0].stringData.ovirt_ca_bundle',
+                'Secret[0].stringData.ovirt_password',
                 'Secret[0].stringData.ovirt-config.yaml',
                 ['Secret', '0', 'stringData', 'osServicePrincipal.json'],
                 ['Secret', '0', 'stringData', 'osServiceAccount.json'],
                 ['Secret', '0', 'stringData', 'clouds.yaml'],
             ]}
-            immutables={[
-                'Secret[0].apiVersion',
-                'Secret[0].kind',
-                'Secret[0].type',
-                'Secret[0].metadata.*',
-                'Secret[0].stringData',
-            ]}
+            immutables={
+                isEditing
+                    ? [
+                          'Secret[0].apiVersion',
+                          'Secret[0].kind',
+                          'Secret[0].type',
+                          'Secret[0].metadata.*',
+                          'Secret[0].stringData',
+                      ]
+                    : undefined
+            }
             edit={() => {
                 if (providerConnection) {
                     history.push(

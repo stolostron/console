@@ -63,7 +63,7 @@ import kac from './kac.json'
 
 const minWizardSize = 1000
 const defaultPanelSize = 600
-const EDITOR_CHANGES = 'Editor changes'
+const EDITOR_CHANGES = 'Other YAML changes'
 
 const acmSchema = [...schema, ...kac]
 
@@ -80,8 +80,10 @@ export default function ImportClusterPage() {
     })
 
     const [importResources, setImportResources] = useState<any | undefined>([])
-    function onFormChange(resources: any) {
+    const [importSyncs, setImportSyncs] = useState<any | undefined>([])
+    function onFormChange(resources: any, syncs: any) {
         setImportResources(resources)
+        setImportSyncs(syncs)
     }
     const [editorChanges, setEditorChanges] = useState<SyncDiffType>()
 
@@ -143,6 +145,7 @@ export default function ImportClusterPage() {
                                     id="code-content"
                                     schema={isACMAvailable ? acmSchema : schema}
                                     resources={importResources}
+                                    syncs={importSyncs}
                                     onClose={(): void => {
                                         setDrawerExpanded(false)
                                     }}
@@ -188,7 +191,7 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
     const [submitted, setSubmitted] = useState<boolean>(false)
     const [importSecret, setImportSecret] = useState<Secret | undefined>()
-    const [token, setToken] = useState<string | undefined>()
+    const [token, setToken] = useState<string | undefined>('')
     const [server, setServer] = useState<string | undefined>(sessionStorage.getItem('DiscoveredClusterApiURL') ?? '')
     const [kubeConfig, setKubeConfig] = useState<string | undefined>()
     const [importMode, setImportMode] = useState<ImportMode>(ImportMode.manual)
@@ -274,7 +277,17 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
             })
         }
         setImportResources(resources)
-        onFormChange(resources)
+        const syncs = [
+            { path: 'ManagedCluster[0].metadata.name', setState: setClusterName },
+            { path: 'Secret[0].stringData.server', setState: setServer },
+            { path: 'Secret[0].stringData.token', setState: setToken },
+            { path: 'Secret[0].stringData.kubeconfig', setState: setKubeConfig },
+            {
+                path: ['ManagedCluster', 0, 'metadata', 'labels', 'cluster.open-cluster-management.io/clusterset'],
+                setState: setManagedClusterSet,
+            },
+        ]
+        onFormChange(resources, syncs)
     }, [
         importMode,
         discovered,
@@ -302,6 +315,7 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                     id="clusterName"
                     label={t('import.form.clusterName.label')}
                     value={clusterName}
+                    spellCheck="false"
                     isDisabled={submitted}
                     onChange={(name) => setClusterName(name)}
                     placeholder={t('import.form.clusterName.placeholder')}
@@ -379,6 +393,7 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                     id="server"
                     label={t('import.server')}
                     placeholder={t('import.server.place')}
+                    spellCheck="false"
                     value={server}
                     onChange={(server) => setServer(server)}
                     isRequired
@@ -388,6 +403,7 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                     id="token"
                     label={t('import.token')}
                     placeholder={t('import.token.place')}
+                    spellCheck="false"
                     value={token}
                     onChange={(token) => setToken(token)}
                     isRequired
@@ -397,6 +413,7 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                     id="kubeConfigEntry"
                     label={t('import.auto.config.label')}
                     placeholder={t('import.auto.config.prompt')}
+                    spellCheck="false"
                     value={kubeConfig}
                     onChange={(file) => setKubeConfig(file)}
                     hidden={importMode !== ImportMode.kubeconfig}
