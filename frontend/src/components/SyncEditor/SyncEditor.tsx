@@ -222,7 +222,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             keyDownHandle.dispose()
         }
         const handle = editorRef.current.onKeyDown(
-            (e: { code: string; stopPropagation: () => void; preventDefault: () => void }) => {
+            (e: {
+                code: string
+                ctrlKey: boolean
+                metaKey: boolean
+                stopPropagation: () => void
+                preventDefault: () => void
+            }) => {
                 const selections = editorRef.current.getSelections()
 
                 // if user presses enter, add new key: below this line
@@ -253,6 +259,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     e.preventDefault()
                 } else if (
                     // if user clicks on readonly area, ignore
+                    !(e.code === 'KeyC' && (e.ctrlKey || e.metaKey)) &&
                     !prohibited.every((prohibit: { intersectRanges: (arg: any) => any }) => {
                         return selections.findIndex((range: any) => prohibit.intersectRanges(range)) === -1
                     })
