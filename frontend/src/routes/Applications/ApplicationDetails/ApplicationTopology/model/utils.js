@@ -24,7 +24,7 @@ export const createChildNode = (parentObject, clustersNames, type, links, nodes)
     const parentType = _.get(parentObject, 'type', '')
     const { name, namespace, id, specs = {} } = parentObject
     const parentId = id
-    const memberId = `member--member--deployable--member--clusters--${getClusterName(parentId)}--${type}--${name}`
+    const memberId = `${parentId}--${type}--${name}`
     let resources
     if (specs.resources) {
         resources = specs.resources.map((res) => {
