@@ -584,6 +584,8 @@
     "creation.enter.value": "Enter {{0}}",
     "creation.invalid.url": "Value must be a valid URL format.",
     "creation.loading.values": "Loading {{0}}...",
+    "creation.missing.clusterSelector.label": "Cluster matching labels section missing label name.",
+    "creation.missing.clusterSelector.value": "Cluster matching labels section missing label value.",
     "creation.missing.input": "This value is required: '{{0}}'",
     "creation.missing.timeWindow.days": "Select at least one day to create a time window.",
     "creation.missing.timeWindow.timezone": "Select a timezone to create a time window.",
