@@ -16,7 +16,7 @@ import {
     Stack,
     StackItem,
 } from '@patternfly/react-core'
-import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent } from '@patternfly/react-table'
 import {
     AcmAlert,
     AcmButton,
@@ -677,7 +677,6 @@ export default function PoliciesPage() {
                 keyFn={policyKeyFn}
                 items={tableItems}
                 tableActions={tableActions}
-                gridBreakPoint={TableGridBreakpoint.none}
                 initialFilters={
                     presets.initialFilters.violations ? { violations: presets.initialFilters.violations } : undefined
                 }
