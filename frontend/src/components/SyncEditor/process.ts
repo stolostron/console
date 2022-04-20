@@ -16,6 +16,7 @@ export interface ProcessedType {
     resources: any[]
     yaml?: string
     hiddenSecretsValues?: any[]
+    hiddenFilteredValues?: any[]
 }
 
 export interface MappingType {
@@ -28,7 +29,7 @@ export interface MappingType {
     $gv?: any // what's the start/stop of the value in yaml
 }
 
-export interface SecretsValuesType {
+export interface CachedValuesType {
     path: string
     value: string
 }
@@ -42,7 +43,7 @@ export const processForm = (
         customResources: any[]
     },
     secrets?: (string | string[])[],
-    selectedFilters?: string[],
+    filters?: (string | string[])[],
     immutables?: (string | string[])[],
     userEdits?: ChangeType[],
     validators?: any
@@ -77,7 +78,7 @@ export const processForm = (
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, [], selectedFilters, immutables, validators),
+        ...process(monacoRef, yaml, documents, errors, secrets, [], filters, [], immutables, validators),
     }
 }
 
@@ -85,8 +86,9 @@ export const processUser = (
     monacoRef: any,
     yaml: string,
     secrets?: (string | string[])[],
-    secretsValues?: SecretsValuesType[],
-    selectedFilters?: string[],
+    cachedSecrets?: CachedValuesType[],
+    filters?: (string | string[])[],
+    cacheFiltered?: CachedValuesType[],
     immutables?: (string | string[])[],
     validators?: any
 ) => {
@@ -101,7 +103,18 @@ export const processUser = (
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, secretsValues, selectedFilters, immutables, validators),
+        ...process(
+            monacoRef,
+            yaml,
+            documents,
+            errors,
+            secrets,
+            cachedSecrets,
+            filters,
+            cacheFiltered,
+            immutables,
+            validators
+        ),
     }
 }
 
@@ -111,17 +124,26 @@ const process = (
     documents: any,
     errors: any[],
     secrets?: (string | string[])[],
-    secretsValues?: SecretsValuesType[],
-    selectedFilters?: string[],
+    cachedSecrets?: CachedValuesType[],
+    filters?: (string | string[])[],
+    cacheFiltered?: CachedValuesType[],
     immutables?: (string | string[])[],
     validators?: any
 ) => {
     // if parse errors, use previous hidden secrets
-    const hiddenSecretsValues: any[] = errors.length === 0 ? [] : secretsValues ?? []
+    const hiddenSecretsValues: any[] = errors.length === 0 ? [] : cachedSecrets ?? []
+    const hiddenFilteredValues: any[] = errors.length === 0 ? [] : cacheFiltered ?? []
 
     // restore hidden secret values
     let { mappings, parsed, resources } = getMappings(documents)
-    secretsValues?.forEach(({ path, value }) => {
+    cachedSecrets?.forEach(({ path, value }) => {
+        if (has(parsed, path)) {
+            set(parsed, path, value)
+        }
+    })
+
+    // restore omitted filter values
+    cacheFiltered?.forEach(({ path, value }) => {
         if (has(parsed, path)) {
             set(parsed, path, value)
         }
@@ -133,6 +155,7 @@ const process = (
         parsed: cloneDeep(parsed),
         resources: cloneDeep(resources),
         hiddenSecretsValues,
+        hiddenFilteredValues,
     }
 
     // hide and remember secret values
@@ -154,11 +177,12 @@ const process = (
 
         // stuff filtered with '-filtered-'
         let allFiltered: { path: string | any[]; isRange: boolean }[] = []
-        if (selectedFilters && !isEmpty(selectedFilters)) {
-            allFiltered = getAllPaths(selectedFilters, mappings, parsed)
+        if (filters && !isEmpty(filters)) {
+            allFiltered = getAllPaths(filters, mappings, parsed)
             allFiltered.forEach(({ path }) => {
                 const value = get(parsed, path) as unknown as string
                 if (value && typeof value === 'object') {
+                    hiddenFilteredValues.push({ path: path, value })
                     set(parsed, path, '-click unfilter YAML to show-')
                 }
             })

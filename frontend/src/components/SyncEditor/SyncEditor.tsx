@@ -30,9 +30,9 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     resources: unknown
     schema?: any
     secrets?: (string | string[])[]
+    filters?: (string | string[])[]
     immutables?: (string | string[])[]
     syncs?: unknown
-    filters?: string[]
     readonly?: boolean
     onClose?: () => void
     onEditorChange?: (editorResources: any) => void
@@ -73,6 +73,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             parsed: { [name: string]: any[] }
             resources: any[]
             hiddenSecretsValues: any[]
+            hiddenFilteredValues: any[]
         }
         redactedChange: {
             mappings: { [name: string]: any[] }
@@ -385,6 +386,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 showSecrets ? undefined : secrets,
                 lastUnredactedChange?.hiddenSecretsValues,
                 showFiltered ? undefined : filters,
+                lastUnredactedChange?.hiddenFilteredValues,
                 immutables,
                 validationRef.current
             )
