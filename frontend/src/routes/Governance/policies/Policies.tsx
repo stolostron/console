@@ -118,14 +118,13 @@ export default function PoliciesPage() {
     const policyClusterViolationsColumn = usePolicyViolationsColumn(policyClusterViolationSummaryMap)
     const [modal, setModal] = useState<ReactNode | undefined>()
     const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
-    const [canAutomatePolicy, setCanAutomatePolicy] = useState<boolean>(false)
+    const [canCreatePolicyAutomation, setCanCreatePolicyAutomation] = useState<boolean>(false)
+    const [canUpdatePolicyAutomation, setCanUpdatePolicyAutomation] = useState<boolean>(false)
 
     useEffect(() => {
         checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
-    }, [namespaces])
-
-    useEffect(() => {
-        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanAutomatePolicy, namespaces)
+        checkPermission(rbacCreate(PolicyAutomationDefinition), setCanCreatePolicyAutomation, namespaces)
+        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanUpdatePolicyAutomation, namespaces)
     }, [namespaces])
 
     const policyColumns = useMemo<IAcmTableColumn<PolicyTableItem>[]>(
@@ -246,8 +245,8 @@ export default function PoliciesPage() {
                     if (policyAutomationMatch) {
                         return (
                             <AcmButton
-                                isDisabled={!canAutomatePolicy}
-                                tooltip={!canAutomatePolicy ? t('rbac.unauthorized') : ''}
+                                isDisabled={!canUpdatePolicyAutomation}
+                                tooltip={!canUpdatePolicyAutomation ? t('rbac.unauthorized') : ''}
                                 isInline
                                 variant={ButtonVariant.link}
                                 onClick={() =>
@@ -277,8 +276,8 @@ export default function PoliciesPage() {
                     } else {
                         return (
                             <AcmButton
-                                isDisabled={!canAutomatePolicy}
-                                tooltip={!canAutomatePolicy ? t('rbac.unauthorized') : ''}
+                                isDisabled={!canCreatePolicyAutomation}
+                                tooltip={!canCreatePolicyAutomation ? t('rbac.unauthorized') : ''}
                                 isInline
                                 variant={ButtonVariant.link}
                                 component={Link}
@@ -315,7 +314,15 @@ export default function PoliciesPage() {
                 cellTransforms: [fitContent],
             },
         ],
-        [policyClusterViolationsColumn, policySets, policyAutomations, setDrawerContext, canAutomatePolicy, t]
+        [
+            policyClusterViolationsColumn,
+            policySets,
+            policyAutomations,
+            setDrawerContext,
+            canCreatePolicyAutomation,
+            canUpdatePolicyAutomation,
+            t,
+        ]
     )
 
     const bulkModalStatusColumns = useMemo(
