@@ -260,7 +260,7 @@ const placementData = async () => [
         tooltip: 'tooltip.creation.app.existingRuleCombo',
         id: 'placementrulecombo',
         type: 'hidden',
-        placeholder: 'select.existing.placement.rule',
+        placeholder: 'creation.app.select.existing.placement.rule',
         reverse: reverseExistingRule,
         fetchAvailable: loadExistingPlacementRules(),
         onSelect: updateNewRuleControls,
