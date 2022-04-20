@@ -5,6 +5,7 @@ import { AcmInlineStatus, AcmPageHeader, StatusType } from '@stolostron/ui-compo
 import { Card, CardBody } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Message } from '../search-sdk/search-sdk'
+import { NavigationPath } from '../../../../NavigationPath'
 
 export default function HeaderWithNotification(props: { messages: Message[] }) {
     const { t } = useTranslation()
@@ -34,7 +35,9 @@ export default function HeaderWithNotification(props: { messages: Message[] }) {
                                     headerContent: displayShortText,
                                     bodyContent: displayLongText,
                                     footerContent: msg.id === 'S20' && (
-                                        <a href={`${NavigationPath.search}?filters={"textsearch":"kind%3Acluster%20addon%3Asearch-collector%3Dfalse%20name%3A!local-cluster"}`}>
+                                        <a
+                                            href={`${NavigationPath.search}?filters={"textsearch":"kind%3Acluster%20addon%3Asearch-collector%3Dfalse%20name%3A!local-cluster"}`}
+                                        >
                                             {footerText}
                                         </a>
                                     ),

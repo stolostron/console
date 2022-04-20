@@ -140,14 +140,10 @@ export default function DetailsPage() {
                         title={name}
                         navigation={
                             <AcmSecondaryNav>
-                                <AcmSecondaryNavItem
-                                    isActive={location.pathname === NavigationPath.resources}
-                                >
+                                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resources}>
                                     <Link
                                         replace
-                                        to={`${NavigationPath.resources}?${encodeURIComponent(
-                                            resourceUrlParams
-                                        )}`}
+                                        to={`${NavigationPath.resources}?${encodeURIComponent(resourceUrlParams)}`}
                                     >
                                         YAML
                                     </Link>
