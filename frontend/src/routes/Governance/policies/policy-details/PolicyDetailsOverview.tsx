@@ -74,6 +74,8 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
     }, [namespaces])
 
     const { leftItems, rightItems } = useMemo(() => {
+        const unauthorizedMessage =
+            !canUpdatePolicyAutomation || !canUpdatePolicyAutomation ? t('rbac.unauthorized') : ''
         const leftItems = [
             {
                 key: 'Name',
@@ -125,7 +127,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                 value: policyAutomationMatch ? (
                     <AcmButton
                         isDisabled={!canUpdatePolicyAutomation}
-                        tooltip={!canUpdatePolicyAutomation ? t('rbac.unauthorized') : ''}
+                        tooltip={unauthorizedMessage}
                         isInline
                         variant={ButtonVariant.link}
                         onClick={() =>
@@ -154,7 +156,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                 ) : (
                     <AcmButton
                         isDisabled={!canCreatePolicyAutomation}
-                        tooltip={!canCreatePolicyAutomation ? t('rbac.unauthorized') : ''}
+                        tooltip={unauthorizedMessage}
                         isInline
                         variant={ButtonVariant.link}
                         component={Link}

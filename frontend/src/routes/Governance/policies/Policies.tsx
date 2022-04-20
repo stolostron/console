@@ -79,6 +79,7 @@ export interface PolicyTableItem {
 
 export default function PoliciesPage() {
     const { t } = useTranslation()
+    const unauthorizedMessage = t('rbac.unauthorized')
     const presets = transformBrowserUrlToFilterPresets(window.location.search)
     const policies = usePolicies()
     const [helmReleases] = useRecoilState(helmReleaseState)
@@ -246,7 +247,7 @@ export default function PoliciesPage() {
                         return (
                             <AcmButton
                                 isDisabled={!canUpdatePolicyAutomation}
-                                tooltip={!canUpdatePolicyAutomation ? t('rbac.unauthorized') : ''}
+                                tooltip={!canUpdatePolicyAutomation ? unauthorizedMessage : ''}
                                 isInline
                                 variant={ButtonVariant.link}
                                 onClick={() =>
@@ -277,7 +278,7 @@ export default function PoliciesPage() {
                         return (
                             <AcmButton
                                 isDisabled={!canCreatePolicyAutomation}
-                                tooltip={!canCreatePolicyAutomation ? t('rbac.unauthorized') : ''}
+                                tooltip={!canCreatePolicyAutomation ? unauthorizedMessage : ''}
                                 isInline
                                 variant={ButtonVariant.link}
                                 component={Link}
@@ -321,6 +322,7 @@ export default function PoliciesPage() {
             setDrawerContext,
             canCreatePolicyAutomation,
             canUpdatePolicyAutomation,
+            unauthorizedMessage,
             t,
         ]
     )
@@ -691,7 +693,7 @@ export default function PoliciesPage() {
                 tableActionButtons={[
                     {
                         isDisabled: !canCreatePolicy,
-                        tooltip: !canCreatePolicy ? t('rbac.unauthorized') : '',
+                        tooltip: !canCreatePolicy ? unauthorizedMessage : '',
                         variant: ButtonVariant.primary,
                         id: 'create',
                         title: 'Create policy',
