@@ -16,6 +16,8 @@ import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
+import { NavigationPath } from '../../../../../../NavigationPath'
+import { Link } from 'react-router-dom'
 
 export function NodePoolsPageContent() {
     return (
@@ -95,18 +97,21 @@ export function NodesPoolsTable() {
             search: 'name',
             cell: (node: NodeInfo) => {
                 const hasOcpConsole = cluster?.distribution?.ocp?.version && cluster.consoleURL
-                const launchUrl = hasOcpConsole
-                    ? `${cluster!.consoleURL}/k8s/cluster/nodes/${node.name}`
-                    : `/resources?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${node.name}`
-                return (
-                    <a href={launchUrl} target={hasOcpConsole ? '_self' : '_blank'} rel="noreferrer">
-                        {hasOcpConsole && (
-                            <span style={{ marginRight: '8px' }}>
-                                <ExternalLinkAltIcon />
-                            </span>
-                        )}
+                return hasOcpConsole ? (
+                    <a href={`${cluster!.consoleURL}/k8s/cluster/nodes/${node.name}`} target="_blank" rel="noreferrer">
+                        <span style={{ marginRight: '8px' }}>
+                            <ExternalLinkAltIcon />
+                        </span>
                         {node.name}
                     </a>
+                ) : (
+                    <Link
+                        to={`${NavigationPath.resources}?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${
+                            node.name
+                        }`}
+                    >
+                        {node.name}
+                    </Link>
                 )
             },
         },

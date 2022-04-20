@@ -256,7 +256,7 @@ export const getEditLink = (params: {
     const {
         properties: { name, namespace, kind, apiversion, cluster },
     } = params
-    return `/multicloud/home/search/resources?${queryString.stringify({
+    return `${NavigationPath.resources}?${queryString.stringify({
         cluster,
         name,
         namespace,

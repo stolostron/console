@@ -124,12 +124,12 @@ export default function DetailsPage() {
                             variant={'link'}
                             onClick={() => {
                                 const prevLocState = window.history?.state?.state
-                                if (prevLocState && prevLocState.from === '/multicloud/home/search') {
+                                if (prevLocState && prevLocState.from === NavigationPath.search) {
                                     // If we came to resources page from search - return to search with previous search filters
                                     history.goBack()
                                 } else {
                                     // If we were redirected to search from elsewhere (ex: application page) - go to blank search page
-                                    window.location.href = '/multicloud/home/search'
+                                    window.location.href = NavigationPath.search
                                 }
                             }}
                         >
@@ -140,14 +140,10 @@ export default function DetailsPage() {
                         title={name}
                         navigation={
                             <AcmSecondaryNav>
-                                <AcmSecondaryNavItem
-                                    isActive={location.pathname === '/multicloud/home/search/resources'}
-                                >
+                                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resources}>
                                     <Link
                                         replace
-                                        to={`/multicloud/home/search/resources?${encodeURIComponent(
-                                            resourceUrlParams
-                                        )}`}
+                                        to={`${NavigationPath.resources}?${encodeURIComponent(resourceUrlParams)}`}
                                     >
                                         YAML
                                     </Link>
@@ -171,7 +167,7 @@ export default function DetailsPage() {
             }
         >
             <Switch>
-                <Route exact path={'/multicloud/home/search/resources'}>
+                <Route exact path={NavigationPath.resources}>
                     <YAMLPage
                         resource={resource}
                         loading={!resource && resourceError !== ''}
