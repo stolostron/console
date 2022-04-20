@@ -36,6 +36,7 @@ import {
     useSearchSchemaQuery,
 } from './search-sdk/search-sdk'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
+import { NavigationPath } from '../../../NavigationPath'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 
@@ -224,7 +225,7 @@ function RenderDropDownAndNewTab(props: {
                     savedSearchQueries={props.savedSearchQueries}
                 />
                 <AcmButton
-                    href={'/multicloud/home/search'}
+                    href={NavigationPath.search}
                     variant={ButtonVariant.link}
                     component="a"
                     target="_blank"
