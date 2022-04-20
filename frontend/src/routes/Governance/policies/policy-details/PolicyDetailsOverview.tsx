@@ -75,7 +75,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
 
     const { leftItems, rightItems } = useMemo(() => {
         const unauthorizedMessage =
-            !canUpdatePolicyAutomation || !canUpdatePolicyAutomation ? t('rbac.unauthorized') : ''
+            !canCreatePolicyAutomation || !canUpdatePolicyAutomation ? t('rbac.unauthorized') : ''
         const leftItems = [
             {
                 key: 'Name',
