@@ -202,7 +202,6 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                         editorTitle={editorTitle}
                                         readonly={mode === 'details'}
                                         resources={formData.stateToData()}
-                                        filterKube={mode === 'form'}
                                         schema={schema}
                                         immutables={immutables}
                                         secrets={secrets}

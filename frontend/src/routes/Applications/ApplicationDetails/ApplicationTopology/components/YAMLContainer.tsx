@@ -113,7 +113,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                 id="code-content"
                 editorTitle={editorTitle}
                 resources={[resource]}
-                filterKube={true}
+                filters={['*.metadata.managedFields']}
                 readonly={true}
             />
         </Fragment>

@@ -28,9 +28,6 @@ export interface MappingType {
     $gv?: any // what's the start/stop of the value in yaml
 }
 
-// remove the kube stuff
-const kube = ['managedFields', 'creationTimestamp', 'uid', 'livenessProbe', 'resourceVersion', 'generation']
-
 export interface SecretsValuesType {
     path: string
     value: string
@@ -45,7 +42,7 @@ export const processForm = (
         customResources: any[]
     },
     secrets?: (string | string[])[],
-    filterResources?: boolean,
+    selectedFilters?: string[],
     immutables?: (string | string[])[],
     userEdits?: ChangeType[],
     validators?: any
@@ -80,7 +77,7 @@ export const processForm = (
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, [], filterResources, immutables, validators),
+        ...process(monacoRef, yaml, documents, errors, secrets, [], selectedFilters, immutables, validators),
     }
 }
 
@@ -89,7 +86,7 @@ export const processUser = (
     yaml: string,
     secrets?: (string | string[])[],
     secretsValues?: SecretsValuesType[],
-    filterResources?: boolean,
+    selectedFilters?: string[],
     immutables?: (string | string[])[],
     validators?: any
 ) => {
@@ -104,7 +101,7 @@ export const processUser = (
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, secretsValues, filterResources, immutables, validators),
+        ...process(monacoRef, yaml, documents, errors, secrets, secretsValues, selectedFilters, immutables, validators),
     }
 }
 
@@ -115,7 +112,7 @@ const process = (
     errors: any[],
     secrets?: (string | string[])[],
     secretsValues?: SecretsValuesType[],
-    filterResources?: boolean,
+    selectedFilters?: string[],
     immutables?: (string | string[])[],
     validators?: any
 ) => {
@@ -129,56 +126,57 @@ const process = (
             set(parsed, path, value)
         }
     })
-    let changeWithSecrets = { yaml, mappings, parsed, resources, hiddenSecretsValues }
+
+    const unredactedChange = {
+        yaml,
+        mappings: cloneDeep(mappings),
+        parsed: cloneDeep(parsed),
+        resources: cloneDeep(resources),
+        hiddenSecretsValues,
+    }
 
     // hide and remember secret values
     const protectedRanges: any[] = []
-    const hideSecrets = secrets && !isEmpty(parsed) && !isEmpty(secrets)
-    if (hideSecrets) {
-        changeWithSecrets = {
-            yaml,
-            mappings: cloneDeep(mappings),
-            parsed: cloneDeep(parsed),
-            resources: cloneDeep(resources),
-            hiddenSecretsValues,
-        }
-
-        // expand wildcards in declared secret paths
-        const allSecrets = getAllPaths(secrets, mappings, parsed)
-
+    if (!isEmpty(parsed)) {
         // stuff secrets with '*******'
-        allSecrets.forEach(({ path }) => {
-            const value = get(parsed, path) as unknown as string
-            if (value && typeof value === 'string') {
-                hiddenSecretsValues.push({ path: path, value })
-                set(parsed, path, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
-            }
-        })
+        let allSecrets: { path: string | any[]; isRange: boolean }[] = []
+        if (secrets && !isEmpty(secrets)) {
+            allSecrets = getAllPaths(secrets, mappings, parsed)
 
-        // filter kube resources
-        if (filterResources) {
-            resources = filterKubeResources(resources)
+            allSecrets.forEach(({ path }) => {
+                const value = get(parsed, path) as unknown as string
+                if (value && typeof value === 'string') {
+                    hiddenSecretsValues.push({ path: path, value })
+                    set(parsed, path, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
+                }
+            })
         }
 
-        // create yaml with '****'
+        // stuff filtered with '-filtered-'
+        let allFiltered: { path: string | any[]; isRange: boolean }[] = []
+        if (selectedFilters && !isEmpty(selectedFilters)) {
+            allFiltered = getAllPaths(selectedFilters, mappings, parsed)
+            allFiltered.forEach(({ path }) => {
+                const value = get(parsed, path) as unknown as string
+                if (value && typeof value === 'object') {
+                    set(parsed, path, '-click unfilter YAML to show-')
+                }
+            })
+        }
+
+        // create redacted yaml, etc
         yaml = stringify(resources)
         documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
         ;({ mappings, parsed, resources } = getMappings(documents))
 
-        // prevent typing on secrets
-        allSecrets.forEach(({ path }) => {
+        // prevent typing on redacted yaml
+        ;[...allSecrets, ...allFiltered].forEach(({ path }) => {
             const value = get(mappings, getPathArray(path))
             if (value && value.$v) {
                 protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
                 value.$s = true
             }
         })
-    } else if (filterResources) {
-        // filter kube resources
-        resources = filterKubeResources(resources)
-        yaml = stringify(resources)
-        documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
-        ;({ mappings, parsed, resources } = getMappings(documents))
     }
 
     // prevent typing on immutables
@@ -196,7 +194,7 @@ const process = (
         validate(validators, mappings, resources, errors)
     }
 
-    return { yaml, protectedRanges, errors, change: { resources, mappings, parsed }, changeWithSecrets }
+    return { yaml, protectedRanges, errors, change: { resources, mappings, parsed }, unredactedChange }
 }
 
 function getMappings(documents: any[]) {
@@ -266,52 +264,25 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
     })
 }
 
+// sort name/namespace to top
+const sort = ['name', 'namespace']
+const sortMapEntries = (a: { key: { value: string } }, b: { key: { value: string } }) => {
+    let ai = sort.indexOf(a.key.value)
+    if (ai < 0) ai = 5
+    let bi = sort.indexOf(b.key.value)
+    if (bi < 0) bi = 5
+    return ai - bi
+}
+
 export const stringify = (resources: any[]) => {
     const yamls: string[] = []
     resources.forEach((resource: any) => {
         if (!isEmpty(resource)) {
-            let yaml = YAML.stringify(resource)
+            let yaml = YAML.stringify(resource, { sortMapEntries })
             yaml = yaml.replace(/'\d+':(\s|$)\s*/gm, '- ')
             yaml = yaml.replace(/:\s*null$/gm, ':')
             yamls.push(yaml)
         }
     })
     return yamls.join('---\n')
-}
-
-// filter kube resources
-export const filterKubeResources = (resources: any[]) => {
-    const _resources: any[] = []
-    resources.forEach((resource: any) => {
-        _resources.push(filterDeep(resource))
-    })
-    return _resources
-}
-
-const filterDeep = (resource: any) => {
-    let newResource: { [index: string]: any | any[] }
-    if (Array.isArray(resource)) {
-        newResource = []
-        Object.entries(resource || {}).forEach(([k, v]) => {
-            if (!kube.includes(k)) {
-                newResource.push(filter(v))
-            }
-        })
-        return newResource
-    } else {
-        newResource = {}
-        Object.entries(resource || {}).forEach(([k, v]) => {
-            if (!kube.includes(k)) {
-                newResource[k] = filter(v)
-            }
-        })
-    }
-    return newResource
-}
-
-const filter = (value: unknown) => {
-    if (typeof value === 'object') {
-        return filterDeep(value)
-    }
-    return value
 }
