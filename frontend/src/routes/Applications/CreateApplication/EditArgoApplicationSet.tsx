@@ -45,7 +45,6 @@ export function WizardSyncEditor() {
             editorTitle={'Application set YAML'}
             variant="toolbar"
             resources={resources}
-            filterKube={true}
             schema={schema}
             immutables={['ApplicationSet[0].metadata.name', 'ApplicationSet[0].metadata.namespace']}
             onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {

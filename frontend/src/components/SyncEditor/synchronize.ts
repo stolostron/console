@@ -99,14 +99,24 @@ const findAllPaths = (
         ret = [...ret, { path: parentKeys, isRange }]
     }
     Object.entries(object).forEach(([k, v]) => {
-        if (typeof v === 'object' && v !== null) {
-            let pk = k
-            if (parentKeys) {
-                pk = isNaN(parseInt(k)) ? `${parentKeys}.${k}` : `${parentKeys}[${k}]`
-            }
-            const o: any = findAllPaths(v, searchKey, isRange, pk)
-            if (o != null && o instanceof Array) {
-                ret = [...ret, ...o]
+        if (v !== null) {
+            let pk, o
+            switch (typeof v) {
+                case 'object':
+                    pk = k
+                    if (parentKeys) {
+                        pk = isNaN(parseInt(k)) ? `${parentKeys}.${k}` : `${parentKeys}[${k}]`
+                    }
+                    o = findAllPaths(v, searchKey, isRange, pk)
+                    if (o != null && o instanceof Array) {
+                        ret = [...ret, ...o]
+                    }
+                    break
+                case 'string':
+                    if (`${parentKeys}.${k}`.endsWith(searchKey)) {
+                        ret = [...ret, { path: `${parentKeys}.${k}`, isRange }]
+                    }
+                    break
             }
         }
     })

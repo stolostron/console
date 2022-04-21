@@ -20,7 +20,7 @@ export function WizardSyncEditor() {
         <SyncEditor
             editorTitle={'Automation YAML'}
             variant="toolbar"
-            filterKube={true}
+            filters={['*.metadata.managedFields']}
             resources={resources}
             schema={schema}
             onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
