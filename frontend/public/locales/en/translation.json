@@ -2380,7 +2380,7 @@
     "Use keywords or property filters to search for resources.": "Use keywords or property filters to search for resources.",
     "Use the navigation to view the resources that are deployed by the selected subscription.": "Use the navigation to view the resources that are deployed by the selected subscription.",
     "validate.ansible.host": "The credential returned an error response from Ansible Tower. Please review the host and token.",
-    "validate.ansible.url.not.valid": "The URL is not valid.",
+    "validate.ansible.url.not.valid": "The provided URL is not a valid Ansible Tower host URL.",
     "validate.baseDnsName.char": "Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character",
     "validate.baseDnsName.start": "The base DNS domain must not begin with a period.",
     "validate.baseDomain.baseDNSPeriod": "The base DNS domain must not begin with a period.",
