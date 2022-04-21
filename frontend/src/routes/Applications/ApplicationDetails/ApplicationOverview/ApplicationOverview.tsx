@@ -129,7 +129,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                 }
             })
         }
-    }, [])
+    }, [namespaces])
 
     function renderData(checkData: any, showData: any, width?: string) {
         return checkData !== -1 ? showData : <Skeleton width={width} className="loading-skeleton-text" />
