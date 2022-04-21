@@ -213,6 +213,7 @@ export default function ApplicationsOverview() {
             placementRules,
             subscriptions,
             localCluster,
+            managedClusters,
         })
 
         // Resource column
@@ -423,6 +424,7 @@ export default function ApplicationsOverview() {
                         placementRules,
                         subscriptions,
                         localCluster,
+                        managedClusters,
                     })
                     const searchParams: any =
                         resource.kind === ApplicationKind && resource.apiVersion === ApplicationApiVersion
@@ -498,7 +500,7 @@ export default function ApplicationsOverview() {
                 search: 'transformed.createdText',
             },
         ],
-        [argoApplications, channels, getTimeWindow, localCluster, placementRules, subscriptions, t]
+        [argoApplications, channels, getTimeWindow, localCluster, placementRules, subscriptions, t, managedClusters]
     )
 
     const filters = [

@@ -182,6 +182,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             placementRules,
             subscriptions,
             localCluster,
+            managedClusters,
         })
 
         ////////////////////////////////// argo items ////////////////////////////////////
