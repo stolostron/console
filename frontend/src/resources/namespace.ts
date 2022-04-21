@@ -19,10 +19,3 @@ export const NamespaceDefinition: IResourceDefinition = {
     apiVersion: NamespaceApiVersion,
     kind: NamespaceKind,
 }
-
-export function listNamespaces() {
-    return listResources<Namespace>({
-        apiVersion: NamespaceApiVersion,
-        kind: NamespaceKind,
-    })
-}
