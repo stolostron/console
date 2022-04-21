@@ -972,7 +972,7 @@ export function CredentialsForm(props: {
                 title: t('credentialsForm.rhvCredentials.title'),
                 wizardTitle: t('credentialsForm.rhvCredentials.wizardTitle'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION_OPENSTACK} target="_blank" rel="noreferrer">
+                    <a href={DOC_LINKS.CREATE_CONNECTION_VIRTUALIZATION} target="_blank" rel="noreferrer">
                         {t('credentialsForm.rhvCredentials.wizardDescription')}
                     </a>
                 ),
@@ -1187,10 +1187,10 @@ export function CredentialsForm(props: {
                             Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('HTTP Proxy'),
-                        placeholder: t('Enter the HTTP Proxy URL'),
+                        label: t('HTTP proxy'),
+                        placeholder: t('Enter the HTTP proxy URL'),
                         labelHelp: t(
-                            'A proxy URL to use for creating HTTP connections outside the cluster. The URL scheme must be http.'
+                            'A proxy URL to use for creating HTTP connections outside the cluster. The URL scheme must be HTTP.'
                         ),
                         value: httpProxy,
                         onChange: setHttpProxy,
@@ -1208,8 +1208,8 @@ export function CredentialsForm(props: {
                             Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('HTTPS Proxy'),
-                        placeholder: t('Enter the HTTPS Proxy URL'),
+                        label: t('HTTPS proxy'),
+                        placeholder: t('Enter the HTTPS proxy URL'),
                         labelHelp: t(
                             'A proxy URL to use for creating HTTPS connections outside the cluster. If this is not specified, then httpProxy is used for both HTTP and HTTPS connections.'
                         ),
@@ -1229,8 +1229,8 @@ export function CredentialsForm(props: {
                             Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('No Proxy'),
-                        placeholder: t('Enter the comma delimited list of urls that do not require a proxy'),
+                        label: t('No proxy'),
+                        placeholder: t('Enter the comma delimited list of URLs that do not require a proxy'),
                         labelHelp: t(
                             'A comma-separated list of destination domain names, domains, IP addresses or other network CIDRs to exclude proxying. Preface a domain with . to include all subdomains of that domain. Use * to bypass proxy for all destinations. Note that if you scale up workers not included in networking.machineCIDR from the installation configuration, you must add them to this list to prevent connection issues.'
                         ),
@@ -1324,7 +1324,11 @@ export function CredentialsForm(props: {
                 title: t('Pull secret and SSH'),
                 wizardTitle: t('Enter the pull secret and SSH keys'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                    <a
+                        href={'https://console.redhat.com/openshift/install/pull-secret'}
+                        target="_blank"
+                        rel="noreferrer"
+                    >
                         {t('How do I get the Red Hat OpenShift Container Platform pull secret?')}
                     </a>
                 ),
