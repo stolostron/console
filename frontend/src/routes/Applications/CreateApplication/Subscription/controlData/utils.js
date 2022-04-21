@@ -609,7 +609,9 @@ export const setAvailableSecrets = (control, result) => {
         }
     } else {
         control.isLoading = loading
-        if (!loading) control.isLoaded = true
+        if (!loading) {
+            control.isLoaded = true
+        }
     }
 }
 
