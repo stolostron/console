@@ -4,7 +4,6 @@ import _ from 'lodash'
 import { getSecret, listResources } from '.'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
-import AbortController from 'abort-controller'
 
 export const ChannelApiVersion = 'apps.open-cluster-management.io/v1'
 export type ChannelApiVersionType = 'apps.open-cluster-management.io/v1'
@@ -37,11 +36,6 @@ export function listChannels() {
     })
 }
 
-const controller = new AbortController()
-const timeout = setTimeout(() => {
-    controller.abort()
-}, 150)
-
 async function getChannelSecret(secretArgs?: { secretRef?: string; namespace?: string }) {
     const channelSecret = { user: '', accessToken: '' }
     if (secretArgs && secretArgs.secretRef && secretArgs.namespace) {
@@ -69,7 +63,6 @@ async function getGitConnection(
         const authOptions = {
             baseUrl: authBaseUrl,
             auth: accessData.accessToken,
-            request: { signal: controller.signal },
         }
         return new Octokit(authOptions)
     } else {
@@ -97,8 +90,7 @@ export function getGitChannelBranches(
             octokit?.repos.listBranches(gitInfo).then(({ data }) => (data ? data.map((branch) => branch.name) : []))
         )
         .catch((err) => {
-            if (err.name === 'AbortError') handleGitError(new Error('request timed out'))
-            else handleGitError(err)
+            handleGitError(err)
             return []
         })
 }
