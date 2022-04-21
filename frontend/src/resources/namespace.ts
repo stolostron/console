@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
-import { listResources } from '.'
 
 export const NamespaceApiVersion = 'v1'
 export type NamespaceApiVersionType = 'v1'
