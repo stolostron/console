@@ -1470,6 +1470,7 @@ export function CredentialsForm(props: {
                 ['Secret', '0', 'stringData', 'osServiceAccount.json'],
                 ['Secret', '0', 'stringData', 'clouds.yaml'],
             ]}
+            immutables={isEditing ? ['*.metadata.name', '*.metadata.namespace'] : []}
             edit={() => {
                 if (providerConnection) {
                     history.push(

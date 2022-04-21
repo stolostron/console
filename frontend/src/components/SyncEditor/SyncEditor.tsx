@@ -294,7 +294,10 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         formChangeRef.current.formChange = () => {
             // ignore echo from form
             // (user types, form is updated, form change comes here)
-            let isEcho = isEqual(Array.isArray(resources) ? resources : [resources], editorChanges?.resources)
+            let isEcho = isEqual(
+                Array.isArray(resources) ? resources : [resources],
+                Array.isArray(editorChanges?.resources) ? editorChanges?.resources : [editorChanges?.resources]
+            )
             isEcho = isEcho && showSecrets === lastShowSecrets && showFiltered === lastShowFiltered
             setLastShowSecrets(showSecrets)
             setLastShowFiltered(showFiltered)
@@ -474,14 +477,18 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                     })
                 } else if (!isEqual(unredactedChange.resources, _resources) || !editorChanges) {
                     // only report if resources changed
-                    setEditorChanges({
-                        resources: unredactedChange.resources,
+                    const editChanges = {
+                        resources: isArr ? unredactedChange.resources : unredactedChange.resources[0],
                         warnings: formatErrors(errors, true),
                         errors: formatErrors(errors),
                         changes: formatChanges(editor, monaco, changes, redactedChange, syncs),
-                    })
+                    }
+                    setEditorChanges(editChanges)
                     setLastValidResources(cloneDeep(isArr ? unredactedChange.resources : unredactedChange.resources[0]))
                     setFormStates(syncs, unredactedChange)
+                    if (onEditorChange && !isEqual(unredactedChange.resources, _resources)) {
+                        onEditorChange(editChanges)
+                    }
                 }
             }
         }, 500)
@@ -489,12 +496,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             clearTimeout(changeTimeoutId)
         }
     }, [reportChanges])
-
-    useEffect(() => {
-        if (onEditorChange && editorChanges) {
-            onEditorChange(editorChanges)
-        }
-    }, [editorChanges])
 
     const toolbarControls = useMemo(() => {
         return (
