@@ -803,7 +803,8 @@ export function getClusterStatus(
                 const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''
                 if (
                     provisionFailedCondition?.message?.includes(currentProvisionRef) ||
-                    provisionFailedCondition?.reason === 'InvalidInstallConfig'
+                    provisionFailedCondition?.reason === 'InvalidInstallConfig' ||
+                    provisionFailedCondition?.reason === 'FallbackInvalidInstallConfig'
                 ) {
                     cdStatus = ClusterStatus.provisionfailed
                 } else {
