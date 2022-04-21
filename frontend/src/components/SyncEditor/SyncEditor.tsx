@@ -22,6 +22,7 @@ import { decorate, getResourceEditorDecorations } from './decorate'
 import { setFormStates } from './synchronize'
 import { SyncDiffType } from './SyncDiff'
 import './SyncEditor.css'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     variant?: string
@@ -111,6 +112,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (schema && !validationRef.current) {
         validationRef.current = compileAjvSchemas(schema)
     }
+    const { t } = useTranslation()
 
     function onEditorDidMount(editor: any, monaco: any) {
         // create 'resource-editor' theme
@@ -305,6 +307,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 change,
                 unredactedChange,
             } = processForm(
+                t,
                 monacoRef,
                 code,
                 resources,
@@ -381,6 +384,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 change,
                 unredactedChange,
             } = processUser(
+                t,
                 monacoRef,
                 value,
                 showSecrets ? undefined : secrets,
@@ -545,7 +549,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                         <CodeEditorControl
                             icon={<FilterIcon />}
                             aria-label="Filter YAML"
-                            toolTipText={showFiltered ? 'Filter YAML' : 'Unfilter YAML'}
+                            toolTipText={showFiltered ? t('Filter YAML') : t('Unfilter YAML')}
                             onClick={() => {
                                 setShowFiltered(!showFiltered)
                             }}

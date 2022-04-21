@@ -35,6 +35,7 @@ export interface CachedValuesType {
 }
 
 export const processForm = (
+    t: (arg0: string) => any,
     monacoRef: any,
     code: string | undefined,
     resourceArr: unknown,
@@ -78,11 +79,12 @@ export const processForm = (
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, [], filters, [], immutables, validators),
+        ...process(t, monacoRef, yaml, documents, errors, secrets, [], filters, [], immutables, validators),
     }
 }
 
 export const processUser = (
+    t: (arg0: string) => any,
     monacoRef: any,
     yaml: string,
     secrets?: (string | string[])[],
@@ -104,6 +106,7 @@ export const processUser = (
     return {
         comparison,
         ...process(
+            t,
             monacoRef,
             yaml,
             documents,
@@ -119,6 +122,7 @@ export const processUser = (
 }
 
 const process = (
+    t: (arg0: string) => any,
     monacoRef: any,
     yaml: string,
     documents: any,
@@ -183,7 +187,7 @@ const process = (
                 const value = get(parsed, path) as unknown as string
                 if (value && typeof value === 'object') {
                     hiddenFilteredValues.push({ path: path, value })
-                    set(parsed, path, '-click unfilter YAML to show-')
+                    set(parsed, path, t('-click Unfilter YAML to show-'))
                 }
             })
         }
