@@ -1,4 +1,5 @@
 {
+    "-click Unfilter YAML to show-": "-click Unfilter YAML to show-",
     ".bma": ".bma",
     "(1 of {{0}})": "(1 of {{0}})",
     "{{count}} clusters with unknown status": "{{count}} cluster with unknown status",
@@ -1196,6 +1197,7 @@
     "error.default.description": "An unexpected error occurred. Try again.",
     "errors": "Errors",
     "External": "External",
+    "Filter YAML": "Filter YAML",
     "Filters": "Filters",
     "Find": "Find",
     "Find by name": "Find by name",
@@ -2338,6 +2340,7 @@
     "Unauthorized": "Unauthorized",
     "unbind": "Remove from cluster",
     "unbinding": "Removing from cluster",
+    "Unfilter YAML": "Unfilter YAML",
     "uninstall": "Uninstall",
     "uninstall.add-on": "Uninstall add-on",
     "uninstalling": "Uninstalling",
