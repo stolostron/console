@@ -24,7 +24,7 @@
         "find-my-way": "^4.3.3",
         "get-value": "^3.0.1",
         "got": "^11.8.3",
-        "node-fetch": "^2.6.1",
+        "node-fetch": "^2.6.7",
         "pino": "^6.13.2",
         "pluralize": "^8.0.0",
         "proxy-agent": "^5.0.0",
