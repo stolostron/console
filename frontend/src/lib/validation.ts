@@ -212,12 +212,13 @@ export function validateBareMetalOSImageURL(value: string, t: TFunction) {
     return undefined
 }
 
-export function validateWebURL(url: string, t: TFunction) {
+export function validateWebURL(url: string, t: TFunction, supportedProtocols?: string[]) {
+    let protocols = supportedProtocols ? supportedProtocols : ['http', 'https']
     if (
         validator.isURL(url, {
             require_protocol: true,
             require_valid_protocol: true,
-            protocols: ['http', 'https'],
+            protocols: protocols,
             require_host: true,
         })
     )

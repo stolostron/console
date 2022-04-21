@@ -1280,7 +1280,7 @@ export function CredentialsForm(props: {
                         value: ansibleHost,
                         onChange: setAnsibleHost,
                         isRequired: true,
-                        validation: (host) => validateWebURL(host, t),
+                        validation: (host) => validateWebURL(host, t, ['https']),
                     },
                     {
                         id: 'ansibleToken',
