@@ -1458,7 +1458,6 @@
     "managed.hibernate.plural": "Hibernate clusters",
     "managed.import": "Import cluster",
     "managed.importCluster": "Import cluster",
-    "managed.noClusterImages": "It is not possible to create a cluster when there is no cluster image available. Contact your administrator to define it.",
     "managed.removeSet": "Remove from cluster set",
     "managed.resume": "Resume cluster",
     "managed.resume.plural": "Resume clusters",
