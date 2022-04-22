@@ -3,7 +3,7 @@
 import { uniqBy, get, set } from 'lodash'
 import { getClusterName, addClusters } from './utils'
 import { createReplicaChild } from './topologySubscription'
-import { fireManagedClusterView, listResources } from '../../../../../resources'
+import { fireManagedClusterView, listNamespacedResources } from '../../../../../resources'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
@@ -154,9 +154,10 @@ const getArgoRoute = async (appName, appNamespace, cluster, managedclusterviewda
     // this only works for OCP clusters, needs more work to support other vendors
     if (cluster === 'local-cluster') {
         try {
-            routes = await listResources({
+            routes = await listNamespacedResources({
                 apiVersion: 'route.openshift.io/v1',
                 kind: 'Route',
+                metadata: { namespace: appNamespace },
             }).promise
         } catch (err) {
             console.error('Error listing resource:', err)
@@ -193,7 +194,7 @@ const getArgoRoute = async (appName, appNamespace, cluster, managedclusterviewda
                 }
             })
             .catch((err) => {
-                console.error('Error getting ersource: ', err)
+                console.error('Error getting resource: ', err)
             })
     }
 }

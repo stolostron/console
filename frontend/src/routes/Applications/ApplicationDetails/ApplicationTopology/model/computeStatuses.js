@@ -378,6 +378,7 @@ const getPulseStatusForGenericNode = (node, t) => {
 
     //go through all clusters to make sure all pods are counted, even if they are not deployed there
     let highestPulse = 3
+    let pendingPulseCount = 0
     clusterNames.forEach((clusterName) => {
         clusterName = R.trim(clusterName)
         //get target cluster namespaces
@@ -390,7 +391,8 @@ const getPulseStatusForGenericNode = (node, t) => {
         targetNSList.forEach((targetNS) => {
             const resourceItems = _.filter(resourcesForCluster, (obj) => _.get(obj, resourceNSString, '') === targetNS)
             if (resourceItems.length === 0) {
-                pulse = 'orange' // search didn't find this resource in this cluster so mark it unknown
+                pendingPulseCount++
+                //pulse = 'orange' // search didn't find this resource in this cluster so mark it unknown
             } else {
                 resourceItems.forEach((resourceItem) => {
                     // does resource have a desired resource count?
@@ -431,6 +433,13 @@ const getPulseStatusForGenericNode = (node, t) => {
             highestPulse = index
         }
     })
+
+    if (pendingPulseCount > 0 && pendingPulseCount < clusterNames.length) {
+        const index = pulseValueArr.indexOf('yellow')
+        if (index < highestPulse) {
+            highestPulse = index
+        }
+    }
     return pulseValueArr[highestPulse]
 }
 
