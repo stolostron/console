@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get } from 'lodash'
+import { get, set } from 'lodash'
 import { getSubscriptionApplication } from './applicationSubscription'
 import { fireManagedClusterView } from '../../../../../resources'
 
@@ -46,6 +46,7 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
         if (cluster) {
             // get argo app definition from managed cluster
             app = await getRemoteArgoApp(cluster, 'application', 'argoproj.io/v1alpha1', name, namespace)
+            set(app, 'status.cluster', cluster)
         } else {
             app = argoApplications.find((app) => {
                 return app?.metadata?.name === name && app?.metadata?.namespace === namespace
