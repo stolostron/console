@@ -322,7 +322,7 @@ export function DiscoveryConfigPageContent(props: {
 
             canUpdateDiscoveryConfig.promise
                 .then((result) =>
-                    !result.status?.allowed ? alertContext.addAlert(getErrorInfo(new ResourceError('', 403))) : null
+                    !result.status?.allowed ? alertContext.addAlert(getErrorInfo(new ResourceError('', 403), t)) : null
                 )
                 .catch((err) => alertContext.addAlert(getErrorInfo(err, t)))
             return () => {
@@ -344,7 +344,7 @@ export function DiscoveryConfigPageContent(props: {
                 canCreateDiscoveryConfig.abort()
             }
         }
-    }, [editing, discoveryConfig.metadata.namespace, alertContext])
+    }, [editing, discoveryConfig.metadata.namespace, alertContext, t])
 
     return (
         <AcmForm>
