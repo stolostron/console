@@ -167,8 +167,16 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         )
 
         editorRef.current = editor
+        window.getEditorValue = () => editor.getValue()
         monacoRef.current = monaco
     }
+
+    // clear our the getEditorValue method
+    useEffect(() => {
+        return () => {
+            window.getEditorValue = undefined
+        }
+    }, [])
 
     useEffect(() => {
         monacoRef.current.editor.setTheme(readonly ? 'readonly-resource-editor' : 'resource-editor')
