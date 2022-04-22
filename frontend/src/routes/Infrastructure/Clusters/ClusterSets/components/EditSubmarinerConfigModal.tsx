@@ -183,7 +183,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                                     return patchResource(props.submarinerConfig!, patch)
                                         .promise.then(() => reset())
                                         .catch((err) => {
-                                            const errorInfo = getErrorInfo(err)
+                                            const errorInfo = getErrorInfo(err, t)
                                             alertContext.addAlert({
                                                 type: 'danger',
                                                 title: errorInfo.title,
