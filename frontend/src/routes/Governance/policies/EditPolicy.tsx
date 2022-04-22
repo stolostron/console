@@ -102,7 +102,6 @@ export function EditPolicy() {
         }
 
         setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
-        setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
     }, [
         channels,
         helmReleases,

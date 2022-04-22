@@ -446,7 +446,6 @@ export function LoadData(props: { children?: ReactNode }) {
                             eventQueue.length = 0
                             break
                         case 'LOADED':
-                            processEventQueue()
                             setLoading(false)
                             break
                         case 'SETTINGS':
@@ -516,9 +515,11 @@ export function LoadData(props: { children?: ReactNode }) {
         checkLoggedIn()
     }, [])
 
+    const children = useMemo(() => <Fragment>{props.children}</Fragment>, [props.children])
+
     if (loading || getBackendUrl() === undefined) return <LoadingPage />
 
-    return <Fragment>{props.children}</Fragment>
+    return children
 }
 
 export function usePolicies() {
