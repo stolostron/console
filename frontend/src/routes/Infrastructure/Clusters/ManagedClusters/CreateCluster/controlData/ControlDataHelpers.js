@@ -181,6 +181,9 @@ export const setAvailableConnections = (control, secrets) => {
         if (replacements['ovirt_ca_bundle']) {
             replacements['ovirtCaBundle'] = replacements['ovirt_ca_bundle']
         }
+        if (!replacements['additionalTrustBundle']) {
+            delete replacements['additionalTrustBundle']
+        }
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
         control.noHandlebarReplacements = true
