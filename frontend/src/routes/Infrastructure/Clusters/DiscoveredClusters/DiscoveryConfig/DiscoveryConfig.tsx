@@ -227,7 +227,7 @@ export function DiscoveryConfigPageContent(props: {
                             }
                         } catch (err) {
                             toastContext.clearAlerts()
-                            alertContext.addAlert(getErrorInfo(err)) //TODO: not currently displaying within modal
+                            alertContext.addAlert(getErrorInfo(err, t)) //TODO: not currently displaying within modal
                         }
                     },
                     confirmText: t('discoveryConfig.delete.btn'),
@@ -324,7 +324,7 @@ export function DiscoveryConfigPageContent(props: {
                 .then((result) =>
                     !result.status?.allowed ? alertContext.addAlert(getErrorInfo(new ResourceError('', 403))) : null
                 )
-                .catch((err) => alertContext.addAlert(getErrorInfo(err)))
+                .catch((err) => alertContext.addAlert(getErrorInfo(err, t)))
             return () => {
                 canUpdateDiscoveryConfig.abort()
             }
@@ -337,9 +337,9 @@ export function DiscoveryConfigPageContent(props: {
             )
             canCreateDiscoveryConfig.promise
                 .then((result) =>
-                    !result.status?.allowed ? alertContext.addAlert(getErrorInfo(new ResourceError('', 403))) : null
+                    !result.status?.allowed ? alertContext.addAlert(getErrorInfo(new ResourceError('', 403), t)) : null
                 )
-                .catch((err) => alertContext.addAlert(getErrorInfo(err)))
+                .catch((err) => alertContext.addAlert(getErrorInfo(err, t)))
             return () => {
                 canCreateDiscoveryConfig.abort()
             }

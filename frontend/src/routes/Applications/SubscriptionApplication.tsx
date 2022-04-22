@@ -106,6 +106,7 @@ export default function CreateSubscriptionApplicationPage() {
 
 export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<string>>) {
     const history = useHistory()
+    const { t } = useTranslation()
     const toastContext = useContext(AcmToastContext)
     const [controlData, setControlData] = useState<any>('')
     const [secrets] = useRecoilState(secretsState)
@@ -149,7 +150,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                     )
                 })
                 .catch((err) => {
-                    const errorInfo = getErrorInfo(err)
+                    const errorInfo = getErrorInfo(err, t)
                     toastContext.addAlert({
                         type: 'danger',
                         title: errorInfo.title,
@@ -233,7 +234,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                         redirectRoute()
                     })
                     .catch((err) => {
-                        const errorInfo = getErrorInfo(err)
+                        const errorInfo = getErrorInfo(err, t)
                         toastContext.addAlert({
                             type: 'danger',
                             title: errorInfo.title,
@@ -242,7 +243,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                     })
             } else {
                 createResource(resourceJSON).catch((err) => {
-                    const errorInfo = getErrorInfo(err)
+                    const errorInfo = getErrorInfo(err, t)
                     toastContext.addAlert({
                         type: 'danger',
                         title: errorInfo.title,
@@ -276,12 +277,6 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                     .replace(':name', editApplication?.selectedAppName ?? '')
             )
         }
-    }
-
-    // setup translation
-    const { t } = useTranslation()
-    const i18n = (key: any, arg: any) => {
-        return t(key, arg)
     }
 
     function getEditApplication(location: Location) {
@@ -369,7 +364,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                 fetchControl={fetchControl}
                 createControl={createControl}
                 logging={process.env.NODE_ENV !== 'production'}
-                i18n={i18n}
+                i18n={t}
             />
         )
     )

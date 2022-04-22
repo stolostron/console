@@ -79,7 +79,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
         if (errors) {
             for (const error of errors) {
                 if (error.item === item) {
-                    return getErrorInfo(error.error)
+                    return getErrorInfo(error.error, t)
                 }
             }
         }
