@@ -652,7 +652,10 @@ export default function AdvancedConfiguration() {
 
     function ApplicationDeploymentHighlights() {
         return (
-            <AcmExpandableCard title={t('Learn more about the terminology')}>
+            <AcmExpandableCard
+                title={t('Learn more about the terminology')}
+                id="ApplicationDeploymentHighlightsTerminology"
+            >
                 <Split hasGutter>
                     <TerminologyCard
                         title={t('Subsciptions')}
