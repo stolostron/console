@@ -799,7 +799,7 @@
     "credentialsForm.ansibleCredentials.wizardDescription": "How do I get Ansible Automation Platform credentials?",
     "credentialsForm.ansibleCredentials.wizardTitle": "Enter the Ansible Automation Platform credentials",
     "credentialsForm.ansibleHost.label": "Ansible Tower host",
-    "credentialsForm.ansibleHost.labelHelp": "credentialsForm.ansibleHost.labelHelp",
+    "credentialsForm.ansibleHost.labelHelp": "The base URL of the Ansible Tower host account. Secure HTTPS protocol is required for the URL.",
     "credentialsForm.ansibleHost.placeholder": "Enter the Ansible Tower host URL",
     "credentialsForm.ansibleToken.label": "Ansible Tower token",
     "credentialsForm.ansibleToken.labelHelp": "credentialsForm.ansibleToken.labelHelp",
