@@ -199,21 +199,27 @@ export function AutomationDetailsSidebar(props: {
         const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
         return (
             <div>
-                {t(
-                    'The Ansible Automation Platform Resource Operator is required to create an Ansible job. Install the operator through the following link: '
+                {t('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')}
+                {openShiftConsoleUrl && openShiftConsoleUrl !== '' ? (
+                    <div>
+                        {t('Install the Operator through the following link: ')}
+                        <Button
+                            isInline
+                            variant={ButtonVariant.link}
+                            onClick={() =>
+                                window.open(
+                                    openShiftConsoleUrl +
+                                        '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
+                                )
+                            }
+                        >
+                            {'Operator'}
+                            <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                        </Button>
+                    </div>
+                ) : (
+                    t('Install the Operator through operator hub.')
                 )}
-                <Button
-                    isInline
-                    variant={ButtonVariant.link}
-                    onClick={() =>
-                        window.open(
-                            openShiftConsoleUrl + '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
-                        )
-                    }
-                >
-                    {t('Operator')}
-                    <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
-                </Button>
             </div>
         )
     }
