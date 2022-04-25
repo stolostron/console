@@ -278,7 +278,7 @@ const controlDataVMW = [
     {
         id: 'disconnectedInfo',
         type: 'title',
-        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS (RHCOS) image.',
+        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS image.',
     },
     {
         name: 'Create disconnected installation',

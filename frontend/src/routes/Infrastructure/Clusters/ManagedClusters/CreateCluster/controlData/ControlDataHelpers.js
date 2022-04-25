@@ -181,6 +181,9 @@ export const setAvailableConnections = (control, secrets) => {
         if (replacements['ovirt_ca_bundle']) {
             replacements['ovirtCaBundle'] = replacements['ovirt_ca_bundle']
         }
+        if (!replacements['additionalTrustBundle']) {
+            delete replacements['additionalTrustBundle']
+        }
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
         control.noHandlebarReplacements = true
@@ -343,7 +346,7 @@ export const clusterDetailsControlData = [
         id: 'fips',
         type: 'checkbox',
         active: false,
-        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with RHCOS instead of the default Kubernetes cryptography suite.',
+        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.',
     },
 ]
 
@@ -442,7 +445,7 @@ export const proxyControlData = [
     {
         id: 'httpProxy',
         type: 'text',
-        name: 'Http Proxy',
+        name: 'HTTP proxy',
         disabled: true,
         tip: 'Requires this format: http://<username>:<pswd>@<ip>:<port>',
         validation: VALIDATE_URL,
@@ -450,7 +453,7 @@ export const proxyControlData = [
     {
         id: 'httpsProxy',
         type: 'text',
-        name: 'Https Proxy',
+        name: 'HTTPS proxy',
         tip: 'Requires this format: https://<username>:<pswd>@<ip>:<port>',
         disabled: true,
         validation: VALIDATE_URL,
@@ -459,7 +462,7 @@ export const proxyControlData = [
         active: [],
         id: 'noProxy',
         type: 'values',
-        name: 'No Proxy',
+        name: 'No proxy',
         disabled: true,
         tip: 'Add comma separated sites to bypass the proxy. By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs.',
     },

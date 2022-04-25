@@ -79,6 +79,7 @@ export interface PolicyTableItem {
 
 export default function PoliciesPage() {
     const { t } = useTranslation()
+    const unauthorizedMessage = t('rbac.unauthorized')
     const presets = transformBrowserUrlToFilterPresets(window.location.search)
     const policies = usePolicies()
     const [helmReleases] = useRecoilState(helmReleaseState)
@@ -118,14 +119,13 @@ export default function PoliciesPage() {
     const policyClusterViolationsColumn = usePolicyViolationsColumn(policyClusterViolationSummaryMap)
     const [modal, setModal] = useState<ReactNode | undefined>()
     const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
-    const [canAutomatePolicy, setCanAutomatePolicy] = useState<boolean>(false)
+    const [canCreatePolicyAutomation, setCanCreatePolicyAutomation] = useState<boolean>(false)
+    const [canUpdatePolicyAutomation, setCanUpdatePolicyAutomation] = useState<boolean>(false)
 
     useEffect(() => {
         checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
-    }, [namespaces])
-
-    useEffect(() => {
-        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanAutomatePolicy, namespaces)
+        checkPermission(rbacCreate(PolicyAutomationDefinition), setCanCreatePolicyAutomation, namespaces)
+        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanUpdatePolicyAutomation, namespaces)
     }, [namespaces])
 
     const policyColumns = useMemo<IAcmTableColumn<PolicyTableItem>[]>(
@@ -246,8 +246,8 @@ export default function PoliciesPage() {
                     if (policyAutomationMatch) {
                         return (
                             <AcmButton
-                                isDisabled={!canAutomatePolicy}
-                                tooltip={!canAutomatePolicy ? t('rbac.unauthorized') : ''}
+                                isDisabled={!canUpdatePolicyAutomation}
+                                tooltip={!canUpdatePolicyAutomation ? unauthorizedMessage : ''}
                                 isInline
                                 variant={ButtonVariant.link}
                                 onClick={() =>
@@ -277,8 +277,8 @@ export default function PoliciesPage() {
                     } else {
                         return (
                             <AcmButton
-                                isDisabled={!canAutomatePolicy}
-                                tooltip={!canAutomatePolicy ? t('rbac.unauthorized') : ''}
+                                isDisabled={!canCreatePolicyAutomation}
+                                tooltip={!canCreatePolicyAutomation ? unauthorizedMessage : ''}
                                 isInline
                                 variant={ButtonVariant.link}
                                 component={Link}
@@ -315,7 +315,16 @@ export default function PoliciesPage() {
                 cellTransforms: [fitContent],
             },
         ],
-        [policyClusterViolationsColumn, policySets, policyAutomations, setDrawerContext, canAutomatePolicy, t]
+        [
+            policyClusterViolationsColumn,
+            policySets,
+            policyAutomations,
+            setDrawerContext,
+            canCreatePolicyAutomation,
+            canUpdatePolicyAutomation,
+            unauthorizedMessage,
+            t,
+        ]
     )
 
     const bulkModalStatusColumns = useMemo(
@@ -664,7 +673,7 @@ export default function PoliciesPage() {
     )
 
     if (tableItems.length === 0) {
-        return <GovernanceCreatePolicyEmptyState />
+        return <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
     }
 
     return (
@@ -684,7 +693,7 @@ export default function PoliciesPage() {
                 tableActionButtons={[
                     {
                         isDisabled: !canCreatePolicy,
-                        tooltip: !canCreatePolicy ? t('rbac.unauthorized') : '',
+                        tooltip: !canCreatePolicy ? unauthorizedMessage : '',
                         variant: ButtonVariant.primary,
                         id: 'create',
                         title: 'Create policy',

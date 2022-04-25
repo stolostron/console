@@ -371,9 +371,10 @@ export const setAvailableRules = (control, result) => {
         control.availableMap = {}
         control.availableData = []
     }
-    if (control.available.length === 0 && (error || placementRules)) {
+    if (error || placementRules) {
         if (error) {
             control.isFailed = true
+            control.isLoaded = true
         } else if (placementRules) {
             control.isLoaded = true
             placementRules.forEach((item) => {
@@ -609,7 +610,9 @@ export const setAvailableSecrets = (control, result) => {
         }
     } else {
         control.isLoading = loading
-        if (!loading) control.isLoaded = true
+        if (!loading) {
+            control.isLoaded = true
+        }
     }
 }
 

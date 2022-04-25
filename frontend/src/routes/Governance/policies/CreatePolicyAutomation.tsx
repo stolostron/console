@@ -74,7 +74,7 @@ export function CreatePolicyAutomation() {
                 kind: PolicyAutomationKind,
                 apiVersion: PolicyAutomationApiVersion,
                 metadata: {
-                    name: `${currentPolicy?.metadata?.name ?? ''}-policy-automation`,
+                    name: `${currentPolicy?.metadata?.name ?? ''}-policy-automation`.substring(0, 253),
                     namespace: currentPolicy?.metadata?.namespace ?? '',
                 },
                 spec: {

@@ -47,7 +47,7 @@ const {
     isAgentOfInfraEnv,
 } = CIM
 
-const TEMPLATE_EDITOR_OPEN_COOKIE = 'template-editor-open-cookie'
+const TEMPLATE_EDITOR_OPEN_COOKIE = 'yaml'
 
 type EditAIClusterProps = RouteComponentProps<
     { namespace: string; name: string },

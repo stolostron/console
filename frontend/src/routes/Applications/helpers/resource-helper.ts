@@ -24,6 +24,7 @@ import {
     SubscriptionApiVersion,
     SubscriptionKind,
 } from '../../../resources'
+import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getAnnotation } from '../Overview'
 
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
@@ -54,7 +55,8 @@ const calculateClusterCount = (
     resource: ArgoApplication,
     clusterCount: any,
     clusterList: string[],
-    localCluster: Cluster | undefined
+    localCluster: Cluster | undefined,
+    managedClusters: Cluster[]
 ) => {
     const isRemoteArgoApp = resource.status.cluster ? true : false
 
@@ -69,15 +71,21 @@ const calculateClusterCount = (
     } else {
         clusterCount.remoteCount++
         if (isRemoteArgoApp) {
-            clusterList.push(resource.status.cluster)
-        } else if (resource.spec.destination?.name) {
-            clusterList.push(resource.spec.destination?.name)
+            clusterList.push(
+                getArgoDestinationCluster(resource.spec.destination, managedClusters, resource.status.cluster)
+            )
+        } else {
+            clusterList.push(getArgoDestinationCluster(resource.spec.destination, managedClusters))
         }
     }
 }
 
 // Check if server URL matches hub URL
 function isLocalClusterURL(url: string, localCluster: Cluster | undefined) {
+    if (url === 'https://kubernetes.default.svc') {
+        return true
+    }
+
     let argoServerURL
     const localClusterURL = new URL(
         localCluster ? _.get(localCluster, 'consoleURL', 'https://localhost') : 'https://localhost'
@@ -105,20 +113,27 @@ export const createClustersText = (props: {
     placementRules: PlacementRule[]
     subscriptions: Subscription[]
     localCluster: Cluster | undefined
+    managedClusters: Cluster[]
 }) => {
     const { resource, clusterCount, clusterList, argoApplications, placementRules, subscriptions, localCluster } = props
     if (resource.kind === ApplicationSetKind) {
         argoApplications!.forEach((app) => {
             if (app.metadata?.ownerReferences) {
                 if (app.metadata.ownerReferences[0].name === resource.metadata?.name) {
-                    calculateClusterCount(app, clusterCount, clusterList, localCluster)
+                    calculateClusterCount(app, clusterCount, clusterList, localCluster, props.managedClusters)
                 }
             }
         })
     }
 
     if (isArgoApp(resource)) {
-        calculateClusterCount(resource as ArgoApplication, clusterCount, clusterList, localCluster)
+        calculateClusterCount(
+            resource as ArgoApplication,
+            clusterCount,
+            clusterList,
+            localCluster,
+            props.managedClusters
+        )
     }
 
     if (resource.kind === ApplicationKind) {
