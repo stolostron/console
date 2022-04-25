@@ -190,7 +190,7 @@ export default function PolicySetsPage() {
     const searchDataKeyNames: string[] = ['Name', 'Namespace']
 
     if (!policySets || policySets.length === 0) {
-        return <GovernanceCreatePolicysetEmptyState />
+        return <GovernanceCreatePolicysetEmptyState rbac={canCreatePolicySet} />
     }
 
     return (
