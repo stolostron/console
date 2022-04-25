@@ -5,12 +5,25 @@ import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { policyAutomationState, secretsState, usePolicies } from '../../../atoms'
+import {
+    configMapsState,
+    policyAutomationState,
+    secretsState,
+    subscriptionOperatorsState,
+    usePolicies,
+} from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource, listAnsibleTowerJobs, PolicyAutomation, reconcileResources, Secret } from '../../../resources'
+import {
+    IResource,
+    listAnsibleTowerJobs,
+    PolicyAutomation,
+    reconcileResources,
+    Secret,
+    SubscriptionOperator,
+} from '../../../resources'
 import schema from './schemaAutomation.json'
 
 export function WizardSyncEditor() {
@@ -42,11 +55,25 @@ export function EditPolicyAutomation() {
     const history = useHistory()
     const policies = usePolicies()
     const [secrets] = useRecoilState(secretsState)
+    const [configMaps] = useRecoilState(configMapsState)
     const [policyAutomations] = useRecoilState(policyAutomationState)
+    const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
     const currentPolicy = useMemo(
         () => policies.find((policy) => policy.metadata.name === name && policy.metadata.namespace === namespace),
         [policies, name, namespace]
     )
+
+    const isOperatorInstalled = useMemo(() => {
+        const ansibleOp = subscriptionOperators.filter((op: SubscriptionOperator) => {
+            const conditions = op.status?.conditions[0]
+            return (
+                op.metadata.name === 'ansible-automation-platform-operator' &&
+                conditions?.reason === 'AllCatalogSourcesHealthy'
+            )
+        })
+        return ansibleOp.length > 0
+    }, [subscriptionOperators])
+
     const currentPolicyAutomation = policyAutomations.find((policyAutomation: PolicyAutomation) => {
         return (
             policyAutomation.metadata.name!.replace('-policy-automation', '') === name &&
@@ -78,6 +105,8 @@ export function EditPolicyAutomation() {
             createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
             resource={currentPolicyAutomation}
             onCancel={() => history.push(NavigationPath.policies)}
+            isAnsibleOperatorInstalled={isOperatorInstalled}
+            configMaps={configMaps}
             onSubmit={(data) => {
                 const resource = data as PolicyAutomation
                 const resources: IResource[] = [resource]
