@@ -446,7 +446,12 @@ export function LoadData(props: { children?: ReactNode }) {
                             eventQueue.length = 0
                             break
                         case 'LOADED':
-                            setLoading(false)
+                            setLoading((loading) => {
+                                if (loading) {
+                                    processEventQueue()
+                                }
+                                return false
+                            })
                             break
                         case 'SETTINGS':
                             setSettings(data.settings)
