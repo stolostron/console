@@ -289,13 +289,13 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                 { key: 'Namespace', value: namespace },
                 {
                     key: t('Created'),
-                    value: t(getShortDateTime(applicationData.application.metadata.creationTimestamp)),
+                    value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
                 },
                 {
                     key: t('Last sync requested'),
                     value: (
                         <Fragment>
-                            {renderData(t(getShortDateTime(lastSynced)), t(getShortDateTime(lastSynced)), '30%')}
+                            {renderData(getShortDateTime(lastSynced), getShortDateTime(lastSynced), '30%')}
                             {renderData(
                                 t(getShortDateTime(lastSynced)),
                                 hasSyncPermission ? (
