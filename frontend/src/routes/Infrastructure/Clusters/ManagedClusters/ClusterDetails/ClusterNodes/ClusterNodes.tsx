@@ -18,6 +18,7 @@ import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { ClusterContext } from '../ClusterDetails'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { Link } from 'react-router-dom'
+import { PluginContext } from '../../../../../../lib/PluginContext'
 
 export function NodePoolsPageContent() {
     return (
@@ -32,6 +33,7 @@ export function NodePoolsPageContent() {
 export function NodesPoolsTable() {
     const { t } = useTranslation()
     const { cluster } = useContext(ClusterContext)
+    const { isSearchAvailable } = useContext(PluginContext)
 
     const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
 
@@ -104,7 +106,7 @@ export function NodesPoolsTable() {
                         </span>
                         {node.name}
                     </a>
-                ) : (
+                ) : isSearchAvailable ? (
                     <Link
                         to={`${NavigationPath.resources}?cluster=${cluster!.name!}&kind=node&apiversion=v1&name=${
                             node.name
@@ -112,6 +114,8 @@ export function NodesPoolsTable() {
                     >
                         {node.name}
                     </Link>
+                ) : (
+                    node.name
                 )
             },
         },
