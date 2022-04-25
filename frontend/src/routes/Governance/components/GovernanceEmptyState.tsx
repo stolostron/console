@@ -9,7 +9,7 @@ import { viewDocumentation } from '../../../lib/doc-util'
 
 // GovernanceCreatePolicysetEmptyState
 
-export function GovernanceCreatePolicyEmptyState() {
+export function GovernanceCreatePolicyEmptyState(props: { rbac: boolean }) {
     const { t } = useTranslation()
     return (
         <AcmEmptyState
@@ -22,7 +22,13 @@ export function GovernanceCreatePolicyEmptyState() {
             }
             action={
                 <div>
-                    <AcmButton component={Link} variant="primary" to={NavigationPath.createPolicy}>
+                    <AcmButton
+                        tooltip={!props.rbac ? t('rbac.unauthorized') : ''}
+                        isDisabled={!props.rbac}
+                        component={Link}
+                        variant="primary"
+                        to={NavigationPath.createPolicy}
+                    >
                         {t('Create policy')}
                     </AcmButton>
                     <TextContent>{viewDocumentation(DOC_LINKS.POLICIES, t)}</TextContent>
@@ -32,7 +38,7 @@ export function GovernanceCreatePolicyEmptyState() {
     )
 }
 
-export function GovernanceManagePoliciesEmptyState() {
+export function GovernanceManagePoliciesEmptyState(props: { rbac: boolean }) {
     const { t } = useTranslation()
     return (
         <AcmEmptyState
@@ -45,7 +51,13 @@ export function GovernanceManagePoliciesEmptyState() {
             }
             action={
                 <div>
-                    <AcmButton component={Link} variant="primary" to={NavigationPath.policies}>
+                    <AcmButton
+                        tooltip={!props.rbac ? t('rbac.unauthorized') : ''}
+                        isDisabled={!props.rbac}
+                        component={Link}
+                        variant="primary"
+                        to={NavigationPath.policies}
+                    >
                         {t('Manage policies')}
                     </AcmButton>
                     <TextContent>{viewDocumentation(DOC_LINKS.POLICIES, t)}</TextContent>
@@ -55,7 +67,7 @@ export function GovernanceManagePoliciesEmptyState() {
     )
 }
 
-export function GovernanceCreatePolicysetEmptyState() {
+export function GovernanceCreatePolicysetEmptyState(props: { rbac: boolean }) {
     const { t } = useTranslation()
     return (
         <AcmEmptyState
@@ -68,7 +80,13 @@ export function GovernanceCreatePolicysetEmptyState() {
             }
             action={
                 <div>
-                    <AcmButton component={Link} variant="primary" to={NavigationPath.createPolicySet}>
+                    <AcmButton
+                        tooltip={!props.rbac ? t('rbac.unauthorized') : ''}
+                        isDisabled={!props.rbac}
+                        component={Link}
+                        variant="primary"
+                        to={NavigationPath.createPolicySet}
+                    >
                         {t('Create policy set')}
                     </AcmButton>
                     <TextContent>{viewDocumentation(DOC_LINKS.POLICY_SETS, t)}</TextContent>
