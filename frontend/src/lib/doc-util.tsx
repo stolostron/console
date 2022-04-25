@@ -19,6 +19,7 @@ export const DOC_LINKS = {
     CREATE_CONNECTION_GCP: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-google-cloud-platform`,
     CREATE_CONNECTION_VMWARE: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-vmware-vsphere`,
     CREATE_CONNECTION_OPENSTACK: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-openstack`,
+    CREATE_CONNECTION_VIRTUALIZATION: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-virtualization`,
     CREATE_CONNECTION_BAREMETAL: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-bare-metal`,
     CREATE_CONNECTION_ANSIBLE: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-ansible`,
     CREATE_CONNECTION_REDHATCLOUD: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-openshift-cluster-manager`,

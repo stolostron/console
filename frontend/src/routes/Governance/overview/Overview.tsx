@@ -2,12 +2,13 @@
 import { Button, ButtonVariant, Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmDrawerContext, compareStrings } from '@stolostron/ui-components'
-import { Fragment, useCallback, useContext, useMemo } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { managedClustersState, usePolicies } from '../../../atoms'
+import { managedClustersState, namespacesState, usePolicies } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { ManagedCluster, Policy } from '../../../resources'
+import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
+import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
 import {
     GovernanceCreatePolicyEmptyState,
     GovernanceManagePoliciesEmptyState,
@@ -20,12 +21,18 @@ import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummaryS
 
 export default function GovernanceOverview() {
     const policies = usePolicies()
+    const [namespaces] = useRecoilState(namespacesState)
     const policyViolationSummary = usePolicyViolationSummary(policies)
+    const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
+    useEffect(() => {
+        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
+    }, [namespaces])
+
     if (policies.length === 0) {
-        return <GovernanceCreatePolicyEmptyState />
+        return <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
     }
     if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant)) {
-        return <GovernanceManagePoliciesEmptyState />
+        return <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
     }
     return (
         <PageSection isWidthLimited>

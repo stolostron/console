@@ -227,7 +227,6 @@ export class TimeWindow extends React.Component {
                                                 variant={SelectVariant.typeahead}
                                                 aria-label="timezoneComboBox"
                                                 className="config-timezone-combo-box"
-                                                style={{ width: '290px', backgroundColor: '#f0f0f0' }}
                                                 placeholder={i18n('Choose a location')}
                                                 selections={timezone || ''}
                                                 isDisabled={!modeSelected}
@@ -335,8 +334,8 @@ export class TimeWindow extends React.Component {
                             ) : (
                                 ''
                             )}
-                            <div className="config-time-container" style={{ display: 'flex', marginBottom: '20px' }}>
-                                <div className="config-input-time" style={{ float: 'left', marginRight: '10px' }}>
+                            <div className="config-time-container">
+                                <div className="config-input-time">
                                     <TimePicker
                                         id={startTimeID}
                                         time={existingStart ? existingStart : ''}

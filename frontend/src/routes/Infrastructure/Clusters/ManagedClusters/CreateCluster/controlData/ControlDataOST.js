@@ -267,7 +267,7 @@ const controlDataOST = [
     {
         id: 'disconnectedInfo',
         type: 'title',
-        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS (RHCOS) image.',
+        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS image.',
     },
     {
         name: 'Create disconnected installation',
@@ -281,7 +281,7 @@ const controlDataOST = [
         type: 'text',
         name: 'Cluster OS Image',
         disabled: true,
-        tip: 'The location of the Red Hat Enterprise Linux CoreOS (RHCOS) image in your local registry.',
+        tip: 'The location of the Red Hat Enterprise Linux CoreOS image in your local registry.',
         validation: VALIDATE_URL,
     },
     {

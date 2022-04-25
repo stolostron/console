@@ -166,7 +166,7 @@ const controlDataRHV = [
             ///////////////////////  root volume  /////////////////////////////////////
             {
                 name: 'creation.ocp.diskSizeGB',
-                tooltip: 'tooltip.creation.ocp.diskSizeGB',
+                tooltip: 'tooltip.creation.ocp.ovirt.diskSizeGB',
                 id: 'masterRootStorage',
                 type: 'number',
                 initial: '120',
@@ -238,7 +238,7 @@ const controlDataRHV = [
             ///////////////////////  sizeGB  /////////////////////////////////////
             {
                 name: 'creation.ocp.diskSizeGB',
-                tooltip: 'tooltip.creation.ocp.diskSizeGB',
+                tooltip: 'tooltip.creation.ocp.ovirt.diskSizeGB',
                 id: 'diskSizeGB',
                 type: 'number',
                 initial: '120',
