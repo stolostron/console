@@ -298,17 +298,3 @@ function ClustersCard() {
         </div>
     )
 }
-function setCanCreatePolicy(
-    arg0: {
-        name: string | undefined
-        namespace: string | undefined
-        resource: string
-        subresource: ('join' | 'bind') | undefined
-        verb: 'get' | 'patch' | 'create' | 'delete' | 'update'
-        group: string
-    },
-    setCanCreatePolicy: any,
-    namespaces: any
-) {
-    throw new Error('Function not implemented.')
-}
