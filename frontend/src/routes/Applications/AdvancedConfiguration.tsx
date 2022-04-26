@@ -240,6 +240,12 @@ export default function AdvancedConfiguration() {
         // edit
         actions.push({
             id: `edit${kind}`,
+            /*
+                t('Edit subscription')
+                t('Edit channel')
+                t('Edit placement')
+                t('Edit placement rule')
+                */
             title: t(`Edit ${kind}`),
             click: () => {
                 const searchParams: any = {
@@ -259,6 +265,12 @@ export default function AdvancedConfiguration() {
         // search
         actions.push({
             id: `search${kind}`,
+            /*
+                t('Search subscription')
+                t('Search channel')
+                t('Search placement')
+                t('Search placement rule')
+                */
             title: t(`Search ${kind}`),
             click: () => {
                 const [apigroup, apiversion] = item.apiVersion.split('/')
@@ -296,6 +308,12 @@ export default function AdvancedConfiguration() {
         //delete
         actions.push({
             id: `delete${kind}`,
+            /*
+                t('Delete subscription')
+                t('Delete channel')
+                t('Delete placement')
+                t('Delete placement rule')
+                */
             title: t(`Delete ${kind}`),
             click: () => {
                 setModalProps({

@@ -74,6 +74,12 @@ export function ToggleSelector(props: IToggleSelectorProps) {
                                 />
                             ) : null
                         }
+                        /*
+                            t('You don\'t have any subscriptions')
+                            t('You don\'t have any channels')
+                            t('You don\'t have any placements')
+                            t('You don\'t have any placement rules')
+                            */
                         title={t(
                             `You don't have any ${options
                                 .find((option) => option.id === selectedId)
