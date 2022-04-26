@@ -49,18 +49,15 @@ const {
 
 const TEMPLATE_EDITOR_OPEN_COOKIE = 'yaml'
 
-type EditAIClusterProps = RouteComponentProps<
-    { namespace: string; name: string },
-    StaticContext,
-    { initialStep?: ClusterDeploymentWizardStepsType }
->
+type EditAIClusterProps = RouteComponentProps<{ namespace: string; name: string }, StaticContext>
 
 const EditAICluster: React.FC<EditAIClusterProps> = ({
     match: {
         params: { namespace, name },
     },
-    location: { state: locationState },
+    location: { search },
 }) => {
+    const searchParams = new URLSearchParams(search)
     const { t } = useTranslation()
     const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
     const history = useHistory()
@@ -236,7 +233,9 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                 onFinish={onFinish}
                                 aiConfigMap={aiConfigMap}
                                 infraEnv={infraEnv}
-                                initialStep={locationState?.initialStep}
+                                initialStep={
+                                    (searchParams.get('initialStep') as ClusterDeploymentWizardStepsType) || undefined
+                                }
                                 fetchInfraEnv={fetchInfraEnv}
                                 isBMPlatform={isBMPlatform(infraEnv)}
                                 isPreviewOpen={isPreviewOpen}
