@@ -1199,9 +1199,14 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
     const nodeType = _.get(node, 'type', '')
     const name = _.get(node, 'name', '')
     const namespace = _.get(node, 'namespace', '')
+    const cluster = _.get(node, 'cluster', '')
 
     const isHookNode = _.get(node, 'specs.raw.hookType')
-    const clusterNames = isHookNode ? ['local-cluster'] : R.split(',', getClusterName(nodeId, node, true))
+    const clusterNames = isHookNode
+        ? ['local-cluster']
+        : cluster
+        ? [cluster]
+        : R.split(',', getClusterName(nodeId, node, true))
     const resourceMap = _.get(node, `specs.${node.type}Model`, {})
     const onlineClusters = getOnlineClusters(node)
 

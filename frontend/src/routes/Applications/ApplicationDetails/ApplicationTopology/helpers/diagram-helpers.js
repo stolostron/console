@@ -657,6 +657,7 @@ export const getFilteredNode = (node, item) => {
         ...node,
         name: item.name,
         namespace: item.namespace,
+        cluster,
     }
 
     // filter statuses to just this one
