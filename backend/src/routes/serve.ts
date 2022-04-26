@@ -134,6 +134,7 @@ const contentTypes: Record<string, string> = {
     '.json': 'application/json; charset=utf-8',
     '.svg': 'image/svg+xml',
     '.png': 'image/png',
+    '.ttf': 'font/ttf',
     '.woff': 'font/woff',
     '.woff2': 'font/woff2',
 }
