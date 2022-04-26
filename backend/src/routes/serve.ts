@@ -66,11 +66,11 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                         })
                     })
                     .on('error', (err) => {
-                        // logger.error(err)
+                        logger.error(err)
                         res.writeHead(404).end()
                     })
                 pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
-                    // if (err) logger.error(err)
+                    if (err) logger.error(err)
                 })
                 return
             } catch {
@@ -91,11 +91,11 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                         })
                     })
                     .on('error', (err) => {
-                        // logger.error(err)
+                        logger.error(err)
                         res.writeHead(404).end()
                     })
                 pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
-                    // if (err) logger.error(err)
+                    if (err) logger.error(err)
                 })
                 return
             } catch {
@@ -112,11 +112,11 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                 })
             })
             .on('error', (err) => {
-                // logger.error(err)
+                logger.error(err)
                 res.writeHead(404).end()
             })
         pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
-            // if (err) logger.error(err)
+            if (err) logger.error(err)
         })
     } catch (err) {
         logger.error(err)
@@ -134,6 +134,7 @@ const contentTypes: Record<string, string> = {
     '.json': 'application/json; charset=utf-8',
     '.svg': 'image/svg+xml',
     '.png': 'image/png',
+    '.ttf': 'font/ttf',
     '.woff': 'font/woff',
     '.woff2': 'font/woff2',
 }
