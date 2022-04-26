@@ -297,7 +297,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                         <Fragment>
                             {renderData(getShortDateTime(lastSynced), getShortDateTime(lastSynced), '30%')}
                             {renderData(
-                                t(getShortDateTime(lastSynced)),
+                                getShortDateTime(lastSynced),
                                 hasSyncPermission ? (
                                     createSyncButton(
                                         applicationData.application.allSubscriptions,
