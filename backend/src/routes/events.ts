@@ -55,6 +55,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'ManagedClusterAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
     { kind: 'Agent', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'InfraEnv', apiVersion: 'agent-install.openshift.io/v1beta1' },
+    { kind: 'NMStateConfig', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'Application', apiVersion: 'app.k8s.io/v1beta1' },
     { kind: 'Channel', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'GitOpsCluster', apiVersion: 'apps.open-cluster-management.io/v1beta1' },
