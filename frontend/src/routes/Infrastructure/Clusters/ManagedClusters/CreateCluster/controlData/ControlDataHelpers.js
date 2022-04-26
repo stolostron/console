@@ -469,7 +469,7 @@ export const proxyControlData = [
     {
         id: 'additionalTrustBundle',
         type: 'textarea',
-        name: 'Additional Trust Bundle',
+        name: 'Additional trust bundle',
         disabled: true,
         placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
     },
