@@ -973,11 +973,11 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
     return (
         <Modal
             title={t('policy.modal.title.delete')}
-            titleIconVariant={'danger'}
+            titleIconVariant={'warning'}
             isOpen
             onClose={props.onClose}
             actions={[
-                <Button key="confirm" variant="primary" onClick={onConfirm} isLoading={isDeleting}>
+                <Button key="confirm" variant="danger" onClick={onConfirm} isLoading={isDeleting}>
                     {isDeleting ? t('deleting') : t('delete')}
                 </Button>,
                 <Button key="cancel" variant="link" onClick={props.onClose}>
