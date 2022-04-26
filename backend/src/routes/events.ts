@@ -163,7 +163,7 @@ async function listAndWatch(options: IWatchOptions) {
                     case 404:
                         logger.trace({ msg: 'watch', ...options, status: 'Not found' })
                         await new Promise((resolve) =>
-                            setTimeout(resolve, 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
+                            setTimeout(resolve, 1 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
                         )
                         break
                 }
