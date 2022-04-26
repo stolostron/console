@@ -5,7 +5,7 @@ import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { secretsState, usePolicies } from '../../../atoms'
+import { configMapsState, secretsState, subscriptionOperatorsState, usePolicies } from '../../../atoms'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -17,6 +17,7 @@ import {
     PolicyAutomationKind,
     reconcileResources,
     Secret,
+    SubscriptionOperator,
 } from '../../../resources'
 import schema from './schemaAutomation.json'
 
@@ -48,10 +49,24 @@ export function CreatePolicyAutomation() {
     const history = useHistory()
     const policies = usePolicies()
     const [secrets] = useRecoilState(secretsState)
+    const [configMaps] = useRecoilState(configMapsState)
+    const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
     const currentPolicy = useMemo(
         () => policies.find((policy) => policy.metadata.name === name && policy.metadata.namespace === namespace),
         [policies, name, namespace]
     )
+
+    const isOperatorInstalled = useMemo(() => {
+        const ansibleOp = subscriptionOperators.filter((op: SubscriptionOperator) => {
+            const conditions = op.status?.conditions[0]
+            return (
+                op.metadata.name === 'ansible-automation-platform-operator' &&
+                conditions?.reason === 'AllCatalogSourcesHealthy'
+            )
+        })
+        return ansibleOp.length > 0
+    }, [subscriptionOperators])
+
     const credentials = useMemo(
         () =>
             secrets.filter(
@@ -70,6 +85,8 @@ export function CreatePolicyAutomation() {
             yamlEditor={getWizardSyncEditor}
             credentials={credentials}
             createCredentialsCallback={() => window.open(NavigationPath.addCredentials)}
+            isAnsibleOperatorInstalled={isOperatorInstalled}
+            configMaps={configMaps}
             resource={{
                 kind: PolicyAutomationKind,
                 apiVersion: PolicyAutomationApiVersion,

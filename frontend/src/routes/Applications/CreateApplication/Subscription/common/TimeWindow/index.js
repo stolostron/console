@@ -323,11 +323,11 @@ export class TimeWindow extends React.Component {
                             {id === 0 ? (
                                 <div className="time-picker-title" style={{ display: 'flex' }}>
                                     <div className="config-title">
-                                        {i18n('Start Time')}
+                                        {i18n('Start time')}
                                         <div className="config-title-required">*</div>
                                     </div>
                                     <div className="config-title">
-                                        {i18n('End Time')}
+                                        {i18n('End time')}
                                         <div className="config-title-required">*</div>
                                     </div>
                                 </div>

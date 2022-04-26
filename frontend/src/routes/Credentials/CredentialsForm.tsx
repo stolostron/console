@@ -1276,11 +1276,11 @@ export function CredentialsForm(props: {
                         type: 'Text',
                         label: t('Ansible Tower host'),
                         placeholder: t('Enter the Ansible Tower host URL'),
-                        // labelHelp: t('credentialsForm.ansibleHost.labelHelp'), // TODO
+                        labelHelp: t('credentialsForm.ansibleHost.labelHelp'),
                         value: ansibleHost,
                         onChange: setAnsibleHost,
                         isRequired: true,
-                        validation: (host) => validateWebURL(host, t),
+                        validation: (host) => validateWebURL(host, t, ['https']),
                     },
                     {
                         id: 'ansibleToken',
