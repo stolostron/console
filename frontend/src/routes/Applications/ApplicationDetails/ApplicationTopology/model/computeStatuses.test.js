@@ -1822,52 +1822,6 @@ describe('setPodDeployStatus  with pod less then desired', () => {
     })
 })
 
-describe('setPodDeployStatus  with pod but no pod model and no podStatusMap', () => {
-    const node = {
-        type: 'pod',
-        name: 'mortgage-app-deploy',
-        namespace: 'default',
-        id: 'member--member--deployable--member--clusters--possiblereptile--default--mortgage-app-subscription-mortgage-mortgage-app-deploy-deployment--deployment--mortgage-app-deploy',
-        clusters: {
-            specs: {
-                clusters: [
-                    {
-                        metadata: {
-                            name: 'possiblereptile',
-                        },
-                        status: 'ok',
-                    },
-                ],
-            },
-        },
-        specs: {
-            searchClusters: [],
-            clustersNames: ['possiblereptile'],
-            raw: {
-                spec: {
-                    metadata: 'default',
-                    replicas: 1,
-                    template: {
-                        spec: {
-                            containers: [{ c1: 'aa' }],
-                        },
-                    },
-                },
-            },
-        },
-    }
-    const result = [
-        { type: 'spacer' },
-        { labelKey: 'Cluster deploy status for pods', type: 'label' },
-        { labelValue: 'Cluster name', value: 'possiblereptile' },
-        { labelValue: 'default', status: 'pending', value: 'Not Deployed' },
-        { type: 'spacer' },
-    ]
-    it('setPodDeployStatus with pod but no pod podStatusMap', () => {
-        expect(setPodDeployStatus(node, node, [], {}, t)).toEqual(result)
-    })
-})
-
 describe('setPodDeployStatus  with pod as desired', () => {
     const node = {
         type: 'pod',
