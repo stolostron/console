@@ -30,6 +30,7 @@ export default function ApplicationsPage() {
     const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
     useEffect(startPolling, [startPolling])
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, setDiscoveredAppilcations] = useRecoilState(discoveredApplicationsState)
     useEffect(() => {
         const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
