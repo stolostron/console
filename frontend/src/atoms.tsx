@@ -146,6 +146,7 @@ function AtomArray<T>() {
 }
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
+export const discoveredApplicationsState = AtomArray<ArgoApplication>()
 
 export const agentClusterInstallsState = AtomArray<CIM.AgentClusterInstallK8sResource>()
 export const agentsState = AtomArray<CIM.AgentK8sResource>()
