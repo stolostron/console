@@ -110,7 +110,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
             }
 
             const resourceMapForObject = Object.values(resourceMap).find(({ name, namespace, type, specs = {} }) => {
-                if (specs.resourceCount) {
+                if (specs.resources) {
                     if (type === relatedKind.kind && (specs.clustersNames || []).includes(relatedKind.cluster)) {
                         return (
                             (specs.resources || []).findIndex((spec) => {
