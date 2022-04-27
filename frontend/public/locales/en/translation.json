@@ -1980,6 +1980,7 @@
     "status.submariner.agent.healthy": "Healthy",
     "status.submariner.connection.degraded": "Degraded",
     "status.submariner.connection.healthy": "Healthy",
+    "status.submariner.missing.broker.message": "The add-on installation is unable to continue until the broker is created.",
     "status.submariner.network.degraded": "Degraded",
     "status.submariner.network.degraded.message": "One or more of the Submariner add-ons installed in the multi-cluster network are in a degraded state.",
     "status.submariner.network.healthy": "Healthy",
