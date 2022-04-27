@@ -14,7 +14,7 @@ import {
     ToolbarItem,
 } from '@patternfly/react-core'
 import { sortable, Table, TableBody, TableHeader, TableVariant } from '@patternfly/react-table'
-import { get, orderBy, flatten } from 'lodash'
+import { get, orderBy } from 'lodash'
 import { pulseValueArr } from '../helpers/diagram-helpers'
 
 const PAGE_SIZES = {
@@ -35,7 +35,6 @@ class DetailsTable extends React.Component {
         const { perPage, sortBy } = state
         localStorage.setItem(`table-${id}-page-size`, perPage)
         const { searchValue } = state
-        const resourceMap = get(node, `specs.${node.type}Model`, [])
         const tableData = [
             {
                 name: 'Name',
@@ -54,31 +53,28 @@ class DetailsTable extends React.Component {
             },
         ]
 
-        let resources = flatten(Object.values(resourceMap))
-        if (resources.length === 0) {
-            resources = node.specs.resources.map((resource) => {
-                return {
-                    pulse: resource.pulse,
-                    name: resource.name,
-                    namespace: resource.namespace,
-                    cluster: get(node, 'specs.clustersNames[0]', '-'),
-                }
+        const { name, namespace, type, specs = {} } = node
+        const { resources = [{ name, namespace }], clustersNames = [], replicaCount = 1 } = specs
+        const statusMap = specs[`${node.type}Model`] || {}
+        let available = []
+        resources.forEach((resource) => {
+            clustersNames.forEach((cluster) => {
+                Array.from(Array(replicaCount)).forEach((_, i) => {
+                    const status = statusMap[`${resource.name}-${cluster}`]
+                    available.push({
+                        pulse: status && status.length > i ? status[i].pulse : 'orange',
+                        name: status && status.length > i ? status[i].name : resource.name,
+                        namespace: status && status.length > i ? status[i].namespace : resource.namespace,
+                        cluster: cluster,
+                        type: type,
+                    })
+                })
             })
-        }
-        const available = resources
-            .map((resource) => {
-                return {
-                    pulse: resource.pulse,
-                    name: resource.name,
-                    namespace: resource.namespace,
-                    cluster: resource.cluster,
-                    type: resource.type,
-                }
-            })
-            .sort((a, b) => {
-                const cmp = pulseValueArr.indexOf(a.pulse) - pulseValueArr.indexOf(b.pulse)
-                return cmp !== 0 ? cmp : a.name.localeCompare(b.name)
-            })
+        })
+        available = available.sort((a, b) => {
+            const cmp = pulseValueArr.indexOf(a.pulse) - pulseValueArr.indexOf(b.pulse)
+            return cmp !== 0 ? cmp : a.name.localeCompare(b.name)
+        })
 
         const newState = { tableData }
 

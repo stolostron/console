@@ -18,7 +18,7 @@ export interface IYAMLContainerProps {
 
 export function YAMLContainer(props: IYAMLContainerProps) {
     let name = _.get(props.node, 'name', '')
-    let cluster = _.get(props.node, 'specs.clustersNames', [''])[0]
+    let cluster = _.get(props.node, 'cluster', _.get(props.node, 'specs.clustersNames', [''])[0])
     const remoteArgoCluster = _.get(props.node, 'specs.raw.status.cluster')
     if (remoteArgoCluster) {
         cluster = remoteArgoCluster
