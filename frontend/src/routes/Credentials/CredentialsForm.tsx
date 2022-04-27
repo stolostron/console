@@ -649,9 +649,13 @@ export function CredentialsForm(props: {
                         type: 'Text',
                         label: t('Base DNS domain'),
                         placeholder: t('Enter the base DNS domain'),
-                        labelHelp: t(
-                            "Optional: The base domain of your provider, which is used to create routes to your OpenShift Container Platform cluster components. It is configured in your cloud provider's DNS as a Start Of Authority (SOA) record."
-                        ),
+                        labelHelp: [Provider.baremetal, Provider.hybrid].includes(credentialsType as Provider)
+                            ? t(
+                                  'Optional: The base domain of your network, which is used to create routes to your OpenShift Container Platform cluster components. It must contain the cluster name that you plan to create, and is configured in the DNS of your network as a Start Of Authority (SOA) record. You can also add this when you create the cluster.'
+                              )
+                            : t(
+                                  "Optional: The base domain of your provider, which is used to create routes to your OpenShift Container Platform cluster components. It is configured in your cloud provider's DNS as a Start Of Authority (SOA) record."
+                              ),
                         value: baseDomain,
                         onChange: setBaseDomain,
                         validation: (v) => validateBaseDomain(v, t),
