@@ -54,18 +54,20 @@ class DetailsTable extends React.Component {
         ]
 
         const { name, namespace, type, specs = {} } = node
-        const { resources = [{ name, namespace }], clustersNames = [] } = specs
+        const { resources = [{ name, namespace }], clustersNames = [], replicaCount = 1 } = specs
         const statusMap = specs[`${node.type}Model`] || {}
         let available = []
         resources.forEach((resource) => {
             clustersNames.forEach((cluster) => {
-                const status = statusMap[`${resource.name}-${cluster}`]
-                available.push({
-                    pulse: status ? status[0].pulse : 'orange',
-                    name: status ? status[0].name : resource.name,
-                    namespace: status ? status[0].namespace : resource.namespace,
-                    cluster: cluster,
-                    type: type,
+                Array.from(Array(replicaCount)).forEach((_, i) => {
+                    const status = statusMap[`${resource.name}-${cluster}`]
+                    available.push({
+                        pulse: status && status.length > i ? status[i].pulse : 'orange',
+                        name: status && status.length > i ? status[i].name : resource.name,
+                        namespace: status && status.length > i ? status[i].namespace : resource.namespace,
+                        cluster: cluster,
+                        type: type,
+                    })
                 })
             })
         })

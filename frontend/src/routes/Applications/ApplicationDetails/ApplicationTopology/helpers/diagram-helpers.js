@@ -675,10 +675,15 @@ export const getFilteredNode = (node, item) => {
     const kindModelKey = `${node.type}Model`
     const kindModel = _.get(node, ['specs', kindModelKey])
     if (kindModel) {
-        const filtered = Object.entries(kindModel).filter(([, v]) => {
-            return v[0].name === name && v[0].namespace === namespace && v[0].cluster === cluster
+        const filtered = {}
+        Object.entries(kindModel).forEach(([k, v]) => {
+            v.forEach((stat) => {
+                if (stat.name === name && stat.namespace === namespace && stat.cluster === cluster) {
+                    filtered[k] = [stat]
+                }
+            })
         })
-        filterNode.specs[kindModelKey] = Object.fromEntries(filtered)
+        filterNode.specs[kindModelKey] = filtered
     }
     return filterNode
 }

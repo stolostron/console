@@ -1126,7 +1126,7 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
         }
     })
 
-    if (!addedDetails) {
+    if (!addedDetails && node.type !== 'pod') {
         details.push({
             type: 'spacer',
         })
