@@ -14,6 +14,7 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
+    discoveredApplicationsState,
     namespacesState,
     placementRulesState,
     subscriptionsState,
@@ -21,8 +22,6 @@ import {
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { checkPermission, rbacCreate, rbacDelete } from '../../lib/rbac-util'
-import { queryRemoteArgoApps } from '../../lib/search'
-import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 import {
     ApplicationApiVersion,
@@ -181,67 +180,24 @@ export default function ApplicationsOverview() {
     const [placementRules] = useRecoilState(placementRulesState)
     const [namespaces] = useRecoilState(namespacesState)
 
-    let managedClusters = useAllClusters()
-    managedClusters = managedClusters.filter((cluster) => {
-        // don't show clusters in cluster pools in table
-        if (cluster.hive.clusterPool) {
-            return cluster.hive.clusterClaimName !== undefined
-        } else {
-            return true
-        }
-    })
-    const localCluster = managedClusters.find((cls) => cls.name === localClusterStr)
+    const allClusters = useAllClusters()
+    const managedClusters = useMemo(
+        () =>
+            allClusters.filter((cluster) => {
+                // don't show clusters in cluster pools in table
+                if (cluster.hive.clusterPool) {
+                    return cluster.hive.clusterClaimName !== undefined
+                } else {
+                    return true
+                }
+            }),
+        [allClusters]
+    )
+    const localCluster = useMemo(() => managedClusters.find((cls) => cls.name === localClusterStr), [managedClusters])
     const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
         open: false,
     })
-    const tableItems: IResource[] = []
-    const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
-    useEffect(startPolling, [startPolling])
-
-    // Cache cell text for sorting and searching
-    const generateTransformData = (tableItem: IResource) => {
-        // Cluster column
-        const clusterCount: any = {
-            localPlacement: false,
-            remoteCount: 0,
-        }
-        const clusterTransformData = createClustersText({
-            resource: tableItem,
-            clusterCount,
-            clusterList: [],
-            argoApplications,
-            placementRules,
-            subscriptions,
-            localCluster,
-            managedClusters,
-        })
-
-        // Resource column
-        const resourceMap: { [key: string]: string } = {}
-        const appRepos = getApplicationRepos(tableItem, subscriptions, channels)
-        let resourceText = ''
-        appRepos?.forEach((repo) => {
-            if (!resourceMap[repo.type]) {
-                resourceText = resourceText + repo.type
-            }
-            resourceMap[repo.type] = repo.type
-        })
-
-        const timeWindow = getTimeWindow(tableItem)
-        const transformedNamespace = getAppNamespace(tableItem)
-        const transformedObject = {
-            transformed: {
-                clusterCount: clusterTransformData,
-                resourceText: resourceText,
-                createdText: getAge(tableItem, '', 'metadata.creationTimestamp'),
-                timeWindow: timeWindow,
-                namespace: transformedNamespace,
-            },
-        }
-
-        // Cannot add properties directly to objects in typescript
-        return { ...tableItem, ...transformedObject }
-    }
+    const [discoveredApplications] = useRecoilState(discoveredApplicationsState)
 
     const getTimeWindow = useCallback(
         (app: IResource) => {
@@ -280,53 +236,120 @@ export default function ApplicationsOverview() {
         [subscriptions, t]
     )
 
-    // Combine all application types
-    applications.forEach((app) => {
-        tableItems.push(generateTransformData(app))
-    })
-    applicationSets.forEach((appset) => {
-        tableItems.push(generateTransformData(appset))
-    })
-    argoApplications.forEach((argoApp) => {
-        const isChildOfAppset =
-            argoApp.metadata.ownerReferences && argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
-        if (!argoApp.metadata.ownerReferences || !isChildOfAppset) {
-            tableItems.push(generateTransformData(argoApp))
-        }
-    })
+    // Cache cell text for sorting and searching
+    const generateTransformData = useCallback(
+        (tableItem: IResource) => {
+            // Cluster column
+            const clusterCount: any = {
+                localPlacement: false,
+                remoteCount: 0,
+            }
+            const clusterTransformData = createClustersText({
+                resource: tableItem,
+                clusterCount,
+                clusterList: [],
+                argoApplications,
+                placementRules,
+                subscriptions,
+                localCluster,
+                managedClusters,
+            })
 
-    if (!loading && data) {
-        const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
-        remoteArgoApps.forEach((remoteArgoApp: any) => {
-            tableItems.push(
-                generateTransformData({
-                    apiVersion: ArgoApplicationApiVersion,
-                    kind: ArgoApplicationKind,
-                    metadata: {
-                        name: remoteArgoApp.name,
-                        namespace: remoteArgoApp.namespace,
-                        creationTimestamp: remoteArgoApp.created,
+            // Resource column
+            const resourceMap: { [key: string]: string } = {}
+            const appRepos = getApplicationRepos(tableItem, subscriptions, channels)
+            let resourceText = ''
+            appRepos?.forEach((repo) => {
+                if (!resourceMap[repo.type]) {
+                    resourceText = resourceText + repo.type
+                }
+                resourceMap[repo.type] = repo.type
+            })
+
+            const timeWindow = getTimeWindow(tableItem)
+            const transformedNamespace = getAppNamespace(tableItem)
+            const transformedObject = {
+                transformed: {
+                    clusterCount: clusterTransformData,
+                    resourceText: resourceText,
+                    createdText: getAge(tableItem, '', 'metadata.creationTimestamp'),
+                    timeWindow: timeWindow,
+                    namespace: transformedNamespace,
+                },
+            }
+
+            // Cannot add properties directly to objects in typescript
+            return { ...tableItem, ...transformedObject }
+        },
+        [argoApplications, channels, getTimeWindow, localCluster, managedClusters, placementRules, subscriptions]
+    )
+
+    // Combine all application types
+    const applicationTableItems = useMemo(
+        () => applications.map(generateTransformData),
+        [applications, generateTransformData]
+    )
+
+    const applicationSetsTableItems = useMemo(
+        () => applicationSets.map(generateTransformData),
+        [applicationSets, generateTransformData]
+    )
+
+    const argoApplicationTableItems = useMemo(
+        () =>
+            argoApplications
+                .filter((argoApp) => {
+                    const isChildOfAppset =
+                        argoApp.metadata.ownerReferences &&
+                        argoApp.metadata.ownerReferences[0].kind === ApplicationSetKind
+                    if (!argoApp.metadata.ownerReferences || !isChildOfAppset) {
+                        return true
+                    }
+                    return false
+                })
+                .map(generateTransformData),
+        [argoApplications, generateTransformData]
+    )
+
+    const discoveredApplicationsTableItems = useMemo(() => {
+        return discoveredApplications.map((remoteArgoApp: any) =>
+            generateTransformData({
+                apiVersion: ArgoApplicationApiVersion,
+                kind: ArgoApplicationKind,
+                metadata: {
+                    name: remoteArgoApp.name,
+                    namespace: remoteArgoApp.namespace,
+                    creationTimestamp: remoteArgoApp.created,
+                },
+                spec: {
+                    destination: {
+                        namespace: remoteArgoApp.destinationNamespace,
+                        name: remoteArgoApp.destinationName,
+                        server: remoteArgoApp.destinationCluster,
                     },
-                    spec: {
-                        destination: {
-                            namespace: remoteArgoApp.destinationNamespace,
-                            name: remoteArgoApp.destinationName,
-                            server: remoteArgoApp.destinationCluster,
-                        },
-                        source: {
-                            path: remoteArgoApp.path,
-                            repoURL: remoteArgoApp.repoURL,
-                            targetRevision: remoteArgoApp.targetRevision,
-                            chart: remoteArgoApp.chart,
-                        },
+                    source: {
+                        path: remoteArgoApp.path,
+                        repoURL: remoteArgoApp.repoURL,
+                        targetRevision: remoteArgoApp.targetRevision,
+                        chart: remoteArgoApp.chart,
                     },
-                    status: {
-                        cluster: remoteArgoApp.cluster,
-                    },
-                } as ArgoApplication)
-            )
-        })
-    }
+                },
+                status: {
+                    cluster: remoteArgoApp.cluster,
+                },
+            } as ArgoApplication)
+        )
+    }, [discoveredApplications, generateTransformData])
+
+    const tableItems: IResource[] = useMemo(
+        () => [
+            ...applicationTableItems,
+            ...applicationSetsTableItems,
+            ...argoApplicationTableItems,
+            ...discoveredApplicationsTableItems,
+        ],
+        [applicationSetsTableItems, applicationTableItems, argoApplicationTableItems, discoveredApplicationsTableItems]
+    )
 
     const keyFn = useCallback(
         (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
@@ -503,170 +526,195 @@ export default function ApplicationsOverview() {
         [argoApplications, channels, getTimeWindow, localCluster, placementRules, subscriptions, t, managedClusters]
     )
 
-    const filters = [
-        {
-            label: t('Type'),
-            id: 'table.filter.type.acm.application.label',
-            options: [
-                {
-                    label: t('Subscription'),
-                    value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
+    const filters = useMemo(
+        () => [
+            {
+                label: t('Type'),
+                id: 'table.filter.type.acm.application.label',
+                options: [
+                    {
+                        label: t('Subscription'),
+                        value: `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`,
+                    },
+                    {
+                        label: t('Argo CD'),
+                        value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
+                    },
+                    {
+                        label: t('Application Set'),
+                        value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
+                    },
+                ],
+                tableFilterFn: (selectedValues: string[], item: IResource) => {
+                    return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
                 },
-                {
-                    label: t('Argo CD'),
-                    value: `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`,
-                },
-                {
-                    label: t('Application Set'),
-                    value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
-                },
-            ],
-            tableFilterFn: (selectedValues: string[], item: IResource) => {
-                return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
             },
-        },
-    ]
+        ],
+        [t]
+    )
 
     const history = useHistory()
     const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
     const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
     const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
-    let modalWarnings: string
+    const [modalWarnings, setModelWarnings] = useState('')
 
-    const rowActionResolver = (resource: IResource) => {
-        const actions: IAcmRowAction<any>[] = []
+    const rowActionResolver = useCallback(
+        (resource: IResource) => {
+            const actions: IAcmRowAction<any>[] = []
 
-        if (isResourceTypeOf(resource, ApplicationDefinition)) {
-            actions.push({
-                id: 'viewApplication',
-                title: t('View application'),
-                click: () => {
-                    history.push(
-                        NavigationPath.applicationOverview
-                            .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string) + subscriptionAppQueryString
-                    )
-                },
-            })
-            actions.push({
-                id: 'editApplication',
-                title: t('Edit application'),
-                click: () => {
-                    history.push(
-                        NavigationPath.editApplicationSubscription
-                            .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string) + '?context=applications'
-                    )
-                },
-            })
-        }
-
-        if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
-            actions.push({
-                id: 'viewApplication',
-                title: t('View application'),
-                click: () => {
-                    history.push(
-                        NavigationPath.applicationOverview
-                            .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string) + argoAppSetQueryString
-                    )
-                },
-            })
-            actions.push({
-                id: 'editApplication',
-                title: t('Edit application'),
-                click: () => {
-                    history.push(
-                        NavigationPath.editApplicationArgo
-                            .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string) + '?context=applicationsets'
-                    )
-                },
-            })
-        }
-
-        if (isResourceTypeOf(resource, DiscoveredArgoApplicationDefinition)) {
-            actions.push({
-                id: 'viewApplication',
-                title: t('View application'),
-                click: () => {
-                    history.push(
-                        NavigationPath.applicationOverview
-                            .replace(':namespace', resource.metadata?.namespace as string)
-                            .replace(':name', resource.metadata?.name as string) +
-                            '?' +
-                            'apiVersion=application.argoproj.io'
-                    )
-                },
-            })
-        }
-
-        actions.push({
-            id: 'searchApplication',
-            title: t('Search application'),
-            click: () => {
-                const [apigroup, apiversion] = resource.apiVersion.split('/')
-                const searchLink = getSearchLink({
-                    properties: {
-                        name: resource.metadata?.name,
-                        namespace: resource.metadata?.namespace,
-                        kind: resource.kind.toLowerCase(),
-                        apigroup,
-                        apiversion,
+            if (isResourceTypeOf(resource, ApplicationDefinition)) {
+                actions.push({
+                    id: 'viewApplication',
+                    title: t('View application'),
+                    click: () => {
+                        history.push(
+                            NavigationPath.applicationOverview
+                                .replace(':namespace', resource.metadata?.namespace as string)
+                                .replace(':name', resource.metadata?.name as string) + subscriptionAppQueryString
+                        )
                     },
                 })
-                history.push(searchLink)
-            },
-        })
-
-        if (isResourceTypeOf(resource, ApplicationDefinition) || isResourceTypeOf(resource, ApplicationSetDefinition)) {
-            actions.push({
-                id: 'deleteApplication',
-                title: t('Delete application'),
-                click: () => {
-                    const appChildResources =
-                        resource.kind === ApplicationKind
-                            ? getAppChildResources(resource, applications, subscriptions, placementRules, channels)
-                            : [[], []]
-                    const appSetRelatedResources =
-                        resource.kind === ApplicationSetKind
-                            ? getAppSetRelatedResources(resource, applicationSets)
-                            : ['', []]
-                    const hostingSubAnnotation = getAnnotation(resource, hostingSubAnnotationStr)
-                    if (hostingSubAnnotation) {
-                        const subName = hostingSubAnnotation.split('/')[1]
-                        modalWarnings = t(
-                            'This application is deployed by the subscription {{subName}}. The delete action might be reverted when resources are reconciled with the resource repository.',
-                            { subName }
+                actions.push({
+                    id: 'editApplication',
+                    title: t('Edit application'),
+                    click: () => {
+                        history.push(
+                            NavigationPath.editApplicationSubscription
+                                .replace(':namespace', resource.metadata?.namespace as string)
+                                .replace(':name', resource.metadata?.name as string) + '?context=applications'
                         )
-                    }
-                    setModalProps({
-                        open: true,
-                        canRemove:
-                            resource.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
-                        resource: resource,
-                        errors: undefined,
-                        warnings: modalWarnings,
-                        loading: false,
-                        selected: appChildResources[0], // children
-                        shared: appChildResources[1], // shared children
-                        appSetPlacement: appSetRelatedResources[0],
-                        appSetsSharingPlacement: appSetRelatedResources[1],
-                        appKind: resource.kind,
-                        appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
-                        close: () => {
-                            setModalProps({ open: false })
-                        },
-                        t,
-                    })
-                },
-                isDisabled: resource.kind === ApplicationSetKind ? !canDeleteApplicationSet : !canDeleteApplication,
-            })
-        }
+                    },
+                })
+            }
 
-        return actions
-    }
+            if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
+                actions.push({
+                    id: 'viewApplication',
+                    title: t('View application'),
+                    click: () => {
+                        history.push(
+                            NavigationPath.applicationOverview
+                                .replace(':namespace', resource.metadata?.namespace as string)
+                                .replace(':name', resource.metadata?.name as string) + argoAppSetQueryString
+                        )
+                    },
+                })
+                actions.push({
+                    id: 'editApplication',
+                    title: t('Edit application'),
+                    click: () => {
+                        history.push(
+                            NavigationPath.editApplicationArgo
+                                .replace(':namespace', resource.metadata?.namespace as string)
+                                .replace(':name', resource.metadata?.name as string) + '?context=applicationsets'
+                        )
+                    },
+                })
+            }
+
+            if (isResourceTypeOf(resource, DiscoveredArgoApplicationDefinition)) {
+                actions.push({
+                    id: 'viewApplication',
+                    title: t('View application'),
+                    click: () => {
+                        history.push(
+                            NavigationPath.applicationOverview
+                                .replace(':namespace', resource.metadata?.namespace as string)
+                                .replace(':name', resource.metadata?.name as string) +
+                                '?' +
+                                'apiVersion=application.argoproj.io'
+                        )
+                    },
+                })
+            }
+
+            actions.push({
+                id: 'searchApplication',
+                title: t('Search application'),
+                click: () => {
+                    const [apigroup, apiversion] = resource.apiVersion.split('/')
+                    const searchLink = getSearchLink({
+                        properties: {
+                            name: resource.metadata?.name,
+                            namespace: resource.metadata?.namespace,
+                            kind: resource.kind.toLowerCase(),
+                            apigroup,
+                            apiversion,
+                        },
+                    })
+                    history.push(searchLink)
+                },
+            })
+
+            if (
+                isResourceTypeOf(resource, ApplicationDefinition) ||
+                isResourceTypeOf(resource, ApplicationSetDefinition)
+            ) {
+                actions.push({
+                    id: 'deleteApplication',
+                    title: t('Delete application'),
+                    click: () => {
+                        const appChildResources =
+                            resource.kind === ApplicationKind
+                                ? getAppChildResources(resource, applications, subscriptions, placementRules, channels)
+                                : [[], []]
+                        const appSetRelatedResources =
+                            resource.kind === ApplicationSetKind
+                                ? getAppSetRelatedResources(resource, applicationSets)
+                                : ['', []]
+                        const hostingSubAnnotation = getAnnotation(resource, hostingSubAnnotationStr)
+                        if (hostingSubAnnotation) {
+                            const subName = hostingSubAnnotation.split('/')[1]
+                            setModelWarnings(
+                                t(
+                                    'This application is deployed by the subscription {{subName}}. The delete action might be reverted when resources are reconciled with the resource repository.',
+                                    { subName }
+                                )
+                            )
+                        } else {
+                            setModelWarnings('')
+                        }
+                        setModalProps({
+                            open: true,
+                            canRemove:
+                                resource.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
+                            resource: resource,
+                            errors: undefined,
+                            warnings: modalWarnings,
+                            loading: false,
+                            selected: appChildResources[0], // children
+                            shared: appChildResources[1], // shared children
+                            appSetPlacement: appSetRelatedResources[0],
+                            appSetsSharingPlacement: appSetRelatedResources[1],
+                            appKind: resource.kind,
+                            appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
+                            close: () => {
+                                setModalProps({ open: false })
+                            },
+                            t,
+                        })
+                    },
+                    isDisabled: resource.kind === ApplicationSetKind ? !canDeleteApplicationSet : !canDeleteApplication,
+                })
+            }
+
+            return actions
+        },
+        [
+            applicationSets,
+            applications,
+            argoApplications,
+            canDeleteApplication,
+            canDeleteApplicationSet,
+            channels,
+            history,
+            modalWarnings,
+            placementRules,
+            subscriptions,
+            t,
+        ]
+    )
 
     useEffect(() => {
         checkPermission(rbacCreate(ApplicationDefinition), setCanCreateApplication, namespaces)
@@ -678,8 +726,8 @@ export default function ApplicationsOverview() {
         checkPermission(rbacDelete(ApplicationSetDefinition), setCanDeleteApplicationSet, namespaces)
     }, [namespaces])
 
-    const appCreationButton = () => {
-        return (
+    const appCreationButton = useMemo(
+        () => (
             <AcmDropdown
                 isDisabled={!canCreateApplication}
                 tooltip={!canCreateApplication ? t('rbac.unauthorized') : ''}
@@ -715,8 +763,9 @@ export default function ApplicationsOverview() {
                 // tooltipPosition={tableDropdown.tooltipPosition}
                 // dropdownPosition={DropdownPosition.left}
             />
-        )
-    }
+        ),
+        [canCreateApplication, history, t]
+    )
 
     return (
         <PageSection>
@@ -728,7 +777,7 @@ export default function ApplicationsOverview() {
                 keyFn={keyFn}
                 items={tableItems}
                 filters={filters}
-                customTableAction={appCreationButton()}
+                customTableAction={appCreationButton}
                 emptyState={
                     <AcmEmptyState
                         key="appOverviewEmptyState"
@@ -743,7 +792,7 @@ export default function ApplicationsOverview() {
                         }
                         action={
                             <>
-                                {appCreationButton()}
+                                {appCreationButton}
                                 <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
                             </>
                         }
