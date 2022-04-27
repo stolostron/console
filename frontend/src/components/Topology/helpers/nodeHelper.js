@@ -24,7 +24,6 @@ const textResourceCount = 'text.resourceCountText'
 const gNodeTitle = 'g.nodeTitle'
 const gNodeLabel = 'g.nodeLabel'
 const useNodeIcon = 'use.nodeIcon'
-const useNodeMultiplier = 'use.multiplier'
 const useResourceCountIcon = 'use.resourceCountIcon'
 const dotResourceCountIcon = '.resourceCountIcon'
 const STATUS_ICON_POSITION = { dx: -18, dy: 12, ddx: 0, width: 16, height: 16 }

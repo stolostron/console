@@ -14,7 +14,7 @@ import {
     ToolbarItem,
 } from '@patternfly/react-core'
 import { sortable, Table, TableBody, TableHeader, TableVariant } from '@patternfly/react-table'
-import { get, orderBy, keyBy, flatten } from 'lodash'
+import { get, orderBy } from 'lodash'
 import { pulseValueArr } from '../helpers/diagram-helpers'
 
 const PAGE_SIZES = {
