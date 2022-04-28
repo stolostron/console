@@ -147,7 +147,7 @@ describe('getResourceLabel', () => {
     })
 
     it('should work with undefined', () => {
-        expect(getResourceLabel('', 2, (t) => t)).toEqual('undefined (2)')
+        expect(getResourceLabel('', 2, (t) => t)).toEqual('- (2)')
     })
 })
 
