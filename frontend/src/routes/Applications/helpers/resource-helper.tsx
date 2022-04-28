@@ -97,31 +97,33 @@ const getSubscriptionsClusterList = (
     const subAnnotationArray = getSubscriptionsFromAnnotation(resource)
     const clusterSet = new Set<string>()
 
-    subAnnotationArray.forEach((sa) => {
-        // exclude local subscriptions
+    for (const sa of subAnnotationArray) {
         if (
-            !_.endsWith(sa, localSubSuffixStr) ||
-            _.indexOf(subAnnotationArray, _.trimEnd(sa, localSubSuffixStr)) == -1
+            _.endsWith(sa, localSubSuffixStr) &&
+            _.indexOf(subAnnotationArray, _.trimEnd(sa, localSubSuffixStr)) !== -1
         ) {
-            const subDetails = sa.split('/')
+            // skip local sub
+            continue
+        }
 
-            subscriptions.forEach((sub) => {
-                if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
-                    const placementRef = sub.spec.placement?.placementRef
-                    if (placementRef) {
-                        const placement = placementRules.find((rule) => rule.metadata.name === placementRef.name)
-                        const decisions = placement?.status?.decisions
+        const subDetails = sa.split('/')
 
-                        if (decisions) {
-                            decisions.forEach((cluster) => {
-                                clusterSet.add(cluster.clusterName)
-                            })
-                        }
+        subscriptions.forEach((sub) => {
+            if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
+                const placementRef = sub.spec.placement?.placementRef
+                if (placementRef) {
+                    const placement = placementRules.find((rule) => rule.metadata.name === placementRef.name)
+                    const decisions = placement?.status?.decisions
+
+                    if (decisions) {
+                        decisions.forEach((cluster) => {
+                            clusterSet.add(cluster.clusterName)
+                        })
                     }
                 }
-            })
-        }
-    })
+            }
+        })
+    }
     return Array.from(clusterSet)
 }
 
@@ -366,8 +368,8 @@ export const getAppSetRelatedResources = (appSet: IResource, applicationSets: Ap
             item.metadata.name !== appSet.metadata?.name ||
             (item.metadata.name === appSet.metadata?.name && item.metadata.namespace !== appSet.metadata?.namespace)
         ) {
-            if (appSetPlacement && appSetPlacement === currentAppSetPlacement) {
-                appSetsSharingPlacement.push(item.metadata.name!)
+            if (appSetPlacement && appSetPlacement === currentAppSetPlacement && item.metadata.name) {
+                appSetsSharingPlacement.push(item.metadata.name)
             }
         }
     })
@@ -388,99 +390,101 @@ export const getAppChildResources = (
     const sharedChildren: any[] = []
     const rules: any[] = []
 
-    subAnnotationArray.forEach((sa) => {
+    for (const sa of subAnnotationArray) {
         const siblingApps: string[] = []
         const subChildResources: string[] = []
-        // skip local
         if (
-            !_.endsWith(sa, localSubSuffixStr) ||
-            _.indexOf(subAnnotationArray, _.trimEnd(sa, localSubSuffixStr)) == -1
+            _.endsWith(sa, localSubSuffixStr) &&
+            _.indexOf(subAnnotationArray, _.trimEnd(sa, localSubSuffixStr)) !== -1
         ) {
-            const subDetails = sa.split('/')
-
-            // Find apps sharing the same sub
-            applications.forEach((item) => {
-                if (item.metadata.uid !== app.metadata?.uid && item.metadata.namespace === app.metadata?.namespace) {
-                    if (
-                        item.metadata.annotations &&
-                        item.metadata.annotations[subAnnotationStr] &&
-                        item.metadata.annotations[subAnnotationStr].split(',').find((sub) => sub === sa)
-                    ) {
-                        siblingApps.push(item.metadata.name!)
-                    }
-                    const appHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
-
-                    if (appHostingSubAnnotation && appHostingSubAnnotation.indexOf(sa) > -1) {
-                        subChildResources.push(`${item.metadata.name} [${item.kind}]`)
-                    }
-                }
-            })
-
-            // Find current sub and subs deployed by this sub
-            let currentSub: IResource | undefined = undefined
-            subscriptions.forEach((item) => {
-                if (
-                    item.metadata.name !== subDetails[1] ||
-                    (item.metadata.name === subDetails[1] && item.metadata.namespace !== subDetails[0])
-                ) {
-                    const subHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
-                    const subHostingDeployableAnnotation = getAnnotation(item, hostingDeployableAnnotationStr)
-
-                    if (
-                        subHostingSubAnnotation &&
-                        subHostingSubAnnotation.indexOf(sa) > -1 &&
-                        !(subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith(localClusterStr))
-                    ) {
-                        subChildResources.push(`${item.metadata.name} [${item.kind}]`)
-                    }
-                } else if (item.metadata.name === subDetails[1] && item.metadata.namespace === subDetails[0]) {
-                    currentSub = item
-                }
-            })
-
-            // Find PRs referenced/deployed by this sub
-            let subWithPR
-            const referencedPR = currentSub ? (currentSub as Subscription).spec.placement?.placementRef : undefined
-            placementRules.forEach((item) => {
-                if (referencedPR && referencedPR.name === item.metadata.name) {
-                    subWithPR = { ...currentSub, rule: item }
-                }
-                const prHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
-
-                if (prHostingSubAnnotation && prHostingSubAnnotation.indexOf(sa) > -1) {
-                    subChildResources.push(`${item.metadata.name} [${item.kind}]`)
-                }
-            })
-
-            // Find channels deployed by this sub
-            channels.forEach((item) => {
-                const channelHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
-
-                if (channelHostingSubAnnotation && channelHostingSubAnnotation === sa) {
-                    subChildResources.push(`${item.metadata.name} [${item.kind}]`)
-                }
-            })
-
-            if (siblingApps.length === 0) {
-                removableSubs.push(subWithPR || currentSub)
-                children.push({
-                    id: `subscriptions-${subDetails[0]}-${subDetails[1]}`,
-                    name: subDetails[1],
-                    namespace: subDetails[0],
-                    kind: SubscriptionKind,
-                    apiVersion: SubscriptionApiVersion,
-                    label: `${subDetails[1]} [${SubscriptionKind}]`,
-                    subChildResources: subChildResources,
-                })
-            } else {
-                sharedChildren.push({
-                    id: `subscriptions-${subDetails[0]}-${subDetails[1]}`,
-                    label: `${subDetails[1]} [${SubscriptionKind}]`,
-                    siblingApps: siblingApps,
-                })
-            }
+            // skip local sub
+            continue
         }
-    })
+        const subDetails = sa.split('/')
+
+        // Find apps sharing the same sub
+        applications.forEach((item) => {
+            if (item.metadata.uid !== app.metadata?.uid && item.metadata.namespace === app.metadata?.namespace) {
+                if (
+                    item.metadata.name &&
+                    item.metadata.annotations &&
+                    item.metadata.annotations[subAnnotationStr] &&
+                    item.metadata.annotations[subAnnotationStr].split(',').find((sub) => sub === sa)
+                ) {
+                    siblingApps.push(item.metadata.name)
+                }
+                const appHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
+
+                if (appHostingSubAnnotation && appHostingSubAnnotation.indexOf(sa) > -1) {
+                    subChildResources.push(`${item.metadata.name} [${item.kind}]`)
+                }
+            }
+        })
+
+        // Find current sub and subs deployed by this sub
+        let currentSub: IResource | undefined = undefined
+        subscriptions.forEach((item) => {
+            if (
+                item.metadata.name !== subDetails[1] ||
+                (item.metadata.name === subDetails[1] && item.metadata.namespace !== subDetails[0])
+            ) {
+                const subHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
+                const subHostingDeployableAnnotation = getAnnotation(item, hostingDeployableAnnotationStr)
+
+                if (
+                    subHostingSubAnnotation &&
+                    subHostingSubAnnotation.indexOf(sa) > -1 &&
+                    !(subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith(localClusterStr))
+                ) {
+                    subChildResources.push(`${item.metadata.name} [${item.kind}]`)
+                }
+            } else if (item.metadata.name === subDetails[1] && item.metadata.namespace === subDetails[0]) {
+                currentSub = item
+            }
+        })
+
+        // Find PRs referenced/deployed by this sub
+        let subWithPR
+        const referencedPR = currentSub ? (currentSub as Subscription).spec.placement?.placementRef : undefined
+        placementRules.forEach((item) => {
+            if (referencedPR && referencedPR.name === item.metadata.name) {
+                subWithPR = { ...currentSub, rule: item }
+            }
+            const prHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
+
+            if (prHostingSubAnnotation && prHostingSubAnnotation.indexOf(sa) > -1) {
+                subChildResources.push(`${item.metadata.name} [${item.kind}]`)
+            }
+        })
+
+        // Find channels deployed by this sub
+        channels.forEach((item) => {
+            const channelHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
+
+            if (channelHostingSubAnnotation && channelHostingSubAnnotation === sa) {
+                subChildResources.push(`${item.metadata.name} [${item.kind}]`)
+            }
+        })
+
+        if (siblingApps.length === 0) {
+            removableSubs.push(subWithPR || currentSub)
+            children.push({
+                id: `subscriptions-${subDetails[0]}-${subDetails[1]}`,
+                name: subDetails[1],
+                namespace: subDetails[0],
+                kind: SubscriptionKind,
+                apiVersion: SubscriptionApiVersion,
+                label: `${subDetails[1]} [${SubscriptionKind}]`,
+                subChildResources: subChildResources,
+            })
+        } else {
+            sharedChildren.push({
+                id: `subscriptions-${subDetails[0]}-${subDetails[1]}`,
+                label: `${subDetails[1]} [${SubscriptionKind}]`,
+                siblingApps: siblingApps,
+            })
+        }
+    }
 
     removableSubs.forEach((sub) => {
         const prName = sub.rule?.metadata.name
@@ -500,8 +504,8 @@ export const getAppChildResources = (
     // Find subs sharing the PR
     rules.forEach((rule) => {
         const siblingSubs: string[] = []
-        for (let i = 0; i < subscriptions.length; i++) {
-            const item = subscriptions[i]
+        for (const sub of subscriptions) {
+            const item = sub
             const subHostingDeployableAnnotation = getAnnotation(item, hostingDeployableAnnotationStr)
 
             if (subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith(localClusterStr)) {
@@ -512,9 +516,10 @@ export const getAppChildResources = (
             if (
                 foundSub === undefined &&
                 item.spec.placement?.placementRef?.name === rule.name &&
-                item.metadata.namespace === rule.namespace
+                item.metadata.namespace === rule.namespace &&
+                item.metadata.name
             ) {
-                siblingSubs.push(item.metadata.name!)
+                siblingSubs.push(item.metadata.name)
             }
         }
 
