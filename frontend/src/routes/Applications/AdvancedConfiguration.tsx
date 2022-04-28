@@ -47,7 +47,7 @@ import {
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { ToggleSelector } from './components/ToggleSelector'
-import { getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
+import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
 
 export default function AdvancedConfiguration() {
     const { t } = useTranslation()
@@ -717,10 +717,7 @@ export default function AdvancedConfiguration() {
         )
     }
 
-    function getPlacementruleClusterCount(
-        resource: IResource,
-        clusterCount: ClusterCount
-    ) {
+    function getPlacementruleClusterCount(resource: IResource, clusterCount: ClusterCount) {
         const clusterDecisions = _.get(resource, 'status.decisions')
         if (clusterDecisions) {
             clusterDecisions.forEach((clusterDecision: { clusterName: string; clusterNamespace: string }) => {

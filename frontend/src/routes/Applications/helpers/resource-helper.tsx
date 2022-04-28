@@ -54,7 +54,7 @@ export function getSubscriptionsFromAnnotation(app: IResource) {
 }
 
 export type ClusterCount = {
-    remoteCount: number,
+    remoteCount: number
     localPlacement: boolean
 }
 
@@ -208,11 +208,7 @@ export function getClusterCountString(
     }
 }
 
-export function getClusterCountSearchLink(
-    resource: IResource,
-    clusterCount: ClusterCount,
-    clusterList?: string[]
-) {
+export function getClusterCountSearchLink(resource: IResource, clusterCount: ClusterCount, clusterList?: string[]) {
     if ((isArgoApp(resource) && !clusterList?.length) || (!clusterCount.remoteCount && !clusterCount.localPlacement)) {
         return undefined
     }
@@ -236,7 +232,11 @@ export function getClusterCountSearchLink(
     )
 }
 
-export function getClusterCountField(clusterCount: ClusterCount, clusterCountString: string, clusterCountSearchLink?: string) {
+export function getClusterCountField(
+    clusterCount: ClusterCount,
+    clusterCountString: string,
+    clusterCountSearchLink?: string
+) {
     return clusterCountSearchLink && clusterCount.remoteCount ? (
         <Link className="cluster-count-link" to={clusterCountSearchLink}>
             {clusterCountString}
