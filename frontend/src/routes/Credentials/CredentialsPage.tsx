@@ -15,7 +15,7 @@ import {
 import { ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -30,6 +30,15 @@ import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 export default function CredentialsPage() {
     const { t } = useTranslation()
     const [secrets] = useRecoilState(secretsState)
+    const credentials = useMemo(
+        () =>
+            secrets.filter(
+                (secret: Secret) =>
+                    !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromNamespace'] &&
+                    !secret.metadata.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
+            ),
+        [secrets]
+    )
     const providerConnections = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setRoute] = useRecoilState(acmRouteState)
@@ -41,7 +50,7 @@ export default function CredentialsPage() {
                     <CredentialsTable
                         providerConnections={providerConnections}
                         discoveryConfigs={discoveryConfigs}
-                        secrets={secrets}
+                        secrets={credentials}
                     />
                 </PageSection>
             </AcmPageContent>
