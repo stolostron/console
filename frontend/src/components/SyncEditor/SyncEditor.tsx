@@ -4,15 +4,7 @@ import { ReactNode, useRef, useEffect, useState, useCallback, useMemo } from 're
 import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
 import { global_BackgroundColor_dark_100 as editorBackground } from '@patternfly/react-tokens'
-import {
-    RedoIcon,
-    UndoIcon,
-    SearchIcon,
-    EyeIcon,
-    EyeSlashIcon,
-    FilterIcon,
-    CloseIcon,
-} from '@patternfly/react-icons/dist/js/icons'
+import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons/dist/js/icons'
 import { ClipboardCopyButton } from '@patternfly/react-core'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
 import { processForm, processUser, ProcessedType } from './process'
@@ -22,7 +14,6 @@ import { decorate, getResourceEditorDecorations } from './decorate'
 import { setFormStates } from './synchronize'
 import { SyncDiffType } from './SyncDiff'
 import './SyncEditor.css'
-import { useTranslation } from '../../lib/acm-i18next'
 
 export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     variant?: string
@@ -62,6 +53,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const allCopiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>All copied</span>
     const [copyHint, setCopyHint] = useState<ReactNode>(defaultCopy)
     const [prohibited, setProhibited] = useState<any>([])
+    const [filteredRows, setFilteredRows] = useState<number[]>([])
     const [newKeyCount, setNewKeyCount] = useState<number>(1)
     const [showsFormChanges, setShowsFormChanges] = useState<boolean>(false)
     const [userEdits, setUserEdits] = useState<any>([])
@@ -112,7 +104,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (schema && !validationRef.current) {
         validationRef.current = compileAjvSchemas(schema)
     }
-    const { t } = useTranslation()
 
     function onEditorDidMount(editor: any, monaco: any) {
         // create 'resource-editor' theme
@@ -192,12 +183,17 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
     // clear any form change decorations if user clicks on editor
     const onMouseDown = useCallback(
-        debounce(() => {
-            if (showsFormChanges) {
+        debounce((e) => {
+            if (filteredRows.includes(e?.target?.position?.lineNumber)) {
+                setShowFiltered(!showFiltered)
+                clearTimeout(formChangeRef.current.changeTimeoutId)
+                formChangeRef.current.formChange(!showFiltered)
+                e.event.preventDefault()
+            } else if (showsFormChanges) {
                 setShowsFormChanges(false)
             }
-        }, 100),
-        [showsFormChanges]
+        }, 0),
+        [showsFormChanges, filteredRows, showFiltered]
     )
     useEffect(() => {
         if (mouseDownHandle) {
@@ -205,7 +201,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         }
         const handle = editorRef.current.onMouseDown(onMouseDown)
         setMouseDownHandle(handle)
-    }, [showsFormChanges])
+    }, [showsFormChanges, filteredRows, showFiltered])
 
     // show tooltips over errors
     useEffect(() => {
@@ -299,38 +295,41 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     // react to changes from form
     useEffect(() => {
         // debounce changes from form
-        formChangeRef.current.formChange = () => {
+        formChangeRef.current.formChange = (_showFiltered: boolean) => {
+            _showFiltered = _showFiltered ?? showFiltered
             // ignore echo from form
             // (user types, form is updated, form change comes here)
             let isEcho = isEqual(
                 Array.isArray(resources) ? resources : [resources],
                 Array.isArray(editorChanges?.resources) ? editorChanges?.resources : [editorChanges?.resources]
             )
-            isEcho = isEcho && showSecrets === lastShowSecrets && showFiltered === lastShowFiltered
+            isEcho = isEcho && showSecrets === lastShowSecrets && _showFiltered === lastShowFiltered
             setLastShowSecrets(showSecrets)
-            setLastShowFiltered(showFiltered)
+            setLastShowFiltered(_showFiltered)
             // parse/validate/secrets
             const {
                 yaml,
                 protectedRanges,
+                filteredRows,
                 errors,
                 comparison: formComparison,
                 change,
                 unredactedChange,
             } = processForm(
-                t,
                 monacoRef,
                 code,
                 resources,
                 changeStack,
                 showSecrets ? undefined : secrets,
-                showFiltered ? undefined : filters,
+                _showFiltered,
+                filters,
                 immutables,
                 userEdits,
                 validationRef.current
             )
             setLastUserEdits(userEdits)
             setProhibited(protectedRanges)
+            setFilteredRows(filteredRows)
 
             if (!isEcho) {
                 // using monaco editor setValue blows away undo/redo and decorations
@@ -361,7 +360,16 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
             // decorate errors, changes
             if (!isEcho || changes.length > 1) {
-                const squigglyTooltips = decorate(false, editorRef, monacoRef, errors, changes, change, protectedRanges)
+                const squigglyTooltips = decorate(
+                    false,
+                    editorRef,
+                    monacoRef,
+                    errors,
+                    changes,
+                    change,
+                    protectedRanges,
+                    filteredRows
+                )
                 setSquigglyTooltips(squigglyTooltips)
             }
             setShowsFormChanges(!!lastChange)
@@ -382,7 +390,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         return () => {
             clearTimeout(formChangeRef.current.changeTimeoutId)
         }
-    }, [JSON.stringify(resources), code, showSecrets, showFiltered, changeStack, JSON.stringify(immutables)])
+    }, [JSON.stringify(resources), code, showSecrets, changeStack, JSON.stringify(immutables)])
 
     // react to changes from user editing yaml
     const editorChanged = (value: string, e: { isFlush: any }) => {
@@ -390,23 +398,25 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             // parse/validate/secrets
             const {
                 protectedRanges,
+                filteredRows,
                 errors,
                 comparison: userComparison,
                 change,
                 unredactedChange,
             } = processUser(
-                t,
                 monacoRef,
                 value,
                 showSecrets ? undefined : secrets,
                 lastUnredactedChange?.hiddenSecretsValues,
-                showFiltered ? undefined : filters,
+                showFiltered,
+                filters,
                 lastUnredactedChange?.hiddenFilteredValues,
                 immutables,
                 validationRef.current
             )
             setLastUnredactedChange(unredactedChange)
             setProhibited(protectedRanges)
+            setFilteredRows(filteredRows)
 
             // determine what changes were made by user so we can decorate
             // and know what form changes to block
@@ -430,7 +440,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 errors,
                 [], //changes,
                 change,
-                protectedRanges
+                protectedRanges,
+                filteredRows
             )
             setSquigglyTooltips(squigglyTooltips)
             setUserEdits(changes)
@@ -554,16 +565,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                             }}
                         />
                     )}
-                    {!!filters && (
-                        <CodeEditorControl
-                            icon={<FilterIcon />}
-                            aria-label="Filter YAML"
-                            toolTipText={showFiltered ? t('Filter YAML') : t('Unfilter YAML')}
-                            onClick={() => {
-                                setShowFiltered(!showFiltered)
-                            }}
-                        />
-                    )}
                     {/* copy */}
                     <ClipboardCopyButton
                         id="copy-button"
@@ -598,7 +599,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 </div>
             </>
         )
-    }, [hasUndo, hasRedo, showSecrets, showFiltered, copyHint])
+    }, [hasUndo, hasRedo, showSecrets, copyHint])
 
     useResizeObserver(pageRef, (entry) => {
         const { width } = entry.contentRect

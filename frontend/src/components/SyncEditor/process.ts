@@ -35,7 +35,6 @@ export interface CachedValuesType {
 }
 
 export const processForm = (
-    t: (arg0: string) => any,
     monacoRef: any,
     code: string | undefined,
     resourceArr: unknown,
@@ -44,6 +43,7 @@ export const processForm = (
         customResources: any[]
     },
     secrets?: (string | string[])[],
+    showFilters?: boolean,
     filters?: (string | string[])[],
     immutables?: (string | string[])[],
     userEdits?: ChangeType[],
@@ -79,16 +79,16 @@ export const processForm = (
     // and the rest
     return {
         comparison,
-        ...process(t, monacoRef, yaml, documents, errors, secrets, [], filters, [], immutables, validators),
+        ...process(monacoRef, yaml, documents, errors, secrets, [], showFilters, filters, [], immutables, validators),
     }
 }
 
 export const processUser = (
-    t: (arg0: string) => any,
     monacoRef: any,
     yaml: string,
     secrets?: (string | string[])[],
     cachedSecrets?: CachedValuesType[],
+    showFilters?: boolean,
     filters?: (string | string[])[],
     cacheFiltered?: CachedValuesType[],
     immutables?: (string | string[])[],
@@ -106,13 +106,13 @@ export const processUser = (
     return {
         comparison,
         ...process(
-            t,
             monacoRef,
             yaml,
             documents,
             errors,
             secrets,
             cachedSecrets,
+            showFilters,
             filters,
             cacheFiltered,
             immutables,
@@ -122,13 +122,13 @@ export const processUser = (
 }
 
 const process = (
-    t: (arg0: string) => any,
     monacoRef: any,
     yaml: string,
     documents: any,
     errors: any[],
     secrets?: (string | string[])[],
     cachedSecrets?: CachedValuesType[],
+    showFilters?: boolean,
     filters?: (string | string[])[],
     cacheFiltered?: CachedValuesType[],
     immutables?: (string | string[])[],
@@ -163,6 +163,7 @@ const process = (
     }
 
     // hide and remember secret values
+    const filteredRows: number[] = []
     const protectedRanges: any[] = []
     if (!isEmpty(parsed)) {
         // stuff secrets with '*******'
@@ -183,13 +184,15 @@ const process = (
         let allFiltered: { path: string | any[]; isRange: boolean }[] = []
         if (filters && !isEmpty(filters)) {
             allFiltered = getAllPaths(filters, mappings, parsed)
-            allFiltered.forEach(({ path }) => {
-                const value = get(parsed, path) as unknown as string
-                if (value && typeof value === 'object') {
-                    hiddenFilteredValues.push({ path: path, value })
-                    set(parsed, path, t('-click Unfilter YAML to show-'))
-                }
-            })
+            if (!showFilters) {
+                allFiltered.forEach(({ path }) => {
+                    const value = get(parsed, path) as unknown as string
+                    if (value && typeof value === 'object') {
+                        hiddenFilteredValues.push({ path: path, value })
+                        set(parsed, path, undefined)
+                    }
+                })
+            }
         }
 
         // create redacted yaml, etc
@@ -198,11 +201,19 @@ const process = (
         ;({ mappings, parsed, resources } = getMappings(documents))
 
         // prevent typing on redacted yaml
-        ;[...allSecrets, ...allFiltered].forEach(({ path }) => {
+        ;[...allSecrets].forEach(({ path }) => {
             const value = get(mappings, getPathArray(path))
             if (value && value.$v) {
                 protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
                 value.$s = true
+            }
+        })
+
+        // add toggle button to filtered values
+        ;[...allFiltered].forEach(({ path }) => {
+            const value = get(mappings, getPathArray(path))
+            if (value) {
+                filteredRows.push(value.$r)
             }
         })
     }
@@ -222,7 +233,7 @@ const process = (
         validate(validators, mappings, resources, errors)
     }
 
-    return { yaml, protectedRanges, errors, change: { resources, mappings, parsed }, unredactedChange }
+    return { yaml, protectedRanges, filteredRows, errors, change: { resources, mappings, parsed }, unredactedChange }
 }
 
 function getMappings(documents: any[]) {

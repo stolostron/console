@@ -11,7 +11,8 @@ export const decorate = (
         parsed: { [name: string]: any[] }
         mappings: { [name: string]: any[] }
     },
-    protectedRanges: any[]
+    protectedRanges: any[],
+    filteredRows: number[]
 ) => {
     const decorations: any[] = []
     const squigglyTooltips: any[] = []
@@ -24,6 +25,9 @@ export const decorate = (
 
     // add protected decorations
     addProtectedDecorations(monacoRef, protectedRanges, decorations)
+
+    // add filter row toggle decorations
+    addFilteredDecorations(monacoRef, filteredRows, decorations)
 
     // add decorations to editor
     const handles = getResourceEditorDecorations(editorRef).map((decoration: { id: any }) => decoration.id)
@@ -45,6 +49,18 @@ const addProtectedDecorations = (monacoRef: any, protectedRanges: any[], decorat
             range: new monacoRef.current.Range(start, 1, end, 132),
             options: {
                 inlineClassName: 'protectedDecoration',
+                description: 'resource-editor',
+            },
+        })
+    })
+}
+
+const addFilteredDecorations = (monacoRef: any, filteredRows: any[], decorations: any[]) => {
+    filteredRows?.forEach((row) => {
+        decorations.push({
+            range: new monacoRef.current.Range(row, 0, row, 132),
+            options: {
+                after: { content: '\u200b', inlineClassName: 'inline-folded' },
                 description: 'resource-editor',
             },
         })

@@ -1,5 +1,4 @@
 {
-    "-click Unfilter YAML to show-": "-click Unfilter YAML to show-",
     ".bma": ".bma",
     "(1 of {{0}})": "(1 of {{0}})",
     "{{count}} clusters with unknown status": "{{count}} cluster with unknown status",
@@ -2413,7 +2412,6 @@
     "Unauthorized": "Unauthorized",
     "unbind": "Remove from cluster",
     "unbinding": "Removing from cluster",
-    "Unfilter YAML": "Unfilter YAML",
     "uninstall": "Uninstall",
     "uninstall.add-on": "Uninstall add-on",
     "uninstalling": "Uninstalling",
