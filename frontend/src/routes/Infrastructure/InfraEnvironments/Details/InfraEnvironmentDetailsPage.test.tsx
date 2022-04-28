@@ -5,8 +5,8 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 
-import { infraEnvironmentsState } from '../../../../atoms'
-import { nockGet, nockList } from '../../../../lib/nock-util'
+import { infraEnvironmentsState, nmStateConfigsState } from '../../../../atoms'
+import { nockGet } from '../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForTestId, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { infraEnvName, mockInfraEnv1, mockPullSecret } from '../InfraEnvironmentsPage.test'
@@ -29,7 +29,7 @@ const Component = () => {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(infraEnvironmentsState, mockInfraEnvironments)
-                // snapshot.set(nmStateConfigState, [mockNMStateConfigInfraEnv])
+                snapshot.set(nmStateConfigsState, [mockNMStateConfigInfraEnv])
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.infraEnvironmentDetails]}>
@@ -75,12 +75,7 @@ describe('Infrastructure Environment Details page', () => {
         await waitForNotText('Download Discovery ISO')
 
         // The Hosts tab
-        const nocks = [
-            nockList(mockNMStateConfigInfraEnv, mockNMStateConfigInfraEnv, ['agent-install.openshift.io/bmh']),
-        ]
         await clickByText('Hosts')
         await waitForText('Hosts may take a few minutes to appear here after booting.')
-
-        await waitForNocks(nocks)
     })
 })
