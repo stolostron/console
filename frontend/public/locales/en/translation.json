@@ -1071,6 +1071,7 @@
     "Disabled": "Disabled",
     "Disconnected installation": "Disconnected installation",
     "discovered": "Discovered",
+    "Discovered": "Discovered",
     "Discovered clusters": "Discovered clusters",
     "discovery.addDiscovery": "Create discovery settings",
     "discovery.configureDiscovery": "Configure discovery settings",

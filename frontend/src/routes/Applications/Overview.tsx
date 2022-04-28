@@ -4,6 +4,7 @@ import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import { t, TFunction } from 'i18next'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
@@ -56,6 +57,7 @@ import {
     getSearchLink,
     getSubscriptionsFromAnnotation,
     hostingSubAnnotationStr,
+    isArgoApp,
     isResourceTypeOf,
 } from './helpers/resource-helper'
 
@@ -65,14 +67,14 @@ const localSubSuffixStr = '-local'
 const localClusterStr = 'local-cluster'
 
 // Map resource kind to type column
-function getResourceType(resource: IResource) {
+function getApplicationType(resource: IResource, t: TFunction) {
     if (resource.apiVersion === ApplicationApiVersion) {
         if (resource.kind === ApplicationKind) {
             return 'Subscription'
         }
     } else if (resource.apiVersion === ArgoApplicationApiVersion) {
         if (resource.kind === ArgoApplicationKind) {
-            return 'Discovered'
+            return t('Discovered')
         } else if (resource.kind === ApplicationSetKind) {
             return 'ApplicationSet'
         }
@@ -393,7 +395,7 @@ export default function ApplicationsOverview() {
             },
             {
                 header: t('Type'),
-                cell: (resource) => <span>{getResourceType(resource)}</span>,
+                cell: (resource) => <span>{getApplicationType(resource, t)}</span>,
                 sort: 'kind',
                 tooltip: () => (
                     <span>
@@ -460,10 +462,7 @@ export default function ApplicationsOverview() {
                         <ResourceLabels
                             appRepos={appRepos!}
                             showSubscriptionAttributes={true}
-                            isArgoApp={
-                                getResourceType(resource) === 'Discovered' ||
-                                getResourceType(resource) === 'ApplicationSet'
-                            }
+                            isArgoApp={isArgoApp(resource) || isResourceTypeOf(resource, ApplicationSetDefinition)}
                             translation={t}
                         />
                     )
