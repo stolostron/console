@@ -36,7 +36,14 @@ import {
     placementRulesState,
     subscriptionsState,
 } from '../../../../atoms'
-import { createClustersText, getShortDateTime } from '../../helpers/resource-helper'
+import {
+    getClusterCount,
+    getClusterCountField,
+    getClusterCountSearchLink,
+    getClusterCountString,
+    getClusterList,
+    getShortDateTime,
+} from '../../helpers/resource-helper'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
 import { getSearchLink } from '../../helpers/resource-helper'
 import _ from 'lodash'
@@ -94,14 +101,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     })
     const [hasSyncPermission, setHasSyncPermission] = useState(false)
     const openTabIcon = '#diagramIcons_open-new-tab'
-    interface IClusterCountProps {
-        localPlacement: boolean
-        remoteCount: number
-    }
-    const clusterCount: IClusterCountProps = {
-        localPlacement: false,
-        remoteCount: 0,
-    }
+
     let isArgoApp = false
     let isAppSet = false
     let isSubscription = false
@@ -135,17 +135,6 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         return checkData !== -1 ? showData : <Skeleton width={width} className="loading-skeleton-text" />
     }
 
-    function getClusterField(searchLink: string, clusterCountString: string, count: IClusterCountProps) {
-        if (count.remoteCount && clusterCountString !== 'None') {
-            return (
-                <a className="cluster-count-link" href={searchLink}>
-                    {t(clusterCountString)}
-                </a>
-            )
-        }
-        return t(clusterCountString)
-    }
-
     if (applicationData) {
         isArgoApp = applicationData.application?.isArgoApp
         isAppSet = applicationData.application?.isAppSet
@@ -153,29 +142,18 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
         const { name, namespace } = applicationData.application.metadata
         const applicationResource = applicationData.application.app
         const appRepos = getApplicationRepos(applicationData.application.app, subscriptions, channels)
-        const [apigroup, apiversion] = applicationResource.apiVersion.split('/')
-        const searchParams: any = {
-            properties: {
-                apigroup,
-                apiversion,
-                kind: applicationResource.kind.toLowerCase(),
-                name: applicationResource.metadata?.name,
-                namespace: applicationResource.metadata?.namespace,
-            },
-            showRelated: 'cluster',
-        }
-        const searchLink = getSearchLink(searchParams)
 
-        const clusterCountString = createClustersText({
-            resource: applicationResource,
-            clusterCount,
-            clusterList: [],
+        const clusterList = getClusterList(
+            applicationResource,
             argoApplications,
             placementRules,
             subscriptions,
             localCluster,
-            managedClusters,
-        })
+            managedClusters
+        )
+        const clusterCount = getClusterCount(clusterList)
+        const clusterCountString = getClusterCountString(t, clusterCount, clusterList, applicationResource)
+        const clusterCountSearchLink = getClusterCountSearchLink(applicationResource, clusterCount, clusterList)
 
         ////////////////////////////////// argo items ////////////////////////////////////
         if (!isSubscription) {
@@ -232,7 +210,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             rightItems = [
                 {
                     key: t('Clusters'),
-                    value: getClusterField(searchLink, clusterCountString, clusterCount),
+                    value: getClusterCountField(clusterCountString, clusterCountSearchLink),
                     keyAction: (
                         <Tooltip
                             content={
@@ -328,7 +306,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             rightItems = [
                 {
                     key: t('Clusters'),
-                    value: getClusterField(searchLink, clusterCountString, clusterCount),
+                    value: getClusterCountField(clusterCountString, clusterCountSearchLink),
                 },
                 {
                     key: t('Cluster resource status'),
