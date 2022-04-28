@@ -188,7 +188,13 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                             metadata: {
                                 name,
                                 namespace: applicationResourceJSON?.metadata?.namespace,
-                                labels: _.get(originalAnsibleSecret, 'metadata.labels', []),
+                                labels: {
+                                    'cluster.open-cluster-management.io/type': 'ans',
+                                    'cluster.open-cluster-management.io/copiedFromNamespace':
+                                        originalAnsibleSecret?.metadata.namespace!,
+                                    'cluster.open-cluster-management.io/copiedFromSecretName':
+                                        originalAnsibleSecret?.metadata.name!,
+                                },
                             },
                             stringData: _.get(originalAnsibleSecret, 'stringData', {}),
                             type: 'Opaque',
