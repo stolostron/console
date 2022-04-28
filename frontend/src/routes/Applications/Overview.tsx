@@ -79,6 +79,7 @@ function getApplicationType(resource: IResource, t: TFunction) {
             return 'ApplicationSet'
         }
     }
+    return '-'
 }
 
 export function getAppSetApps(argoApps: IResource[], appSetName: string) {
