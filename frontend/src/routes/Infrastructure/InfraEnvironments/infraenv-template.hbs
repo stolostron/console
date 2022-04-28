@@ -21,6 +21,9 @@ spec:
     - {{this}}
   {{/each}}
   {{/if}}
+  nmStateConfigLabelSelector:	
+      matchLabels:	
+        infraenvs.agent-install.openshift.io: {{ ai.name }}
   {{#if ai.enableProxy}}
   proxy:
     {{#if ai.httpProxy}}

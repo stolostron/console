@@ -99,6 +99,8 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
+    NMStateConfigKind,
+    NMStateConfigApiVersion,
     Placement,
     PlacementApiVersionAlpha,
     PlacementBinding,
@@ -182,7 +184,7 @@ export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
 export const managedClustersState = AtomArray<ManagedCluster>()
 export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
-export const nmStateConfigState = AtomArray<CIM.NMStateK8sResource>()
+export const nmStateConfigsState = AtomArray<CIM.NMStateK8sResource>()
 export const policiesState = AtomArray<Policy>()
 export const policyAutomationState = AtomArray<PolicyAutomation>()
 export const policySetsState = AtomArray<PolicySet>()
@@ -262,6 +264,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
+    const [, setNMStateConfigs] = useRecoilState(nmStateConfigsState)
     const [, setPoliciesState] = useRecoilState(policiesState)
     const [, setPolicyAutomationState] = useRecoilState(policyAutomationState)
     const [, setPolicySetsState] = useRecoilState(policySetsState)
@@ -325,6 +328,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
         addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
         addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
+        addSetter(NMStateConfigApiVersion, NMStateConfigKind, setNMStateConfigs)
         addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
         addSetter(PolicyAutomationApiVersion, PolicyAutomationKind, setPolicyAutomationState)
         addSetter(PolicySetApiVersion, PolicySetKind, setPolicySetsState)
@@ -368,6 +372,7 @@ export function LoadData(props: { children?: ReactNode }) {
         setManagedClusters,
         setMultiClusterHubs,
         setNamespaces,
+        setNMStateConfigs,
         setPlacementBindingsState,
         setPlacementDecisionsState,
         setPlacementRulesState,

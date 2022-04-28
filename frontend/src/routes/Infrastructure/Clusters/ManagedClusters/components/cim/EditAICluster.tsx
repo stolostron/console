@@ -9,9 +9,8 @@ import { PageSection, Switch } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolostron/ui-components'
 
 import { patchResource } from '../../../../../../resources'
-import { agentsState, clusterImageSetsState, configMapsState } from '../../../../../../atoms'
+import { agentsState, clusterImageSetsState, configMapsState, nmStateConfigsState } from '../../../../../../atoms'
 import {
-    fetchNMState,
     fetchSecret,
     getAIConfigMap,
     getClusterDeploymentLink,
@@ -26,7 +25,6 @@ import {
     useClusterDeployment,
     useAgentClusterInstall,
     useInfraEnv,
-    useNMStatesOfNamespace,
     fetchInfraEnv,
     fetchManagedClusters,
     fetchKlusterletAddonConfig,
@@ -35,7 +33,7 @@ import {
 import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { isBMPlatform } from '../../../../InfraEnvironments/utils'
+import { getInfraEnvNMStates, isBMPlatform } from '../../../../InfraEnvironments/utils'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../../../components/BulkActionModel'
 
 const {
@@ -62,15 +60,15 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
     const history = useHistory()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
-    const [clusterImageSets, agents, configMaps] = useRecoilValue(
-        waitForAll([clusterImageSetsState, agentsState, configMapsState])
+    const [clusterImageSets, agents, configMaps, nmStateConfigs] = useRecoilValue(
+        waitForAll([clusterImageSetsState, agentsState, configMapsState, nmStateConfigsState])
     )
 
     const clusterDeployment = useClusterDeployment({ name, namespace })
     const agentClusterInstall = useAgentClusterInstall({ name, namespace })
     const infraEnv = useInfraEnv({ name, namespace })
 
-    const nmStates = useNMStatesOfNamespace(infraEnv?.metadata?.namespace)
+    const infraNMStates = useMemo(() => getInfraEnvNMStates(infraEnv, nmStateConfigs), [nmStateConfigs, infraEnv])
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
 
@@ -101,7 +99,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
         { open: false }
     )
-    const onDeleteHost = useOnDeleteHost(setBulkModalProps, [], agentClusterInstall, nmStates)
+    const onDeleteHost = useOnDeleteHost(setBulkModalProps, [], agentClusterInstall, infraNMStates)
 
     const hostActions = {
         onEditHost: (agent: CIM.AgentK8sResource) => {
@@ -227,7 +225,7 @@ const EditAICluster: React.FC<EditAIClusterProps> = ({
                                     })
                                 }
                                 fetchSecret={fetchSecret}
-                                fetchNMState={fetchNMState}
+                                infraNMStates={infraNMStates}
                                 getClusterDeploymentLink={getClusterDeploymentLink}
                                 hostActions={hostActions}
                                 onFinish={onFinish}
