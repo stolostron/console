@@ -26,10 +26,13 @@ import { isType } from '../../../lib/is-type'
 import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
 import {
+    ApplicationSet,
     ApplicationSetKind,
     getGitChannelBranches,
     getGitChannelPaths,
     IResource,
+    Placement,
+    PlacementKind,
     reconcileResources,
     unpackProviderConnection,
 } from '../../../resources'
@@ -101,15 +104,9 @@ export function EditArgoApplicationSet() {
             history.push(NavigationPath.applications)
             return
         }
-        const applicationSetPlacements = placements.filter((placement) => {
-            if (placement.metadata.namespace !== applicationSet.metadata.namespace) return false
-            for (const generator of applicationSet.spec.generators ?? []) {
-                const matchLabels = generator.clusterDecisionResource?.labelSelector?.matchLabels
-                if (!matchLabels) continue
-                if (matchLabels['cluster.open-cluster-management.io/placement'] === placement.metadata.name) return true
-            }
-            return false
-        })
+        const applicationSetPlacements = placements.filter((placement) =>
+            isPlacementUsedByApplicationSet(applicationSet, placement)
+        )
         setExistingResources([applicationSet, ...applicationSetPlacements])
     }, [applicationSets, history, params.name, params.namespace, placementDecisions, placements])
 
@@ -145,6 +142,7 @@ export function EditArgoApplicationSet() {
             getGitPaths={getGitChannelPaths}
             onSubmit={(data) => {
                 const resources = data as IResource[]
+                handlePlacements(resources, existingResources, applicationSets)
                 return reconcileResources(resources, existingResources).then(() => {
                     const applicationSet = resources.find((resource) => resource.kind === ApplicationSetKind)
                     if (applicationSet) {
@@ -170,4 +168,35 @@ export function EditArgoApplicationSet() {
             resources={existingResources}
         />
     )
+}
+
+function handlePlacements(newResources: IResource[], sourceResources: IResource[], applicationSets: ApplicationSet[]) {
+    for (const sourceResource of sourceResources) {
+        if (sourceResource.kind === PlacementKind) {
+            const placement = sourceResource as Placement
+            if (!newResources.find((newResource) => newResource.metadata?.uid === sourceResource.metadata?.uid)) {
+                if (placementPolicySetCount(placement, applicationSets) > 1) {
+                    sourceResources.push(JSON.parse(JSON.stringify(sourceResource)))
+                }
+            }
+        }
+    }
+}
+
+function placementPolicySetCount(placement: Placement, applicationSets: ApplicationSet[]) {
+    let count = 0
+    for (const applicationSet of applicationSets) {
+        if (isPlacementUsedByApplicationSet(applicationSet, placement)) count++
+    }
+    return count
+}
+
+function isPlacementUsedByApplicationSet(applicationSet: ApplicationSet, placement: Placement) {
+    if (placement.metadata.namespace !== applicationSet.metadata.namespace) return false
+    for (const generator of applicationSet.spec.generators ?? []) {
+        const matchLabels = generator.clusterDecisionResource?.labelSelector?.matchLabels
+        if (!matchLabels) continue
+        if (matchLabels['cluster.open-cluster-management.io/placement'] === placement.metadata.name) return true
+    }
+    return false
 }
