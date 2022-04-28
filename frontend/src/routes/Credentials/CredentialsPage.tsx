@@ -37,6 +37,7 @@ export default function CredentialsPage() {
             ),
         [secrets]
     )
+
     const providerConnections = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setRoute] = useRecoilState(acmRouteState)
