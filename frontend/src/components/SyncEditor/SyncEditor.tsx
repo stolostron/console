@@ -92,12 +92,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const [hoverProviderHandle, setHoverProviderHandle] = useState<any>()
     const [showSecrets, setShowSecrets] = useState<boolean>(false)
     const [showFiltered, setShowFiltered] = useState<boolean>(false)
+    const [clickedOnFilteredLine, setClickedOnFilteredLine] = useState<boolean>(false)
+    const [editorHasFocus, setEditorHasFocus] = useState<boolean>(false)
     const [lastShowSecrets, setLastShowSecrets] = useState<boolean>(false)
     const [lastShowFiltered, setLastShowFiltered] = useState<boolean>(false)
     const [showCondensed, setShowCondensed] = useState<boolean>(false)
     const [hasUndo, setHasUndo] = useState<boolean>(false)
     const [hasRedo, setHasRedo] = useState<boolean>(false)
-    const formChangeRef = useRef<any>({})
 
     // compile schema(s) just once
     const validationRef = useRef<unknown>()
@@ -181,15 +182,18 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         })
     }, [])
 
-    // clear any form change decorations if user clicks on editor
     const onMouseDown = useCallback(
         debounce((e) => {
-            if (filteredRows.includes(e?.target?.position?.lineNumber)) {
+            // if clicking on a filtered row, toggle the
+            // show filter state to "expand" filtered content
+            setEditorHasFocus(true)
+            const isClickOnFilteredLine = filteredRows.includes(e?.target?.position?.lineNumber)
+            setClickedOnFilteredLine(isClickOnFilteredLine)
+            if (isClickOnFilteredLine) {
                 setShowFiltered(!showFiltered)
-                clearTimeout(formChangeRef.current.changeTimeoutId)
-                formChangeRef.current.formChange(!showFiltered)
-                e.event.preventDefault()
-            } else if (showsFormChanges) {
+            }
+            // clear any form change decorations if user clicks on editor
+            if (showsFormChanges) {
                 setShowsFormChanges(false)
             }
         }, 0),
@@ -286,26 +290,25 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         editorRef.current.onDidBlurEditorWidget(() => {
             const parent = document.getElementsByClassName('sync-editor__container')[0]
             if (!parent.contains(document.activeElement)) {
-                clearTimeout(formChangeRef.current.changeTimeoutId)
-                formChangeRef.current.formChange()
+                setClickedOnFilteredLine(false)
+                setEditorHasFocus(false)
             }
         })
-    }, [])
+    }, [setClickedOnFilteredLine, setEditorHasFocus])
 
     // react to changes from form
     useEffect(() => {
         // debounce changes from form
-        formChangeRef.current.formChange = (_showFiltered: boolean) => {
-            _showFiltered = _showFiltered ?? showFiltered
+        const formChange = () => {
             // ignore echo from form
             // (user types, form is updated, form change comes here)
             let isEcho = isEqual(
                 Array.isArray(resources) ? resources : [resources],
                 Array.isArray(editorChanges?.resources) ? editorChanges?.resources : [editorChanges?.resources]
             )
-            isEcho = isEcho && showSecrets === lastShowSecrets && _showFiltered === lastShowFiltered
+            isEcho = isEcho && showSecrets === lastShowSecrets && showFiltered === lastShowFiltered
             setLastShowSecrets(showSecrets)
-            setLastShowFiltered(_showFiltered)
+            setLastShowFiltered(showFiltered)
             // parse/validate/secrets
             const {
                 yaml,
@@ -321,7 +324,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 resources,
                 changeStack,
                 showSecrets ? undefined : secrets,
-                _showFiltered,
+                showFiltered,
                 filters,
                 immutables,
                 userEdits,
@@ -382,15 +385,21 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 setHasUndo(false)
             }
         }
-        formChangeRef.current.changeTimeoutId = setTimeout(
-            formChangeRef.current.formChange,
-            editorRef.current.hasTextFocus() ? 1000 : 100
-        )
+        const changeTimeoutId = setTimeout(formChange, !clickedOnFilteredLine && editorHasFocus ? 1000 : 100)
 
         return () => {
-            clearTimeout(formChangeRef.current.changeTimeoutId)
+            clearTimeout(changeTimeoutId)
         }
-    }, [JSON.stringify(resources), code, showSecrets, changeStack, JSON.stringify(immutables)])
+    }, [
+        JSON.stringify(resources),
+        code,
+        showSecrets,
+        showFiltered,
+        editorHasFocus,
+        clickedOnFilteredLine,
+        changeStack,
+        JSON.stringify(immutables),
+    ])
 
     // react to changes from user editing yaml
     const editorChanged = (value: string, e: { isFlush: any }) => {
