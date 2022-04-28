@@ -125,7 +125,7 @@ describe('getResourceType', () => {
     })
 
     it('should work with undefined', () => {
-        expect(getResourceType('', t)).toEqual(undefined)
+        expect(getResourceType('', t)).toEqual('-')
     })
 })
 
