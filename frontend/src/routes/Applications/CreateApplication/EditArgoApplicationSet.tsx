@@ -142,7 +142,7 @@ export function EditArgoApplicationSet() {
             getGitPaths={getGitChannelPaths}
             onSubmit={(data) => {
                 const resources = data as IResource[]
-                handlePlacements(resources, existingResources, applicationSets)
+                onlyDeletePlacementsThatAreNotUsedByOtherApplicationSets(resources, existingResources, applicationSets)
                 return reconcileResources(resources, existingResources).then(() => {
                     const applicationSet = resources.find((resource) => resource.kind === ApplicationSetKind)
                     if (applicationSet) {
@@ -170,17 +170,14 @@ export function EditArgoApplicationSet() {
     )
 }
 
-function handlePlacements(newResources: IResource[], sourceResources: IResource[], applicationSets: ApplicationSet[]) {
-    for (const sourceResource of sourceResources) {
-        if (sourceResource.kind === PlacementKind) {
-            const placement = sourceResource as Placement
-            if (!newResources.find((newResource) => newResource.metadata?.uid === sourceResource.metadata?.uid)) {
-                if (placementPolicySetCount(placement, applicationSets) > 1) {
-                    sourceResources.push(JSON.parse(JSON.stringify(sourceResource)))
-                }
-            }
-        }
+function isPlacementUsedByApplicationSet(applicationSet: ApplicationSet, placement: Placement) {
+    if (placement.metadata.namespace !== applicationSet.metadata.namespace) return false
+    for (const generator of applicationSet.spec.generators ?? []) {
+        const matchLabels = generator.clusterDecisionResource?.labelSelector?.matchLabels
+        if (!matchLabels) continue
+        if (matchLabels['cluster.open-cluster-management.io/placement'] === placement.metadata.name) return true
     }
+    return false
 }
 
 function placementPolicySetCount(placement: Placement, applicationSets: ApplicationSet[]) {
@@ -191,12 +188,19 @@ function placementPolicySetCount(placement: Placement, applicationSets: Applicat
     return count
 }
 
-function isPlacementUsedByApplicationSet(applicationSet: ApplicationSet, placement: Placement) {
-    if (placement.metadata.namespace !== applicationSet.metadata.namespace) return false
-    for (const generator of applicationSet.spec.generators ?? []) {
-        const matchLabels = generator.clusterDecisionResource?.labelSelector?.matchLabels
-        if (!matchLabels) continue
-        if (matchLabels['cluster.open-cluster-management.io/placement'] === placement.metadata.name) return true
+function onlyDeletePlacementsThatAreNotUsedByOtherApplicationSets(
+    newResources: IResource[],
+    sourceResources: IResource[],
+    applicationSets: ApplicationSet[]
+) {
+    for (const sourceResource of sourceResources) {
+        if (sourceResource.kind === PlacementKind) {
+            const placement = sourceResource as Placement
+            if (!newResources.find((newResource) => newResource.metadata?.uid === sourceResource.metadata?.uid)) {
+                if (placementPolicySetCount(placement, applicationSets) > 1) {
+                    newResources.push(JSON.parse(JSON.stringify(sourceResource)))
+                }
+            }
+        }
     }
-    return false
 }
