@@ -43,9 +43,9 @@ export function LogsContainer(props: ILogsContainerProps) {
         initialCluster = pods[0].cluster
         initialPodURL = createResourceURL(
             {
-                initialCluster,
+                cluster: initialCluster,
                 type: pods[0].kind,
-                initialNamespace,
+                namespace: initialNamespace,
                 name: initialPod,
                 specs: {
                     raw: {
