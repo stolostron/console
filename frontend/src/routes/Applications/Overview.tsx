@@ -557,7 +557,6 @@ export default function ApplicationsOverview() {
     const [canCreateApplication, setCanCreateApplication] = useState<boolean>(false)
     const [canDeleteApplication, setCanDeleteApplication] = useState<boolean>(false)
     const [canDeleteApplicationSet, setCanDeleteApplicationSet] = useState<boolean>(false)
-    const [modalWarnings, setModelWarnings] = useState('')
 
     const rowActionResolver = useCallback(
         (resource: IResource) => {
@@ -664,16 +663,13 @@ export default function ApplicationsOverview() {
                                 ? getAppSetRelatedResources(resource, applicationSets)
                                 : ['', []]
                         const hostingSubAnnotation = getAnnotation(resource, hostingSubAnnotationStr)
+                        let modalWarnings: string | undefined
                         if (hostingSubAnnotation) {
                             const subName = hostingSubAnnotation.split('/')[1]
-                            setModelWarnings(
-                                t(
-                                    'This application is deployed by the subscription {{subName}}. The delete action might be reverted when resources are reconciled with the resource repository.',
-                                    { subName }
-                                )
+                            modalWarnings = t(
+                                'This application is deployed by the subscription {{subName}}. The delete action might be reverted when resources are reconciled with the resource repository.',
+                                { subName }
                             )
-                        } else {
-                            setModelWarnings('')
                         }
                         setModalProps({
                             open: true,
@@ -709,7 +705,6 @@ export default function ApplicationsOverview() {
             canDeleteApplicationSet,
             channels,
             history,
-            modalWarnings,
             placementRules,
             subscriptions,
             t,
