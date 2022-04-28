@@ -55,18 +55,25 @@ export const getAllPaths = (
             }
         }
         if (Array.isArray(path)) {
-            //
-            // [Resource, '*', 'key', ...]
-            //
-            if (mappings[path[0]] && path[1] === '*') {
-                Array.from(Array(mappings[path[0]].length)).forEach((_d, inx) => {
-                    if (Array.isArray(path)) {
-                        allPaths.push({ path: [path[0], inx, ...path.slice(2)], isRange })
-                    }
-                })
+            if (mappings[path[0]]) {
+                //
+                // [Resource, '*', 'key', ...] (array path)
+                //
+                if (path[1] === '*') {
+                    Array.from(Array(mappings[path[0]].length)).forEach((_d, inx) => {
+                        if (Array.isArray(path)) {
+                            allPaths.push({ path: [path[0], inx, ...path.slice(2)], isRange })
+                        }
+                    })
+                } else {
+                    //
+                    // [Resource, 'n', 'key', ...]
+                    //
+                    allPaths.push({ path: [...path], isRange })
+                }
             }
             //
-            // 'Resource[*].key']
+            // 'Resource[*].key'] (string path)
             //
         } else if (path.includes('[*]')) {
             // if ends with *, include all objects below this path
