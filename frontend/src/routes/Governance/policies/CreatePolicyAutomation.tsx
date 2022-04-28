@@ -148,21 +148,12 @@ export function CreatePolicyAutomation() {
                 const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
                 const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')
 
-                return new Promise((resolve, reject) => {
-                    const ansibleJobs = listAnsibleTowerJobs(host, token)
-                    ansibleJobs.promise
-                        .then((response) => {
-                            if (response) {
-                                let templateList: string[] = []
-                                if (response?.results) {
-                                    templateList = response.results!.map((job) => job.name!)
-                                }
-                                resolve(templateList)
-                            }
-                        })
-                        .catch(() => {
-                            reject('Error getting Anisble jobs')
-                        })
+                return listAnsibleTowerJobs(host, token).promise.then((response) => {
+                    let templateList: string[] = []
+                    if (response?.results) {
+                        templateList = response.results!.map((job) => job.name!)
+                    }
+                    return templateList
                 })
             }}
         />

@@ -1,4 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
+import { fitContent } from '@patternfly/react-table'
 import {
     AcmButton,
     AcmEmptyState,
@@ -12,24 +14,30 @@ import {
     Provider,
     ProviderLongTextMap,
 } from '@stolostron/ui-components'
-import { ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
-import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
-import { Fragment, useEffect, useState } from 'react'
-import { Trans, useTranslation } from '../../lib/acm-i18next'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, discoveryConfigState, secretsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
+import { Trans, useTranslation } from '../../lib/acm-i18next'
+import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { NavigationPath } from '../../NavigationPath'
 import { deleteResource, DiscoveryConfig, ProviderConnection, Secret, unpackProviderConnection } from '../../resources'
-import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 
 export default function CredentialsPage() {
     const { t } = useTranslation()
     const [secrets] = useRecoilState(secretsState)
+    const credentialsSecrets = useMemo(
+        () =>
+            secrets.filter(
+                (secret) => secret?.metadata?.labels?.['cluster.open-cluster-management.io/credentials'] !== undefined
+            ),
+        [secrets]
+    )
+
     const providerConnections = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setRoute] = useRecoilState(acmRouteState)
@@ -41,7 +49,7 @@ export default function CredentialsPage() {
                     <CredentialsTable
                         providerConnections={providerConnections}
                         discoveryConfigs={discoveryConfigs}
-                        secrets={secrets}
+                        secrets={credentialsSecrets}
                     />
                 </PageSection>
             </AcmPageContent>
