@@ -108,7 +108,7 @@ export default function AdvancedConfiguration() {
     const getSubscriptionClusterCount = useCallback(
         function getSubscriptionClusterCount(
             resource: IResource,
-            clusterCount: { localPlacement: boolean; remoteCount: number },
+            clusterCount: ClusterCount,
             showSearchLink?: boolean
         ) {
             const namespace = _.get(resource, 'metadata.namespace')
@@ -719,7 +719,7 @@ export default function AdvancedConfiguration() {
 
     function getPlacementruleClusterCount(
         resource: IResource,
-        clusterCount: { localPlacement: boolean; remoteCount: number }
+        clusterCount: ClusterCount
     ) {
         const clusterDecisions = _.get(resource, 'status.decisions')
         if (clusterDecisions) {

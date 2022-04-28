@@ -210,7 +210,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             rightItems = [
                 {
                     key: t('Clusters'),
-                    value: getClusterCountField(clusterCountString, clusterCountSearchLink),
+                    value: getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink),
                     keyAction: (
                         <Tooltip
                             content={
@@ -306,7 +306,7 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
             rightItems = [
                 {
                     key: t('Clusters'),
-                    value: getClusterCountField(clusterCountString, clusterCountSearchLink),
+                    value: getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink),
                 },
                 {
                     key: t('Cluster resource status'),

@@ -444,7 +444,7 @@ export default function ApplicationsOverview() {
                     const clusterCount = getClusterCount(clusterList)
                     const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
                     const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
-                    return getClusterCountField(clusterCountString, clusterCountSearchLink)
+                    return getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink)
                 },
                 tooltip: t(
                     'Displays the number of remote and local clusters where resources for the application are deployed. For an individual Argo application, the name of the destination cluster is displayed. Click to search for all related clusters.'
