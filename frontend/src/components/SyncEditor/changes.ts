@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
 import { diff } from 'deep-diff'
-import { get, isEmpty, keyBy } from 'lodash'
+import { get, isEmpty, keyBy, isEqual } from 'lodash'
 import { getPathArray } from './synchronize'
 import { normalize } from './reconcile'
 import { MappingType } from './process'
@@ -53,18 +53,18 @@ export const getFormChanges = (
                     return JSON.stringify(edit.$p)
                 })
                 remainingEdits = userEdits.filter((edit: ChangeType) => {
-                    const { $a, $u, $p } = edit
-                    const val = get(change.mappings, $a) as MappingType
+                    const { $u, $p } = edit
+                    const val = get(change.parsed, $p) as MappingType
                     // if there's no value at this path anymore, just filter out this user edit (may have deleted)
-                    if (val) {
+                    if (val !== undefined) {
                         // use any form change on top of a user edit
                         const key = JSON.stringify($p)
                         const chng = changeMap[key]
                         if (chng) {
-                            // user edit and form change conflict so delete form change
+                            // user edit and form change conflict at this path, so delete form change
                             delete changeMap[key]
-                            // however ifchange equals the user edit, also delete the user edit
-                            if ($u === val.$v || (!$u && !val.$v)) {
+                            // if change equals the user edit, also delete the user edit
+                            if (isEqual($u, val) || (!$u && !val)) {
                                 return false
                             }
                         }
@@ -245,6 +245,7 @@ const getChanges = (
                         case 'N': // new
                             chng = { $t: 'N', $a: pathArr, $p: path }
                             if (isCustomEdit) {
+                                chng.$u = rhs // what user changed it to
                                 chng.$f = 'new'
                             }
                             changes.push(chng)
