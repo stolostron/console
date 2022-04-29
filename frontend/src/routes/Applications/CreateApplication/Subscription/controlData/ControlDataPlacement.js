@@ -22,6 +22,7 @@ import ClusterSelector, {
 import {
     setAvailableRules,
     getExistingPRControlsSection,
+    updateNewRuleControlsData,
     getSharedPlacementRuleWarning,
     getSharedSubscriptionWarning,
 } from './utils'
@@ -46,11 +47,14 @@ export const loadExistingPlacementRules = () => {
 export const updateNewRuleControls = (urlControl, controlGlobal) => {
     const controlList = getExistingPRControlsSection(urlControl, controlGlobal)
 
-    const { active } = urlControl
+    const { active, availableData } = urlControl
+    const selectedPR = availableData[active]
 
     controlList.forEach((control) => {
         const selectedRuleNameControl = _.get(control, 'selectedRuleName')
         selectedRuleNameControl.active = active
+
+        updateNewRuleControlsData(selectedPR, control)
     })
 }
 
@@ -180,7 +184,6 @@ export const reverseExistingRule = (control, templateObject) => {
 }
 export const reverseExistingRuleName = (control, templateObject) => {
     const active = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.name'))
-
     if (active && control.active === undefined) {
         const { groupControlData } = control
         const selectedRuleName = groupControlData.find(({ id }) => id === 'selectedRuleName')
