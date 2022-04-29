@@ -8,11 +8,10 @@ import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from
 import { ClipboardCopyButton } from '@patternfly/react-core'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
 import { processForm, processUser, ProcessedType } from './process'
-import { compileAjvSchemas, formatErrors } from './validation'
+import { compileAjvSchemas } from './validation'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
-import { setFormStates } from './synchronize'
-import { SyncDiffType } from './SyncDiff'
+import { setFormValues } from './synchronize'
 import './SyncEditor.css'
 
 export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
@@ -48,16 +47,15 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const pageRef = useRef<HTMLDivElement>(null)
     const editorRef = useRef<any | null>(null)
     const monacoRef = useRef<any | null>(null)
+    const editorHadFocus = useRef(false)
     const defaultCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Copy</span>
     const copiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>Selection copied</span>
     const allCopiedCopy: ReactNode = <span style={{ wordBreak: 'keep-all' }}>All copied</span>
     const [copyHint, setCopyHint] = useState<ReactNode>(defaultCopy)
     const [prohibited, setProhibited] = useState<any>([])
     const [filteredRows, setFilteredRows] = useState<number[]>([])
-    const [newKeyCount, setNewKeyCount] = useState<number>(1)
     const [showsFormChanges, setShowsFormChanges] = useState<boolean>(false)
     const [userEdits, setUserEdits] = useState<any>([])
-    const [editorChanges, setEditorChanges] = useState<SyncDiffType>()
     const [reportChanges, setReportChanges] = useState<{
         changes: any[]
         unredactedChange: {
@@ -86,7 +84,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         baseResources: any[]
         customResources: any[]
     }>()
-    const [lastValidResources, setLastValidResources] = useState<any>()
     const [mouseDownHandle, setMouseDownHandle] = useState<any>()
     const [keyDownHandle, setKeyDownHandle] = useState<any>()
     const [hoverProviderHandle, setHoverProviderHandle] = useState<any>()
@@ -94,8 +91,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const [showFiltered, setShowFiltered] = useState<boolean>(false)
     const [clickedOnFilteredLine, setClickedOnFilteredLine] = useState<boolean>(false)
     const [editorHasFocus, setEditorHasFocus] = useState<boolean>(false)
-    const [lastShowSecrets, setLastShowSecrets] = useState<boolean>(false)
-    const [lastShowFiltered, setLastShowFiltered] = useState<boolean>(false)
     const [showCondensed, setShowCondensed] = useState<boolean>(false)
     const [hasUndo, setHasUndo] = useState<boolean>(false)
     const [hasRedo, setHasRedo] = useState<boolean>(false)
@@ -243,34 +238,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 preventDefault: () => void
             }) => {
                 const selections = editorRef.current.getSelections()
-
                 // if user presses enter, add new key: below this line
-                if (e.code === 'Enter') {
-                    const editor = editorRef.current
-                    const model = editor.getModel()
-                    const pos = editor.getPosition()
-                    const lines = model.getLineCount()
-                    const thisLine = model.getLineContent(pos.lineNumber)
-                    let times
-                    const isLastLine = lines <= pos.lineNumber + 1
-                    if (isLastLine) {
-                        times = thisLine.search(/\S/)
-                    } else {
-                        const nextLine = model.getLineContent(pos.lineNumber + 1)
-                        times = Math.max(thisLine.search(/\S/), nextLine.search(/\S/))
-                    }
-                    const count = `${newKeyCount}`.padStart(4, '0')
-                    const newLine = `${isLastLine ? '\n' : ''}${' '.repeat(times)}key${count}:  ${
-                        !isLastLine ? '\n' : ''
-                    }`
-                    let range = new monacoRef.current.Range(pos.lineNumber + 1, 0, pos.lineNumber + 1, 0)
-                    editor.executeEdits('new-key', [{ identifier: 'new-key', range, text: newLine }])
-                    range = new monacoRef.current.Range(pos.lineNumber + 1, times + 1, pos.lineNumber + 1, times + 8)
-                    editor.setSelection(range)
-                    setNewKeyCount(newKeyCount + 1)
-                    e.stopPropagation()
-                    e.preventDefault()
-                } else if (
+                if (
                     // if user clicks on readonly area, ignore
                     !(e.code === 'KeyC' && (e.ctrlKey || e.metaKey)) &&
                     !prohibited.every((prohibit: { intersectRanges: (arg: any) => any }) => {
@@ -300,15 +269,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     useEffect(() => {
         // debounce changes from form
         const formChange = () => {
-            // ignore echo from form
-            // (user types, form is updated, form change comes here)
-            let isEcho = isEqual(
-                Array.isArray(resources) ? resources : [resources],
-                Array.isArray(editorChanges?.resources) ? editorChanges?.resources : [editorChanges?.resources]
-            )
-            isEcho = isEcho && showSecrets === lastShowSecrets && showFiltered === lastShowFiltered
-            setLastShowSecrets(showSecrets)
-            setLastShowFiltered(showFiltered)
             // parse/validate/secrets
             const {
                 yaml,
@@ -330,26 +290,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 userEdits,
                 validationRef.current
             )
-            setLastUserEdits(userEdits)
             setProhibited(protectedRanges)
             setFilteredRows(filteredRows)
-
-            if (!isEcho) {
-                // using monaco editor setValue blows away undo/redo and decorations
-                // but the design decision is the editor is agnostic of its form
-                // so form changes aren't articulated into individual line changes
-                const model = editorRef.current?.getModel()
-                const saveDecorations = getResourceEditorDecorations(editorRef)
-                const savePosition = editorRef.current?.getPosition()
-                model.setValue(yaml)
-                editorRef.current?.setPosition(savePosition)
-                editorRef.current.deltaDecorations([], saveDecorations)
-            }
-
             setLastUnredactedChange(unredactedChange)
 
-            // determine what changes were made by form so we can decorate
-            const { changes, userEdits: edits } = getFormChanges(
+            const { yamlChanges, remainingEdits } = getFormChanges(
                 errors,
                 change,
                 userEdits,
@@ -358,18 +303,40 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 lastFormComparison
             )
 
-            // report to form since we may have merged form resources with custom edits
-            setReportChanges(cloneDeep({ changes: edits, unredactedChange, redactedChange: change, errors }))
+            // only update yaml in editor if it changed syntactically changed
+            // allows user to add spaces without this wiping them out
+            const model = editorRef.current?.getModel()
+            if (!isEqual(model.resources, change.resources)) {
+                model.resources = cloneDeep(change.resources)
+                const saveDecorations = getResourceEditorDecorations(editorRef)
+                const viewState = editorRef.current?.saveViewState()
+                model.setValue(yaml)
+                editorRef.current?.restoreViewState(viewState)
+                editorRef.current.deltaDecorations([], saveDecorations)
+                setHasRedo(false)
+                setHasUndo(false)
+            }
+
+            // user edits that haven't been incorporated into form
+            setLastUserEdits(remainingEdits)
+
+            // if there were remaining edits, report to form the new and custom changes
+            if (remainingEdits.length > 0) {
+                setReportChanges(
+                    cloneDeep({ changes: remainingEdits, unredactedChange, redactedChange: change, errors, form: true })
+                )
+            }
 
             // decorate errors, changes
-            if (!isEcho || changes.length > 1) {
+            if (!editorHasFocus || yamlChanges.length > 1) {
                 const squigglyTooltips = decorate(
                     false,
                     editorRef,
                     monacoRef,
                     errors,
-                    changes,
+                    yamlChanges,
                     change,
+                    remainingEdits,
                     protectedRanges,
                     filteredRows
                 )
@@ -378,14 +345,20 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             setShowsFormChanges(!!lastChange)
             setLastFormComparison(formComparison)
             setLastChange(change)
-            setUserEdits(edits)
-
-            if (!isEcho) {
-                setHasRedo(false)
-                setHasUndo(false)
-            }
+            setUserEdits(remainingEdits)
         }
-        const changeTimeoutId = setTimeout(formChange, !clickedOnFilteredLine && editorHasFocus ? 1000 : 100)
+        // if editor loses focus, update form immediately
+        // otherwise if form already had focus, no need to call formChange
+        let changeTimeoutId: NodeJS.Timeout
+        // if editor didn't have focus before and now it does, ignore form change
+        if (!editorHadFocus.current && editorHasFocus) {
+            // ignore
+        } else {
+            // if form changed, and editor doesn't have focus (user isn't typing) process form change immediately
+            // if form changed, and editor has focus (user is typing) process form with debounce of 1 s to allow user to type
+            changeTimeoutId = setTimeout(formChange, !clickedOnFilteredLine && editorHasFocus ? 1000 : 0)
+        }
+        editorHadFocus.current = editorHasFocus
 
         return () => {
             clearTimeout(changeTimeoutId)
@@ -447,8 +420,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 editorRef,
                 monacoRef,
                 errors,
-                [], //changes,
+                [],
                 change,
+                lastUserEdits,
                 protectedRanges,
                 filteredRows
             )
@@ -459,10 +433,12 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             //setLastChange(change)
 
             // set up a change stack that can be used to reconcile user changes typed here and if/when form changes occur
-            setChangeStack({
-                baseResources: changeStack?.baseResources ?? unredactedChange?.resources ?? [],
-                customResources: unredactedChange.resources,
-            })
+            if (errors.length === 0) {
+                setChangeStack({
+                    baseResources: changeStack?.baseResources ?? unredactedChange?.resources ?? [],
+                    customResources: unredactedChange.resources,
+                })
+            }
 
             // undo/redo disable
             //TODO when multiple editors set for each
@@ -487,43 +463,36 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     // report changes to form
     useEffect(() => {
         // debounce report of changes to form
-        const changeTimeoutId = setTimeout(() => {
-            if (reportChanges) {
-                const { changes, unredactedChange, redactedChange, errors } = reportChanges
-                const editor = editorRef?.current
-                const monaco = monacoRef?.current
-                const isArr = Array.isArray(resources)
-                let _resources = isArr ? resources : [resources]
-                _resources = lastValidResources || _resources
-                if (errors.length || unredactedChange.resources.length === 0) {
-                    // if errors, use last valid resources
-                    setEditorChanges({
-                        resources: isArr ? _resources : _resources[0],
-                        warnings: formatErrors(errors, true),
-                        errors: formatErrors(errors),
-                        changes: formatChanges(editor, monaco, changes, redactedChange, syncs),
-                    })
-                } else if (!isEqual(unredactedChange.resources, _resources) || !editorChanges) {
-                    // only report if resources changed
-                    const editChanges = {
-                        resources: isArr ? unredactedChange.resources : unredactedChange.resources[0],
-                        warnings: formatErrors(errors, true),
-                        errors: formatErrors(errors),
-                        changes: formatChanges(editor, monaco, changes, redactedChange, syncs),
-                    }
-                    setEditorChanges(editChanges)
-                    setLastValidResources(cloneDeep(isArr ? unredactedChange.resources : unredactedChange.resources[0]))
-                    setFormStates(syncs, unredactedChange)
-                    if (onEditorChange && !isEqual(unredactedChange.resources, _resources)) {
-                        onEditorChange(editChanges)
+        const changeTimeoutId = setTimeout(
+            () => {
+                if (reportChanges) {
+                    const { changes, unredactedChange, redactedChange, errors, form } = reportChanges
+                    const editor = editorRef?.current
+                    const monaco = monacoRef?.current
+                    const isArr = Array.isArray(resources)
+                    let _resources = isArr ? unredactedChange.resources : unredactedChange.resources[0]
+                    // only set editorChanges if there's no error
+                    if (errors.length === 0) {
+                        // if syncs defined, set values into form/wizard
+                        setFormValues(syncs, unredactedChange)
+                        // if synceditor yaml is different from form.wizard, report yaml
+                        _resources = isArr ? resources : [resources]
+                        if (onEditorChange && !isEqual(unredactedChange.resources, _resources)) {
+                            const editChanges = {
+                                resources: isArr ? unredactedChange.resources : unredactedChange.resources[0],
+                                changes: formatChanges(editor, monaco, changes, redactedChange, syncs),
+                            }
+                            onEditorChange(editChanges)
+                        }
                     }
                 }
-            }
-        }, 500)
+            },
+            editorHasFocus ? 0 : 2000
+        )
         return () => {
             clearTimeout(changeTimeoutId)
         }
-    }, [reportChanges])
+    }, [reportChanges, editorHasFocus])
 
     const toolbarControls = useMemo(() => {
         return (

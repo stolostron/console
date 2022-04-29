@@ -3,7 +3,7 @@ import get from 'lodash/get'
 import { MappingType } from './process'
 
 // set form/wizard inputs to yaml changes
-export const setFormStates = (
+export const setFormValues = (
     syncs: unknown,
     resources: {
         mappings: { [x: string]: any[] }

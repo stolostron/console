@@ -38,20 +38,21 @@ export const getFormChanges = (
     },
     lastComparison?: { [name: string]: any[] }
 ) => {
-    let changes = [] //userEdits
+    let yamlChanges = []
+    let remainingEdits = []
 
     // changes to yaml
     if (errors.length === 0 || !errors.every(({ isWarning }) => !isWarning)) {
         if (lastChange && lastComparison) {
-            changes = getChanges(false, change, lastChange, comparison, lastComparison)
+            yamlChanges = getChanges(false, change, lastChange, comparison, lastComparison)
 
             // remove any form changes on top of user changes (for decoration purposes--reconcile prevents the yaml change)
             // remove any user changes which are now the same as the form
             if (!isEmpty(userEdits)) {
-                const changeMap = keyBy(changes, (edit) => {
+                const changeMap = keyBy(yamlChanges, (edit) => {
                     return JSON.stringify(edit.$p)
                 })
-                userEdits = userEdits.filter((edit: ChangeType) => {
+                remainingEdits = userEdits.filter((edit: ChangeType) => {
                     const { $a, $u, $p } = edit
                     const val = get(change.mappings, $a) as MappingType
                     // if there's no value at this path anymore, just filter out this user edit (may have deleted)
@@ -60,22 +61,22 @@ export const getFormChanges = (
                         const key = JSON.stringify($p)
                         const chng = changeMap[key]
                         if (chng) {
-                            // however if the latest form change equals the user edit, just delete the user edit
+                            // user edit and form change conflict so delete form change
+                            delete changeMap[key]
+                            // however ifchange equals the user edit, also delete the user edit
                             if ($u === val.$v || (!$u && !val.$v)) {
                                 return false
-                            } else {
-                                delete changeMap[key]
                             }
                         }
                         return true
                     }
                     return false
                 })
-                changes = Object.values(changeMap)
+                yamlChanges = Object.values(changeMap)
             }
         }
     }
-    return { changes, userEdits }
+    return { yamlChanges, remainingEdits }
 }
 
 export const getUserChanges = (

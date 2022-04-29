@@ -38,16 +38,18 @@ export const processForm = (
     monacoRef: any,
     code: string | undefined,
     resourceArr: unknown,
-    changeStack?: {
-        baseResources: any[]
-        customResources: any[]
-    },
-    secrets?: (string | string[])[],
-    showFilters?: boolean,
-    filters?: (string | string[])[],
-    immutables?: (string | string[])[],
-    userEdits?: ChangeType[],
-    validators?: any
+    changeStack:
+        | {
+              baseResources: any[]
+              customResources: any[]
+          }
+        | undefined,
+    secrets: (string | string[])[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    userEdits: ChangeType[],
+    validators: any
 ) => {
     // get yaml, documents, resource, mapped
     let yaml = code || ''
@@ -86,13 +88,13 @@ export const processForm = (
 export const processUser = (
     monacoRef: any,
     yaml: string,
-    secrets?: (string | string[])[],
-    cachedSecrets?: CachedValuesType[],
-    showFilters?: boolean,
-    filters?: (string | string[])[],
-    cacheFiltered?: CachedValuesType[],
-    immutables?: (string | string[])[],
-    validators?: any
+    secrets: (string | string[])[] | undefined,
+    cachedSecrets: CachedValuesType[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    cacheFiltered: CachedValuesType[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    validators: any
 ) => {
     // get yaml, documents, resource, mapped
     const documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
@@ -126,18 +128,14 @@ const process = (
     yaml: string,
     documents: any,
     errors: any[],
-    secrets?: (string | string[])[],
-    cachedSecrets?: CachedValuesType[],
-    showFilters?: boolean,
-    filters?: (string | string[])[],
-    cacheFiltered?: CachedValuesType[],
-    immutables?: (string | string[])[],
-    validators?: any
+    secrets: (string | string[])[] | undefined,
+    cachedSecrets: CachedValuesType[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    cacheFiltered: CachedValuesType[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    validators: any
 ) => {
-    // if parse errors, use previous hidden secrets
-    const hiddenSecretsValues: any[] = errors.length === 0 ? [] : cachedSecrets ?? []
-    const hiddenFilteredValues: any[] = errors.length === 0 ? [] : cacheFiltered ?? []
-
     // restore hidden secret values
     let { mappings, parsed, resources } = getMappings(documents)
     cachedSecrets?.forEach(({ path, value }) => {
@@ -153,6 +151,9 @@ const process = (
         }
     })
 
+    // if parse errors, use previous hidden secrets
+    const hiddenSecretsValues: any[] = []
+    const hiddenFilteredValues: any[] = []
     const unredactedChange = {
         yaml,
         mappings: cloneDeep(mappings),
@@ -174,7 +175,7 @@ const process = (
             allSecrets.forEach(({ path }) => {
                 const value = get(parsed, path) as unknown as string
                 if (value && typeof value === 'string') {
-                    hiddenSecretsValues.push({ path: path, value })
+                    if (errors.length === 0) hiddenSecretsValues.push({ path: path, value })
                     set(parsed, path, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
                 }
             })
@@ -188,7 +189,7 @@ const process = (
                 allFiltered.forEach(({ path }) => {
                     const value = get(parsed, path) as unknown as string
                     if (value && typeof value === 'object') {
-                        hiddenFilteredValues.push({ path: path, value })
+                        if (errors.length === 0) hiddenFilteredValues.push({ path: path, value })
                         set(parsed, path, undefined)
                     }
                 })
@@ -231,6 +232,11 @@ const process = (
 
     if (errors.length === 0 && validators) {
         validate(validators, mappings, resources, errors)
+    }
+
+    if (errors.length !== 0 && cachedSecrets && cacheFiltered) {
+        unredactedChange.hiddenSecretsValues = cachedSecrets
+        unredactedChange.hiddenFilteredValues = cacheFiltered
     }
 
     return { yaml, protectedRanges, filteredRows, errors, change: { resources, mappings, parsed }, unredactedChange }
