@@ -600,6 +600,7 @@
     "creation.aws.subnetID.tooltip": "If you provide your own VPC, specify subnets for each availability zone that your cluster uses.",
     "creation.duplicate.clusterSelector.label": "Duplicated cluster selector label: '{{0}}'",
     "creation.enter.value": "Enter {{0}}",
+    "creation.input.must.not.change": "This value cannot be modified. Restore the original value in the YAML view to continue: '{{0}}'",
     "creation.invalid.url": "Value must be a valid URL format.",
     "creation.loading.values": "Loading {{0}}...",
     "creation.missing.clusterSelector.label": "Cluster matching labels section missing label name.",
