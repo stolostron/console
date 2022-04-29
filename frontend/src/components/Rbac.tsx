@@ -18,7 +18,7 @@ type RbacDropdownProps<T = unknown> = {
 
 type Actions<T = unknown> = {
     id: string
-    text: string
+    text: React.ReactNode
     isAriaDisabled?: boolean
     tooltip?: string
     click: (item: T) => void

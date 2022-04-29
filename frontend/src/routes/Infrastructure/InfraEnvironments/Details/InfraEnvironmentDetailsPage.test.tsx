@@ -6,7 +6,7 @@ import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { infraEnvironmentsState, nmStateConfigsState } from '../../../../atoms'
 import { nockGet } from '../../../../lib/nock-util'
-import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
+import { clickByText, clickHostAction, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim/EditAICluster.sharedmocks'
 import { infraEnvName, mockInfraEnv1, mockPullSecret } from '../InfraEnvironmentsPage.test'
@@ -55,10 +55,11 @@ describe.skip('Infrastructure Environment Details page', () => {
         // The Overview tab
         await waitForText('Infrastructure Environment name')
 
-        await clickByText('Add host')
+        // Open discovery ISO dialog
+        await clickHostAction('With Discovery ISO')
 
         // Discovery ISO config dialog
-        await clickByText('Generate Discovery ISO')
+        await clickByText('ai:Generate Discovery ISO')
 
         // Discovery ISO download state
         await waitForText('Discovery ISO is ready to download')
