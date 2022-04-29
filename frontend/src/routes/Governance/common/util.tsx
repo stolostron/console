@@ -286,18 +286,18 @@ function getHelmReleaseMap(helmReleases: HelmRelease[]) {
     return resourceMap
 }
 function getSubscriptionMap(subscriptions: Subscription[]) {
-    const resourceMap = new Map()
+    const resourceMap: Record<string, Subscription | undefined> = {}
     subscriptions.forEach((subscription: Subscription) => {
-        resourceMap.set(`${subscription.metadata.namespace}/${subscription.metadata.name}`, subscription)
+        resourceMap[`${subscription.metadata.namespace}/${subscription.metadata.name}`] = subscription
     })
     return resourceMap
 }
 function getChannelMap(channels: Channel[]) {
-    const resourceMap = new Map()
+    const channelMap: Record<string, Channel | undefined> = {}
     channels.forEach((channel: Channel) => {
-        resourceMap.set(`${channel.metadata.namespace}/${channel.metadata.name}`, channel)
+        channelMap[`${channel.metadata.namespace}/${channel.metadata.name}`] = channel
     })
-    return resourceMap
+    return channelMap
 }
 
 // This function may need some revision/testing
@@ -326,8 +326,8 @@ export function resolveSource(
     if (hostingSubscription) {
         const subscriptionMap = getSubscriptionMap(subscriptions)
         const channelMap = getChannelMap(channels)
-        const subscription = subscriptionMap.get(hostingSubscription)
-        const channel = channelMap.get(subscription.spec.channel ?? '')
+        const subscription = subscriptionMap[hostingSubscription]
+        const channel = channelMap[subscription?.spec.channel ?? '']
         if (subscription && channel) {
             const subscriptionAnnotations = getAnnotations(subscription)
             const getGitAnnotation = (annotations: any, name: string) =>
