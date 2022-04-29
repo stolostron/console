@@ -375,7 +375,7 @@ export const setAvailableRules = (control, result) => {
         if (error) {
             control.isFailed = true
             control.isLoaded = true
-        } else if (placementRules) {
+        } else if (placementRules && placementRules.length > 0) {
             control.isLoaded = true
             placementRules.forEach((item) => {
                 const { metadata } = item
@@ -388,6 +388,7 @@ export const setAvailableRules = (control, result) => {
                     control.active = null
                 }
             })
+            control.availableData = placementRules
         }
     } else {
         control.isLoading = loading
@@ -457,7 +458,7 @@ export const updateNewRuleControlsData = (selectedPR, control) => {
     const localClusterControl = _.get(control, localClusterCheckbox)
 
     if (selectedPR) {
-        const clusterConditionsList = _.get(selectedPR, 'raw.spec.clusterConditions', [])
+        const clusterConditionsList = _.get(selectedPR, 'spec.clusterConditions', [])
         const localClusterData = clusterConditionsList.filter(
             (rule) =>
                 _.get(rule, 'status', '').toLowerCase() === 'true' &&
@@ -472,7 +473,7 @@ export const updateNewRuleControlsData = (selectedPR, control) => {
             _.set(onlineControl, 'type', 'hidden')
         }
 
-        const clusterSelectorData = _.get(selectedPR, 'raw.spec.clusterSelector.matchLabels', null)
+        const clusterSelectorData = _.get(selectedPR, 'spec.clusterSelector.matchLabels', null)
 
         clusterSelectorData !== null
             ? _.set(clusterSelectorControl, 'type', 'custom')
