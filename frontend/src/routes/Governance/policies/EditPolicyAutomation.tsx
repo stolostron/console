@@ -131,8 +131,9 @@ export function EditPolicyAutomation() {
                                 labels: {
                                     'cluster.open-cluster-management.io/type': 'ans',
                                     'cluster.open-cluster-management.io/copiedFromNamespace':
-                                        resource.metadata.namespace!,
-                                    'cluster.open-cluster-management.io/copiedFromSecretName': resource.metadata.name!,
+                                        credToCopy[0].metadata.namespace!,
+                                    'cluster.open-cluster-management.io/copiedFromSecretName':
+                                        credToCopy[0].metadata.name!,
                                 },
                             },
                         })
