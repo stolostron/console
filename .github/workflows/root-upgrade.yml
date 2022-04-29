@@ -2,7 +2,7 @@ name: Root Upgrade
 on:
     workflow_dispatch:
     schedule:
-        - cron: '0 12 * * 1'
+        - cron: '0 12 * * 0'
 jobs:
     npm-check-updates:
         if: (github.event_name == 'schedule' && github.repository == 'stolostron/console') || (github.event_name != 'schedule')
