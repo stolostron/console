@@ -4,6 +4,7 @@ import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
@@ -45,13 +46,18 @@ import { DeleteResourceModal, IDeleteResourceModalProps } from './components/Del
 import ResourceLabels from './components/ResourceLabels'
 import { argoAppSetQueryString, subscriptionAppQueryString } from './CreateApplication/actions'
 import {
-    createClustersText,
     getAge,
     getAppChildResources,
     getAppSetRelatedResources,
+    getClusterCount,
+    getClusterCountField,
+    getClusterCountSearchLink,
+    getClusterCountString,
+    getClusterList,
     getSearchLink,
     getSubscriptionsFromAnnotation,
     hostingSubAnnotationStr,
+    isArgoApp,
     isResourceTypeOf,
 } from './helpers/resource-helper'
 
@@ -61,18 +67,19 @@ const localSubSuffixStr = '-local'
 const localClusterStr = 'local-cluster'
 
 // Map resource kind to type column
-function getResourceType(resource: IResource) {
+function getApplicationType(resource: IResource, t: TFunction) {
     if (resource.apiVersion === ApplicationApiVersion) {
         if (resource.kind === ApplicationKind) {
             return 'Subscription'
         }
     } else if (resource.apiVersion === ArgoApplicationApiVersion) {
         if (resource.kind === ArgoApplicationKind) {
-            return 'Discovered'
+            return t('Discovered')
         } else if (resource.kind === ApplicationSetKind) {
             return 'ApplicationSet'
         }
     }
+    return '-'
 }
 
 export function getAppSetApps(argoApps: IResource[], appSetName: string) {
@@ -240,20 +247,16 @@ export default function ApplicationsOverview() {
     const generateTransformData = useCallback(
         (tableItem: IResource) => {
             // Cluster column
-            const clusterCount: any = {
-                localPlacement: false,
-                remoteCount: 0,
-            }
-            const clusterTransformData = createClustersText({
-                resource: tableItem,
-                clusterCount,
-                clusterList: [],
+            const clusterList = getClusterList(
+                tableItem,
                 argoApplications,
                 placementRules,
                 subscriptions,
                 localCluster,
-                managedClusters,
-            })
+                managedClusters
+            )
+            const clusterCount = getClusterCount(clusterList)
+            const clusterTransformData = getClusterCountString(t, clusterCount, clusterList, tableItem)
 
             // Resource column
             const resourceMap: { [key: string]: string } = {}
@@ -281,7 +284,7 @@ export default function ApplicationsOverview() {
             // Cannot add properties directly to objects in typescript
             return { ...tableItem, ...transformedObject }
         },
-        [argoApplications, channels, getTimeWindow, localCluster, managedClusters, placementRules, subscriptions]
+        [argoApplications, channels, getTimeWindow, localCluster, managedClusters, placementRules, subscriptions, t]
     )
 
     // Combine all application types
@@ -393,7 +396,7 @@ export default function ApplicationsOverview() {
             },
             {
                 header: t('Type'),
-                cell: (resource) => <span>{getResourceType(resource)}</span>,
+                cell: (resource) => <span>{getApplicationType(resource, t)}</span>,
                 sort: 'kind',
                 tooltip: () => (
                     <span>
@@ -433,49 +436,18 @@ export default function ApplicationsOverview() {
             {
                 header: t('Clusters'),
                 cell: (resource) => {
-                    const clusterCount = {
-                        localPlacement: false,
-                        remoteCount: 0,
-                    }
-                    const clusterList: string[] = []
-
-                    const clusterCountString = createClustersText({
-                        resource: resource,
-                        clusterCount,
-                        clusterList: clusterList,
+                    const clusterList = getClusterList(
+                        resource,
                         argoApplications,
                         placementRules,
                         subscriptions,
                         localCluster,
-                        managedClusters,
-                    })
-                    const searchParams: any =
-                        resource.kind === ApplicationKind && resource.apiVersion === ApplicationApiVersion
-                            ? {
-                                  properties: {
-                                      apigroup: 'app.k8s.io',
-                                      kind: 'application',
-                                      name: resource.metadata?.name,
-                                      namespace: resource.metadata?.namespace,
-                                  },
-                                  showRelated: 'cluster',
-                              }
-                            : {
-                                  properties: {
-                                      name: clusterList,
-                                      kind: 'cluster',
-                                  },
-                              }
-                    const searchLink = getSearchLink(searchParams)
-
-                    if (clusterCount.remoteCount && clusterCountString !== 'None') {
-                        return (
-                            <a className="cluster-count-link" href={searchLink}>
-                                {clusterCountString}
-                            </a>
-                        )
-                    }
-                    return clusterCountString
+                        managedClusters
+                    )
+                    const clusterCount = getClusterCount(clusterList)
+                    const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
+                    const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
+                    return getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink)
                 },
                 tooltip: t(
                     'Displays the number of remote and local clusters where resources for the application are deployed. For an individual Argo application, the name of the destination cluster is displayed. Click to search for all related clusters.'
@@ -491,10 +463,7 @@ export default function ApplicationsOverview() {
                         <ResourceLabels
                             appRepos={appRepos!}
                             showSubscriptionAttributes={true}
-                            isArgoApp={
-                                getResourceType(resource) === 'Discovered' ||
-                                getResourceType(resource) === 'ApplicationSet'
-                            }
+                            isArgoApp={isArgoApp(resource) || isResourceTypeOf(resource, ApplicationSetDefinition)}
                             translation={t}
                         />
                     )

@@ -4,13 +4,13 @@ import { TFunction } from 'i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
 import queryString from 'query-string'
+import { Link } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     Application,
-    ApplicationKind,
     ApplicationSet,
-    ApplicationSetKind,
     ArgoApplication,
+    ArgoApplicationDefinition,
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
@@ -23,6 +23,8 @@ import {
     Subscription,
     SubscriptionApiVersion,
     SubscriptionKind,
+    ApplicationSetDefinition,
+    ApplicationDefinition,
 } from '../../../resources'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getAnnotation } from '../Overview'
@@ -51,33 +53,108 @@ export function getSubscriptionsFromAnnotation(app: IResource) {
     return subAnnotation !== undefined ? subAnnotation.split(',') : []
 }
 
-const calculateClusterCount = (
-    resource: ArgoApplication,
-    clusterCount: any,
-    clusterList: string[],
+export type ClusterCount = {
+    remoteCount: number
+    localPlacement: boolean
+}
+
+const getArgoClusterList = (
+    resources: ArgoApplication[],
     localCluster: Cluster | undefined,
     managedClusters: Cluster[]
 ) => {
-    const isRemoteArgoApp = resource.status.cluster ? true : false
+    const clusterSet = new Set<string>()
 
-    if (
-        (resource.spec.destination?.name === 'in-cluster' ||
-            resource.spec.destination?.name === localClusterStr ||
-            isLocalClusterURL(resource.spec.destination?.server || '', localCluster)) &&
-        !isRemoteArgoApp
-    ) {
-        clusterCount.localPlacement = true
-        clusterList.push(localClusterStr)
-    } else {
-        clusterCount.remoteCount++
-        if (isRemoteArgoApp) {
-            clusterList.push(
-                getArgoDestinationCluster(resource.spec.destination, managedClusters, resource.status.cluster)
-            )
+    resources.forEach((resource) => {
+        const isRemoteArgoApp = resource.status.cluster ? true : false
+
+        if (
+            (resource.spec.destination?.name === 'in-cluster' ||
+                resource.spec.destination?.name === localClusterStr ||
+                isLocalClusterURL(resource.spec.destination?.server || '', localCluster)) &&
+            !isRemoteArgoApp
+        ) {
+            clusterSet.add(localClusterStr)
         } else {
-            clusterList.push(getArgoDestinationCluster(resource.spec.destination, managedClusters))
+            if (isRemoteArgoApp) {
+                clusterSet.add(
+                    getArgoDestinationCluster(resource.spec.destination, managedClusters, resource.status.cluster)
+                )
+            } else {
+                clusterSet.add(getArgoDestinationCluster(resource.spec.destination, managedClusters))
+            }
         }
+    })
+
+    return Array.from(clusterSet)
+}
+
+const getSubscriptionsClusterList = (
+    resource: Application,
+    placementRules: PlacementRule[],
+    subscriptions: Subscription[]
+) => {
+    const subAnnotationArray = getSubscriptionsFromAnnotation(resource)
+    const clusterSet = new Set<string>()
+
+    for (const sa of subAnnotationArray) {
+        if (
+            _.endsWith(sa, localSubSuffixStr) &&
+            _.indexOf(subAnnotationArray, _.trimEnd(sa, localSubSuffixStr)) !== -1
+        ) {
+            // skip local sub
+            continue
+        }
+
+        const subDetails = sa.split('/')
+
+        subscriptions.forEach((sub) => {
+            if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
+                const placementRef = sub.spec.placement?.placementRef
+                if (placementRef) {
+                    const placement = placementRules.find((rule) => rule.metadata.name === placementRef.name)
+                    const decisions = placement?.status?.decisions
+
+                    if (decisions) {
+                        decisions.forEach((cluster) => {
+                            clusterSet.add(cluster.clusterName)
+                        })
+                    }
+                }
+            }
+        })
     }
+    return Array.from(clusterSet)
+}
+
+export const getClusterList = (
+    resource: IResource,
+    argoApplications: ArgoApplication[],
+    placementRules: PlacementRule[],
+    subscriptions: Subscription[],
+    localCluster: Cluster | undefined,
+    managedClusters: Cluster[]
+) => {
+    if (isResourceTypeOf(resource, ArgoApplicationDefinition)) {
+        return getArgoClusterList([resource as ArgoApplication], localCluster, managedClusters)
+    } else if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
+        return getArgoClusterList(
+            argoApplications.filter(
+                (app) =>
+                    app.metadata?.ownerReferences && app.metadata.ownerReferences[0].name === resource.metadata?.name
+            ),
+            localCluster,
+            managedClusters
+        )
+    } else if (isResourceTypeOf(resource, ApplicationDefinition)) {
+        return getSubscriptionsClusterList(resource as Application, placementRules, subscriptions)
+    }
+    return [] as string[]
+}
+
+export const getClusterCount = (clusterList: string[]): ClusterCount => {
+    const localPlacement = clusterList.includes(localClusterStr)
+    return { localPlacement, remoteCount: clusterList.length - (localPlacement ? 1 : 0) }
 }
 
 // Check if server URL matches hub URL
@@ -93,90 +170,16 @@ function isLocalClusterURL(url: string, localCluster: Cluster | undefined) {
 
     try {
         argoServerURL = new URL(url)
-    } catch (_) {
+    } catch (_err) {
         return false
     }
 
-    const hostnameWithOutAPI = argoServerURL.hostname.substr(argoServerURL.hostname.indexOf('api.') + 4)
+    const hostnameWithOutAPI = argoServerURL.hostname.substring(argoServerURL.hostname.indexOf('api.') + 4)
 
     if (localClusterURL.host.indexOf(hostnameWithOutAPI) > -1) {
         return true
     }
     return false
-}
-
-export const createClustersText = (props: {
-    resource: IResource
-    clusterCount: any
-    clusterList: string[]
-    argoApplications: ArgoApplication[]
-    placementRules: PlacementRule[]
-    subscriptions: Subscription[]
-    localCluster: Cluster | undefined
-    managedClusters: Cluster[]
-}) => {
-    const { resource, clusterCount, clusterList, argoApplications, placementRules, subscriptions, localCluster } = props
-    if (resource.kind === ApplicationSetKind) {
-        argoApplications!.forEach((app) => {
-            if (app.metadata?.ownerReferences) {
-                if (app.metadata.ownerReferences[0].name === resource.metadata?.name) {
-                    calculateClusterCount(app, clusterCount, clusterList, localCluster, props.managedClusters)
-                }
-            }
-        })
-    }
-
-    if (isArgoApp(resource)) {
-        calculateClusterCount(
-            resource as ArgoApplication,
-            clusterCount,
-            clusterList,
-            localCluster,
-            props.managedClusters
-        )
-    }
-
-    if (resource.kind === ApplicationKind) {
-        const subAnnotationArray = getSubscriptionsFromAnnotation(resource)
-
-        for (let i = 0; i < subAnnotationArray.length; i++) {
-            if (
-                _.endsWith(subAnnotationArray[i], localSubSuffixStr) &&
-                _.indexOf(subAnnotationArray, _.trimEnd(subAnnotationArray[i], localSubSuffixStr)) !== -1
-            ) {
-                // skip local sub
-                continue
-            }
-            const subDetails = subAnnotationArray[i].split('/')
-
-            subscriptions.forEach((sub) => {
-                if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
-                    const placementRef = sub.spec.placement?.placementRef
-
-                    if (placementRef) {
-                        const placement = placementRules.find((rule) => rule.metadata.name === placementRef.name)
-                        const decisions = placement?.status?.decisions
-
-                        if (decisions) {
-                            decisions.forEach((cluster) => {
-                                if (cluster.clusterName === localClusterStr) {
-                                    clusterCount.localPlacement = true
-                                } else {
-                                    clusterCount.remoteCount++
-                                }
-                            })
-                        }
-                    }
-                }
-            })
-        }
-    }
-
-    return isArgoApp(resource)
-        ? clusterList.length > 0
-            ? clusterList[0]
-            : 'None'
-        : getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
 }
 
 export const normalizeRepoType = (type: string) => {
@@ -186,17 +189,64 @@ export const normalizeRepoType = (type: string) => {
 
 export const groupByRepoType = (repos: any) => _.groupBy(repos, (repo) => normalizeRepoType(repo.type))
 
-export function getClusterCountString(remoteCount: number, localPlacement: boolean) {
-    if (remoteCount) {
-        return localPlacement ? `${remoteCount} Remote, 1 Local` : `${remoteCount} Remote`
-    } else if (localPlacement) {
-        return 'Local'
+export function getClusterCountString(
+    t: TFunction,
+    clusterCount: ClusterCount,
+    clusterList?: string[],
+    resource?: IResource
+) {
+    if (resource && isArgoApp(resource)) {
+        return clusterList?.length ? clusterList[0] : t('None')
+    } else if (clusterCount.remoteCount && clusterCount.localPlacement) {
+        return t('{{remoteCount}} Remote, 1 Local', { remoteCount: clusterCount.remoteCount })
+    } else if (clusterCount.remoteCount) {
+        return t('{{remoteCount}} Remote', { remoteCount: clusterCount.remoteCount })
+    } else if (clusterCount.localPlacement) {
+        return t('Local')
     } else {
-        return 'None'
+        return t('None')
     }
 }
 
-export function getResourceType(type: String, t: (arg: String) => String) {
+export function getClusterCountSearchLink(resource: IResource, clusterCount: ClusterCount, clusterList?: string[]) {
+    if ((isArgoApp(resource) && !clusterList?.length) || (!clusterCount.remoteCount && !clusterCount.localPlacement)) {
+        return undefined
+    }
+    return getSearchLink(
+        isResourceTypeOf(resource, ApplicationDefinition)
+            ? {
+                  properties: {
+                      apigroup: 'app.k8s.io',
+                      kind: 'application',
+                      name: resource.metadata?.name,
+                      namespace: resource.metadata?.namespace,
+                  },
+                  showRelated: 'cluster',
+              }
+            : {
+                  properties: {
+                      name: clusterList,
+                      kind: 'cluster',
+                  },
+              }
+    )
+}
+
+export function getClusterCountField(
+    clusterCount: ClusterCount,
+    clusterCountString: string,
+    clusterCountSearchLink?: string
+) {
+    return clusterCountSearchLink && clusterCount.remoteCount ? (
+        <Link className="cluster-count-link" to={clusterCountSearchLink}>
+            {clusterCountString}
+        </Link>
+    ) : (
+        clusterCountString
+    )
+}
+
+export function getResourceType(type: string, t: TFunction) {
     switch (type) {
         case 'github':
             return t('Git')
@@ -209,7 +259,7 @@ export function getResourceType(type: String, t: (arg: String) => String) {
         case 'objectbucket':
             return t('Object storage')
         default:
-            break
+            return '-'
     }
 }
 
@@ -318,8 +368,8 @@ export const getAppSetRelatedResources = (appSet: IResource, applicationSets: Ap
             item.metadata.name !== appSet.metadata?.name ||
             (item.metadata.name === appSet.metadata?.name && item.metadata.namespace !== appSet.metadata?.namespace)
         ) {
-            if (appSetPlacement && appSetPlacement === currentAppSetPlacement) {
-                appSetsSharingPlacement.push(item.metadata.name!)
+            if (appSetPlacement && appSetPlacement === currentAppSetPlacement && item.metadata.name) {
+                appSetsSharingPlacement.push(item.metadata.name)
             }
         }
     })
@@ -340,34 +390,32 @@ export const getAppChildResources = (
     const sharedChildren: any[] = []
     const rules: any[] = []
 
-    for (let i = 0; i < subAnnotationArray.length; i++) {
-        const related: IResource[] = []
+    for (const sa of subAnnotationArray) {
         const siblingApps: string[] = []
         const subChildResources: string[] = []
         if (
-            _.endsWith(subAnnotationArray[i], localSubSuffixStr) &&
-            _.indexOf(subAnnotationArray, _.trimEnd(subAnnotationArray[i], localSubSuffixStr)) !== -1
+            _.endsWith(sa, localSubSuffixStr) &&
+            _.indexOf(subAnnotationArray, _.trimEnd(sa, localSubSuffixStr)) !== -1
         ) {
             // skip local sub
             continue
         }
-        const subDetails = subAnnotationArray[i].split('/')
+        const subDetails = sa.split('/')
 
         // Find apps sharing the same sub
         applications.forEach((item) => {
             if (item.metadata.uid !== app.metadata?.uid && item.metadata.namespace === app.metadata?.namespace) {
                 if (
+                    item.metadata.name &&
                     item.metadata.annotations &&
                     item.metadata.annotations[subAnnotationStr] &&
-                    item.metadata.annotations[subAnnotationStr].split(',').find((sub) => sub === subAnnotationArray[i])
+                    item.metadata.annotations[subAnnotationStr].split(',').find((sub) => sub === sa)
                 ) {
-                    siblingApps.push(item.metadata.name!)
-                    related.push(item)
+                    siblingApps.push(item.metadata.name)
                 }
                 const appHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
 
-                if (appHostingSubAnnotation && appHostingSubAnnotation.indexOf(subAnnotationArray[i]) > -1) {
-                    related.push(item)
+                if (appHostingSubAnnotation && appHostingSubAnnotation.indexOf(sa) > -1) {
                     subChildResources.push(`${item.metadata.name} [${item.kind}]`)
                 }
             }
@@ -385,10 +433,9 @@ export const getAppChildResources = (
 
                 if (
                     subHostingSubAnnotation &&
-                    subHostingSubAnnotation.indexOf(subAnnotationArray[i]) > -1 &&
+                    subHostingSubAnnotation.indexOf(sa) > -1 &&
                     !(subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith(localClusterStr))
                 ) {
-                    related.push(item)
                     subChildResources.push(`${item.metadata.name} [${item.kind}]`)
                 }
             } else if (item.metadata.name === subDetails[1] && item.metadata.namespace === subDetails[0]) {
@@ -401,12 +448,11 @@ export const getAppChildResources = (
         const referencedPR = currentSub ? (currentSub as Subscription).spec.placement?.placementRef : undefined
         placementRules.forEach((item) => {
             if (referencedPR && referencedPR.name === item.metadata.name) {
-                related.push(item)
                 subWithPR = { ...currentSub, rule: item }
             }
             const prHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
 
-            if (prHostingSubAnnotation && prHostingSubAnnotation.indexOf(subAnnotationArray[i]) > -1) {
+            if (prHostingSubAnnotation && prHostingSubAnnotation.indexOf(sa) > -1) {
                 subChildResources.push(`${item.metadata.name} [${item.kind}]`)
             }
         })
@@ -415,7 +461,7 @@ export const getAppChildResources = (
         channels.forEach((item) => {
             const channelHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
 
-            if (channelHostingSubAnnotation && channelHostingSubAnnotation === subAnnotationArray[i]) {
+            if (channelHostingSubAnnotation && channelHostingSubAnnotation === sa) {
                 subChildResources.push(`${item.metadata.name} [${item.kind}]`)
             }
         })
@@ -458,8 +504,8 @@ export const getAppChildResources = (
     // Find subs sharing the PR
     rules.forEach((rule) => {
         const siblingSubs: string[] = []
-        for (let i = 0; i < subscriptions.length; i++) {
-            const item = subscriptions[i]
+        for (const sub of subscriptions) {
+            const item = sub
             const subHostingDeployableAnnotation = getAnnotation(item, hostingDeployableAnnotationStr)
 
             if (subHostingDeployableAnnotation && subHostingDeployableAnnotation.startsWith(localClusterStr)) {
@@ -470,9 +516,10 @@ export const getAppChildResources = (
             if (
                 foundSub === undefined &&
                 item.spec.placement?.placementRef?.name === rule.name &&
-                item.metadata.namespace === rule.namespace
+                item.metadata.namespace === rule.namespace &&
+                item.metadata.name
             ) {
-                siblingSubs.push(item.metadata.name!)
+                siblingSubs.push(item.metadata.name)
             }
         }
 

@@ -47,7 +47,7 @@ import {
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { ToggleSelector } from './components/ToggleSelector'
-import { getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
+import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
 
 export default function AdvancedConfiguration() {
     const { t } = useTranslation()
@@ -108,7 +108,7 @@ export default function AdvancedConfiguration() {
     const getSubscriptionClusterCount = useCallback(
         function getSubscriptionClusterCount(
             resource: IResource,
-            clusterCount: { localPlacement: boolean; remoteCount: number },
+            clusterCount: ClusterCount,
             showSearchLink?: boolean
         ) {
             const namespace = _.get(resource, 'metadata.namespace')
@@ -137,14 +137,14 @@ export default function AdvancedConfiguration() {
                         })
                         return (
                             <Link style={{ color: '#0066cc' }} to={searchLink}>
-                                {getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)}
+                                {getClusterCountString(t, clusterCount)}
                             </Link>
                         )
                     }
                 }
             }
         },
-        [placementrules]
+        [placementrules, t]
     )
 
     // Cache cell text for sorting and searching
@@ -178,7 +178,7 @@ export default function AdvancedConfiguration() {
                     })
                 }
 
-                const clusterCountString = getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                const clusterCountString = getClusterCountString(t, clusterCount)
                 _.set(transformedObject.transformed, 'subscriptionCount', subscriptionCount)
                 _.set(transformedObject.transformed, 'clusterCount', clusterCountString)
                 break
@@ -205,7 +205,7 @@ export default function AdvancedConfiguration() {
                     })
 
                     getSubscriptionClusterCount(tableItem, clusterCount, true)
-                    const clusterString = getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                    const clusterString = getClusterCountString(t, clusterCount)
                     _.set(transformedObject.transformed, 'clusterCount', clusterString)
                     _.set(transformedObject.transformed, 'appCount', appCount)
                 }
@@ -213,7 +213,7 @@ export default function AdvancedConfiguration() {
             }
             case 'PlacementRule': {
                 clusterCount = getPlacementruleClusterCount(tableItem, clusterCount)
-                const clusterString = getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                const clusterString = getClusterCountString(t, clusterCount)
                 _.set(transformedObject.transformed, 'clusterCount', clusterString)
                 break
             }
@@ -425,7 +425,7 @@ export default function AdvancedConfiguration() {
                                 return remoteContext
                             }
 
-                            return getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                            return getClusterCountString(t, clusterCount)
                         },
                         sort: 'transformed.clusterCount',
                         tooltip:
@@ -717,10 +717,7 @@ export default function AdvancedConfiguration() {
         )
     }
 
-    function getPlacementruleClusterCount(
-        resource: IResource,
-        clusterCount: { localPlacement: boolean; remoteCount: number }
-    ) {
+    function getPlacementruleClusterCount(resource: IResource, clusterCount: ClusterCount) {
         const clusterDecisions = _.get(resource, 'status.decisions')
         if (clusterDecisions) {
             clusterDecisions.forEach((clusterDecision: { clusterName: string; clusterNamespace: string }) => {
