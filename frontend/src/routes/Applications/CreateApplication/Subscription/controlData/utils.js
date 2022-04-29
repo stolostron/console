@@ -11,14 +11,14 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
+import _ from 'lodash'
 import {
-    listChannels,
-    listProviderConnections,
     getGitChannelBranches,
     getGitChannelPaths,
+    listChannels,
+    listProviderConnections,
 } from '../../../../../resources'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
-import _ from 'lodash'
 
 const onlineClustersCheckbox = 'online-cluster-only-checkbox'
 const existingRuleCheckbox = 'existingrule-checkbox'
@@ -317,7 +317,7 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
             setLoadingState(githubPathCtrl, true)
             getGitChannelPaths(gitUrl, branchName, { secretRef, namespace }, { user, accessToken }).then(
                 (result) => {
-                    githubPathCtrl.available = result.sort()
+                    githubPathCtrl.available = result?.sort()
                     setLoadingState(githubPathCtrl, false)
                 },
                 () => {
