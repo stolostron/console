@@ -26,7 +26,7 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     syncs?: unknown
     readonly?: boolean
     onClose?: () => void
-    onStateChange?: (editorState: any) => void
+    onStatusChange?: (editorState: any) => void
     onEditorChange?: (editorResources: any) => void
 }
 
@@ -42,7 +42,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         syncs,
         filters,
         readonly,
-        onStateChange,
+        onStatusChange,
         onEditorChange,
         onClose,
     } = props
@@ -57,8 +57,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const [prohibited, setProhibited] = useState<any>([])
     const [filteredRows, setFilteredRows] = useState<number[]>([])
     const [userEdits, setUserEdits] = useState<any>([])
-    const [reportChanges, setReportChanges] = useState<{
-        changes: any[]
+    const [resourceChanges, setResourceChanges] = useState<{
         unredactedChange: {
             yaml: string
             mappings: { [name: string]: any[] }
@@ -67,15 +66,19 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             hiddenSecretsValues: any[]
             hiddenFilteredValues: any[]
         }
+    }>()
+    const [statusChanges, setStatusChanges] = useState<{
+        changes: any[]
+        errors: any[]
         redactedChange: {
             mappings: { [name: string]: any[] }
             parsed: { [name: string]: any[] }
             resources: any[]
         }
-        errors: any[]
     }>()
     const [lastUserEdits, setLastUserEdits] = useState<any>([])
     const [squigglyTooltips, setSquigglyTooltips] = useState<any>([])
+    const [customYaml, setCustomYaml] = useState<string>()
     const [lastChange, setLastChange] = useState<ProcessedType>()
     const [lastUnredactedChange, setLastUnredactedChange] = useState<ProcessedType>()
     const [lastFormComparison, setLastFormComparison] = useState<{
@@ -266,6 +269,17 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     useEffect(() => {
         // debounce changes from form
         const formChange = () => {
+            // if form hasn't caught up with user edits, ignore this change
+            const caughtUp = !customYaml || !editorRef.current.customYaml || editorRef.current.customYaml === customYaml
+            if (!caughtUp) {
+                return
+            }
+            setCustomYaml(undefined)
+            // if editor has errors and still has focus, ignore form changes
+            // as soon as form has focus it will fix all errors like an auto correct
+            if (editorHasFocus && editorRef.current.customSyntaxErrors) {
+                return
+            }
             // parse/validate/secrets
             const {
                 yaml,
@@ -291,8 +305,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             setFilteredRows(filteredRows)
             setLastUnredactedChange(unredactedChange)
 
+            const allErrors = [...errors.validation, ...errors.syntax]
             const { yamlChanges, remainingEdits } = getFormChanges(
-                errors,
+                allErrors,
                 change,
                 userEdits,
                 formComparison,
@@ -303,7 +318,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             // only update yaml in editor if it changed syntactically changed
             // allows user to add spaces without this wiping them out
             const model = editorRef.current?.getModel()
-            if (!isEqual(model.resources, change.resources)) {
+            if (!isEqual(model.resources, change.resources) || editorRef.current.customSyntaxErrors) {
+                editorRef.current.customSyntaxErrors = false
                 model.resources = cloneDeep(change.resources)
                 const saveDecorations = getResourceEditorDecorations(editorRef)
                 const viewState = editorRef.current?.saveViewState()
@@ -314,24 +330,21 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 setHasUndo(false)
             }
 
-            // if there were remaining edits, report to form the new and custom changes
+            // if there were remaining edits, report to form
             if (remainingEdits.length !== lastUserEdits.length) {
-                setReportChanges(
-                    cloneDeep({ changes: remainingEdits, unredactedChange, redactedChange: change, errors, form: true })
-                )
+                setStatusChanges(cloneDeep({ changes: remainingEdits, redactedChange: change, errors: allErrors }))
             }
 
             // user edits that haven't been incorporated into form
             setLastUserEdits(remainingEdits)
 
             // decorate errors, changes
-            //if (remainingEdits.length > 0 || yamlChanges.length > 1) {
             const squigglyTooltips = decorate(
                 false,
                 editorHasFocus,
                 editorRef,
                 monacoRef,
-                errors,
+                allErrors,
                 yamlChanges,
                 change,
                 remainingEdits,
@@ -339,7 +352,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 filteredRows
             )
             setSquigglyTooltips(squigglyTooltips)
-            //}
             setLastFormComparison(formComparison)
             setLastChange(change)
             setUserEdits(remainingEdits)
@@ -363,6 +375,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     }, [
         JSON.stringify(resources),
         code,
+        customYaml,
         showSecrets,
         showFiltered,
         editorHasFocus,
@@ -399,8 +412,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
             // determine what changes were made by user so we can decorate
             // and know what form changes to block
+            const allErrors = [...errors.validation, ...errors.syntax]
             const changes = getUserChanges(
-                errors,
+                allErrors,
                 change,
                 lastUserEdits,
                 userComparison,
@@ -409,7 +423,12 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             )
 
             // report new resources/errors/useredits to form
-            setReportChanges(cloneDeep({ changes, unredactedChange, redactedChange: change, errors }))
+            // if there are validation errors still pass it to form
+            editorRef.current.customSyntaxErrors = allErrors.length > 0
+            if (errors.syntax.length === 0) {
+                setResourceChanges(cloneDeep({ unredactedChange }))
+            }
+            setStatusChanges(cloneDeep({ changes, redactedChange: change, errors: allErrors }))
 
             // decorate errors, changes
             const squigglyTooltips = decorate(
@@ -417,7 +436,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 editorHasFocus,
                 editorRef,
                 monacoRef,
-                errors,
+                allErrors,
                 [],
                 change,
                 lastUserEdits,
@@ -430,15 +449,14 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             //setLastChange(change)
 
             // set up a change stack that can be used to reconcile user changes typed here and if/when form changes occur
-            if (errors.length === 0) {
+            if (allErrors.length === 0) {
                 setChangeStack({
                     baseResources: changeStack?.baseResources ?? unredactedChange?.resources ?? [],
                     customResources: unredactedChange.resources,
                 })
             }
 
-            // undo/redo disable
-            //TODO when multiple editors set for each
+            // undo/redo enable
             const model = editorRef.current?.getModel()
             const editStacks = model?._undoRedoService._editStacks
             setHasRedo(editStacks?.values()?.next()?.value?.hasFutureElements())
@@ -457,44 +475,50 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         }
     }, [])
 
-    // report changes to form
+    const editorChange = useCallback(
+        (value, e) => {
+            editorRef.current.customYaml = value
+            debouncedEditorChange(value, e)
+        },
+        [debouncedEditorChange]
+    )
+
+    // report resource changes to form
     useEffect(() => {
-        // debounce report of changes to form
-        const changeTimeoutId = setTimeout(() => {
-            if (reportChanges) {
-                const { changes, unredactedChange, redactedChange, errors } = reportChanges
-                const editor = editorRef?.current
-                const monaco = monacoRef?.current
-                const isArr = Array.isArray(resources)
-                let _resources = isArr ? unredactedChange.resources : unredactedChange.resources[0]
+        if (resourceChanges) {
+            const { unredactedChange } = resourceChanges
+            const isArr = Array.isArray(resources)
+            let _resources = isArr ? unredactedChange.resources : unredactedChange.resources[0]
 
-                // if synceditor resources is different from form.wizard, report resources
-                if (errors.length === 0) {
-                    // if syncs defined, set values into form/wizard
-                    setFormValues(syncs, unredactedChange)
-                    _resources = isArr ? resources : [resources]
-                    if (onEditorChange && !isEqual(unredactedChange.resources, _resources)) {
-                        const editChanges = {
-                            resources: isArr ? unredactedChange.resources : unredactedChange.resources[0],
-                        }
-                        onEditorChange(editChanges)
-                    }
+            // if synceditor resources is different from form.wizard, report resources
+            // if syncs defined, set values into form/wizard
+            setFormValues(syncs, unredactedChange)
+            _resources = isArr ? resources : [resources]
+            if (onEditorChange && !isEqual(unredactedChange.resources, _resources)) {
+                const editChanges = {
+                    resources: isArr ? unredactedChange.resources : unredactedChange.resources[0],
                 }
-
-                // report just errors and user changes
-                if (onStateChange) {
-                    onStateChange({
-                        warnings: formatErrors(errors, true),
-                        errors: formatErrors(errors),
-                        changes: formatChanges(editor, monaco, changes, redactedChange, syncs),
-                    })
-                }
+                setCustomYaml(editorRef.current.customYaml)
+                onEditorChange(editChanges)
             }
-        }, 0)
-        return () => {
-            clearTimeout(changeTimeoutId)
         }
-    }, [reportChanges])
+    }, [resourceChanges])
+
+    // report errors/user edits to form
+    useEffect(() => {
+        if (statusChanges && onStatusChange) {
+            const { changes, errors, redactedChange } = statusChanges
+            const editor = editorRef?.current
+            const monaco = monacoRef?.current
+
+            // report just errors and user changes
+            onStatusChange({
+                warnings: formatErrors(errors, true),
+                errors: formatErrors(errors),
+                changes: formatChanges(editor, monaco, changes, redactedChange, syncs),
+            })
+        }
+    }, [statusChanges])
 
     const toolbarControls = useMemo(() => {
         return (
@@ -602,7 +626,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 isLineNumbersVisible={true}
                 isReadOnly={readonly}
                 isMinimapVisible={true}
-                onChange={debouncedEditorChange}
+                onChange={editorChange}
                 language={Language.yaml}
                 customControls={variant === 'toolbar' ? toolbarControls : undefined}
                 onEditorDidMount={onEditorDidMount}

@@ -62,26 +62,38 @@ export const processForm = (
         }
     }
 
-    // get initial parse errors
+    // get initial parse syntaxErrors
     let documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-    let errors = getErrors(documents)
+    let syntaxErrors = getErrors(documents)
     const { parsed, resources } = getMappings(documents)
 
     // save a version of parsed for change comparison later in decorations--in this case for form changes
     const comparison = cloneDeep(parsed)
 
     // reconcile form changes with user changes
-    if (errors.length === 0 && changeStack && userEdits) {
+    if (syntaxErrors.length === 0 && changeStack && userEdits) {
         const customResources = reconcile(changeStack, userEdits, resources)
         yaml = stringify(customResources)
         documents = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-        errors = getErrors(documents)
+        syntaxErrors = getErrors(documents)
     }
 
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, [], showFilters, filters, [], immutables, validators),
+        ...process(
+            monacoRef,
+            yaml,
+            documents,
+            syntaxErrors,
+            secrets,
+            [],
+            showFilters,
+            filters,
+            [],
+            immutables,
+            validators
+        ),
     }
 }
 
@@ -98,7 +110,7 @@ export const processUser = (
 ) => {
     // get yaml, documents, resource, mapped
     const documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-    const errors = getErrors(documents)
+    const syntaxErrors = getErrors(documents)
     const { parsed } = getMappings(documents)
 
     // save a version of parsed for change comparison later in decorations--in this case for user changes
@@ -111,7 +123,7 @@ export const processUser = (
             monacoRef,
             yaml,
             documents,
-            errors,
+            syntaxErrors,
             secrets,
             cachedSecrets,
             showFilters,
@@ -127,7 +139,7 @@ const process = (
     monacoRef: any,
     yaml: string,
     documents: any,
-    errors: any[],
+    syntaxErrors: any[],
     secrets: (string | string[])[] | undefined,
     cachedSecrets: CachedValuesType[] | undefined,
     showFilters: boolean,
@@ -151,7 +163,7 @@ const process = (
         }
     })
 
-    // if parse errors, use previous hidden secrets
+    // if parse syntaxErrors, use previous hidden secrets
     const hiddenSecretsValues: any[] = []
     const hiddenFilteredValues: any[] = []
     const unredactedChange = {
@@ -175,7 +187,7 @@ const process = (
             allSecrets.forEach(({ path }) => {
                 const value = get(parsed, path) as unknown as string
                 if (value && typeof value === 'string') {
-                    if (errors.length === 0) hiddenSecretsValues.push({ path: path, value })
+                    if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path: path, value })
                     set(parsed, path, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
                 }
             })
@@ -189,7 +201,7 @@ const process = (
                 allFiltered.forEach(({ path }) => {
                     const value = get(parsed, path) as unknown as string
                     if (value && typeof value === 'object') {
-                        if (errors.length === 0) hiddenFilteredValues.push({ path: path, value })
+                        if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path: path, value })
                         set(parsed, path, undefined)
                     }
                 })
@@ -230,16 +242,24 @@ const process = (
         })
     }
 
-    if (errors.length === 0 && validators) {
-        validate(validators, mappings, resources, errors)
+    const validationErrors: any[] = []
+    if (syntaxErrors.length === 0 && validators) {
+        validate(validators, mappings, resources, validationErrors)
     }
 
-    if (errors.length !== 0 && cachedSecrets && cacheFiltered) {
+    if (syntaxErrors.length !== 0 && validationErrors.length !== 0 && cachedSecrets && cacheFiltered) {
         unredactedChange.hiddenSecretsValues = cachedSecrets
         unredactedChange.hiddenFilteredValues = cacheFiltered
     }
 
-    return { yaml, protectedRanges, filteredRows, errors, change: { resources, mappings, parsed }, unredactedChange }
+    return {
+        yaml,
+        protectedRanges,
+        filteredRows,
+        errors: { syntax: syntaxErrors, validation: validationErrors },
+        change: { resources, mappings, parsed },
+        unredactedChange,
+    }
 }
 
 function getMappings(documents: any[]) {

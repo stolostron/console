@@ -209,7 +209,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                         onClose={(): void => {
                                             setDrawerExpanded(false)
                                         }}
-                                        onStateChange={(changes: { errors: any[]; changes: any[] }): void => {
+                                        onStatusChange={(changes: { errors: any[]; changes: any[] }): void => {
                                             setStateChanges(changes)
                                         }}
                                         onEditorChange={(changes: { resources: any[] }): void => {

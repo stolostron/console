@@ -151,8 +151,8 @@ export default function ImportClusterPage() {
                                     onClose={(): void => {
                                         setDrawerExpanded(false)
                                     }}
-                                    onStateChange={(stateChanges: SyncDiffType): void => {
-                                        setStateChanges(stateChanges)
+                                    onStatusChange={(statusChanges: SyncDiffType): void => {
+                                        setStateChanges(statusChanges)
                                     }}
                                     onEditorChange={(changes: { resources: any[] }): void => {
                                         setEditorChanges(changes)
