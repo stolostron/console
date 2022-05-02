@@ -112,8 +112,10 @@ export function AnsibleAutomationsForm(props: {
 
     const history = useHistory()
     const [editAnsibleJob, setEditAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
-    const [editAnsibleJobList, setEditAnsibleJobList] =
-        useState<{ jobs: ClusterCuratorAnsibleJob[]; setJobs: (jobs: ClusterCuratorAnsibleJob[]) => void }>()
+    const [editAnsibleJobList, setEditAnsibleJobList] = useState<{
+        jobs: ClusterCuratorAnsibleJob[]
+        setJobs: (jobs: ClusterCuratorAnsibleJob[]) => void
+    }>()
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
     const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
