@@ -9,6 +9,7 @@ import { MappingType } from './process'
 export interface ChangeType {
     $t: string // type of change (N, E)
     $u?: any // the value the user has changed it to
+    $y?: boolean // an element was added to the array at $p
     $f?: any // the previous value in the form when the user has edited
     $a: string | string[] // the path to the value in a mapped object
     $p: string | string[] // the path to the value in a parsed object
@@ -53,7 +54,7 @@ export const getFormChanges = (
                     return JSON.stringify(edit.$p)
                 })
                 remainingEdits = userEdits.filter((edit: ChangeType) => {
-                    const { $u, $p } = edit
+                    const { $u, $y, $p } = edit
                     const val = get(change.parsed, $p) as MappingType
                     // if there's no value at this path anymore, just filter out this user edit (may have deleted)
                     if (val !== undefined) {
@@ -64,7 +65,7 @@ export const getFormChanges = (
                             // user edit and form change conflict at this path, so delete form change
                             delete changeMap[key]
                             // if change equals the user edit, also delete the user edit
-                            if (isEqual($u, val) || (!$u && !val)) {
+                            if ((Array.isArray(val) && $y ? val.includes($u) : isEqual($u, val)) || (!$u && !val)) {
                                 return false
                             }
                         }
@@ -173,7 +174,7 @@ const getChanges = (
     const diffs = diff(lastComparison, comparison)
     if (diffs) {
         diffs.forEach((diff: any) => {
-            const { path, index, item, lhs, rhs } = diff
+            const { path, item, lhs, rhs } = diff
             let { kind } = diff
             if (path && path.length) {
                 let pathArr = getPathArray(path)
@@ -193,11 +194,6 @@ const getChanges = (
                             }
                             case 'A': {
                                 switch (item.kind) {
-                                    case 'N':
-                                        // convert new array item to new range
-                                        kind = 'N'
-                                        obj = obj.$v[index].$r ? obj.$v[index] : obj
-                                        break
                                     case 'D':
                                         // if array delete, ignore any other edits within array
                                         // edits are just the comparison of other array items
@@ -230,6 +226,29 @@ const getChanges = (
 
                     let chng: ChangeType
                     switch (kind) {
+                        case 'A': {
+                            if (item.kind === 'N') {
+                                chng = { $t: 'N', $a: pathArr, $p: path }
+                                if (isCustomEdit) {
+                                    chng.$u = item.rhs
+                                    chng.$f = 'new'
+                                    chng.$y = true
+                                } else {
+                                    if (Array.isArray(obj.$v)) {
+                                        obj.$v.some((itm: { $v: any; rhs: any; $k: any }) => {
+                                            if (itm.$v === item.rhs) {
+                                                chng.$a = [...pathArr, '$v', itm.$k]
+                                                chng.$p = [...path, itm.$k]
+                                                return true
+                                            }
+                                            return false
+                                        })
+                                    }
+                                }
+                                changes.push(chng)
+                            }
+                            break
+                        }
                         case 'E': {
                             // edited
                             if ((obj.$v || obj.$v === false) && rhs !== undefined) {

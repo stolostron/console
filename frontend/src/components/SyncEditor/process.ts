@@ -244,7 +244,7 @@ const process = (
 
     const validationErrors: any[] = []
     if (syntaxErrors.length === 0 && validators) {
-        validate(validators, mappings, resources, validationErrors)
+        validate(validators, mappings, resources, validationErrors, syntaxErrors)
     }
 
     if (syntaxErrors.length !== 0 && validationErrors.length !== 0 && cachedSecrets && cacheFiltered) {
