@@ -1,16 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Alert } from '@patternfly/react-core'
 import { TableComposable, Tbody, Tr, Td } from '@patternfly/react-table'
 import { diffChars } from 'diff'
 import './SyncDiff.css'
 
 export interface SyncDiffType {
     changes: any[]
-    resources: any[]
+    errors: any[]
+    warnings: any[]
 }
 
-export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: string }): JSX.Element {
-    const { editorChanges } = props
+export function SyncDiff(props: { stateChanges: SyncDiffType; errorMessage: string }): JSX.Element {
+    const { stateChanges, errorMessage } = props
 
     const ellipse = (str: string) => {
         if (str.length > 32) {
@@ -126,19 +128,23 @@ export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: str
 
     return (
         <div className="sync-diff__container">
-            <TableComposable className="diff-table" aria-label="Editor changes" variant={'compact'} borders={false}>
-                <Tbody>
-                    {editorChanges?.changes?.map((change, rowIndex) => {
-                        const { type, previous, latest, line, path, reveal } = change
-                        switch (type) {
-                            case 'N':
-                                return diffNew(latest, line, rowIndex, reveal)
-                            default:
-                                return diffEdit(previous, latest, path, line, rowIndex, reveal)
-                        }
-                    })}
-                </Tbody>
-            </TableComposable>
+            {stateChanges?.errors?.length ? (
+                <Alert isInline={true} title={errorMessage} variant={'danger'} />
+            ) : (
+                <TableComposable className="diff-table" aria-label="Editor changes" variant={'compact'} borders={false}>
+                    <Tbody>
+                        {stateChanges?.changes?.map((change, rowIndex) => {
+                            const { type, previous, latest, line, path, reveal } = change
+                            switch (type) {
+                                case 'N':
+                                    return diffNew(latest, line, rowIndex, reveal)
+                                default:
+                                    return diffEdit(previous, latest, path, line, rowIndex, reveal)
+                            }
+                        })}
+                    </Tbody>
+                </TableComposable>
+            )}
         </div>
     )
 }

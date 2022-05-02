@@ -8,7 +8,7 @@ import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from
 import { ClipboardCopyButton } from '@patternfly/react-core'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
 import { processForm, processUser, ProcessedType } from './process'
-import { compileAjvSchemas } from './validation'
+import { compileAjvSchemas, formatErrors } from './validation'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
 import { setFormValues } from './synchronize'
@@ -26,6 +26,7 @@ export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
     syncs?: unknown
     readonly?: boolean
     onClose?: () => void
+    onStateChange?: (editorState: any) => void
     onEditorChange?: (editorResources: any) => void
 }
 
@@ -41,6 +42,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         syncs,
         filters,
         readonly,
+        onStateChange,
         onEditorChange,
         onClose,
     } = props
@@ -285,7 +287,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 userEdits,
                 validationRef.current
             )
-            console.log('🚀 ~ file: SyncEditor.tsx ~ line 344 ~ formChange ~ resources', resources)
             setProhibited(protectedRanges)
             setFilteredRows(filteredRows)
             setLastUnredactedChange(unredactedChange)
@@ -327,6 +328,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             //if (remainingEdits.length > 0 || yamlChanges.length > 1) {
             const squigglyTooltips = decorate(
                 false,
+                editorHasFocus,
                 editorRef,
                 monacoRef,
                 errors,
@@ -406,12 +408,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 lastChange?.parsed
             )
 
-            // report to form
+            // report new resources/errors/useredits to form
             setReportChanges(cloneDeep({ changes, unredactedChange, redactedChange: change, errors }))
 
             // decorate errors, changes
             const squigglyTooltips = decorate(
                 true,
+                editorHasFocus,
                 editorRef,
                 monacoRef,
                 errors,
@@ -464,22 +467,30 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 const monaco = monacoRef?.current
                 const isArr = Array.isArray(resources)
                 let _resources = isArr ? unredactedChange.resources : unredactedChange.resources[0]
-                // only set editorChanges if there's no error
+
+                // if synceditor resources is different from form.wizard, report resources
                 if (errors.length === 0) {
                     // if syncs defined, set values into form/wizard
                     setFormValues(syncs, unredactedChange)
-                    // if synceditor yaml is different from form.wizard, report yaml
                     _resources = isArr ? resources : [resources]
                     if (onEditorChange && !isEqual(unredactedChange.resources, _resources)) {
                         const editChanges = {
                             resources: isArr ? unredactedChange.resources : unredactedChange.resources[0],
-                            changes: formatChanges(editor, monaco, changes, redactedChange, syncs),
                         }
                         onEditorChange(editChanges)
                     }
                 }
+
+                // report just errors and user changes
+                if (onStateChange) {
+                    onStateChange({
+                        warnings: formatErrors(errors, true),
+                        errors: formatErrors(errors),
+                        changes: formatChanges(editor, monaco, changes, redactedChange, syncs),
+                    })
+                }
             }
-        }, 100)
+        }, 0)
         return () => {
             clearTimeout(changeTimeoutId)
         }

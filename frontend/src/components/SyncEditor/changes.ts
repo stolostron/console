@@ -245,7 +245,7 @@ const getChanges = (
                         case 'N': // new
                             chng = { $t: 'N', $a: pathArr, $p: path }
                             if (isCustomEdit) {
-                                chng.$u = rhs // what user changed it to
+                                chng.$u = rhs || obj.$v // what user changed it to
                                 chng.$f = 'new'
                             }
                             changes.push(chng)

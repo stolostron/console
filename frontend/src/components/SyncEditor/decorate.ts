@@ -3,6 +3,7 @@ import { get, capitalize } from 'lodash'
 
 export const decorate = (
     isCustomEdit: boolean,
+    editorHasFocus: boolean,
     editorRef: any,
     monacoRef: any,
     errors: any[],
@@ -40,7 +41,7 @@ export const decorate = (
     editorRef.current.deltaDecorations(handles, decorations)
 
     // scroll to best line to show
-    if (!isCustomEdit) {
+    if (!editorHasFocus) {
         scrollToChangeDecoration(editorRef, errors, decorations)
     }
 

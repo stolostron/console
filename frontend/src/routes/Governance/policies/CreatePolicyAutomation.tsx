@@ -30,7 +30,7 @@ export function WizardSyncEditor() {
             variant="toolbar"
             resources={resources}
             schema={schema}
-            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+            onEditorChange={(changes: { resources: any[] }): void => {
                 update(changes?.resources)
             }}
         />
