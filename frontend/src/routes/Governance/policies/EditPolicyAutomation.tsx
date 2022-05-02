@@ -15,12 +15,7 @@ import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import {
-    listAnsibleTowerJobs,
-    PolicyAutomation,
-    Secret,
-    SubscriptionOperator,
-} from '../../../resources'
+import { listAnsibleTowerJobs, PolicyAutomation, Secret, SubscriptionOperator } from '../../../resources'
 import { handlePolicyAutomationSubmit } from '../common/util'
 import schema from './schemaAutomation.json'
 
@@ -104,7 +99,7 @@ export function EditPolicyAutomation() {
             onCancel={() => history.push(NavigationPath.policies)}
             isAnsibleOperatorInstalled={isOperatorInstalled}
             configMaps={configMaps}
-            onSubmit={(data) => handlePolicyAutomationSubmit (data, secrets, history, t, currentPolicyAutomation)}
+            onSubmit={(data) => handlePolicyAutomationSubmit(data, secrets, history, t, currentPolicyAutomation)}
             getAnsibleJobsCallback={async (credential: any) => {
                 const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
                 const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')
