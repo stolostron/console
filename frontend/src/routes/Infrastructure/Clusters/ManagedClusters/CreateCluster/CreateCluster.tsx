@@ -21,6 +21,7 @@ import {
     managedClustersState,
     secretsState,
     settingsState,
+    agentsState,
 } from '../../../../../atoms'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
@@ -35,15 +36,21 @@ import {
     ProviderConnection,
     Secret,
     unpackProviderConnection,
+    patchResource,
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import { getControlData } from './controlData/ControlData'
 import { arrayItemHasKey, setAvailableConnections } from './controlData/ControlDataHelpers'
-import './style.css'
 import endpointTemplate from './templates/endpoints.hbs'
 import hiveTemplate from './templates/hive-template.hbs'
 import { Warning, WarningContext, WarningContextType } from './Warning'
+import {
+    HypershiftAgentContext,
+    useHypershiftContextValues,
+} from './components/assisted-installer/hypershift/HypershiftAgentContext'
+
+import './style.css'
 
 const { isAIFlowInfraEnv } = CIM
 
@@ -99,6 +106,8 @@ export default function CreateClusterPage() {
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
     const [infraEnvs] = useRecoilState(infraEnvironmentsState)
     const [warning, setWarning] = useState<WarningContextType>()
+    const [agents] = useRecoilState(agentsState)
+    const hypershiftValues = useHypershiftContextValues()
 
     // Is there a way how to get this without fetching all InfraEnvs?
     const isInfraEnvAvailable = !!infraEnvs?.length
@@ -142,6 +151,32 @@ export default function CreateClusterPage() {
                 })
                 return 'ERROR'
             } else {
+                // patch hypershift agents
+                const hypershiftAgentNs = get(map, 'HostedCluster.spec.platform.agent.agentNamespace')
+                if (hypershiftAgentNs) {
+                    setCreationStatus({ status: 'IN_PROGRESS', messages: ['Patching hosts...'] })
+                    const nodePoolPatches = hypershiftValues.nodePools?.map(
+                        ({ autoSelectHosts, autoSelectedAgentIDs, selectedAgentIDs, agentLabels }) => {
+                            const requestedAgentIDs = autoSelectHosts ? autoSelectedAgentIDs : selectedAgentIDs
+                            const agentsToPatch = agents.filter((a) => requestedAgentIDs.includes(a.metadata.uid))
+                            return agentsToPatch.map(
+                                (a) =>
+                                    patchResource(a, [
+                                        {
+                                            op: a.metadata.labels ? 'replace' : 'add',
+                                            path: '/metadata/labels',
+                                            value: {
+                                                ...(a.metadata.labels || {}),
+                                                ...agentLabels,
+                                            },
+                                        },
+                                    ]).promise
+                            )
+                        }
+                    )
+                    nodePoolPatches && (await Promise.allSettled(nodePoolPatches))
+                }
+
                 // check if Template is selected
                 if (selectedTemplate !== '') {
                     // set installAttemptsLimit to 0
@@ -374,7 +409,10 @@ export default function CreateClusterPage() {
 
     const onControlSelect = (control: any) => {
         if (control.controlId === 'infrastructure') {
-            if (control.active?.includes('CIM') && !isInfraEnvAvailable) {
+            if (
+                (control.active?.includes('CIM') || control.active?.includes('CIM-Hypershift')) &&
+                !isInfraEnvAvailable
+            ) {
                 setWarning({
                     title: t('cim.infra.missing.warning.title'),
                     text: t('cim.infra.missing.warning.text'),
@@ -434,32 +472,34 @@ export default function CreateClusterPage() {
                 <AcmPageContent id="create-cluster">
                     <PageSection variant="light" isFilled type="wizard">
                         <WarningContext.Provider value={warning}>
-                            <TemplateEditor
-                                wizardClassName={classes.wizardBody}
-                                type={'cluster'}
-                                title={'Cluster YAML'}
-                                monacoEditor={<MonacoEditor />}
-                                controlData={controlData}
-                                template={template}
-                                portals={Portals}
-                                fetchControl={fetchControl}
-                                createControl={{
-                                    createResource,
-                                    cancelCreate,
-                                    pauseCreate: () => {},
-                                    creationStatus: creationStatus?.status,
-                                    creationMsg: creationStatus?.messages,
-                                    resetStatus: () => {
-                                        setCreationStatus(undefined)
-                                    },
-                                }}
-                                logging={process.env.NODE_ENV !== 'production'}
-                                i18n={i18n}
-                                onControlInitialize={onControlInitialize}
-                                onControlChange={onControlChange}
-                                ref={templateEditorRef}
-                                controlProps={selectedConnection}
-                            />
+                            <HypershiftAgentContext.Provider value={hypershiftValues}>
+                                <TemplateEditor
+                                    wizardClassName={classes.wizardBody}
+                                    type={'cluster'}
+                                    title={'Cluster YAML'}
+                                    monacoEditor={<MonacoEditor />}
+                                    controlData={controlData}
+                                    template={template}
+                                    portals={Portals}
+                                    fetchControl={fetchControl}
+                                    createControl={{
+                                        createResource,
+                                        cancelCreate,
+                                        pauseCreate: () => {},
+                                        creationStatus: creationStatus?.status,
+                                        creationMsg: creationStatus?.messages,
+                                        resetStatus: () => {
+                                            setCreationStatus(undefined)
+                                        },
+                                    }}
+                                    logging={process.env.NODE_ENV !== 'production'}
+                                    i18n={i18n}
+                                    onControlInitialize={onControlInitialize}
+                                    onControlChange={onControlChange}
+                                    ref={templateEditorRef}
+                                    controlProps={selectedConnection}
+                                />
+                            </HypershiftAgentContext.Provider>
                         </WarningContext.Provider>
                     </PageSection>
                 </AcmPageContent>

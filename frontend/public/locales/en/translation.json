@@ -329,6 +329,8 @@
     "cluster.create.gke.subtitle": "Google Kubernetes Engine",
     "cluster.create.gke.title": "Select to create a managed Kubernetes cluster on Google Kubernetes Engine",
     "cluster.create.google.subtitle": "Google Cloud",
+    "cluster.create.hypershift.subtitle": "Hypershift",
+    "cluster.create.hypershift.tooltip": "Hypershift",
     "cluster.create.ibm.subtitle": "IBM Cloud",
     "cluster.create.ibmcloud.subtitle": "OpenShift on IBM Cloud",
     "cluster.create.ibmcloud.title": "Select to create an OpenShift Container Platform on IBM Cloud",
