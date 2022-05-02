@@ -66,7 +66,7 @@ const getArgoClusterList = (
     const clusterSet = new Set<string>()
 
     resources.forEach((resource) => {
-        const isRemoteArgoApp = resource.status.cluster ? true : false
+        const isRemoteArgoApp = resource.status?.cluster ? true : false
 
         if (
             (resource.spec.destination?.name === 'in-cluster' ||
