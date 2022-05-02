@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { Chip } from '@patternfly/react-core'
 import { TFunction } from 'i18next'
-import { useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -15,10 +15,15 @@ import {
     Policy,
     PolicySet,
     PolicyTemplate,
+    PolicyAutomation,
+    reconcileResources,
     Subscription,
+    IResource,
+    Secret,
 } from '../../../resources'
 import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
+import { AcmToastContext } from '@stolostron/ui-components'
 
 export interface PolicyCompliance {
     policyName: string
@@ -478,4 +483,54 @@ export function getPolicyRemediation(policy: Policy | undefined) {
         }
     })
     return remediationAggregation
+}
+
+export function handlePolicyAutomationSubmit(
+    data: any,
+    secrets: Secret[],
+    history: any,
+    t: TFunction,
+    currentPolicyAutomation?: PolicyAutomation
+) {
+    const resource = data as PolicyAutomation
+    const resources: IResource[] = [resource]
+    const toast = useContext(AcmToastContext)
+
+    if (resource) {
+        // Copy the cedential to the namespace of the policy
+        const credToCopy: Secret[] = secrets.filter(
+            (secret: Secret) =>
+                secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
+                secret.metadata.name === resource.spec.automationDef.secret
+        )
+        const credExists = credToCopy.find((cred) => cred.metadata.namespace === resource.metadata.namespace)
+        if (!credExists) {
+            // unshift so secret is created before the PolicyAutomation
+            resources.unshift({
+                ...credToCopy[0],
+                metadata: {
+                    annotations: credToCopy[0].metadata.annotations,
+                    name: credToCopy[0].metadata.name,
+                    namespace: resource.metadata.namespace!,
+                    labels: {
+                        'cluster.open-cluster-management.io/type': 'ans',
+                        'cluster.open-cluster-management.io/copiedFromNamespace': credToCopy[0].metadata.namespace!,
+                        'cluster.open-cluster-management.io/copiedFromSecretName': credToCopy[0].metadata.name!,
+                    },
+                },
+            })
+        }
+    }
+    const currentResources = currentPolicyAutomation ? [currentPolicyAutomation] : []
+    return reconcileResources(resources, currentResources).then(() => {
+        if (resource) {
+            toast.addAlert({
+                title: t('Policy automation created'),
+                message: t('{{name}} was successfully created.', { name: resource.metadata?.name }),
+                type: 'success',
+                autoClose: true,
+            })
+        }
+        history.push(window.history?.state?.state?.from ?? NavigationPath.policies)
+    })
 }
