@@ -128,7 +128,6 @@ const addChangeDecorations = (
         const { $t, $a, $f } = chng
         const obj: any = get(change.mappings, $a)
         if (obj) {
-            //if (!isCustomEdit) {
             decorations.push({
                 range: new monacoRef.current.Range(obj.$r, 0, obj.$r + ($t === 'N' ? obj.$l - 1 : 0), 0),
                 options: {
