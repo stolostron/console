@@ -35,7 +35,7 @@ export function WizardSyncEditor() {
             schema={schema}
             immutables={['PolicySet[0].metadata.name', 'PolicySet[0].metadata.namespace']}
             filters={['*.metadata.managedFields']}
-            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+            onEditorChange={(changes: { resources: any[] }): void => {
                 update(changes?.resources)
             }}
         />

@@ -85,7 +85,8 @@ export default function ImportClusterPage() {
         setImportResources(resources)
         setImportSyncs(syncs)
     }
-    const [editorChanges, setEditorChanges] = useState<SyncDiffType>()
+    const [stateChanges, setStateChanges] = useState<SyncDiffType>()
+    const [editorChanges, setEditorChanges] = useState<{ resources: any[] }>()
 
     return (
         <div ref={pageRef} style={{ height: '100%' }}>
@@ -119,6 +120,7 @@ export default function ImportClusterPage() {
                                         onChange={() => {
                                             localStorage.setItem('import-cluster-yaml', (!drawerExpanded).toString())
                                             setDrawerExpanded(!drawerExpanded)
+                                            setStateChanges(undefined)
                                             setEditorChanges(undefined)
                                         }}
                                     />
@@ -149,8 +151,11 @@ export default function ImportClusterPage() {
                                     onClose={(): void => {
                                         setDrawerExpanded(false)
                                     }}
-                                    onEditorChange={(editorChanges: SyncDiffType): void => {
-                                        setEditorChanges(editorChanges)
+                                    onStatusChange={(statusChanges: SyncDiffType): void => {
+                                        setStateChanges(statusChanges)
+                                    }}
+                                    onEditorChange={(changes: { resources: any[] }): void => {
+                                        setEditorChanges(changes)
                                     }}
                                 />
                             </DrawerPanelContent>
@@ -162,6 +167,7 @@ export default function ImportClusterPage() {
                                     <ImportClusterPageContent
                                         onFormChange={onFormChange}
                                         editorChanges={editorChanges}
+                                        stateChanges={stateChanges}
                                     />
                                 </PageSection>
                             </AcmPageContent>
@@ -179,7 +185,7 @@ enum ImportMode {
     kubeconfig,
 }
 
-const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }) => {
+const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges, stateChanges }) => {
     const { t } = useTranslation()
     const alertContext = useContext(AcmAlertContext)
     const { isACMAvailable } = useContext(PluginContext)
@@ -419,9 +425,9 @@ const ImportClusterPageContent: React.FC<any> = ({ onFormChange, editorChanges }
                     hidden={importMode !== ImportMode.kubeconfig}
                     isRequired
                 />
-                {editorChanges?.changes?.length > 0 && (
+                {(stateChanges?.changes?.length > 0 || stateChanges?.errors?.length > 0) && (
                     <FormGroup fieldId="diffs" label={t(EDITOR_CHANGES)}>
-                        <SyncDiff editorChanges={editorChanges} errorMessage={'Resolve editor syntax errors.'} />
+                        <SyncDiff stateChanges={stateChanges} errorMessage={'Resolve editor syntax errors.'} />
                     </FormGroup>
                 )}
                 <AcmAlertGroup isInline canClose />

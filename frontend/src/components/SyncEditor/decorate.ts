@@ -3,6 +3,7 @@ import { get, capitalize } from 'lodash'
 
 export const decorate = (
     isCustomEdit: boolean,
+    editorHasFocus: boolean,
     editorRef: any,
     monacoRef: any,
     errors: any[],
@@ -11,7 +12,9 @@ export const decorate = (
         parsed: { [name: string]: any[] }
         mappings: { [name: string]: any[] }
     },
-    protectedRanges: any[]
+    userEdits: any[],
+    protectedRanges: any[],
+    filteredRows: number[]
 ) => {
     const decorations: any[] = []
     const squigglyTooltips: any[] = []
@@ -20,17 +23,25 @@ export const decorate = (
     addErrorDecorations(monacoRef, errors, decorations, squigglyTooltips)
 
     // add change decorations
-    addChangeDecorations(monacoRef, changes, change, decorations)
+    addChangeDecorations(isCustomEdit, monacoRef, changes, change, decorations)
+
+    // if form is making changes, layer any editor changes decorations on top of form changes
+    if (userEdits.length) {
+        addChangeDecorations(true, monacoRef, userEdits, change, decorations)
+    }
 
     // add protected decorations
     addProtectedDecorations(monacoRef, protectedRanges, decorations)
+
+    // add filter row toggle decorations
+    addFilteredDecorations(monacoRef, filteredRows, decorations)
 
     // add decorations to editor
     const handles = getResourceEditorDecorations(editorRef).map((decoration: { id: any }) => decoration.id)
     editorRef.current.deltaDecorations(handles, decorations)
 
     // scroll to best line to show
-    if (!isCustomEdit) {
+    if (!editorHasFocus) {
         scrollToChangeDecoration(editorRef, errors, decorations)
     }
 
@@ -45,6 +56,18 @@ const addProtectedDecorations = (monacoRef: any, protectedRanges: any[], decorat
             range: new monacoRef.current.Range(start, 1, end, 132),
             options: {
                 inlineClassName: 'protectedDecoration',
+                description: 'resource-editor',
+            },
+        })
+    })
+}
+
+const addFilteredDecorations = (monacoRef: any, filteredRows: any[], decorations: any[]) => {
+    filteredRows?.forEach((row) => {
+        decorations.push({
+            range: new monacoRef.current.Range(row, 0, row, 132),
+            options: {
+                after: { content: '\u200b', inlineClassName: 'inline-folded' },
                 description: 'resource-editor',
             },
         })
@@ -92,6 +115,7 @@ const addErrorDecorations = (monacoRef: any, errors: any[], decorations: any[], 
 }
 
 const addChangeDecorations = (
+    isCustomEdit: boolean,
     monacoRef: any,
     changes: any[],
     change: {
@@ -101,18 +125,28 @@ const addChangeDecorations = (
     decorations: any[]
 ) => {
     changes.forEach((chng) => {
-        const { $t, $a } = chng
+        const { $t, $a, $f } = chng
         const obj: any = get(change.mappings, $a)
         if (obj) {
             decorations.push({
                 range: new monacoRef.current.Range(obj.$r, 0, obj.$r + ($t === 'N' ? obj.$l - 1 : 0), 0),
                 options: {
                     isWholeLine: true,
-                    linesDecorationsClassName: 'insertedLineDecoration',
-                    minimap: { color: '#c0c0ff', position: 2 },
+                    linesDecorationsClassName: isCustomEdit ? 'customLineDecoration' : 'insertedLineDecoration',
+                    overviewRuler: isCustomEdit ? { color: '#0000ff', position: 1 } : {},
+                    minimap: { color: isCustomEdit ? '#0000ff' : '#c0c0ff', position: 2 },
                     description: 'resource-editor',
                 },
             })
+            if ($f !== undefined && $f.toString().length < 32 && !obj.$s) {
+                decorations.push({
+                    range: new monacoRef.current.Range(obj.$r, 0, obj.$r, 132),
+                    options: {
+                        after: { content: `  # ${$f}`, inlineClassName: 'protectedDecoration' },
+                        description: 'resource-editor',
+                    },
+                })
+            }
         }
     })
 }
