@@ -501,6 +501,3 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         </AcmPage>
     )
 }
-function WAIT_FOR_APPLICATION_DELAY(arg0: () => void, WAIT_FOR_APPLICATION_DELAY: any) {
-    throw new Error('Function not implemented.')
-}
