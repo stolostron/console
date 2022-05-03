@@ -160,6 +160,8 @@
     "bareMetalAsset.tableHeader.namespace": "Namespace",
     "bareMetalAsset.tableHeader.role": "Role",
     "bareMetalAsset.tableHeader.status": "Status",
+    "bareMetalAsset.warning.text": "The Bare Metal Assets flow is deprecated and will be removed in the next feature. For Bare Metal clusters consider the assisted installation flows.",
+    "bareMetalAsset.warning.title": "Feature deprecation",
     "Base DNS domain": "Base DNS domain",
     "Base domain resource group name": "Base domain resource group name",
     "Basic information": "Basic information",

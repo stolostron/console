@@ -374,6 +374,13 @@ export default function CreateClusterPage() {
                     linkText: t('cim.infra.manage.link'),
                     linkTo: NavigationPath.infraEnvironments,
                 })
+            } else if (control.active?.includes('BMC')) {
+                setWarning({
+                    title: t('bareMetalAsset.warning.title'),
+                    text: t('bareMetalAsset.warning.text'),
+                    linkText: t('Learn more'),
+                    //linkTo: NavigationPath.infraEnvironments,
+                })
             } else {
                 setWarning(undefined)
             }
