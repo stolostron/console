@@ -147,6 +147,9 @@ function AtomArray<T>() {
     return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
 }
 
+// throttle events delay
+export const THROTTLE_EVENTS_DELAY = 500
+
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const discoveredApplicationsState = AtomArray<ArgoApplication>()
 
@@ -486,7 +489,7 @@ export function LoadData(props: { children?: ReactNode }) {
         }
         startWatch()
 
-        const timeout = setInterval(processEventQueue, 500)
+        const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
         return () => {
             clearInterval(timeout)
             if (evtSource) evtSource.close()

@@ -5,6 +5,7 @@ import { Alert } from '@patternfly/react-core'
 import {
     AcmActionGroup,
     AcmAlert,
+    AcmLoadingPage,
     AcmPage,
     AcmPageHeader,
     AcmRoute,
@@ -38,6 +39,7 @@ import {
     placementsState,
     subscriptionReportsState,
     subscriptionsState,
+    THROTTLE_EVENTS_DELAY,
 } from '../../../atoms'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -113,6 +115,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     const location = useLocation()
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
+    const [waitForApplication, setWaitForApplication] = useState<boolean>(true)
     const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
     const [activeChannel, setActiveChannel] = useState<string>()
     const [applicationData, setApplicationData] = useState<ApplicationDataType>()
@@ -305,6 +308,15 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         }
     })
 
+    useEffect(() => {
+        // if application wasn't found wait and try again
+        if (applicationNotFound) {
+            setTimeout(() => {
+                setWaitForApplication(false)
+            }, THROTTLE_EVENTS_DELAY)
+        }
+    }, [applicationNotFound])
+
     // refresh application the first time and then every n seconds
     useEffect(() => {
         setApplicationData(undefined)
@@ -373,7 +385,16 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         )
         return () => clearInterval(interval)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeChannel, apiVersion, cluster, getSnapshot, match.params.name, match.params.namespace, stateMap])
+    }, [
+        waitForApplication,
+        activeChannel,
+        apiVersion,
+        cluster,
+        getSnapshot,
+        match.params.name,
+        match.params.namespace,
+        stateMap,
+    ])
 
     return (
         <AcmPage
@@ -445,7 +466,9 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 />
             }
         >
-            {applicationNotFound ? (
+            {applicationNotFound && waitForApplication ? (
+                <AcmLoadingPage />
+            ) : applicationNotFound ? (
                 <Alert isInline variant="danger" title={t('Application not found!')} />
             ) : (
                 <Fragment>
