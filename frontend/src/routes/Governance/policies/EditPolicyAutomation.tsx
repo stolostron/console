@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyAutomationWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicyAutomation/PolicyAutomationWizard'
-import { useMemo } from 'react'
+import { AcmToastContext } from '@stolostron/ui-components'
+import { useContext, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -50,6 +51,7 @@ export function EditPolicyAutomation() {
     const [configMaps] = useRecoilState(configMapsState)
     const [policyAutomations] = useRecoilState(policyAutomationState)
     const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
+    const toast = useContext(AcmToastContext)
     const currentPolicy = useMemo(
         () => policies.find((policy) => policy.metadata.name === name && policy.metadata.namespace === namespace),
         [policies, name, namespace]
@@ -99,7 +101,7 @@ export function EditPolicyAutomation() {
             onCancel={() => history.push(NavigationPath.policies)}
             isAnsibleOperatorInstalled={isOperatorInstalled}
             configMaps={configMaps}
-            onSubmit={(data) => handlePolicyAutomationSubmit(data, secrets, history, t, currentPolicyAutomation)}
+            onSubmit={(data) => handlePolicyAutomationSubmit(data, secrets, history, toast, t, currentPolicyAutomation)}
             getAnsibleJobsCallback={async (credential: any) => {
                 const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
                 const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')

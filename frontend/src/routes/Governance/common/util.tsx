@@ -23,7 +23,7 @@ import {
 } from '../../../resources'
 import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
-import { AcmToastContext } from '@stolostron/ui-components'
+import { AcmToastContext, IAlertContext } from '@stolostron/ui-components'
 
 export interface PolicyCompliance {
     policyName: string
@@ -489,12 +489,12 @@ export function handlePolicyAutomationSubmit(
     data: any,
     secrets: Secret[],
     history: any,
+    toast: IAlertContext,
     t: TFunction,
     currentPolicyAutomation?: PolicyAutomation
 ) {
     const resource = data as PolicyAutomation
     const resources: IResource[] = [resource]
-    const toast = useContext(AcmToastContext)
 
     if (resource) {
         // Copy the cedential to the namespace of the policy
