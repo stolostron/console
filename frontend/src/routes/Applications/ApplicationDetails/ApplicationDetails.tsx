@@ -39,6 +39,7 @@ import {
     placementsState,
     subscriptionReportsState,
     subscriptionsState,
+    WAIT_FOR_RECOIL_DELAY,
 } from '../../../atoms'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -74,12 +75,6 @@ export const ApplicationContext = createContext<{
 
 const namespaceString = ':namespace'
 const nameString = ':name'
-
-// in case where application is just created
-// because recoil state is throttled
-// the new application might yet be in recoil state
-// so if application not found
-const WAIT_FOR_APPLICATION_DELAY = 1000
 
 export const useApplicationPageContext = (ActionList: ElementType) => {
     const { setActions } = useContext(ApplicationContext)
@@ -318,7 +313,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         if (applicationNotFound) {
             setTimeout(() => {
                 setWaitForApplication(false)
-            }, WAIT_FOR_APPLICATION_DELAY)
+            }, WAIT_FOR_RECOIL_DELAY)
         }
     }, [applicationNotFound])
 
@@ -505,4 +500,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             )}
         </AcmPage>
     )
+}
+function WAIT_FOR_APPLICATION_DELAY(arg0: () => void, WAIT_FOR_APPLICATION_DELAY: any) {
+    throw new Error('Function not implemented.')
 }
