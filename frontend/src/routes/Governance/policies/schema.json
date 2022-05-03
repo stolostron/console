@@ -11,9 +11,9 @@
                     "type": "object",
                     "properties": {
                         "name": {
-                            "validateDNSName": true
+                            "validateName": true
                         },
-                        "namespace": { "validateDNSName": true }
+                        "namespace": { "validateName": true }
                     },
                     "required": ["name", "namespace"]
                 },
@@ -39,8 +39,8 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "validateDNSName": true },
-                        "namespace": { "validateDNSName": true }
+                        "name": { "validateName": true },
+                        "namespace": { "validateName": true }
                     },
                     "required": ["name", "namespace"]
                 },
@@ -66,8 +66,8 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "validateDNSName": true },
-                        "namespace": { "validateDNSName": true }
+                        "name": { "validateName": true },
+                        "namespace": { "validateName": true }
                     },
                     "required": ["name", "namespace"]
                 },
@@ -98,15 +98,15 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "validateDNSName": true },
-                        "namespace": { "validateDNSName": true }
+                        "name": { "validateName": true },
+                        "namespace": { "validateName": true }
                     },
                     "required": ["name", "namespace"]
                 },
                 "placementRef": {
                     "type": "object",
                     "properties": {
-                        "name": { "validateDNSName": true },
+                        "name": { "validateName": true },
                         "apiGroup": { "type": "string" },
                         "kind": { "type": "string", "enum": ["Placement", "PlacementRule"] }
                     },
@@ -119,7 +119,7 @@
                         "properties": {
                             "apiGroup": { "type": "string" },
                             "kind": { "const": "Policy" },
-                            "name": { "validateDNSName": true }
+                            "name": { "validateName": true }
                         },
                         "required": ["apiGroup", "kind", "name"]
                     }

@@ -36,7 +36,18 @@ export const compileAjvSchemas = (schema: any[]) => {
 
 export const addAjvKeywords = (ajv: Ajv) => {
     ajv.addKeyword({
-        keyword: 'validateDNSName',
+        keyword: 'validateName',
+        schemaType: 'boolean',
+        validate: (_schema: null, data: any) => {
+            return (
+                !data ||
+                (/^[a-z0-9]([-a-z0-9.]*[a-z0-9.])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/.test(data) &&
+                    data.length <= 253)
+            )
+        },
+    })
+    ajv.addKeyword({
+        keyword: 'validateLabel',
         schemaType: 'boolean',
         validate: (_schema: null, data: any) => {
             return (
@@ -184,8 +195,16 @@ function validateResource(
                         errorMsg.linePos.end.col = mapping.$gv.end.col
                         errorMsg.isWarning = false
                         break
-                    // validateDNSName
-                    case 'validateDNSName':
+                    // validateName
+                    case 'validateName':
+                        errorMsg.message =
+                            'Name must start/end alphanumerically, can contain dashes and periods, and must be less then 253 characters'
+                        errorMsg.linePos.start.col = mapping.$gv.start.col
+                        errorMsg.linePos.end.col = mapping.$gv.end.col
+                        errorMsg.isWarning = false
+                        break
+                    // validateLabel
+                    case 'validateLabel':
                         errorMsg.message =
                             'Name must start/end alphanumerically, can contain dashes, and must be less then 63 characters'
                         errorMsg.linePos.start.col = mapping.$gv.start.col
