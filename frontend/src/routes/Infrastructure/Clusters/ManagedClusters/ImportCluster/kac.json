@@ -10,15 +10,15 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "validateDNSName": true },
-                        "namespace": { "validateDNSName": true }
+                        "name": { "validateName": true },
+                        "namespace": { "validateName": true }
                     }
                 },
                 "spec": {
                     "type": "object",
                     "properties": {
-                        "clusterName": { "validateDNSName": true },
-                        "clusterNamespace": { "validateDNSName": true },
+                        "clusterName": { "validateName": true },
+                        "clusterNamespace": { "validateName": true },
                         "clusterLabels": {
                             "type": "object",
                             "properties": {
