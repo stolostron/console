@@ -7,7 +7,7 @@
   placement:
     placementRef:
       kind: PlacementRule
-{{#if selectedRuleName}}
+{{#if existingrule-checkbox}}
       name: {{{selectedRuleName}}}
 {{else}}       
       name: {{{@root.name}}}-placement-{{uniqueGroupID}}
