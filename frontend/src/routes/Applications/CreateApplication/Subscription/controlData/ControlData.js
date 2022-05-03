@@ -39,6 +39,17 @@ export const loadExistingNamespaces = () => {
     }
 }
 
+export const updateNameControls = (nameControl, globalControl) => {
+    const channelsControl = globalControl.find(({ id }) => id === 'channels')
+    channelsControl?.active.forEach((subscription) => {
+        const placementCheckbox = subscription.find(({ id }) => id === 'existingrule-checkbox')
+        if (!placementCheckbox?.active) {
+            const rule = subscription.find(({ id }) => id === 'selectedRuleName')
+            if (rule?.active) rule.active = undefined
+        }
+    })
+}
+
 export const updateNSControls = (nsControl, globalControl) => {
     const { active, available = [] } = nsControl
 
@@ -65,6 +76,7 @@ export const controlData = async () => [
         id: 'name',
         type: 'text',
         editing: { disabled: true }, // if editing existing app, disable this field
+        onSelect: updateNameControls,
         validation: {
             constraint: VALID_DNS_LABEL,
             notification: 'import.form.invalid.dns.label',

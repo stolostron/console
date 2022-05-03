@@ -102,6 +102,8 @@ export const updateDisplayForPlacementControls = (urlControl, controlGlobal) => 
             clusterSelectorControl.active.mode = true
             delete clusterSelectorControl.showData
         }
+        const availablePlacementControl = existingRuleControl.available
+        if (!availablePlacementControl.includes(existingRuleControl.active)) existingRuleControl.active = ''
     })
     return controlGlobal
 }
@@ -184,7 +186,7 @@ export const reverseExistingRule = (control, templateObject) => {
 }
 export const reverseExistingRuleName = (control, templateObject) => {
     const active = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.name'))
-    if (active && control.type !== 'hidden' && control.active === undefined) {
+    if (active && control.active === undefined) {
         const { groupControlData } = control
         const selectedRuleName = groupControlData.find(({ id }) => id === 'selectedRuleName')
         selectedRuleName.active = active.$v
