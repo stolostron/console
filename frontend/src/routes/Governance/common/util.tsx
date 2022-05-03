@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { Chip } from '@patternfly/react-core'
 import { TFunction } from 'i18next'
-import { useContext, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { NavigationPath } from '../../../NavigationPath'
 import {
@@ -23,7 +23,7 @@ import {
 } from '../../../resources'
 import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
-import { AcmToastContext, IAlertContext } from '@stolostron/ui-components'
+import { IAlertContext } from '@stolostron/ui-components'
 
 export interface PolicyCompliance {
     policyName: string
