@@ -9,11 +9,10 @@ export interface SyncDiffType {
     changes: any[]
     errors: any[]
     warnings: any[]
-    resources: any[]
 }
 
-export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: string }): JSX.Element {
-    const { editorChanges, errorMessage } = props
+export function SyncDiff(props: { stateChanges: SyncDiffType; errorMessage: string }): JSX.Element {
+    const { stateChanges, errorMessage } = props
 
     const ellipse = (str: string) => {
         if (str.length > 32) {
@@ -84,12 +83,17 @@ export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: str
                     <span style={{ color: '#04c' }}>{key}</span>
                     <span>: </span>
                     {diff.map((part) => {
+                        const msg = ellipse(part.value)
                         if (part.added) {
                             return null
                         } else if (part.removed) {
-                            return <span style={{ backgroundColor: '#ff818266' }}>{ellipse(part.value)}</span>
+                            return (
+                                <span key={msg} style={{ backgroundColor: '#ff818266' }}>
+                                    {msg}
+                                </span>
+                            )
                         }
-                        return ellipse(part.value)
+                        return msg
                     })}
                 </Td>
                 <Td
@@ -105,12 +109,17 @@ export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: str
                     <span style={{ color: '#04c' }}>{key}</span>
                     <span>: </span>
                     {diff.map((part) => {
+                        const msg = ellipse(part.value)
                         if (part.removed) {
                             return null
                         } else if (part.added) {
-                            return <span style={{ backgroundColor: '#abf2bc' }}>{ellipse(part.value)}</span>
+                            return (
+                                <span key={msg} style={{ backgroundColor: '#abf2bc' }}>
+                                    {msg}
+                                </span>
+                            )
                         }
-                        return ellipse(part.value)
+                        return msg
                     })}
                 </Td>
             </Tr>
@@ -119,12 +128,12 @@ export function SyncDiff(props: { editorChanges: SyncDiffType; errorMessage: str
 
     return (
         <div className="sync-diff__container">
-            {editorChanges?.errors?.length ? (
+            {stateChanges?.errors?.length ? (
                 <Alert isInline={true} title={errorMessage} variant={'danger'} />
             ) : (
                 <TableComposable className="diff-table" aria-label="Editor changes" variant={'compact'} borders={false}>
                     <Tbody>
-                        {editorChanges?.changes?.map((change, rowIndex) => {
+                        {stateChanges?.changes?.map((change, rowIndex) => {
                             const { type, previous, latest, line, path, reveal } = change
                             switch (type) {
                                 case 'N':
