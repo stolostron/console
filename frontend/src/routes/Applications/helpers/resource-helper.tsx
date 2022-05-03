@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/* eslint-disable  */
+
 import { TFunction } from 'i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
