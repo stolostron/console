@@ -115,10 +115,10 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
 
             // add prehooks
             if (subscription.prehooks && subscription.prehooks.length > 0) {
-                addSubscriptionHooks(clusterId, subscription, links, nodes, true)
+                addSubscriptionHooks(subscriptionId, subscription, links, nodes, true)
             }
             if (subscription.posthooks && subscription.posthooks.length > 0) {
-                addSubscriptionHooks(clusterId, subscription, links, nodes, false)
+                addSubscriptionHooks(subscriptionId, subscription, links, nodes, false)
             }
 
             // add deployed resource nodes using subscription report
