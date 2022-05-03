@@ -147,9 +147,8 @@ function AtomArray<T>() {
     return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
 }
 
-// because recoil state is throttled, a created resource might yet be in recoil state
-// a constant used to set a timeout to wait until recoil catches up
-export const WAIT_FOR_RECOIL_DELAY = 1000
+// throttle events delay
+export const THROTTLE_EVENTS_DELAY = 500
 
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const discoveredApplicationsState = AtomArray<ArgoApplication>()
@@ -490,7 +489,7 @@ export function LoadData(props: { children?: ReactNode }) {
         }
         startWatch()
 
-        const timeout = setInterval(processEventQueue, 500)
+        const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
         return () => {
             clearInterval(timeout)
             if (evtSource) evtSource.close()

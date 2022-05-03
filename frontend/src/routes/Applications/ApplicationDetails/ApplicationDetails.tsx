@@ -39,7 +39,7 @@ import {
     placementsState,
     subscriptionReportsState,
     subscriptionsState,
-    WAIT_FOR_RECOIL_DELAY,
+    THROTTLE_EVENTS_DELAY,
 } from '../../../atoms'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -309,11 +309,11 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     })
 
     useEffect(() => {
-        // if application wasn't found wait a second and try again
+        // if application wasn't found wait and try again
         if (applicationNotFound) {
             setTimeout(() => {
                 setWaitForApplication(false)
-            }, WAIT_FOR_RECOIL_DELAY)
+            }, THROTTLE_EVENTS_DELAY)
         }
     }, [applicationNotFound])
 
