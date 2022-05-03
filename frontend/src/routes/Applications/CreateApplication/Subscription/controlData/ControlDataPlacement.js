@@ -184,15 +184,6 @@ export const reverseExistingRule = (control, templateObject) => {
     }
     return control
 }
-export const reverseExistingRuleName = (control, templateObject) => {
-    const active = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.name'))
-    if (active && control.active === undefined) {
-        const { groupControlData } = control
-        const selectedRuleName = groupControlData.find(({ id }) => id === 'selectedRuleName')
-        selectedRuleName.active = active.$v
-    }
-    return control
-}
 
 export const reverseOnline = (control, templateObject) => {
     const active = _.get(templateObject, getSourcePath('PlacementRule[0].spec.clusterConditions[0].type'))
@@ -271,7 +262,7 @@ const placementData = async () => [
     {
         id: 'selectedRuleName',
         type: 'hidden',
-        reverse: reverseExistingRuleName,
+        reverse: reverseExistingRule,
     },
     {
         type: 'custom',
