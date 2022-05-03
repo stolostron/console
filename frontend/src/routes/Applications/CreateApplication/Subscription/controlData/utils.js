@@ -164,9 +164,9 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
                 nameControl.active = channelName
                 for (const [key, value] of Object.entries(availableData)) {
                     if (
+                        key !== undefined &&
                         value.metadata.name === channelName &&
-                        value.metadata.namespace === channelNS &&
-                        key.includes(active)
+                        value.metadata.namespace === channelNS
                     ) {
                         isChannel = true
                     }
