@@ -89,11 +89,11 @@ export function CreatePolicyAutomation() {
                 kind: PolicyAutomationKind,
                 apiVersion: PolicyAutomationApiVersion,
                 metadata: {
-                    name: `${currentPolicy?.metadata?.name ?? ''}-policy-automation`.substring(0, 253),
-                    namespace: currentPolicy?.metadata?.namespace ?? '',
+                    name: `${name ?? ''}-policy-automation`.substring(0, 253),
+                    namespace: namespace ?? '',
                 },
                 spec: {
-                    policyRef: currentPolicy?.metadata?.name ?? '',
+                    policyRef: name ?? '',
                     mode: 'once',
                     automationDef: { name: '', secret: '', type: 'AnsibleJob' },
                 },
