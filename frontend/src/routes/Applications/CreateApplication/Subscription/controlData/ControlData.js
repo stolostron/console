@@ -42,8 +42,11 @@ export const loadExistingNamespaces = () => {
 export const updateNameControls = (nameControl, globalControl) => {
     const channelsControl = globalControl.find(({ id }) => id === 'channels')
     channelsControl?.active.forEach((subscription) => {
-        const rule = subscription.find(({ id }) => id === 'selectedRuleName')
-        if (rule) rule.active = undefined
+        const placementCheckbox = subscription.find(({ id }) => id === 'existingrule-checkbox')
+        if (!placementCheckbox?.active) {
+            const rule = subscription.find(({ id }) => id === 'selectedRuleName')
+            if (rule?.active) rule.active = undefined
+        }
     })
 }
 

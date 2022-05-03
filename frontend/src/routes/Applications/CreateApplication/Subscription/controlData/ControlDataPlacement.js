@@ -102,6 +102,8 @@ export const updateDisplayForPlacementControls = (urlControl, controlGlobal) => 
             clusterSelectorControl.active.mode = true
             delete clusterSelectorControl.showData
         }
+        const availablePlacementControl = existingRuleControl.available
+        if (!availablePlacementControl.includes(existingRuleControl.active)) existingRuleControl.active = ''
     })
     return controlGlobal
 }
