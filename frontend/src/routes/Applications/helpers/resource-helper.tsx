@@ -49,8 +49,11 @@ export function isResourceTypeOf(resource: IResource, resourceType: IResourceDef
 export function getSubscriptionsFromAnnotation(app: IResource) {
     const subAnnotation =
         app.metadata?.annotations !== undefined ? app.metadata?.annotations[subAnnotationStr] : undefined
-
-    return subAnnotation !== undefined ? subAnnotation.split(',') : []
+    // eslint-disable-next-line no-extra-boolean-cast
+    if (!!subAnnotation) {
+        return subAnnotation.split(',')
+    }
+    return []
 }
 
 export type ClusterCount = {
