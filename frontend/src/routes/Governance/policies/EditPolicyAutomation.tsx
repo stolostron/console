@@ -30,7 +30,7 @@ export function WizardSyncEditor() {
             filters={['*.metadata.managedFields']}
             resources={resources}
             schema={schema}
-            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+            onEditorChange={(changes: { resources: any[] }): void => {
                 update(changes?.resources)
             }}
         />
