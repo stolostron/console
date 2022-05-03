@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
+/* eslint-disable  */
 import { TFunction } from 'i18next'
 import _ from 'lodash'
 import moment, { Moment } from 'moment'
@@ -49,6 +49,7 @@ export function isResourceTypeOf(resource: IResource, resourceType: IResourceDef
 export function getSubscriptionsFromAnnotation(app: IResource) {
     const subAnnotation =
         app.metadata?.annotations !== undefined ? app.metadata?.annotations[subAnnotationStr] : undefined
+    // eslint-disable-next-line no-extra-boolean-cast
     if (!!subAnnotation) {
         return subAnnotation.split(',')
     }
