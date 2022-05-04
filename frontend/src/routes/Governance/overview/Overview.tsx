@@ -1,13 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, ButtonVariant, Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmDrawerContext, compareStrings } from '@stolostron/ui-components'
-import { Fragment, useCallback, useContext, useMemo } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { managedClustersState, usePolicies } from '../../../atoms'
+import { managedClustersState, namespacesState, usePolicies } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { ManagedCluster, Policy } from '../../../resources'
+import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
+import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
 import {
     GovernanceCreatePolicyEmptyState,
     GovernanceManagePoliciesEmptyState,
@@ -20,12 +21,18 @@ import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummaryS
 
 export default function GovernanceOverview() {
     const policies = usePolicies()
+    const [namespaces] = useRecoilState(namespacesState)
     const policyViolationSummary = usePolicyViolationSummary(policies)
+    const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
+    useEffect(() => {
+        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
+    }, [namespaces])
+
     if (policies.length === 0) {
-        return <GovernanceCreatePolicyEmptyState />
+        return <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
     }
     if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant)) {
-        return <GovernanceManagePoliciesEmptyState />
+        return <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
     }
     return (
         <PageSection isWidthLimited>
@@ -210,23 +217,39 @@ function ClustersCard() {
             <Card isRounded>
                 <CardTitle>{'Clusters'}</CardTitle>
                 <CardBody>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 16 }}>
                         {clusters.map((cluster) => {
                             const clusterViolationSummary = clusterViolationSummaryMap[cluster.metadata.name ?? '']
                             if (!clusterViolationSummary) return <Fragment />
                             return (
                                 <Fragment>
                                     <span>{cluster.metadata.name}</span>
+                                    {clusterViolationSummary.unknown ? (
+                                        <Tooltip
+                                            content={t('policies.unknown', {
+                                                count: clusterViolationSummary.unknown,
+                                            })}
+                                        >
+                                            <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                <Button
+                                                    isInline
+                                                    variant={ButtonVariant.link}
+                                                    onClick={() => onClick(cluster, 'unknown')}
+                                                >
+                                                    {clusterViolationSummary.unknown}
+                                                </Button>{' '}
+                                                &nbsp;
+                                                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                                            </span>
+                                        </Tooltip>
+                                    ) : (
+                                        <span />
+                                    )}
                                     {clusterViolationSummary.compliant ? (
                                         <Tooltip
-                                            content={t(
-                                                clusterViolationSummary.compliant === 1
-                                                    ? 'cluster.without.violations'
-                                                    : 'clusters.without.violations',
-                                                {
-                                                    count: clusterViolationSummary.compliant,
-                                                }
-                                            )}
+                                            content={t('policies.noviolations', {
+                                                count: clusterViolationSummary.compliant,
+                                            })}
                                         >
                                             <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                                                 <Fragment>
@@ -247,14 +270,9 @@ function ClustersCard() {
                                     )}
                                     {clusterViolationSummary.noncompliant ? (
                                         <Tooltip
-                                            content={t(
-                                                clusterViolationSummary.noncompliant === 1
-                                                    ? 'cluster.with.violations'
-                                                    : 'clusters.with.violations',
-                                                {
-                                                    count: clusterViolationSummary.noncompliant,
-                                                }
-                                            )}
+                                            content={t('policy.violations', {
+                                                count: clusterViolationSummary.noncompliant,
+                                            })}
                                         >
                                             <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                                                 <Button

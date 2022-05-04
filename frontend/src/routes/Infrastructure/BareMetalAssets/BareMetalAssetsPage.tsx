@@ -106,7 +106,6 @@ export function BareMetalAssetsTable(props: {
     function setImportModalProps() {
         setImportedProps({
             open: true,
-            icon: 'default',
             title: t('bulk.title.import.bma'),
             action: t('import'),
             processing: '',

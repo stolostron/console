@@ -2,10 +2,48 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import moment from 'moment'
 import { nockIgnoreRBAC } from '../../lib/nock-util'
 import { waitForTestId } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
+import { Application, ApplicationApiVersion, ApplicationKind } from '../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
+import { applicationsState } from '../../atoms'
+
+///////////////////////////////// Mock Data /////////////////////////////////////////////////////
+
+const mockApplication0: Application = {
+    apiVersion: ApplicationApiVersion,
+    kind: ApplicationKind,
+    metadata: {
+        name: 'application-0',
+        namespace: 'namespace-0',
+        creationTimestamp: `${moment().format()}`,
+        annotations: {
+            'apps.open-cluster-management.io/subscriptions':
+                'namespace-0/subscription-0,namespace-0/subscription-0-local',
+        },
+    },
+    spec: {
+        componentKinds: [
+            {
+                group: 'apps.open-cluster-management.io',
+                kind: 'Subscription',
+            },
+        ],
+        selector: {
+            matchExpressions: [
+                {
+                    key: 'app',
+                    operator: 'In',
+                    values: ['application-0-app'],
+                },
+            ],
+        },
+    },
+}
+
+const mockApplications: Application[] = [mockApplication0]
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
@@ -55,10 +93,30 @@ describe('Create Subscription Application page', () => {
         console.group = originalConsoleGroup
         console.groupCollapsed = originalConsoleGroupCollapsed
     })
-    test('can render CreateSubscriptionApplicationPage', async () => {
+    test('can render Create Subscription Application Page', async () => {
         window.scrollBy = () => {}
         render(<Component />)
         await waitForTestId('cancel-button-portal-id')
         await waitForTestId('create-button-portal-id')
+    })
+
+    test('can render Edit Subscription Application Page', async () => {
+        window.scrollBy = () => {}
+        render(
+            <RecoilRoot
+                initializeState={(snapshot) => {
+                    snapshot.set(applicationsState, mockApplications)
+                }}
+            >
+                <MemoryRouter>
+                    <Route
+                        path={NavigationPath.editApplicationSubscription
+                            .replace(':namespace', mockApplication0.metadata?.namespace as string)
+                            .replace(':name', mockApplication0.metadata?.name as string)}
+                        render={() => <CreateSubscriptionApplicationPage />}
+                    />
+                </MemoryRouter>
+            </RecoilRoot>
+        )
     })
 })

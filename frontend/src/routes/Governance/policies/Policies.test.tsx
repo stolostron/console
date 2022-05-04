@@ -3,6 +3,7 @@ import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policySetsState } from '../../../atoms'
+import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
 import { Policy, PolicySet } from '../../../resources'
 import PoliciesPage from './Policies'
@@ -116,6 +117,9 @@ export const mockPolicy: Policy[] = [rootPolicy, policy0]
 export const mockPolicySet: PolicySet[] = [policySet0]
 
 describe('Policies Page', () => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+    })
     test('Should render empty Policies page correctly', async () => {
         render(
             <RecoilRoot
@@ -180,7 +184,7 @@ describe('Policies Page', () => {
             // need to use index [1] because the name column is also an "a" element
             expect(container.querySelectorAll('a')[2]).toHaveAttribute(
                 'href',
-                '/multicloud/governance/policies/details/test/policy-set-with-1-placement-policy-1/results'
+                '/multicloud/governance/policies/details/test/policy-set-with-1-placement-policy-1/results?sort=-1'
             )
         )
     })

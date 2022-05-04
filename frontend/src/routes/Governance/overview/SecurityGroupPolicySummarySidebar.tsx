@@ -99,7 +99,7 @@ export function SecurityGroupPolicySummarySidebar(props: {
         () => [
             {
                 header: t('Policy name'),
-                search: 'policyName',
+                search: 'metadata.name',
                 sort: (a: Policy, b: Policy) =>
                     /* istanbul ignore next */
                     compareStrings(a.metadata.name, b.metadata.name),

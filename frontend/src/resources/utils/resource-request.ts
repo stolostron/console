@@ -2,12 +2,11 @@
 
 import { noop } from 'lodash'
 import { getCookie } from '.'
-import { NamespaceKind } from '..'
-import { ApplicationKind, SubscriptionApiVersion, SubscriptionKind } from '..'
+import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '..'
+import { subAnnotationStr } from '../../routes/Applications/helpers/resource-helper'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
-import { subAnnotationStr } from '../../routes/Applications/helpers/resource-helper'
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -503,7 +502,7 @@ export function deleteRequest(url: string): IRequestResult {
 
 // --- FETCH FUNCTIONS ---
 
-export function fetchGet<T = unknown>(url: string, signal: AbortSignal) {
+export function fetchGet<T = unknown>(url: string, signal?: AbortSignal) {
     return fetchRetry<T>({
         method: 'GET',
         url,
@@ -516,7 +515,7 @@ export function fetchPut<T = unknown>(url: string, data: unknown, signal: AbortS
     return fetchRetry<T>({ method: 'PUT', url, signal, data })
 }
 
-export function fetchPost<T = unknown>(url: string, data: unknown, signal: AbortSignal) {
+export function fetchPost<T = unknown>(url: string, data?: unknown, signal?: AbortSignal) {
     return fetchRetry<T>({ method: 'POST', url, signal, data })
 }
 
@@ -536,7 +535,7 @@ export function fetchDelete(url: string, signal: AbortSignal) {
 export async function fetchRetry<T>(options: {
     method?: 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE'
     url: string
-    signal: AbortSignal
+    signal?: AbortSignal
     data?: unknown
     retries?: number
     delay?: number
@@ -579,7 +578,7 @@ export async function fetchRetry<T>(options: {
                 redirect: 'manual',
             })
         } catch (err) {
-            if (options.signal.aborted) {
+            if (options.signal?.aborted) {
                 throw new ResourceError(`Request aborted`, ResourceErrorCode.RequestAborted)
             }
 

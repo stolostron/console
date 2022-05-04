@@ -11,7 +11,6 @@ import {
     patchResource,
     createResource,
     getResource,
-    listNamespacedResources,
     ClusterImageSet,
     listClusterImageSets,
     listResources,
@@ -36,7 +35,7 @@ import { AgentK8sResource, BareMetalHostK8sResource } from 'openshift-assisted-u
 
 const {
     getAnnotationsFromAgentSelector,
-    AGENT_BMH_HOSTNAME_LABEL_KEY,
+    AGENT_BMH_NAME_LABEL_KEY,
     INFRAENV_GENERATED_AI_FLOW,
     getBareMetalHostCredentialsSecret,
     getBareMetalHost,
@@ -52,7 +51,6 @@ type OnHostsNext = {
 }
 
 type OnDiscoverHostsNext = {
-    values: CIM.ClusterDeploymentHostsDiscoveryValues
     clusterDeployment: CIM.ClusterDeploymentK8sResource
     agentClusterInstall: CIM.AgentClusterInstallK8sResource
     agents: CIM.AgentK8sResource[]
@@ -162,9 +160,6 @@ export const onHostsNext = async ({ values, clusterDeployment, agents, agentClus
 
 /** AI-specific version for the CIM-flow's onHostsNext() callback */
 export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClusterInstall }: OnDiscoverHostsNext) => {
-    // TODO(mlibra): So far we do not need "values" of the Formik - options the user will choose from will come later (like CNV or OCS)
-    // So far no need to "release" agents since the user either deletes the agent or keep the list untouched. Reconsider when "disable" gets in place.
-
     const name = clusterDeployment.metadata.name
     const namespace = clusterDeployment.metadata.namespace
 
@@ -172,7 +167,7 @@ export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClu
         agents,
         name,
         namespace,
-        hostIds: agents.map((a: CIM.AgentK8sResource) => a.metadata.uid),
+        hostIds: agents.map((a) => a.metadata.uid),
     })
 
     const masterCount = agentClusterInstall.spec?.provisionRequirements?.controlPlaneAgents
@@ -182,11 +177,6 @@ export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClu
 
         await setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
     }
-
-    // In the AI flow, the agents are automatically approved
-    await Promise.all(agents.map((agent) => onApproveAgent(agent)))
-
-    // No need to update ClusterDeployment annotations - they stay static after ccreation by template
 }
 
 const appendPatch = (patches: any, path: string, newVal: object | string | boolean, existingVal?: object | string) => {
@@ -322,7 +312,10 @@ export const useClusterDeployment = ({
 }): CIM.ClusterDeploymentK8sResource | undefined => {
     const [clusterDeployments] = useRecoilValue(waitForAll([clusterDeploymentsState]))
     return useMemo(
-        () => clusterDeployments.find((cd) => cd.metadata.name === name && cd.metadata.namespace === namespace),
+        () =>
+            name
+                ? clusterDeployments.find((cd) => cd.metadata.name === name && cd.metadata.namespace === namespace)
+                : undefined,
         [name, namespace, clusterDeployments]
     )
 }
@@ -361,19 +354,6 @@ export const onApproveAgent = (agent: CIM.AgentK8sResource) =>
 export const getClusterDeploymentLink = ({ name }: { name: string }) =>
     NavigationPath.clusterDetails.replace(':id', name)
 
-// export const canDeleteAgent = (agent?: CIM.AgentK8sResource, bmh?: CIM.BareMetalHostK8sResource) => !!agent || !!bmh
-
-// TODO(mlibra): Is that state-dependent in our flow?
-export const canEditHost = () => true
-
-export const fetchNMState = async (namespace: string, bmhName: string) => {
-    const nmStates = await listNamespacedResources(
-        { apiVersion: 'agent-install.openshift.io/v1beta1', kind: 'NMStateConfig', metadata: { namespace } },
-        [AGENT_BMH_HOSTNAME_LABEL_KEY]
-    ).promise
-    return nmStates.find((nm) => nm.metadata?.labels?.[AGENT_BMH_HOSTNAME_LABEL_KEY] === bmhName)
-}
-
 export const fetchSecret = (namespace: string, name: string) =>
     getResource({ apiVersion: 'v1', kind: 'Secret', metadata: { namespace, name } }).promise
 
@@ -396,7 +376,7 @@ export const getDeleteHostAction =
         let bmh = bareMetalHost
         if (agent) {
             resources.push(agent)
-            const bmhName = agent.metadata.labels?.[AGENT_BMH_HOSTNAME_LABEL_KEY]
+            const bmhName = agent.metadata.labels?.[AGENT_BMH_NAME_LABEL_KEY]
             if (bmhName) {
                 bmh = bareMetalHosts.find(
                     ({ metadata }) => metadata.name === bmhName && metadata.namespace === agent.metadata.namespace
@@ -414,12 +394,10 @@ export const getDeleteHostAction =
                 },
             })
 
-            const nmState = (nmStates || []).find(
-                (nm) => nm.metadata?.labels?.[AGENT_BMH_HOSTNAME_LABEL_KEY] === bmh.metadata.name
+            const bmhNMStates = (nmStates || []).filter(
+                (nm) => nm.metadata?.labels?.[AGENT_BMH_NAME_LABEL_KEY] === bmh.metadata.name
             )
-            if (nmState) {
-                resources.push(nmState)
-            }
+            resources.push(...bmhNMStates)
         }
 
         if (agentClusterInstall) {
@@ -433,7 +411,7 @@ export const getDeleteHostAction =
     }
 
 export const getAgentName = (resource: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource): string =>
-    resource.spec?.hostname || resource.spec?.bmc?.address || resource.metadata?.name || '-'
+    resource.spec?.hostname || resource.metadata?.name || '-'
 
 export const agentNameSortFunc = (
     a: CIM.AgentK8sResource | CIM.BareMetalHostK8sResource,
@@ -481,27 +459,6 @@ export const useOnDeleteHost = (
         },
         [toggleDialog, bareMetalHosts, nmStates]
     )
-}
-
-export const useNMStatesOfNamespace = (namespace?: string) => {
-    const [nmStates, setNMStates] = useState<CIM.NMStateK8sResource[] | undefined>()
-    useEffect(() => {
-        const doItAsync = async () => {
-            if (namespace) {
-                const result = await listNamespacedResources(
-                    {
-                        apiVersion: 'agent-install.openshift.io/v1beta1',
-                        kind: 'NMStateConfig',
-                        metadata: { namespace },
-                    },
-                    [AGENT_BMH_HOSTNAME_LABEL_KEY]
-                ).promise
-                setNMStates(result)
-            }
-        }
-        doItAsync()
-    }, [namespace])
-    return nmStates
 }
 
 export const onSaveBMH =
@@ -568,21 +525,6 @@ export const getOnCreateBMH =
         const secretRes = await createResource<any>(secret).promise
         if (nmState) {
             await createResource<any>(nmState).promise
-            const matchLabels = { infraEnv: infraEnv.metadata.name }
-            if (!isEqual(infraEnv.spec.nmStateConfigLabelSelector?.matchLabels, matchLabels)) {
-                const op = Object.prototype.hasOwnProperty.call(infraEnv.spec, 'nmStateConfigLabelSelector')
-                    ? 'replace'
-                    : 'add'
-                await patchResource(infraEnv, [
-                    {
-                        op: op,
-                        path: `/spec/nmStateConfigLabelSelector`,
-                        value: {
-                            matchLabels,
-                        },
-                    },
-                ]).promise
-            }
         }
         const bmh: CIM.BareMetalHostK8sResource = getBareMetalHost(values, infraEnv, secretRes)
         return createResource(bmh).promise
@@ -766,13 +708,22 @@ export const onEditNtpSources = (values: any, infraEnv: CIM.InfraEnvK8sResource)
     return patchResource(infraEnv, patches).promise
 }
 
-export const onMassDeleteHost = (agent: CIM.AgentK8sResource, bmh: CIM.BareMetalHostK8sResource) => {
+export const onMassDeleteHost = (
+    agent: CIM.AgentK8sResource,
+    bmh: CIM.BareMetalHostK8sResource,
+    nmStates: CIM.NMStateK8sResource[] = []
+) => {
     const toDelete = []
     if (agent) {
         toDelete.push(agent)
     }
     if (bmh) {
         toDelete.push(bmh)
+
+        const bmhNMStates = (nmStates || []).filter(
+            (nm) => nm.metadata?.labels?.[AGENT_BMH_NAME_LABEL_KEY] === bmh.metadata.name
+        )
+        toDelete.push(...bmhNMStates)
     }
     return deleteResources(toDelete).promise
 }

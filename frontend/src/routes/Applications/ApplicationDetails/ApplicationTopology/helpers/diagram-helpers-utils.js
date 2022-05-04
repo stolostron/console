@@ -21,7 +21,7 @@ import {
     metadataName,
 } from '../model/computeStatuses'
 
-export const nodesWithNoNS = ['namespace', 'clusterrole', 'clusterrolebinding']
+export const nodesWithNoNS = ['namespace', 'clusterrole', 'clusterrolebinding', 'customresourcedefinition']
 
 export const isDeployableResource = (node) => {
     //check if this node has been created using a deployable object
@@ -39,12 +39,12 @@ export const nodeMustHavePods = (node) => {
     if (
         R.includes(R.pathOr('', ['type'])(node), [
             'pod',
-            'replicaset',
+            //'replicaset',
             'daemonset',
             'statefulset',
-            'replicationcontroller',
-            'deployment',
-            'deploymentconfig',
+            //'replicationcontroller',
+            //'deployment',
+            //'deploymentconfig',
             'controllerrevision',
         ])
     ) {
@@ -192,8 +192,7 @@ export const namespaceMatchTargetServer = (relatedKind, resourceMapForObject) =>
 
 // try to match app destination clusters with hub clusters using search data
 export const updateAppClustersMatchingSearch = (node, searchClusters) => {
-    const nodeId = _.get(node, 'id', '')
-    if (nodeId !== 'member--clusters--') {
+    if (node.type !== 'cluster') {
         //acm cluster node
         _.set(node, 'specs.clusters', searchClusters)
         return node
@@ -243,7 +242,6 @@ export const updateAppClustersMatchingSearch = (node, searchClusters) => {
         }
     })
     _.set(node, 'specs.appClusters', _.sortBy(appClusters))
-    _.set(node, 'specs.clusters', searchClusters)
     return node
 }
 

@@ -3,7 +3,7 @@ import { get, uniq, uniqBy } from 'lodash'
 import { getClusterName, addClusters } from './utils'
 import { createReplicaChild } from './topologySubscription'
 
-export function getArgoTopology(application, argoData) {
+export function getArgoTopology(application, argoData, managedClusters) {
     const { topology, cluster } = argoData
     const links = []
     const nodes = []
@@ -14,42 +14,31 @@ export function getArgoTopology(application, argoData) {
     let clusterNames = []
     const destination = get(application, 'app.spec.destination', [])
     if (cluster) {
+        // Argo app defined on remote cluster
         // set to empty string for now, depends on backend to provide argoapi from secrets
+        const clusterName = getArgoDestinationCluster(destination, managedClusters, cluster)
         const remoteClusterDestination = ''
-        clusterNames.push(cluster)
-        clusters.push({ metadata: { name: cluster, namespace: cluster }, remoteClusterDestination, status: 'ok' })
+        clusterNames.push(clusterName)
+        clusters.push({
+            metadata: { name: clusterName, namespace: clusterName },
+            remoteClusterDestination,
+            status: 'ok',
+        })
     } else {
-        //serverDestinations.forEach((destination) => {
         try {
-            let clusterName
-            const serverApi = get(destination, 'server')
-            if (serverApi) {
-                const serverURI = new URL(serverApi)
-                clusterName =
-                    serverURI && serverURI.hostname && serverURI.hostname.split('.').length > 1
-                        ? serverURI.hostname.split('.')[1]
-                        : 'unknown'
-                if (clusterName === 'default') {
-                    // mark this as default cluster
-                    clusterName = 'local-cluster'
-                }
-            } else {
-                // target destination was set using the name property
-                clusterName = get(destination, 'name', 'unknown')
-            }
+            const clusterName = getArgoDestinationCluster(destination, managedClusters)
             clusterNames.push(clusterName)
             clusters.push({ metadata: { name: clusterName, namespace: clusterName }, destination, status: 'ok' })
         } catch (err) {
             //logger.error(err)
         }
-        //})
     }
     clusterNames = uniq(clusterNames)
     const relatedApps = topology ? topology.nodes[0].specs.relatedApps : undefined
 
     const appId = `application--${name}`
     nodes.push({
-        name: '',
+        name,
         namespace,
         type: 'application',
         id: appId,
@@ -120,6 +109,7 @@ export function getArgoTopology(application, argoData) {
             specs: {
                 isDesign: false,
                 raw,
+                clustersNames: clusterNames,
                 parent: {
                     clusterId,
                 },
@@ -135,8 +125,34 @@ export function getArgoTopology(application, argoData) {
 
         const template = { metadata: {} }
         // create replica subobject, if this object defines a replicas
-        createReplicaChild(deployableObj, template, links, nodes)
+        createReplicaChild(deployableObj, clusterNames, template, links, nodes)
     })
 
     return { nodes: uniqBy(nodes, 'uid'), links }
+}
+
+export function getArgoDestinationCluster(destination, managedClusters, cluster) {
+    // cluster is the name of the managed cluster where the Argo app is defined
+    let clusterName
+    const serverApi = get(destination, 'server')
+    if (serverApi) {
+        if (serverApi === 'https://kubernetes.default.svc') {
+            clusterName = cluster ? cluster : 'local-cluster'
+        } else {
+            const server = managedClusters.find((cls) => cls.kubeApiServer === serverApi)
+            clusterName = server ? server.name : 'unknown'
+        }
+    } else {
+        // target destination was set using the name property
+        clusterName = get(destination, 'name', 'unknown')
+        if (cluster && (clusterName === 'in-cluster' || clusterName === 'local-cluster')) {
+            clusterName = cluster
+        }
+
+        if (clusterName === 'in-cluster') {
+            clusterName = 'local-cluster'
+        }
+    }
+
+    return clusterName
 }

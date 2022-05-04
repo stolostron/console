@@ -4,6 +4,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
+import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
 import { PolicySet, PolicySetApiVersion, PolicySetKind } from '../../../resources'
 import PolicySetsPage from './PolicySets'
@@ -63,6 +64,9 @@ export const mockEmptyPolicySets: PolicySet[] = []
 export const mockPolicySets: PolicySet[] = [policySet0, policySet1]
 
 describe('PolicySets Page', () => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+    })
     test('Should render empty PolicySet page correctly', async () => {
         render(
             <RecoilRoot

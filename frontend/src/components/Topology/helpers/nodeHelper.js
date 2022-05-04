@@ -24,7 +24,6 @@ const textResourceCount = 'text.resourceCountText'
 const gNodeTitle = 'g.nodeTitle'
 const gNodeLabel = 'g.nodeLabel'
 const useNodeIcon = 'use.nodeIcon'
-const useNodeMultiplier = 'use.multiplier'
 const useResourceCountIcon = 'use.resourceCountIcon'
 const dotResourceCountIcon = '.resourceCountIcon'
 const STATUS_ICON_POSITION = { dx: -18, dy: 12, ddx: 0, width: 16, height: 16 }
@@ -42,7 +41,22 @@ export default class NodeHelper {
         this.typeToShapeMap = typeToShapeMap
         this.getClientRef = getClientRef
         this.showsShapeTitles = showsShapeTitles
+        this.setWasDragged = this.setWasDragged.bind(this)
         this.t = t
+    }
+
+    setWasDragged = (dx, dy) => {
+        if (dx !== undefined) {
+            if (!this.dragged) {
+                this.dragged = { dx: 0, dy: 0 }
+            }
+            this.dragged.dx += dx
+            this.dragged.dy += dy
+        } else {
+            const wasDragged = Math.abs(this.dragged.dx) + Math.abs(this.dragged.dy) > 10
+            delete this.dragged
+            return wasDragged
+        }
     }
 
     // add or remove nodes based on data in this.nodes
@@ -79,18 +93,18 @@ export default class NodeHelper {
                 return d.id
             })
             .style('opacity', 0.0)
-            .on('click', (d) => {
-                nodeClickHandler(d)
+            .on('click', (e) => {
+                e.stopPropagation()
             })
 
         // node hover/select shape
         this.createNodeSelect(newNodes)
 
         // node multiplier shape
-        this.updateNodeMultiplier(newNodes)
+        this.createNodeMultiplier(newNodes)
 
         // node shape
-        this.createNodeShapes(newNodes, nodeDragHandler)
+        this.createNodeShapes(newNodes, nodeClickHandler, nodeDragHandler)
 
         // node labels
         if (draw) {
@@ -108,25 +122,23 @@ export default class NodeHelper {
     }
 
     createNodeSelect = (nodes) => {
-        nodes.append('use').call(attrs, (d) => {
-            const resourceCount = _.get(d, 'specs.resourceCount')
-            if (resourceCount > 1) {
-                return {
-                    href: '#diagramIcons_selectMultiplier',
-                    tabindex: -1,
-                    class: 'shadow selectMultiplier',
-                }
-            } else {
-                return {
-                    href: '#diagramShapes_select',
-                    tabindex: -1,
-                    class: 'shadow select',
-                }
+        nodes.append('use').call(attrs, () => {
+            return {
+                href: '#diagramIcons_selectMultiplier',
+                tabindex: -1,
+                class: 'shadow selectMultiplier',
+            }
+        })
+        nodes.append('use').call(attrs, () => {
+            return {
+                href: '#diagramShapes_select',
+                tabindex: -1,
+                class: 'shadow select',
             }
         })
     }
 
-    addElementsForNodes = (nodes, nodeDragHandler) => {
+    addElementsForNodes = (nodes, nodeClickHandler, nodeDragHandler) => {
         nodes
             .append('use')
             .call(attrs, (d) => {
@@ -148,19 +160,23 @@ export default class NodeHelper {
                     .on('drag', this.dragNode)
                     .on('start', () => {
                         if (nodeDragHandler) {
+                            this.setWasDragged(0, 0)
                             nodeDragHandler(true)
                         }
                     })
-                    .on('end', () => {
+                    .on('end', (e) => {
                         if (nodeDragHandler) {
                             nodeDragHandler(false)
+                            if (!this.setWasDragged()) {
+                                nodeClickHandler(e)
+                            }
                         }
                     })
             )
     }
 
-    createNodeShapes = (nodes, nodeDragHandler) => {
-        this.addElementsForNodes(nodes, nodeDragHandler)
+    createNodeShapes = (nodes, nodeClickHandler, nodeDragHandler) => {
+        this.addElementsForNodes(nodes, nodeClickHandler, nodeDragHandler)
 
         //Make sure the subscription node updates
         const subscriptionNode = this.svg
@@ -176,7 +192,7 @@ export default class NodeHelper {
         })
         const subscriptionNodeShapeEnter = subscriptionNodeShape.enter()
 
-        this.addElementsForNodes(subscriptionNodeShapeEnter, nodeDragHandler)
+        this.addElementsForNodes(subscriptionNodeShapeEnter, nodeClickHandler, nodeDragHandler)
     }
 
     createTitles = (draw, nodes) => {
@@ -291,15 +307,9 @@ export default class NodeHelper {
         })
     }
 
-    // update node multiplier
-    updateNodeMultiplier = (nodes) => {
-        const multipliers = nodes.selectAll(useNodeMultiplier).data((d) => {
-            const resourceCount = _.get(d, 'specs.resourceCount')
-            return resourceCount > 1 ? [d] : []
-        })
-        multipliers.exit().remove()
-        multipliers
-            .enter()
+    // create node multiplier
+    createNodeMultiplier = (nodes) => {
+        nodes
             .append('use')
             .call(attrs, () => {
                 return {
@@ -448,7 +458,6 @@ export default class NodeHelper {
         visible.selectAll('use.shape').call(attrs, ({ layout }) => {
             const { x, y, scale = 1 } = layout
             const sz = NODE_SIZE * scale
-            console.log()
             return {
                 width: sz,
                 height: sz,
@@ -457,22 +466,26 @@ export default class NodeHelper {
         })
 
         // move highlight/select shape
-        visible.selectAll('use.select').call(attrs, ({ layout }) => {
+        visible.selectAll('use.select').call(attrs, ({ layout, specs }) => {
             const { x, y, scale = 1 } = layout
+            const multiplier = specs !== null && (specs.resourceCount || 0) > 1
             const sz = NODE_SIZE * scale + 8
             return {
                 width: sz,
                 height: sz,
+                visibility: !multiplier ? 'visible' : 'hidden',
                 transform: `translate(${x - sz / 2}, ${y - sz / 2})`,
             }
         })
-        visible.selectAll('use.selectMultiplier').call(attrs, ({ layout }) => {
+        visible.selectAll('use.selectMultiplier').call(attrs, ({ layout, specs }) => {
             const { x, y, scale = 1 } = layout
             const wz = 66 * scale + 8
+            const multiplier = specs !== null && (specs.resourceCount || 0) > 1
             const sz = NODE_SIZE * scale + 8
             return {
                 width: wz,
                 height: sz,
+                visibility: multiplier ? 'visible' : 'hidden',
                 transform: `translate(${x - sz / 2}, ${y - sz / 2 - 2})`,
             }
         })
@@ -505,6 +518,7 @@ export default class NodeHelper {
     }
 
     dragNode = (evt, dp) => {
+        this.setWasDragged(evt.dx, evt.dy)
         const { layout } = dp
         const node = d3.select(`#${dp.id}`)
 

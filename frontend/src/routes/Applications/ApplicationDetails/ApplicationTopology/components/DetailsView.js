@@ -41,8 +41,6 @@ DetailsViewDecorator.propTypes = {
     shape: PropTypes.string,
 }
 
-const resourcesWithPods = new Set(['pod', 'replicaset', 'replicationcontroller', 'statefulset', 'daemonset'])
-
 class DetailsView extends React.Component {
     constructor(props) {
         super(props)
@@ -124,14 +122,17 @@ class DetailsView extends React.Component {
     }
 
     render() {
-        const { filteredNode } = this.state
+        const { filteredNode, activeTabKey } = this.state
         const { getLayoutNodes, options, selectedNodeId, nodes, t } = this.props
         const { typeToShapeMap } = options
         const currentNode = filteredNode || getLayoutNodes().find((n) => n.uid === selectedNodeId) || {}
         const currentUpdatedNode = filteredNode || nodes.find((n) => n.uid === selectedNodeId)
         const { layout = {} } = currentNode
         const resourceType = layout.type || currentNode.type || currentUpdatedNode.type
-        const isTableView = _.get(currentNode, 'specs.resourceCount', 0) > 1 && currentNode.type !== 'cluster'
+        const isTableView =
+            _.get(currentNode, 'specs.resourceCount', 0) > 1 &&
+            currentNode.type !== 'cluster' &&
+            currentNode.type !== 'application'
         const { shape = 'other', className = 'default' } = typeToShapeMap[resourceType] || {}
         let name = isTableView || currentNode.type === 'cluster' ? '' : currentNode.name
         if (!name) {
@@ -141,40 +142,40 @@ class DetailsView extends React.Component {
         const searchLink = createResourceSearchLink(currentNode, t)
 
         return (
-            <div className="topologyDetails">
-                {filteredNode && (
-                    <div style={{ margin: '0 0 20px 10px' }}>
-                        <Button onClick={() => this.setState({ filteredNode: undefined })} variant="link" isInline>
-                            {t(`< Back to all ${resourceType}s`)}
-                        </Button>
-                    </div>
-                )}
-                <div className="detailsHeader">
-                    <DetailsViewDecorator shape={shape} className={className} />
-                    <div>
-                        <div className="sectionContent">
-                            <span className="label">{legend}</span>
+            <div className="topologyDetails" style={{ overflow: activeTabKey !== 2 ? 'auto' : 'hidden' }}>
+                <div class="detailsHeader">
+                    {filteredNode && (
+                        <div style={{ margin: '0 0 20px 10px' }}>
+                            <Button onClick={() => this.setState({ filteredNode: undefined })} variant="link" isInline>
+                                {t(`< Back to all ${resourceType}s`)}
+                            </Button>
                         </div>
-                        {!isTableView && (
-                            <Fragment>
-                                <div className="sectionContent">
-                                    <span className="titleNameText">{name}</span>
-                                </div>
-                                <div className="openSearchLink">{this.renderLink(searchLink, t)}</div>
-                            </Fragment>
-                        )}
+                    )}
+                    <div className="innerDetailsHeader">
+                        <DetailsViewDecorator shape={shape} className={className} />
+                        <div>
+                            <div className="sectionContent">
+                                <span className="label">{legend}</span>
+                            </div>
+                            {!isTableView && (
+                                <Fragment>
+                                    <div className="sectionContent">
+                                        <span className="titleNameText">{name}</span>
+                                    </div>
+                                    <div className="openSearchLink">{this.renderLink(searchLink, t)}</div>
+                                </Fragment>
+                            )}
+                        </div>
                     </div>
+                    {!isTableView && this.renderTabs(currentNode)}
                 </div>
-                <Fragment>
-                    {isTableView ? this.renderTable(currentNode) : this.renderTabs(currentNode, currentUpdatedNode)}
-                </Fragment>
+                <section style={{ height: activeTabKey !== 2 ? undefined : '100%' }}>
+                    {isTableView
+                        ? this.renderTableContents(currentNode)
+                        : this.renderTabContents(currentNode, currentUpdatedNode)}
+                </section>
             </div>
         )
-    }
-
-    renderTable(node) {
-        const { t } = this.props
-        return <DetailsTable id="details-view-table" node={node} handleOpen={this.handleOpen.bind(this)} t={t} />
     }
 
     handleOpen(node, item) {
@@ -182,7 +183,26 @@ class DetailsView extends React.Component {
         this.setState({ filteredNode })
     }
 
-    renderTabs(node, currentUpdatedNode) {
+    renderTabs(node) {
+        const { t } = this.props
+        const isLogTabHidden = node.type !== 'pod'
+        const { activeTabKey } = this.state
+
+        return (
+            <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick} mountOnEnter={true} unmountOnExit={true}>
+                <Tab eventKey={0} title={<TabTitleText>{t('Details')}</TabTitleText>} isHidden={false} />
+                <Tab eventKey={1} title={<TabTitleText>{t('Logs')}</TabTitleText>} isHidden={isLogTabHidden} />
+                <Tab eventKey={2} title={<TabTitleText>{t('YAML')}</TabTitleText>} isHidden={node.type === 'cluster'} />
+            </Tabs>
+        )
+    }
+
+    renderTableContents(node) {
+        const { t } = this.props
+        return <DetailsTable id="details-view-table" node={node} handleOpen={this.handleOpen.bind(this)} t={t} />
+    }
+
+    renderTabContents(node, currentUpdatedNode) {
         const { options, activeFilters, t } = this.props
         const selectedNodeId = node.id
         const { getNodeDetails } = options
@@ -190,27 +210,24 @@ class DetailsView extends React.Component {
         const name = node.type === 'cluster' ? '' : node.name
         const yamlURL = createResourceURL(node, t)
         const { namespace, type } = node
-        const isLogTabHidden = !resourcesWithPods.has(node.type)
         const { activeTabKey } = this.state
 
         // Only YAML tab has a key so it will get recreated when switching between nodes
-        return (
-            <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick} mountOnEnter={true} unmountOnExit={true}>
-                <Tab eventKey={0} title={<TabTitleText>{t('Details')}</TabTitleText>} isHidden={false}>
-                    {details.map((detail) => this.renderDetail(detail, t))}
-                </Tab>
-                <Tab eventKey={1} title={<TabTitleText>{t('Logs')}</TabTitleText>} isHidden={isLogTabHidden}>
-                    <LogsContainer node={node} t={t} renderResourceURLLink={this.renderResourceURLLink} />
-                </Tab>
-                <Tab eventKey={2} title={<TabTitleText>{t('YAML')}</TabTitleText>} isHidden={node.type === 'cluster'}>
-                    {this.renderResourceURLLink(
+        switch (activeTabKey) {
+            case 0:
+            default:
+                return details.map((detail) => this.renderDetail(detail, t))
+            case 1:
+                return <LogsContainer node={node} t={t} renderResourceURLLink={this.renderResourceURLLink} />
+            case 2:
+                {
+                    this.renderResourceURLLink(
                         { data: { action: 'open_link', targetLink: yamlURL, name, namespace, kind: type } },
                         t
-                    )}
-                    <YAMLContainer key={selectedNodeId} node={node} t={t} />
-                </Tab>
-            </Tabs>
-        )
+                    )
+                }
+                return <YAMLContainer key={selectedNodeId} node={node} t={t} />
+        }
     }
 
     renderDetail(detail, t) {

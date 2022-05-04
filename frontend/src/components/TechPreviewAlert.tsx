@@ -3,10 +3,10 @@ import { Alert, Label } from '@patternfly/react-core'
 import { BellIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../lib/acm-i18next'
 
-export function TechPreviewAlert(props: { i18nKey: string; docHref: string }) {
+export function TechPreviewAlert(props: { i18nKey: string; docHref: string; disableBottomPadding?: boolean }) {
     return (
         <Alert
-            style={{ marginBottom: '16px' }}
+            style={{ marginBottom: props.disableBottomPadding ? undefined : '16px' }}
             customIcon={<BellIcon />}
             isInline
             variant="warning"

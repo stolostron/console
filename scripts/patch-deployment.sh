@@ -17,6 +17,9 @@ DEPLOYMENT=`oc get deployment -n open-cluster-management --selector=app=console-
 
 kubectl scale deployment.v1.apps/$DEPLOYMENT -n open-cluster-management --replicas=0
 
+PATCH='[{"op":"replace","path":"/spec/template/spec/containers/0/imagePullPolicy","value":"Always"}]'
+oc patch deployment $DEPLOYMENT -n open-cluster-management --type='json' -p $PATCH
+
 PATCH='[{"op":"replace","path":"/spec/template/spec/containers/0/image","value":"'${IMAGE}':'$1'"}]'
 oc patch deployment $DEPLOYMENT -n open-cluster-management --type='json' -p $PATCH
 

@@ -172,7 +172,7 @@ export class ClusterSelector extends React.Component {
                 if (labelNameSet.has(labelName)) {
                     exceptions.push({
                         row: 1,
-                        text: i18n('creation.duplicate.clusterSelector.label').replace('{0}', labelName),
+                        text: i18n('creation.duplicate.clusterSelector.label', [labelName]),
                         type: 'error',
                         controlId: `labelName-${id}`,
                     })

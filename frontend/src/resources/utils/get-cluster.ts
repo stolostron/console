@@ -353,7 +353,7 @@ export function getProvider(
     let providerLabel =
         hivePlatformLabel && hivePlatformLabel !== 'unknown'
             ? hivePlatformLabel
-            : platformClusterClaim?.value ?? cloudLabel ?? ''
+            : cloudLabel ?? platformClusterClaim?.value ?? ''
     providerLabel = providerLabel.toUpperCase()
 
     let provider: Provider | undefined
@@ -394,7 +394,13 @@ export function getProvider(
             provider = Provider.vmware
             break
         case 'RHV':
+        case 'OVIRT':
             provider = Provider.redhatvirtualization
+            break
+        case 'ALIBABA':
+        case 'ALICLOUD':
+        case 'ALIBABACLOUD':
+            provider = Provider.alibaba
             break
         case 'AUTO-DETECT':
             provider = undefined
@@ -758,6 +764,7 @@ export function getClusterStatus(
             'InstallConfigValidationFailed',
             cdConditions
         )
+        const authenticationError = checkForCondition('AuthenticationFailure', cdConditions)
         const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
         const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
         const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
@@ -842,12 +849,17 @@ export function getClusterStatus(
                 )
                 cdStatus = ClusterStatus.notstarted
                 statusMessage = invalidInstallConfigCondition?.message
+            } else if (authenticationError) {
+                const authenticationErrorCondition = cdConditions.find((c) => c.type === 'AuthenticationFailure')
+                cdStatus = ClusterStatus.provisionfailed
+                statusMessage = authenticationErrorCondition?.message
             } else if (provisionFailed) {
                 const provisionFailedCondition = cdConditions.find((c) => c.type === 'ProvisionFailed')
                 const currentProvisionRef = clusterDeployment.status?.provisionRef?.name ?? ''
                 if (
                     provisionFailedCondition?.message?.includes(currentProvisionRef) ||
-                    provisionFailedCondition?.reason === 'InvalidInstallConfig'
+                    provisionFailedCondition?.reason === 'InvalidInstallConfig' ||
+                    provisionFailedCondition?.reason === 'FallbackInvalidInstallConfig'
                 ) {
                     cdStatus = ClusterStatus.provisionfailed
                 } else {

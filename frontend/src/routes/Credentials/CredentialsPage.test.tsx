@@ -37,6 +37,7 @@ const mockProviderConnection1: ProviderConnection = {
         namespace: 'provider-connection-namespace',
         labels: {
             'cluster.open-cluster-management.io/type': '',
+            'cluster.open-cluster-management.io/credentials': '',
         },
     },
     type: 'Opaque',
@@ -50,6 +51,7 @@ const mockProviderConnection2: ProviderConnection = {
         namespace: 'provider-connection-namespace',
         labels: {
             'cluster.open-cluster-management.io/type': '',
+            'cluster.open-cluster-management.io/credentials': '',
         },
     },
     type: 'Opaque',
@@ -63,6 +65,7 @@ const cloudRedHatProviderConnection: ProviderConnection = {
         namespace: 'ocm',
         labels: {
             'cluster.open-cluster-management.io/type': Provider.redhatcloud,
+            'cluster.open-cluster-management.io/credentials': '',
         },
     },
     type: 'Opaque',
@@ -204,13 +207,13 @@ describe('provider connections page', () => {
         await waitForNotText('Cancel')
     })
 
-    test('If cloud.redhat.com credential and no discoveryconfig configured, show action available', async () => {
+    test('If console.redhat.com credential and no discoveryconfig configured, show action available', async () => {
         render(<TestProviderConnectionsPage providerConnections={[cloudRedHatProviderConnection]} />)
         await waitForText(cloudRedHatProviderConnection.metadata!.name!)
         await waitForText('Create cluster discovery')
     })
 
-    test('If cloud.redhat.com providerconnection and discoveryconfig configured, do not show action available', async () => {
+    test('If console.redhat.com providerconnection and discoveryconfig configured, do not show action available', async () => {
         render(
             <TestProviderConnectionsPage
                 providerConnections={[cloudRedHatProviderConnection]}

@@ -5,6 +5,7 @@ import { get, includes, concat, uniqBy, filter, keyBy, cloneDeep, groupBy } from
 import { createChildNode, addClusters } from './utils'
 
 const localClusterName = 'local-cluster'
+const typesWithPods = ['replicaset', 'replicationcontroller', 'statefulset', 'daemonset']
 
 export const getSubscriptionTopology = (application, managedClusters, relatedResources) => {
     const links = []
@@ -83,18 +84,34 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
                 ''
             source = source.split('/').pop()
 
-            // add cluster nodes
-            clusterId = addClusters(appId, subscription, source, ruleClusterNames, managedClusterNames, links, nodes)
+            // add subscription node
+            const filteredClusters = managedClusters.filter((cluster) => {
+                return ruleClusterNames.includes(cluster.name)
+            })
+
+            // get clusters it was deployed to
+            const clustersNames = get(subscription, 'report.results', []).map((result) => {
+                return result.source
+            })
 
             const isRulePlaced = ruleClusterNames.length > 0
-
-            // add subscription node
-            const subscriptionId = addSubscription(clusterId, subscription, isRulePlaced, links, nodes)
+            const subscriptionId = addSubscription(
+                appId,
+                clustersNames,
+                subscription,
+                source,
+                isRulePlaced,
+                links,
+                nodes
+            )
 
             // add rules node
             if (subscription.rules) {
-                addSubscriptionRules(clusterId, subscription, links, nodes)
+                addSubscriptionRules(subscriptionId, subscription, links, nodes)
             }
+
+            // add cluster nodes
+            clusterId = addClusters(subscriptionId, subscription, '', ruleClusterNames, filteredClusters, links, nodes)
 
             // add prehooks
             if (subscription.prehooks && subscription.prehooks.length > 0) {
@@ -106,7 +123,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
 
             // add deployed resource nodes using subscription report
             if (subscription.report) {
-                processReport(subscription.report, subscriptionId, links, nodes, relatedResources)
+                processReport(subscription.report, clustersNames, clusterId, links, nodes, relatedResources)
             }
         })
     }
@@ -114,7 +131,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
     return { nodes: uniqBy(nodes, 'uid'), links }
 }
 
-const addSubscription = (appId, subscription, isPlaced, links, nodes) => {
+const addSubscription = (appId, clustersNames, subscription, source, isPlaced, links, nodes) => {
     const {
         metadata: { namespace, name },
     } = subscription
@@ -127,10 +144,12 @@ const addSubscription = (appId, subscription, isPlaced, links, nodes) => {
         id: subscriptionId,
         uid: subscriptionId,
         specs: {
+            title: source,
             isDesign: true,
             hasRules: !!rule,
             isPlaced,
             raw: subscription,
+            clustersNames,
         },
     })
 
@@ -194,7 +213,7 @@ const addSubscriptionHooks = (parentId, subscription, links, nodes, isPreHook) =
     })
 }
 
-const processReport = (report, clusterId, links, nodes, relatedResources) => {
+const processReport = (report, clustersNames, clusterId, links, nodes, relatedResources) => {
     // for each resource, add what it's related to
     report = cloneDeep(report)
     const resources = report.resources || []
@@ -205,13 +224,14 @@ const processReport = (report, clusterId, links, nodes, relatedResources) => {
         })
     }
 
+    // get elements which services belong to
     const serviceOwners = filter(resources, (obj) => {
         const kind = get(obj, 'kind', '')
         return includes(['Route', 'Ingress', 'StatefulSet'], kind)
     })
 
     // process route and service first
-    const serviceMap = processServiceOwner(clusterId, serviceOwners, links, nodes, relatedResources)
+    const serviceMap = processServiceOwner(clusterId, clustersNames, serviceOwners, links, nodes, relatedResources)
 
     const services = filter(resources, (obj) => {
         const kind = get(obj, 'kind', '')
@@ -219,7 +239,7 @@ const processReport = (report, clusterId, links, nodes, relatedResources) => {
     })
 
     // then service
-    processServices(clusterId, services, links, nodes, serviceMap)
+    processServices(clusterId, clustersNames, services, links, nodes, serviceMap)
 
     // then the rest
     const others = filter(resources, (obj) => {
@@ -228,7 +248,7 @@ const processReport = (report, clusterId, links, nodes, relatedResources) => {
     })
 
     processMultiples(others).forEach((resource) => {
-        addSubscriptionDeployedResource(clusterId, resource, links, nodes)
+        addSubscriptionDeployedResource(clusterId, clustersNames, resource, links, nodes)
     })
 }
 
@@ -249,10 +269,10 @@ const processMultiples = (resources) => {
 }
 
 // Route, Ingress, StatefulSet
-const processServiceOwner = (clusterId, serviceOwners, links, nodes, relatedResources) => {
+const processServiceOwner = (clusterId, clustersNames, serviceOwners, links, nodes, relatedResources) => {
     const servicesMap = {}
     serviceOwners.forEach((serviceOwner, inx) => {
-        const node = addSubscriptionDeployedResource(clusterId, serviceOwner, links, nodes)
+        const node = addSubscriptionDeployedResource(clusterId, clustersNames, serviceOwner, links, nodes)
 
         if (relatedResources) {
             // get service info and map it to the object id
@@ -292,7 +312,7 @@ const processServiceOwner = (clusterId, serviceOwners, links, nodes, relatedReso
     return servicesMap
 }
 
-const processServices = (clusterId, services, links, nodes, servicesMap) => {
+const processServices = (clusterId, clustersNames, services, links, nodes, servicesMap) => {
     services.forEach((service, inx) => {
         const serviceName = service.name
         let parentId = servicesMap[serviceName]
@@ -303,11 +323,11 @@ const processServices = (clusterId, services, links, nodes, servicesMap) => {
             parentId = clusterId
         }
 
-        addSubscriptionDeployedResource(parentId, service, links, nodes)
+        addSubscriptionDeployedResource(parentId, clustersNames, service, links, nodes)
     })
 }
 
-const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
+const addSubscriptionDeployedResource = (parentId, clustersNames, resource, links, nodes) => {
     const parentNode = nodes.find((n) => n.id === parentId)
     const parentObject = parentNode
         ? {
@@ -330,9 +350,10 @@ const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
         uid: memberId,
         specs: {
             parent: parentObject,
+            clustersNames,
             template,
             resources,
-            resourceCount,
+            resourceCount: resourceCount || 0 + clustersNames.length,
         },
     }
 
@@ -344,50 +365,66 @@ const addSubscriptionDeployedResource = (parentId, resource, links, nodes) => {
     })
 
     // create replica subobject, if this object defines a replicas
-    createReplicaChild(node, template, links, nodes)
+    createReplicaChild(node, clustersNames, template, links, nodes)
 
     // create controllerrevision subobject, if this object is a daemonset
-    createControllerRevisionChild(node, links, nodes)
+    createControllerRevisionChild(node, clustersNames, links, nodes)
 
     // create route subobject, if this object is an ingress
-    createIngressRouteChild(node, links, nodes)
+    createIngressRouteChild(node, clustersNames, links, nodes)
+
+    // for replicaset and replicationcontroller
+    createPodChild(node, clustersNames, links, nodes)
 
     return node
 }
 
-export const createReplicaChild = (parentObject, template, links, nodes) => {
+export const createReplicaChild = (parentObject, clustersNames, template, links, nodes) => {
     const parentType = get(parentObject, 'type', '')
     if (parentType === 'deploymentconfig' || parentType === 'deployment') {
         const type = parentType === 'deploymentconfig' ? 'replicationcontroller' : 'replicaset'
         if (template && template.related) {
             const relatedMap = keyBy(template.related, 'kind')
-            if (relatedMap['replicaset']) {
-                const pNode = createChildNode(parentObject, type, links, nodes)
-                return createChildNode(pNode, 'pod', links, nodes)
+            if (relatedMap['replicaset'] || relatedMap['replicationcontroller']) {
+                const pNode = createChildNode(parentObject, clustersNames, type, links, nodes)
+                const replicaCount = get(
+                    relatedMap['replicaset'] || relatedMap['replicationcontroller'],
+                    'items.0.desired',
+                    0
+                )
+                return createChildNode(pNode, clustersNames, 'pod', links, nodes, replicaCount)
             } else if (relatedMap['pod']) {
-                return createChildNode(parentObject, 'pod', links, nodes)
+                return createChildNode(parentObject, clustersNames, 'pod', links, nodes)
             }
         } else {
-            const pNode = createChildNode(parentObject, type, links, nodes)
-            if (type === 'replicaset') {
-                return createChildNode(pNode, 'pod', links, nodes)
+            const pNode = createChildNode(parentObject, clustersNames, type, links, nodes)
+            if (typesWithPods.includes(type)) {
+                return createChildNode(pNode, clustersNames, 'pod', links, nodes)
             }
         }
     }
 }
 
-const createIngressRouteChild = (parentObject, links, nodes) => {
+const createIngressRouteChild = (parentObject, clustersNames, links, nodes) => {
     const parentType = get(parentObject, 'type', '')
     if (parentType === 'ingress') {
         const type = 'route'
-        return createChildNode(parentObject, type, links, nodes)
+        return createChildNode(parentObject, clustersNames, type, links, nodes)
     }
 }
 
-const createControllerRevisionChild = (parentObject, links, nodes) => {
+const createControllerRevisionChild = (parentObject, clustersNames, links, nodes) => {
     const parentType = get(parentObject, 'type', '')
     if (parentType === 'daemonset' || parentType === 'statefulset') {
         // create only for daemonset or statefulset types
-        return createChildNode(parentObject, 'controllerrevision', links, nodes)
+        const pNode = createChildNode(parentObject, clustersNames, 'controllerrevision', links, nodes)
+        return createChildNode(pNode, clustersNames, 'pod', links, nodes)
+    }
+}
+
+const createPodChild = (parentObject, clustersNames, links, nodes) => {
+    const parentType = get(parentObject, 'type', '')
+    if (parentType === 'replicaset' || parentType === 'replicationcontroller') {
+        return createChildNode(parentObject, clustersNames, 'pod', links, nodes)
     }
 }

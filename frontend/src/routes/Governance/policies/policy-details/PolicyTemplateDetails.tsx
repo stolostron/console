@@ -23,7 +23,7 @@ import { useEffect, useMemo, useState } from 'react'
 import YamlEditor from '../../../../components/YamlEditor'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { fireManagedClusterView, getResource } from '../../../../resources'
+import { fireManagedClusterView } from '../../../../resources'
 
 export function PolicyTemplateDetails(props: {
     clusterName: string
@@ -50,36 +50,19 @@ export function PolicyTemplateDetails(props: {
 
     useEffect(() => {
         const version = apiGroup ? `${apiGroup}/${apiVersion}` : apiVersion
-        if (clusterName === 'local-cluster') {
-            const resourceResult = getResource({
-                apiVersion: version,
-                kind,
-                metadata: { namespace: clusterName, name: templateName },
-            }).promise
-            resourceResult
-                .then((response) => {
-                    setTemplate(response)
-                    setRelatedObjects(getRelatedObjects(response))
-                })
-                .catch((err) => {
-                    console.error('Error getting resource: ', err)
-                    setTemplateError(err.message)
-                })
-        } else {
-            fireManagedClusterView(clusterName, kind, version, templateName, clusterName)
-                .then((viewResponse) => {
-                    if (viewResponse?.message) {
-                        setTemplateError(viewResponse.message)
-                    } else {
-                        setTemplate(viewResponse.result)
-                        setRelatedObjects(getRelatedObjects(viewResponse.result))
-                    }
-                })
-                .catch((err) => {
-                    console.error('Error getting resource: ', err)
-                    setTemplateError(err)
-                })
-        }
+        fireManagedClusterView(clusterName, kind, version, templateName, clusterName)
+            .then((viewResponse) => {
+                if (viewResponse?.message) {
+                    setTemplateError(viewResponse.message)
+                } else {
+                    setTemplate(viewResponse.result)
+                    setRelatedObjects(getRelatedObjects(viewResponse.result))
+                }
+            })
+            .catch((err) => {
+                console.error('Error getting resource: ', err)
+                setTemplateError(err)
+            })
     }, [clusterName, kind, apiGroup, apiVersion, templateName])
 
     const descriptionItems = [
@@ -233,7 +216,11 @@ export function PolicyTemplateDetails(props: {
     )
 
     if (templateError) {
-        return <AcmAlert variant="danger" title={templateError} isInline noClose />
+        return (
+            <PageSection style={{ paddingBottom: '0' }}>
+                <AcmAlert variant="danger" title={templateError} isInline noClose />
+            </PageSection>
+        )
     }
 
     return (

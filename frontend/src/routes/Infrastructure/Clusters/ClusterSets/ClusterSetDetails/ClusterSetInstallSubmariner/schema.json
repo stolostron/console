@@ -10,8 +10,10 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string" },
-                        "namespace": { "type": "string" }
+                        "name": {
+                            "validateDNSName": true
+                        },
+                        "namespace": { "validateDNSName": true }
                     },
                     "required": ["name", "namespace"]
                 },
@@ -71,7 +73,8 @@
                     "properties": {
                         "name": { "type": "string" },
                         "namespace": { "type": "string" }
-                    }
+                    },
+                    "required": ["name", "namespace"]
                 },
                 "spec": {
                     "type": "object",

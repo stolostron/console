@@ -328,8 +328,42 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             }
         })
 
+        if (!selectedClusters || !selectedClusters.length) {
+            // empty ManagedClusterAddOn resource
+            resources.push({
+                apiVersion: ManagedClusterAddOnApiVersion,
+                kind: ManagedClusterAddOnKind,
+                metadata: {
+                    name: 'submariner',
+                    namespace: '',
+                },
+                spec: {
+                    installNamespace: 'submariner-operator',
+                },
+            })
+            resources.push({
+                apiVersion: SubmarinerConfigApiVersion,
+                kind: SubmarinerConfigKind,
+                metadata: {
+                    name: 'submariner',
+                    namespace: '',
+                },
+                spec: {
+                    gatewayConfig: {
+                        gateways: 0,
+                    },
+                    IPSecNATTPort: 0,
+                    NATTEnable: false,
+                    cableDriver: '',
+                    credentialsSecret: {
+                        name: '',
+                    },
+                },
+            })
+        }
+
         // if globalnet support create
-        if (!isGlobalnetAlreadyConfigured) {
+        if (!isGlobalnetAlreadyConfigured || !selectedClusters || !selectedClusters.length) {
             const broker: Broker = {
                 apiVersion: BrokerApiVersion,
                 kind: BrokerKind,
@@ -469,12 +503,15 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     {
                         id: 'globalist-enable',
                         type: 'Checkbox',
-                        title: t('Globalnet Settings'),
+                        title: t('Globalnet settings'),
                         label: t('Enable Globalnet'),
                         value: globalnetEnabled,
                         isDisabled: isGlobalnetAlreadyConfigured,
+                        labelHelp: t('globalnet.description'),
                         helperText: isGlobalnetAlreadyConfigured
-                            ? t('Already enabled for clusters in this cluster set')
+                            ? globalnetEnabled
+                                ? t('globalnet.enabled')
+                                : t('globalnet.disabled')
                             : '',
                         onChange: (value: boolean) => {
                             setGlobalnetEnabled(value)
@@ -689,6 +726,12 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             secrets={[
                 'Secret[*].stringData.aws_secret_access_key',
                 ['Secret', '*', 'stringData', 'osServiceAccount.json'],
+            ]}
+            immutables={[
+                'ManagedClusterAddOn[0].metadata.name',
+                'ManagedClusterAddOn[0].metadata.namespace',
+                'SubmarinerConfig[*].metadata.name',
+                'SubmarinerConfig[*].metadata.namespace',
             ]}
         />
     )

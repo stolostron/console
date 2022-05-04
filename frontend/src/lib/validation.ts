@@ -25,7 +25,7 @@ export function validatePublicSshKey(value: string, t: TFunction) {
         // Public SSH key should start with 'ssh-rsa' or 'ssh-dss', for example
         // Second token is a base64 value, with first integer being the length of the first token
         // (eg. 7 for RSA and DSA keys, 11 for ed25519 keys, etc.)
-        const keyTypes = ['ssh-rsa', 'ssh-dss', 'ssh-ed25519', 'ecdsa-sha2-nistp256']
+        const keyTypes = ['ssh-rsa', 'ssh-dss', 'ssh-ed25519', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp521']
         const tokens = value.trim().split(/\s+/)
         if (tokens.length >= 2) {
             if (keyTypes.includes(tokens[0])) {
@@ -212,12 +212,13 @@ export function validateBareMetalOSImageURL(value: string, t: TFunction) {
     return undefined
 }
 
-export function validateWebURL(url: string, t: TFunction) {
+export function validateWebURL(url: string, t: TFunction, supportedProtocols?: string[]) {
+    const protocols = supportedProtocols ? supportedProtocols : ['http', 'https']
     if (
         validator.isURL(url, {
             require_protocol: true,
             require_valid_protocol: true,
-            protocols: ['http', 'https'],
+            protocols: protocols,
             require_host: true,
         })
     )
@@ -257,7 +258,7 @@ export function validateHttpProxy(value: string, t: TFunction) {
             })
         )
             return undefined
-        return t('validate.ansible.url.not.valid')
+        return t('validate.http.proxy.url.not.valid')
     }
     return undefined
 }
@@ -268,12 +269,12 @@ export function validateHttpsProxy(value: string, t: TFunction) {
             validator.isURL(value, {
                 require_protocol: true,
                 require_valid_protocol: true,
-                protocols: ['https'],
+                protocols: ['http', 'https'],
                 require_host: true,
             })
         )
             return undefined
-        return t('validate.ansible.url.not.valid')
+        return t('validate.https.proxy.url.not.valid')
     }
     return undefined
 }

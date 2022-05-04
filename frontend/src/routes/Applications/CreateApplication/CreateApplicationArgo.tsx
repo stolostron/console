@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import moment from 'moment-timezone'
@@ -11,11 +12,13 @@ import {
     channelsState,
     gitOpsClustersState,
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     managedClustersState,
     namespacesState,
     placementsState,
     secretsState,
 } from '../../../atoms'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
@@ -27,9 +30,31 @@ import {
     IResource,
     unpackProviderConnection,
 } from '../../../resources'
+import { argoAppSetQueryString } from './actions'
+import schema from './schema.json'
 
 export default function CreateArgoApplicationSetPage() {
     return <CreateApplicationArgo />
+}
+
+export function WizardSyncEditor() {
+    const resources = useItem() // Wizard framework sets this context
+    const { update } = useData() // Wizard framework sets this context
+    return (
+        <SyncEditor
+            editorTitle={'Application set YAML'}
+            variant="toolbar"
+            resources={resources}
+            schema={schema}
+            onEditorChange={(changes: { resources: any[] }): void => {
+                update(changes?.resources)
+            }}
+        />
+    )
+}
+
+function getWizardSyncEditor() {
+    return <WizardSyncEditor />
 }
 
 export function CreateApplicationArgo() {
@@ -43,6 +68,7 @@ export function CreateApplicationArgo() {
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const [managedClusters] = useRecoilState(managedClustersState)
+    const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const providerConnections = secrets.map(unpackProviderConnection)
 
@@ -72,10 +98,12 @@ export function CreateApplicationArgo() {
             applicationSets={applicationSets}
             placements={placements}
             clusters={managedClusters}
+            clusterSets={clusterSets}
             clusterSetBindings={managedClusterSetBindings}
             channels={channels}
             getGitRevisions={getGitChannelBranches}
             getGitPaths={getGitChannelPaths}
+            yamlEditor={getWizardSyncEditor}
             onCancel={() => history.push(NavigationPath.applications)}
             onSubmit={(data) => {
                 const resources = data as IResource[]
@@ -89,7 +117,11 @@ export function CreateApplicationArgo() {
                             autoClose: true,
                         })
                     }
-                    history.push(NavigationPath.applications)
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', applicationSet?.metadata?.namespace ?? '')
+                            .replace(':name', applicationSet?.metadata?.name ?? '') + argoAppSetQueryString
+                    )
                 })
             }}
             timeZones={timeZones}

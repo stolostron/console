@@ -526,7 +526,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
                             const availableStatuses = [ClusterStatus.running]
                             const isAvailable =
                                 !cluster.hive.clusterClaimName && availableStatuses.includes(cluster.status)
-                            return <span style={{ whiteSpace: 'nowrap' }}>{t(`${isAvailable ? 'Yes' : 'No'}`)}</span>
+                            return <span style={{ whiteSpace: 'nowrap' }}>{isAvailable ? t('Yes') : t('No')}</span>
                         },
                     },
                 ]}
@@ -620,10 +620,15 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
                         header: t('table.createdBy'),
                         sort: 'hive',
                         cell: (claim: ClusterClaim) => {
-                            return (
+                            return claim.metadata.annotations ? (
                                 <div>
-                                    {atob(claim.metadata.annotations!['open-cluster-management.io/user-identity'])}
+                                    {Buffer.from(
+                                        claim.metadata.annotations!['open-cluster-management.io/user-identity'],
+                                        'base64'
+                                    ).toString('ascii')}
                                 </div>
+                            ) : (
+                                <span style={{ whiteSpace: 'nowrap' }}>-</span>
                             )
                         },
                     },

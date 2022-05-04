@@ -4,16 +4,14 @@ import { fireManagedClusterView } from '../../../../../resources/managedclusterv
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'
-import { get, set, isEqual } from 'lodash'
+import { get, set } from 'lodash'
 
-export async function getSubscriptionResourceStatuses(application, appData, topology, lastRefresh) {
-    // get related resources -- only need to do if subscription report changes
+export async function getSubscriptionResourceStatuses(application, appData) {
+    // need to constantly get search data since it will change even if subscription data doesn't
     // with SubscriptionReport need to find out what service/replicaset goes with what route/deployment
     let relatedResources = {}
-    if (application.reports && (!lastRefresh || !isEqual(application.reports, lastRefresh.application.reports))) {
+    if (application.reports) {
         relatedResources = await getRelatedResources(application.reports)
-    } else if (lastRefresh) {
-        relatedResources = lastRefresh.relatedResources
     }
 
     // get resource statuses
@@ -48,7 +46,7 @@ async function getResourceStatuses(application, appData) {
             input: [{ ...query }],
             limit: 10000,
         },
-        fetchPolicy: 'cache-first',
+        fetchPolicy: 'network-only', // cache-first will result in stale search data
     })
 }
 
@@ -84,8 +82,12 @@ async function getRelatedResources(reports) {
                 }
                 switch (kind) {
                     case 'Deployment':
-                    case 'DeploymentConfig':
                         promises.push(getSearchPromise(cluster, kind, name, namespace, ['replicaset', 'pod']))
+                        break
+                    case 'DeploymentConfig':
+                        promises.push(
+                            getSearchPromise(cluster, kind, name, namespace, ['replicationcontroller', 'pod'])
+                        )
                         break
                     case 'Route':
                         promises.push(
@@ -148,7 +150,7 @@ const getSearchPromise = (cluster, kind, name, namespace, relatedKinds) => {
             input: [{ ...query, relatedKinds }],
             limit: 10000,
         },
-        fetchPolicy: 'cache-first',
+        fetchPolicy: 'network-only',
     })
 }
 

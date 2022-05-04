@@ -342,7 +342,8 @@ describe('createDeployableYamlLink for application no selflink', () => {
                     data: {
                         action: 'show_resource_yaml',
                         cluster: 'local-cluster',
-                        editLink: '/resources?cluster=local-cluster&kind=application&name=test-1&namespace=test-1-ns',
+                        editLink:
+                            '/multicloud/home/search/resources?cluster=local-cluster&kind=application&name=test-1&namespace=test-1-ns',
                     },
                     label: 'View resource YAML',
                 },
@@ -377,7 +378,7 @@ describe('createDeployableYamlLink for application with editLink', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/resources?apiversion=app.k8s.io%2Fv1beta1&cluster=local-cluster&kind=application&name=test&namespace=test-ns',
+                        '/multicloud/home/search/resources?apiversion=app.k8s.io%2Fv1beta1&cluster=local-cluster&kind=application&name=test&namespace=test-ns',
                 },
                 label: 'View resource YAML',
             },
@@ -1232,7 +1233,7 @@ describe('addNodeServiceLocation 1', () => {
             },
         },
     }
-    const result = []
+    const result = [{ labelKey: 'Location', value: '1.1:80' }]
     it('addNodeServiceLocation 1', () => {
         expect(addNodeServiceLocation(node, 'possiblereptile', 'default', [])).toEqual(result)
     })
@@ -1368,7 +1369,8 @@ describe('processResourceActionLink search view2', () => {
         name: 'frontend',
         namespace: 'open-cluster-management',
     }
-    const result = '/search?filters={"textsearch":"kind:service namespace:open-cluster-management name:frontend"}'
+    const result =
+        '/multicloud/home/search?filters={"textsearch":"kind:service namespace:open-cluster-management name:frontend"}'
 
     it('processResourceActionLink opens search view2', () => {
         expect(processResourceActionLink(openSearchView)).toEqual(result)
@@ -1379,9 +1381,11 @@ describe('processResourceActionLink openRemoteresourceYaml', () => {
     const openRemoteresourceYaml = {
         action: 'show_resource_yaml',
         cluster: 'possiblereptile',
-        editLink: '/resources?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123',
+        editLink:
+            '/multicloud/home/search/resources?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123',
     }
-    const result = '/resources?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123'
+    const result =
+        '/multicloud/home/search/resources?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123'
     it('processResourceActionLink openRemoteresourceYaml', () => {
         expect(processResourceActionLink(openRemoteresourceYaml)).toEqual(result)
     })

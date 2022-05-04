@@ -12,85 +12,92 @@ import {
     Title,
 } from '@patternfly/react-core'
 import { ReactNode } from 'react'
+import { TFunction } from 'i18next'
+import { useTranslation } from '../lib/acm-i18next'
 
-export function getErrorInfo(error: unknown): AcmAlertInfo {
+export function getErrorInfo(error: unknown, t: TFunction): AcmAlertInfo {
     let title = 'Error'
     let message = 'Unknown'
     if (error instanceof ResourceError) {
         /* istanbul ignore next */
         switch (error.code) {
             case ResourceErrorCode.BadGateway:
-                title = 'Bad gateway'
-                message = 'Unable to communicate with the server because of a bad gateway.'
+                title = t('Bad gateway')
+                message = t('Unable to communicate with the server because of a bad gateway.')
                 break
             case ResourceErrorCode.BadRequest:
-                title = 'Bad request'
-                message = 'Could not process request because of invalid data.'
+                title = t('Bad request')
+                message = t('Could not process request because of invalid data.')
                 break
             case ResourceErrorCode.Conflict:
-                title = 'Conflict'
-                message = 'Unable to update the resource because of a resource conflict.'
+                title = t('Conflict')
+                message = error.message
+                    ? t('Unable to update the resource because of a resource conflict: {{details}}', {
+                          details: error.message,
+                      })
+                    : t('Unable to update the resource because of a resource conflict.')
                 break
             case ResourceErrorCode.UnprocessableEntity:
-                title = 'Unprocessable entity'
+                title = t('Unprocessable entity')
                 message = error.message
                 break
             case ResourceErrorCode.ConnectionReset:
-                title = 'Connection reset'
-                message = 'Unable to communicate with the server because the network connection was reset.'
+                title = t('Connection reset')
+                message = t('Unable to communicate with the server because the network connection was reset.')
                 break
             case ResourceErrorCode.Forbidden:
-                title = 'Forbidden'
-                message =
-                    'You are not authorized to complete this action. See your cluster administrator for role-based access control information.'
+                title = t('Forbidden')
+                message = t(
+                    'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
+                )
                 break
             case ResourceErrorCode.GatewayTimeout:
-                title = 'Gateway timeout'
-                message = 'Unable to communicate with the server due to a gateway timeout.'
+                title = t('Gateway timeout')
+                message = t('Unable to communicate with the server due to a gateway timeout.')
                 break
             case ResourceErrorCode.InternalServerError:
-                title = 'Internal server error'
-                message = 'Unable to communicate with the server because of an unforseen error.'
+                title = t('Internal server error')
+                message = t('Unable to communicate with the server because of an unforseen error.')
                 break
             case ResourceErrorCode.NetworkError:
-                title = 'Network error'
-                message = 'Unable to communicate with the server because of a network error.'
+                title = t('Network error')
+                message = t('Unable to communicate with the server because of a network error.')
                 break
             case ResourceErrorCode.NotFound:
-                title = 'Not found'
-                message = 'The resource was not found.'
+                title = t('Not found')
+                message = t('The resource was not found.')
                 break
             case ResourceErrorCode.NotImplemented:
-                title = 'Not implemented'
-                message = 'The resource access is not implemented.'
+                title = t('Not implemented')
+                message = t('The resource access is not implemented.')
                 break
             case ResourceErrorCode.RequestAborted:
-                title = 'Request cancelled'
-                message = 'The request was cancelled.'
+                title = t('Request cancelled')
+                message = t('The request was cancelled.')
                 break
             case ResourceErrorCode.ServiceUnavailable:
-                title = 'Service unavilable'
-                message = 'Unable to communicate with the server because the service is unavailable.'
+                title = t('Service unavilable')
+                message = t('Unable to communicate with the server because the service is unavailable.')
                 break
             case ResourceErrorCode.Timeout:
-                title = 'Timeout'
-                message = 'Failed to communicate with the server because of a network timeout.'
+                title = t('Timeout')
+                message = t('Failed to communicate with the server because of a network timeout.')
                 break
             case ResourceErrorCode.TooManyRequests:
-                title = 'Too many requests'
-                message = 'Request failed because of too many requests. Please retry.'
+                title = t('Too many requests')
+                message = t('Request failed because of too many requests. Please retry.')
                 break
             case ResourceErrorCode.Unauthorized:
-                title = 'Unauthorized'
-                message = 'You are not authorized to perform this operation.'
+                title = t('Unauthorized')
+                message = t('You are not authorized to perform this operation.')
                 break
             case ResourceErrorCode.Unknown:
-                title = 'Unknown error'
-                message = 'An unknown error occurred.'
+                title = t('Unknown error')
+                message = t('An unknown error occurred.')
                 break
             default:
-                title = 'Unknown error'
-                message = 'An unknown error occurred.'
+                title = t('Unknown error')
+                message = t('An unknown error occurred.')
                 break
         }
     } else if (error instanceof Error) {
@@ -103,7 +110,8 @@ export function getErrorInfo(error: unknown): AcmAlertInfo {
 }
 
 export function ErrorState(props: { error: Error; actions?: ReactNode }) {
-    const errorInfo = getErrorInfo(props.error)
+    const { t } = useTranslation()
+    const errorInfo = getErrorInfo(props.error, t)
     return (
         <EmptyState>
             <Title size="lg" headingLevel="h4">

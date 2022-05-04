@@ -33,6 +33,7 @@ const controlData = [
 
 const CreateInfraEnv: React.FC = () => {
     const template = Handlebars.compile(infraEnvTemplate)
+    Handlebars.registerHelper('checkNtpSources', (enable, sources) => enable && sources?.length > 0)
     const history = useHistory()
     const { t } = useTranslation()
     const { t: tEditor } = useTranslation()

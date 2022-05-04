@@ -6,7 +6,6 @@ import React from 'react'
 import Handlebars from 'handlebars'
 import installConfigHbs from '../../../ManagedClusters/CreateCluster/templates/install-config.hbs'
 import { keyBy, cloneDeep } from 'lodash'
-
 import getControlDataAWS from '../../../ManagedClusters/CreateCluster/controlData/ControlDataAWS'
 import getControlDataGCP from '../../../ManagedClusters/CreateCluster/controlData/ControlDataGCP'
 import getControlDataAZR from '../../../ManagedClusters/CreateCluster/controlData/ControlDataAZR'
@@ -30,6 +29,14 @@ export const getDistributionTitle = (ctrlData, groupData, i18n) => {
         return i18n('creation.ocp.choose.infrastructure', [title])
     }
     return ''
+}
+
+const lessThanEqualSize = (active, templateObjectMap, i18n) => {
+    const runningCount = active
+    const size = templateObjectMap['<<main>>'].ClusterPool[0].$raw.spec.size
+    if (runningCount > size) {
+        return i18n('clusterPool.creation.validation.runningCount.lessThanOrEqualSize')
+    }
 }
 
 const fixupControlsForClusterPool = (controlData) => {
@@ -77,6 +84,7 @@ const fixupControlsForClusterPool = (controlData) => {
             initial: '0',
             validation: {
                 required: true,
+                contextTester: lessThanEqualSize,
             },
         }
     )

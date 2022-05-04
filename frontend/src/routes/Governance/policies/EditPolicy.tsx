@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EditMode } from '@patternfly-labs/react-form-wizard'
+import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Policy/PolicyWizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
@@ -9,6 +9,7 @@ import {
     channelsState,
     helmReleaseState,
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     managedClustersState,
     namespacesState,
     placementBindingsState,
@@ -18,7 +19,9 @@ import {
     usePolicies,
 } from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicyKind, reconcileResources } from '../../../resources'
 import {
@@ -27,6 +30,29 @@ import {
     resolveExternalStatus,
     resolveSource,
 } from '../common/util'
+import schema from './schema.json'
+
+export function WizardSyncEditor() {
+    const resources = useItem() // Wizard framework sets this context
+    const { update } = useData() // Wizard framework sets this context
+    return (
+        <SyncEditor
+            editorTitle={'Policy YAML'}
+            variant="toolbar"
+            resources={resources}
+            immutables={['Policy[0].metadata.name', 'Policy[0].metadata.namespace']}
+            schema={schema}
+            filters={['*.metadata.managedFields']}
+            onEditorChange={(changes: { resources: any[] }): void => {
+                update(changes?.resources)
+            }}
+        />
+    )
+}
+
+function getWizardSyncEditor() {
+    return <WizardSyncEditor />
+}
 
 export function EditPolicy() {
     const { t } = useTranslation()
@@ -39,13 +65,24 @@ export function EditPolicy() {
     const [placementRules] = useRecoilState(placementRulesState)
     const [managedClusters] = useRecoilState(managedClustersState)
     const [placementBindings] = useRecoilState(placementBindingsState)
+    const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
-    const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
+    const namespaceNames = useMemo(
+        () =>
+            namespaces
+                .filter(
+                    (namespace) => !namespace.metadata.labels?.['cluster.open-cluster-management.io/managedCluster']
+                )
+                .map((namespace) => namespace.metadata.name ?? ''),
+        [namespaces]
+    )
     const [existingResources, setExistingResources] = useState<IResource[]>()
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [gitSource, setGitSource] = useState('')
+    const searchParams = useSearchParams()
+
     useEffect(() => {
         const policy = policies.find(
             (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
@@ -64,7 +101,6 @@ export function EditPolicy() {
             setGitSource(policySource?.pathName ?? '')
         }
 
-        setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
         setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
     }, [
         channels,
@@ -90,8 +126,10 @@ export function EditPolicy() {
             policies={policies}
             clusters={managedClusters}
             placements={placements}
+            yamlEditor={getWizardSyncEditor}
             namespaces={namespaceNames}
             placementRules={placementRules}
+            clusterSets={clusterSets}
             clusterSetBindings={clusterSetBindings}
             editMode={EditMode.Edit}
             resources={existingResources}
@@ -107,11 +145,34 @@ export function EditPolicy() {
                             type: 'success',
                             autoClose: true,
                         })
+                        if (searchParams.get('context') === 'policies') {
+                            history.push(NavigationPath.policies)
+                        } else {
+                            history.push(
+                                NavigationPath.policyDetails
+                                    .replace(':namespace', policy.metadata?.namespace ?? '')
+                                    .replace(':name', policy.metadata?.name ?? '')
+                            )
+                        }
                     }
-                    history.push(NavigationPath.policies)
                 })
             }}
-            onCancel={() => history.push(NavigationPath.policies)}
+            onCancel={() => {
+                if (searchParams.get('context') === 'policies') {
+                    history.push(NavigationPath.policies)
+                } else {
+                    const policy = existingResources.find((resource) => resource.kind === PolicyKind)
+                    if (policy) {
+                        history.push(
+                            NavigationPath.policyDetails
+                                .replace(':namespace', policy.metadata?.namespace ?? '')
+                                .replace(':name', policy.metadata?.name ?? '')
+                        )
+                    } else {
+                        history.push(NavigationPath.policies)
+                    }
+                }
+            }}
         />
     )
 }

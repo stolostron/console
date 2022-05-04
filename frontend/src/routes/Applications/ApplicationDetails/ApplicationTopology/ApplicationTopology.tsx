@@ -67,19 +67,24 @@ export function ApplicationTopologyPageContent(props: {
         isResizable: boolean,
         disableDrawerHead: boolean,
         drawerPanelBodyHasNoPadding: boolean,
-        panelContent: React.ReactNode | React.ReactNode[]
+        panelContent: React.ReactNode | React.ReactNode[],
+        closeDrawer: boolean
     ) => {
-        setDrawerContext({
-            isExpanded: true,
-            onCloseClick: () => setDrawerContext(undefined),
-            title,
-            panelContent,
-            isInline,
-            panelContentProps: { minSize: '20%' },
-            isResizable,
-            disableDrawerHead,
-            drawerPanelBodyHasNoPadding,
-        })
+        if (closeDrawer) {
+            setDrawerContext(undefined)
+        } else {
+            setDrawerContext({
+                isExpanded: true,
+                onCloseClick: () => setDrawerContext(undefined),
+                title,
+                panelContent,
+                isInline,
+                panelContentProps: { minSize: '20%' },
+                isResizable,
+                disableDrawerHead,
+                drawerPanelBodyHasNoPadding,
+            })
+        }
     }
 
     const changeTheChannel = (fetchChannel: string) => {
@@ -116,7 +121,15 @@ export function ApplicationTopologyPageContent(props: {
                     className="how-to-read-text"
                     tabIndex={0}
                     onClick={() =>
-                        setDrawerContent(t('How to read topology'), true, false, false, false, <LegendView t={t} />)
+                        setDrawerContent(
+                            t('How to read topology'),
+                            false,
+                            false,
+                            false,
+                            false,
+                            <LegendView t={t} />,
+                            false
+                        )
                     }
                     onKeyPress={() => {
                         // noop function

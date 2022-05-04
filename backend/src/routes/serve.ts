@@ -10,7 +10,7 @@ const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=60
 
 export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     try {
-        let url = req.url
+        let url = req.url.split('?')[0]
 
         let ext = extname(url)
         if (ext === '') {
@@ -30,7 +30,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             res.setHeader('X-DNS-Prefetch-Control', 'off')
             res.setHeader('Expect-CT', 'enforce, max-age=30')
             // res.setHeader('Content-Security-Policy', ["default-src 'self'"].join(';'))
-        } else if (url === '/plugin-entry.js' || url === '/plugin-manifest.json') {
+        } else if (url === '/plugin/plugin-entry.js' || url === '/plugin/plugin-manifest.json') {
             res.setHeader('Cache-Control', 'no-cache')
         } else {
             res.setHeader('Cache-Control', cacheControl)
@@ -66,11 +66,11 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                         })
                     })
                     .on('error', (err) => {
-                        // logger.error(err)
+                        logger.error(err)
                         res.writeHead(404).end()
                     })
                 pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
-                    // if (err) logger.error(err)
+                    if (err) logger.error(err)
                 })
                 return
             } catch {
@@ -91,11 +91,11 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                         })
                     })
                     .on('error', (err) => {
-                        // logger.error(err)
+                        logger.error(err)
                         res.writeHead(404).end()
                     })
                 pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
-                    // if (err) logger.error(err)
+                    if (err) logger.error(err)
                 })
                 return
             } catch {
@@ -112,11 +112,11 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
                 })
             })
             .on('error', (err) => {
-                // logger.error(err)
+                logger.error(err)
                 res.writeHead(404).end()
             })
         pipeline(readStream, res as unknown as NodeJS.WritableStream, (err) => {
-            // if (err) logger.error(err)
+            if (err) logger.error(err)
         })
     } catch (err) {
         logger.error(err)
@@ -134,6 +134,7 @@ const contentTypes: Record<string, string> = {
     '.json': 'application/json; charset=utf-8',
     '.svg': 'image/svg+xml',
     '.png': 'image/png',
+    '.ttf': 'font/ttf',
     '.woff': 'font/woff',
     '.woff2': 'font/woff2',
 }

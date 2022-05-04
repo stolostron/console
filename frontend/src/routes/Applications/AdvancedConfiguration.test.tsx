@@ -2,9 +2,16 @@
 import { MemoryRouter, Route } from 'react-router-dom'
 import { render, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
-import { subscriptionsState } from '../../atoms'
+import { namespacesState, subscriptionsState } from '../../atoms'
 import { NavigationPath } from '../../NavigationPath'
-import { Subscription, SubscriptionApiVersion, SubscriptionKind } from '../../resources'
+import {
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
+    Subscription,
+    SubscriptionApiVersion,
+    SubscriptionKind,
+} from '../../resources'
 import { nockIgnoreRBAC } from '../../lib/nock-util'
 import { clickByTestId, waitForText } from '../../lib/test-util'
 import AdvancedConfiguration from './AdvancedConfiguration'
@@ -48,6 +55,12 @@ const mockSubscription2: Subscription = {
     },
 }
 
+const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: { name },
+}))
+
 const mockSubscriptions = [mockSubscription1, mockSubscription2]
 
 function TestAdvancedConfigurationPage() {
@@ -55,6 +68,7 @@ function TestAdvancedConfigurationPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(subscriptionsState, mockSubscriptions)
+                snapshot.set(namespacesState, mockNamespaces)
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>

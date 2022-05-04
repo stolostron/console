@@ -19,6 +19,7 @@ import {
     onChangeConnection,
     onChangeDisconnect,
     addSnoText,
+    architectureData,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -99,6 +100,8 @@ const controlDataOST = [
         type: 'title',
         info: 'creation.ocp.cluster.node.pool.info',
     },
+    ///////////////////////  architecture  /////////////////////////////////////
+    ...architectureData,
     ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
@@ -264,7 +267,7 @@ const controlDataOST = [
     {
         id: 'disconnectedInfo',
         type: 'title',
-        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS (RHCOS) image.',
+        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS image.',
     },
     {
         name: 'Create disconnected installation',
@@ -276,9 +279,9 @@ const controlDataOST = [
     {
         id: 'clusterOSImage',
         type: 'text',
-        name: 'Cluster OS Image',
+        name: 'Cluster OS image',
         disabled: true,
-        tip: 'The location of the Red Hat Enterprise Linux CoreOS (RHCOS) image in your local registry.',
+        tip: 'The location of the Red Hat Enterprise Linux CoreOS image in your local registry.',
         validation: VALIDATE_URL,
     },
     {
@@ -291,7 +294,7 @@ const controlDataOST = [
     {
         id: 'disconnectedAdditionalTrustBundle',
         type: 'textarea',
-        name: 'Additional Trust Bundle',
+        name: 'Additional trust bundle',
         disabled: true,
         placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
         tip: 'The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.',

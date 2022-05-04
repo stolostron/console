@@ -2,8 +2,11 @@
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as frontend-packages
 WORKDIR /app/frontend
-COPY ./frontend .
+# Copy only package.json and package-lock.json so that the docker cache hash only changes if those change
+# This will cause the npm ci to only rerun if the package.json or package-lock.json changes
+COPY ./frontend/package.json ./frontend/package-lock.json ./
 RUN npm ci --no-optional
+COPY ./frontend .
 
 FROM frontend-packages as frontend
 RUN npm run build
@@ -13,8 +16,11 @@ RUN npm run build:plugin:acm
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as backend
 WORKDIR /app/backend
-COPY ./backend .
+# Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
+# This will cause the npm ci to only rerun if the package.json or package-lock.json changes
+COPY ./backend/package.json ./backend/package-lock.json ./
 RUN npm ci --no-optional
+COPY ./backend .
 RUN npm run build
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs14-linux as production

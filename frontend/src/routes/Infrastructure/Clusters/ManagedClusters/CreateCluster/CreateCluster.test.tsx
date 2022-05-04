@@ -317,7 +317,7 @@ const mockManagedCluster: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: {
         labels: {
-            cloud: 'Bare-Metal',
+            cloud: 'BareMetal',
             name: clusterName,
             vendor: 'OpenShift',
         },
@@ -493,7 +493,7 @@ const mockKlusterletAddonSecret = {
         clusterName: 'test',
         clusterNamespace: 'test',
         clusterLabels: {
-            cloud: 'Bare-Metal',
+            cloud: 'BareMetal',
             vendor: 'OpenShift',
         },
         applicationManager: {
@@ -1276,13 +1276,14 @@ describe('CreateCluster', () => {
 
         // private configuration
         await clickByText('Next')
-        await typeByText('Hosted Zone', 'aws-hosted-zone.com')
-        await typeByPlaceholderText('Enter amiID', 'ami-0876eacb38191e91f')
+        await clickByTestId('hasPrivateConfig')
+        await typeByText('Hosted zone', 'aws-hosted-zone.com')
+        await typeByPlaceholderText('Enter AMI ID', 'ami-0876eacb38191e91f')
         await clickByText('Subnets')
         await typeByPlaceholderText('Enter one or more subnet IDs', 'subnet-02216dd4dae7c45d0')
         await clickByText('Service Endpoints')
         await typeByPlaceholderText('Enter AWS service endpoint name', 'endpoint-1')
-        await typeByPlaceholderText('Enter AWS service endpoint url', 'aws.endpoint-1.com')
+        await typeByPlaceholderText('Enter AWS service endpoint URL', 'aws.endpoint-1.com')
         await clickByText('Next')
 
         // skipping proxy

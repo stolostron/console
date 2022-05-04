@@ -19,6 +19,7 @@ export interface FormData {
     nextLabel: string
     backLabel: string
     customData?: unknown
+    stateToSyncs?: () => unknown
     stateToData: () => unknown
 }
 

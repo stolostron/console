@@ -1,13 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
 import { diff } from 'deep-diff'
-import { get, isEmpty, keyBy } from 'lodash'
-import { getPathArray } from './process'
+import { get, isEmpty, keyBy, isEqual } from 'lodash'
+import { getPathArray } from './synchronize'
 import { normalize } from './reconcile'
 import { MappingType } from './process'
 
 export interface ChangeType {
     $t: string // type of change (N, E)
+    $u?: any // the value the user has changed it to
+    $y?: boolean // an element was added to the array at $p
     $f?: any // the previous value in the form when the user has edited
     $a: string | string[] // the path to the value in a mapped object
     $p: string | string[] // the path to the value in a parsed object
@@ -37,44 +39,45 @@ export const getFormChanges = (
     },
     lastComparison?: { [name: string]: any[] }
 ) => {
-    let changes = userEdits
+    let yamlChanges = []
+    let remainingEdits = []
 
     // changes to yaml
     if (errors.length === 0 || !errors.every(({ isWarning }) => !isWarning)) {
         if (lastChange && lastComparison) {
-            changes = getChanges(false, change, lastChange, comparison, lastComparison)
+            yamlChanges = getChanges(false, change, lastChange, comparison, lastComparison)
 
             // remove any form changes on top of user changes (for decoration purposes--reconcile prevents the yaml change)
             // remove any user changes which are now the same as the form
             if (!isEmpty(userEdits)) {
-                const changeMap = keyBy(changes, (edit) => {
+                const changeMap = keyBy(yamlChanges, (edit) => {
                     return JSON.stringify(edit.$p)
                 })
-                userEdits = userEdits.filter((edit: ChangeType) => {
-                    const { $a, $f, $p } = edit
-                    const val = get(change.mappings, $a) as MappingType
+                remainingEdits = userEdits.filter((edit: ChangeType) => {
+                    const { $u, $y, $p } = edit
+                    const val = get(change.parsed, $p) as MappingType
                     // if there's no value at this path anymore, just filter out this user edit (may have deleted)
-                    if (val) {
+                    if (val !== undefined) {
                         // use any form change on top of a user edit
                         const key = JSON.stringify($p)
                         const chng = changeMap[key]
                         if (chng) {
-                            // however if the latest form change equals the user edit, just delete the user edit
-                            if ($f === val.$v) {
+                            // user edit and form change conflict at this path, so delete form change
+                            delete changeMap[key]
+                            // if change equals the user edit, also delete the user edit
+                            if ((Array.isArray(val) && $y ? val.includes($u) : isEqual($u, val)) || (!$u && !val)) {
                                 return false
-                            } else {
-                                delete changeMap[key]
                             }
                         }
                         return true
                     }
                     return false
                 })
-                changes = Object.values(changeMap)
+                yamlChanges = Object.values(changeMap)
             }
         }
     }
-    return { changes, userEdits }
+    return { yamlChanges, remainingEdits }
 }
 
 export const getUserChanges = (
@@ -91,7 +94,7 @@ export const getUserChanges = (
     },
     lastComparison?: { [name: string]: any[] }
 ) => {
-    let changes = lastUserEdits
+    let changes = [] //lastUserEdits
 
     // changes to yaml
     if (errors.length === 0 || !errors.every(({ isWarning }) => !isWarning)) {
@@ -166,13 +169,12 @@ const getChanges = (
     lastComparison: { [name: string]: any[] }
 ) => {
     const changes: any[] = []
-    //    if (!isEmpty(lastChange.parsed)) {
     const ignorePaths: any = []
     normalize(lastComparison, comparison)
     const diffs = diff(lastComparison, comparison)
     if (diffs) {
         diffs.forEach((diff: any) => {
-            const { path, index, item, lhs, rhs } = diff
+            const { path, item, lhs, rhs } = diff
             let { kind } = diff
             if (path && path.length) {
                 let pathArr = getPathArray(path)
@@ -192,11 +194,6 @@ const getChanges = (
                             }
                             case 'A': {
                                 switch (item.kind) {
-                                    case 'N':
-                                        // convert new array item to new range
-                                        kind = 'N'
-                                        obj = obj.$v[index].$r ? obj.$v[index] : obj
-                                        break
                                     case 'D':
                                         // if array delete, ignore any other edits within array
                                         // edits are just the comparison of other array items
@@ -229,12 +226,36 @@ const getChanges = (
 
                     let chng: ChangeType
                     switch (kind) {
+                        case 'A': {
+                            if (item.kind === 'N') {
+                                chng = { $t: 'N', $a: pathArr, $p: path }
+                                if (isCustomEdit) {
+                                    chng.$u = item.rhs
+                                    chng.$f = 'new'
+                                    chng.$y = true
+                                } else {
+                                    if (Array.isArray(obj.$v)) {
+                                        obj.$v.some((itm: { $v: any; rhs: any; $k: any }) => {
+                                            if (itm.$v === item.rhs) {
+                                                chng.$a = [...pathArr, '$v', itm.$k]
+                                                chng.$p = [...path, itm.$k]
+                                                return true
+                                            }
+                                            return false
+                                        })
+                                    }
+                                }
+                                changes.push(chng)
+                            }
+                            break
+                        }
                         case 'E': {
                             // edited
                             if ((obj.$v || obj.$v === false) && rhs !== undefined) {
                                 chng = { $t: 'E', $a: pathArr, $p: path }
                                 if (isCustomEdit) {
-                                    chng.$f = lhs
+                                    chng.$u = rhs // what user changed it to
+                                    chng.$f = lhs // what form had it as
                                 }
                                 changes.push(chng)
                             }
@@ -243,6 +264,7 @@ const getChanges = (
                         case 'N': // new
                             chng = { $t: 'N', $a: pathArr, $p: path }
                             if (isCustomEdit) {
+                                chng.$u = rhs || obj.$v // what user changed it to
                                 chng.$f = 'new'
                             }
                             changes.push(chng)
@@ -252,7 +274,6 @@ const getChanges = (
             }
         })
     }
-    //    }
     return changes
 }
 
@@ -260,10 +281,24 @@ export const formatChanges = (
     editor: { revealLineInCenter: (arg0: any) => void; setSelection: (arg0: any) => void },
     monaco: { Selection: new (arg0: any, arg1: number, arg2: any, arg3: number) => any },
     changes: any[],
-    changeWithoutSecrets: { mappings: any; parsed: any; resources?: any[] }
+    changeWithoutSecrets: { mappings: any; parsed: any; resources?: any[] },
+    syncs: unknown
 ) => {
+    const syncPathSet = new Set()
+    if (Array.isArray(syncs)) {
+        syncs.forEach(({ path }) => {
+            syncPathSet.add(getPathArray(path).join('/'))
+        })
+    }
     changes = changes
-        .filter((change: ChangeType) => get(changeWithoutSecrets.parsed, change.$p) !== undefined)
+        .filter((change: ChangeType) => {
+            // don't include change if it's already being sent to form
+            // or if the value is undefined
+            return (
+                !syncPathSet.has((change.$a as string[]).join('/')) &&
+                get(changeWithoutSecrets.parsed, change.$p) !== undefined
+            )
+        })
         .map((change: ChangeType) => {
             const obj = get(changeWithoutSecrets.parsed, change.$p)
             const objVs = get(changeWithoutSecrets.mappings, change.$a)

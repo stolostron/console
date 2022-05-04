@@ -15,12 +15,15 @@ spec:
   pullSecretRef:
     name: pullsecret-{{{ai.name}}}
   sshAuthorizedKey: {{{ai.sshPublicKey}}}
-  {{#if ai.enableNtpSources}}
+  {{#if (checkNtpSources ai.enableNtpSources ai.additionalNtpSources)}}
   additionalNTPSources:
   {{#each ai.additionalNtpSources}}
     - {{this}}
   {{/each}}
   {{/if}}
+  nmStateConfigLabelSelector:	
+      matchLabels:	
+        infraenvs.agent-install.openshift.io: {{ ai.name }}
   {{#if ai.enableProxy}}
   proxy:
     {{#if ai.httpProxy}}
@@ -30,7 +33,7 @@ spec:
     httpsProxy: {{{ ai.httpsProxy }}}
     {{/if}}
     {{#if ai.noProxy}}
-    noProxy: {{{ ai.noProxy }}}
+    noProxy: '{{{ ai.noProxy }}}'
     {{/if}}
   {{/if}}
 status:

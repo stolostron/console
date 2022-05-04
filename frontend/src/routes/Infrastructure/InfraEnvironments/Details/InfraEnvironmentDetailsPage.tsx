@@ -17,9 +17,11 @@ import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import {
     acmRouteState,
     agentsState,
+    agentClusterInstallsState,
     bareMetalHostsState,
     configMapsState,
     infrastructuresState,
+    nmStateConfigsState,
 } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -33,7 +35,7 @@ import {
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
-import { isBMPlatform } from '../utils'
+import { getInfraEnvNMStates, isBMPlatform } from '../utils'
 
 const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY, getAgentsHostsNames } = CIM
 
@@ -47,11 +49,20 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
     const [isoModalOpen, setISOModalOpen] = useState(false)
 
-    const [agents, bareMetalHosts, configMaps, infrastructures] = useRecoilValue(
-        waitForAll([agentsState, bareMetalHostsState, configMapsState, infrastructuresState])
+    const [agentClusterInstalls, agents, bareMetalHosts, configMaps, infrastructures, nmStateConfigs] = useRecoilValue(
+        waitForAll([
+            agentClusterInstallsState,
+            agentsState,
+            bareMetalHostsState,
+            configMapsState,
+            infrastructuresState,
+            nmStateConfigsState,
+        ])
     )
 
     const infraEnv = useInfraEnv({ name: match.params.name, namespace: match.params.namespace })
+
+    const infraNMStates = useMemo(() => getInfraEnvNMStates(infraEnv, nmStateConfigs), [nmStateConfigs, infraEnv])
 
     const infraAgents = useMemo(
         () =>
@@ -157,10 +168,12 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentHosts}>
                             <HostsTab
+                                agentClusterInstalls={agentClusterInstalls}
                                 infraEnv={infraEnv}
                                 infraAgents={infraAgents}
                                 bareMetalHosts={infraBMHs}
                                 aiConfigMap={aiConfigMap}
+                                infraNMStates={infraNMStates}
                             />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentDetails}>

@@ -6,6 +6,7 @@ import {
     channelsState,
     gitOpsClustersState,
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     namespacesState,
     placementsState,
     secretsState,
@@ -29,9 +30,12 @@ import {
     GitOpsCluster,
     GitOpsClusterApiVersion,
     GitOpsClusterKind,
+    ManagedClusterSet,
+    ManagedClusterSetApiVersion,
     ManagedClusterSetBinding,
     ManagedClusterSetBindingApiVersion,
     ManagedClusterSetBindingKind,
+    ManagedClusterSetKind,
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
@@ -88,6 +92,18 @@ const channelHelm: Channel = {
         // secretRef: {
         //     name: 'secret-01',
         // },
+    },
+}
+
+const clusterSet: ManagedClusterSet = {
+    apiVersion: ManagedClusterSetApiVersion,
+    kind: ManagedClusterSetKind,
+    metadata: {
+        name: 'cluster-set-01',
+        namespace: 'argo-server-1',
+    },
+    spec: {
+        clusterSet: 'cluster-set-01',
     },
 }
 
@@ -157,7 +173,10 @@ const argoAppSetGit: ApplicationSet = {
                     namespace: 'gitops-ns',
                     server: '{{server}}',
                 },
-                syncPolicy: { automated: { selfHeal: true }, syncOptions: ['CreateNamespace=true'] },
+                syncPolicy: {
+                    automated: { selfHeal: true, prune: true },
+                    syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+                },
             },
         },
     },
@@ -202,7 +221,10 @@ const argoAppSetHelm: ApplicationSet = {
                     namespace: 'gitops-ns',
                     server: '{{server}}',
                 },
-                syncPolicy: { automated: { selfHeal: true }, syncOptions: ['CreateNamespace=true'] },
+                syncPolicy: {
+                    automated: { selfHeal: true, prune: true },
+                    syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+                },
             },
         },
     },
@@ -241,6 +263,7 @@ describe('Create Argo Application Set', () => {
                     snapshot.set(channelsState, [channelGit, channelHelm])
                     snapshot.set(namespacesState, [namespace])
                     snapshot.set(secretsState, [])
+                    snapshot.set(managedClusterSetsState, [clusterSet])
                     snapshot.set(managedClusterSetBindingsState, [clusterSetBinding])
                 }}
             >

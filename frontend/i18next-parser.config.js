@@ -3,6 +3,9 @@
 
 const { CustomJSONLexer } = require('./i18n-scripts/lexers/json.js');
 
+const JavascriptLexer = { lexer: 'JavascriptLexer', functions: ['t', 'i18n'] }
+const JsxLexer = { lexer: 'JsxLexer', functions: ['t', 'i18n'] }
+
 module.exports = {
     contextSeparator: '_',
     // Key separator used in your translation keys
@@ -35,14 +38,14 @@ module.exports = {
         htm: ['HTMLLexer'],
         html: ['HTMLLexer'],
 
-        mjs: ['JavascriptLexer'],
-        js: ['JavascriptLexer'], // if you're writing jsx inside .js files, change this to JsxLexer
-        ts: ['JavascriptLexer'],
-        jsx: ['JsxLexer'],
-        tsx: ['JsxLexer'],
+        mjs: [JavascriptLexer],
+        js: [JavascriptLexer], // if you're writing jsx inside .js files, change this to JsxLexer
+        ts: [JavascriptLexer],
+        jsx: [JsxLexer],
+        tsx: [JsxLexer],
         json: [CustomJSONLexer],
 
-        default: ['JavascriptLexer'],
+        default: [JavascriptLexer],
     },
 
     lineEnding: 'auto',

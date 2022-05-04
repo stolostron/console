@@ -15,10 +15,8 @@ import helmReleaseChannelData from './ControlDataHelm'
 import objectstoreChannelData from './ControlDataObjectStore'
 import otherChannelData from './ControlDataOther'
 import { setAvailableNSSpecs, updateControlsForNS, getSharedSubscriptionWarning } from './utils'
-import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'
-import { NamespaceDefinition } from '../../../../../resources'
+import { listProjects } from '../../../../../resources'
 import { discoverGroupsFromSource, shiftTemplateObject } from '../transformers/transform-resources-to-controls'
-import { listNamespaces } from '../../../../../resources'
 import { VALID_DNS_LABEL } from 'temptifly'
 import { GitAltIcon, UnknownIcon } from '@patternfly/react-icons'
 import HelmIcom from '../../logos/HelmIcon.svg'
@@ -29,12 +27,8 @@ export const loadExistingNamespaces = () => {
         query: () => {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const namespaces = await listNamespaces().promise
-                    const authorizedNamespaces = await getAuthorizedNamespaces(
-                        [rbacCreate(NamespaceDefinition)],
-                        namespaces
-                    )
-                    resolve(authorizedNamespaces)
+                    const namespaces = await listProjects().promise
+                    resolve(namespaces)
                 } catch (err) {
                     reject(err)
                 }

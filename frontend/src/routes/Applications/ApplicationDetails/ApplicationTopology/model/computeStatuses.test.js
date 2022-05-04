@@ -9,7 +9,6 @@ import {
     setApplicationDeployStatus,
     setPodDeployStatus,
     getPulseForData,
-    getPulseForNodeWithPodStatus,
     setPlacementRuleDeployStatus,
     getPodState,
     getPulseStatusForCluster,
@@ -26,7 +25,7 @@ import {
     subscriptionInputNotPlaced,
     genericNodeInputRed,
     genericNodeInputRed2,
-    deploymentNodeYellow3,
+    deploymentNodeRed,
     deploymentNodeYellow4,
     deploymentNodeYellow2,
     deploymentNodeNoPODS,
@@ -51,457 +50,6 @@ const t = (string) => {
 }
 
 window.open = () => {} // provide an empty implementation for window.open
-
-describe('getPulseForNodeWithPodStatus', () => {
-    const podItem = {
-        id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
-        uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
-        name: 'mortgage-app-deploy',
-        cluster: null,
-        clusterName: null,
-        clusters: {
-            specs: {
-                clusters: [
-                    {
-                        metadata: {
-                            name: 'feng',
-                        },
-                        status: 'ok',
-                    },
-                    {
-                        metadata: {
-                            name: 'cluster1',
-                        },
-                        status: 'ok',
-                    },
-                    {
-                        metadata: {
-                            name: 'cluster2',
-                        },
-                        status: 'ok',
-                    },
-                ],
-            },
-        },
-        type: 'deployment',
-        specs: {
-            clustersNames: ['feng', 'cluster1'],
-            podModel: {
-                'mortgage-app-deploy-55c65b9c8f-6v9bn': [
-                    {
-                        cluster: 'feng',
-                        namespace: 'default',
-                        hostIP: '1.1.1.1',
-                        status: 'Error',
-                        startedAt: '2020-04-20T22:03:52Z',
-                        restarts: 0,
-                        podIP: '1.1.1.1',
-                    },
-                ],
-            },
-            deploymentModel: {
-                'mortgage-app-deploy-feng': [
-                    {
-                        cluster: 'feng',
-                        namespace: 'default',
-                        ready: 2,
-                        desired: 3,
-                        unavailable: 1,
-                    },
-                ],
-                'mortgage-app-deploy-cluster1': [],
-            },
-            raw: {
-                apiVersion: 'apps/v1',
-                kind: 'Deployment',
-                metadata: {
-                    labels: { app: 'mortgage-app-mortgage' },
-                    name: 'mortgage-app-deploy',
-                    namespace: 'default',
-                },
-                spec: {
-                    replicas: 1,
-                    selector: {
-                        matchLabels: { app: 'mortgage-app-mortgage' },
-                    },
-                    template: {
-                        metadata: {
-                            labels: { app: 'mortgage-app-mortgage' },
-                        },
-                        spec: {
-                            containers: [
-                                {
-                                    image: 'fxiang/mortgage:0.4.0',
-                                    imagePullPolicy: 'Always',
-                                    name: 'mortgage-app-mortgage',
-                                    ports: [
-                                        {
-                                            containerPort: 9080,
-                                        },
-                                    ],
-                                    resources: {
-                                        limits: { cpu: '200m', memory: '256Mi' },
-                                        request: { cpu: '200m', memory: '256Mi' },
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                },
-            },
-            deployStatuses: [
-                {
-                    phase: 'Subscribed',
-                    resourceStatus: {
-                        availableReplicas: 1,
-                    },
-                },
-            ],
-        },
-    }
-
-    it('getPulseForNodeWithPodStatus pulse red', () => {
-        expect(getPulseForNodeWithPodStatus(podItem, t)).toEqual('red')
-    })
-})
-
-describe('getPulseForNodeWithPodStatus controllerrevision type', () => {
-    const podItem = {
-        id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--controllerrevision--mortgage-app-deploy',
-        uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--controllerrevision--mortgage-app-deploy',
-        name: 'mortgage-app-deploy',
-        cluster: null,
-        clusterName: null,
-        clusters: {
-            specs: {
-                clusters: [
-                    {
-                        metadata: {
-                            name: 'feng',
-                        },
-                        status: 'ok',
-                    },
-                    {
-                        metadata: {
-                            name: 'cluster1',
-                        },
-                        status: 'ok',
-                    },
-                    {
-                        metadata: {
-                            name: 'cluster2',
-                        },
-                        status: 'ok',
-                    },
-                ],
-            },
-        },
-        type: 'controllerrevision',
-        specs: {
-            clustersNames: ['feng', 'cluster1'],
-            podModel: {
-                'mortgage-app-deploy-55c65b9c8f-6v9bn': [
-                    {
-                        cluster: 'feng',
-                        namespace: 'default',
-                        hostIP: '1.1.1.1',
-                        status: 'Error',
-                        startedAt: '2020-04-20T22:03:52Z',
-                        restarts: 0,
-                        podIP: '1.1.1.1',
-                    },
-                ],
-            },
-            controllerrevisionModel: {
-                'mortgage-app-deploy-feng': [
-                    {
-                        cluster: 'feng',
-                        namespace: 'default',
-                        ready: 2,
-                        desired: 3,
-                        unavailable: 1,
-                    },
-                ],
-                'mortgage-app-deploy-cluster1': [],
-            },
-            raw: {
-                apiVersion: 'apps/v1',
-                kind: 'ControllerRevision',
-                metadata: {
-                    labels: { app: 'mortgage-app-mortgage' },
-                    name: 'mortgage-app-deploy',
-                    namespace: 'default',
-                },
-                spec: {
-                    replicas: 1,
-                    selector: {
-                        matchLabels: { app: 'mortgage-app-mortgage' },
-                    },
-                    template: {
-                        metadata: {
-                            labels: { app: 'mortgage-app-mortgage' },
-                        },
-                        spec: {
-                            containers: [
-                                {
-                                    image: 'fxiang/mortgage:0.4.0',
-                                    imagePullPolicy: 'Always',
-                                    name: 'mortgage-app-mortgage',
-                                    ports: [
-                                        {
-                                            containerPort: 9080,
-                                        },
-                                    ],
-                                    resources: {
-                                        limits: { cpu: '200m', memory: '256Mi' },
-                                        request: { cpu: '200m', memory: '256Mi' },
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                },
-            },
-            deployStatuses: [
-                {
-                    phase: 'Subscribed',
-                    resourceStatus: {
-                        availableReplicas: 1,
-                    },
-                },
-            ],
-        },
-    }
-
-    it('getPulseForNodeWithPodStatus pulse red controllerrevision type', () => {
-        expect(getPulseForNodeWithPodStatus(podItem, t)).toEqual('red')
-    })
-})
-
-describe('getPulseForNodeWithPodStatus controllerrevision type no desired', () => {
-    const podItem = {
-        id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--controllerrevision--mortgage-app-deploy',
-        uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--controllerrevision--mortgage-app-deploy',
-        name: 'mortgage-app-deploy',
-        cluster: null,
-        clusterName: null,
-        clusters: {
-            specs: {
-                clusters: [
-                    {
-                        metadata: {
-                            name: 'feng',
-                        },
-                        status: 'ok',
-                    },
-                    {
-                        metadata: {
-                            name: 'cluster1',
-                        },
-                        status: 'ok',
-                    },
-                    {
-                        metadata: {
-                            name: 'cluster2',
-                        },
-                        status: 'ok',
-                    },
-                ],
-            },
-        },
-        type: 'controllerrevision',
-        specs: {
-            searchClusters: [
-                {
-                    name: 'feng',
-                    status: 'OK',
-                },
-            ],
-            clustersNames: ['feng', 'cluster1', 'cluster2'],
-            podModel: {
-                'mortgage-app-deploy-55c65b9c8f-6v9bn': [
-                    {
-                        namespace: 'default',
-                        cluster: 'feng',
-                        hostIP: '1.1.1.1',
-                        status: 'Error',
-                        startedAt: '2020-04-20T22:03:52Z',
-                        restarts: 0,
-                        podIP: '1.1.1.1',
-                    },
-                ],
-            },
-            controllerrevisionModel: {
-                'mortgage-app-deploy-feng': [
-                    {
-                        cluster: 'feng',
-                        ready: 2,
-                        unavailable: 1,
-                        namespace: 'default',
-                    },
-                ],
-                'mortgage-app-deploy-cluster1': [],
-            },
-            raw: {
-                apiVersion: 'apps/v1',
-                kind: 'ControllerRevision',
-                metadata: {
-                    labels: { app: 'mortgage-app-mortgage' },
-                    name: 'mortgage-app-deploy',
-                    namespace: 'default',
-                },
-                spec: {
-                    replicas: 1,
-                    selector: {
-                        matchLabels: { app: 'mortgage-app-mortgage' },
-                    },
-                    template: {
-                        metadata: {
-                            labels: { app: 'mortgage-app-mortgage' },
-                        },
-                        spec: {
-                            containers: [
-                                {
-                                    image: 'fxiang/mortgage:0.4.0',
-                                    imagePullPolicy: 'Always',
-                                    name: 'mortgage-app-mortgage',
-                                    ports: [
-                                        {
-                                            containerPort: 9080,
-                                        },
-                                    ],
-                                    resources: {
-                                        limits: { cpu: '200m', memory: '256Mi' },
-                                        request: { cpu: '200m', memory: '256Mi' },
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                },
-            },
-            deployStatuses: [
-                {
-                    phase: 'Subscribed',
-                    resourceStatus: {
-                        availableReplicas: 1,
-                    },
-                },
-            ],
-        },
-    }
-
-    it('getPulseForNodeWithPodStatus pulse red controllerrevision type no desired', () => {
-        expect(getPulseForNodeWithPodStatus(podItem, t)).toEqual('red')
-    })
-})
-
-describe('getPulseForNodeWithPodStatus no replica', () => {
-    const podItem = {
-        id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
-        uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
-        name: 'mortgage-app-deploy',
-        cluster: null,
-        clusterName: null,
-        clusters: {
-            specs: {
-                clusters: [
-                    {
-                        metadata: {
-                            name: 'feng',
-                        },
-                        status: 'ok',
-                    },
-                    {
-                        metadata: {
-                            name: 'cluster1',
-                        },
-                        status: 'ok',
-                    },
-                    {
-                        metadata: {
-                            name: 'cluster2',
-                        },
-                        status: 'ok',
-                    },
-                ],
-            },
-        },
-        type: 'deployment',
-        specs: {
-            searchClusters: [
-                {
-                    name: 'feng',
-                    status: 'OK',
-                },
-                {
-                    name: 'cluster1',
-                    status: 'OK',
-                },
-            ],
-            clustersNames: ['feng', 'cluster1'],
-            deploymentModel: {
-                'mortgage-app-deploy-feng': [
-                    {
-                        ready: 2,
-                        desired: 3,
-                        namespace: 'default',
-                    },
-                ],
-                'mortgage-app-deploy-cluster1': [],
-            },
-            raw: {
-                apiVersion: 'apps/v1',
-                kind: 'Deployment',
-                metadata: {
-                    labels: { app: 'mortgage-app-mortgage' },
-                    name: 'mortgage-app-deploy',
-                    namespace: 'default',
-                },
-                spec: {
-                    selector: {
-                        matchLabels: { app: 'mortgage-app-mortgage' },
-                    },
-                    template: {
-                        metadata: {
-                            labels: { app: 'mortgage-app-mortgage' },
-                        },
-                        spec: {
-                            containers: [
-                                {
-                                    image: 'fxiang/mortgage:0.4.0',
-                                    imagePullPolicy: 'Always',
-                                    name: 'mortgage-app-mortgage',
-                                    ports: [
-                                        {
-                                            containerPort: 9080,
-                                        },
-                                    ],
-                                    resources: {
-                                        limits: { cpu: '200m', memory: '256Mi' },
-                                        request: { cpu: '200m', memory: '256Mi' },
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                },
-            },
-            deployStatuses: [
-                {
-                    phase: 'Subscribed',
-                    resourceStatus: {
-                        availableReplicas: 1,
-                    },
-                },
-            ],
-        },
-    }
-
-    it('getPulseForNodeWithPodStatus pulse no replica', () => {
-        expect(getPulseForNodeWithPodStatus(podItem, t)).toEqual('yellow')
-    })
-})
 
 describe('getPulseForData', () => {
     const previousPulse = 'red'
@@ -552,16 +100,6 @@ describe('getPulseForData', () => {
 
     it('getPulseForData pulse green pod desired is equal with available', () => {
         expect(getPulseForData(available, desired, podsUnavailable)).toEqual('green')
-    })
-})
-
-describe('getPulseForData', () => {
-    const available = 0
-    const desired = undefined
-    const podsUnavailable = 0
-
-    it('getPulseForData pulse orange pod desired is undefined and no pods available', () => {
-        expect(getPulseForData(available, desired, podsUnavailable)).toEqual('orange')
     })
 })
 
@@ -817,7 +355,7 @@ describe('setSubscriptionDeployStatus with no sub error', () => {
                 data: {
                     action: 'open_link',
                     targetLink:
-                        '/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Ans%20cluster%3Alocal-cluster"}',
+                        '/multicloud/home/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Ans%20cluster%3Alocal-cluster"}',
                 },
                 id: 'undefined-subscrSearch',
                 label: 'View all placement rules in {{0}} namespace',
@@ -997,7 +535,7 @@ describe('setSubscriptionDeployStatus for details yellow', () => {
                 data: {
                     action: 'open_link',
                     targetLink:
-                        '/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Ans%20cluster%3Alocal-cluster"}',
+                        '/multicloud/home/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3Ans%20cluster%3Alocal-cluster"}',
                 },
                 id: 'undefined-subscrSearch',
                 label: 'View all placement rules in {{0}} namespace',
@@ -1047,8 +585,8 @@ describe('computeNodeStatus', () => {
         expect(computeNodeStatus(persVolumePendingStateYellow, true, t)).toEqual('yellow')
     })
 
-    it('return computeNodeStatus generic node green - res not defined', () => {
-        expect(computeNodeStatus(genericNodeYellowNotDefined, true, t)).toEqual('yellow')
+    it('return computeNodeStatus generic node red - res not defined', () => {
+        expect(computeNodeStatus(genericNodeYellowNotDefined, true, t)).toEqual('orange')
     })
 
     it('return Ansible error', () => {
@@ -1075,7 +613,7 @@ describe('computeNodeStatus', () => {
         expect(computeNodeStatus(subscriptionInputRed1, true, t)).toEqual('red')
     })
 
-    it('return computeNodeStatus orange', () => {
+    it('return computeNodeStatus red', () => {
         expect(computeNodeStatus(subscriptionInputRed, true, t)).toEqual('orange')
     })
 
@@ -1100,19 +638,19 @@ describe('computeNodeStatus', () => {
     })
 
     it('return computeNodeStatus generic no  pod', () => {
-        expect(computeNodeStatus(deploymentNodeNoPodModel, true, t)).toEqual('yellow')
+        expect(computeNodeStatus(deploymentNodeNoPodModel, true, t)).toEqual('orange')
     })
 
     it('return computeNodeStatus generic node no pods', () => {
-        expect(computeNodeStatus(deploymentNodeNoPODS, true, t)).toEqual('yellow')
+        expect(computeNodeStatus(deploymentNodeNoPODS, true, t)).toEqual('orange')
     })
 
     it('return computeNodeStatus generic node no pods res', () => {
-        expect(computeNodeStatus(deploymentNodeNoPODSNoRes, true, t)).toEqual('yellow')
+        expect(computeNodeStatus(deploymentNodeNoPODSNoRes, true, t)).toEqual('orange')
     })
 
-    it('return computeNodeStatus generic node yellow', () => {
-        expect(computeNodeStatus(genericNodeYellow, true, t)).toEqual('yellow')
+    it('return computeNodeStatus generic node orange', () => {
+        expect(computeNodeStatus(genericNodeYellow, true, t)).toEqual('orange')
     })
 
     it('return computeNodeStatus package node orange', () => {
@@ -1126,14 +664,14 @@ describe('computeNodeStatus', () => {
     it('return computeNodeStatus rules node green2', () => {
         expect(computeNodeStatus(ruleNodeGreen2, true, t)).toEqual('green')
     })
-    it('return computeNodeStatus deploymentNodeYellow3', () => {
-        expect(computeNodeStatus(deploymentNodeYellow3, true, t)).toEqual('yellow')
+    it('return computeNodeStatus deploymentNodeRed', () => {
+        expect(computeNodeStatus(deploymentNodeRed, true, t)).toEqual('orange')
     })
     it('return computeNodeStatus deploymentNodeYellow4', () => {
-        expect(computeNodeStatus(deploymentNodeYellow4, true, t)).toEqual('yellow')
+        expect(computeNodeStatus(deploymentNodeYellow4, true, t)).toEqual('orange')
     })
     it('return computeNodeStatus deploymentNodeYellow2', () => {
-        expect(computeNodeStatus(deploymentNodeYellow2, true, t)).toEqual('yellow')
+        expect(computeNodeStatus(deploymentNodeYellow2, true, t)).toEqual('orange')
     })
 
     it('return computeNodeStatus subscriptionGreenNotPlacedYellow', () => {
@@ -1275,7 +813,7 @@ describe('setResourceDeployStatus ansiblejob', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch123&namespace=default',
+                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch123&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1345,7 +883,7 @@ describe('setResourceDeployStatus ansiblejob', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1405,7 +943,7 @@ describe('setResourceDeployStatus ansiblejob no specs.raw.spec', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1464,7 +1002,7 @@ describe('setResourceDeployStatus ansiblejob no status', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1493,7 +1031,7 @@ describe('setResourceDeployStatus ansiblejob no status', () => {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
                     editLink:
-                        '/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
+                        '/multicloud/home/search/resources?apiversion=tower.ansible.com%2Fv1alpha1&cluster=local-cluster&kind=ansiblejob&name=bigjoblaunch&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1521,7 +1059,7 @@ describe('setResourceDeployStatus ansiblejob no status', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'local-cluster',
-                    editLink: '/resources?cluster=local-cluster&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=local-cluster&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1592,6 +1130,7 @@ describe('setResourceDeployStatus 2', () => {
         { type: 'spacer' },
         { labelValue: 'Cluster name', value: 'possiblereptile' },
         { labelValue: 'default', status: 'checkmark', value: 'Deployed' },
+        { labelKey: 'Location', value: '172.30.140.196:9080' },
         {
             indent: true,
             type: 'link',
@@ -1599,7 +1138,8 @@ describe('setResourceDeployStatus 2', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
+                    editLink:
+                        '/multicloud/home/search/resources?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -1672,6 +1212,7 @@ describe('setResourceDeployStatus 2 with filter green', () => {
         { type: 'spacer' },
         { labelValue: 'Cluster name', value: 'possiblereptile' },
         { labelValue: 'default', status: 'checkmark', value: 'Deployed' },
+        { labelKey: 'Location', value: '172.30.140.196:9080' },
         {
             indent: true,
             type: 'link',
@@ -1679,7 +1220,8 @@ describe('setResourceDeployStatus 2 with filter green', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
+                    editLink:
+                        '/multicloud/home/search/resources?cluster=possiblereptile&kind=service&name=mortgage-app-svc&namespace=default',
                 },
                 label: 'View resource YAML',
             },
@@ -2061,7 +1603,7 @@ describe('setApplicationDeployStatus application', () => {
                 data: {
                     action: 'open_link',
                     targetLink:
-                        '/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Adefault%20cluster%3Alocal-cluster"}',
+                        '/multicloud/home/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Adefault%20cluster%3Alocal-cluster"}',
                 },
                 id: 'member--application-subscrSearch',
                 label: 'View all subscriptions in {{0}} namespace',
@@ -2101,7 +1643,7 @@ describe('setApplicationDeployStatus no selector', () => {
                 data: {
                     action: 'open_link',
                     targetLink:
-                        '/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Adefault%20cluster%3Alocal-cluster"}',
+                        '/multicloud/home/search?filters={"textsearch":"kind%3Asubscription%20namespace%3Adefault%20cluster%3Alocal-cluster"}',
                 },
                 id: 'member--clusters--braveman, possiblereptile, sharingpenguin, relievedox--default--guestbook-app-cassandra-cassandra-service--service--cassandra-subscrSearch',
                 label: 'View all subscriptions in {{0}} namespace',
@@ -2171,15 +1713,6 @@ describe('setPodDeployStatus  with pod less then desired', () => {
                 ],
             },
         },
-        podStatusMap: {
-            'possiblereptile-default-pod-mortgage-app-deploy': {
-                cluster: 'possiblereptile',
-                namespace: 'default',
-                ready: 1,
-                desired: 3,
-                unavailable: 2,
-            },
-        },
         specs: {
             clustersNames: ['possiblereptile'],
             raw: {
@@ -2196,22 +1729,38 @@ describe('setPodDeployStatus  with pod less then desired', () => {
                 },
             },
             podModel: {
-                'mortgage-app-deploy-55c65b9c8f-r84f4-possiblereptile': [
+                'mortgage-app-deploy-possiblereptile': [
                     {
                         cluster: 'possiblereptile',
                         namespace: 'default',
-                        status: 'err',
+                        status: 'Failed',
+
+                        // "_uid": "console-managed/e434f8e1-942f-44c6-bf5d-b8c88ba4441e",
+                        // "apiversion": "v1",
+                        // "status": "Running",
+                        // "created": "2022-04-06T16:04:39Z",
+                        // "namespace": "default",
+                        // "kind": "pod",
+                        // "cluster": "console-managed",
+                        // "hostIP": "10.0.187.69",
+                        // "restarts": 2,
+                        // "startedAt": "2022-04-06T16:04:39Z",
+                        // "name": "helloworld-app-deploy-7998d94b96-ndnds",
+                        // "container": "helloworld-app-container",
+                        // "_rbac": "console-managed_null_pods",
+                        // "_clusterNamespace": "console-managed",
+                        // "image": "quay.io/fxiang1/helloworld:0.0.1",
+                        // "label": "app=helloworld-app; pod-template-hash=7998d94b96",
+                        // "_ownerUID": "console-managed/4348a1c7-01c7-4553-9750-3181f2f52a2f",
+                        // "podIP": "10.128.0.57",
+                        // "resStatus": "running",
+                        // "pulse": "green"
                     },
                 ],
             },
         },
     }
     const result = [
-        { type: 'spacer' },
-        { labelKey: 'Cluster deploy status for pods', type: 'label' },
-        { labelValue: 'Cluster name', value: 'possiblereptile' },
-        { labelValue: 'default', status: 'failure', value: '1/3' },
-        { type: 'spacer' },
         { type: 'spacer' },
         { labelValue: 'Pod details for {{0}}', type: 'label' },
         {
@@ -2228,7 +1777,7 @@ describe('setPodDeployStatus  with pod less then desired', () => {
             labelValue: undefined,
             status: 'failure',
             type: 'label',
-            value: 'err',
+            value: 'Failed',
         },
         {
             indent: true,
@@ -2237,7 +1786,7 @@ describe('setPodDeployStatus  with pod less then desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -2269,52 +1818,6 @@ describe('setPodDeployStatus  with pod less then desired', () => {
         { type: 'spacer' },
     ]
     it('setPodDeployStatus with pod less then desired', () => {
-        expect(setPodDeployStatus(node, node, [], {}, t)).toEqual(result)
-    })
-})
-
-describe('setPodDeployStatus  with pod but no pod model and no podStatusMap', () => {
-    const node = {
-        type: 'pod',
-        name: 'mortgage-app-deploy',
-        namespace: 'default',
-        id: 'member--member--deployable--member--clusters--possiblereptile--default--mortgage-app-subscription-mortgage-mortgage-app-deploy-deployment--deployment--mortgage-app-deploy',
-        clusters: {
-            specs: {
-                clusters: [
-                    {
-                        metadata: {
-                            name: 'possiblereptile',
-                        },
-                        status: 'ok',
-                    },
-                ],
-            },
-        },
-        specs: {
-            searchClusters: [],
-            clustersNames: ['possiblereptile'],
-            raw: {
-                spec: {
-                    metadata: 'default',
-                    replicas: 1,
-                    template: {
-                        spec: {
-                            containers: [{ c1: 'aa' }],
-                        },
-                    },
-                },
-            },
-        },
-    }
-    const result = [
-        { type: 'spacer' },
-        { labelKey: 'Cluster deploy status for pods', type: 'label' },
-        { labelValue: 'Cluster name', value: 'possiblereptile' },
-        { labelValue: 'default', status: 'pending', value: 'Not Deployed' },
-        { type: 'spacer' },
-    ]
-    it('setPodDeployStatus with pod but no pod podStatusMap', () => {
         expect(setPodDeployStatus(node, node, [], {}, t)).toEqual(result)
     })
 })
@@ -2390,11 +1893,6 @@ describe('setPodDeployStatus  with pod as desired', () => {
     }
     const result = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status for pods', type: 'label' },
-        { labelValue: 'Cluster name', value: 'possiblereptile' },
-        { labelValue: 'default', status: 'checkmark', value: '3/3' },
-        { type: 'spacer' },
-        { type: 'spacer' },
         { labelValue: 'Pod details for {{0}}', type: 'label' },
         {
             type: 'label',
@@ -2419,7 +1917,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -2472,7 +1970,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -2525,7 +2023,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -2647,11 +2145,6 @@ describe('setPodDeployStatus - pod as desired with green filter', () => {
     }
     const result = [
         { type: 'spacer' },
-        { labelKey: 'Cluster deploy status for pods', type: 'label' },
-        { labelValue: 'Cluster name', value: 'possiblereptile' },
-        { labelValue: 'default', status: 'checkmark', value: '3/3' },
-        { type: 'spacer' },
-        { type: 'spacer' },
         { labelValue: 'Pod details for {{0}}', type: 'label' },
         {
             type: 'label',
@@ -2676,7 +2169,7 @@ describe('setPodDeployStatus - pod as desired with green filter', () => {
                 data: {
                     action: 'show_resource_yaml',
                     cluster: 'possiblereptile',
-                    editLink: '/resources?cluster=possiblereptile&namespace=default',
+                    editLink: '/multicloud/home/search/resources?cluster=possiblereptile&namespace=default',
                 },
                 label: 'View Pod YAML and Logs',
             },
@@ -2777,7 +2270,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
         { type: 'spacer' },
         { labelKey: 'Cluster deploy status for pods', type: 'label' },
         { labelValue: 'Cluster name', value: 'possiblereptile' },
-        { labelValue: '*', value: 'Not deployed', status: 'pending' },
+        { labelValue: 'default', value: 'Not Deployed', status: 'pending' },
         { type: 'spacer' },
     ]
     it('setPodDeployStatus with pod as desired but no matched cluster', () => {

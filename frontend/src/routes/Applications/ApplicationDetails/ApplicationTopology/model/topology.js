@@ -10,13 +10,16 @@ import { getAppSetTopology } from './topologyAppSet'
 
 export const getTopology = (application, managedClusters, relatedResources, argoData) => {
     let topology
-    if (application.isArgoApp) {
-        topology = getArgoTopology(application, argoData)
-    } else if (application.isAppSet) {
-        topology = getAppSetTopology(application)
-    } else {
-        topology = getSubscriptionTopology(application, managedClusters, relatedResources)
+    if (application) {
+        if (application.isArgoApp) {
+            topology = getArgoTopology(application, argoData, managedClusters)
+        } else if (application.isAppSet) {
+            topology = getAppSetTopology(application)
+        } else {
+            topology = getSubscriptionTopology(application, managedClusters, relatedResources)
+        }
     }
+
     return topology
 }
 
@@ -102,9 +105,7 @@ export const processNodeData = (node, topoResourceMap, isClusterGrouped, hasHelm
         // if this node represents multiple resources, create an entry for each resource in the map
         const resources = _.get(node, 'specs.resources')
         if (resources) {
-            resources.forEach(({ name }) => {
-                topoResourceMap[`${type}-${name}-${clusterName}`] = node
-            })
+            topoResourceMap[`${type}-${clusterName}`] = node
         } else {
             topoResourceMap[`${type}-${keyName}-${clusterName}`] = node
         }

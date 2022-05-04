@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getClusterName, createChildNode, addClusters, getApplicationData } from './utils'
+import { getClusterName, addClusters, getApplicationData } from './utils'
 
 describe('getClusterName', () => {
     it('get the cluster name from the id', () => {
@@ -11,32 +11,6 @@ describe('getClusterName', () => {
 
     it('node id is undefined', () => {
         expect(getClusterName(undefined)).toEqual('')
-    })
-})
-
-describe('createChildNode', () => {
-    it('create child node from given data', () => {
-        const parent = {
-            type: 'cluster',
-            id: 'member--clusters--local-cluster',
-            name: 'test-cluster',
-            namespace: 'test-ns',
-        }
-        const result = {
-            id: 'member--member--deployable--member--clusters--local-cluster--service--test-cluster',
-            name: 'test-cluster',
-            namespace: 'test-ns',
-            specs: {
-                parent: {
-                    parentId: 'member--clusters--local-cluster',
-                    parentName: 'test-cluster',
-                    parentType: 'cluster',
-                },
-            },
-            type: 'service',
-            uid: 'member--member--deployable--member--clusters--local-cluster--service--test-cluster',
-        }
-        expect(createChildNode(parent, 'service', [], [])).toEqual(result)
     })
 })
 
@@ -92,7 +66,7 @@ describe('getApplicationData', () => {
         ]
         const result = {
             isArgoApp: false,
-            relatedKinds: ['application', 'subscription', 'cluster', 'replicaset', 'pod'],
+            relatedKinds: ['application', 'subscription', 'cluster', 'replicaset'],
             subscription: 'my-subscription',
         }
         expect(getApplicationData(nodes)).toEqual(result)
@@ -118,7 +92,7 @@ describe('getApplicationData', () => {
         const result = {
             cluster: 'local-cluster',
             isArgoApp: true,
-            relatedKinds: ['replicaset', 'pod'],
+            relatedKinds: ['replicaset'],
             source: {},
             subscription: null,
         }

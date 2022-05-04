@@ -35,6 +35,7 @@ import { ErrorPage } from '../../../components/ErrorPage'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { validateKubernetesDnsName } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
+import schema from './schema.json'
 import _ from 'lodash'
 
 export default function AnsibleAutomationsFormPage({
@@ -111,8 +112,10 @@ export function AnsibleAutomationsForm(props: {
 
     const history = useHistory()
     const [editAnsibleJob, setEditAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
-    const [editAnsibleJobList, setEditAnsibleJobList] =
-        useState<{ jobs: ClusterCuratorAnsibleJob[]; setJobs: (jobs: ClusterCuratorAnsibleJob[]) => void }>()
+    const [editAnsibleJobList, setEditAnsibleJobList] = useState<{
+        jobs: ClusterCuratorAnsibleJob[]
+        setJobs: (jobs: ClusterCuratorAnsibleJob[]) => void
+    }>()
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
     const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
@@ -188,7 +191,7 @@ export function AnsibleAutomationsForm(props: {
             metadata: {
                 name: templateName,
                 namespace: ansibleSecretNamespace,
-                resourceVersion: resourceVersion,
+                resourceVersion: resourceVersion ?? '',
             },
             spec: {
                 install: {
@@ -214,6 +217,10 @@ export function AnsibleAutomationsForm(props: {
             },
         }
         return curator
+    }
+    function stateToSyncs() {
+        const syncs = [{ path: 'ClusterCurator[0].metadata.name', setState: setTemplateName }]
+        return syncs
     }
 
     function cellsFn(ansibleJob: ClusterCuratorAnsibleJob) {
@@ -500,12 +507,21 @@ export function AnsibleAutomationsForm(props: {
         submitText: isEditing ? t('save') : t('add'),
         submittingText: isEditing ? t('saving') : t('adding'),
         cancel: () => history.push(NavigationPath.ansibleAutomations),
+        stateToSyncs,
         stateToData,
     }
 
     return (
         <Fragment>
-            <AcmDataFormPage formData={formData} mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'} />
+            <AcmDataFormPage
+                editorTitle={t('Ansible YAML')}
+                formData={formData}
+                schema={schema}
+                immutables={
+                    isEditing ? ['ClusterCurator[0].metadata.name', 'ClusterCurator[0].metadata.namespace'] : []
+                }
+                mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
+            />
             <EditAnsibleJobModal
                 ansibleJob={editAnsibleJob}
                 ansibleSelection={ansibleSelection}

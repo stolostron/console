@@ -7,6 +7,7 @@ import {
     VALIDATE_BASE_DNS_NAME_REQUIRED,
     VALID_DNS_LABEL,
     VALIDATE_URL,
+    VALIDATE_ALPHANUMERIC,
 } from 'temptifly'
 import { listClusterImageSets } from '../../../../../../resources'
 import { unpackProviderConnection } from '../../../../../../resources'
@@ -180,6 +181,9 @@ export const setAvailableConnections = (control, secrets) => {
         if (replacements['ovirt_ca_bundle']) {
             replacements['ovirtCaBundle'] = replacements['ovirt_ca_bundle']
         }
+        if (!replacements['additionalTrustBundle']) {
+            delete replacements['additionalTrustBundle']
+        }
         control.availableMap[c.metadata.name] = { replacements }
         control.hasReplacements = true
         control.noHandlebarReplacements = true
@@ -342,7 +346,7 @@ export const clusterDetailsControlData = [
         id: 'fips',
         type: 'checkbox',
         active: false,
-        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with RHCOS instead of the default Kubernetes cryptography suite.',
+        tip: 'Use the Federal Information Processing Standards (FIPS) modules provided with Red Hat Enterprise Linux CoreOS instead of the default Kubernetes cryptography suite.',
     },
 ]
 
@@ -441,7 +445,7 @@ export const proxyControlData = [
     {
         id: 'httpProxy',
         type: 'text',
-        name: 'Http Proxy',
+        name: 'HTTP proxy',
         disabled: true,
         tip: 'Requires this format: http://<username>:<pswd>@<ip>:<port>',
         validation: VALIDATE_URL,
@@ -449,7 +453,7 @@ export const proxyControlData = [
     {
         id: 'httpsProxy',
         type: 'text',
-        name: 'Https Proxy',
+        name: 'HTTPS proxy',
         tip: 'Requires this format: https://<username>:<pswd>@<ip>:<port>',
         disabled: true,
         validation: VALIDATE_URL,
@@ -458,14 +462,14 @@ export const proxyControlData = [
         active: [],
         id: 'noProxy',
         type: 'values',
-        name: 'No Proxy',
+        name: 'No proxy',
         disabled: true,
         tip: 'Add comma separated sites to bypass the proxy. By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs.',
     },
     {
         id: 'additionalTrustBundle',
         type: 'textarea',
-        name: 'Additional Trust Bundle',
+        name: 'Additional trust bundle',
         disabled: true,
         placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
     },
@@ -493,6 +497,18 @@ export const automationControlData = [
             required: false,
         },
         prompts: CREATE_AUTOMATION_TEMPLATE,
+    },
+]
+
+export const architectureData = [
+    {
+        name: 'Architecture',
+        tooltip: 'tooltip.architecture',
+        id: 'architecture',
+        type: 'combobox',
+        available: ['amd64'],
+        validation: VALIDATE_ALPHANUMERIC,
+        cacheUserValueKey: 'create.cluster.architecture',
     },
 ]
 

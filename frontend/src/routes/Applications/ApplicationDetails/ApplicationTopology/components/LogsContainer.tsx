@@ -19,11 +19,7 @@ export function LogsContainer(props: ILogsContainerProps) {
     let resourceError = ''
     const t = props.t
     const podModel = _.get(props.node, 'specs.podModel')
-    const pods = podModel
-        ? Object.keys(podModel).map((key) => {
-              return podModel[key][0]
-          })
-        : []
+    const pods = podModel ? podModel[Object.keys(podModel)[0]] : []
 
     if (pods.length === 0) {
         resourceError = t('No pods found')
@@ -47,9 +43,9 @@ export function LogsContainer(props: ILogsContainerProps) {
         initialCluster = pods[0].cluster
         initialPodURL = createResourceURL(
             {
-                initialCluster,
+                cluster: initialCluster,
                 type: pods[0].kind,
-                initialNamespace,
+                namespace: initialNamespace,
                 name: initialPod,
                 specs: {
                     raw: {

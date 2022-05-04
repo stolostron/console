@@ -175,7 +175,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     <>
                         <div>{cluster?.labels?.clusterID}</div>
                         <a
-                            href={`https://cloud.redhat.com/openshift/details/${cluster?.labels?.clusterID}`}
+                            href={`https://console.redhat.com/openshift/details/s/${cluster?.labels?.clusterID}`}
                             target="_blank"
                             rel="noreferrer"
                         >

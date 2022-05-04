@@ -18,8 +18,15 @@ import _ from 'lodash'
 
 export const getConnectedLayoutOptions = ({ elements }) => {
     // pre position elements to try to keep webcola from random layouts
+    let subscriptions = 0
     const typeToShapeMap = defaultShapes
     const nodes = elements.nodes()
+    nodes.forEach((n) => {
+        const ndata = n.data()
+        if (ndata.node.type === 'subscription' || ndata.node.type === 'ansiblejob') {
+            subscriptions++
+        }
+    })
     const roots = nodes
         .roots((n) => {
             // only have the application node as root
@@ -27,7 +34,13 @@ export const getConnectedLayoutOptions = ({ elements }) => {
             return ndata.node.type === 'application' || ndata.node.type === 'applicationset'
         })
         .toArray()
+    const leaves = nodes.leaves()
     positionApplicationRows(roots, typeToShapeMap)
+    if (subscriptions <= 1 && nodes.length < 40 && roots.length === 1 && leaves.length > 2 && leaves.length < 20) {
+        return {
+            name: 'preset',
+        }
+    }
 
     // let cola position them, nicely
     return {

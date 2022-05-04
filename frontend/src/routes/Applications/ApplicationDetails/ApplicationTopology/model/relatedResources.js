@@ -90,6 +90,6 @@ const getSearchPromise = (cluster, kind, name, namespace, relatedKinds) => {
             input: [{ ...query, relatedKinds }],
             limit: 10000,
         },
-        fetchPolicy: 'cache-first',
+        fetchPolicy: 'network-only',
     })
 }

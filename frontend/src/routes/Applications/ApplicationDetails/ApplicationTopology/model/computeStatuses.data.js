@@ -33,10 +33,6 @@ export const genericNodeYellowNotDefined = {
     type: 'service',
     specs: {
         clustersNames: ['feng'],
-        serviceModel: {
-            'mortgage-app-service-feng': {},
-            'mortgage-app-service-cluster1': {},
-        },
         raw: {
             apiVersion: 'apps/v1',
             kind: 'Service',
@@ -140,7 +136,7 @@ export const persVolumePendingStatePendingRes = [
                 action: 'show_resource_yaml',
                 cluster: 'feng',
                 editLink:
-                    '/resources?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
+                    '/multicloud/home/search/resources?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
             },
             label: 'View resource YAML',
         },
@@ -178,7 +174,7 @@ export const persVolumePendingStateGreenRes = [
                 action: 'show_resource_yaml',
                 cluster: 'feng',
                 editLink:
-                    '/resources?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
+                    '/multicloud/home/search/resources?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
             },
             label: 'View resource YAML',
         },
@@ -476,7 +472,7 @@ export const deploymentNodeYellow = {
     },
 }
 
-export const deploymentNodeYellow3 = {
+export const deploymentNodeRed = {
     id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
     uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
     name: 'mortgage-app-deploy',
@@ -510,16 +506,6 @@ export const deploymentNodeYellow3 = {
     specs: {
         clustersNames: ['feng'],
         pulse: 'red',
-        deploymentModel: {
-            'mortgage-app-deploy-feng': [
-                {
-                    namespace: 'default',
-                    ready: 2,
-                    desired: 3,
-                },
-            ],
-            'mortgage-app-deploy-cluster1': [],
-        },
     },
 }
 
@@ -561,16 +547,6 @@ export const deploymentNodeYellow4 = {
             metadata: {
                 namespace: 'default',
             },
-        },
-        deploymentModel: {
-            'mortgage-app-deployable-feng': [
-                {
-                    namespace: 'default',
-                    ready: 2,
-                    desired: 3,
-                },
-            ],
-            'mortgage-app-deploy-cluster1': [],
         },
     },
 }
@@ -616,16 +592,6 @@ export const deploymentNodeYellow2 = {
                 replicas: 3,
             },
         },
-        deploymentModel: {
-            'mortgage-app-deploy-feng': [
-                {
-                    namespace: 'default',
-                    ready: 3,
-                    desired: 3,
-                },
-            ],
-            'mortgage-app-deploy-cluster1': [],
-        },
     },
 }
 
@@ -662,16 +628,6 @@ export const deploymentNodeNoPODS = {
     type: 'deployment',
     specs: {
         clustersNames: ['feng'],
-        deploymentModel: {
-            'mortgage-app-deploy-feng': [
-                {
-                    namespace: 'default',
-                    ready: 2,
-                    desired: 3,
-                },
-            ],
-            'mortgage-app-deploy-cluster1': [],
-        },
         raw: {
             apiVersion: 'apps/v1',
             kind: 'Deployment',
@@ -737,7 +693,7 @@ export const deploymentNodeNoPODS = {
             {
                 name: 'Deployment',
                 value: 'mortgage-app-deploy',
-                href: "/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+                href: "/multicloud/home/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
             },
         ],
         x: 151.5,
@@ -824,16 +780,6 @@ export const deploymentNodeNoPODSNoRes = {
     type: 'deployment',
     specs: {
         clustersNames: ['feng4', 'cluster1', 'cluster2'],
-        deploymentModel: {
-            'mortgage-app-deploy-feng4': [
-                {
-                    namespace: 'default',
-                    ready: 2,
-                    desired: 3,
-                },
-            ],
-            'mortgage-app-deploy-cluster1': [],
-        },
         raw: {
             apiVersion: 'apps/v1',
             kind: 'Deployment',
@@ -899,7 +845,7 @@ export const deploymentNodeNoPODSNoRes = {
             {
                 name: 'Deployment',
                 value: 'mortgage-app-deploy',
-                href: "/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+                href: "/multicloud/home/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
             },
         ],
         x: 151.5,
@@ -1097,7 +1043,7 @@ export const deploymentNodeRed3 = {
             {
                 name: 'Deployment',
                 value: 'mortgage-app-deploy',
-                href: "/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+                href: "/multicloud/home/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
             },
         ],
         x: 151.5,
@@ -1181,16 +1127,6 @@ export const deploymentNodeNoPodModel = {
     type: 'deployment',
     specs: {
         clustersNames: ['feng'],
-        deploymentModel: {
-            'mortgage-app-deploy-feng': [
-                {
-                    namespace: 'default',
-                    ready: 3,
-                    desired: 3,
-                },
-            ],
-            'mortgage-app-deploy-cluster1': [],
-        },
         raw: {
             apiVersion: 'apps/v1',
             kind: 'Deployment',
@@ -1277,10 +1213,6 @@ export const genericNodeYellow = {
     type: 'service',
     specs: {
         clustersNames: ['feng'],
-        serviceModel: {
-            'mortgage-app-service-feng': {},
-            'mortgage-app-service-cluster1': {},
-        },
         raw: {
             apiVersion: 'apps/v1',
             kind: 'Service',
