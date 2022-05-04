@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { cloneDeep, get, includes, isEmpty } from 'lodash'
+import { cloneDeep, get, isEmpty } from 'lodash'
 import { listResources } from '../../../../../resources/utils/resource-request'
+import { isLocalSubscription } from '../../../helpers/local-subscriptions'
 
 const EVERYTHING_CHANNEL = '__ALL__/__ALL__//__ALL__/__ALL__'
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
@@ -11,9 +12,11 @@ export const getSubscriptionApplication = async (model, app, selectedChannel, re
     // get subscriptions to channels (pipelines)
     let subscriptionNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/subscriptions"]')
     if (subscriptionNames && subscriptionNames.length > 0) {
+
         // filter local hub subscription
-        const filteredSubscriptions = subscriptionNames.split(',').filter((subscriptionName) => {
-            return !includes(subscriptionName, '-local')
+        const subscriptionNameList = subscriptionNames.split(',')
+        const filteredSubscriptions = subscriptionNameList.filter((subscriptionName) => {
+            return !isLocalSubscription(subscriptionName, subscriptionNameList)
         })
         const subscriptions = cloneDeep(getResources(filteredSubscriptions, recoilStates.subscriptions))
 
