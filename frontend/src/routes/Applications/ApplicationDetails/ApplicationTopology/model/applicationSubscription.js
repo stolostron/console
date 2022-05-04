@@ -10,7 +10,7 @@ const NAMESPACE = 'metadata.namespace'
 
 export const getSubscriptionApplication = async (model, app, selectedChannel, recoilStates) => {
     // get subscriptions to channels (pipelines)
-    let subscriptionNames = getSubscriptionAnnotations(app)
+    const subscriptionNames = getSubscriptionAnnotations(app)
     if (subscriptionNames.length > 0) {
         // filter local hub subscription
         const filteredSubscriptions = subscriptionNames.filter((subscriptionName) => {
