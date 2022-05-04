@@ -35,7 +35,7 @@ const existingRuleCheckbox = 'existingrule-checkbox'
 const localClusterCheckbox = 'local-cluster-checkbox'
 const onlineClusterCheckbox = 'online-cluster-only-checkbox'
 
-export const loadExistingPlacementRules = (a, b, c, d) => {
+export const loadExistingPlacementRules = () => {
     let nsControl = ''
 
     return {
