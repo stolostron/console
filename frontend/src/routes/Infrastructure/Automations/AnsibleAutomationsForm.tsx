@@ -517,9 +517,7 @@ export function AnsibleAutomationsForm(props: {
                 editorTitle={t('Ansible YAML')}
                 formData={formData}
                 schema={schema}
-                immutables={
-                    isEditing ? ['ClusterCurator[0].metadata.name', 'ClusterCurator[0].metadata.namespace'] : []
-                }
+                immutables={isEditing ? ['ClusterCurator.0.metadata.name', 'ClusterCurator.0.metadata.namespace'] : []}
                 mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
             />
             <EditAnsibleJobModal
