@@ -48,7 +48,7 @@ export function WizardSyncEditor() {
             variant="toolbar"
             resources={resources}
             schema={schema}
-            immutables={['ApplicationSet[0].metadata.name', 'ApplicationSet[0].metadata.namespace']}
+            immutables={['ApplicationSet.0.metadata.name', 'ApplicationSet.0.metadata.namespace']}
             onEditorChange={(changes: { resources: any[] }): void => {
                 update(changes?.resources)
             }}

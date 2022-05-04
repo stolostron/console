@@ -40,7 +40,7 @@ export function WizardSyncEditor() {
             editorTitle={'Policy YAML'}
             variant="toolbar"
             resources={resources}
-            immutables={['Policy[0].metadata.name', 'Policy[0].metadata.namespace']}
+            immutables={['Policy.0.metadata.name', 'Policy.0.metadata.namespace']}
             schema={schema}
             filters={['*.metadata.managedFields']}
             onEditorChange={(changes: { resources: any[] }): void => {
