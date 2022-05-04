@@ -7,10 +7,15 @@
   placement:
     placementRef:
       kind: PlacementRule
-{{#if existingrule-checkbox}}
+{{#if selectedRuleName}}
       name: {{{selectedRuleName}}}
-{{else}}       
+{{else}}
+    {{#unless existingrule-checkbox}}       
       name: {{{@root.name}}}-placement-{{uniqueGroupID}}
+    {{else}}
+      name:
+    {{/unless}}
+    
 {{/if}}       
 {{#if timeWindow.mode}}
   timewindow:
