@@ -12,7 +12,6 @@ export const getSubscriptionApplication = async (model, app, selectedChannel, re
     // get subscriptions to channels (pipelines)
     let subscriptionNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/subscriptions"]')
     if (subscriptionNames && subscriptionNames.length > 0) {
-
         // filter local hub subscription
         const subscriptionNameList = subscriptionNames.split(',')
         const filteredSubscriptions = subscriptionNameList.filter((subscriptionName) => {
