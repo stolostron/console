@@ -330,7 +330,7 @@ export function getResource<Resource extends IResource>(
 }
 
 export function listResources<Resource extends IResource>(
-    resource: { apiVersion: string; kind: string },
+    resource: { apiVersion: string; kind: string; metadata?: { namespace?: string } },
     labels?: string[],
     query?: Record<string, string>
 ): IRequestResult<Resource[]> {

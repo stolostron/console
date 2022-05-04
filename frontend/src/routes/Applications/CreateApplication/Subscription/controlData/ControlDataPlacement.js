@@ -36,9 +36,14 @@ const localClusterCheckbox = 'local-cluster-checkbox'
 const onlineClusterCheckbox = 'online-cluster-only-checkbox'
 
 export const loadExistingPlacementRules = () => {
+    let nsControl = ''
+
     return {
         query: () => {
-            return listPlacementRules().promise
+            return listPlacementRules(nsControl.active).promise
+        },
+        variables: (control, globalControl) => {
+            nsControl = globalControl.find(({ id: idCtrl }) => idCtrl === 'namespace')
         },
         loadingDesc: 'creation.app.loading.rules',
         setAvailable: setAvailableRules.bind(null),
