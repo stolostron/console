@@ -126,7 +126,8 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
                         namespace === relatedKind.namespace &&
                         type === relatedKind.kind &&
                         ((specs.clustersNames || []).includes(relatedKind.cluster) ||
-                            (specs.searchClusters || []).find((cls) => cls.name === relatedKind.cluster)) // fallback to searchclusters if SubscriptionReport is not created
+                            (specs.searchClusters || []).find((cls) => cls.name === relatedKind.cluster) ||
+                            relatedKind.cluster === 'local-cluster') // fallback to searchclusters if SubscriptionReport is not created
                     )
                 }
             })
