@@ -1,14 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ApolloError } from '@apollo/client'
 import { Alert } from '@patternfly/react-core'
 import {
     AcmActionGroup,
+    AcmAlert,
+    AcmLoadingPage,
     AcmPage,
     AcmPageHeader,
     AcmRoute,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@stolostron/ui-components'
+import { TFunction } from 'i18next'
 import {
     createContext,
     ElementType,
@@ -35,6 +39,7 @@ import {
     placementsState,
     subscriptionReportsState,
     subscriptionsState,
+    THROTTLE_EVENTS_DELAY,
 } from '../../../atoms'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -47,6 +52,8 @@ import {
     ApplicationSetDefinition,
     ApplicationSetKind,
 } from '../../../resources'
+import { searchClient } from '../../Home/Search/search-sdk/search-client'
+import { useSearchCompleteQuery } from '../../Home/Search/search-sdk/search-sdk'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
 import { getAppChildResources, getAppSetRelatedResources, getSearchLink } from '../helpers/resource-helper'
@@ -90,10 +97,25 @@ export type ApplicationDataType = {
     statuses?: any
 }
 
+function searchError(completeError: ApolloError | undefined, t: TFunction) {
+    if (completeError && completeError.message.includes('not enabled')) {
+        return (
+            <AcmAlert
+                noClose
+                variant="info"
+                isInline
+                title={t('Info')}
+                subtitle={`${completeError?.message} ${t('Enable search to display application statuses properly.')}`}
+            />
+        )
+    }
+}
+
 export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ name: string; namespace: string }>) {
     const location = useLocation()
     const { t } = useTranslation()
     const [, setRoute] = useRecoilState(acmRouteState)
+    const [waitForApplication, setWaitForApplication] = useState<boolean>(true)
     const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
     const [activeChannel, setActiveChannel] = useState<string>()
     const [applicationData, setApplicationData] = useState<ApplicationDataType>()
@@ -244,6 +266,19 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         })
     }
 
+    const searchCompleteResults = useSearchCompleteQuery({
+        skip: false,
+        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+        variables: {
+            property: '',
+            query: {
+                filters: [],
+                keywords: [],
+                limit: 10000,
+            },
+        },
+    })
+
     useEffect(() => setRoute(AcmRoute.Applications), [setRoute])
 
     useEffect(() => {
@@ -272,6 +307,15 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             cluster = param.split('=')[1]
         }
     })
+
+    useEffect(() => {
+        // if application wasn't found wait and try again
+        if (applicationNotFound) {
+            setTimeout(() => {
+                setWaitForApplication(false)
+            }, THROTTLE_EVENTS_DELAY)
+        }
+    }, [applicationNotFound])
 
     // refresh application the first time and then every n seconds
     useEffect(() => {
@@ -341,7 +385,16 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         )
         return () => clearInterval(interval)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeChannel, apiVersion, cluster, getSnapshot, match.params.name, match.params.namespace, stateMap])
+    }, [
+        waitForApplication,
+        activeChannel,
+        apiVersion,
+        cluster,
+        getSnapshot,
+        match.params.name,
+        match.params.namespace,
+        stateMap,
+    ])
 
     return (
         <AcmPage
@@ -413,10 +466,13 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                 />
             }
         >
-            {applicationNotFound ? (
+            {applicationNotFound && waitForApplication ? (
+                <AcmLoadingPage />
+            ) : applicationNotFound ? (
                 <Alert isInline variant="danger" title={t('Application not found!')} />
             ) : (
                 <Fragment>
+                    {searchError(searchCompleteResults.error, t)}
                     <DeleteResourceModal {...modalProps} />
                     <Suspense fallback={<Fragment />}>
                         <Switch>

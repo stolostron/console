@@ -2,7 +2,7 @@
 import Ajv from 'ajv'
 import stringSimilarity from 'string-similarity'
 import { isEmpty, get, set, keyBy, cloneDeep } from 'lodash'
-import { getPathArray } from './process'
+import { getPathArray } from './synchronize'
 
 export interface ErrorMessageType {
     linePos: {
@@ -60,7 +60,13 @@ export const getErrors = (documents: any[]) => {
 }
 
 ///////// validation errors
-export function validate(validators: any, mappings: { [name: string]: any[] }, resources: any[], errors: any[]) {
+export function validate(
+    validators: any,
+    mappings: { [name: string]: any[] },
+    resources: any[],
+    errors: any[],
+    syntaxErrors: any[]
+) {
     const kindMap = {}
     const validatorMap = keyBy(validators, 'type')
     const requiredTypes: Record<string, number> = {}
@@ -97,7 +103,7 @@ export function validate(validators: any, mappings: { [name: string]: any[] }, r
     // what required types weren't found
     Object.entries(requiredTypes).forEach(([k, v]) => {
         if (v > 0) {
-            errors.push({
+            syntaxErrors.push({
                 linePos: {
                     end: { line: 1, col: 1 },
                     start: { line: 1, col: 1 },

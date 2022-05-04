@@ -6,7 +6,6 @@ import _ from 'lodash'
 import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
 
 const localClusterName = 'local-cluster'
-const metadataName = 'metadata.name'
 
 export const getClusterName = (nodeId) => {
     if (nodeId === undefined) {
@@ -21,17 +20,18 @@ export const getClusterName = (nodeId) => {
     return localClusterName
 }
 
-export const createChildNode = (parentObject, type, links, nodes) => {
+export const createChildNode = (parentObject, clustersNames, type, links, nodes, replicaCount = 1) => {
     const parentType = _.get(parentObject, 'type', '')
     const { name, namespace, id, specs = {} } = parentObject
     const parentId = id
-    const memberId = `member--member--deployable--member--clusters--${getClusterName(parentId)}--${type}--${name}`
+    const memberId = `${parentId}--${type}--${name}`
     let resources
     if (specs.resources) {
         resources = specs.resources.map((res) => {
             return { ...res, kind: type }
         })
     }
+    const resourceCount = specs.resourceCount === 0 ? replicaCount : specs.resourceCount * replicaCount
     const node = {
         name,
         namespace,
@@ -39,8 +39,10 @@ export const createChildNode = (parentObject, type, links, nodes) => {
         id: memberId,
         uid: memberId,
         specs: {
-            resourceCount: specs.resourceCount,
+            resourceCount,
             resources,
+            clustersNames,
+            replicaCount,
             parent: {
                 parentId,
                 parentName: name,
@@ -60,16 +62,7 @@ export const createChildNode = (parentObject, type, links, nodes) => {
 }
 
 // add cluster node to RHCAM application
-export const addClusters = (
-    parentId,
-    subscription,
-    source,
-    clusterNames,
-    managedClusterNames,
-    links,
-    nodes,
-    topology
-) => {
+export const addClusters = (parentId, subscription, source, clusterNames, managedClusters, links, nodes, topology) => {
     // create element if not already created
     const sortedClusterNames = _.sortBy(clusterNames)
     let clusterId = 'member--clusters'
@@ -86,10 +79,10 @@ export const addClusters = (
               id: 'member--clusters',
           })
         : undefined
-    const filteredClusters = managedClusterNames.filter((cluster) => {
-        const cname = _.get(cluster, metadataName)
-        return cname && clusterNames.includes(cname)
-    })
+    //    const filteredClusters = managedClusterNames.filter((cluster) => {
+    //        const cname = _.get(cluster, metadataName)
+    //        return cname && clusterNames.includes(cname)
+    //    })
     nodes.push({
         name: clusterNames.length === 1 ? clusterNames[0] : '',
         namespace: '',
@@ -100,8 +93,10 @@ export const addClusters = (
             title: source,
             subscription,
             resourceCount: clusterNames.length,
-            cluster: subscription && filteredClusters.length === 1 ? filteredClusters[0] : undefined,
-            clusters: filteredClusters,
+            //            cluster: subscription && filteredClusters.length === 1 ? filteredClusters[0] : undefined,
+            //            clusters: filteredClusters,
+            clustersNames: clusterNames,
+            clusters: _.cloneDeep(managedClusters),
             sortedClusterNames,
             appClusters: topoClusterNode ? topoClusterNode.specs.appClusters : undefined,
             targetNamespaces: topoClusterNode ? topoClusterNode.specs.targetNamespaces : undefined,

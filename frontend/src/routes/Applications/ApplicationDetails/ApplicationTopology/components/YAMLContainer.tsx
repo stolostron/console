@@ -18,7 +18,11 @@ export interface IYAMLContainerProps {
 
 export function YAMLContainer(props: IYAMLContainerProps) {
     let name = _.get(props.node, 'name', '')
-    const cluster = _.get(props.node, 'specs.clustersNames', [''])[0]
+    let cluster = _.get(props.node, 'cluster', _.get(props.node, 'specs.clustersNames', [''])[0])
+    const remoteArgoCluster = _.get(props.node, 'specs.raw.status.cluster')
+    if (remoteArgoCluster) {
+        cluster = remoteArgoCluster
+    }
     const namespace = _.get(props.node, 'namespace', '')
     const type = _.get(props.node, 'type', '')
     const kind = type === 'placements' ? 'placementrule' : type
@@ -34,6 +38,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
         if (typeModel && Object.keys(typeModel).length > 0) {
             const modelArray = typeModel[Object.keys(typeModel)[0]]
             name = _.get(modelArray[0], 'name')
+            cluster = _.get(modelArray[0], 'cluster')
         }
     }
 
@@ -49,7 +54,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
 
     useEffect(() => {
         let isComponentMounted = true
-        if (cluster === 'local-cluster' || isDesign) {
+        if ((cluster === 'local-cluster' || isDesign) && !remoteArgoCluster) {
             const resourceResult = getResource({
                 apiVersion,
                 kind,
@@ -89,7 +94,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                 isComponentMounted = false
             }
         }
-    }, [cluster, kind, apiVersion, name, namespace, isDesign])
+    }, [cluster, kind, apiVersion, name, namespace, isDesign, remoteArgoCluster])
 
     if (!resource && resourceError.message === '') {
         return <AcmLoadingPage />
@@ -112,7 +117,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                 id="code-content"
                 editorTitle={editorTitle}
                 resources={[resource]}
-                filterKube={true}
+                filters={['*.metadata.managedFields']}
                 readonly={true}
             />
         </Fragment>

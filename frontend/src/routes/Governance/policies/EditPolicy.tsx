@@ -9,6 +9,7 @@ import {
     channelsState,
     helmReleaseState,
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     managedClustersState,
     namespacesState,
     placementBindingsState,
@@ -41,8 +42,8 @@ export function WizardSyncEditor() {
             resources={resources}
             immutables={['Policy[0].metadata.name', 'Policy[0].metadata.namespace']}
             schema={schema}
-            filterKube={true}
-            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+            filters={['*.metadata.managedFields']}
+            onEditorChange={(changes: { resources: any[] }): void => {
                 update(changes?.resources)
             }}
         />
@@ -64,6 +65,7 @@ export function EditPolicy() {
     const [placementRules] = useRecoilState(placementRulesState)
     const [managedClusters] = useRecoilState(managedClustersState)
     const [placementBindings] = useRecoilState(placementBindingsState)
+    const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(
         () =>
@@ -100,7 +102,6 @@ export function EditPolicy() {
         }
 
         setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
-        setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
     }, [
         channels,
         helmReleases,
@@ -128,6 +129,7 @@ export function EditPolicy() {
             yamlEditor={getWizardSyncEditor}
             namespaces={namespaceNames}
             placementRules={placementRules}
+            clusterSets={clusterSets}
             clusterSetBindings={clusterSetBindings}
             editMode={EditMode.Edit}
             resources={existingResources}

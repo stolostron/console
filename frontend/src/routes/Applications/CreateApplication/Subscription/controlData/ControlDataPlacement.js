@@ -48,7 +48,7 @@ export const updateNewRuleControls = (urlControl, controlGlobal) => {
     const controlList = getExistingPRControlsSection(urlControl, controlGlobal)
 
     const { active, availableData } = urlControl
-    const selectedPR = availableData[active]
+    const selectedPR = availableData.find((pr) => pr.metadata.name === active)
 
     controlList.forEach((control) => {
         const selectedRuleNameControl = _.get(control, 'selectedRuleName')
@@ -260,7 +260,7 @@ const placementData = async () => [
         tooltip: 'tooltip.creation.app.existingRuleCombo',
         id: 'placementrulecombo',
         type: 'hidden',
-        placeholder: 'select.existing.placement.rule',
+        placeholder: 'creation.app.select.existing.placement.rule',
         reverse: reverseExistingRule,
         fetchAvailable: loadExistingPlacementRules(),
         onSelect: updateNewRuleControls,

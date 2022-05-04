@@ -9,7 +9,6 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { Location } from 'history'
 import {
     ApplicationKind,
-    createResources as createKubeResources,
     IResource,
     ProviderConnection,
     SubscriptionKind,
@@ -17,6 +16,7 @@ import {
     updateAppResources,
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
+    reconcileResources,
 } from '../../resources'
 import '../Applications/CreateApplication/Subscription/style.css'
 
@@ -106,6 +106,7 @@ export default function CreateSubscriptionApplicationPage() {
 
 export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<string>>) {
     const history = useHistory()
+    const { t } = useTranslation()
     const toastContext = useContext(AcmToastContext)
     const [controlData, setControlData] = useState<any>('')
     const [secrets] = useRecoilState(secretsState)
@@ -132,7 +133,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
             // change create cluster to create application
             const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
-            createKubeResources(createResources as IResource[])
+            reconcileResources(createResources as IResource[], [])
                 .then(() => {
                     toastContext.addAlert({
                         title: t('Application created'),
@@ -149,7 +150,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                     )
                 })
                 .catch((err) => {
-                    const errorInfo = getErrorInfo(err)
+                    const errorInfo = getErrorInfo(err, t)
                     toastContext.addAlert({
                         type: 'danger',
                         title: errorInfo.title,
@@ -187,7 +188,13 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                             metadata: {
                                 name,
                                 namespace: applicationResourceJSON?.metadata?.namespace,
-                                labels: _.get(originalAnsibleSecret, 'metadata.labels', []),
+                                labels: {
+                                    'cluster.open-cluster-management.io/type': 'ans',
+                                    'cluster.open-cluster-management.io/copiedFromNamespace':
+                                        originalAnsibleSecret?.metadata.namespace!,
+                                    'cluster.open-cluster-management.io/copiedFromSecretName':
+                                        originalAnsibleSecret?.metadata.name!,
+                                },
                             },
                             stringData: _.get(originalAnsibleSecret, 'stringData', {}),
                             type: 'Opaque',
@@ -233,7 +240,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                         redirectRoute()
                     })
                     .catch((err) => {
-                        const errorInfo = getErrorInfo(err)
+                        const errorInfo = getErrorInfo(err, t)
                         toastContext.addAlert({
                             type: 'danger',
                             title: errorInfo.title,
@@ -242,7 +249,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                     })
             } else {
                 createResource(resourceJSON).catch((err) => {
-                    const errorInfo = getErrorInfo(err)
+                    const errorInfo = getErrorInfo(err, t)
                     toastContext.addAlert({
                         type: 'danger',
                         title: errorInfo.title,
@@ -276,12 +283,6 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                     .replace(':name', editApplication?.selectedAppName ?? '')
             )
         }
-    }
-
-    // setup translation
-    const { t } = useTranslation()
-    const i18n = (key: any, arg: any) => {
-        return t(key, arg)
     }
 
     function getEditApplication(location: Location) {
@@ -369,7 +370,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                 fetchControl={fetchControl}
                 createControl={createControl}
                 logging={process.env.NODE_ENV !== 'production'}
-                i18n={i18n}
+                i18n={t}
             />
         )
     )

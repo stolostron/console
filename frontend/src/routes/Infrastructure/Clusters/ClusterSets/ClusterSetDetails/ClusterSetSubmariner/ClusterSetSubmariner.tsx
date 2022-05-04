@@ -54,6 +54,11 @@ const SubmarinerAgentDegraded: SubmarinerAgentDegradedType = 'SubmarinerAgentDeg
 type SubmarinerConnectionDegradedType = 'SubmarinerConnectionDegraded'
 const SubmarinerConnectionDegraded: SubmarinerConnectionDegradedType = 'SubmarinerConnectionDegraded'
 
+// Status type from the submariner agent controller indicating whether the submariner broker has been
+// created and its configuration applied
+type SubmarinerBrokerConfigAppliedType = 'SubmarinerBrokerConfigApplied'
+const SubmarinerBrokerConfigApplied: SubmarinerBrokerConfigAppliedType = 'SubmarinerBrokerConfigApplied'
+
 export enum SubmarinerStatus {
     'progressing' = 'progressing',
     'healthy' = 'healthy',
@@ -181,6 +186,24 @@ export function ClusterSetSubmarinerPageContent() {
                             : t('status.submariner.agent.healthy')
                     type = agentCondition?.status === 'True' ? StatusType.danger : StatusType.healthy
                     message = agentCondition.message
+                } else {
+                    // Check for the status condition that the broker is missing.  This could be temporary, but
+                    // if the broker was not created at all, then the status needs to be surfaced so the user knows
+                    // why the submariner managed cluster addon deployment is not progressing.
+                    const brokerCondition = mca.status?.conditions?.find(
+                        (c) => c.type === SubmarinerBrokerConfigApplied
+                    )
+                    if (brokerCondition) {
+                        // The broker is missing if the status is false
+                        if (brokerCondition?.status === 'False') {
+                            status = t('status.submariner.agent.degraded')
+                            type = StatusType.warning
+                            // The submariner managed cluster addon is not setting the message on this condition
+                            // (only logging it), but probably should
+                            // message = brokerCondition?.message
+                            message = t('status.submariner.missing.broker.message')
+                        }
+                    }
                 }
                 return (
                     <AcmInlineStatus

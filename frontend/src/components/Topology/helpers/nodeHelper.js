@@ -24,7 +24,6 @@ const textResourceCount = 'text.resourceCountText'
 const gNodeTitle = 'g.nodeTitle'
 const gNodeLabel = 'g.nodeLabel'
 const useNodeIcon = 'use.nodeIcon'
-const useNodeMultiplier = 'use.multiplier'
 const useResourceCountIcon = 'use.resourceCountIcon'
 const dotResourceCountIcon = '.resourceCountIcon'
 const STATUS_ICON_POSITION = { dx: -18, dy: 12, ddx: 0, width: 16, height: 16 }
@@ -102,7 +101,7 @@ export default class NodeHelper {
         this.createNodeSelect(newNodes)
 
         // node multiplier shape
-        this.updateNodeMultiplier(newNodes)
+        this.createNodeMultiplier(newNodes)
 
         // node shape
         this.createNodeShapes(newNodes, nodeClickHandler, nodeDragHandler)
@@ -123,20 +122,18 @@ export default class NodeHelper {
     }
 
     createNodeSelect = (nodes) => {
-        nodes.append('use').call(attrs, (d) => {
-            const resourceCount = _.get(d, 'specs.resourceCount')
-            if (resourceCount > 1) {
-                return {
-                    href: '#diagramIcons_selectMultiplier',
-                    tabindex: -1,
-                    class: 'shadow selectMultiplier',
-                }
-            } else {
-                return {
-                    href: '#diagramShapes_select',
-                    tabindex: -1,
-                    class: 'shadow select',
-                }
+        nodes.append('use').call(attrs, () => {
+            return {
+                href: '#diagramIcons_selectMultiplier',
+                tabindex: -1,
+                class: 'shadow selectMultiplier',
+            }
+        })
+        nodes.append('use').call(attrs, () => {
+            return {
+                href: '#diagramShapes_select',
+                tabindex: -1,
+                class: 'shadow select',
             }
         })
     }
@@ -310,15 +307,9 @@ export default class NodeHelper {
         })
     }
 
-    // update node multiplier
-    updateNodeMultiplier = (nodes) => {
-        const multipliers = nodes.selectAll(useNodeMultiplier).data((d) => {
-            const resourceCount = _.get(d, 'specs.resourceCount')
-            return resourceCount > 1 ? [d] : []
-        })
-        multipliers.exit().remove()
-        multipliers
-            .enter()
+    // create node multiplier
+    createNodeMultiplier = (nodes) => {
+        nodes
             .append('use')
             .call(attrs, () => {
                 return {
@@ -475,22 +466,26 @@ export default class NodeHelper {
         })
 
         // move highlight/select shape
-        visible.selectAll('use.select').call(attrs, ({ layout }) => {
+        visible.selectAll('use.select').call(attrs, ({ layout, specs }) => {
             const { x, y, scale = 1 } = layout
+            const multiplier = specs !== null && (specs.resourceCount || 0) > 1
             const sz = NODE_SIZE * scale + 8
             return {
                 width: sz,
                 height: sz,
+                visibility: !multiplier ? 'visible' : 'hidden',
                 transform: `translate(${x - sz / 2}, ${y - sz / 2})`,
             }
         })
-        visible.selectAll('use.selectMultiplier').call(attrs, ({ layout }) => {
+        visible.selectAll('use.selectMultiplier').call(attrs, ({ layout, specs }) => {
             const { x, y, scale = 1 } = layout
             const wz = 66 * scale + 8
+            const multiplier = specs !== null && (specs.resourceCount || 0) > 1
             const sz = NODE_SIZE * scale + 8
             return {
                 width: wz,
                 height: sz,
+                visibility: multiplier ? 'visible' : 'hidden',
                 transform: `translate(${x - sz / 2}, ${y - sz / 2 - 2})`,
             }
         })

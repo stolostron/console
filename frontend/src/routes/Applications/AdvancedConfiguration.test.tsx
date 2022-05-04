@@ -2,19 +2,18 @@
 import { MemoryRouter, Route } from 'react-router-dom'
 import { render, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
-import { subscriptionsState } from '../../atoms'
+import { namespacesState, subscriptionsState } from '../../atoms'
 import { NavigationPath } from '../../NavigationPath'
 import {
-    Project,
-    ProjectApiVersion,
-    ProjectDefinition,
-    ProjectKind,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
     Subscription,
     SubscriptionApiVersion,
     SubscriptionKind,
 } from '../../resources'
-import { nockIgnoreRBAC, nockList } from '../../lib/nock-util'
-import { clickByTestId, waitForNocks, waitForText } from '../../lib/test-util'
+import { nockIgnoreRBAC } from '../../lib/nock-util'
+import { clickByTestId, waitForText } from '../../lib/test-util'
 import AdvancedConfiguration from './AdvancedConfiguration'
 
 let testLocation: Location
@@ -56,9 +55,9 @@ const mockSubscription2: Subscription = {
     },
 }
 
-const mockNamespaces: Project[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
-    apiVersion: ProjectApiVersion,
-    kind: ProjectKind,
+const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
     metadata: { name },
 }))
 
@@ -69,6 +68,7 @@ function TestAdvancedConfigurationPage() {
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(subscriptionsState, mockSubscriptions)
+                snapshot.set(namespacesState, mockNamespaces)
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>
@@ -89,32 +89,24 @@ describe('advanced configuration page', () => {
 
     test('should render the table with subscriptions', async () => {
         render(<TestAdvancedConfigurationPage />)
-        const initialNocks = [nockList(ProjectDefinition, mockNamespaces)]
-        await waitForNocks(initialNocks)
         await waitForText(mockSubscription1.metadata!.name!)
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
 
     test('should click channel option', async () => {
         render(<TestAdvancedConfigurationPage />)
-        const initialNocks = [nockList(ProjectDefinition, mockNamespaces)]
-        await waitForNocks(initialNocks)
         await clickByTestId('channels')
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
 
     test('should click placement option', async () => {
         render(<TestAdvancedConfigurationPage />)
-        const initialNocks = [nockList(ProjectDefinition, mockNamespaces)]
-        await waitForNocks(initialNocks)
         await clickByTestId('placements')
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })
 
     test('should click placement rule option', async () => {
         render(<TestAdvancedConfigurationPage />)
-        const initialNocks = [nockList(ProjectDefinition, mockNamespaces)]
-        await waitForNocks(initialNocks)
         await clickByTestId('placementrules')
         await waitFor(() => expect(testLocation.pathname).toEqual(NavigationPath.advancedConfiguration))
     })

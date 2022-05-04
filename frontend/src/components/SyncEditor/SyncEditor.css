@@ -66,6 +66,12 @@
     user-select: auto;
 }
 
+.filterDecoration {
+    /* color: #b0b0b0 !important; */
+    cursor: pointer;
+    user-select: auto;
+}
+
 .errorDecoration {
     margin-left: 6px;
     height: 14px !important;

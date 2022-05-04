@@ -148,3 +148,7 @@
 .new-tab-icon .argo-app-link {
     margin-left: 0px;
 }
+
+#set-time-window-link {
+    padding-left: 0;
+}

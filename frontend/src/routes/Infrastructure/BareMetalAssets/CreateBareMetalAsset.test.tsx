@@ -1,5 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { render, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Route } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
+import { namespacesState } from '../../../atoms'
+import { nockCreate, nockGet, nockIgnoreRBAC, nockOptions, nockPatch, nockRBAC } from '../../../lib/nock-util'
+import { clickByText, selectByText, typeByTestId, waitForNock, waitForTestId } from '../../../lib/test-util'
+import { NavigationPath } from '../../../NavigationPath'
 import {
     BareMetalAsset,
     BareMetalAssetApiVersion,
@@ -12,13 +20,6 @@ import {
     SecretApiVersion,
     SecretKind,
 } from '../../../resources'
-import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route } from 'react-router-dom'
-import { RecoilRoot } from 'recoil'
-import { namespacesState } from '../../../atoms'
-import { nockCreate, nockGet, nockIgnoreRBAC, nockOptions, nockPatch, nockRBAC } from '../../../lib/nock-util'
-import { NavigationPath } from '../../../NavigationPath'
 import CreateBareMetalAssetPage from './CreateBareMetalAsset'
 
 const bmaNamespace: ResourceAttributes = {
@@ -75,20 +76,7 @@ describe('CreateBareMetalAsset', () => {
             },
         }
 
-        const bmaSecret: Secret = {
-            kind: SecretKind,
-            apiVersion: SecretApiVersion,
-            metadata: {
-                namespace: 'test-namespace',
-                name: 'test-bma-bmc-secret',
-            },
-            data: { password: 'encoded', username: 'encoded' },
-        }
-
-        const secretCreateNock = nockCreate(createBmaSecret, bmaSecret)
-        const bmaCreateNock = nockCreate(createBareMetalAsset)
-
-        const { getByText, queryAllByText, getByTestId } = render(
+        render(
             <RecoilRoot
                 initializeState={(snapshot) => {
                     snapshot.set(namespacesState, [mockNamespace])
@@ -100,28 +88,22 @@ describe('CreateBareMetalAsset', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-
-        await waitFor(() => expect(getByTestId('bareMetalAssetName')))
-
-        // user input
-        userEvent.type(getByTestId('bareMetalAssetName'), createBareMetalAsset.metadata.name!)
-        userEvent.type(
-            getByTestId('namespaceName-button-select-typeahead'),
-            `${createBareMetalAsset.metadata.namespace!}{enter}`
+        await waitForTestId('bareMetalAssetName')
+        await typeByTestId('bareMetalAssetName', createBareMetalAsset.metadata.name!)
+        await selectByText(
+            'Select a namespace to store the bare metal asset in the cluster',
+            createBareMetalAsset.metadata.namespace!
         )
-        userEvent.type(getByTestId('baseboardManagementControllerAddress'), createBareMetalAsset.spec?.bmc.address!)
-        userEvent.type(getByTestId('username'), createBmaSecret.stringData?.username!)
-        userEvent.type(getByTestId('password'), createBmaSecret.stringData?.username!)
-        userEvent.type(getByTestId('bootMACAddress'), createBareMetalAsset.spec?.bootMACAddress!)
-
-        userEvent.click(getByText('Create'))
-
-        await waitFor(() => expect(queryAllByText('Required').length).toBe(0))
-
-        await waitFor(() => expect(secretCreateNock.isDone()).toBeTruthy())
-        await waitFor(() => expect(bmaCreateNock.isDone()).toBeTruthy())
-
-        await waitFor(() => expect(getByTestId('redirected')).toBeInTheDocument())
+        await typeByTestId('baseboardManagementControllerAddress', createBareMetalAsset.spec?.bmc.address!)
+        await typeByTestId('username', createBmaSecret.stringData?.username!)
+        await typeByTestId('password', createBmaSecret.stringData?.password!)
+        await typeByTestId('bootMACAddress', createBareMetalAsset.spec?.bootMACAddress!)
+        const secretCreateNock = nockCreate(createBmaSecret)
+        const bmaCreateNock = nockCreate(createBareMetalAsset)
+        await clickByText('Create')
+        await waitForNock(secretCreateNock)
+        await waitForNock(bmaCreateNock)
+        await waitForTestId('redirected')
     })
 
     test('can edit asset', async () => {

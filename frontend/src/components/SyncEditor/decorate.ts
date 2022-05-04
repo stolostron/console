@@ -3,6 +3,7 @@ import { get, capitalize } from 'lodash'
 
 export const decorate = (
     isCustomEdit: boolean,
+    editorHasFocus: boolean,
     editorRef: any,
     monacoRef: any,
     errors: any[],
@@ -12,7 +13,8 @@ export const decorate = (
         mappings: { [name: string]: any[] }
     },
     userEdits: any[],
-    protectedRanges: any[]
+    protectedRanges: any[],
+    filteredRows: number[]
 ) => {
     const decorations: any[] = []
     const squigglyTooltips: any[] = []
@@ -20,23 +22,26 @@ export const decorate = (
     // errors/warnings
     addErrorDecorations(monacoRef, errors, decorations, squigglyTooltips)
 
-    // add the decorations
+    // add change decorations
     addChangeDecorations(isCustomEdit, monacoRef, changes, change, decorations)
 
     // if form is making changes, layer any editor changes decorations on top of form changes
-    if (!isCustomEdit && userEdits.length) {
+    if (userEdits.length) {
         addChangeDecorations(true, monacoRef, userEdits, change, decorations)
     }
 
     // add protected decorations
     addProtectedDecorations(monacoRef, protectedRanges, decorations)
 
+    // add filter row toggle decorations
+    addFilteredDecorations(monacoRef, filteredRows, decorations)
+
     // add decorations to editor
     const handles = getResourceEditorDecorations(editorRef).map((decoration: { id: any }) => decoration.id)
     editorRef.current.deltaDecorations(handles, decorations)
 
     // scroll to best line to show
-    if (!isCustomEdit) {
+    if (!editorHasFocus) {
         scrollToChangeDecoration(editorRef, errors, decorations)
     }
 
@@ -51,6 +56,18 @@ const addProtectedDecorations = (monacoRef: any, protectedRanges: any[], decorat
             range: new monacoRef.current.Range(start, 1, end, 132),
             options: {
                 inlineClassName: 'protectedDecoration',
+                description: 'resource-editor',
+            },
+        })
+    })
+}
+
+const addFilteredDecorations = (monacoRef: any, filteredRows: any[], decorations: any[]) => {
+    filteredRows?.forEach((row) => {
+        decorations.push({
+            range: new monacoRef.current.Range(row, 0, row, 132),
+            options: {
+                after: { content: '\u200b', inlineClassName: 'inline-folded' },
                 description: 'resource-editor',
             },
         })

@@ -353,7 +353,7 @@ export function getProvider(
     let providerLabel =
         hivePlatformLabel && hivePlatformLabel !== 'unknown'
             ? hivePlatformLabel
-            : platformClusterClaim?.value ?? cloudLabel ?? ''
+            : cloudLabel ?? platformClusterClaim?.value ?? ''
     providerLabel = providerLabel.toUpperCase()
 
     let provider: Provider | undefined

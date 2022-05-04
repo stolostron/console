@@ -99,11 +99,8 @@ const getAllChannels = (subscriptions, channels, selectedChannel) => {
 }
 
 const getChannelName = (subscription) => {
-    const {
-        metadata: { name: nm, namespace: ns },
-        deployablePaths: paths,
-        isChucked,
-    } = subscription
+    const { metadata = {}, deployablePaths: paths, isChucked } = subscription
+    const { name: nm, namespace: ns } = metadata
     const chn = get(subscription, 'spec.channel')
     return `${ns}/${nm}//${chn}${getSubChannelName(paths, isChucked)}`
 }

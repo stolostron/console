@@ -1421,10 +1421,10 @@ export function CreateDetailsLink(item: any) {
             return (
                 <Link
                     to={{
-                        pathname: '/multicloud/home/search/resources',
+                        pathname: NavigationPath.resources,
                         search: GetUrlSearchParam(item),
                         state: {
-                            from: '/multicloud/home/search',
+                            from: NavigationPath.search,
                         },
                     }}
                 >
@@ -1449,10 +1449,10 @@ export function CreateDetailsLink(item: any) {
             return (
                 <Link
                     to={{
-                        pathname: '/multicloud/home/search/resources',
+                        pathname: NavigationPath.resources,
                         search: GetUrlSearchParam(item),
                         state: {
-                            from: '/multicloud/home/search',
+                            from: NavigationPath.search,
                         },
                     }}
                 >
@@ -1473,10 +1473,10 @@ export function CreateDetailsLink(item: any) {
             return (
                 <Link
                     to={{
-                        pathname: '/multicloud/home/search/resources',
+                        pathname: NavigationPath.resources,
                         search: GetUrlSearchParam(item),
                         state: {
-                            from: '/multicloud/home/search',
+                            from: NavigationPath.search,
                         },
                     }}
                 >

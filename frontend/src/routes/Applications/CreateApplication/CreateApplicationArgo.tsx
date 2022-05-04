@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
+import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import moment from 'moment-timezone'
 import { useContext } from 'react'
@@ -12,11 +12,13 @@ import {
     channelsState,
     gitOpsClustersState,
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     managedClustersState,
     namespacesState,
     placementsState,
     secretsState,
 } from '../../../atoms'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
@@ -30,7 +32,6 @@ import {
 } from '../../../resources'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
-import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
 export default function CreateArgoApplicationSetPage() {
     return <CreateApplicationArgo />
@@ -45,7 +46,7 @@ export function WizardSyncEditor() {
             variant="toolbar"
             resources={resources}
             schema={schema}
-            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+            onEditorChange={(changes: { resources: any[] }): void => {
                 update(changes?.resources)
             }}
         />
@@ -67,6 +68,7 @@ export function CreateApplicationArgo() {
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const [managedClusters] = useRecoilState(managedClustersState)
+    const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const providerConnections = secrets.map(unpackProviderConnection)
 
@@ -96,6 +98,7 @@ export function CreateApplicationArgo() {
             applicationSets={applicationSets}
             placements={placements}
             clusters={managedClusters}
+            clusterSets={clusterSets}
             clusterSetBindings={managedClusterSetBindings}
             channels={channels}
             getGitRevisions={getGitChannelBranches}

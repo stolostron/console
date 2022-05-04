@@ -1233,7 +1233,7 @@ describe('addNodeServiceLocation 1', () => {
             },
         },
     }
-    const result = []
+    const result = [{ labelKey: 'Location', value: '1.1:80' }]
     it('addNodeServiceLocation 1', () => {
         expect(addNodeServiceLocation(node, 'possiblereptile', 'default', [])).toEqual(result)
     })

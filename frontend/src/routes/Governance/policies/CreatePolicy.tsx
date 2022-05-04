@@ -7,6 +7,7 @@ import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     managedClustersState,
     namespacesState,
     placementRulesState,
@@ -28,7 +29,7 @@ export function WizardSyncEditor() {
             variant="toolbar"
             resources={resources}
             schema={schema}
-            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+            onEditorChange={(changes: { resources: any[] }): void => {
                 update(changes?.resources)
             }}
         />
@@ -48,6 +49,7 @@ export function CreatePolicy() {
     const [placements] = useRecoilState(placementsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [managedClusters] = useRecoilState(managedClustersState)
+    const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(
         () =>
@@ -68,6 +70,7 @@ export function CreatePolicy() {
             namespaces={namespaceNames}
             placements={placements}
             placementRules={placementRules}
+            clusterSets={clusterSets}
             clusterSetBindings={clusterSetBindings}
             onCancel={() => history.push(NavigationPath.policies)}
             onSubmit={(data) => {

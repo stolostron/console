@@ -154,7 +154,7 @@ function addK8Details(node, updatedNode, details, activeFilters, t) {
         },
         {
             labelKey: t('Namespace'),
-            value: namespace ? namespace : R.pathOr('N/A', ['specs', 'raw', 'metadata', 'namespace'])(node),
+            value: (namespace ? namespace : node.namespace) || 'N/A',
         },
     ]
 

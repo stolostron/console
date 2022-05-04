@@ -175,29 +175,37 @@ export default function PolicySetCard(props: {
                 <CardBody>
                     <Stack hasGutter>
                         {policySet.spec.description && <div>{policySet.spec.description ?? ''}</div>}
-                        {policySet.status?.compliant && (
-                            <DescriptionList>
+                        <DescriptionList>
+                            {(policySet.status?.compliant || policySet.status?.statusMessage) && (
                                 <DescriptionListGroup>
                                     <DescriptionListTerm>
                                         <strong>{t('Status')}</strong>
                                     </DescriptionListTerm>
-                                    <DescriptionListDescription>
-                                        {policySet.status?.compliant === 'Compliant' ? (
-                                            <div>
-                                                <CheckCircleIcon color="var(--pf-global--success-color--100)" /> &nbsp;
-                                                {t('No violations')}
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
-                                                &nbsp;
-                                                {t('Violations')}
-                                            </div>
-                                        )}
-                                    </DescriptionListDescription>
+                                    {policySet.status?.compliant && (
+                                        <DescriptionListDescription>
+                                            {policySet.status?.compliant === 'Compliant' ? (
+                                                <div>
+                                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />{' '}
+                                                    &nbsp;
+                                                    {t('No violations')}
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
+                                                    &nbsp;
+                                                    {t('Violations')}
+                                                </div>
+                                            )}
+                                        </DescriptionListDescription>
+                                    )}
+                                    {policySet.status?.statusMessage && (
+                                        <DescriptionListDescription>
+                                            {policySet.status?.statusMessage}
+                                        </DescriptionListDescription>
+                                    )}
                                 </DescriptionListGroup>
-                            </DescriptionList>
-                        )}
+                            )}
+                        </DescriptionList>
                     </Stack>
                 </CardBody>
             </Card>
@@ -242,11 +250,11 @@ function DeletePolicySetModal(props: { item: PolicySet; onClose: () => void }) {
                 type: props.item.kind,
                 name: '',
             })}
-            titleIconVariant={'danger'}
+            titleIconVariant={'warning'}
             isOpen
             onClose={props.onClose}
             actions={[
-                <Button key="confirm" variant="primary" onClick={onConfirm} isLoading={isDeleting}>
+                <Button key="confirm" variant="danger" onClick={onConfirm} isLoading={isDeleting}>
                     {isDeleting ? t('deleting') : t('delete')}
                 </Button>,
                 <Button key="cancel" variant="link" onClick={props.onClose}>

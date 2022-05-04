@@ -328,13 +328,15 @@ export default function CreateClusterPage() {
                                         resolve(status)
                                     } else {
                                         setTimeout(() => {
+                                            const params = new URLSearchParams({
+                                                initialStep: isAssistedFlow ? 'hosts-discovery' : 'hosts-selection',
+                                            })
                                             resolve(status)
                                             setCreationStatus(undefined)
                                             history.push(
-                                                NavigationPath.editCluster
+                                                `${NavigationPath.editCluster
                                                     .replace(':namespace', clusterNamespace as string)
-                                                    .replace(':name', clusterName as string),
-                                                { initialStep: isAssistedFlow ? 'hosts-discovery' : 'hosts-selection' }
+                                                    .replace(':name', clusterName as string)}?${params.toString()}`
                                             )
                                         }, 250)
                                     }

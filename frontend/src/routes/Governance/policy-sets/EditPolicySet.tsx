@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EditMode } from '@patternfly-labs/react-form-wizard'
+import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicySetWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicySet/PolicySetWizard'
-import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { AcmToastContext } from '@stolostron/ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     managedClustersState,
     namespacesState,
     placementBindingsState,
@@ -17,12 +17,12 @@ import {
     usePolicies,
 } from '../../../atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, PolicySetKind, reconcileResources } from '../../../resources'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 import schema from './schema.json'
-import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 
 export function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
@@ -34,8 +34,8 @@ export function WizardSyncEditor() {
             resources={resources}
             schema={schema}
             immutables={['PolicySet[0].metadata.name', 'PolicySet[0].metadata.namespace']}
-            filterKube={true}
-            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+            filters={['*.metadata.managedFields']}
+            onEditorChange={(changes: { resources: any[] }): void => {
                 update(changes?.resources)
             }}
         />
@@ -58,6 +58,7 @@ export function EditPolicySet() {
     const [placementRules] = useRecoilState(placementRulesState)
     const [managedClusters] = useRecoilState(managedClustersState)
     const [placementBindings] = useRecoilState(placementBindingsState)
+    const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
     const [existingResources, setExistingResources] = useState<IResource[]>()
@@ -92,6 +93,7 @@ export function EditPolicySet() {
             placements={placements}
             namespaces={namespaceNames}
             placementRules={placementRules}
+            clusterSets={clusterSets}
             clusterSetBindings={clusterSetBindings}
             yamlEditor={getWizardSyncEditor}
             editMode={EditMode.Edit}

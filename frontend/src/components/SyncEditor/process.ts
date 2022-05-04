@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
-import { isEmpty, get, set, cloneDeep, has, PropertyPath } from 'lodash'
+import { isEmpty, get, set, cloneDeep, has } from 'lodash'
 import { getErrors, validate } from './validation'
+import { getAllPaths, getPathArray } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 
@@ -15,6 +16,7 @@ export interface ProcessedType {
     resources: any[]
     yaml?: string
     hiddenSecretsValues?: any[]
+    hiddenFilteredValues?: any[]
 }
 
 export interface MappingType {
@@ -27,10 +29,7 @@ export interface MappingType {
     $gv?: any // what's the start/stop of the value in yaml
 }
 
-// remove the kube stuff
-const kube = ['managedFields', 'creationTimestamp', 'uid', 'livenessProbe', 'resourceVersion', 'generation']
-
-export interface SecretsValuesType {
+export interface CachedValuesType {
     path: string
     value: string
 }
@@ -39,15 +38,18 @@ export const processForm = (
     monacoRef: any,
     code: string | undefined,
     resourceArr: unknown,
-    changeStack?: {
-        baseResources: any[]
-        customResources: any[]
-    },
-    secrets?: (string | string[])[],
-    filterResources?: boolean,
-    immutables?: (string | string[])[],
-    userEdits?: ChangeType[],
-    validators?: any
+    changeStack:
+        | {
+              baseResources: any[]
+              customResources: any[]
+          }
+        | undefined,
+    secrets: (string | string[])[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    userEdits: ChangeType[],
+    validators: any
 ) => {
     // get yaml, documents, resource, mapped
     let yaml = code || ''
@@ -60,41 +62,55 @@ export const processForm = (
         }
     }
 
-    // get initial parse errors
+    // get initial parse syntaxErrors
     let documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-    let errors = getErrors(documents)
+    let syntaxErrors = getErrors(documents)
     const { parsed, resources } = getMappings(documents)
 
     // save a version of parsed for change comparison later in decorations--in this case for form changes
     const comparison = cloneDeep(parsed)
 
     // reconcile form changes with user changes
-    if (errors.length === 0 && changeStack && userEdits) {
+    if (syntaxErrors.length === 0 && changeStack && userEdits) {
         const customResources = reconcile(changeStack, userEdits, resources)
         yaml = stringify(customResources)
         documents = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-        errors = getErrors(documents)
+        syntaxErrors = getErrors(documents)
     }
 
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, [], filterResources, immutables, validators),
+        ...process(
+            monacoRef,
+            yaml,
+            documents,
+            syntaxErrors,
+            secrets,
+            [],
+            showFilters,
+            filters,
+            [],
+            immutables,
+            validators
+        ),
     }
 }
 
 export const processUser = (
     monacoRef: any,
     yaml: string,
-    secrets?: (string | string[])[],
-    secretsValues?: SecretsValuesType[],
-    filterResources?: boolean,
-    immutables?: (string | string[])[],
-    validators?: any
+    secrets: (string | string[])[] | undefined,
+    cachedSecrets: CachedValuesType[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    cacheFiltered: CachedValuesType[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    validators: any
 ) => {
     // get yaml, documents, resource, mapped
     const documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-    const errors = getErrors(documents)
+    const syntaxErrors = getErrors(documents)
     const { parsed } = getMappings(documents)
 
     // save a version of parsed for change comparison later in decorations--in this case for user changes
@@ -103,7 +119,19 @@ export const processUser = (
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, secretsValues, filterResources, immutables, validators),
+        ...process(
+            monacoRef,
+            yaml,
+            documents,
+            syntaxErrors,
+            secrets,
+            cachedSecrets,
+            showFilters,
+            filters,
+            cacheFiltered,
+            immutables,
+            validators
+        ),
     }
 }
 
@@ -111,102 +139,127 @@ const process = (
     monacoRef: any,
     yaml: string,
     documents: any,
-    errors: any[],
-    secrets?: (string | string[])[],
-    secretsValues?: SecretsValuesType[],
-    filterResources?: boolean,
-    immutables?: (string | string[])[],
-    validators?: any
+    syntaxErrors: any[],
+    secrets: (string | string[])[] | undefined,
+    cachedSecrets: CachedValuesType[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    cacheFiltered: CachedValuesType[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    validators: any
 ) => {
-    // if parse errors, use previous hidden secrets
-    const hiddenSecretsValues: any[] = errors.length === 0 ? [] : secretsValues ?? []
-
     // restore hidden secret values
     let { mappings, parsed, resources } = getMappings(documents)
-    secretsValues?.forEach(({ path, value }) => {
+    cachedSecrets?.forEach(({ path, value }) => {
         if (has(parsed, path)) {
             set(parsed, path, value)
         }
     })
-    let changeWithSecrets = { yaml, mappings, parsed, resources, hiddenSecretsValues }
+
+    // restore omitted filter values
+    cacheFiltered?.forEach(({ path, value }) => {
+        if (has(parsed, path)) {
+            set(parsed, path, value)
+        }
+    })
+
+    // if parse syntaxErrors, use previous hidden secrets
+    const hiddenSecretsValues: any[] = []
+    const hiddenFilteredValues: any[] = []
+    const unredactedChange = {
+        yaml,
+        mappings: cloneDeep(mappings),
+        parsed: cloneDeep(parsed),
+        resources: cloneDeep(resources),
+        hiddenSecretsValues,
+        hiddenFilteredValues,
+    }
 
     // hide and remember secret values
+    const filteredRows: number[] = []
     const protectedRanges: any[] = []
-    const hideSecrets = secrets && !isEmpty(parsed) && !isEmpty(secrets)
-    if (hideSecrets) {
-        changeWithSecrets = {
-            yaml,
-            mappings: cloneDeep(mappings),
-            parsed: cloneDeep(parsed),
-            resources: cloneDeep(resources),
-            hiddenSecretsValues,
-        }
-
-        // expand wildcards in declared secret paths
-        const allSecrets: any = getAllPaths(secrets, mappings, parsed)
-
+    if (!isEmpty(parsed)) {
         // stuff secrets with '*******'
-        allSecrets.forEach((secret: PropertyPath) => {
-            const value = get(parsed, secret)
-            if (value && typeof value === 'string') {
-                hiddenSecretsValues.push({ path: secret, value })
-                set(parsed, secret, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
-            }
-        })
+        let allSecrets: { path: string | any[]; isRange: boolean }[] = []
+        if (secrets && !isEmpty(secrets)) {
+            allSecrets = getAllPaths(secrets, mappings, parsed)
 
-        // filter kube resources
-        if (filterResources) {
-            resources = filterKubeResources(resources)
+            allSecrets.forEach(({ path }) => {
+                const value = get(parsed, path) as unknown as string
+                if (value && typeof value === 'string') {
+                    if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path: path, value })
+                    set(parsed, path, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
+                }
+            })
         }
 
-        // create yaml with '****'
+        // stuff filtered with '-filtered-'
+        let allFiltered: { path: string | any[]; isRange: boolean }[] = []
+        if (filters && !isEmpty(filters)) {
+            allFiltered = getAllPaths(filters, mappings, parsed)
+            if (!showFilters) {
+                allFiltered.forEach(({ path }) => {
+                    const value = get(parsed, path) as unknown as string
+                    if (value && typeof value === 'object') {
+                        if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path: path, value })
+                        set(parsed, path, undefined)
+                    }
+                })
+            }
+        }
+
+        // create redacted yaml, etc
         yaml = stringify(resources)
         documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
         ;({ mappings, parsed, resources } = getMappings(documents))
 
-        // prevent typing on secrets
-        allSecrets.forEach((secret: string | string[]) => {
-            const value = get(mappings, getPathArray(secret))
+        // prevent typing on redacted yaml
+        ;[...allSecrets].forEach(({ path }) => {
+            const value = get(mappings, getPathArray(path))
             if (value && value.$v) {
                 protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
                 value.$s = true
             }
         })
-    } else if (filterResources) {
-        // filter kube resources
-        resources = filterKubeResources(resources)
-        yaml = stringify(resources)
-        documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
-        ;({ mappings, parsed, resources } = getMappings(documents))
-    }
 
-    // prevent typing on immutables
-    if (immutables) {
-        immutables.forEach((immutable) => {
-            let allFlag = false
-            if (Array.isArray(immutable)) {
-                allFlag = immutable[immutable.length - 1] === '*'
-                if (allFlag) {
-                    immutable.pop()
-                }
-            } else {
-                allFlag = immutable.endsWith('*')
-                if (allFlag) {
-                    immutable = immutable.slice(0, -2)
-                }
-            }
-            const value = get(mappings, getPathArray(immutable))
-            if (value && value.$v) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + (allFlag ? value.$l : 1), 0))
+        // add toggle button to filtered values
+        ;[...allFiltered].forEach(({ path }) => {
+            const value = get(mappings, getPathArray(path))
+            if (value) {
+                filteredRows.push(value.$r)
             }
         })
     }
 
-    if (errors.length === 0 && validators) {
-        validate(validators, mappings, resources, errors)
+    // prevent typing on immutables
+    if (immutables) {
+        const allImmutables = getAllPaths(immutables, mappings, parsed)
+        allImmutables.forEach(({ path, isRange }) => {
+            const value = get(mappings, getPathArray(path))
+            if (value && value.$v !== undefined) {
+                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + (isRange ? value.$l : 1), 0))
+            }
+        })
     }
 
-    return { yaml, protectedRanges, errors, change: { resources, mappings, parsed }, changeWithSecrets }
+    const validationErrors: any[] = []
+    if (syntaxErrors.length === 0 && validators) {
+        validate(validators, mappings, resources, validationErrors, syntaxErrors)
+    }
+
+    if (syntaxErrors.length !== 0 && validationErrors.length !== 0 && cachedSecrets && cacheFiltered) {
+        unredactedChange.hiddenSecretsValues = cachedSecrets
+        unredactedChange.hiddenFilteredValues = cacheFiltered
+    }
+
+    return {
+        yaml,
+        protectedRanges,
+        filteredRows,
+        errors: { syntax: syntaxErrors, validation: validationErrors },
+        change: { resources, mappings, parsed },
+        unredactedChange,
+    }
 }
 
 function getMappings(documents: any[]) {
@@ -243,7 +296,7 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
                 value = item?.value?.type === 'SEQ' ? [] : {}
                 getMappingItems(item.items ?? item.value.items, value)
             } else {
-                value = item?.value?.value || item?.value
+                value = item?.value?.value ?? item?.value
             }
         }
         if (Array.isArray(rangeObj)) {
@@ -276,145 +329,25 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
     })
 }
 
-export const getPathArray = (path: string[] | string) => {
-    const pathArr: string[] = []
-    if (!Array.isArray(path)) {
-        path = path.replace(/\[/g, '.').replace(/\]./g, '.')
-        path = path.split('.')
-    }
-    path.forEach((seg: any, idx: number) => {
-        pathArr.push(seg)
-        if (idx > 1 && idx < path.length - 1) {
-            pathArr.push('$v')
-        }
-    })
-    return pathArr
+// sort name/namespace to top
+const sort = ['name', 'namespace']
+const sortMapEntries = (a: { key: { value: string } }, b: { key: { value: string } }) => {
+    let ai = sort.indexOf(a.key.value)
+    if (ai < 0) ai = 5
+    let bi = sort.indexOf(b.key.value)
+    if (bi < 0) bi = 5
+    return ai - bi
 }
 
 export const stringify = (resources: any[]) => {
     const yamls: string[] = []
     resources.forEach((resource: any) => {
         if (!isEmpty(resource)) {
-            let yaml = YAML.stringify(resource)
+            let yaml = YAML.stringify(resource, { sortMapEntries })
             yaml = yaml.replace(/'\d+':(\s|$)\s*/gm, '- ')
             yaml = yaml.replace(/:\s*null$/gm, ':')
             yamls.push(yaml)
         }
     })
     return yamls.join('---\n')
-}
-
-// if a path has a wildcard fill in the exact path
-export const getPathLines = (
-    paths: (string | string[])[],
-    change: {
-        mappings: { [name: string]: any[] }
-        parsed: { [name: string]: any[] }
-    }
-) => {
-    const pathLines: number[] = []
-    const allPaths = getAllPaths(paths, change.mappings, change.parsed)
-    allPaths.forEach((path) => {
-        const value = get(change.mappings, getPathArray(path))
-        if (value) {
-            pathLines.push(value.$r)
-        }
-    })
-    return pathLines
-}
-
-// if a path has a wildcard fill in the exact path
-const getAllPaths = (
-    paths: (string | any[])[],
-    mappings: { [x: string]: string | any[] },
-    parsed: { [x: string]: string | any[] }
-) => {
-    let allPaths: (string | any[])[] = []
-    paths.forEach((path: string | any[]) => {
-        if (Array.isArray(path)) {
-            //
-            // [Resource, '*', 'key', ...]
-            //
-            if (mappings[path[0]] && path[1] === '*') {
-                Array.from(Array(mappings[path[0]].length)).forEach((_d, inx) => {
-                    allPaths.push([path[0], inx, ...path.slice(2)])
-                })
-            }
-            //
-            // 'Resource[*].key']
-            //
-        } else if (path.includes('[*]')) {
-            const arr = path.split('[*]')
-            if (mappings[arr[0]]) {
-                Array.from(Array(mappings[arr[0]].length)).forEach((_d, inx) => {
-                    allPaths.push(`${arr[0]}[${inx}]${arr[1]}`)
-                })
-            }
-            //
-            // '*.key.key'
-            //
-        } else if (path.startsWith('*.')) {
-            allPaths = [...allPaths, ...findAllPaths(parsed, path.substring(2))]
-        } else {
-            allPaths.push(path)
-        }
-    })
-    return allPaths
-}
-
-const findAllPaths = (object: { [x: string]: any; hasOwnProperty?: any }, searchKey: string, parentKeys = '') => {
-    let ret: any = []
-    if (parentKeys.endsWith(searchKey)) {
-        ret = [...ret, parentKeys]
-    }
-    Object.entries(object).forEach(([k, v]) => {
-        if (typeof v === 'object' && v !== null) {
-            let pk = k
-            if (parentKeys) {
-                pk = isNaN(parseInt(k)) ? `${parentKeys}.${k}` : `${parentKeys}[${k}]`
-            }
-            const o: any = findAllPaths(v, searchKey, pk)
-            if (o != null && o instanceof Array) {
-                ret = [...ret, ...o]
-            }
-        }
-    })
-    return ret
-}
-
-// filter kube resources
-export const filterKubeResources = (resources: any[]) => {
-    const _resources: any[] = []
-    resources.forEach((resource: any) => {
-        _resources.push(filterDeep(resource))
-    })
-    return _resources
-}
-
-const filterDeep = (resource: any) => {
-    let newResource: { [index: string]: any | any[] }
-    if (Array.isArray(resource)) {
-        newResource = []
-        Object.entries(resource || {}).forEach(([k, v]) => {
-            if (!kube.includes(k)) {
-                newResource.push(filter(v))
-            }
-        })
-        return newResource
-    } else {
-        newResource = {}
-        Object.entries(resource || {}).forEach(([k, v]) => {
-            if (!kube.includes(k)) {
-                newResource[k] = filter(v)
-            }
-        })
-    }
-    return newResource
-}
-
-const filter = (value: unknown) => {
-    if (typeof value === 'object') {
-        return filterDeep(value)
-    }
-    return value
 }

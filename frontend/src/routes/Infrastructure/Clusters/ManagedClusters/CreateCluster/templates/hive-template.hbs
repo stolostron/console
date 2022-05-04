@@ -173,7 +173,7 @@ metadata:
     region: {{{../../region}}}
   {{/case}}
   {{#case 'BMC'}}
-    cloud: Bare-Metal
+    cloud: BareMetal
   {{/case}}
   {{#case 'vSphere'}}
     cloud: vSphere
@@ -210,6 +210,8 @@ apiVersion: hive.openshift.io/v1
 kind: ClusterImageSet
 metadata:
   name: {{{clusterImageSetName}}}
+  labels:
+    visible: 'true'
 spec:
   releaseImage: {{{clusterReleaseImage}}}
 {{/if}}

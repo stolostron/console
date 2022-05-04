@@ -317,7 +317,7 @@ const mockManagedCluster: ManagedCluster = {
     kind: ManagedClusterKind,
     metadata: {
         labels: {
-            cloud: 'Bare-Metal',
+            cloud: 'BareMetal',
             name: clusterName,
             vendor: 'OpenShift',
         },
@@ -493,7 +493,7 @@ const mockKlusterletAddonSecret = {
         clusterName: 'test',
         clusterNamespace: 'test',
         clusterLabels: {
-            cloud: 'Bare-Metal',
+            cloud: 'BareMetal',
             vendor: 'OpenShift',
         },
         applicationManager: {

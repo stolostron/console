@@ -613,6 +613,7 @@ function AppHeader() {
                     </div>
                 </div>
             }
+            logoProps={{ style: { textDecoration: 'none', cursor: 'default' } }}
             headerTools={headerTools}
             showNavToggle
             isNavOpen={isNavOpen}

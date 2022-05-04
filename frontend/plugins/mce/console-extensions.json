@@ -57,7 +57,7 @@
             "perspective": "acm",
             "section": "mce-infrastructure",
             "id": "mce-automations",
-            "name": "%plugin__mce~Automations%",
+            "name": "%plugin__mce~Automation%",
             "href": "/multicloud/infrastructure/automations"
         }
     },

@@ -135,7 +135,9 @@ describe('ChannelController components 2. 2', () => {
 describe('ChannelController components 3', () => {
     let container
     beforeEach(async () => {
-        ;({ container } = render(<ChannelController channelControl={channelController3} t={t} />))
+        ;({ container } = render(
+            <ChannelController channelControl={channelController3} t={t} setDrawerContent={jest.fn} />
+        ))
 
         await waitFor(() => container.querySelector(`button[id="comboChannel"]`))
     })
@@ -150,7 +152,9 @@ describe('ChannelController components 3', () => {
 describe('ChannelController components 4', () => {
     let container
     beforeEach(async () => {
-        ;({ container } = render(<ChannelController channelControl={channelController4} t={t} />))
+        ;({ container } = render(
+            <ChannelController channelControl={channelController4} t={t} setDrawerContent={jest.fn} />
+        ))
 
         await waitFor(() => container.querySelector(`button[id="comboChannel"]`))
     })

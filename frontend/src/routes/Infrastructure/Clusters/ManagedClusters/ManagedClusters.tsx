@@ -304,7 +304,7 @@ export function ClustersTable(props: {
                             setModalProps({ open: false })
                         },
                         isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                        plural: t('hibernatable.clusters'),
+                        plural: t('resumable.clusters'),
                     })
                 },
                 variant: 'bulk-action',

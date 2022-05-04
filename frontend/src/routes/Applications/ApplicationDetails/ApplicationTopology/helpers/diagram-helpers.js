@@ -400,6 +400,7 @@ export const getNameWithoutPodHash = (relatedKind) => {
                 //openshift.io/deployment-config.name
                 deployableName = values[1].trim()
                 nameNoHash = deployableName
+                podTemplateHashLabelFound = true
             }
         }
     })
@@ -580,7 +581,7 @@ export const addIngressNodeInfo = (node, details, t) => {
 
 //for service
 export const addNodeServiceLocation = (node, clusterName, targetNS, details, t) => {
-    if (R.pathOr('', ['specs', 'raw', 'kind'])(node) === 'Service') {
+    if (node.type === 'service') {
         return addNodeInfoPerCluster(node, clusterName, targetNS, details, addNodeServiceLocationForCluster, t) //process only services
     }
     return details
@@ -588,7 +589,7 @@ export const addNodeServiceLocation = (node, clusterName, targetNS, details, t) 
 
 //generic function to write location info
 export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getDetailsFunction, t) => {
-    const resourceName = _.get(node, 'namespace', '')
+    const resourceName = _.get(node, 'name', '')
     const resourceMap = _.get(node, `specs.${node.type}Model`, {})
 
     const locationDetails = []
@@ -605,14 +606,14 @@ export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getD
     return details
 }
 
-export const addNodeServiceLocationForCluster = (node, typeObject, details, t) => {
+export const addNodeServiceLocationForCluster = (node, typeObject, details) => {
     if (node && typeObject && typeObject.clusterIP && typeObject.port) {
         let port = R.split(':', typeObject.port)[0] // take care of 80:etc format
         port = R.split('/', port)[0] //now remove any 80/TCP
 
         const location = `${typeObject.clusterIP}:${port}`
         details.push({
-            labelKey: t('Location'),
+            labelKey: 'Location',
             value: location,
         })
     }
@@ -656,6 +657,7 @@ export const getFilteredNode = (node, item) => {
         ...node,
         name: item.name,
         namespace: item.namespace,
+        cluster,
     }
 
     // filter statuses to just this one
@@ -673,10 +675,15 @@ export const getFilteredNode = (node, item) => {
     const kindModelKey = `${node.type}Model`
     const kindModel = _.get(node, ['specs', kindModelKey])
     if (kindModel) {
-        const filtered = Object.entries(kindModel).filter(([, v]) => {
-            return v[0].name === name && v[0].namespace === namespace && v[0].cluster === cluster
+        const filtered = {}
+        Object.entries(kindModel).forEach(([k, v]) => {
+            v.forEach((stat) => {
+                if (stat.name === name && stat.namespace === namespace && stat.cluster === cluster) {
+                    filtered[k] = [stat]
+                }
+            })
         })
-        filterNode.specs[kindModelKey] = Object.fromEntries(filtered)
+        filterNode.specs[kindModelKey] = filtered
     }
     return filterNode
 }
