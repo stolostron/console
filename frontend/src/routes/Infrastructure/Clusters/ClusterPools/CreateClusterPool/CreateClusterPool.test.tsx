@@ -248,22 +248,6 @@ describe('CreateClusterPool', () => {
         // skip AWS private config
         await clickByText('Next')
 
-        // // start filling in the form
-        // await typeByTestId('eman', clusterName!)
-        // await typeByTestId('emanspace', mockCreateProject.metadata.name!)
-
-        // await clickByText('Next')
-
-        // // wait for tables/combos to fill in
-        // await waitForNocks(initialNocks)
-
-        // // finish the form
-        // await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
-        // container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
-
-        // await clickByPlaceholderText('Select a credential')
-        // await clickByText(providerConnection.metadata.name!)
-
         await clickByText('Review')
 
         // nocks for cluster creation
