@@ -456,6 +456,7 @@ export const updateNewRuleControlsData = (selectedPR, control) => {
     const onlineControl = _.get(control, onlineClustersCheckbox)
     const clusterSelectorControl = _.get(control, 'clusterSelector')
     const localClusterControl = _.get(control, localClusterCheckbox)
+    const existingRuleControl = _.get(control, 'placementrulecombo')
 
     if (selectedPR) {
         const clusterConditionsList = _.get(selectedPR, 'spec.clusterConditions', [])
@@ -520,20 +521,28 @@ export const updateNewRuleControlsData = (selectedPR, control) => {
 
         _.set(localClusterControl, 'type', 'hidden')
     } else {
-        _.set(localClusterControl, 'type', 'checkbox')
+        if (existingRuleControl.active) {
+            _.set(localClusterControl, 'type', 'checkbox')
 
-        _.set(onlineControl, 'type', 'checkbox')
-        _.set(onlineControl, 'active', false)
-        _.set(onlineControl, 'disabled', false)
+            _.set(onlineControl, 'type', 'checkbox')
+            _.set(onlineControl, 'active', false)
+            _.set(onlineControl, 'disabled', false)
 
-        _.set(clusterSelectorControl, 'type', 'custom')
-        _.set(clusterSelectorControl, 'active.mode', true)
+            _.set(clusterSelectorControl, 'type', 'custom')
+            _.set(clusterSelectorControl, 'active.mode', true)
 
-        clusterSelectorControl.active.clusterLabelsListID = 1
-        clusterSelectorControl.active.clusterLabelsList = [{ id: 0, labelName: '', labelValue: '', validValue: false }]
-        clusterSelectorControl.showData = []
+            clusterSelectorControl.active.clusterLabelsListID = 1
+            clusterSelectorControl.active.clusterLabelsList = [
+                { id: 0, labelName: '', labelValue: '', validValue: false },
+            ]
+            clusterSelectorControl.showData = []
+        } else {
+            // when a onSelect is fired when clearing the combobox, hide the selector
+            _.set(clusterSelectorControl, 'type', 'hidden')
+            _.set(onlineControl, 'type', 'hidden')
+            _.set(localClusterControl, 'type', 'hidden')
+        }
     }
-
     return control
 }
 
