@@ -60,7 +60,7 @@ import {
     isArgoApp,
     isResourceTypeOf,
 } from './helpers/resource-helper'
-import { isLocalSubscription } from './helpers/local-subscriptions'
+import { isLocalSubscription } from './helpers/subscriptions'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'

@@ -2,7 +2,7 @@
 
 import { cloneDeep, get, isEmpty } from 'lodash'
 import { listResources } from '../../../../../resources/utils/resource-request'
-import { isLocalSubscription } from '../../../helpers/local-subscriptions'
+import { getSubscriptionAnnotations, isLocalSubscription } from '../../../helpers/subscriptions'
 
 const EVERYTHING_CHANNEL = '__ALL__/__ALL__//__ALL__/__ALL__'
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
@@ -10,12 +10,11 @@ const NAMESPACE = 'metadata.namespace'
 
 export const getSubscriptionApplication = async (model, app, selectedChannel, recoilStates) => {
     // get subscriptions to channels (pipelines)
-    let subscriptionNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/subscriptions"]')
-    if (subscriptionNames && subscriptionNames.length > 0) {
+    let subscriptionNames = getSubscriptionAnnotations(app)
+    if (subscriptionNames.length > 0) {
         // filter local hub subscription
-        const subscriptionNameList = subscriptionNames.split(',')
-        const filteredSubscriptions = subscriptionNameList.filter((subscriptionName) => {
-            return !isLocalSubscription(subscriptionName, subscriptionNameList)
+        const filteredSubscriptions = subscriptionNames.filter((subscriptionName) => {
+            return !isLocalSubscription(subscriptionName, subscriptionNames)
         })
         const subscriptions = cloneDeep(getResources(filteredSubscriptions, recoilStates.subscriptions))
 
