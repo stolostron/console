@@ -33,6 +33,20 @@ export const getPathArray = (path: string[] | string) => {
     return pathArr
 }
 
+// get all of the string siblings of a uid key
+export const getUidSiblings = (paths: { [name: string]: any[] }) => {
+    const uidSiblings: any[] = []
+    getMatchingValues([/.*%uid$/], paths).forEach((value: { $d: any[] }) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        Object.entries(value.$d).forEach(([_k, v]) => {
+            if (typeof v.$v !== 'object' || v.$k === 'managedFields') {
+                uidSiblings.push(v)
+            }
+        })
+    })
+    return uidSiblings
+}
+
 // if a path has a wildcard fill in the exact path
 export const getMatchingValues = (search: (string | any[] | RegExp)[], paths: { [name: string]: any[] }) => {
     const values: any = []
