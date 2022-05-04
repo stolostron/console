@@ -28,7 +28,12 @@ import {
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy, PolicySet } from '../../../../resources'
-import { getClustersSummaryForPolicySet, getPolicyRemediation, getPolicySetPolicies } from '../../common/util'
+import {
+    getClustersSummaryForPolicySet,
+    getPlacementDecisionsForResource,
+    getPolicyRemediation,
+    getPolicySetPolicies,
+} from '../../common/util'
 import { ClusterPolicyViolationIcons2 } from '../../components/ClusterPolicyViolations'
 import {
     useClusterViolationSummaryMap,
@@ -112,29 +117,21 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
     }, [policySet, policies])
 
     const { policySetClusters, policySetClusterCompliance } = useMemo(() => {
-        const placementRuleClusterCompliance = getClustersSummaryForPolicySet(
+        const clusterCompliance = getClustersSummaryForPolicySet(
             policySet,
             policies,
             placementDecisions,
             placementBindings,
-            placementRules
+            [...placements, ...placementRules]
         )
-        const placementClusterCompliance = getClustersSummaryForPolicySet(
-            policySet,
-            policies,
-            placementDecisions,
-            placementBindings,
-            placements
-        )
-
         const psClusterCompliance: {
             compliant: string[]
             nonCompliant: string[]
             unknown: string[]
         } = {
-            compliant: [...placementRuleClusterCompliance.compliant, ...placementClusterCompliance.compliant],
-            nonCompliant: [...placementRuleClusterCompliance.nonCompliant, ...placementClusterCompliance.nonCompliant],
-            unknown: [...placementRuleClusterCompliance.unknown, ...placementClusterCompliance.unknown],
+            compliant: clusterCompliance.compliant,
+            nonCompliant: clusterCompliance.nonCompliant,
+            unknown: clusterCompliance.unknown,
         }
         const psClusters: string[] = [
             ...psClusterCompliance.compliant,
@@ -214,6 +211,15 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         [clusterPolicyViolationsColumn, managedClusters, t]
     )
 
+    const decision = useMemo(
+        () =>
+            getPlacementDecisionsForResource(policySet, placementDecisions, placementBindings, [
+                ...placements,
+                ...placementRules,
+            ]),
+        [policySet, placementDecisions, placementBindings, placements, placementRules]
+    )
+
     const policyColumnDefs = useMemo(
         () => [
             {
@@ -239,20 +245,36 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
             {
                 header: t('Cluster violation'),
                 sort: (policyA: Policy, policyB: Policy) => {
+                    // Find the clusters in context of the PolicySet
+                    const policySetClusterContextA = policyA?.status?.status?.filter((status) => {
+                        return decision[0].status.decisions.find(
+                            (decisionStatus) => decisionStatus.clusterName === status.clustername
+                        )
+                    })
+                    // Find the clusters in context of the PolicySet
+                    const policySetClusterContextB = policyB?.status?.status?.filter((status) => {
+                        return decision[0].status.decisions.find(
+                            (decisionStatus) => decisionStatus.clusterName === status.clustername
+                        )
+                    })
                     const violationACount =
-                        policyA?.status?.status?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
+                        policySetClusterContextA?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
                     const violationBCount =
-                        policyB?.status?.status?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
+                        policySetClusterContextB?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
                     return compareNumbers(violationACount, violationBCount)
                 },
                 cell: (currentPolicy: Policy) => {
+                    // Find the clusters in context of the PolicySet
+                    const policySetClusterContext = currentPolicy?.status?.status?.filter((status) => {
+                        return decision[0].status.decisions.find(
+                            (decisionStatus) => decisionStatus.clusterName === status.clustername
+                        )
+                    })
                     const violationCount =
-                        currentPolicy?.status?.status?.filter((status) => status.compliant === 'NonCompliant').length ??
-                        0
+                        policySetClusterContext?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
                     const compliantCount =
-                        currentPolicy?.status?.status?.filter((status) => status.compliant === 'Compliant').length ?? 0
-                    const unknownCount =
-                        currentPolicy?.status?.status?.filter((status) => !status.compliant).length ?? 0
+                        policySetClusterContext?.filter((status) => status.compliant === 'Compliant').length ?? 0
+                    const unknownCount = policySetClusterContext?.filter((status) => !status.compliant).length ?? 0
                     if (violationCount !== 0 || compliantCount !== 0 || unknownCount !== 0) {
                         return (
                             <ClusterPolicyViolationIcons2
@@ -291,7 +313,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 },
             },
         ],
-        [t]
+        [decision, t]
     )
 
     return (
