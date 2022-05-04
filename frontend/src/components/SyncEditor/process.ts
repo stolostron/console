@@ -2,7 +2,7 @@
 import YAML from 'yaml'
 import { isEmpty, set, cloneDeep, has } from 'lodash'
 import { getErrors, validate } from './validation'
-import { getMatchingValues } from './synchronize'
+import { getMatchingValues, getUidSiblings } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 
@@ -177,7 +177,7 @@ const process = (
 
     // hide and remember secret values
     const filteredRows: number[] = []
-    const protectedRanges: any[] = []
+    let protectedRanges: any[] = []
     if (!isEmpty(parsed)) {
         // stuff secrets with '*******'
         let allSecrets = []
@@ -231,6 +231,14 @@ const process = (
             protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0))
         })
     }
+
+    // prevent typing on uid and its siblings
+    protectedRanges = [
+        ...protectedRanges,
+        ...getUidSiblings(paths).map((value) => {
+            return new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0)
+        }),
+    ]
 
     const validationErrors: any[] = []
     if (syntaxErrors.length === 0 && validators) {
@@ -317,6 +325,7 @@ function getMappingItems(
                 $r: firstRow,
                 $l: length,
                 $v: value,
+                $d: rangeObj,
             }
         } else if (item.key) {
             const keyPos = item.key.cstNode.rangeAsLinePos
@@ -337,6 +346,7 @@ function getMappingItems(
                 $r: firstRow,
                 $l: length,
                 $v: value,
+                $d: rangeObj,
             }
         }
     })
