@@ -41,8 +41,7 @@ export const addAjvKeywords = (ajv: Ajv) => {
         validate: (_schema: null, data: any) => {
             return (
                 !data ||
-                (/^[a-z0-9]([-a-z0-9.]*[a-z0-9.])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/.test(data) &&
-                    data.length <= 253)
+                (/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/.test(data) && data.length <= 253)
             )
         },
     })
