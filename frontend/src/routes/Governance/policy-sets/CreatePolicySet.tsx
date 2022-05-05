@@ -2,7 +2,7 @@
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { PolicySetWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/PolicySet/PolicySetWizard'
 import { AcmToastContext } from '@stolostron/ui-components'
-import { useContext, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -52,6 +52,22 @@ export function CreatePolicySet() {
     const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [clusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const namespaceNames = useMemo(() => namespaces.map((namespace) => namespace.metadata.name ?? ''), [namespaces])
+    const onSubmit = useCallback((data) => {
+        const resources = data as IResource[]
+        return reconcileResources(resources, []).then(() => {
+            const policySet = resources.find((resource) => resource.kind === PolicySetKind)
+            if (policySet) {
+                toast.addAlert({
+                    title: t('Policy set created'),
+                    message: t('{{name}} was successfully created.', { name: policySet.metadata?.name }),
+                    type: 'success',
+                    autoClose: true,
+                })
+            }
+            history.push(NavigationPath.policySets)
+        })
+    }, [])
+    const onCancel = useCallback(() => history.push(NavigationPath.policySets), [])
     return (
         <PolicySetWizard
             title={t('Create policy set')}
@@ -63,22 +79,8 @@ export function CreatePolicySet() {
             yamlEditor={getWizardSyncEditor}
             clusterSets={clusterSets}
             clusterSetBindings={clusterSetBindings}
-            onSubmit={(data) => {
-                const resources = data as IResource[]
-                return reconcileResources(resources, []).then(() => {
-                    const policySet = resources.find((resource) => resource.kind === PolicySetKind)
-                    if (policySet) {
-                        toast.addAlert({
-                            title: t('Policy set created'),
-                            message: t('{{name}} was successfully created.', { name: policySet.metadata?.name }),
-                            type: 'success',
-                            autoClose: true,
-                        })
-                    }
-                    history.push(NavigationPath.policySets)
-                })
-            }}
-            onCancel={() => history.push(NavigationPath.policySets)}
+            onSubmit={onSubmit}
+            onCancel={onCancel}
         />
     )
 }
