@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
-import { isEmpty, get, set, cloneDeep, has } from 'lodash'
+import { isEmpty, set, cloneDeep, has } from 'lodash'
 import { getErrors, validate } from './validation'
-import { getAllPaths, getPathArray } from './synchronize'
+import { getMatchingValues, getUidSiblings } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 
@@ -149,7 +149,7 @@ const process = (
     validators: any
 ) => {
     // restore hidden secret values
-    let { mappings, parsed, resources } = getMappings(documents)
+    let { mappings, parsed, resources, paths } = getMappings(documents)
     cachedSecrets?.forEach(({ path, value }) => {
         if (has(parsed, path)) {
             set(parsed, path, value)
@@ -177,32 +177,29 @@ const process = (
 
     // hide and remember secret values
     const filteredRows: number[] = []
-    const protectedRanges: any[] = []
+    let protectedRanges: any[] = []
     if (!isEmpty(parsed)) {
         // stuff secrets with '*******'
-        let allSecrets: { path: string | any[]; isRange: boolean }[] = []
+        let allSecrets = []
         if (secrets && !isEmpty(secrets)) {
-            allSecrets = getAllPaths(secrets, mappings, parsed)
-
-            allSecrets.forEach(({ path }) => {
-                const value = get(parsed, path) as unknown as string
-                if (value && typeof value === 'string') {
-                    if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path: path, value })
-                    set(parsed, path, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
+            allSecrets = getMatchingValues(secrets, paths)
+            allSecrets.forEach((value: { $p: string[]; $r: any; $l: any; $v: any }) => {
+                if (value.$v && typeof value.$v === 'string') {
+                    if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path: value.$p, value })
+                    set(parsed, value.$p, `${'*'.repeat(Math.min(20, value.$v.replace(/\n$/, '').length))}`)
                 }
             })
         }
 
         // stuff filtered with '-filtered-'
-        let allFiltered: { path: string | any[]; isRange: boolean }[] = []
+        let allFiltered = []
         if (filters && !isEmpty(filters)) {
-            allFiltered = getAllPaths(filters, mappings, parsed)
+            allFiltered = getMatchingValues(filters, paths)
             if (!showFilters) {
-                allFiltered.forEach(({ path }) => {
-                    const value = get(parsed, path) as unknown as string
-                    if (value && typeof value === 'object') {
-                        if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path: path, value })
-                        set(parsed, path, undefined)
+                allFiltered.forEach((value: { $p: string[]; $r: any; $l: any; $v: any }) => {
+                    if (value.$v && typeof value.$v === 'object') {
+                        if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path: value.$p, value: value.$v })
+                        set(parsed, value.$p, undefined)
                     }
                 })
             }
@@ -211,40 +208,39 @@ const process = (
         // create redacted yaml, etc
         yaml = stringify(resources)
         documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
-        ;({ mappings, parsed, resources } = getMappings(documents))
+        ;({ mappings, parsed, resources, paths } = getMappings(documents))
 
         // prevent typing on redacted yaml
-        ;[...allSecrets].forEach(({ path }) => {
-            const value = get(mappings, getPathArray(path))
-            if (value && value.$v) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
-                value.$s = true
-            }
+        ;[...allSecrets].forEach((value: { $r: any }) => {
+            protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
+            //value.$s = true
         })
 
         // add toggle button to filtered values
-        ;[...allFiltered].forEach(({ path }) => {
-            const value = get(mappings, getPathArray(path))
-            if (value) {
-                filteredRows.push(value.$r)
-            }
+        ;[...allFiltered].forEach((value: { $r: any }) => {
+            filteredRows.push(value.$r)
         })
     }
 
     // prevent typing on immutables
     if (immutables) {
-        const allImmutables = getAllPaths(immutables, mappings, parsed)
-        allImmutables.forEach(({ path, isRange }) => {
-            const value = get(mappings, getPathArray(path))
-            if (value && value.$v !== undefined) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + (isRange ? value.$l : 1), 0))
-            }
+        const allImmutables = getMatchingValues(immutables, paths)
+        allImmutables.forEach((value: { $r: any; $l: any }) => {
+            protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0))
         })
     }
 
+    // prevent typing on uid and its siblings
+    protectedRanges = [
+        ...protectedRanges,
+        ...getUidSiblings(paths).map((value) => {
+            return new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0)
+        }),
+    ]
+
     const validationErrors: any[] = []
     if (syntaxErrors.length === 0 && validators) {
-        validate(validators, mappings, resources, validationErrors, syntaxErrors)
+        validate(validators, mappings, resources, validationErrors, syntaxErrors, protectedRanges)
     }
 
     if (syntaxErrors.length !== 0 && validationErrors.length !== 0 && cachedSecrets && cacheFiltered) {
@@ -266,35 +262,53 @@ function getMappings(documents: any[]) {
     const parsed: { [name: string]: any[] } = {}
     const mappings: { [name: string]: any[] } = {}
     const resources: any[] = []
+    const paths: { [name: string]: any[] } = {}
     documents.forEach((document) => {
         if (!document?.errors.length) {
             const json = document.toJSON()
             if (json) {
                 const key = json?.kind || 'root'
-                let arr = mappings[key] || []
-                const rangeObj: { [name: string]: MappingType } = {}
-                const contents: any = document?.contents
-                getMappingItems(contents?.items, rangeObj)
-                arr.push(rangeObj)
-                mappings[key] = arr
-                arr = parsed[key] || []
+                let arr = parsed[key] || []
                 arr.push(json)
                 parsed[key] = arr
+                arr = mappings[key] || []
+                const rangeObj: { [name: string]: MappingType } = {}
+                const contents: any = document?.contents
+                getMappingItems(
+                    contents?.items,
+                    rangeObj,
+                    `${key}.${parsed[key].length - 1}`,
+                    [key, `${parsed[key].length - 1}`],
+                    paths
+                )
+                arr.push(rangeObj)
+                mappings[key] = arr
                 resources.push(json)
             }
         }
     })
-    return { mappings, parsed, resources }
+    return { mappings, parsed, resources, paths }
 }
 
-function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType } | MappingType[]) {
+function getMappingItems(
+    items: any[],
+    rangeObj: { [name: string]: MappingType } | MappingType[],
+    parentKey: string,
+    parentPath: string[],
+    paths: { [name: string]: any } = {}
+) {
     items?.forEach((item: any) => {
         const key = item?.key?.value || 'unknown'
         let value
         if (item.items || item.value) {
             if (item.items ?? item.value.items) {
                 value = item?.value?.type === 'SEQ' ? [] : {}
-                getMappingItems(item.items ?? item.value.items, value)
+                const pk = `${parentKey}${item?.key?.value ? `.${key}` : ''}`
+                const pa = [...parentPath]
+                if (item?.key?.value) {
+                    pa.push(key)
+                }
+                getMappingItems(item.items ?? item.value.items, value, pk, pa, paths)
             } else {
                 value = item?.value?.value ?? item?.value
             }
@@ -311,6 +325,13 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
                 $v: value,
                 $gv: valuePos,
             })
+            paths[`${parentKey}.${rangeObj.length}`] = {
+                $p: [...parentPath, rangeObj.length],
+                $r: firstRow,
+                $l: length,
+                $v: value,
+                $d: rangeObj,
+            }
         } else if (item.key) {
             const keyPos = item.key.cstNode.rangeAsLinePos
             const valuePos = item?.value?.cstNode.rangeAsLinePos
@@ -324,6 +345,13 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
                 $v: value,
                 $gk: keyPos,
                 $gv: valuePos,
+            }
+            paths[`${parentKey}.${key}`] = {
+                $p: [...parentPath, key],
+                $r: firstRow,
+                $l: length,
+                $v: value,
+                $d: rangeObj,
             }
         }
     })

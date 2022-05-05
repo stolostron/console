@@ -36,7 +36,17 @@ export const compileAjvSchemas = (schema: any[]) => {
 
 export const addAjvKeywords = (ajv: Ajv) => {
     ajv.addKeyword({
-        keyword: 'validateDNSName',
+        keyword: 'validateName',
+        schemaType: 'boolean',
+        validate: (_schema: null, data: any) => {
+            return (
+                !data ||
+                (/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/.test(data) && data.length <= 253)
+            )
+        },
+    })
+    ajv.addKeyword({
+        keyword: 'validateLabel',
         schemaType: 'boolean',
         validate: (_schema: null, data: any) => {
             return (
@@ -65,7 +75,8 @@ export function validate(
     mappings: { [name: string]: any[] },
     resources: any[],
     errors: any[],
-    syntaxErrors: any[]
+    syntaxErrors: any[],
+    protectedRanges: any[]
 ) {
     const kindMap = {}
     const validatorMap = keyBy(validators, 'type')
@@ -96,7 +107,7 @@ export function validate(
         }
         if (validator) {
             // d keeps track of Secret[0], Secret[1], Secret[d]
-            validateResource(validator, mappings, [resource.kind, d], resource, errors)
+            validateResource(validator, mappings, [resource.kind, d], resource, errors, protectedRanges)
             set(kindMap, resource.kind, d++)
         }
     })
@@ -119,7 +130,8 @@ function validateResource(
     mappings: { [name: string]: any[] },
     prefix: string[],
     resource: any,
-    errors: any[]
+    errors: any[],
+    protectedRanges: any[]
 ) {
     const valid = validator(resource)
     if (!valid) {
@@ -148,74 +160,89 @@ function validateResource(
             }
             let mapping = get(mappings, path)
             if (mapping) {
-                errorMsg.linePos.start.line = errorMsg.linePos.end.line = mapping?.kind?.$r ?? mapping?.$r ?? 1
-                errorMsg.isWarning = true
-                let matches
-                switch (keyword) {
-                    // missing a key
-                    case 'required':
-                        // see if there's a misspelled key
-                        mapping = mapping.$v || mapping
-                        if (!isEmpty(mapping)) {
-                            matches = stringSimilarity.findBestMatch(params.missingProperty, Object.keys(mapping))
-                        }
-                        if (matches) {
-                            const {
-                                bestMatch: { rating, target },
-                            } = matches
-                            if (rating > 0.7) {
-                                const similar = mapping[target]
-                                errorMsg.linePos.start.line = errorMsg.linePos.end.line = similar.$r
-                                errorMsg.linePos.start.col = similar.$gk.start.col
-                                errorMsg.linePos.end.col = similar.$gk.end.col
+                // no need to show validation errors on immutable lines
+                const lineNumber = mapping?.kind?.$r ?? mapping?.$r ?? 1
+                const lineIsProtected = protectedRanges.some((prohibited: { containsPosition: (arg: any) => any }) => {
+                    return prohibited.containsPosition({ lineNumber, startColumn: 1, endColumn: 1 })
+                })
+                if (!lineIsProtected) {
+                    errorMsg.linePos.start.line = errorMsg.linePos.end.line = lineNumber
+                    errorMsg.isWarning = true
+                    let matches
+                    switch (keyword) {
+                        // missing a key
+                        case 'required':
+                            // see if there's a misspelled key
+                            mapping = mapping.$v || mapping
+                            if (!isEmpty(mapping)) {
+                                matches = stringSimilarity.findBestMatch(params.missingProperty, Object.keys(mapping))
                             }
-                        }
-                        errorMsg.isWarning = false
-                        break
-                    case 'const':
-                        errorMsg.message = `${message}: ${params.allowedValue}`
-                        errorMsg.linePos.start.col = mapping.$gv.start.col
-                        errorMsg.linePos.end.col = mapping.$gv.end.col
-                        errorMsg.isWarning = false
-                        break
-                    // value wrong pattern
-                    case 'pattern':
-                        errorMsg.linePos.start.col = mapping.$gv.start.col
-                        errorMsg.linePos.end.col = mapping.$gv.end.col
-                        errorMsg.isWarning = false
-                        break
-                    // validateDNSName
-                    case 'validateDNSName':
-                        errorMsg.message =
-                            'Name must start/end alphanumerically, can contain dashes, and must be less then 63 characters'
-                        errorMsg.linePos.start.col = mapping.$gv.start.col
-                        errorMsg.linePos.end.col = mapping.$gv.end.col
-                        errorMsg.isWarning = false
-                        break
-                    // value wrong enum
-                    case 'enum':
-                        errorMsg.message = `${message}: ${params.allowedValues
-                            .map((val: any) => {
-                                return `"${val}"`
-                            })
-                            .join(', ')}`
-                        errorMsg.linePos.start.col = mapping.$gv.start.col
-                        errorMsg.linePos.end.col = mapping.$gv.end.col
-                        break
-                    case 'type':
-                        errorMsg.message = message
-                        errorMsg.linePos.start.col = mapping.$gv?.start?.col ?? 1
-                        errorMsg.linePos.end.col = mapping.$gv?.end?.col ?? 1
-                        errorMsg.isWarning = false
-                        break
-                    default:
-                        errorMsg.message = message
-                        errorMsg.linePos.start.col = mapping.$gv?.start?.col ?? 1
-                        errorMsg.linePos.end.col = mapping.$gv?.end?.col ?? 1
-                        break
+                            if (matches) {
+                                const {
+                                    bestMatch: { rating, target },
+                                } = matches
+                                if (rating > 0.7) {
+                                    const similar = mapping[target]
+                                    errorMsg.linePos.start.line = errorMsg.linePos.end.line = similar.$r
+                                    errorMsg.linePos.start.col = similar.$gk.start.col
+                                    errorMsg.linePos.end.col = similar.$gk.end.col
+                                }
+                            }
+                            errorMsg.isWarning = false
+                            break
+                        case 'const':
+                            errorMsg.message = `${message}: ${params.allowedValue}`
+                            errorMsg.linePos.start.col = mapping.$gv.start.col
+                            errorMsg.linePos.end.col = mapping.$gv.end.col
+                            errorMsg.isWarning = false
+                            break
+                        // value wrong pattern
+                        case 'pattern':
+                            errorMsg.linePos.start.col = mapping.$gv.start.col
+                            errorMsg.linePos.end.col = mapping.$gv.end.col
+                            errorMsg.isWarning = false
+                            break
+                        // validateName
+                        case 'validateName':
+                            errorMsg.message =
+                                'Name must start/end alphanumerically, can contain dashes and periods, and must be less then 253 characters'
+                            errorMsg.linePos.start.col = mapping.$gv.start.col
+                            errorMsg.linePos.end.col = mapping.$gv.end.col
+                            errorMsg.isWarning = false
+                            break
+                        // validateLabel
+                        case 'validateLabel':
+                            errorMsg.message =
+                                'Name must start/end alphanumerically, can contain dashes, and must be less then 63 characters'
+                            errorMsg.linePos.start.col = mapping.$gv.start.col
+                            errorMsg.linePos.end.col = mapping.$gv.end.col
+                            errorMsg.isWarning = false
+                            break
+                        // value wrong enum
+                        case 'enum':
+                            errorMsg.message = `${message}: ${params.allowedValues
+                                .map((val: any) => {
+                                    return `"${val}"`
+                                })
+                                .join(', ')}`
+                            errorMsg.linePos.start.col = mapping.$gv.start.col
+                            errorMsg.linePos.end.col = mapping.$gv.end.col
+                            break
+                        case 'type':
+                            errorMsg.message = message
+                            errorMsg.linePos.start.col = mapping.$gv?.start?.col ?? 1
+                            errorMsg.linePos.end.col = mapping.$gv?.end?.col ?? 1
+                            errorMsg.isWarning = false
+                            break
+                        default:
+                            errorMsg.message = message
+                            errorMsg.linePos.start.col = mapping.$gv?.start?.col ?? 1
+                            errorMsg.linePos.end.col = mapping.$gv?.end?.col ?? 1
+                            break
+                    }
+                    errors.push(errorMsg)
                 }
             }
-            errors.push(errorMsg)
         })
     }
 }

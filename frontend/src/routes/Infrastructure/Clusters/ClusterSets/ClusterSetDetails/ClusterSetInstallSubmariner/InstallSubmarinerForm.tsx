@@ -723,16 +723,8 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             mode="wizard"
             editorTitle={t('Submariner YAML')}
             schema={schema}
-            secrets={[
-                'Secret[*].stringData.aws_secret_access_key',
-                ['Secret', '*', 'stringData', 'osServiceAccount.json'],
-            ]}
-            immutables={[
-                'ManagedClusterAddOn[0].metadata.name',
-                'ManagedClusterAddOn[0].metadata.namespace',
-                'SubmarinerConfig[*].metadata.name',
-                'SubmarinerConfig[*].metadata.namespace',
-            ]}
+            secrets={['*.stringData.aws_secret_access_key', '*.stringData.osServiceAccount.json']}
+            immutables={['*.metadata.name', '*.metadata.namespace']}
         />
     )
 }
