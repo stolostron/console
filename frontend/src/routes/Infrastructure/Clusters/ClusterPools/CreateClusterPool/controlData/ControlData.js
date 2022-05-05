@@ -9,7 +9,7 @@ import { keyBy, cloneDeep } from 'lodash'
 import getControlDataAWS from '../../../ManagedClusters/CreateCluster/controlData/ControlDataAWS'
 import getControlDataGCP from '../../../ManagedClusters/CreateCluster/controlData/ControlDataGCP'
 import getControlDataAZR from '../../../ManagedClusters/CreateCluster/controlData/ControlDataAZR'
-import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo } from '../../../ManagedClusters/CreateCluster/controlData/Logos'
+import { AwsLogo, GoogleLogo, AzureLogo } from '../../../ManagedClusters/CreateCluster/controlData/Logos'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -19,16 +19,6 @@ export const getActiveCardID = (control, fetchData = {}) => {
         return 'BMC'
     }
     return null
-}
-
-export const getDistributionTitle = (ctrlData, groupData, i18n) => {
-    const activeObject = groupData.find((object) => object.id === 'distribution')
-    const active = activeObject['active']
-    if (active && activeObject['availableMap']) {
-        const title = activeObject['availableMap'][active].title
-        return i18n('creation.ocp.choose.infrastructure', [title])
-    }
-    return ''
 }
 
 const lessThanEqualSize = (active, templateObjectMap, i18n) => {
@@ -111,37 +101,11 @@ export const getControlData = (includeAwsPrivate = false, snoFeatureGate = false
             type: 'hidden',
             active: false,
         },
-        {
-            id: 'chooseDist',
-            type: 'title',
-            info: 'creation.ocp.choose.distribution',
-            tooltip: 'tooltip.creation.ocp.choose.distribution',
-        },
-        {
-            id: 'distribution',
-            type: 'cards',
-            sort: false,
-            pauseControlCreationHereUntilSelected: false,
-            active: 'OpenShift',
-            available: [
-                {
-                    id: 'OpenShift',
-                    logo: <RedHatLogo />,
-                    title: 'cluster.create.ocp.subtitle',
-                },
-            ],
-            validation: {
-                notification: 'creation.ocp.cluster.must.select.orchestration',
-                required: true,
-            },
-        },
         ///////////////////////  cloud  /////////////////////////////////////
         {
             id: 'chooseInfra',
             type: 'title',
-            info: getDistributionTitle,
-            tooltip: 'tooltip.creation.ocp.choose.aws.infrastructure',
-            learnMore: 'https://docs.openshift.com/container-platform/4.3/installing/',
+            info: 'clusterPool.creation.ocp.choose.distribution',
         },
         {
             id: 'infrastructure',

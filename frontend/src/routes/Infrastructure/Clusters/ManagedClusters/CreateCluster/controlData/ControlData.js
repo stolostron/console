@@ -67,6 +67,11 @@ export const getControlData = (
     },
     ///////////////////////  cloud  /////////////////////////////////////
     {
+        id: 'chooseType',
+        type: 'title',
+        info: 'creation.ocp.choose.distribution',
+    },
+    {
         id: 'infrastructure',
         type: 'cards',
         sort: false,
