@@ -183,11 +183,10 @@ const process = (
         let allSecrets = []
         if (secrets && !isEmpty(secrets)) {
             allSecrets = getMatchingValues(secrets, paths)
-            allSecrets.forEach((value: { $p: string; $r: any; $l: any; $v: any }) => {
+            allSecrets.forEach((value: { $p: string[]; $r: any; $l: any; $v: any }) => {
                 if (value.$v && typeof value.$v === 'string') {
-                    const path = value.$p.split('%')
-                    if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path, value })
-                    set(parsed, path, `${'*'.repeat(Math.min(20, value.$v.replace(/\n$/, '').length))}`)
+                    if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path: value.$p, value })
+                    set(parsed, value.$p, `${'*'.repeat(Math.min(20, value.$v.replace(/\n$/, '').length))}`)
                 }
             })
         }
@@ -197,11 +196,10 @@ const process = (
         if (filters && !isEmpty(filters)) {
             allFiltered = getMatchingValues(filters, paths)
             if (!showFilters) {
-                allFiltered.forEach((value: { $p: string; $r: any; $l: any; $v: any }) => {
+                allFiltered.forEach((value: { $p: string[]; $r: any; $l: any; $v: any }) => {
                     if (value.$v && typeof value.$v === 'object') {
-                        const path = value.$p.split('%')
-                        if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path, value: value.$v })
-                        set(parsed, path, undefined)
+                        if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path: value.$p, value: value.$v })
+                        set(parsed, value.$p, undefined)
                     }
                 })
             }
@@ -276,7 +274,13 @@ function getMappings(documents: any[]) {
                 arr = mappings[key] || []
                 const rangeObj: { [name: string]: MappingType } = {}
                 const contents: any = document?.contents
-                getMappingItems(contents?.items, rangeObj, `${key}%${parsed[key].length - 1}`, paths)
+                getMappingItems(
+                    contents?.items,
+                    rangeObj,
+                    `${key}.${parsed[key].length - 1}`,
+                    [key, `${parsed[key].length - 1}`],
+                    paths
+                )
                 arr.push(rangeObj)
                 mappings[key] = arr
                 resources.push(json)
@@ -290,6 +294,7 @@ function getMappingItems(
     items: any[],
     rangeObj: { [name: string]: MappingType } | MappingType[],
     parentKey: string,
+    parentPath: string[],
     paths: { [name: string]: any } = {}
 ) {
     items?.forEach((item: any) => {
@@ -298,12 +303,12 @@ function getMappingItems(
         if (item.items || item.value) {
             if (item.items ?? item.value.items) {
                 value = item?.value?.type === 'SEQ' ? [] : {}
-                getMappingItems(
-                    item.items ?? item.value.items,
-                    value,
-                    `${parentKey}${item?.key?.value ? `%${key}` : ''}`,
-                    paths
-                )
+                const pk = `${parentKey}${item?.key?.value ? `.${key}` : ''}`
+                const pa = [...parentPath]
+                if (item?.key?.value) {
+                    pa.push(key)
+                }
+                getMappingItems(item.items ?? item.value.items, value, pk, pa, paths)
             } else {
                 value = item?.value?.value ?? item?.value
             }
@@ -320,8 +325,8 @@ function getMappingItems(
                 $v: value,
                 $gv: valuePos,
             })
-            paths[`${parentKey}%${rangeObj.length}`] = {
-                $p: `${parentKey}%${rangeObj.length}`,
+            paths[`${parentKey}.${rangeObj.length}`] = {
+                $p: [...parentPath, rangeObj.length],
                 $r: firstRow,
                 $l: length,
                 $v: value,
@@ -341,8 +346,8 @@ function getMappingItems(
                 $gk: keyPos,
                 $gv: valuePos,
             }
-            paths[`${parentKey}%${key}`] = {
-                $p: `${parentKey}%${key}`,
+            paths[`${parentKey}.${key}`] = {
+                $p: [...parentPath, key],
                 $r: firstRow,
                 $l: length,
                 $v: value,
