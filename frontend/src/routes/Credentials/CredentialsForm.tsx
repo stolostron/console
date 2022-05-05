@@ -1465,9 +1465,9 @@ export function CredentialsForm(props: {
                 '*.stringData.ovirt_ca_bundle',
                 '*.stringData.ovirt_password',
                 '*.stringData.ovirt-config.yaml',
-                '*.stringData%osServicePrincipal.json',
-                '*.stringData%osServiceAccount.json',
-                '*.stringData%clouds.yaml',
+                '*.stringData.osServicePrincipal.json',
+                '*.stringData.osServiceAccount.json',
+                '*.stringData.clouds.yaml',
             ]}
             immutables={isEditing ? ['*.metadata.name', '*.metadata.namespace'] : []}
             edit={() => {

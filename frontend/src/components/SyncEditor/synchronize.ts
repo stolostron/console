@@ -36,7 +36,7 @@ export const getPathArray = (path: string[] | string) => {
 // get all of the string siblings of a uid key
 export const getUidSiblings = (paths: { [name: string]: any[] }) => {
     const uidSiblings: any[] = []
-    getMatchingValues([/.*%uid$/], paths).forEach((value: { $d: any[] }) => {
+    getMatchingValues([/.*\.uid$/], paths).forEach((value: { $d: any[] }) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         Object.entries(value.$d).forEach(([_k, v]) => {
             if (typeof v.$v !== 'object' || v.$k === 'managedFields') {
@@ -51,15 +51,18 @@ export const getUidSiblings = (paths: { [name: string]: any[] }) => {
 export const getMatchingValues = (search: (string | any[] | RegExp)[], paths: { [name: string]: any[] }) => {
     const values: any = []
     search.forEach((path: string | any[] | RegExp) => {
-        if (typeof path === 'string') {
-            path = path.replaceAll('.', '%')
-        } else if (Array.isArray(path)) {
-            path = path.join('%')
+        if (Array.isArray(path)) {
+            path = path.join('.')
         }
         if (typeof path === 'string' && path.indexOf('*') === -1) {
             values.push(paths[path])
         } else {
-            const re = path instanceof RegExp ? path : new RegExp(`${path.replaceAll('*', '.*')}$`, 'gi')
+            let re: RegExp
+            if (path instanceof RegExp) {
+                re = path
+            } else {
+                re = new RegExp(`${path.replaceAll('.', '\\.').replaceAll('*', '.*')}$`, 'gi')
+            }
             Object.entries(paths).forEach(([k, v]) => {
                 if (re.test(k)) {
                     values.push(v)
