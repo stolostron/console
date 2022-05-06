@@ -10,7 +10,7 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "validateDNSName": true },
+                        "name": { "validateName": true },
                         "labels": {
                             "type": "object",
                             "properties": {
@@ -45,8 +45,8 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "validateDNSName": true },
-                        "namespace": { "validateDNSName": true }
+                        "name": { "validateName": true },
+                        "namespace": { "validateName": true }
                     },
                     "required": ["name", "namespace"]
                 },

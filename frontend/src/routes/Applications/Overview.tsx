@@ -60,10 +60,10 @@ import {
     isArgoApp,
     isResourceTypeOf,
 } from './helpers/resource-helper'
+import { isLocalSubscription } from './helpers/subscriptions'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
-const localSubSuffixStr = '-local'
 const localClusterStr = 'local-cluster'
 
 // Map resource kind to type column
@@ -116,10 +116,7 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
             const appRepos: any[] = []
 
             for (let i = 0; i < subAnnotations.length; i++) {
-                if (
-                    _.endsWith(subAnnotations[i], localSubSuffixStr) &&
-                    _.indexOf(subAnnotations, _.trimEnd(subAnnotations[i], localSubSuffixStr)) !== -1
-                ) {
+                if (isLocalSubscription(subAnnotations[i], subAnnotations)) {
                     // skip local sub
                     continue
                 }
@@ -216,10 +213,7 @@ export default function ApplicationsOverview() {
             let hasTimeWindow = false
 
             for (let i = 0; i < subAnnotations.length; i++) {
-                if (
-                    _.endsWith(subAnnotations[i], localSubSuffixStr) &&
-                    _.indexOf(subAnnotations, _.trimEnd(subAnnotations[i], localSubSuffixStr)) !== -1
-                ) {
+                if (isLocalSubscription(subAnnotations[i], subAnnotations)) {
                     // skip local sub
                     continue
                 }

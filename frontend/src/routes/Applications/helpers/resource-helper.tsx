@@ -26,12 +26,11 @@ import {
     ApplicationSetDefinition,
     ApplicationDefinition,
 } from '../../../resources'
+import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getAnnotation } from '../Overview'
 
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
-export const subAnnotationStr = 'apps.open-cluster-management.io/subscriptions'
-const localSubSuffixStr = '-local'
 const localClusterStr = 'local-cluster'
 const appSetPlacementStr =
     'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
@@ -47,13 +46,7 @@ export function isResourceTypeOf(resource: IResource, resourceType: IResourceDef
 }
 
 export function getSubscriptionsFromAnnotation(app: IResource) {
-    const subAnnotation =
-        app.metadata?.annotations !== undefined ? app.metadata?.annotations[subAnnotationStr] : undefined
-    // eslint-disable-next-line no-extra-boolean-cast
-    if (!!subAnnotation) {
-        return subAnnotation.split(',')
-    }
-    return []
+    return getSubscriptionAnnotations(app) as string[]
 }
 
 export type ClusterCount = {
@@ -101,10 +94,7 @@ const getSubscriptionsClusterList = (
     const clusterSet = new Set<string>()
 
     for (const sa of subAnnotationArray) {
-        if (
-            _.endsWith(sa, localSubSuffixStr) &&
-            _.indexOf(subAnnotationArray, _.trimEnd(sa, localSubSuffixStr)) !== -1
-        ) {
+        if (isLocalSubscription(sa, subAnnotationArray)) {
             // skip local sub
             continue
         }
@@ -396,10 +386,7 @@ export const getAppChildResources = (
     for (const sa of subAnnotationArray) {
         const siblingApps: string[] = []
         const subChildResources: string[] = []
-        if (
-            _.endsWith(sa, localSubSuffixStr) &&
-            _.indexOf(subAnnotationArray, _.trimEnd(sa, localSubSuffixStr)) !== -1
-        ) {
+        if (isLocalSubscription(sa, subAnnotationArray)) {
             // skip local sub
             continue
         }
@@ -408,12 +395,7 @@ export const getAppChildResources = (
         // Find apps sharing the same sub
         applications.forEach((item) => {
             if (item.metadata.uid !== app.metadata?.uid && item.metadata.namespace === app.metadata?.namespace) {
-                if (
-                    item.metadata.name &&
-                    item.metadata.annotations &&
-                    item.metadata.annotations[subAnnotationStr] &&
-                    item.metadata.annotations[subAnnotationStr].split(',').find((sub) => sub === sa)
-                ) {
+                if (item.metadata.name && getSubscriptionsFromAnnotation(item).find((sub) => sub === sa)) {
                     siblingApps.push(item.metadata.name)
                 }
                 const appHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)

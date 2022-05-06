@@ -331,9 +331,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             }
 
             // if there were remaining edits, report to form
-            if (remainingEdits.length !== lastUserEdits.length) {
-                setStatusChanges(cloneDeep({ changes: remainingEdits, redactedChange: change, errors: allErrors }))
-            }
+            setStatusChanges(cloneDeep({ changes: remainingEdits, redactedChange: change, errors: allErrors }))
 
             // user edits that haven't been incorporated into form
             setLastUserEdits(remainingEdits)

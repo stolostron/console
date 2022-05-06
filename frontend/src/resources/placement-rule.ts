@@ -39,9 +39,12 @@ export interface PlacementRuleStatus {
     }[]
 }
 
-export function listPlacementRules() {
+export function listPlacementRules(namespace: string) {
     return listResources<PlacementRule>({
         apiVersion: PlacementRuleApiVersion,
         kind: PlacementRuleKind,
+        metadata: {
+            namespace,
+        },
     })
 }

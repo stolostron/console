@@ -1454,20 +1454,20 @@ export function CredentialsForm(props: {
             schema={schema}
             mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
             secrets={[
-                'Secret[0].stringData.pullSecret',
-                'Secret[0].stringData.aws_secret_access_key',
-                'Secret[0].stringData.ssh-privatekey',
-                'Secret[0].stringData.ssh-publickey',
-                'Secret[0].stringData.password',
-                'Secret[0].stringData.token',
-                'Secret[0].stringData.ocmAPIToken',
-                'Secret[0].stringData.additionalTrustBundle',
-                'Secret[0].stringData.ovirt_ca_bundle',
-                'Secret[0].stringData.ovirt_password',
-                'Secret[0].stringData.ovirt-config.yaml',
-                ['Secret', '0', 'stringData', 'osServicePrincipal.json'],
-                ['Secret', '0', 'stringData', 'osServiceAccount.json'],
-                ['Secret', '0', 'stringData', 'clouds.yaml'],
+                '*.stringData.pullSecret',
+                '*.stringData.aws_secret_access_key',
+                '*.stringData.ssh-privatekey',
+                '*.stringData.ssh-publickey',
+                '*.stringData.password',
+                '*.stringData.token',
+                '*.stringData.ocmAPIToken',
+                '*.stringData.additionalTrustBundle',
+                '*.stringData.ovirt_ca_bundle',
+                '*.stringData.ovirt_password',
+                '*.stringData.ovirt-config.yaml',
+                '*.stringData.osServicePrincipal.json',
+                '*.stringData.osServiceAccount.json',
+                '*.stringData.clouds.yaml',
             ]}
             immutables={isEditing ? ['*.metadata.name', '*.metadata.namespace'] : []}
             edit={() => {
