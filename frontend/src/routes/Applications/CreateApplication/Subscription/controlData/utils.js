@@ -555,7 +555,7 @@ export const channelSimplified = (value, control) => {
         return value
     }
     const mappedData = _.get(control, 'availableData', {})[value]
-    return (mappedData && _.get(mappedData, 'objectPath')) || value
+    return (mappedData && _.get(mappedData, 'spec.pathname')) || value
 }
 
 export const setAvailableChannelSpecs = (type, control, result) => {
