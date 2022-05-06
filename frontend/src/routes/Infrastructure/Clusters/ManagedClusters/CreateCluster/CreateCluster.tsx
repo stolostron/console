@@ -381,7 +381,7 @@ export default function CreateClusterPage() {
                     title: t('bareMetalAsset.warning.title'),
                     text: t('bareMetalAsset.warning.text'),
                     linkText: t('Learn more'),
-                    //linkTo: NavigationPath.infraEnvironments,
+                    linkTo: DOC_LINKS.CREATE_CLUSTER_ONPREMISE,
                 })
             } else {
                 setWarning(undefined)
