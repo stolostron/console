@@ -40,11 +40,23 @@ export interface PlacementRuleStatus {
 }
 
 export function listPlacementRules(namespace: string) {
-    return listResources<PlacementRule>({
+    if (!namespace) {
+        return {
+            promise: Promise.resolve([]),
+            abort: () => {},
+        }
+    }
+    const result = listResources<PlacementRule>({
         apiVersion: PlacementRuleApiVersion,
         kind: PlacementRuleKind,
         metadata: {
             namespace,
         },
     })
+    return {
+        promise: result.promise.then((placementRules) => {
+            return placementRules
+        }),
+        abort: result.abort,
+    }
 }
