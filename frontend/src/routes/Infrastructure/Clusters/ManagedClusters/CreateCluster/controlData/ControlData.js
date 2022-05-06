@@ -21,6 +21,8 @@ import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo } from './Logos'
 import ServerIcon from '@patternfly/react-icons/dist/js/icons/server-icon'
 import { controlDataCIM, controlDataAI } from './ControlDataAI'
+import { Label } from '@patternfly/react-core'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -64,6 +66,11 @@ export const getControlData = (
         active: includeKlusterletAddonConfig,
     },
     ///////////////////////  cloud  /////////////////////////////////////
+    {
+        id: 'chooseType',
+        type: 'title',
+        info: 'creation.ocp.choose.distribution',
+    },
     {
         id: 'infrastructure',
         type: 'cards',
@@ -124,7 +131,7 @@ export const getControlData = (
                 id: 'BMC',
                 logo: <ServerIcon color="slategray" />,
                 title: 'cluster.create.baremetal.subtitle',
-                // text: <Deprecated />,
+                text: <DeprecatedLabel />,
                 change: {
                     insertControlData: getControlDataBMC(),
                     replacements: {
@@ -192,3 +199,8 @@ export const getControlData = (
         },
     },
 ]
+
+export function DeprecatedLabel() {
+    const { t } = useTranslation()
+    return <Label color="orange">{t('deprecated')}</Label>
+}

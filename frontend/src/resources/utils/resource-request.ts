@@ -3,7 +3,8 @@
 import { noop } from 'lodash'
 import { getCookie } from '.'
 import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '..'
-import { subAnnotationStr } from '../../routes/Applications/helpers/resource-helper'
+import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
+import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
@@ -207,11 +208,11 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
         try {
             const existingResource = await getResource(resource).promise
             if (existingResource.kind === ApplicationKind) {
-                const exisitngSubscriptions =
-                    existingResource.metadata?.annotations && existingResource.metadata?.annotations[subAnnotationStr]
-                subscriptions = exisitngSubscriptions
-                    ?.split(',')
-                    .filter((subscription) => !subscription.endsWith('-local')) as string[]
+                const existingSubscriptions = getSubscriptionsFromAnnotation(existingResource)
+
+                subscriptions = existingSubscriptions.filter(
+                    (subscription) => !isLocalSubscription(subscription, existingSubscriptions)
+                )
             }
             if (existingResource) {
                 await replaceResource(resource).promise
@@ -330,7 +331,7 @@ export function getResource<Resource extends IResource>(
 }
 
 export function listResources<Resource extends IResource>(
-    resource: { apiVersion: string; kind: string },
+    resource: { apiVersion: string; kind: string; metadata?: { namespace?: string } },
     labels?: string[],
     query?: Record<string, string>
 ): IRequestResult<Resource[]> {

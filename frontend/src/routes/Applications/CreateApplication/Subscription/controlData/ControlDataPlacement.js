@@ -36,9 +36,14 @@ const localClusterCheckbox = 'local-cluster-checkbox'
 const onlineClusterCheckbox = 'online-cluster-only-checkbox'
 
 export const loadExistingPlacementRules = () => {
+    let nsControl = ''
+
     return {
         query: () => {
-            return listPlacementRules().promise
+            return listPlacementRules(nsControl.active).promise
+        },
+        variables: (control, globalControl) => {
+            nsControl = globalControl.find(({ id: idCtrl }) => idCtrl === 'namespace')
         },
         loadingDesc: 'creation.app.loading.rules',
         setAvailable: setAvailableRules.bind(null),
@@ -102,6 +107,8 @@ export const updateDisplayForPlacementControls = (urlControl, controlGlobal) => 
             clusterSelectorControl.active.mode = true
             delete clusterSelectorControl.showData
         }
+        const availablePlacementControl = existingRuleControl.available
+        if (!availablePlacementControl.includes(existingRuleControl.active)) existingRuleControl.active = ''
     })
     return controlGlobal
 }
@@ -179,15 +186,6 @@ export const reverseExistingRule = (control, templateObject) => {
     const active = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.name'))
     if (active && control.active === undefined) {
         control.active = active.$v
-    }
-    return control
-}
-export const reverseExistingRuleName = (control, templateObject) => {
-    const active = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.name'))
-    if (active && control.type !== 'hidden' && control.active === undefined) {
-        const { groupControlData } = control
-        const selectedRuleName = groupControlData.find(({ id }) => id === 'selectedRuleName')
-        selectedRuleName.active = active.$v
     }
     return control
 }
@@ -269,7 +267,7 @@ const placementData = async () => [
     {
         id: 'selectedRuleName',
         type: 'hidden',
-        reverse: reverseExistingRuleName,
+        reverse: reverseExistingRule,
     },
     {
         type: 'custom',

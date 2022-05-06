@@ -11,9 +11,9 @@
                     "type": "object",
                     "properties": {
                         "name": {
-                            "validateDNSName": true
+                            "validateName": true
                         },
-                        "namespace": { "validateDNSName": true }
+                        "namespace": { "validateName": true }
                     },
                     "required": ["name", "namespace"]
                 },
