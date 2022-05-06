@@ -24,7 +24,7 @@ module.exports = {
         'node_modules/(?!d3-interpolate|d3-color|react-monaco-editor|openshift-assisted-ui-lib|@patternfly-labs/react-form-wizard)',
     ],
     coverageDirectory: './coverage',
-    coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
+    coverageReporters: ['text-summary', 'html', 'lcov'],
     collectCoverageFrom: [
         '<rootDir>/src/**/*.{tsx,ts,jsx,js}',
         '<rootDir>/src/*.{tsx,ts,jsx,js}',
