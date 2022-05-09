@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import * as jsonpatch from 'fast-json-patch/index.mjs'
 import { noop } from 'lodash'
 import { getCookie } from '.'
 import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '..'
@@ -104,7 +105,15 @@ export async function reconcileResources(
         await createResources(addedResources, { dryRun: true, abortController })
 
         // Dry Run - Modified Resources
-        await updateResources(modifiedResources, { dryRun: true, abortController })
+        for (const resource of modifiedResources) {
+            const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
+            if (existing) {
+                const patch = jsonpatch.compare(existing, resource)
+                if (patch.length) {
+                    await patchResource(existing, patch, { dryRun: true })
+                }
+            }
+        }
 
         // Dry Run - Deleted Resources
         await deleteResources(deletedResources, { dryRun: true, abortController })
@@ -114,7 +123,15 @@ export async function reconcileResources(
 
         // Update Resources
         try {
-            await updateResources(modifiedResources, { abortController })
+            for (const resource of modifiedResources) {
+                const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
+                if (existing) {
+                    const patch = jsonpatch.compare(existing, resource)
+                    if (patch.length) {
+                        await patchResource(existing, patch)
+                    }
+                }
+            }
         } catch (err) {
             // modifications failed, delete the previously created
             void deleteResources(addedResources).catch(noop)
