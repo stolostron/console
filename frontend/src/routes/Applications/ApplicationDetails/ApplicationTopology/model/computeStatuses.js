@@ -803,7 +803,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                               ['Propagated']
                           )
                         : t(
-                              'This subscription has no status. If the status does not change to {{0}} after waiting for initial creation, verify that the klusterlet-addon-appmgr pod is running on the remote cluster.',
+                              'This subscription has no status. If the status does not change to {{0}} after waiting for initial creation, verify that the application-manager pod is running on the remote cluster.',
                               ['Subscribed']
                           )
 
@@ -873,7 +873,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
         details.push({
             labelValue: t('Remote subscriptions'),
             value: t(
-                'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the klusterlet-addon-appmgr pod runs on the managed clusters.',
+                'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the application-manager pod runs on the managed clusters.',
                 [node.namespace]
             ),
             status: failureStatus,

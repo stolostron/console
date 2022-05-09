@@ -610,7 +610,7 @@ describe('getNodeDetails subscription', () => {
         { type: 'label', labelKey: 'Cluster deploy status' },
         {
             labelValue: 'Remote subscriptions',
-            value: 'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the klusterlet-addon-appmgr pod runs on the managed clusters.',
+            value: 'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the application-manager pod runs on the managed clusters.',
             status: 'failure',
         },
         {
