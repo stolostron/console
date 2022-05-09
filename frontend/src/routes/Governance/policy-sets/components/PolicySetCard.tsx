@@ -23,7 +23,7 @@ import {
     StackItem,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-import { AcmDrawerContext } from '@stolostron/ui-components'
+import { AcmDrawerContext, AcmDrawerProps } from '@stolostron/ui-components'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -153,6 +153,8 @@ export default function PolicySetCard(props: {
                                             <DeletePolicySetModal
                                                 item={policySet}
                                                 onClose={() => setModal(undefined)}
+                                                setDrawerContext={setDrawerContext}
+                                                setSelectedCardID={setSelectedCardID}
                                             />
                                         )
                                     }}
@@ -213,7 +215,12 @@ export default function PolicySetCard(props: {
     )
 }
 
-function DeletePolicySetModal(props: { item: PolicySet; onClose: () => void }) {
+function DeletePolicySetModal(props: {
+    item: PolicySet
+    onClose: () => void
+    setDrawerContext: React.Dispatch<React.SetStateAction<AcmDrawerProps | undefined>>
+    setSelectedCardID: React.Dispatch<React.SetStateAction<string>>
+}) {
     const { t } = useTranslation()
     const [deletePlacements, setDeletePlacements] = useState(true)
     const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
@@ -235,6 +242,9 @@ function DeletePolicySetModal(props: { item: PolicySet; onClose: () => void }) {
                 deletePlacementBindings
             ).promise
             props.onClose()
+            setIsDeleting(false)
+            props.setDrawerContext(undefined)
+            props.setSelectedCardID('')
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message)
