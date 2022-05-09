@@ -235,9 +235,9 @@ export function CredentialsForm(props: {
 
     function getDisconnectedDocLink(credentialType: Provider) {
         switch (credentialType) {
-            case 'vmw':
+            case Provider.vmware:
                 return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL_VMWARE
-            case 'ost':
+            case Provider.openstack:
                 return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL_OPENSTACK
             default:
                 return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL
@@ -246,17 +246,17 @@ export function CredentialsForm(props: {
 
     function getProxyDocLink(credentialType: Provider) {
         switch (credentialType) {
-            case 'redhatvirtualization':
+            case Provider.redhatvirtualization:
                 return DOC_LINKS.CREATE_CONNECTION_PROXY_VIRTUALIZATION
-            case 'aws':
+            case Provider.aws:
                 return DOC_LINKS.CREATE_CONNECTION_PROXY_AWS
-            case 'gcp':
+            case Provider.gcp:
                 return DOC_LINKS.CREATE_CONNECTION_PROXY_GCP
-            case 'azr':
+            case Provider.azure:
                 return DOC_LINKS.CREATE_CONNECTION_PROXY_AZURE
-            case 'vmw':
+            case Provider.vmware:
                 return DOC_LINKS.CREATE_CONNECTION_PROXY_VMWARE
-            case 'ost':
+            case Provider.openstack:
                 return DOC_LINKS.CREATE_CONNECTION_PROXY_OPENSTACK
             default:
                 return DOC_LINKS.CREATE_CONNECTION_PROXY
