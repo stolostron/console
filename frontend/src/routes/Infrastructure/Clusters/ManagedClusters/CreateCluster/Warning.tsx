@@ -4,7 +4,9 @@ import { Alert, AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { AcmButton } from '@stolostron/ui-components'
 import { Link } from 'react-router-dom'
 
-export type WarningContextType = { title: string; text: string; linkTo?: string; linkText?: string } | undefined
+export type WarningContextType =
+    | { title: string; text: string; linkTo?: string; linkText?: string; isExternalLink?: boolean }
+    | undefined
 
 export const WarningContext = React.createContext<WarningContextType>(undefined)
 
@@ -17,13 +19,19 @@ export const Warning = () => {
 
     let actionLinks
     if (warning.linkTo) {
-        actionLinks = (
-            <Link to={warning.linkTo}>
-                <AcmButton variant={ButtonVariant.link} style={{ paddingLeft: 0 }}>
-                    {warning.linkText}
-                </AcmButton>
-            </Link>
-        )
+        warning.isExternalLink
+            ? (actionLinks = (
+                  <a href={warning.linkTo} target="_blank" rel="noopener noreferrer" style={{ paddingLeft: 0 }}>
+                      {warning.linkText}
+                  </a>
+              ))
+            : (actionLinks = (
+                  <Link to={warning.linkTo}>
+                      <AcmButton variant={ButtonVariant.link} style={{ paddingLeft: 0 }}>
+                          {warning.linkText}
+                      </AcmButton>
+                  </Link>
+              ))
     }
 
     return (
