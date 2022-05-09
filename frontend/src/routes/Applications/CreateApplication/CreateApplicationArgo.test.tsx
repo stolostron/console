@@ -161,6 +161,7 @@ const argoAppSetGit: ApplicationSet = {
         template: {
             metadata: {
                 name: 'application-01-{{name}}',
+                labels: { 'velero.io/exclude-from-backup': 'true' },
             },
             spec: {
                 project: 'default',
@@ -209,6 +210,7 @@ const argoAppSetHelm: ApplicationSet = {
         template: {
             metadata: {
                 name: 'helm-application-01-{{name}}',
+                labels: { 'velero.io/exclude-from-backup': 'true' },
             },
             spec: {
                 project: 'default',
@@ -305,13 +307,7 @@ describe('Create Argo Application Set', () => {
         await clickByText('application-test')
 
         await typeByPlaceholderText('Enter the remote namespace', 'gitops-ns')
-        const nextNocks = [
-            nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] }),
-            nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
-            nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
-        ]
         await clickByText('Next')
-        await waitForNocks(nextNocks)
 
         // Sync policy
         await clickByText('Next')
