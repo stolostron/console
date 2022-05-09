@@ -105,7 +105,9 @@ const getSubscriptionsClusterList = (
             if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
                 const placementRef = sub.spec.placement?.placementRef
                 if (placementRef) {
-                    const placement = placementRules.find((rule) => rule.metadata.name === placementRef.name)
+                    const placement = placementRules.find(
+                        (rule) => rule.metadata.name === placementRef.name && rule.metadata.namespace === subDetails[0]
+                    )
                     const decisions = placement?.status?.decisions
 
                     if (decisions) {
