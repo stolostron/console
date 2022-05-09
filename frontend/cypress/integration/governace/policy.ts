@@ -8,24 +8,9 @@ import { randomHex } from '../../support/utils/random-hex'
 describe('policy', () => {
     const name = `policy-${randomHex()}`
     const namespace = `cypress-${randomHex()}`
-
-    it('create namespace', () => {
-        createNamespace(namespace)
-    })
-
-    it('create policy ', () => {
-        createPolicy(name, namespace)
-    })
-
-    it('edit policy ', () => {
-        editPolicy(name)
-    })
-
-    it('delete policy ', () => {
-        deletePolicy(name)
-    })
-
-    it('delete namespace', () => {
-        deleteNamespace(namespace)
-    })
+    it('create namespace', () => createNamespace(namespace))
+    it('create policy ', () => createPolicy(name, namespace))
+    it('edit policy ', () => editPolicy(name))
+    it('delete policy ', () => deletePolicy(name))
+    it('delete namespace', () => deleteNamespace(namespace))
 })

@@ -10,20 +10,8 @@ describe('policy set', () => {
     const policy1Name = `policy-${randomHex()}`
     const policySetName = `policy-set-${randomHex()}`
     const namespace = `cypress-${randomHex()}`
-
-    it('create namespace', () => {
-        createNamespace(namespace)
-    })
-
-    it('create policies', () => {
-        createPolicy(policy1Name, namespace)
-    })
-
-    it('create policy set', () => {
-        createPolicySet(policySetName, namespace)
-    })
-
-    it('delete namespace', () => {
-        deleteNamespace(namespace)
-    })
+    it('create namespace', () => createNamespace(namespace))
+    it('create policies', () => createPolicy(policy1Name, namespace))
+    it('create policy set', () => createPolicySet(policySetName, namespace))
+    it('delete namespace', () => deleteNamespace(namespace))
 })
