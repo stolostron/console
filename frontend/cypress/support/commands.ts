@@ -26,8 +26,10 @@
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 Cypress.Commands.add('login', () => {
+    cy.visit(`/multicloud`, { failOnStatusCode: false })
     cy.getCookie('acm-access-token-cookie').then((cookie) => {
         if (!cookie) {
+            cy.get('button').click()
             cy.contains('kube:admin').click()
             cy.contains('Username').type('kubeadmin')
             cy.contains('Password').type(Cypress.env('PASSWORD'))
@@ -43,4 +45,8 @@ Cypress.Commands.add('multiselect', { prevSubject: 'element' }, (subject: JQuery
         .contains(text)
         .parent()
         .within(() => cy.get('[type="checkbox"]').check())
+})
+
+before(() => {
+    cy.login()
 })
