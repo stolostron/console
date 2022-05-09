@@ -11,7 +11,7 @@ import { processForm, processUser, ProcessedType } from './process'
 import { compileAjvSchemas, formatErrors } from './validation'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
-import { setFormValues } from './synchronize'
+import { setFormValues, updateReferences } from './synchronize'
 import './SyncEditor.css'
 
 export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
@@ -88,6 +88,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         baseResources: any[]
         customResources: any[]
     }>()
+    const [xreferences, setXReferences] = useState<{ value: any; references: { [name: string]: any[] } }[]>([])
     const [mouseDownHandle, setMouseDownHandle] = useState<any>()
     const [keyDownHandle, setKeyDownHandle] = useState<any>()
     const [hoverProviderHandle, setHoverProviderHandle] = useState<any>()
@@ -289,6 +290,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 comparison: formComparison,
                 change,
                 unredactedChange,
+                xreferences,
             } = processForm(
                 monacoRef,
                 code,
@@ -298,12 +300,14 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 showFiltered,
                 filters,
                 immutables,
+                readonly === true,
                 userEdits,
                 validationRef.current
             )
             setProhibited(protectedRanges)
             setFilteredRows(filteredRows)
             setLastUnredactedChange(unredactedChange)
+            setXReferences(xreferences)
 
             const allErrors = [...errors.validation, ...errors.syntax]
             const { yamlChanges, remainingEdits } = getFormChanges(
@@ -402,6 +406,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 filters,
                 lastUnredactedChange?.hiddenFilteredValues,
                 immutables,
+                readonly === true,
                 validationRef.current
             )
             setLastUnredactedChange(unredactedChange)
@@ -411,7 +416,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             // determine what changes were made by user so we can decorate
             // and know what form changes to block
             const allErrors = [...errors.validation, ...errors.syntax]
-            const changes = getUserChanges(
+            let changes = getUserChanges(
                 allErrors,
                 change,
                 lastUserEdits,
@@ -419,6 +424,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 lastChange,
                 lastChange?.parsed
             )
+
+            //
+            changes = updateReferences(changes, xreferences, unredactedChange)
 
             // report new resources/errors/useredits to form
             // if there are validation errors still pass it to form
