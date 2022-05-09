@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import * as jsonpatch from 'fast-json-patch/index.mjs'
+import * as jsonpatch from 'fast-json-patch'
 import { noop } from 'lodash'
 import { getCookie } from '.'
 import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '..'
