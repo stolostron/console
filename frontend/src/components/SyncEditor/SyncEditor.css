@@ -22,7 +22,6 @@
     font-weight: 600;
     color: #ededed;
     background-color: #25282c;
-    border-bottom: 1px solid #55585c;
 }
 
 .sync-editor__container .pf-c-code-editor__controls {
@@ -64,6 +63,12 @@
 
 .protectedDecoration {
     color: #b0b0b0 !important;
+    user-select: auto;
+}
+
+.filterDecoration {
+    /* color: #b0b0b0 !important; */
+    cursor: pointer;
     user-select: auto;
 }
 

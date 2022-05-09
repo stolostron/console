@@ -10,7 +10,7 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string" },
+                        "name": { "validateName": true },
                         "labels": {
                             "type": "object",
                             "properties": {
@@ -45,8 +45,8 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string" },
-                        "namespace": { "type": "string" }
+                        "name": { "validateName": true },
+                        "namespace": { "validateName": true }
                     },
                     "required": ["name", "namespace"]
                 },
@@ -61,87 +61,6 @@
                 }
             },
             "required": ["apiVersion", "type", "kind", "metadata", "stringData"]
-        }
-    },
-    {
-        "type": "KlusterletAddonConfig",
-        "required": 1,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "apiVersion": { "type": "string" },
-                "kind": { "const": "KlusterletAddonConfig" },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "type": "string" },
-                        "namespace": { "type": "string" }
-                    }
-                },
-                "spec": {
-                    "type": "object",
-                    "properties": {
-                        "clusterName": { "type": "string" },
-                        "clusterNamespace": { "type": "string" },
-                        "clusterLabels": {
-                            "type": "object",
-                            "properties": {
-                                "cloud": { "type": "string" },
-                                "vendor": { "type": "string" }
-                            },
-                            "required": ["name", "cloud", "vendor"]
-                        },
-                        "applicationManager": {
-                            "type": "object",
-                            "properties": {
-                                "enabled": { "type": "boolean" },
-                                "argocdCluster": { "type": "boolean" }
-                            },
-                            "required": ["enabled"]
-                        },
-                        "policyController": {
-                            "type": "object",
-                            "properties": {
-                                "enabled": { "type": "boolean" }
-                            },
-                            "required": ["enabled"]
-                        },
-                        "searchCollector": {
-                            "type": "object",
-                            "properties": {
-                                "enabled": { "type": "boolean" }
-                            },
-                            "required": ["enabled"]
-                        },
-                        "certPolicyController": {
-                            "type": "object",
-                            "properties": {
-                                "enabled": { "type": "boolean" }
-                            },
-                            "required": ["enabled"]
-                        },
-                        "iamPolicyController": {
-                            "type": "object",
-                            "properties": {
-                                "enabled": { "type": "boolean" }
-                            },
-                            "required": ["enabled"]
-                        }
-                    },
-                    "required": [
-                        "clusterName",
-                        "clusterNamespace",
-                        "clusterLabels",
-                        "applicationManager",
-                        "policyController",
-                        "searchCollector",
-                        "certPolicyController",
-                        "iamPolicyController"
-                    ]
-                },
-                "version": { "type": "string" }
-            },
-            "required": ["apiVersion", "metadata"]
         }
     }
 ]

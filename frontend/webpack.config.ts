@@ -40,7 +40,17 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                     type: 'asset', 
                     resourceQuery: /url/
                 },
-                { test: /\.(svg)$/, use: '@svgr/webpack' },
+                { 
+                    test: /\.(svg)$/i,
+                    type: 'asset',
+                    resourceQuery: /url/, // *.svg?url  see https://react-svgr.com/docs/webpack/#use-svgr-and-asset-svg-in-the-same-project
+                },
+                {
+                    test: /\.svg$/i,
+                    issuer: /\.[jt]sx?$/,
+                    resourceQuery: { not: [/url/] }, // exlcude react component if *.svg?url
+                    use: ['@svgr/webpack'], 
+                },
                 { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
                 {
                     test: /\.css$/,
@@ -125,6 +135,7 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
                 '/multicloud/console-links': { target: 'https://localhost:4000', secure: false },
                 '/multicloud/configure': { target: 'https://localhost:4000', secure: false},
                 '/multicloud/username': { target: 'https://localhost:4000', secure: false },
+                '/multicloud/mchVersion': { target: 'https://localhost:4000', secure: false },
             },
             open: true,
             historyApiFallback: true,

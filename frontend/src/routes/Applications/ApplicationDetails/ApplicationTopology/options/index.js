@@ -11,7 +11,7 @@
 'use strict'
 
 import { defaultShapes } from '../../../../../components/Topology/shapes/constants'
-import { computeNodeStatus } from '../helpers/diagram-helpers'
+import { computeNodeStatus } from '../model/computeStatuses'
 import { getConnectedLayoutOptions, getUnconnectedLayoutOptions } from './layouts'
 import { getNodeDescription } from './descriptions'
 import { getNodeTitle, getSectionTitles } from './titles'

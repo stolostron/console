@@ -19,13 +19,16 @@ spec:
     cloud: Azure
   {{/case}}
   {{#case 'BMC'}}
-    cloud: Bare-Metal
+    cloud: BareMetal
   {{/case}}
   {{#case 'vSphere'}}
     cloud: vSphere
   {{/case}}
   {{#case 'OpenStack'}}
     cloud: OpenStack
+  {{/case}}
+  {{#case 'RHV'}}
+    cloud: RHV
   {{/case}}
 {{/switch}}
     vendor: OpenShift

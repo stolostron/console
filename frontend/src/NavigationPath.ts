@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
+import { History, Location } from 'history'
 
 export enum NavigationPath {
     // Console
@@ -74,19 +75,21 @@ export enum NavigationPath {
     advancedConfiguration = '/multicloud/applications/advanced',
     applications = '/multicloud/applications',
     createApplicationArgo = '/multicloud/applications/create/argo',
+    editApplicationArgo = '/multicloud/applications/edit/argo/:namespace/:name',
     createApplicationSubscription = '/multicloud/applications/create/subscription',
     applicationDetails = '/multicloud/applications/details/:namespace/:name',
     applicationOverview = '/multicloud/applications/details/:namespace/:name/overview',
     applicationTopology = '/multicloud/applications/details/:namespace/:name/topology',
-    editApplicationSubscription = '/multicloud/applications/edit/:namespace/:name',
+    editApplicationSubscription = '/multicloud/applications/edit/subscription/:namespace/:name',
 
     // Governance
     governance = '/multicloud/governance',
     policies = '/multicloud/governance/policies',
     policySets = '/multicloud/governance/policy-sets',
-    governanceClusters = '/multicloud/governance/clusters',
     createPolicy = '/multicloud/governance/policies/create',
     editPolicy = '/multicloud/governance/policies/edit/:namespace/:name',
+    createPolicyAutomation = '/multicloud/governance/policyautomation/create/:namespace/:name',
+    editPolicyAutomation = '/multicloud/governance/policyautomation/edit/:namespace/:name',
     policyDetails = '/multicloud/governance/policies/details/:namespace/:name',
     policyDetailsResults = '/multicloud/governance/policies/details/:namespace/:name/results',
     policyDetailsHistory = '/multicloud/governance/policies/details/:namespace/:name/status/:clusterName/templates/:templateName/history',
@@ -99,4 +102,22 @@ export enum NavigationPath {
     addCredentials = '/multicloud/credentials/create',
     editCredentials = '/multicloud/credentials/edit/:namespace/:name',
     viewCredentials = '/multicloud/credentials/details/:namespace/:name',
+}
+
+export type CancelBackState = { cancelBack?: boolean }
+
+export function locationWithCancelBack(
+    pathname: History.Pathname,
+    search?: History.Search,
+    hash?: History.Hash
+): Location<CancelBackState> {
+    return { pathname, search: search || '', hash: hash || '', state: { cancelBack: true } }
+}
+
+export function cancelNavigation(location: Location<CancelBackState>, history: History, pathname: string) {
+    if (location.state && location.state?.cancelBack) {
+        history.goBack()
+    } else {
+        history.push(pathname)
+    }
 }

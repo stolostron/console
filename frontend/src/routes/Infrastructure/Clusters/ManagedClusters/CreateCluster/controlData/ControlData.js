@@ -9,7 +9,6 @@ import installConfigHbs from '../templates/install-config.hbs'
 import cimTemplateHbs from '../templates/assisted-installer/cim-template.hbs'
 import aiTemplateHbs from '../templates/assisted-installer/ai-template.hbs'
 import { AcmIconVariant, AcmIcon } from '@stolostron/ui-components'
-import { CIM } from 'openshift-assisted-ui-lib'
 import { ConnectedIcon } from '@patternfly/react-icons'
 
 import getControlDataAWS from './ControlDataAWS'
@@ -22,8 +21,8 @@ import getControlDataOST from './ControlDataOST'
 import { RedHatLogo, AwsLogo, GoogleLogo, AzureLogo, VMwareLogo } from './Logos'
 import ServerIcon from '@patternfly/react-icons/dist/js/icons/server-icon'
 import { controlDataCIM, controlDataAI } from './ControlDataAI'
-
-const { TechnologyPreview, PreviewBadgePosition } = CIM
+import { Label } from '@patternfly/react-core'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 
 const installConfig = Handlebars.compile(installConfigHbs)
 
@@ -38,7 +37,13 @@ export const getActiveCardID = (control, fetchData = {}) => {
     return null
 }
 
-export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate = false, snoFeatureGate = false) => [
+export const getControlData = (
+    warning,
+    onControlSelect,
+    awsPrivateFeatureGate = false,
+    snoFeatureGate = false,
+    includeKlusterletAddonConfig = true
+) => [
     ///////////////////////  container platform  /////////////////////////////////////
     {
         id: 'distStep',
@@ -55,7 +60,17 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
         type: 'custom',
         component: warning,
     },
+    {
+        id: 'includeKlusterletAddonConfig',
+        type: 'hidden',
+        active: includeKlusterletAddonConfig,
+    },
     ///////////////////////  cloud  /////////////////////////////////////
+    {
+        id: 'chooseType',
+        type: 'title',
+        info: 'creation.ocp.choose.distribution',
+    },
     {
         id: 'infrastructure',
         type: 'cards',
@@ -116,7 +131,7 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                 id: 'BMC',
                 logo: <ServerIcon color="slategray" />,
                 title: 'cluster.create.baremetal.subtitle',
-                // text: <Deprecated />,
+                text: <DeprecatedLabel />,
                 change: {
                     insertControlData: getControlDataBMC(),
                     replacements: {
@@ -154,7 +169,6 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                 logo: <AcmIcon icon={AcmIconVariant.hybrid} />, // TODO(mlibra): change icon (requests graphics by UXD)
                 title: 'cluster.create.cim.subtitle',
                 tooltip: 'cluster.create.cim.tooltip',
-                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
                 change: {
                     insertControlData: controlDataCIM,
                     replacements: {},
@@ -167,7 +181,6 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
                 logo: <ConnectedIcon />,
                 title: 'cluster.create.ai.subtitle',
                 tooltip: 'cluster.create.ai.tooltip',
-                text: <TechnologyPreview position={PreviewBadgePosition.inline} className="pf-u-font-size-xs" />,
                 change: {
                     insertControlData: controlDataAI,
                     replacements: {},
@@ -186,3 +199,8 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
         },
     },
 ]
+
+export function DeprecatedLabel() {
+    const { t } = useTranslation()
+    return <Label color="orange">{t('deprecated')}</Label>
+}

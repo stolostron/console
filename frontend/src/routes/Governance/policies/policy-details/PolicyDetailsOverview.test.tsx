@@ -3,6 +3,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { placementBindingsState, placementDecisionsState, placementsState, policySetsState } from '../../../../atoms'
+import { nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
 import { Placement, PlacementBinding, PlacementDecision, Policy, PolicySet } from '../../../../resources'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
@@ -65,13 +66,6 @@ const policySet: PolicySet = {
     status: {
         compliant: 'Compliant',
         placement: [{ placement: 'policy-set-with-1-placement', placementBinding: 'policy-set-with-1-placement' }],
-        results: [
-            {
-                clusters: [{ clusterName: 'local-cluster', clusterNamespace: 'local-cluster', compliant: 'Compliant' }],
-                compliant: 'Compliant',
-                policy: 'policy-set-with-1-placement-policy',
-            },
-        ],
     },
 }
 
@@ -162,6 +156,9 @@ export const mockPlacementBindings: PlacementBinding[] = [placementBinding]
 export const mockPlacementDecision: PlacementDecision[] = [placementDecision]
 
 describe('Policy Details Results', () => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+    })
     test('Should render Policy Details Results Page content correctly', async () => {
         render(
             <RecoilRoot

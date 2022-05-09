@@ -13,3 +13,6 @@ declare module '*.svg' {
     export { ReactComponent }
     export default content
 }
+
+// for SVG images loaded as url paths
+declare module '*.svg?url'

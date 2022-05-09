@@ -1,84 +1,62 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { makeStyles } from '@material-ui/styles'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
-import { Text, TextContent, TextVariants, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
+import {
+    Split,
+    SplitItem,
+    Stack,
+    Text,
+    TextContent,
+    TextVariants,
+    ToggleGroup,
+    ToggleGroupItem,
+} from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { managedClustersState, policiesState } from '../../../../atoms'
+import {
+    managedClustersState,
+    placementBindingsState,
+    placementDecisionsState,
+    placementRulesState,
+    placementsState,
+    usePolicies,
+} from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { PolicySet, PolicySetResultCluster, PolicySetStatusResult } from '../../../../resources'
-import { usePolicySetClusterPolicyViolationsColumn } from '../../clusters/useClusterPolicyViolationsColumn'
+import { NavigationPath } from '../../../../NavigationPath'
+import { Policy, PolicySet } from '../../../../resources'
+import {
+    getClustersSummaryForPolicySet,
+    getPlacementDecisionsForResource,
+    getPolicyRemediation,
+    getPolicySetPolicies,
+} from '../../common/util'
 import { ClusterPolicyViolationIcons2 } from '../../components/ClusterPolicyViolations'
-import { useClusterViolationSummaryMap } from '../../overview/ClusterViolationSummary'
+import {
+    useClusterViolationSummaryMap,
+    usePolicySetClusterPolicyViolationsColumn,
+} from '../../overview/ClusterViolationSummary'
 
-const useStyles = makeStyles({
-    body: {
-        position: 'relative',
-        top: '-35px',
-        padding: '0 8px',
-        '& section': {
-            paddingTop: 'var(--pf-global--spacer--lg)',
-        },
-    },
-    titleText: {
-        paddingBottom: 'var(--pf-global--spacer--xl)',
-        '& h4': {
-            color: 'var(--pf-global--Color--200)',
-        },
-    },
-    sectionSeparator: {
-        borderBottom: '1px solid #D2D2D2',
-        margin: '0 -2rem 1rem -2rem',
-    },
-    donutContainer: {
-        maxWidth: '450px',
-        margin: '0 auto',
-    },
-    toggleContainer: {
-        position: 'relative',
-        zIndex: 1,
-        top: '16px',
-        width: 'fit-content',
-        height: 0,
-        marginLeft: 'auto',
-    },
-    tableTitle: {
-        paddingBottom: 'var(--pf-global--spacer--md)',
-    },
-    backAction: {
-        paddingBottom: 'var(--pf-global--spacer--lg)',
-    },
-    subDetailComponents: {
-        paddingBottom: 'var(--pf-global--spacer--xl)',
-        '& small': {
-            color: 'inherit',
-            paddingBottom: 'var(--pf-global--spacer--sm)',
-        },
-    },
-    riskSubDetail: {
-        paddingLeft: 'var(--pf-global--spacer--lg)',
-        '& p': {
-            fontSize: 'var(--pf-global--FontSize--xs)',
-            color: '#5A6872',
-        },
-    },
-})
-
-function renderDonutChart(clusters: PolicySetResultCluster[], t: TFunction) {
-    const clusterCompliantCount = clusters.filter((cluster) => cluster.compliant === 'Compliant').length
-    const clusterNonCompliantCount = clusters.filter((cluster) => cluster.compliant === 'NonCompliant').length
+function renderDonutChart(clusterComplianceSummary: { compliant: string[]; nonCompliant: string[] }, t: TFunction) {
+    const clusterCompliantCount = clusterComplianceSummary.compliant.length
+    const clusterNonCompliantCount = clusterComplianceSummary.nonCompliant.length
     const formattedData = [
         {
-            key: t('Clusters without policy violations'),
+            key:
+                clusterCompliantCount === 1
+                    ? t('Cluster without policy violations')
+                    : t('Clusters without policy violations'),
             value: clusterCompliantCount,
             isPrimary: true,
         },
         {
-            key: t('Clusters with policy violations'),
+            key:
+                clusterNonCompliantCount === 1
+                    ? t('Cluster with policy violations')
+                    : t('Clusters with policy violations'),
             value: clusterNonCompliantCount,
         },
     ]
@@ -87,80 +65,91 @@ function renderDonutChart(clusters: PolicySetResultCluster[], t: TFunction) {
         name: `${d.value} ${d.key}`,
     }))
 
+    const donutTitle =
+        clusterCompliantCount + clusterNonCompliantCount === 0
+            ? '0%'
+            : `${((clusterCompliantCount / (clusterCompliantCount + clusterNonCompliantCount)) * 100).toFixed(0)}%`
+
     return (
-        <ChartDonut
-            ariaTitle={t('Policy cluster violations')}
-            ariaDesc={t('Policy cluster violations chart')}
-            legendOrientation="vertical"
-            legendPosition="right"
-            constrainToVisibleArea={true}
-            data={chartData}
-            legendComponent={
-                <ChartLegend
-                    data={legendData}
-                    labelComponent={<ChartLabel style={{ width: '100ps' }} />}
-                    colorScale={['#0066CC', '#C9190B']}
-                />
-            }
-            labels={({ datum }) => `${datum.x}: ${datum.y}`}
-            padding={{
-                bottom: 20,
-                left: 20,
-                right: 275,
-                top: 20,
-            }}
-            title={`${((clusterCompliantCount / clusters.length) * 100).toFixed(0)}%`}
-            width={450}
-            height={200}
-            colorScale={['#0066CC', '#C9190B']}
-        />
+        <div style={{ height: 230, marginTop: -16, marginBottom: -16 }}>
+            <ChartDonut
+                ariaTitle={t('Policy cluster violations')}
+                ariaDesc={t('Policy cluster violations chart')}
+                legendOrientation="vertical"
+                legendPosition="right"
+                // constrainToVisibleArea={true}
+                data={chartData}
+                legendComponent={
+                    <ChartLegend
+                        data={legendData}
+                        labelComponent={<ChartLabel />}
+                        colorScale={['var(--pf-global--success-color--100)', 'var(--pf-global--danger-color--100)']}
+                    />
+                }
+                labels={({ datum }) => `${datum.x}: ${datum.y}`}
+                padding={{
+                    right: 300,
+                }}
+                title={donutTitle}
+                width={450}
+                colorScale={['var(--pf-global--success-color--100)', 'var(--pf-global--danger-color--100)']}
+            />
+        </div>
     )
 }
 
 export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
     const { policySet } = props
-    const classes = useStyles()
     const { t } = useTranslation()
     const [managedClusters] = useRecoilState(managedClustersState)
-    const [policies] = useRecoilState(policiesState)
+    const policies = usePolicies()
+    const [placements] = useRecoilState(placementsState)
+    const [placementRules] = useRecoilState(placementRulesState)
+    const [placementBindings] = useRecoilState(placementBindingsState)
+    const [placementDecisions] = useRecoilState(placementDecisionsState)
     const [type, setType] = useState<'Clusters' | 'Policies'>('Clusters')
     const selectType = (type: 'Clusters' | 'Policies') => {
         setType(type)
     }
 
-    const policySetClusters: PolicySetResultCluster[] = useMemo(() => {
-        const clusters: PolicySetResultCluster[] = []
-        policySet.status?.results.forEach((statusResult: PolicySetStatusResult) => {
-            const currentClusters = statusResult.clusters ?? []
-            currentClusters.forEach((cluster: PolicySetResultCluster) => {
-                const matchIdx = clusters.findIndex(
-                    (c: PolicySetResultCluster) => c.clusterName === cluster.clusterName
-                )
-                if (matchIdx === -1) {
-                    clusters.push(cluster)
-                }
-                if (matchIdx > -1 && clusters[matchIdx].compliant === 'Compliant') {
-                    clusters.splice(matchIdx, 1)
-                    clusters.push(cluster)
-                }
-            })
-        })
-        return clusters
-    }, [policySet])
+    const policySetPolicies = useMemo(() => {
+        return getPolicySetPolicies(policies, policySet)
+    }, [policySet, policies])
 
-    const policySetPolicies: PolicySetStatusResult[] = useMemo(() => {
-        const policies: PolicySetStatusResult[] = []
-        policySet.status?.results.map((result: PolicySetStatusResult) => {
-            policies.push(result)
-        })
-        return policies
-    }, [policySet])
+    const { policySetClusters, policySetClusterCompliance } = useMemo(() => {
+        const clusterCompliance = getClustersSummaryForPolicySet(
+            policySet,
+            policies,
+            placementDecisions,
+            placementBindings,
+            [...placements, ...placementRules]
+        )
+        const psClusterCompliance: {
+            compliant: string[]
+            nonCompliant: string[]
+            unknown: string[]
+        } = {
+            compliant: clusterCompliance.compliant,
+            nonCompliant: clusterCompliance.nonCompliant,
+            unknown: clusterCompliance.unknown,
+        }
+        const psClusters: string[] = [
+            ...psClusterCompliance.compliant,
+            ...psClusterCompliance.nonCompliant,
+            ...psClusterCompliance.unknown,
+        ]
+
+        return {
+            policySetClusters: psClusters,
+            policySetClusterCompliance: psClusterCompliance,
+        }
+    }, [policySet, policies, placementDecisions, placementBindings, placementRules, placements])
 
     const clusterViolationSummaryMap = useClusterViolationSummaryMap(
         policies.filter(
-            (policy) =>
+            (policy: Policy) =>
                 policy.metadata.namespace === policySet.metadata.namespace &&
-                policySetPolicies.find((p) => p.policy === policy.metadata.name)
+                policySetPolicies.find((p) => p.metadata.name === policy.metadata.name)
         )
     )
     const clusterPolicyViolationsColumn = usePolicySetClusterPolicyViolationsColumn(clusterViolationSummaryMap)
@@ -169,23 +158,21 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         () => [
             {
                 header: t('Cluster name'),
-                search: (cluster: PolicySetResultCluster) => cluster.clusterName,
-                sort: (a: PolicySetResultCluster, b: PolicySetResultCluster) =>
+                search: (cluster: string) => cluster,
+                sort: (a: string, b: string) =>
                     /* istanbul ignore next */
-                    compareStrings(a.clusterName, b.clusterName),
-                cell: (cluster: PolicySetResultCluster) => (
-                    <a href={`/multicloud/infrastructure/clusters/details/${cluster.clusterName}/overview`}>
-                        {cluster.clusterName}
-                    </a>
+                    compareStrings(a, b),
+                cell: (cluster: string) => (
+                    <a href={`/multicloud/infrastructure/clusters/details/${cluster}/overview`}>{cluster}</a>
                 ),
             },
             clusterPolicyViolationsColumn,
             {
                 header: t('Labels'),
-                cell: (clusterInfo: PolicySetResultCluster) => {
-                    const cluster = managedClusters.find((cluster) => cluster.metadata.name === clusterInfo.clusterName)
-                    if (cluster && cluster.metadata.labels) {
-                        const labelKeys = Object.keys(cluster.metadata.labels)
+                cell: (cluster: string) => {
+                    const clusterMatch = managedClusters.find((c) => c.metadata.name === cluster)
+                    if (clusterMatch && clusterMatch.metadata.labels) {
+                        const labelKeys = Object.keys(clusterMatch.metadata.labels)
                         const collapse =
                             [
                                 'clusterID',
@@ -207,7 +194,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                         })
                         return (
                             <AcmLabels
-                                labels={cluster.metadata.labels}
+                                labels={clusterMatch.metadata.labels}
                                 expandedText={t('show.less')}
                                 collapsedText={t('show.more', { number: collapse.length })}
                                 allCollapsedText={t('count.labels', { number: collapse.length })}
@@ -224,51 +211,78 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         [clusterPolicyViolationsColumn, managedClusters, t]
     )
 
+    const decision = useMemo(
+        () =>
+            getPlacementDecisionsForResource(policySet, placementDecisions, placementBindings, [
+                ...placements,
+                ...placementRules,
+            ]),
+        [policySet, placementDecisions, placementBindings, placements, placementRules]
+    )
+
     const policyColumnDefs = useMemo(
         () => [
             {
                 header: t('Policy name'),
-                search: (policy: PolicySetStatusResult) => policy.policy,
-                sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) =>
+                search: (policy: Policy) => policy.metadata.name ?? '',
+                sort: (policyA: Policy, policyB: Policy) =>
                     /* istanbul ignore next */
-                    compareStrings(a.policy, b.policy),
-                cell: (policy: PolicySetStatusResult) => {
-                    // TODO after policydetails page is added
-                    // <a href={`/multicloud/governance/policies/${policy.policy}`}>{policy.policy}</a>
-                    return policy.policy
+                    compareStrings(policyA.metadata.name, policyB.metadata.name),
+                cell: (policy: Policy) => {
+                    return (
+                        <Link
+                            to={{
+                                pathname: NavigationPath.policyDetails
+                                    .replace(':namespace', policy.metadata.namespace ?? '')
+                                    .replace(':name', policy.metadata.name ?? ''),
+                            }}
+                        >
+                            {policy.metadata.name}
+                        </Link>
+                    )
                 },
             },
             {
                 header: t('Cluster violation'),
-                sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) => {
-                    let violationCountA = 0
-                    let violationCountB = 0
-                    a?.clusters?.forEach((c: PolicySetResultCluster) => {
-                        if (c.compliant === 'NonCompliant') {
-                            violationCountA++
-                        }
+                sort: (policyA: Policy, policyB: Policy) => {
+                    // Find the clusters in context of the PolicySet
+                    const policySetClusterContextA = policyA?.status?.status?.filter((status) => {
+                        return decision[0].status.decisions.find(
+                            (decisionStatus) => decisionStatus.clusterName === status.clustername
+                        )
                     })
-                    b?.clusters?.forEach((c: PolicySetResultCluster) => {
-                        if (c.compliant === 'NonCompliant') {
-                            violationCountB++
-                        }
+                    // Find the clusters in context of the PolicySet
+                    const policySetClusterContextB = policyB?.status?.status?.filter((status) => {
+                        return decision[0].status.decisions.find(
+                            (decisionStatus) => decisionStatus.clusterName === status.clustername
+                        )
                     })
-                    return compareNumbers(violationCountA, violationCountB)
+                    const violationACount =
+                        policySetClusterContextA?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
+                    const violationBCount =
+                        policySetClusterContextB?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
+                    return compareNumbers(violationACount, violationBCount)
                 },
-                cell: (policy: PolicySetStatusResult) => {
-                    let violationCount = 0
-                    // Get total count of cluster violations for a specific policy
-                    const hasCompliance = policy?.clusters?.filter((cluster) => cluster.compliant) ?? []
-                    if (hasCompliance.length > 0) {
-                        hasCompliance.forEach((c: PolicySetResultCluster) => {
-                            if (c.compliant === 'NonCompliant') {
-                                violationCount++
-                            }
-                        })
+                cell: (currentPolicy: Policy) => {
+                    // Find the clusters in context of the PolicySet
+                    const policySetClusterContext = currentPolicy?.status?.status?.filter((status) => {
+                        return decision[0].status.decisions.find(
+                            (decisionStatus) => decisionStatus.clusterName === status.clustername
+                        )
+                    })
+                    const violationCount =
+                        policySetClusterContext?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
+                    const compliantCount =
+                        policySetClusterContext?.filter((status) => status.compliant === 'Compliant').length ?? 0
+                    const unknownCount = policySetClusterContext?.filter((status) => !status.compliant).length ?? 0
+                    if (violationCount !== 0 || compliantCount !== 0 || unknownCount !== 0) {
                         return (
                             <ClusterPolicyViolationIcons2
-                                compliant={hasCompliance.length - violationCount}
+                                compliant={compliantCount}
+                                compliantHref={`/multicloud/governance/policies/details/${currentPolicy?.metadata.namespace}/${currentPolicy?.metadata.name}/results`}
                                 noncompliant={violationCount}
+                                violationHref={`/multicloud/governance/policies/details/${currentPolicy?.metadata.namespace}/${currentPolicy?.metadata.name}/results`}
+                                unknown={unknownCount}
                             />
                         )
                     }
@@ -276,40 +290,50 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 },
             },
             {
-                header: t('Remediation'),
-                sort: (a: PolicySetStatusResult, b: PolicySetStatusResult) => {
-                    const policyA = policies.find((p) => p.metadata.name === a.policy)
-                    const policyB = policies.find((p) => p.metadata.name === b.policy)
-                    /* istanbul ignore next */
-                    return compareStrings(policyA?.spec.remediationAction, policyB?.spec.remediationAction)
+                header: t('Status'),
+                sort: (policyA: Policy, policyB: Policy) => {
+                    const statusA = policyA?.spec.disabled === true ? t('Disabled') : t('Enabled')
+                    const statusB = policyB?.spec.disabled === true ? t('Disabled') : t('Enabled')
+                    return compareStrings(statusA, statusB)
                 },
-                cell: (policyStatus: PolicySetStatusResult) => {
-                    const policy = policies.find((p) => p.metadata.name === policyStatus.policy)
-                    return policy?.spec.remediationAction ?? '-'
+                cell: (policy: Policy) => {
+                    return <span>{policy?.spec.disabled === true ? t('Disabled') : t('Enabled')}</span>
+                },
+            },
+            {
+                header: t('Remediation'),
+                sort: (policyA: Policy, policyB: Policy) => {
+                    const policyARemediation = getPolicyRemediation(policyA)
+                    const policyBRemediation = getPolicyRemediation(policyB)
+                    /* istanbul ignore next */
+                    return compareStrings(policyARemediation, policyBRemediation)
+                },
+                cell: (policy: Policy) => {
+                    return getPolicyRemediation(policy)
                 },
             },
         ],
-        [policies, t]
+        [decision, t]
     )
 
     return (
-        <div className={classes.body}>
-            <TextContent className={classes.titleText}>
-                <Text component={TextVariants.h2}>{policySet.metadata.name}</Text>
-                <p style={{ fontSize: '12px', color: '#6A6E73', fontWeight: 100 }}>
-                    {`Namespace: ${policySet.metadata.namespace}`}
-                </p>
-                <div style={{ marginBottom: '.5rem' }}>
-                    <strong>{policySetClusters.length}</strong> clusters
-                    <strong style={{ marginLeft: '1rem' }}>{policySet.spec.policies.length ?? 0}</strong> policies
-                </div>
+        <Stack hasGutter>
+            <TextContent>
+                <Text component={TextVariants.p}>
+                    <Split hasGutter>
+                        <SplitItem>
+                            <strong>{policySetClusters.length}</strong>&nbsp; clusters
+                        </SplitItem>
+                        <SplitItem>
+                            <strong>{policySetPolicies.length}</strong>&nbsp; policies
+                        </SplitItem>
+                    </Split>
+                </Text>
                 <Text component={TextVariants.p}>{policySet.spec.description}</Text>
             </TextContent>
-            <div className={classes.sectionSeparator} />
-            <div className={classes.donutContainer}>
-                {policySetClusters.length > 0 && renderDonutChart(policySetClusters, t)}
-            </div>
-            <div className={classes.toggleContainer}>
+            <div>{policySetClusters.length > 0 && renderDonutChart(policySetClusterCompliance, t)}</div>
+            <Split>
+                <SplitItem isFilled />
                 <ToggleGroup>
                     <ToggleGroupItem
                         text={t('Clusters')}
@@ -324,9 +348,9 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                         onChange={() => selectType('Policies')}
                     />
                 </ToggleGroup>
-            </div>
+            </Split>
             {type === 'Clusters' ? (
-                <AcmTable<PolicySetResultCluster>
+                <AcmTable<string>
                     plural="Clusters"
                     items={policySetClusters}
                     initialSort={{
@@ -334,7 +358,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                         direction: 'desc',
                     }}
                     columns={clusterColumnDefs}
-                    keyFn={(item: any) => item.policy}
+                    keyFn={(item: string) => item}
                     tableActions={[]}
                     rowActions={[]}
                     gridBreakPoint={TableGridBreakpoint.none}
@@ -342,15 +366,15 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                     searchPlaceholder={t('Find by name')}
                 />
             ) : (
-                <AcmTable<PolicySetStatusResult>
-                    plural="Clusters"
+                <AcmTable<Policy>
+                    plural="Policies"
                     items={policySetPolicies}
                     initialSort={{
                         index: 1, // default to sorting by violation count
                         direction: 'desc',
                     }}
                     columns={policyColumnDefs}
-                    keyFn={(item: any) => item.policy}
+                    keyFn={(item: Policy) => item.metadata.uid ?? ''}
                     tableActions={[]}
                     rowActions={[]}
                     gridBreakPoint={TableGridBreakpoint.none}
@@ -358,6 +382,6 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                     searchPlaceholder={t('Find by name')}
                 />
             )}
-        </div>
+        </Stack>
     )
 }

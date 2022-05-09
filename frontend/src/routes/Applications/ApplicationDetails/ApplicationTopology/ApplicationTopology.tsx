@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionListItem, PageSection } from '@patternfly/react-core'
-import { AcmActionGroup, AcmDrawerContext } from '@stolostron/ui-components'
+import { PageSection } from '@patternfly/react-core'
+import { AcmDrawerContext } from '@stolostron/ui-components'
 import { cloneDeep } from 'lodash'
 import { useContext, useEffect, useState } from 'react'
 import Topology from '../../../../components/Topology/Topology'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { ApplicationDataType, useApplicationPageContext } from '../ApplicationDetails'
+import { ApplicationDataType } from '../ApplicationDetails'
 import './ApplicationTopology.css'
 import DiagramViewer from './components/DiagramViewer'
 import LegendView from './components/LegendView'
@@ -67,56 +67,25 @@ export function ApplicationTopologyPageContent(props: {
         isResizable: boolean,
         disableDrawerHead: boolean,
         drawerPanelBodyHasNoPadding: boolean,
-        panelContent: React.ReactNode | React.ReactNode[]
+        panelContent: React.ReactNode | React.ReactNode[],
+        closeDrawer: boolean
     ) => {
-        setDrawerContext({
-            isExpanded: true,
-            onCloseClick: () => setDrawerContext(undefined),
-            title,
-            panelContent,
-            isInline,
-            panelContentProps: { minSize: '20%' },
-            isResizable,
-            disableDrawerHead,
-            drawerPanelBodyHasNoPadding,
-        })
+        if (closeDrawer) {
+            setDrawerContext(undefined)
+        } else {
+            setDrawerContext({
+                isExpanded: true,
+                onCloseClick: () => setDrawerContext(undefined),
+                title,
+                panelContent,
+                isInline,
+                panelContentProps: { minSize: '20%' },
+                isResizable,
+                disableDrawerHead,
+                drawerPanelBodyHasNoPadding,
+            })
+        }
     }
-
-    useApplicationPageContext(() => {
-        return (
-            <AcmActionGroup>
-                {[
-                    <ActionListItem>
-                        <div className="diagram-title">
-                            <span
-                                className="how-to-read-text"
-                                tabIndex={0}
-                                onClick={() =>
-                                    setDrawerContent(
-                                        t('How to read topology'),
-                                        true,
-                                        false,
-                                        false,
-                                        false,
-                                        <LegendView t={t} />
-                                    )
-                                }
-                                onKeyPress={() => {
-                                    // noop function
-                                }}
-                                role="button"
-                            >
-                                {t('How to read topology')}
-                                <svg className="how-to-read-icon">
-                                    <use href={'#diagramIcons_sidecar'} />
-                                </svg>
-                            </span>
-                        </div>
-                    </ActionListItem>,
-                ]}
-            </AcmActionGroup>
-        )
-    })
 
     const changeTheChannel = (fetchChannel: string) => {
         props.setActiveChannel(fetchChannel)
@@ -134,7 +103,7 @@ export function ApplicationTopologyPageContent(props: {
     }
 
     const processActionLink = (resource: any, toggleLoading: boolean) => {
-        processResourceActionLink(resource, toggleLoading, handleErrorMsg)
+        processResourceActionLink(resource, toggleLoading, t)
     }
 
     const canUpdateStatuses = !!statuses
@@ -142,10 +111,37 @@ export function ApplicationTopologyPageContent(props: {
         if (application && appData && topology) {
             setElements(cloneDeep(getDiagramElements(appData, cloneDeep(topology), statuses, canUpdateStatuses, t)))
         }
-    }, [appData, application, canUpdateStatuses, refreshTime, statuses, t, topology])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [refreshTime])
 
     return (
         <PageSection>
+            <div className="diagram-title">
+                <span
+                    className="how-to-read-text"
+                    tabIndex={0}
+                    onClick={() =>
+                        setDrawerContent(
+                            t('How to read topology'),
+                            false,
+                            false,
+                            false,
+                            false,
+                            <LegendView t={t} />,
+                            false
+                        )
+                    }
+                    onKeyPress={() => {
+                        // noop function
+                    }}
+                    role="button"
+                >
+                    {t('How to read topology')}
+                    <svg className="how-to-read-icon">
+                        <use href={'#diagramIcons_sidecar'} />
+                    </svg>
+                </span>
+            </div>
             <Topology
                 diagramViewer={DiagramViewer}
                 elements={elements}

@@ -1,0 +1,66 @@
+[
+    {
+        "type": "ClusterCurator",
+        "required": 1,
+        "schema": {
+            "type": "object",
+            "properties": {
+                "apiVersion": { "type": "string" },
+                "kind": { "const": "ClusterCurator" },
+                "metadata": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "validateName": true
+                        },
+                        "namespace": { "validateName": true }
+                    },
+                    "required": ["name", "namespace"]
+                },
+                "spec": {
+                    "type": "object",
+                    "properties": {
+                        "install": {
+                            "type": "object",
+                            "properties": {
+                                "towerAuthSecret": { "type": "string" },
+                                "prehook": { "type": "array" },
+                                "posthook": { "type": "array" }
+                            },
+                            "required": ["towerAuthSecret", "prehook", "posthook"]
+                        },
+                        "upgrade": {
+                            "type": "object",
+                            "properties": {
+                                "towerAuthSecret": { "type": "string" },
+                                "prehook": { "type": "array" },
+                                "posthook": { "type": "array" }
+                            },
+                            "required": ["towerAuthSecret", "prehook", "posthook"]
+                        },
+                        "scale": {
+                            "type": "object",
+                            "properties": {
+                                "towerAuthSecret": { "type": "string" },
+                                "prehook": { "type": "array" },
+                                "posthook": { "type": "array" }
+                            },
+                            "required": ["towerAuthSecret", "prehook", "posthook"]
+                        },
+                        "destroy": {
+                            "type": "object",
+                            "properties": {
+                                "towerAuthSecret": { "type": "string" },
+                                "prehook": { "type": "array" },
+                                "posthook": { "type": "array" }
+                            },
+                            "required": ["towerAuthSecret", "prehook", "posthook"]
+                        }
+                    },
+                    "required": ["install", "upgrade", "scale", "destroy"]
+                }
+            },
+            "required": ["apiVersion", "metadata", "kind", "spec"]
+        }
+    }
+]

@@ -2,36 +2,43 @@
 
 import { TFunction } from 'i18next'
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
 import { AcmAlert, AcmLoadingPage } from '@stolostron/ui-components'
 import { getResource } from '../../../../../resources'
 
+const typesWithoutDefaultName = ['replicaset', 'pod', 'replicationcontroller', 'controllerrevision']
+
 export interface IYAMLContainerProps {
     node: any[]
+    containerRef: HTMLDivElement
     t: TFunction
 }
 
 export function YAMLContainer(props: IYAMLContainerProps) {
     let name = _.get(props.node, 'name', '')
-    const cluster = _.get(props.node, 'specs.clustersNames', [''])[0]
+    let cluster = _.get(props.node, 'cluster', _.get(props.node, 'specs.clustersNames', [''])[0])
+    const remoteArgoCluster = _.get(props.node, 'specs.raw.status.cluster')
+    if (remoteArgoCluster) {
+        cluster = remoteArgoCluster
+    }
     const namespace = _.get(props.node, 'namespace', '')
     const type = _.get(props.node, 'type', '')
     const kind = type === 'placements' ? 'placementrule' : type
-    let apiVersion = _.get(props.node, 'specs.raw.apiVersion') // only works for app definition, for resource we need data from search
+    let apiVersion = _.get(props.node, 'specs.raw.apiVersion', '') // only works for app definition, for resource we need data from search
     const isDesign = _.get(props.node, 'specs.isDesign', false)
     const editorTitle = `${kind[0].toUpperCase() + kind.substring(1)} YAML`
     const [resource, setResource] = useState<any>(undefined)
     const [resourceError, setResourceError] = useState({ message: '', stack: '' })
     const t = props.t
 
-    if (type === 'replicaset') {
-        const replicasetModel = _.get(props.node, `specs.${kind}Model`)
-        if (replicasetModel && Object.keys(replicasetModel).length > 0) {
-            const modelArray = replicasetModel[Object.keys(replicasetModel)[0]]
+    if (typesWithoutDefaultName.includes(type)) {
+        const typeModel = _.get(props.node, `specs.${kind}Model`)
+        if (typeModel && Object.keys(typeModel).length > 0) {
+            const modelArray = typeModel[Object.keys(typeModel)[0]]
             name = _.get(modelArray[0], 'name')
-            apiVersion = _.get(modelArray[0], 'apigroup') + '/' + _.get(modelArray[0], 'apiversion')
+            cluster = _.get(modelArray[0], 'cluster')
         }
     }
 
@@ -47,7 +54,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
 
     useEffect(() => {
         let isComponentMounted = true
-        if (cluster === 'local-cluster' || isDesign) {
+        if ((cluster === 'local-cluster' || isDesign) && !remoteArgoCluster) {
             const resourceResult = getResource({
                 apiVersion,
                 kind,
@@ -61,7 +68,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                     }
                 })
                 .catch((err) => {
-                    console.error('Error getting ersource: ', err)
+                    console.error('Error getting resource: ', err)
                     setResourceError(err.message)
                 })
             return () => {
@@ -80,14 +87,14 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                     }
                 })
                 .catch((err) => {
-                    console.error('Error getting ersource: ', err)
+                    console.error('Error getting resource: ', err)
                     setResourceError(err)
                 })
             return () => {
                 isComponentMounted = false
             }
         }
-    }, [cluster, kind, apiVersion, name, namespace, isDesign])
+    }, [cluster, kind, apiVersion, name, namespace, isDesign, remoteArgoCluster])
 
     if (!resource && resourceError.message === '') {
         return <AcmLoadingPage />
@@ -95,7 +102,7 @@ export function YAMLContainer(props: IYAMLContainerProps) {
 
     // need to set height for div below or else SyncEditor height will increaase indefinitely
     return (
-        <div style={{ height: '100vh' }}>
+        <Fragment>
             {resourceError.message !== '' && (
                 <AcmAlert
                     noClose={true}
@@ -110,11 +117,9 @@ export function YAMLContainer(props: IYAMLContainerProps) {
                 id="code-content"
                 editorTitle={editorTitle}
                 resources={[resource]}
-                onClose={(): void => {}}
+                filters={['*.metadata.managedFields']}
                 readonly={true}
-                onEditorChange={(): void => {}}
-                hideCloseButton={true}
             />
-        </div>
+        </Fragment>
     )
 }

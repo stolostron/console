@@ -164,3 +164,24 @@ export function canUser(
     const selfSubjectAccessReview = createSubjectAccessReview(resourceAttributes)
     return selfSubjectAccessReview
 }
+
+export async function checkPermission(
+    resourceAttributes: ResourceAttributes,
+    setStateFn: (state: boolean) => void,
+    namespaces: Namespace[]
+) {
+    if (namespaces.length) {
+        const fetchAuthorizedNamespaces = async () => {
+            return getAuthorizedNamespaces([resourceAttributes], namespaces)
+        }
+        fetchAuthorizedNamespaces().then((authorizedNamespaces) => {
+            if (authorizedNamespaces?.length > 0) {
+                setStateFn(true)
+            } else {
+                setStateFn(false)
+            }
+        })
+    } else {
+        setStateFn(false)
+    }
+}

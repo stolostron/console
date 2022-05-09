@@ -14,7 +14,7 @@ import { unauthorized } from '../lib/respond'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-import { getServiceAcccountToken } from './liveness'
+import { getServiceAccountToken } from './liveness'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -55,6 +55,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'ManagedClusterAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
     { kind: 'Agent', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'InfraEnv', apiVersion: 'agent-install.openshift.io/v1beta1' },
+    { kind: 'NMStateConfig', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'Application', apiVersion: 'app.k8s.io/v1beta1' },
     { kind: 'Channel', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'GitOpsCluster', apiVersion: 'apps.open-cluster-management.io/v1beta1' },
@@ -75,10 +76,12 @@ const definitions: IWatchOptions[] = [
     { kind: 'ManagedCluster', apiVersion: 'cluster.open-cluster-management.io/v1' },
     { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1alpha1' },
+    { kind: 'PlacementDecision', apiVersion: 'cluster.open-cluster-management.io/v1alpha1' },
     { kind: 'PlacementDecision', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ManagedClusterSetBinding', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ManagedClusterSet', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ClusterCurator', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
+    { kind: 'Subscription', apiVersion: 'operators.coreos.com/v1alpha1' },
     { kind: 'DiscoveredCluster', apiVersion: 'discovery.open-cluster-management.io/v1' },
     { kind: 'DiscoveryConfig', apiVersion: 'discovery.open-cluster-management.io/v1' },
     { kind: 'AgentClusterInstall', apiVersion: 'extensions.hive.openshift.io/v1beta1' },
@@ -94,6 +97,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'MultiClusterHub', apiVersion: 'operator.open-cluster-management.io/v1' },
     { kind: 'PlacementBinding', apiVersion: 'policy.open-cluster-management.io/v1' },
     { kind: 'Policy', apiVersion: 'policy.open-cluster-management.io/v1' },
+    { kind: 'PolicyAutomation', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
     { kind: 'PolicySet', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
     { kind: 'SubmarinerConfig', apiVersion: 'submarineraddon.open-cluster-management.io/v1alpha1' },
     { kind: 'AnsibleJob', apiVersion: 'tower.ansible.com/v1alpha1' },
@@ -155,7 +159,7 @@ async function listAndWatch(options: IWatchOptions) {
                     case 404:
                         logger.trace({ msg: 'watch', ...options, status: 'Not found' })
                         await new Promise((resolve) =>
-                            setTimeout(resolve, 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
+                            setTimeout(resolve, 1 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
                         )
                         break
                 }
@@ -177,7 +181,7 @@ async function listAndWatch(options: IWatchOptions) {
 }
 
 async function listKubernetesObjects(options: IWatchOptions) {
-    const serviceAcccountToken = getServiceAcccountToken()
+    const serviceAccountToken = getServiceAccountToken()
     let resourceVersion = ''
     let _continue: string | undefined
     let items: IResource[] = []
@@ -185,7 +189,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
         const url = resourceUrl(options, { limit: '100', continue: _continue })
         const request = got
             .get(url, {
-                headers: { authorization: `Bearer ${serviceAcccountToken}` },
+                headers: { authorization: `Bearer ${serviceAccountToken}` },
                 https: { rejectUnauthorized: false },
             })
             .json<{
@@ -245,7 +249,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
 }
 
 async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: string) {
-    const serviceAcccountToken = getServiceAcccountToken()
+    const serviceAccountToken = getServiceAccountToken()
     while (!stopping) {
         logger.debug({
             msg: 'watch',
@@ -258,7 +262,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
         try {
             const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
             const request = got.stream(url, {
-                headers: { authorization: `Bearer ${serviceAcccountToken}` },
+                headers: { authorization: `Bearer ${serviceAccountToken}` },
                 https: { rejectUnauthorized: false },
                 timeout: { socket: 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000) },
             })

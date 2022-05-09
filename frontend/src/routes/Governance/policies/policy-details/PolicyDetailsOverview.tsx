@@ -1,19 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, LabelGroup, PageSection, Stack, Text, TextVariants } from '@patternfly/react-core'
+import { Alert, ButtonVariant, LabelGroup, PageSection, Stack, Text, TextVariants } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmDescriptionList, AcmTable } from '@stolostron/ui-components'
+import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '@stolostron/ui-components'
 import moment from 'moment'
-import { useCallback, useMemo } from 'react'
+import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
+    namespacesState,
     placementBindingsState,
     placementDecisionsState,
     placementRulesState,
     placementsState,
+    policyAutomationState,
     policySetsState,
 } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { checkPermission, rbacCreate, rbacUpdate } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
     Placement,
@@ -22,10 +25,13 @@ import {
     PlacementRule,
     PlacementRuleStatus,
     Policy,
+    PolicyAutomation,
+    PolicyAutomationDefinition,
     PolicySet,
 } from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
-import { getPlacementDecisionsForPlacements, getPlacementsForResource } from '../../common/util'
+import { getPlacementDecisionsForPlacements, getPlacementsForResource, getPolicyRemediation } from '../../common/util'
+import { AutomationDetailsSidebar } from '../../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
 
@@ -40,11 +46,14 @@ interface TableData {
 export default function PolicyDetailsOverview(props: { policy: Policy }) {
     const { policy } = props
     const { t } = useTranslation()
+    const { setDrawerContext } = useContext(AcmDrawerContext)
     const [placements] = useRecoilState(placementsState)
     const [policySets] = useRecoilState(policySetsState)
     const [placementBindings] = useRecoilState(placementBindingsState)
     const [placementRules] = useRecoilState(placementRulesState)
     const [placementDecisions] = useRecoilState(placementDecisionsState)
+    const [policyAutomations] = useRecoilState(policyAutomationState)
+    const [namespaces] = useRecoilState(namespacesState)
     const govData = useGovernanceData([policy])
     const clusterRiskScore =
         govData.clusterRisks.high +
@@ -52,7 +61,21 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
         govData.clusterRisks.low +
         govData.clusterRisks.unknown +
         govData.clusterRisks.synced
+    const policyAutomationMatch = policyAutomations.find(
+        (pa: PolicyAutomation) => pa.spec.policyRef === policy.metadata.name
+    )
+    const [modal, setModal] = useState<ReactNode | undefined>()
+    const [canCreatePolicyAutomation, setCanCreatePolicyAutomation] = useState<boolean>(false)
+    const [canUpdatePolicyAutomation, setCanUpdatePolicyAutomation] = useState<boolean>(false)
+
+    useEffect(() => {
+        checkPermission(rbacCreate(PolicyAutomationDefinition), setCanCreatePolicyAutomation, namespaces)
+        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanUpdatePolicyAutomation, namespaces)
+    }, [namespaces])
+
     const { leftItems, rightItems } = useMemo(() => {
+        const unauthorizedMessage =
+            !canCreatePolicyAutomation || !canUpdatePolicyAutomation ? t('rbac.unauthorized') : ''
         const leftItems = [
             {
                 key: 'Name',
@@ -68,7 +91,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
             },
             {
                 key: 'Remediation',
-                value: policy.spec.remediationAction ?? '-',
+                value: getPolicyRemediation(policy),
             },
             {
                 key: 'Cluster violations',
@@ -99,22 +122,70 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                 key: 'Created',
                 value: moment(policy.metadata.creationTimestamp, 'YYYY-MM-DDTHH:mm:ssZ').fromNow(),
             },
-            // TODO need to implement automation
-            // {
-            //     key: 'Automation',
-            //     value: '-', // react node (link)
-            // },
+            {
+                key: 'Automation',
+                value: policyAutomationMatch ? (
+                    <AcmButton
+                        isDisabled={!canUpdatePolicyAutomation}
+                        tooltip={unauthorizedMessage}
+                        isInline
+                        variant={ButtonVariant.link}
+                        onClick={() =>
+                            setDrawerContext({
+                                isExpanded: true,
+                                onCloseClick: () => {
+                                    setDrawerContext(undefined)
+                                },
+                                title: policyAutomationMatch.metadata.name,
+                                panelContent: (
+                                    <AutomationDetailsSidebar
+                                        setModal={setModal}
+                                        policyAutomationMatch={policyAutomationMatch}
+                                        policy={policy}
+                                        onClose={() => setDrawerContext(undefined)}
+                                    />
+                                ),
+                                panelContentProps: { defaultSize: '40%' },
+                                isInline: true,
+                                isResizable: true,
+                            })
+                        }
+                    >
+                        {policyAutomationMatch.metadata.name}
+                    </AcmButton>
+                ) : (
+                    <AcmButton
+                        isDisabled={!canCreatePolicyAutomation}
+                        tooltip={unauthorizedMessage}
+                        isInline
+                        variant={ButtonVariant.link}
+                        component={Link}
+                        to={{
+                            pathname: NavigationPath.createPolicyAutomation
+                                .replace(':namespace', policy.metadata.namespace as string)
+                                .replace(':name', policy.metadata.name as string),
+                            state: {
+                                from: NavigationPath.policyDetails
+                                    .replace(':namespace', policy.metadata.namespace as string)
+                                    .replace(':name', policy.metadata.name as string),
+                            },
+                        }}
+                    >
+                        {t('Configure')}
+                    </AcmButton>
+                ),
+            },
         ]
         return { leftItems, rightItems }
     }, [
         clusterRiskScore,
         govData.clusterRisks,
-        policy.metadata.creationTimestamp,
-        policy.metadata.name,
-        policy.metadata.namespace,
-        policy.metadata.annotations,
-        policy.spec.disabled,
-        policy.spec.remediationAction,
+        policy,
+        policyAutomationMatch,
+        setDrawerContext,
+        canCreatePolicyAutomation,
+        canUpdatePolicyAutomation,
+        t,
     ])
 
     // Need to get bindings for all policysets a policy is included in
@@ -202,7 +273,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                     // Gather status list from policy status
                     const rawStatusList: {
                         clustername: string
-                        compliant: string
+                        compliant?: string
                     }[] = item.policy.status?.status ?? []
                     // Build lists of clusters, organized by status keys
                     const clusterList: Record<string, Set<string>> = {}
@@ -220,7 +291,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                                 compliant: 'nostatus',
                             })
                         }
-                        let compliant = statusObject[0].compliant ?? 'nostatus'
+                        let compliant = statusObject[0]?.compliant ?? 'nostatus'
                         compliant = compliant.toLowerCase()
                         const clusterName = statusObject[0].clustername
                         // Add cluster to its associated status list in the clusterList object
@@ -270,24 +341,27 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
                                         numLabels={2}
                                     >
                                         {Array.from(clusterList[status]).map((cluster: string, index) => {
-                                            // If there's no status, there's no point in linking to the status page
-                                            let href = ''
                                             if (status !== 'nostatus') {
-                                                href = NavigationPath.policyDetailsResults
-                                                    .replace(':namespace', policy.metadata.namespace!)
-                                                    .replace(':name', policy.metadata.name!)
-                                            } else {
-                                                href = NavigationPath.policyDetails
-                                                    .replace(':namespace', policy.metadata.namespace!)
-                                                    .replace(':name', policy.metadata.name!)
+                                                return (
+                                                    <span key={`${cluster}-link`}>
+                                                        <Link
+                                                            to={`${NavigationPath.policyDetailsResults
+                                                                .replace(':namespace', policy.metadata.namespace!)
+                                                                .replace(
+                                                                    ':name',
+                                                                    policy.metadata.name!
+                                                                )}?search=${cluster}`}
+                                                        >
+                                                            {cluster}
+                                                            {index < clusterList[status].size - 1 && ', '}
+                                                        </Link>
+                                                    </span>
+                                                )
                                             }
-                                            // Return links to status page, filtered by selected cluster
                                             return (
                                                 <span key={`${cluster}-link`}>
-                                                    <Link to={href}>
-                                                        {cluster}
-                                                        {index < clusterList[status].size - 1 && ', '}
-                                                    </Link>
+                                                    {cluster}
+                                                    {index < clusterList[status].size - 1 && ', '}
                                                 </span>
                                             )
                                         })}
@@ -314,6 +388,7 @@ export default function PolicyDetailsOverview(props: { policy: Policy }) {
 
     return (
         <PageSection>
+            {modal !== undefined && modal}
             <Stack hasGutter>
                 <div id="violation.details">
                     <AcmDescriptionList title={t('Policy details')} leftItems={leftItems} rightItems={rightItems} />

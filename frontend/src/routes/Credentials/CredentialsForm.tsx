@@ -166,9 +166,7 @@ export default function CredentialsFormPage() {
                     <PageSection variant="light" isFilled>
                         <AcmEmptyState
                             title={t('Unauthorized')}
-                            message={t(
-                                'You are not authorized to complete this action. There is currently no namespace that allows you to create this resource. See your cluster administrator for role-based access control information.'
-                            )}
+                            message={t('rbac.unauthorized.namespace')}
                             showIcon={false}
                         />
                     </PageSection>
@@ -278,6 +276,7 @@ export function CredentialsForm(props: {
 
     // Red Hat Virtualization
     const [ovirtUrl, setOvirtUrl] = useState(() => providerConnection?.stringData?.ovirt_url ?? '')
+    const [ovirtFqdn, setOvirtFqdn] = useState(() => providerConnection?.stringData?.ovirt_fqdn ?? '')
     const [ovirtUsername, setOvirtUsername] = useState(() => providerConnection?.stringData?.ovirt_username ?? '')
     const [ovirtPassword, setOvirtPassword] = useState(() => providerConnection?.stringData?.ovirt_password ?? '')
     const [ovirtCABundle, setOvirtCABundle] = useState(() => providerConnection?.stringData?.ovirt_ca_bundle ?? '')
@@ -425,6 +424,7 @@ export function CredentialsForm(props: {
                 break
             case Provider.redhatvirtualization:
                 secret.stringData!.ovirt_url = ovirtUrl
+                secret.stringData!.ovirt_fqdn = ovirtFqdn
                 secret.stringData!.ovirt_username = ovirtUsername
                 secret.stringData!.ovirt_password = ovirtPassword
                 secret.stringData!.ovirt_ca_bundle = ovirtCABundle
@@ -460,6 +460,49 @@ export function CredentialsForm(props: {
         }
         return secret
         // return packProviderConnection(secret)
+    }
+    function stateToSyncs() {
+        const syncs = [
+            { path: 'Secret[0].metadata.name', setState: setName },
+            { path: 'Secret[0].metadata.namespace', setState: setNamespace },
+            { path: 'Secret[0].stringData.baseDomain', setState: setBaseDomain },
+            { path: 'Secret[0].stringData.pullSecret', setState: setPullSecret },
+            { path: 'Secret[0].stringData.ssh-publickey', setState: setSshPublickey },
+            { path: 'Secret[0].stringData.ssh-privatekey', setState: setSshPrivatekey },
+            { path: 'Secret[0].stringData.httpProxy', setState: setHttpProxy },
+            { path: 'Secret[0].stringData.httpsProxy', setState: setHttpsProxy },
+            { path: 'Secret[0].stringData.noProxy', setState: setNoProxy },
+            { path: 'Secret[0].stringData.aws_access_key_id', setState: setAwsAccessKeyID },
+            { path: 'Secret[0].stringData.aws_secret_access_key', setState: setAwsSecretAccessKeyID },
+            { path: 'Secret[0].stringData.baseDomainResourceGroupName', setState: setBaseDomainResourceGroupName },
+            { path: 'Secret[0].stringData.cloudName', setState: setCloudName },
+            { path: 'Secret[0].stringData.projectID', setState: setGcProjectID },
+            { path: 'Secret[0].stringData.vCenter', setState: setVcenter },
+            { path: 'Secret[0].stringData.username', setState: setUsername },
+            { path: 'Secret[0].stringData.password', setState: setPassword },
+            { path: 'Secret[0].stringData.cacertificate', setState: setCacertificate },
+            { path: 'Secret[0].stringData.cluster', setState: setVmClusterName },
+            { path: 'Secret[0].stringData.datacenter', setState: setDatacenter },
+            { path: 'Secret[0].stringData.defaultDatastore', setState: setDatastore },
+            { path: ['Secret', '0', 'stringData', 'clouds.yaml'], setState: setOpenstackCloudsYaml },
+            { path: 'Secret[0].stringData.cloud', setState: setOpenstackCloud },
+            { path: 'Secret[0].stringData.ovirt_url', setState: setOvirtUrl },
+            { path: 'Secret[0].stringData.ovirt_fqdn', setState: setOvirtFqdn },
+            { path: 'Secret[0].stringData.ovirt_username', setState: setOvirtUsername },
+            { path: 'Secret[0].stringData.ovirt_password', setState: setOvirtPassword },
+            { path: 'Secret[0].stringData.ovirt_ca_bundle', setState: setOvirtCABundle },
+            { path: 'Secret[0].stringData.libvirtURI', setState: setLibvirtURI },
+            { path: 'Secret[0].stringData.sshKnownHosts', setState: setSshKnownHosts },
+            { path: 'Secret[0].stringData.bootstrapOSImage', setState: setBootstrapOSImage },
+            { path: 'Secret[0].stringData.imageMirror', setState: setImageMirror },
+            { path: 'Secret[0].stringData.clusterOSImage', setState: setClusterOSImage },
+            { path: 'Secret[0].stringData.additionalTrustBundle', setState: setAdditionalTrustBundle },
+            { path: 'Secret[0].stringData.imageContentSources', setState: setImageContentSources },
+            { path: 'Secret[0].stringData.host', setState: setAnsibleHost },
+            { path: 'Secret[0].stringData.token', setState: setAnsibleToken },
+            { path: 'Secret[0].stringData.ocmAPIToken', setState: setOcmAPIToken },
+        ]
+        return syncs
     }
     const title = isViewing ? name : isEditing ? t('Edit credential') : t('Add credential')
     const titleTooltip = (
@@ -601,9 +644,13 @@ export function CredentialsForm(props: {
                         type: 'Text',
                         label: t('Base DNS domain'),
                         placeholder: t('Enter the base DNS domain'),
-                        labelHelp: t(
-                            "Optional: The base domain of your provider, which is used to create routes to your OpenShift Container Platform cluster components. It is configured in your cloud provider's DNS as a Start Of Authority (SOA) record."
-                        ),
+                        labelHelp: [Provider.baremetal, Provider.hybrid].includes(credentialsType as Provider)
+                            ? t(
+                                  'Optional: The base domain of your network, which is used to create routes to your OpenShift Container Platform cluster components. It must contain the cluster name that you plan to create, and is configured in the DNS of your network as a Start Of Authority (SOA) record. You can also add this when you create the cluster.'
+                              )
+                            : t(
+                                  "Optional: The base domain of your provider, which is used to create routes to your OpenShift Container Platform cluster components. It is configured in your cloud provider's DNS as a Start Of Authority (SOA) record."
+                              ),
                         value: baseDomain,
                         onChange: setBaseDomain,
                         validation: (v) => validateBaseDomain(v, t),
@@ -924,7 +971,7 @@ export function CredentialsForm(props: {
                 title: t('credentialsForm.rhvCredentials.title'),
                 wizardTitle: t('credentialsForm.rhvCredentials.wizardTitle'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION_OPENSTACK} target="_blank" rel="noreferrer">
+                    <a href={DOC_LINKS.CREATE_CONNECTION_VIRTUALIZATION} target="_blank" rel="noreferrer">
                         {t('credentialsForm.rhvCredentials.wizardDescription')}
                     </a>
                 ),
@@ -938,6 +985,19 @@ export function CredentialsForm(props: {
                         labelHelp: t('credentialsForm.ovirt_url.labelHelp'),
                         value: ovirtUrl,
                         onChange: setOvirtUrl,
+                        isRequired: true,
+                        isSecret: false,
+                        // validation: (value) => validateCloudsYaml(value, cloud, t),
+                    },
+                    {
+                        id: 'ovirt_fqdn',
+                        isHidden: credentialsType !== Provider.redhatvirtualization,
+                        type: 'Text',
+                        label: t('credentialsForm.ovirt_fqdn.label'),
+                        placeholder: t('credentialsForm.ovirt_fqdn.placeholder'),
+                        labelHelp: t('credentialsForm.ovirt_fqdn.labelHelp'),
+                        value: ovirtFqdn,
+                        onChange: setOvirtFqdn,
                         isRequired: true,
                         isSecret: false,
                         // validation: (value) => validateCloudsYaml(value, cloud, t),
@@ -972,12 +1032,13 @@ export function CredentialsForm(props: {
                         id: 'ovirt_ca_bundle',
                         isHidden: credentialsType !== Provider.redhatvirtualization,
                         type: 'TextArea',
-                        label: t('credentialsForm.additionalTrustBundle.label'),
-                        placeholder: t('credentialsForm.additionalTrustBundle.placeholder'),
-                        labelHelp: t('credentialsForm.additionalTrustBundle.labelHelp'),
+                        label: t('credentialsForm.ovirt_ca_bundle.label'),
+                        placeholder: t('credentialsForm.ovirt_ca_bundle.placeholder'),
+                        labelHelp: t('credentialsForm.ovirt_ca_bundle.labelHelp'),
                         value: ovirtCABundle,
                         onChange: setOvirtCABundle,
                         isRequired: true,
+                        validation: (value) => validateCertificate(value, t),
                     },
                 ],
             },
@@ -1125,10 +1186,10 @@ export function CredentialsForm(props: {
                             Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('HTTP Proxy'),
-                        placeholder: t('Enter the HTTP Proxy url'),
+                        label: t('HTTP proxy'),
+                        placeholder: t('Enter the HTTP proxy URL'),
                         labelHelp: t(
-                            'A proxy URL to use for creating HTTP connections outside the cluster. The URL scheme must be http.'
+                            'A proxy URL to use for creating HTTP connections outside the cluster. The URL scheme must be HTTP.'
                         ),
                         value: httpProxy,
                         onChange: setHttpProxy,
@@ -1146,8 +1207,8 @@ export function CredentialsForm(props: {
                             Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('HTTPS Proxy'),
-                        placeholder: t('Enter the HTTPS Proxy url'),
+                        label: t('HTTPS proxy'),
+                        placeholder: t('Enter the HTTPS proxy URL'),
                         labelHelp: t(
                             'A proxy URL to use for creating HTTPS connections outside the cluster. If this is not specified, then httpProxy is used for both HTTP and HTTPS connections.'
                         ),
@@ -1167,8 +1228,8 @@ export function CredentialsForm(props: {
                             Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('No Proxy'),
-                        placeholder: t('Enter the comma delimited list of urls that do not require a proxy'),
+                        label: t('No proxy'),
+                        placeholder: t('Enter the comma delimited list of URLs that do not require a proxy'),
                         labelHelp: t(
                             'A comma-separated list of destination domain names, domains, IP addresses or other network CIDRs to exclude proxying. Preface a domain with . to include all subdomains of that domain. Use * to bypass proxy for all destinations. Note that if you scale up workers not included in networking.machineCIDR from the installation configuration, you must add them to this list to prevent connection issues.'
                         ),
@@ -1214,11 +1275,11 @@ export function CredentialsForm(props: {
                         type: 'Text',
                         label: t('Ansible Tower host'),
                         placeholder: t('Enter the Ansible Tower host URL'),
-                        // labelHelp: t('credentialsForm.ansibleHost.labelHelp'), // TODO
+                        labelHelp: t('credentialsForm.ansibleHost.labelHelp'),
                         value: ansibleHost,
                         onChange: setAnsibleHost,
                         isRequired: true,
-                        validation: (host) => validateWebURL(host, t),
+                        validation: (host) => validateWebURL(host, t, ['https']),
                     },
                     {
                         id: 'ansibleToken',
@@ -1262,7 +1323,11 @@ export function CredentialsForm(props: {
                 title: t('Pull secret and SSH'),
                 wizardTitle: t('Enter the pull secret and SSH keys'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                    <a
+                        href={'https://console.redhat.com/openshift/install/pull-secret'}
+                        target="_blank"
+                        rel="noreferrer"
+                    >
                         {t('How do I get the Red Hat OpenShift Container Platform pull secret?')}
                     </a>
                 ),
@@ -1379,6 +1444,7 @@ export function CredentialsForm(props: {
         nextLabel: t('Next'),
         backLabel: t('Back'),
         cancel: () => history.push(NavigationPath.credentials),
+        stateToSyncs,
         stateToData,
     }
     return (
@@ -1388,26 +1454,22 @@ export function CredentialsForm(props: {
             schema={schema}
             mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
             secrets={[
-                'Secret[0].stringData.pullSecret',
-                'Secret[0].stringData.aws_secret_access_key',
-                'Secret[0].stringData.ssh-privatekey',
-                'Secret[0].stringData.ssh-publickey',
-                'Secret[0].stringData.password',
-                'Secret[0].stringData.token',
-                'Secret[0].stringData.ocmAPIToken',
-                'Secret[0].stringData.additionalTrustBundle',
-                'Secret[0].stringData.ovirt_password',
-                ['Secret', '0', 'stringData', 'osServicePrincipal.json'],
-                ['Secret', '0', 'stringData', 'osServiceAccount.json'],
-                ['Secret', '0', 'stringData', 'clouds.yaml'],
+                '*.stringData.pullSecret',
+                '*.stringData.aws_secret_access_key',
+                '*.stringData.ssh-privatekey',
+                '*.stringData.ssh-publickey',
+                '*.stringData.password',
+                '*.stringData.token',
+                '*.stringData.ocmAPIToken',
+                '*.stringData.additionalTrustBundle',
+                '*.stringData.ovirt_ca_bundle',
+                '*.stringData.ovirt_password',
+                '*.stringData.ovirt-config.yaml',
+                '*.stringData.osServicePrincipal.json',
+                '*.stringData.osServiceAccount.json',
+                '*.stringData.clouds.yaml',
             ]}
-            immutables={[
-                'Secret[0].apiVersion',
-                'Secret[0].kind',
-                'Secret[0].type',
-                'Secret[0].metadata.*',
-                'Secret[0].stringData',
-            ]}
+            immutables={isEditing ? ['*.metadata.name', '*.metadata.namespace'] : []}
             edit={() => {
                 if (providerConnection) {
                     history.push(

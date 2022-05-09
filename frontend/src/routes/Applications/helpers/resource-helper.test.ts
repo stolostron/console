@@ -13,8 +13,9 @@ import {
 } from './resource-helper'
 import i18next from 'i18next'
 import moment from 'moment'
+import { ArgoApplicationDefinition } from '../../../resources'
 
-const t = i18next.t
+const t = i18next.t.bind(i18next)
 jest.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string) => i18next.t(key),
@@ -73,19 +74,36 @@ describe('groupByRepoType', () => {
 
 describe('getClusterCountString', () => {
     it('should return None', () => {
-        expect(getClusterCountString(0, false)).toEqual('None')
+        expect(getClusterCountString(t, { remoteCount: 0, localPlacement: false })).toEqual('None')
     })
 
     it('should return Local', () => {
-        expect(getClusterCountString(0, true)).toEqual('Local')
+        expect(getClusterCountString(t, { remoteCount: 0, localPlacement: true })).toEqual('Local')
     })
 
     it('should return Remote', () => {
-        expect(getClusterCountString(2, false)).toEqual('2 Remote')
+        expect(getClusterCountString(t, { remoteCount: 2, localPlacement: false })).toEqual('2 Remote')
     })
 
     it('should return Remote with Local', () => {
-        expect(getClusterCountString(2, true)).toEqual('2 Remote, 1 Local')
+        expect(getClusterCountString(t, { remoteCount: 2, localPlacement: true })).toEqual('2 Remote, 1 Local')
+    })
+
+    it('should return cluster name for Argo', () => {
+        expect(
+            getClusterCountString(
+                t,
+                { remoteCount: 2, localPlacement: true },
+                ['managed-cluster', 'other'],
+                ArgoApplicationDefinition
+            )
+        ).toEqual('managed-cluster')
+    })
+
+    it('should return None for Argo', () => {
+        expect(
+            getClusterCountString(t, { remoteCount: 2, localPlacement: true }, [], ArgoApplicationDefinition)
+        ).toEqual('None')
     })
 })
 
@@ -107,7 +125,7 @@ describe('getResourceType', () => {
     })
 
     it('should work with undefined', () => {
-        expect(getResourceType('', t)).toEqual(undefined)
+        expect(getResourceType('', t)).toEqual('-')
     })
 })
 
@@ -129,7 +147,7 @@ describe('getResourceLabel', () => {
     })
 
     it('should work with undefined', () => {
-        expect(getResourceLabel('', 2, (t) => t)).toEqual('undefined (2)')
+        expect(getResourceLabel('', 2, (t) => t)).toEqual('- (2)')
     })
 })
 

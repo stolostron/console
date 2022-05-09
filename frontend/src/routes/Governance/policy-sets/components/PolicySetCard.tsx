@@ -9,6 +9,10 @@ import {
     CardHeader,
     CardTitle,
     Checkbox,
+    DescriptionList,
+    DescriptionListDescription,
+    DescriptionListGroup,
+    DescriptionListTerm,
     Dropdown,
     DropdownItem,
     DropdownSeparator,
@@ -18,8 +22,9 @@ import {
     Stack,
     StackItem,
 } from '@patternfly/react-core'
+import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { AcmDrawerContext } from '@stolostron/ui-components'
-import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { placementBindingsState, placementRulesState, placementsState } from '../../../../atoms'
@@ -27,66 +32,48 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicySet } from '../../../../resources'
-import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
-import { PolicyViolationIcons } from '../../components/PolicyViolations'
-import { IPolicyRisks } from '../../useGovernanceData'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
-import { IPolicySetSummary, usePolicySetSummary } from '../usePolicySetSummary'
 
-function getClusterRisks(policySetSummary: IPolicySetSummary) {
-    const clusterViolationCount = policySetSummary.clusterViolations
-    const clusterNonViolationCount = policySetSummary.clusterCount - clusterViolationCount
-    const clusterRisks: IPolicyRisks = {
-        synced: clusterNonViolationCount,
-        high: clusterViolationCount,
-        medium: 0,
-        low: 0,
-        unknown: 0,
-    }
-    return clusterRisks
-}
-
-function getPolicyRisks(policySetSummary: IPolicySetSummary) {
-    const policyViolationCount = policySetSummary.policyViolations
-    const policyUnknownCount = policySetSummary.policyUnknownStatusCount
-    const policyNonViolationCount = policySetSummary.policyCount - policyViolationCount - policyUnknownCount
-    const policyRisks: IPolicyRisks = {
-        synced: policyNonViolationCount,
-        high: policyViolationCount,
-        medium: 0,
-        low: 0,
-        unknown: policyUnknownCount,
-    }
-    return policyRisks
-}
-
-export default function PolicySetCard(props: { policySet: PolicySet }) {
-    const { policySet } = props
+export default function PolicySetCard(props: {
+    policySet: PolicySet
+    selectedCardID: string
+    setSelectedCardID: React.Dispatch<React.SetStateAction<string>>
+    canEditPolicySet: boolean
+    canDeletePolicySet: boolean
+}) {
+    const { policySet, selectedCardID, setSelectedCardID, canEditPolicySet, canDeletePolicySet } = props
     const { t } = useTranslation()
     const { setDrawerContext } = useContext(AcmDrawerContext)
     const [isKebabOpen, setIsKebabOpen] = useState<boolean>(false)
     const [modal, setModal] = useState<ReactNode | undefined>()
     const history = useHistory()
-    const policySetSummary = usePolicySetSummary(policySet)
+    const cardID = `policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`
 
-    const { clusterRisks, policyRisks } = useMemo(() => {
-        const clusterRisks = getClusterRisks(policySetSummary)
-        const policyRisks = getPolicyRisks(policySetSummary)
-        return { policySetSummary, clusterRisks, policyRisks }
-    }, [policySetSummary])
-
-    function onClick(event: React.MouseEvent) {
-        if (!event.currentTarget.contains(event.target as Node)) {
-            return
-        }
+    function onClick(cardId: string) {
         setDrawerContext({
             isExpanded: true,
-            onCloseClick: () => setDrawerContext(undefined),
+            onCloseClick: () => {
+                setDrawerContext(undefined)
+                setSelectedCardID('')
+            },
+            title: (
+                <Stack>
+                    {policySet.metadata.name}
+                    <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
+                        {`Namespace: ${policySet.metadata.namespace}`}
+                    </div>
+                </Stack>
+            ),
             panelContent: <PolicySetDetailSidebar policySet={policySet} />,
             panelContentProps: { defaultSize: '40%' },
             isInline: true,
             isResizable: true,
         })
+        // Introduce a delay (400ms) until scroll to selected card to wait for sidebar to transition.
+        setTimeout(() => {
+            const cardElement = document.querySelector(`#${cardId}`)
+            cardElement?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
+        }, 400)
     }
 
     function onToggle(
@@ -109,10 +96,19 @@ export default function PolicySetCard(props: { policySet: PolicySet }) {
                 isRounded
                 isHoverable
                 isFullHeight
-                id={`policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`}
-                key={`policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`}
+                isSelectable
+                isSelected={selectedCardID === cardID}
+                id={cardID}
+                key={cardID}
                 style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
-                onClick={onClick}
+                onClick={(event) => {
+                    const newSelectedCard = cardID === selectedCardID ? '' : cardID
+                    setSelectedCardID(newSelectedCard)
+                    if (!event.currentTarget.contains(event.target as Node)) {
+                        return
+                    }
+                    onClick(cardID)
+                }}
             >
                 <CardHeader isToggleRightAligned={true}>
                     <CardActions>
@@ -125,19 +121,16 @@ export default function PolicySetCard(props: { policySet: PolicySet }) {
                                 <DropdownItem
                                     key="view details"
                                     onClick={() => {
-                                        setDrawerContext({
-                                            isExpanded: true,
-                                            onCloseClick: () => setDrawerContext(undefined),
-                                            panelContent: <PolicySetDetailSidebar policySet={policySet} />,
-                                            panelContentProps: { defaultSize: '40%' },
-                                            isInline: true,
-                                            isResizable: true,
-                                        })
+                                        const newSelectedCard = cardID === selectedCardID ? '' : cardID
+                                        setSelectedCardID(newSelectedCard)
+                                        onClick(cardID)
                                     }}
                                 >
                                     {t('View details')}
                                 </DropdownItem>,
                                 <DropdownItem
+                                    isAriaDisabled={!canEditPolicySet}
+                                    tooltip={!canEditPolicySet ? t('rbac.unauthorized') : ''}
                                     key="edit"
                                     onClick={() => {
                                         history.push(
@@ -151,6 +144,8 @@ export default function PolicySetCard(props: { policySet: PolicySet }) {
                                 </DropdownItem>,
                                 <DropdownSeparator key="separator" />,
                                 <DropdownItem
+                                    isAriaDisabled={!canDeletePolicySet}
+                                    tooltip={!canDeletePolicySet ? t('rbac.unauthorized') : ''}
                                     key="delete"
                                     onClick={() => {
                                         setIsKebabOpen(false)
@@ -169,37 +164,48 @@ export default function PolicySetCard(props: { policySet: PolicySet }) {
                         />
                     </CardActions>
                     <CardTitle>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <Stack>
                             {policySet.metadata.name}
-                            <div style={{ fontSize: 'small', opacity: 0.6, fontWeight: 'normal' }}>
+                            <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
                                 {`Namespace: ${policySet.metadata.namespace}`}
                             </div>
-                        </div>
+                        </Stack>
                     </CardTitle>
                 </CardHeader>
                 <CardBody>
                     <Stack hasGutter>
                         {policySet.spec.description && <div>{policySet.spec.description ?? ''}</div>}
-                        {policySetSummary.clusterCount > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                <span>
-                                    <strong>{policySetSummary.clusterCount}</strong> clusters
-                                </span>
-                                <div style={{ paddingLeft: 16 }}>
-                                    <ClusterPolicyViolationIcons risks={clusterRisks} />
-                                </div>
-                            </div>
-                        )}
-                        {policySetSummary.policyCount > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                <span>
-                                    <strong>{policySetSummary.policyCount}</strong> policies
-                                </span>
-                                <div style={{ paddingLeft: 16 }}>
-                                    <PolicyViolationIcons risks={policyRisks} />
-                                </div>
-                            </div>
-                        )}
+                        <DescriptionList>
+                            {(policySet.status?.compliant || policySet.status?.statusMessage) && (
+                                <DescriptionListGroup>
+                                    <DescriptionListTerm>
+                                        <strong>{t('Status')}</strong>
+                                    </DescriptionListTerm>
+                                    {policySet.status?.compliant && (
+                                        <DescriptionListDescription>
+                                            {policySet.status?.compliant === 'Compliant' ? (
+                                                <div>
+                                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />{' '}
+                                                    &nbsp;
+                                                    {t('No violations')}
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
+                                                    &nbsp;
+                                                    {t('Violations')}
+                                                </div>
+                                            )}
+                                        </DescriptionListDescription>
+                                    )}
+                                    {policySet.status?.statusMessage && (
+                                        <DescriptionListDescription>
+                                            {policySet.status?.statusMessage}
+                                        </DescriptionListDescription>
+                                    )}
+                                </DescriptionListGroup>
+                            )}
+                        </DescriptionList>
                     </Stack>
                 </CardBody>
             </Card>
@@ -244,11 +250,11 @@ function DeletePolicySetModal(props: { item: PolicySet; onClose: () => void }) {
                 type: props.item.kind,
                 name: '',
             })}
-            titleIconVariant={'danger'}
+            titleIconVariant={'warning'}
             isOpen
             onClose={props.onClose}
             actions={[
-                <Button key="confirm" variant="primary" onClick={onConfirm} isLoading={isDeleting}>
+                <Button key="confirm" variant="danger" onClick={onConfirm} isLoading={isDeleting}>
                     {isDeleting ? t('deleting') : t('delete')}
                 </Button>,
                 <Button key="cancel" variant="link" onClick={props.onClose}>
@@ -275,7 +281,7 @@ function DeletePolicySetModal(props: { item: PolicySet; onClose: () => void }) {
                         id="delete-placements"
                         isChecked={deletePlacements}
                         onChange={setDeletePlacements}
-                        label={t('policy.modal.delete.associatedResources.placementRule')}
+                        label={t('policy.modal.delete.associatedResources.placement')}
                     />
                 </StackItem>
                 {error && (

@@ -4,7 +4,7 @@ import { getSubscriptionResourceStatuses } from './resourceStatusesSubscription'
 import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
 import { cloneDeep } from 'lodash'
 
-export async function getResourceStatuses(application, appData, topology, lastRefresh) {
+export async function getResourceStatuses(application, appData, topology) {
     let results
     const appDataWithStatuses = cloneDeep(appData)
     if (application.isArgoApp) {
@@ -12,7 +12,7 @@ export async function getResourceStatuses(application, appData, topology, lastRe
     } else if (application.isAppSet) {
         results = await getAppSetResourceStatuses(application, appDataWithStatuses)
     } else {
-        results = await getSubscriptionResourceStatuses(application, appDataWithStatuses, topology, lastRefresh)
+        results = await getSubscriptionResourceStatuses(application, appDataWithStatuses, topology)
     }
     const { resourceStatuses, relatedResources } = results
     return { resourceStatuses: cloneDeep(resourceStatuses), relatedResources, appDataWithStatuses }

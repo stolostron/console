@@ -10,7 +10,9 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
+    managedClusterInfosState,
     managedClustersState,
+    namespacesState,
     placementRulesState,
     subscriptionsState,
 } from '../../atoms'
@@ -31,7 +33,13 @@ import {
     ChannelKind,
     ManagedCluster,
     ManagedClusterApiVersion,
+    ManagedClusterInfo,
+    ManagedClusterInfoApiVersion,
+    ManagedClusterInfoKind,
     ManagedClusterKind,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
@@ -161,6 +169,31 @@ const mockManagedCluster0: ManagedCluster = {
     },
 }
 
+const readyManagedClusterConditions = [
+    { type: 'ManagedClusterConditionAvailable', reason: 'ManagedClusterConditionAvailable', status: 'True' },
+    { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+    { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+]
+
+const mockManagedClusterInfo0: ManagedClusterInfo = {
+    apiVersion: ManagedClusterInfoApiVersion,
+    kind: ManagedClusterInfoKind,
+    metadata: { name: 'local-cluster', namespace: 'local-cluster' },
+    status: {
+        conditions: readyManagedClusterConditions,
+        version: '1.17',
+        distributionInfo: {
+            type: 'ocp',
+            ocp: {
+                version: '1.2.3',
+                availableUpdates: [],
+                desiredVersion: '1.2.3',
+                upgradeFailed: false,
+            },
+        },
+    },
+}
+
 const mockApplicationSet0: ApplicationSet = {
     apiVersion: ApplicationSetApiVersion,
     kind: ApplicationSetKind,
@@ -266,6 +299,14 @@ const mockPlacementrules: PlacementRule[] = [mockPlacementrule0]
 
 const mockManagedClusters: ManagedCluster[] = [mockManagedCluster0]
 
+const mockManagedClusterInfos = [mockManagedClusterInfo0]
+
+const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: { name },
+}))
+
 const mockApplicationSets: ApplicationSet[] = [mockApplicationSet0]
 
 const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoApplication1]
@@ -329,6 +370,8 @@ describe('Applications Page', () => {
                     snapshot.set(managedClustersState, mockManagedClusters)
                     snapshot.set(applicationSetsState, mockApplicationSets)
                     snapshot.set(argoApplicationsState, mockArgoApplications)
+                    snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
+                    snapshot.set(namespacesState, mockNamespaces)
                 }}
             >
                 <MemoryRouter>
@@ -361,12 +404,12 @@ describe('Applications Page', () => {
     test('should filter subscription apps', async () => {
         // Open filter
         userEvent.click(screen.getByText('Filter'))
-        expect(screen.getByTestId('application.app.k8s.io/v1beta1')).toBeTruthy()
-        userEvent.click(screen.getByTestId('application.app.k8s.io/v1beta1'))
+        expect(screen.getByTestId('app.k8s.io/Application')).toBeTruthy()
+        userEvent.click(screen.getByTestId('app.k8s.io/Application'))
 
         // Close filter
         userEvent.click(screen.getByText('Filter'))
-        const subscriptionCheckBox = screen.queryByTestId('application.app.k8s.io/v1beta1')
+        const subscriptionCheckBox = screen.queryByTestId('app.k8s.io/Application')
         expect(subscriptionCheckBox).toBeNull()
         const applicationSetType = screen.queryByText(ApplicationSetKind)
         expect(applicationSetType).toBeNull()
@@ -378,12 +421,12 @@ describe('Applications Page', () => {
     test('should filter argo apps', async () => {
         // Open filter
         userEvent.click(screen.getByText('Filter'))
-        expect(screen.getByTestId('application.argoproj.io/v1alpha1')).toBeTruthy()
-        userEvent.click(screen.getByTestId('application.argoproj.io/v1alpha1'))
+        expect(screen.getByTestId('argoproj.io/Application')).toBeTruthy()
+        userEvent.click(screen.getByTestId('argoproj.io/Application'))
 
         // Close filter
         userEvent.click(screen.getByText('Filter'))
-        const argoCheckBox = screen.queryByTestId('application.argoproj.io/v1alpha1')
+        const argoCheckBox = screen.queryByTestId('argoproj.io/Application')
         expect(argoCheckBox).toBeNull()
         const applicationType = screen.queryByText(ApplicationKind)
         expect(applicationType).toBeNull()
@@ -395,12 +438,12 @@ describe('Applications Page', () => {
     test('should filter appset apps', async () => {
         // Open filter
         userEvent.click(screen.getByText('Filter'))
-        expect(screen.getByTestId('applicationset.argoproj.io/v1alpha1')).toBeTruthy()
-        userEvent.click(screen.getByTestId('applicationset.argoproj.io/v1alpha1'))
+        expect(screen.getByTestId('argoproj.io/ApplicationSet')).toBeTruthy()
+        userEvent.click(screen.getByTestId('argoproj.io/ApplicationSet'))
 
         // Close filter
         userEvent.click(screen.getByText('Filter'))
-        const argoCheckBox = screen.queryByTestId('applicationset.argoproj.io/v1alpha1')
+        const argoCheckBox = screen.queryByTestId('argoproj.io/ApplicationSet')
         expect(argoCheckBox).toBeNull()
         const applicationType = screen.queryByText(ApplicationKind)
         expect(applicationType).toBeNull()

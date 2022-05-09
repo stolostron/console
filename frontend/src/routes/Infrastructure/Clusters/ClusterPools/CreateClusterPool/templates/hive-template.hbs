@@ -14,13 +14,13 @@ metadata:
 {{#if region}}
     region: '{{{region}}}'  ##region
 {{/if}}
-    vendor: '{{distribution}}'
+    vendor: OpenShift
 {{#if clusterSet}}
     cluster.open-cluster-management.io/clusterset: '{{{clusterSet}}}'
 {{/if}}
 spec:
-  runningCount: {{{runningCount}}} ##runningCount
   size: {{{size}}} ##size
+  runningCount: {{{runningCount}}} ##runningCount
   baseDomain: {{{baseDomain}}}  ##baseDomain
 {{#if singleNode}}
   skipMachinePools: true
@@ -61,6 +61,7 @@ spec:
       credentialsSecretRef:
         name: {{{../../name}}}-azure-creds
       region: {{{../../region}}}
+      cloudName: {{{../../cloudName}}}
   {{/case}}
 {{/switch}}
 
@@ -77,6 +78,8 @@ apiVersion: hive.openshift.io/v1
 kind: ClusterImageSet
 metadata:
   name: {{{clusterImageSetName}}}
+  labels:
+    visible: 'true'
 spec:
   releaseImage: {{{clusterReleaseImage}}}
 {{/if}}
@@ -174,6 +177,18 @@ metadata:
 stringData:
   username: {{{../../username}}}
   password: {{{../../password}}}
+
+{{#case 'RHV'}}
+metadata:
+  name: {{{../../name}}}-ovirt-creds
+  namespace: '{{{../../namespace}}}'
+stringData:
+{{#if ../../showSecrets}}
+  ovirt-config.yaml:{{{../../ovirtConfigYaml}}}
+{{else}}
+  ovirt-config.yaml: # injected on create
+{{/if}}
+{{/case}}
 
 ---
 

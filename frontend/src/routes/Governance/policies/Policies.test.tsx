@@ -3,6 +3,7 @@ import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policySetsState } from '../../../atoms'
+import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
 import { Policy, PolicySet } from '../../../resources'
 import PoliciesPage from './Policies'
@@ -108,13 +109,6 @@ const policySet0: PolicySet = {
     status: {
         compliant: 'Compliant',
         placement: [{ placement: 'policy-set-with-1-placement', placementBinding: 'policy-set-with-1-placement' }],
-        results: [
-            {
-                clusters: [{ clusterName: 'local-cluster', clusterNamespace: 'local-cluster', compliant: 'Compliant' }],
-                compliant: 'Compliant',
-                policy: 'policy-set-with-1-placement-policy-1',
-            },
-        ],
     },
 }
 
@@ -123,6 +117,9 @@ export const mockPolicy: Policy[] = [rootPolicy, policy0]
 export const mockPolicySet: PolicySet[] = [policySet0]
 
 describe('Policies Page', () => {
+    beforeEach(async () => {
+        nockIgnoreRBAC()
+    })
     test('Should render empty Policies page correctly', async () => {
         render(
             <RecoilRoot
@@ -136,7 +133,7 @@ describe('Policies Page', () => {
             </RecoilRoot>
         )
 
-        await waitForText('Use the following button to create a policy.')
+        await waitForText("You don't have any policies")
     })
 
     test('Should render Policies page correctly', async () => {
@@ -178,7 +175,7 @@ describe('Policies Page', () => {
             // need to use index [1] because the name column is also an "a" element
             expect(container.querySelectorAll('a')[1]).toHaveAttribute(
                 'href',
-                '/multicloud/governance/policy-sets?names%3D%5B%22policy-set-with-1-placement%22%5D%26namespaces%3D%5B%22test%22%5D'
+                '/multicloud/governance/policy-sets?search%3D%7B%22name%22%3A%5B%22policy-set-with-1-placement%22%5D%2C%22namespace%22%3A%5B%22test%22%5D%7D'
             )
         )
 
@@ -187,7 +184,7 @@ describe('Policies Page', () => {
             // need to use index [1] because the name column is also an "a" element
             expect(container.querySelectorAll('a')[2]).toHaveAttribute(
                 'href',
-                '/multicloud/governance/policies/details/test/policy-set-with-1-placement-policy-1/results'
+                '/multicloud/governance/policies/details/test/policy-set-with-1-placement-policy-1/results?sort=-1'
             )
         )
     })

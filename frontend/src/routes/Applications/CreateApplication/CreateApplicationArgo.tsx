@@ -1,87 +1,74 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '@patternfly-labs/react-form-wizard/lib/wizards/Argo/ArgoWizard'
-import { PageSection } from '@patternfly/react-core'
-import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@stolostron/ui-components'
+import { AcmToastContext } from '@stolostron/ui-components'
 import moment from 'moment-timezone'
+import { useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
+    applicationSetsState,
     channelsState,
     gitOpsClustersState,
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     managedClustersState,
     namespacesState,
     placementsState,
     secretsState,
 } from '../../../atoms'
+import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
 import {
+    ApplicationSetKind,
     createResources,
     getGitChannelBranches,
     getGitChannelPaths,
     IResource,
     unpackProviderConnection,
 } from '../../../resources'
-
-const Portals = Object.freeze({
-    editBtn: 'edit-button-portal-id',
-    createBtn: 'create-button-portal-id',
-    cancelBtn: 'cancel-button-portal-id',
-})
+import { argoAppSetQueryString } from './actions'
+import schema from './schema.json'
 
 export default function CreateArgoApplicationSetPage() {
-    const { t } = useTranslation()
+    return <CreateApplicationArgo />
+}
 
-    // create portals for buttons in header
-    const switches = (
-        <div className="switch-controls">
-            <div id={Portals.editBtn} />
-        </div>
-    )
-
-    const portals = (
-        <div className="portal-controls">
-            <div id={Portals.cancelBtn} />
-            <div id={Portals.createBtn} />
-        </div>
-    )
-
+export function WizardSyncEditor() {
+    const resources = useItem() // Wizard framework sets this context
+    const { update } = useData() // Wizard framework sets this context
     return (
-        <AcmPage
-            header={
-                <AcmPageHeader
-                    title={t('Create application')}
-                    breadcrumb={[
-                        { text: t('Applications'), to: NavigationPath.applications },
-                        { text: t('Create application'), to: '' },
-                    ]}
-                    switches={switches}
-                    actions={portals}
-                />
-            }
-        >
-            <AcmErrorBoundary>
-                <AcmPageContent id="create-application">
-                    <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
-                        <CreateApplicationArgo />
-                    </PageSection>
-                </AcmPageContent>
-            </AcmErrorBoundary>
-        </AcmPage>
+        <SyncEditor
+            editorTitle={'Application set YAML'}
+            variant="toolbar"
+            resources={resources}
+            schema={schema}
+            onEditorChange={(changes: { resources: any[] }): void => {
+                update(changes?.resources)
+            }}
+        />
     )
 }
 
+function getWizardSyncEditor() {
+    return <WizardSyncEditor />
+}
+
 export function CreateApplicationArgo() {
+    const { t } = useTranslation()
     const history = useHistory()
+    const [applicationSets] = useRecoilState(applicationSetsState)
+    const toast = useContext(AcmToastContext)
     const [placements] = useRecoilState(placementsState)
     const [gitOpsClusters] = useRecoilState(gitOpsClustersState)
     const [channels] = useRecoilState(channelsState)
     const [namespaces] = useRecoilState(namespacesState)
     const [secrets] = useRecoilState(secretsState)
     const [managedClusters] = useRecoilState(managedClustersState)
+    const [clusterSets] = useRecoilState(managedClusterSetsState)
     const [managedClusterSetBindings] = useRecoilState(managedClusterSetBindingsState)
     const providerConnections = secrets.map(unpackProviderConnection)
 
@@ -104,23 +91,39 @@ export function CreateApplicationArgo() {
 
     return (
         <ArgoWizard
-            addClusterSets={NavigationPath.clusterSets}
+            createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
             ansibleCredentials={availableAnsibleCredentials}
             argoServers={availableArgoNS}
             namespaces={availableNamespace}
+            applicationSets={applicationSets}
             placements={placements}
             clusters={managedClusters}
+            clusterSets={clusterSets}
             clusterSetBindings={managedClusterSetBindings}
-            onCancel={() => history.push('.')}
             channels={channels}
             getGitRevisions={getGitChannelBranches}
             getGitPaths={getGitChannelPaths}
-            onSubmit={(resources) =>
-                createResources(resources as IResource[]).then((error) => {
-                    history.push(NavigationPath.applications)
-                    return error
+            yamlEditor={getWizardSyncEditor}
+            onCancel={() => history.push(NavigationPath.applications)}
+            onSubmit={(data) => {
+                const resources = data as IResource[]
+                return createResources(resources).then(() => {
+                    const applicationSet = resources.find((resource) => resource.kind === ApplicationSetKind)
+                    if (applicationSet) {
+                        toast.addAlert({
+                            title: t('Application set created'),
+                            message: t('{{name}} was successfully created.', { name: applicationSet.metadata?.name }),
+                            type: 'success',
+                            autoClose: true,
+                        })
+                    }
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', applicationSet?.metadata?.namespace ?? '')
+                            .replace(':name', applicationSet?.metadata?.name ?? '') + argoAppSetQueryString
+                    )
                 })
-            }
+            }}
             timeZones={timeZones}
         />
     )

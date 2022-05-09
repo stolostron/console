@@ -8,7 +8,7 @@ import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
-import { NavigationPath } from '../../../../../../NavigationPath'
+import { locationWithCancelBack, NavigationPath } from '../../../../../../NavigationPath'
 import { ClusterPoolsTable } from '../../../ClusterPools/ClusterPools'
 import { ClusterSetContext } from '../ClusterSetDetails'
 
@@ -33,7 +33,10 @@ export function ClusterSetClusterPoolsPageContent() {
                             action={
                                 <RbacButton
                                     component={Link}
-                                    to={NavigationPath.clusterSetManage.replace(':id', clusterSet!.metadata.name!)}
+                                    to={locationWithCancelBack(
+                                        NavigationPath.createClusterPool,
+                                        `?clusterSet=${clusterSet!.metadata.name}`
+                                    )}
                                     variant="primary"
                                     rbac={[
                                         rbacCreate(
@@ -44,7 +47,7 @@ export function ClusterSetClusterPoolsPageContent() {
                                         ),
                                     ]}
                                 >
-                                    {t('managed.clusterSets.clusters.emptyStateButton')}
+                                    {t('managed.clusterSets.clusterPools.emptyStateButton')}
                                 </RbacButton>
                             }
                         />

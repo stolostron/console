@@ -1,46 +1,48 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-import { t } from 'i18next'
-import { Fragment, useMemo } from 'react'
+import { Button, ButtonVariant, Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@patternfly/react-core'
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { AcmDrawerContext, compareStrings } from '@stolostron/ui-components'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { policiesState } from '../../../atoms'
+import { managedClustersState, namespacesState, usePolicies } from '../../../atoms'
 import { AcmMasonry } from '../../../components/AcmMasonry'
-import { Policy } from '../../../resources'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { checkPermission, rbacCreate } from '../../../lib/rbac-util'
+import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
 import {
     GovernanceCreatePolicyEmptyState,
     GovernanceManagePoliciesEmptyState,
 } from '../components/GovernanceEmptyState'
-import { ClusterViolationsCard, useClusterViolationSummaryMap } from './ClusterViolationSummary'
+import { ClusterPolicySummarySidebar } from './ClusterPolicySummarySidebar'
+import { useClusterViolationSummaryMap } from './ClusterViolationSummary'
 import { PolicySetViolationsCard } from './PolicySetViolationSummary'
 import { PolicyViolationsCard, usePolicyViolationSummary } from './PolicyViolationSummary'
+import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummarySidebar'
 
 export default function GovernanceOverview() {
-    const [policiesSource] = useRecoilState(policiesState)
-    const policies = useMemo(
-        () =>
-            policiesSource.filter(
-                (policy) => policy.metadata.labels?.['policy.open-cluster-management.io/root-policy'] === undefined
-            ),
-        [policiesSource]
-    )
+    const policies = usePolicies()
+    const [namespaces] = useRecoilState(namespacesState)
     const policyViolationSummary = usePolicyViolationSummary(policies)
-    const clusterViolationSummaryMap = useClusterViolationSummaryMap(policies)
+    const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
+    useEffect(() => {
+        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
+    }, [namespaces])
+
     if (policies.length === 0) {
-        return <GovernanceCreatePolicyEmptyState />
+        return <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
     }
     if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant)) {
-        return <GovernanceManagePoliciesEmptyState />
+        return <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
     }
     return (
         <PageSection isWidthLimited>
             <Stack hasGutter>
-                <AcmMasonry minSize={400} maxColumns={3}>
+                <AcmMasonry minSize={415} maxColumns={3}>
                     <PolicySetViolationsCard />
                     <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
-                    <ClusterViolationsCard clusterViolationSummaryMap={clusterViolationSummaryMap} />
-                    <SecurityGroupCard key="categories" title="Categories" group="categories" policies={policies} />
+                    <ClustersCard />
                     <SecurityGroupCard key="standards" title="Standards" group="standards" policies={policies} />
+                    <SecurityGroupCard key="categories" title="Categories" group="categories" policies={policies} />
                     <SecurityGroupCard key="controls" title="Controls" group="controls" policies={policies} />
                 </AcmMasonry>
             </Stack>
@@ -48,65 +50,10 @@ export default function GovernanceOverview() {
     )
 }
 
-interface SecurityGroupViolations {
+export interface SecurityGroupViolations {
     name: string
     compliant: number
     noncompliant: number
-}
-
-function SecurityGroupCard(props: { title: string; group: string; policies: Policy[] }) {
-    const violations = useSecurityGroupViolations(props.group, props.policies)
-    return (
-        <div>
-            <Card isRounded>
-                <CardTitle>{props.title}</CardTitle>
-                <CardBody>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16 }}>
-                        {violations.map((violation) => {
-                            if (!(violation.compliant || violation.noncompliant)) return <Fragment />
-                            return (
-                                <Fragment>
-                                    <span>{violation.name}</span>
-                                    {violation.compliant ? (
-                                        <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                                            <Tooltip
-                                                content={t('policies.noviolations', { count: violation.compliant })}
-                                            >
-                                                <Fragment>
-                                                    {violation.compliant} &nbsp;
-                                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />
-                                                </Fragment>
-                                            </Tooltip>
-                                        </span>
-                                    ) : (
-                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
-                                            {violation.compliant} &nbsp;
-                                            <CheckCircleIcon color="var(--pf-global--success-color--100)" />
-                                        </span>
-                                    )}
-                                    {violation.noncompliant ? (
-                                        <Tooltip content={t('policy.violations', { count: violation.compliant })}>
-                                            <Fragment>
-                                                <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                                                    {violation.noncompliant} &nbsp;
-                                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
-                                                </span>
-                                            </Fragment>
-                                        </Tooltip>
-                                    ) : (
-                                        <span style={{ whiteSpace: 'nowrap', opacity: 0.2, textAlign: 'right' }}>
-                                            {violation.noncompliant} &nbsp;
-                                            <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
-                                        </span>
-                                    )}
-                                </Fragment>
-                            )
-                        })}
-                    </div>
-                </CardBody>
-            </Card>
-        </div>
-    )
 }
 
 function useSecurityGroupViolations(group: string, policies: Policy[]) {
@@ -133,7 +80,221 @@ function useSecurityGroupViolations(group: string, policies: Policy[]) {
                 }
             }
         }
-        return Object.values(clusterViolations)
+        return Object.values(clusterViolations).sort((a: SecurityGroupViolations, b: SecurityGroupViolations) =>
+            compareStrings(a.name, b.name)
+        )
     }, [group, policies])
     return violations
+}
+
+function SecurityGroupCard(props: { title: string; group: string; policies: Policy[] }) {
+    const { setDrawerContext } = useContext(AcmDrawerContext)
+    const violations = useSecurityGroupViolations(props.group, props.policies)
+    const { t } = useTranslation()
+
+    const onClick = useCallback(
+        (violation: SecurityGroupViolations, secGroupName: string, compliance: string) => {
+            setDrawerContext({
+                title: violation.name,
+                isExpanded: true,
+                onCloseClick: () => {
+                    setDrawerContext(undefined)
+                },
+                panelContent: (
+                    <SecurityGroupPolicySummarySidebar
+                        violation={violation}
+                        secGroupName={secGroupName}
+                        compliance={compliance}
+                    />
+                ),
+                panelContentProps: { defaultSize: '40%' },
+                isInline: true,
+                isResizable: true,
+            })
+        },
+        [setDrawerContext]
+    )
+
+    return (
+        <div>
+            <Card isRounded>
+                <CardTitle>{props.title}</CardTitle>
+                <CardBody>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 16 }}>
+                        {violations.map((violation) => {
+                            if (!(violation.compliant || violation.noncompliant)) return <Fragment />
+                            return (
+                                <Fragment>
+                                    <span>{violation.name}</span>
+                                    {violation.compliant ? (
+                                        <Tooltip
+                                            content={t(
+                                                violation.compliant === 1
+                                                    ? 'policies.noviolations'
+                                                    : 'policies.noviolations_plural',
+                                                { count: violation.compliant }
+                                            )}
+                                        >
+                                            <Fragment>
+                                                <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                    <Button
+                                                        isInline
+                                                        variant={ButtonVariant.link}
+                                                        onClick={() => onClick(violation, props.group, 'compliant')}
+                                                    >
+                                                        {violation.compliant}
+                                                    </Button>{' '}
+                                                    &nbsp;
+                                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                                                </span>
+                                            </Fragment>
+                                        </Tooltip>
+                                    ) : (
+                                        <span />
+                                    )}
+                                    {violation.noncompliant ? (
+                                        <Tooltip
+                                            content={t(
+                                                violation.noncompliant === 1
+                                                    ? 'policy.violations'
+                                                    : 'policy.violations_plural',
+                                                { count: violation.noncompliant }
+                                            )}
+                                        >
+                                            <Fragment>
+                                                <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                    <Button
+                                                        isInline
+                                                        variant={ButtonVariant.link}
+                                                        onClick={() => onClick(violation, props.group, 'noncompliant')}
+                                                    >
+                                                        {violation.noncompliant}
+                                                    </Button>{' '}
+                                                    &nbsp;
+                                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                                                </span>
+                                            </Fragment>
+                                        </Tooltip>
+                                    ) : (
+                                        <span />
+                                    )}
+                                </Fragment>
+                            )
+                        })}
+                    </div>
+                </CardBody>
+            </Card>
+        </div>
+    )
+}
+
+function ClustersCard() {
+    const { t } = useTranslation()
+    const [clusters] = useRecoilState(managedClustersState)
+    const policies = usePolicies()
+    const { setDrawerContext } = useContext(AcmDrawerContext)
+    const clusterViolationSummaryMap = useClusterViolationSummaryMap(policies)
+
+    const onClick = useCallback(
+        (cluster: ManagedCluster, compliance: string) => {
+            setDrawerContext({
+                title: cluster.metadata.name,
+                isExpanded: true,
+                onCloseClick: () => {
+                    setDrawerContext(undefined)
+                },
+                panelContent: <ClusterPolicySummarySidebar cluster={cluster} compliance={compliance} />,
+                panelContentProps: { defaultSize: '40%' },
+                isInline: true,
+                isResizable: true,
+            })
+        },
+        [setDrawerContext]
+    )
+
+    return (
+        <div>
+            <Card isRounded>
+                <CardTitle>{'Clusters'}</CardTitle>
+                <CardBody>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 16 }}>
+                        {clusters.map((cluster) => {
+                            const clusterViolationSummary = clusterViolationSummaryMap[cluster.metadata.name ?? '']
+                            if (!clusterViolationSummary) return <Fragment />
+                            return (
+                                <Fragment>
+                                    <span>{cluster.metadata.name}</span>
+                                    {clusterViolationSummary.unknown ? (
+                                        <Tooltip
+                                            content={t('policies.unknown', {
+                                                count: clusterViolationSummary.unknown,
+                                            })}
+                                        >
+                                            <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                <Button
+                                                    isInline
+                                                    variant={ButtonVariant.link}
+                                                    onClick={() => onClick(cluster, 'unknown')}
+                                                >
+                                                    {clusterViolationSummary.unknown}
+                                                </Button>{' '}
+                                                &nbsp;
+                                                <ExclamationTriangleIcon color="var(--pf-global--warning-color--100)" />
+                                            </span>
+                                        </Tooltip>
+                                    ) : (
+                                        <span />
+                                    )}
+                                    {clusterViolationSummary.compliant ? (
+                                        <Tooltip
+                                            content={t('policies.noviolations', {
+                                                count: clusterViolationSummary.compliant,
+                                            })}
+                                        >
+                                            <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                <Fragment>
+                                                    <Button
+                                                        isInline
+                                                        variant={ButtonVariant.link}
+                                                        onClick={() => onClick(cluster, 'compliant')}
+                                                    >
+                                                        {clusterViolationSummary.compliant}
+                                                    </Button>{' '}
+                                                    &nbsp;
+                                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />
+                                                </Fragment>
+                                            </span>
+                                        </Tooltip>
+                                    ) : (
+                                        <span />
+                                    )}
+                                    {clusterViolationSummary.noncompliant ? (
+                                        <Tooltip
+                                            content={t('policy.violations', {
+                                                count: clusterViolationSummary.noncompliant,
+                                            })}
+                                        >
+                                            <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                                                <Button
+                                                    isInline
+                                                    variant={ButtonVariant.link}
+                                                    onClick={() => onClick(cluster, 'noncompliant')}
+                                                >
+                                                    {clusterViolationSummary.noncompliant}
+                                                </Button>{' '}
+                                                &nbsp;
+                                                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />
+                                            </span>
+                                        </Tooltip>
+                                    ) : (
+                                        <span />
+                                    )}
+                                </Fragment>
+                            )
+                        })}
+                    </div>
+                </CardBody>
+            </Card>
+        </div>
+    )
 }

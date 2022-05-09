@@ -1,4 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
+import { fitContent } from '@patternfly/react-table'
 import {
     AcmButton,
     AcmEmptyState,
@@ -12,16 +14,15 @@ import {
     Provider,
     ProviderLongTextMap,
 } from '@stolostron/ui-components'
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
-import { fitContent } from '@patternfly/react-table'
 import moment from 'moment'
-import { Fragment, useEffect, useState } from 'react'
-import { Trans, useTranslation } from '../../lib/acm-i18next'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, discoveryConfigState, secretsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
+import { Trans, useTranslation } from '../../lib/acm-i18next'
+import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { rbacDelete, rbacPatch } from '../../lib/rbac-util'
 import { NavigationPath } from '../../NavigationPath'
 import { deleteResource, DiscoveryConfig, ProviderConnection, Secret, unpackProviderConnection } from '../../resources'
@@ -29,6 +30,14 @@ import { deleteResource, DiscoveryConfig, ProviderConnection, Secret, unpackProv
 export default function CredentialsPage() {
     const { t } = useTranslation()
     const [secrets] = useRecoilState(secretsState)
+    const credentialsSecrets = useMemo(
+        () =>
+            secrets.filter(
+                (secret) => secret?.metadata?.labels?.['cluster.open-cluster-management.io/credentials'] !== undefined
+            ),
+        [secrets]
+    )
+
     const providerConnections = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setRoute] = useRecoilState(acmRouteState)
@@ -40,7 +49,7 @@ export default function CredentialsPage() {
                     <CredentialsTable
                         providerConnections={providerConnections}
                         discoveryConfigs={discoveryConfigs}
-                        secrets={secrets}
+                        secrets={credentialsSecrets}
                     />
                 </PageSection>
             </AcmPageContent>
@@ -53,9 +62,12 @@ export default function CredentialsPage() {
 const AddConnectionBtn = () => {
     const { t } = useTranslation()
     return (
-        <AcmButton component={Link} to={NavigationPath.addCredentials}>
-            {t('Add credential')}
-        </AcmButton>
+        <div>
+            <AcmButton component={Link} to={NavigationPath.addCredentials}>
+                {t('Add credential')}
+            </AcmButton>
+            <TextContent>{viewDocumentation(DOC_LINKS.CREATE_CONNECTION, t)}</TextContent>
+        </div>
     )
 }
 
@@ -114,11 +126,12 @@ export function CredentialsTable(props: {
             <AcmTable<Secret>
                 emptyState={
                     <AcmEmptyState
-                        title={t(`You don't have any credentials.`)}
+                        title={t(`You don't have any credentials`)}
                         message={
-                            <Trans>
-                                Click the <strong>Add credential</strong> button to create your resource.
-                            </Trans>
+                            <Trans
+                                i18nKey="Click <bold>Add credential</bold> to create your resource."
+                                components={{ bold: <strong /> }}
+                            />
                         }
                         action={<AddConnectionBtn />}
                     />

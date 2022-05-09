@@ -33,7 +33,8 @@ export default function Topology(props: {
         isResizable: boolean,
         disableDrawerHead: boolean,
         drawerPanelBodyHasNoPadding: boolean,
-        panelContent: React.ReactNode | React.ReactNode[]
+        panelContent: React.ReactNode | React.ReactNode[],
+        closeDrawer: boolean
     ) => void
     t: (key: any) => string
 }): JSX.Element

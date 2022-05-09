@@ -11,18 +11,19 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
+import _ from 'lodash'
 import {
-    listChannels,
-    listProviderConnections,
     getGitChannelBranches,
     getGitChannelPaths,
+    listChannels,
+    listProviderConnections,
 } from '../../../../../resources'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
-import _ from 'lodash'
 
 const onlineClustersCheckbox = 'online-cluster-only-checkbox'
 const existingRuleCheckbox = 'existingrule-checkbox'
 const localClusterCheckbox = 'local-cluster-checkbox'
+const specPathname = 'spec.pathname'
 
 export const loadExistingChannels = (type) => {
     return {
@@ -139,6 +140,7 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
     )
     let existingChannel = false
     let originalChannelControl = null
+    let isChannel = false
     // change channel name and namespace to reflect repository path
     if (active) {
         // if existing channel, reuse channel name and namespace
@@ -150,6 +152,7 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
             //generate a unique name for this channel
             const channelName = getUniqueChannelName(active, groupControlData)
             const channelNS = `${channelName}-ns`
+            const isChannelNS = nsControl.available.includes(channelNS)
 
             originalChannelControl = findOriginalChannelControl(globalControl, channelName, nameControl)
 
@@ -157,6 +160,19 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
                 // if existing channel, reuse channel name and namespace
                 nameControl.active = channelName
                 namespaceControl.active = channelNS
+                namespaceControlExists.active = true
+            } else if (isChannelNS) {
+                nameControl.active = channelName
+                for (const [key, value] of Object.entries(availableData)) {
+                    if (
+                        key !== undefined &&
+                        value.metadata.name === channelName &&
+                        value.metadata.namespace === channelNS
+                    ) {
+                        isChannel = true
+                    }
+                }
+                namespaceControl.active = isChannel ? channelNS : ''
                 namespaceControlExists.active = true
             } else {
                 nameControl.active = channelName
@@ -260,6 +276,9 @@ export const updateControlsForNS = (initiatingControl, nsControl, globalControl)
             selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', '')
 
             updateNewRuleControlsData('', control)
+        } else {
+            const existingPlacementRuleCombo = _.get(control, 'placementrulecombo')
+            _.set(existingPlacementRuleCombo, 'isLoaded', false)
         }
     })
 
@@ -271,12 +290,16 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
         const gitControl = groupControlData.find(({ id }) => id === 'githubURL')
         const branchCtrl = groupControlData.find(({ id }) => id === 'githubBranch')
         const githubPathCtrl = groupControlData.find(({ id }) => id === 'githubPath')
+        const githubAccessIdCtrl = groupControlData.find(({ id }) => id === 'githubAccessId')
+        const githubUserCtrl = groupControlData.find(({ id }) => id === 'githubUser')
 
         const selectedChannel = _.get(gitControl, 'availableData', {})[_.get(gitControl, 'active', '')]
         // get git repository path from channel object if this is an existing channel, use the combo value otherwise
-        const gitUrl = selectedChannel ? _.get(selectedChannel, 'spec.pathname', '') : _.get(gitControl, 'active', '')
+        const gitUrl = selectedChannel ? _.get(selectedChannel, specPathname, '') : _.get(gitControl, 'active', '')
         const namespace = _.get(selectedChannel, 'metadata.namespace', '')
         const secretRef = _.get(selectedChannel, 'secretRef', '')
+        const accessToken = _.get(githubAccessIdCtrl, 'active')
+        const user = _.get(githubUserCtrl, 'active')
 
         if (!gitUrl) {
             branchCtrl.active = ''
@@ -296,9 +319,9 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
         if (branchName) {
             //get folders for branch
             setLoadingState(githubPathCtrl, true)
-            getGitChannelPaths(gitUrl, branchName, { secretRef, namespace }).then(
+            getGitChannelPaths(gitUrl, branchName, { secretRef, namespace }, { user, accessToken }).then(
                 (result) => {
-                    githubPathCtrl.available = result.sort()
+                    githubPathCtrl.available = result?.sort()
                     setLoadingState(githubPathCtrl, false)
                 },
                 () => {
@@ -314,7 +337,7 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
                 setLoadingState(branchCtrl, false)
             }
 
-            getGitChannelBranches(gitUrl, { secretRef, namespace }).then((result) => {
+            getGitChannelBranches(gitUrl, { secretRef, namespace }, { user, accessToken }).then((result) => {
                 if (_.get(result, 'errors')) {
                     onError()
                 } else {
@@ -352,9 +375,10 @@ export const setAvailableRules = (control, result) => {
         control.availableMap = {}
         control.availableData = []
     }
-    if (control.available.length === 0 && (error || placementRules)) {
+    if (error || placementRules) {
         if (error) {
             control.isFailed = true
+            control.isLoaded = true
         } else if (placementRules) {
             control.isLoaded = true
             placementRules.forEach((item) => {
@@ -368,6 +392,7 @@ export const setAvailableRules = (control, result) => {
                     control.active = null
                 }
             })
+            control.availableData = placementRules
         }
     } else {
         control.isLoading = loading
@@ -389,7 +414,7 @@ export const setAvailableNSSpecs = (control, result) => {
             control.isFailed = true
         } else if (data) {
             control.isLoaded = true
-            control.available = data
+            control.available = data.map((d) => d.metadata.name)
             control.available.sort()
         }
     } else {
@@ -435,9 +460,10 @@ export const updateNewRuleControlsData = (selectedPR, control) => {
     const onlineControl = _.get(control, onlineClustersCheckbox)
     const clusterSelectorControl = _.get(control, 'clusterSelector')
     const localClusterControl = _.get(control, localClusterCheckbox)
+    const existingRuleControl = _.get(control, 'placementrulecombo')
 
     if (selectedPR) {
-        const clusterConditionsList = _.get(selectedPR, 'raw.spec.clusterConditions', [])
+        const clusterConditionsList = _.get(selectedPR, 'spec.clusterConditions', [])
         const localClusterData = clusterConditionsList.filter(
             (rule) =>
                 _.get(rule, 'status', '').toLowerCase() === 'true' &&
@@ -452,7 +478,7 @@ export const updateNewRuleControlsData = (selectedPR, control) => {
             _.set(onlineControl, 'type', 'hidden')
         }
 
-        const clusterSelectorData = _.get(selectedPR, 'raw.spec.clusterSelector.matchLabels', null)
+        const clusterSelectorData = _.get(selectedPR, 'spec.clusterSelector.matchLabels', null)
 
         clusterSelectorData !== null
             ? _.set(clusterSelectorControl, 'type', 'custom')
@@ -499,20 +525,28 @@ export const updateNewRuleControlsData = (selectedPR, control) => {
 
         _.set(localClusterControl, 'type', 'hidden')
     } else {
-        _.set(localClusterControl, 'type', 'checkbox')
+        if (existingRuleControl.active) {
+            _.set(localClusterControl, 'type', 'checkbox')
 
-        _.set(onlineControl, 'type', 'checkbox')
-        _.set(onlineControl, 'active', false)
-        _.set(onlineControl, 'disabled', false)
+            _.set(onlineControl, 'type', 'checkbox')
+            _.set(onlineControl, 'active', false)
+            _.set(onlineControl, 'disabled', false)
 
-        _.set(clusterSelectorControl, 'type', 'custom')
-        _.set(clusterSelectorControl, 'active.mode', true)
+            _.set(clusterSelectorControl, 'type', 'custom')
+            _.set(clusterSelectorControl, 'active.mode', true)
 
-        clusterSelectorControl.active.clusterLabelsListID = 1
-        clusterSelectorControl.active.clusterLabelsList = [{ id: 0, labelName: '', labelValue: '', validValue: false }]
-        clusterSelectorControl.showData = []
+            clusterSelectorControl.active.clusterLabelsListID = 1
+            clusterSelectorControl.active.clusterLabelsList = [
+                { id: 0, labelName: '', labelValue: '', validValue: false },
+            ]
+            clusterSelectorControl.showData = []
+        } else {
+            // when a onSelect is fired when clearing the combobox, hide the selector
+            _.set(clusterSelectorControl, 'type', 'hidden')
+            _.set(onlineControl, 'type', 'hidden')
+            _.set(localClusterControl, 'type', 'hidden')
+        }
     }
-
     return control
 }
 
@@ -522,7 +556,7 @@ export const channelSimplified = (value, control) => {
         return value
     }
     const mappedData = _.get(control, 'availableData', {})[value]
-    return (mappedData && _.get(mappedData, 'objectPath')) || value
+    return (mappedData && _.get(mappedData, specPathname)) || value
 }
 
 export const setAvailableChannelSpecs = (type, control, result) => {
@@ -543,7 +577,7 @@ export const setAvailableChannelSpecs = (type, control, result) => {
         } else if (channels) {
             control.isLoaded = true
             const keyFn = (channel) => {
-                return `${_.get(channel, 'spec.pathname', '')} [${_.get(channel, 'metadata.namespace', 'ns')}/${_.get(
+                return `${_.get(channel, specPathname, '')} [${_.get(channel, 'metadata.namespace', 'ns')}/${_.get(
                     channel,
                     'metadata.name',
                     'name'
@@ -576,7 +610,7 @@ export const setAvailableSecrets = (control, result) => {
         control.availableMap = {}
         control.availableData = []
     }
-    if (control.available.length === 0 && (error || secrets)) {
+    if (control.available.length === 0 && (error || secrets.length)) {
         if (error) {
             control.isFailed = true
         } else if (secrets.length) {
@@ -585,11 +619,14 @@ export const setAvailableSecrets = (control, result) => {
                 (providerConnection) =>
                     providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
             )
-            control.available = ansibleCredentials.map((secret) => secret.metadata.name).sort()
+            control.available = Array.from(new Set([..._.map(ansibleCredentials, 'metadata.name')])).sort()
             return control
         }
     } else {
         control.isLoading = loading
+        if (!loading) {
+            control.isLoaded = true
+        }
     }
 }
 

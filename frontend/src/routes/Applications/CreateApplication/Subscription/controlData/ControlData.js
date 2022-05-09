@@ -15,10 +15,8 @@ import helmReleaseChannelData from './ControlDataHelm'
 import objectstoreChannelData from './ControlDataObjectStore'
 import otherChannelData from './ControlDataOther'
 import { setAvailableNSSpecs, updateControlsForNS, getSharedSubscriptionWarning } from './utils'
-import { getAuthorizedNamespaces, rbacCreate } from '../../../../../lib/rbac-util'
-import { NamespaceDefinition } from '../../../../../resources'
+import { listProjects } from '../../../../../resources'
 import { discoverGroupsFromSource, shiftTemplateObject } from '../transformers/transform-resources-to-controls'
-import { listNamespaces } from '../../../../../resources'
 import { VALID_DNS_LABEL } from 'temptifly'
 import { GitAltIcon, UnknownIcon } from '@patternfly/react-icons'
 import HelmIcom from '../../logos/HelmIcon.svg'
@@ -29,12 +27,8 @@ export const loadExistingNamespaces = () => {
         query: () => {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const namespaces = await listNamespaces().promise
-                    const authorizedNamespaces = await getAuthorizedNamespaces(
-                        [rbacCreate(NamespaceDefinition)],
-                        namespaces
-                    )
-                    resolve(authorizedNamespaces)
+                    const namespaces = await listProjects().promise
+                    resolve(namespaces)
                 } catch (err) {
                     reject(err)
                 }
@@ -43,6 +37,17 @@ export const loadExistingNamespaces = () => {
         loadingDesc: 'Loading namespaces...',
         setAvailable: setAvailableNSSpecs.bind(null),
     }
+}
+
+export const updateNameControls = (nameControl, globalControl) => {
+    const channelsControl = globalControl.find(({ id }) => id === 'channels')
+    channelsControl?.active.forEach((subscription) => {
+        const placementCheckbox = subscription.find(({ id }) => id === 'existingrule-checkbox')
+        if (!placementCheckbox?.active) {
+            const rule = subscription.find(({ id }) => id === 'selectedRuleName')
+            if (rule?.active) rule.active = undefined
+        }
+    })
 }
 
 export const updateNSControls = (nsControl, globalControl) => {
@@ -61,11 +66,17 @@ export const controlData = async () => [
         note: 'creation.view.required.mark',
     },
     {
+        id: 'showSecrets',
+        type: 'hidden',
+        active: false,
+    },
+    {
         name: 'creation.app.name',
         tooltip: 'tooltip.creation.app.name',
         id: 'name',
         type: 'text',
         editing: { disabled: true }, // if editing existing app, disable this field
+        onSelect: updateNameControls,
         validation: {
             constraint: VALID_DNS_LABEL,
             notification: 'import.form.invalid.dns.label',

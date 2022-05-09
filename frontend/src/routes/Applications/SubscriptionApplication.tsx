@@ -7,7 +7,17 @@ import Handlebars from 'handlebars'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
 import { Location } from 'history'
-import { ApplicationKind, createResources as createKubeResources, IResource, updateAppResources } from '../../resources'
+import {
+    ApplicationKind,
+    IResource,
+    ProviderConnection,
+    SubscriptionKind,
+    unpackProviderConnection,
+    updateAppResources,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    reconcileResources,
+} from '../../resources'
 import '../Applications/CreateApplication/Subscription/style.css'
 
 // Template Data
@@ -28,11 +38,19 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import _ from 'lodash'
 import { useRecoilState } from 'recoil'
-import { ansibleJobState, applicationsState, channelsState, placementRulesState, subscriptionsState } from '../../atoms'
+import {
+    ansibleJobState,
+    applicationsState,
+    channelsState,
+    placementRulesState,
+    secretsState,
+    subscriptionsState,
+} from '../../atoms'
 
 import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
 import { getApplication } from './ApplicationDetails/ApplicationTopology/model/application'
 import { getErrorInfo } from '../../components/ErrorPage'
+import { useSearchParams } from '../../lib/search'
 
 interface CreationStatus {
     status: string
@@ -48,7 +66,7 @@ const Portals = Object.freeze({
 
 export default function CreateSubscriptionApplicationPage() {
     const { t } = useTranslation()
-    const [title, setTitle] = useState<string>(t('Create Application'))
+    const [title, setTitle] = useState<string>(t('Create application'))
 
     // create portals for buttons in header
     const switches = (
@@ -88,8 +106,15 @@ export default function CreateSubscriptionApplicationPage() {
 
 export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<string>>) {
     const history = useHistory()
+    const { t } = useTranslation()
     const toastContext = useContext(AcmToastContext)
     const [controlData, setControlData] = useState<any>('')
+    const [secrets] = useRecoilState(secretsState)
+    const providerConnections = secrets.map(unpackProviderConnection)
+    const ansibleCredentials = providerConnections.filter(
+        (providerConnection) =>
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+    )
     useEffect(() => {
         getControlData()
             .then((cd) => {
@@ -108,7 +133,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
             setCreationStatus({ status: 'IN_PROGRESS', messages: [] })
             // change create cluster to create application
             const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
-            createKubeResources(createResources as IResource[])
+            reconcileResources(createResources as IResource[], [])
                 .then(() => {
                     toastContext.addAlert({
                         title: t('Application created'),
@@ -118,10 +143,14 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                         type: 'success',
                         autoClose: true,
                     })
-                    history.push(NavigationPath.applications)
+                    history.push(
+                        NavigationPath.applicationOverview
+                            .replace(':namespace', applicationResourceJSON.metadata.namespace as string)
+                            .replace(':name', applicationResourceJSON.metadata.name as string) + location.search
+                    )
                 })
                 .catch((err) => {
-                    const errorInfo = getErrorInfo(err)
+                    const errorInfo = getErrorInfo(err, t)
                     toastContext.addAlert({
                         type: 'danger',
                         title: errorInfo.title,
@@ -132,8 +161,51 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     }
     function handleCreate(resourceJSON: { createResources: IResource[] }) {
         if (resourceJSON) {
+            // create ansible secrets if any are used and not yet available in the app ns
+            // get all subscriptions using an ansible provider
+            const { createResources } = resourceJSON
+            const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
+            const subsUsingAnsible = resourceJSON.createResources.filter(
+                (resource) => resource.kind === SubscriptionKind && _.get(resource, 'spec.hooksecretref.name')
+            )
+            if (subsUsingAnsible) {
+                const uniqueAnsibleSecretNames = Array.from(
+                    new Set([..._.map(subsUsingAnsible, 'spec.hooksecretref.name')])
+                )
+                uniqueAnsibleSecretNames.forEach((name) => {
+                    // check if a secret with this name already exists in the app ns
+                    const existingSecret = ansibleCredentials.find((ac) => {
+                        return (
+                            ac.metadata.name === name &&
+                            ac.metadata.namespace === applicationResourceJSON?.metadata?.namespace
+                        )
+                    })
+                    if (!existingSecret) {
+                        const originalAnsibleSecret = ansibleCredentials.find((ac) => ac.metadata.name === name)
+                        const ansibleSecret: ProviderConnection = {
+                            apiVersion: ProviderConnectionApiVersion,
+                            kind: ProviderConnectionKind,
+                            metadata: {
+                                name,
+                                namespace: applicationResourceJSON?.metadata?.namespace,
+                                labels: {
+                                    'cluster.open-cluster-management.io/type': 'ans',
+                                    'cluster.open-cluster-management.io/copiedFromNamespace':
+                                        originalAnsibleSecret?.metadata.namespace!,
+                                    'cluster.open-cluster-management.io/copiedFromSecretName':
+                                        originalAnsibleSecret?.metadata.name!,
+                                },
+                            },
+                            stringData: _.get(originalAnsibleSecret, 'stringData', {}),
+                            type: 'Opaque',
+                        }
+                        // add resource
+                        createResources.push(ansibleSecret)
+                    }
+                })
+            }
+
             if (editApplication) {
-                const { createResources } = resourceJSON
                 // set resourceVersion
                 createResources.forEach((resource) => {
                     const name = resource.metadata?.name
@@ -157,7 +229,6 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
 
                 updateAppResources(createResources)
                     .then(() => {
-                        const applicationResourceJSON = _.find(createResources, { kind: ApplicationKind })
                         toastContext.addAlert({
                             title: t('Application updated'),
                             message: t('{{name}} was successfully updated.', {
@@ -166,10 +237,10 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                             type: 'success',
                             autoClose: true,
                         })
-                        history.push(NavigationPath.applications)
+                        redirectRoute()
                     })
                     .catch((err) => {
-                        const errorInfo = getErrorInfo(err)
+                        const errorInfo = getErrorInfo(err, t)
                         toastContext.addAlert({
                             type: 'danger',
                             title: errorInfo.title,
@@ -178,7 +249,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                     })
             } else {
                 createResource(resourceJSON).catch((err) => {
-                    const errorInfo = getErrorInfo(err)
+                    const errorInfo = getErrorInfo(err, t)
                     toastContext.addAlert({
                         type: 'danger',
                         title: errorInfo.title,
@@ -199,19 +270,25 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
 
     // cancel button
     const cancelCreate = () => {
-        history.push(NavigationPath.applications)
+        redirectRoute()
     }
 
-    // setup translation
-    const { t } = useTranslation()
-    const i18n = (key: any, arg: any) => {
-        return t(key, arg)
+    const redirectRoute = () => {
+        if (searchParams.get('context') === 'applications') {
+            history.push(NavigationPath.applications)
+        } else {
+            history.push(
+                NavigationPath.applicationOverview
+                    .replace(':namespace', editApplication?.selectedAppNamespace ?? '')
+                    .replace(':name', editApplication?.selectedAppName ?? '')
+            )
+        }
     }
 
     function getEditApplication(location: Location) {
         const pathname = location.pathname
-        if (pathname.includes('/edit')) {
-            const params = pathname.replace(/(.*)edit\//, '')
+        if (pathname.includes('/edit/subscription')) {
+            const params = pathname.replace(/(.*)edit\/subscription\//, '')
             const [namespace, name] = params.split('/')
             if (name && namespace) {
                 return {
@@ -238,24 +315,30 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     const [placementRules] = useRecoilState(placementRulesState)
     const location = useLocation()
     const editApplication = getEditApplication(location)
+    const searchParams = useSearchParams()
     useEffect(() => {
         if (editApplication) {
             const { selectedAppName, selectedAppNamespace } = editApplication
             const allChannels = '__ALL__/__ALL__//__ALL__/__ALL__'
-            // get application object from recoil states
-            const application = getApplication(selectedAppNamespace, selectedAppName, allChannels, {
-                applications,
-                ansibleJob,
-                subscriptions,
-                channels,
-                placementRules,
-            })
-            setFetchControl({
-                resources: getApplicationResources(application),
-                isLoaded: true,
-            })
+            const fetchApplication = async () => {
+                // get application object from recoil states
+                const application = await getApplication(selectedAppNamespace, selectedAppName, allChannels, {
+                    applications,
+                    ansibleJob,
+                    subscriptions,
+                    channels,
+                    placementRules,
+                })
+
+                setFetchControl({
+                    resources: getApplicationResources(application),
+                    isLoaded: true,
+                })
+            }
+            fetchApplication()
         }
-    }, [ansibleJob, applications, channels, editApplication, placementRules, subscriptions])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     useEffect(() => {
         if (editApplication) {
@@ -272,8 +355,11 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
         creationMsg: creationStatus?.messages,
     }
 
+    const isFetchControl = editApplication ? fetchControl : true
+
     return (
-        controlData && (
+        controlData &&
+        isFetchControl && (
             <TemplateEditor
                 type={'application'}
                 title={t('application.create.yaml')}
@@ -284,7 +370,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
                 fetchControl={fetchControl}
                 createControl={createControl}
                 logging={process.env.NODE_ENV !== 'production'}
-                i18n={i18n}
+                i18n={t}
             />
         )
     )

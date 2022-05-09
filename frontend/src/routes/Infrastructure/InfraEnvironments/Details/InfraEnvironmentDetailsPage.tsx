@@ -13,12 +13,15 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
+
 import {
     acmRouteState,
     agentsState,
+    agentClusterInstallsState,
     bareMetalHostsState,
     configMapsState,
-    infraEnvironmentsState,
+    infrastructuresState,
+    nmStateConfigsState,
 } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -28,9 +31,11 @@ import {
     getAIConfigMap,
     getOnCreateBMH,
     getOnSaveISOParams,
+    useInfraEnv,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
+import { getInfraEnvNMStates, isBMPlatform } from '../utils'
 
 const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY, getAgentsHostsNames } = CIM
 
@@ -44,23 +49,39 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
     const [isoModalOpen, setISOModalOpen] = useState(false)
 
-    const [infraEnvironments, agents, bareMetalHosts, configMaps] = useRecoilValue(
-        waitForAll([infraEnvironmentsState, agentsState, bareMetalHostsState, configMapsState])
+    const [agentClusterInstalls, agents, bareMetalHosts, configMaps, infrastructures, nmStateConfigs] = useRecoilValue(
+        waitForAll([
+            agentClusterInstallsState,
+            agentsState,
+            bareMetalHostsState,
+            configMapsState,
+            infrastructuresState,
+            nmStateConfigsState,
+        ])
     )
 
-    const infraEnv = infraEnvironments.find(
-        (i) => i.metadata.name === match.params.name && i.metadata.namespace === match.params.namespace
-    )
-    const infraAgents = agents.filter(
-        (a) =>
-            a.metadata.namespace === infraEnv?.metadata?.namespace &&
-            isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+    const infraEnv = useInfraEnv({ name: match.params.name, namespace: match.params.namespace })
+
+    const infraNMStates = useMemo(() => getInfraEnvNMStates(infraEnv, nmStateConfigs), [nmStateConfigs, infraEnv])
+
+    const infraAgents = useMemo(
+        () =>
+            agents.filter(
+                (a) =>
+                    a.metadata.namespace === infraEnv?.metadata?.namespace &&
+                    isMatch(a.metadata.labels, infraEnv.status?.agentLabelSelector?.matchLabels)
+            ),
+        [agents, infraEnv]
     )
 
-    const infraBMHs = bareMetalHosts.filter(
-        (bmh) =>
-            bmh.metadata.namespace === infraEnv?.metadata?.namespace &&
-            bmh.metadata.labels?.[INFRAENV_AGENTINSTALL_LABEL_KEY] === infraEnv?.metadata?.name
+    const infraBMHs = useMemo(
+        () =>
+            bareMetalHosts.filter(
+                (bmh) =>
+                    bmh.metadata.namespace === infraEnv?.metadata?.namespace &&
+                    bmh.metadata.labels?.[INFRAENV_AGENTINSTALL_LABEL_KEY] === infraEnv?.metadata?.name
+            ),
+        [bareMetalHosts, infraEnv?.metadata?.namespace, infraEnv?.metadata?.name]
     )
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, infraBMHs), [infraAgents, infraBMHs])
@@ -147,10 +168,12 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentHosts}>
                             <HostsTab
+                                agentClusterInstalls={agentClusterInstalls}
                                 infraEnv={infraEnv}
                                 infraAgents={infraAgents}
                                 bareMetalHosts={infraBMHs}
                                 aiConfigMap={aiConfigMap}
+                                infraNMStates={infraNMStates}
                             />
                         </Route>
                         <Route exact path={NavigationPath.infraEnvironmentDetails}>
@@ -170,6 +193,7 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
                 onCreateBMH={getOnCreateBMH(infraEnv)}
                 onSaveISOParams={getOnSaveISOParams(infraEnv)}
                 usedHostnames={usedHostnames}
+                isBMPlatform={isBMPlatform(infrastructures[0])}
             />
         </>
     )

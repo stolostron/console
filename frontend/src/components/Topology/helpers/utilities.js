@@ -64,6 +64,8 @@ export function kubeNaming(type) {
             .replace('stream', 'Stream')
             .replace('channel', 'Channel')
             .replace('source', 'Source')
+            .replace('reSource', 'Resource')
+            .replace('definition', 'Definition')
             .replace('config', 'Config')
             .replace('account', 'Account')
             .replace('controller', 'Controller')

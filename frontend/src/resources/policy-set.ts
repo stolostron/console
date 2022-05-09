@@ -1,10 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { IResourceDefinition } from './resource'
+
 export const PolicySetApiVersion = 'policy.open-cluster-management.io/v1beta1'
 export type PolicySetApiVersionType = 'policy.open-cluster-management.io/v1beta1'
 
 export const PolicySetKind = 'PolicySet'
 export type PolicySetKindType = 'PolicySet'
+
+export const PolicySetDefinition: IResourceDefinition = {
+    apiVersion: PolicySetApiVersion,
+    kind: PolicySetKind,
+}
 
 export interface PolicySet {
     apiVersion: PolicySetApiVersionType
@@ -35,24 +42,12 @@ export interface PolicySetSpec {
 export interface PolicySetStatus {
     compliant?: 'NonCompliant' | 'Compliant'
     placement?: PolicySetStatusPlacement[]
-    results: PolicySetStatusResult[]
+    statusMessage?: string
 }
 
 export interface PolicySetStatusPlacement {
-    placement: string
-    placementBinding: string
+    placement?: string
+    placementRule?: string
+    placementBinding?: string
     placementDecisions?: string[]
-}
-
-export interface PolicySetStatusResult {
-    policy: string
-    compliant?: 'NonCompliant' | 'Compliant'
-    message?: string
-    clusters?: PolicySetResultCluster[]
-}
-
-export interface PolicySetResultCluster {
-    clusterName: string
-    clusterNamespace: string
-    compliant: 'NonCompliant' | 'Compliant'
 }

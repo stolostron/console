@@ -17,6 +17,7 @@ import { configure } from './routes/configure'
 import { consoleLinks } from './routes/consoleLinks'
 import { events, startWatching, stopWatching } from './routes/events'
 import { liveness } from './routes/liveness'
+import { mchVersion } from './routes/mchVersion'
 import { login, loginCallback, logout } from './routes/oauth'
 import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
@@ -24,9 +25,9 @@ import { search } from './routes/search'
 import { serve } from './routes/serve'
 import { username } from './routes/username'
 
-// Router defaults to max param length of 100 - We need to override to 200 to handle resources with very long names
-// If the route exceeds 200 chars the route will not be found from this fn: router.find()
-export const router = Router<Router.HTTPVersion.V2>({ maxParamLength: 300 })
+// Router defaults to max param length of 100 - We need to override to 500 to handle resources with very long names
+// If the route exceeds 500 chars the route will not be found from this fn: router.find()
+export const router = Router<Router.HTTPVersion.V2>({ maxParamLength: 500 })
 router.get(`/readinessProbe`, readiness)
 router.get(`/livenessProbe`, liveness)
 router.get(`/ping`, respondOK)
@@ -48,6 +49,7 @@ router.get(`/*`, serve)
 router.get('/configure', configure)
 router.get('/console-links', consoleLinks)
 router.get('/username', username)
+router.get('/mchVersion', mchVersion)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     if (process.env.NODE_ENV !== 'production') {

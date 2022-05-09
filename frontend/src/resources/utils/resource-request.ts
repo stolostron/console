@@ -1,13 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import * as jsonpatch from 'fast-json-patch'
 import { noop } from 'lodash'
 import { getCookie } from '.'
-import { NamespaceKind } from '..'
-import { ApplicationKind, SubscriptionApiVersion, SubscriptionKind } from '..'
+import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '..'
+import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
+import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
-import { subAnnotationStr } from '../../routes/Applications/helpers/resource-helper'
 
 export interface IRequestResult<ResultType = unknown> {
     promise: Promise<ResultType>
@@ -104,7 +105,15 @@ export async function reconcileResources(
         await createResources(addedResources, { dryRun: true, abortController })
 
         // Dry Run - Modified Resources
-        await updateResources(modifiedResources, { dryRun: true, abortController })
+        for (const resource of modifiedResources) {
+            const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
+            if (existing) {
+                const patch = jsonpatch.compare(existing, resource)
+                if (patch.length) {
+                    await patchResource(existing, patch, { dryRun: true })
+                }
+            }
+        }
 
         // Dry Run - Deleted Resources
         await deleteResources(deletedResources, { dryRun: true, abortController })
@@ -114,7 +123,15 @@ export async function reconcileResources(
 
         // Update Resources
         try {
-            await updateResources(modifiedResources, { abortController })
+            for (const resource of modifiedResources) {
+                const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
+                if (existing) {
+                    const patch = jsonpatch.compare(existing, resource)
+                    if (patch.length) {
+                        await patchResource(existing, patch)
+                    }
+                }
+            }
         } catch (err) {
             // modifications failed, delete the previously created
             void deleteResources(addedResources).catch(noop)
@@ -148,22 +165,15 @@ export async function createResources(
             abortController?.signal.addEventListener('abort', requestResult.abort)
             try {
                 await requestResult.promise
+                createdResources.push(resource)
             } finally {
                 abortController?.signal.removeEventListener('abort', requestResult.abort)
             }
         }
     } catch (err) {
-        if (options?.dryRun !== true) {
-            if (options?.deleteCreatedOnError) {
-                if (createResource.length) {
-                    for (const createdResource of createdResources) {
-                        try {
-                            deleteResource(createdResource).promise.catch(noop)
-                        } catch (err) {
-                            // Do nothing
-                        }
-                    }
-                }
+        if (options?.dryRun !== true && options?.deleteCreatedOnError) {
+            for (const createdResource of createdResources) {
+                deleteResource(createdResource).promise.catch(noop)
             }
         }
         throw err
@@ -215,14 +225,15 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
         try {
             const existingResource = await getResource(resource).promise
             if (existingResource.kind === ApplicationKind) {
-                const exisitngSubscriptions =
-                    existingResource.metadata?.annotations && existingResource.metadata?.annotations[subAnnotationStr]
-                subscriptions = exisitngSubscriptions
-                    ?.split(',')
-                    .filter((subscription) => !subscription.endsWith('-local')) as string[]
+                const existingSubscriptions = getSubscriptionsFromAnnotation(existingResource)
+
+                subscriptions = existingSubscriptions.filter(
+                    (subscription) => !isLocalSubscription(subscription, existingSubscriptions)
+                )
             }
-            if (existingResource) {
-                await replaceResource(resource).promise
+            const patch = jsonpatch.compare(existingResource, resource)
+            if (patch.length) {
+                await patchResource(existingResource, patch)
             }
         } catch (err) {
             // if the resource does not exist, create the resource
@@ -338,7 +349,7 @@ export function getResource<Resource extends IResource>(
 }
 
 export function listResources<Resource extends IResource>(
-    resource: { apiVersion: string; kind: string },
+    resource: { apiVersion: string; kind: string; metadata?: { namespace?: string } },
     labels?: string[],
     query?: Record<string, string>
 ): IRequestResult<Resource[]> {
@@ -510,7 +521,7 @@ export function deleteRequest(url: string): IRequestResult {
 
 // --- FETCH FUNCTIONS ---
 
-export function fetchGet<T = unknown>(url: string, signal: AbortSignal) {
+export function fetchGet<T = unknown>(url: string, signal?: AbortSignal) {
     return fetchRetry<T>({
         method: 'GET',
         url,
@@ -523,7 +534,7 @@ export function fetchPut<T = unknown>(url: string, data: unknown, signal: AbortS
     return fetchRetry<T>({ method: 'PUT', url, signal, data })
 }
 
-export function fetchPost<T = unknown>(url: string, data: unknown, signal: AbortSignal) {
+export function fetchPost<T = unknown>(url: string, data?: unknown, signal?: AbortSignal) {
     return fetchRetry<T>({ method: 'POST', url, signal, data })
 }
 
@@ -543,7 +554,7 @@ export function fetchDelete(url: string, signal: AbortSignal) {
 export async function fetchRetry<T>(options: {
     method?: 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE'
     url: string
-    signal: AbortSignal
+    signal?: AbortSignal
     data?: unknown
     retries?: number
     delay?: number
@@ -586,7 +597,7 @@ export async function fetchRetry<T>(options: {
                 redirect: 'manual',
             })
         } catch (err) {
-            if (options.signal.aborted) {
+            if (options.signal?.aborted) {
                 throw new ResourceError(`Request aborted`, ResourceErrorCode.RequestAborted)
             }
 

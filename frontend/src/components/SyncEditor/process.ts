@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
-import stringSimilarity from 'string-similarity'
-import { isEmpty, get, set, keyBy, cloneDeep, has, PropertyPath } from 'lodash'
+import { isEmpty, set, cloneDeep, has } from 'lodash'
+import { getErrors, validate } from './validation'
+import { getMatchingValues, getUidSiblings } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 
@@ -15,6 +16,7 @@ export interface ProcessedType {
     resources: any[]
     yaml?: string
     hiddenSecretsValues?: any[]
+    hiddenFilteredValues?: any[]
 }
 
 export interface MappingType {
@@ -22,36 +24,32 @@ export interface MappingType {
     $r: number //what line is it on in the yaml
     $l: number // how many lines does it use in the yaml
     $v: any // what's its value
-    $s: boolean // is a secret
-    $gk: any // the start/stop of the key in the yaml
-    $gv: any // what's the start/stop of the value in yaml
+    $s?: boolean // is a secret
+    $gk?: any // the start/stop of the key in the yaml
+    $gv?: any // what's the start/stop of the value in yaml
 }
 
-export interface SecretsValuesType {
+export interface CachedValuesType {
     path: string
     value: string
-}
-export interface ErrorMessageType {
-    linePos: {
-        end: { line: 1; col: 1 }
-        start: { line: 1; col: 1 }
-    }
-    message: string
-    isWarning?: boolean
 }
 
 export const processForm = (
     monacoRef: any,
     code: string | undefined,
     resourceArr: unknown,
-    changeStack?: {
-        baseResources: any[]
-        customResources: any[]
-    },
-    secrets?: (string | string[])[],
-    immutables?: (string | string[])[],
-    userEdits?: ChangeType[],
-    validators?: any
+    changeStack:
+        | {
+              baseResources: any[]
+              customResources: any[]
+          }
+        | undefined,
+    secrets: (string | string[])[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    userEdits: ChangeType[],
+    validators: any
 ) => {
     // get yaml, documents, resource, mapped
     let yaml = code || ''
@@ -63,36 +61,56 @@ export const processForm = (
             yaml = stringify(resourceArr)
         }
     }
+
+    // get initial parse syntaxErrors
     let documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-    let errors = getErrors(documents)
+    let syntaxErrors = getErrors(documents)
     const { parsed, resources } = getMappings(documents)
 
     // save a version of parsed for change comparison later in decorations--in this case for form changes
     const comparison = cloneDeep(parsed)
 
     // reconcile form changes with user changes
-    if (errors.length === 0 && changeStack && userEdits) {
+    if (syntaxErrors.length === 0 && changeStack && userEdits) {
         const customResources = reconcile(changeStack, userEdits, resources)
         yaml = stringify(customResources)
         documents = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-        errors = getErrors(documents)
+        syntaxErrors = getErrors(documents)
     }
 
     // and the rest
-    return { comparison, ...process(monacoRef, yaml, documents, errors, secrets, [], immutables, validators) }
+    return {
+        comparison,
+        ...process(
+            monacoRef,
+            yaml,
+            documents,
+            syntaxErrors,
+            secrets,
+            [],
+            showFilters,
+            filters,
+            [],
+            immutables,
+            validators
+        ),
+    }
 }
 
 export const processUser = (
     monacoRef: any,
     yaml: string,
-    secrets?: (string | string[])[],
-    secretsValues?: SecretsValuesType[],
-    immutables?: (string | string[])[],
-    validators?: any
+    secrets: (string | string[])[] | undefined,
+    cachedSecrets: CachedValuesType[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    cacheFiltered: CachedValuesType[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    validators: any
 ) => {
     // get yaml, documents, resource, mapped
     const documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-    const errors = getErrors(documents)
+    const syntaxErrors = getErrors(documents)
     const { parsed } = getMappings(documents)
 
     // save a version of parsed for change comparison later in decorations--in this case for user changes
@@ -101,7 +119,19 @@ export const processUser = (
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, secretsValues, immutables, validators),
+        ...process(
+            monacoRef,
+            yaml,
+            documents,
+            syntaxErrors,
+            secrets,
+            cachedSecrets,
+            showFilters,
+            filters,
+            cacheFiltered,
+            immutables,
+            validators
+        ),
     }
 }
 
@@ -109,230 +139,122 @@ const process = (
     monacoRef: any,
     yaml: string,
     documents: any,
-    errors: any[],
-    secrets?: (string | string[])[],
-    secretsValues?: SecretsValuesType[],
-    immutables?: (string | string[])[],
-    validators?: any
+    syntaxErrors: any[],
+    secrets: (string | string[])[] | undefined,
+    cachedSecrets: CachedValuesType[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    cacheFiltered: CachedValuesType[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    validators: any
 ) => {
-    // if parse errors, use previous hidden secrets
-    const hiddenSecretsValues: any[] = errors.length === 0 ? [] : secretsValues ?? []
-
     // restore hidden secret values
-    let { mappings, parsed, resources } = getMappings(documents)
-    secretsValues?.forEach(({ path, value }) => {
+    let { mappings, parsed, resources, paths } = getMappings(documents)
+    cachedSecrets?.forEach(({ path, value }) => {
         if (has(parsed, path)) {
             set(parsed, path, value)
         }
     })
-    let changeWithSecrets = { yaml, mappings, parsed, resources, hiddenSecretsValues }
+
+    // restore omitted filter values
+    cacheFiltered?.forEach(({ path, value }) => {
+        if (has(parsed, path)) {
+            set(parsed, path, value)
+        }
+    })
+
+    // if parse syntaxErrors, use previous hidden secrets
+    const hiddenSecretsValues: any[] = []
+    const hiddenFilteredValues: any[] = []
+    const unredactedChange = {
+        yaml,
+        mappings: cloneDeep(mappings),
+        parsed: cloneDeep(parsed),
+        resources: cloneDeep(resources),
+        hiddenSecretsValues,
+        hiddenFilteredValues,
+    }
 
     // hide and remember secret values
-    const protectedRanges: any[] = []
-    if (secrets && !isEmpty(parsed) && !isEmpty(secrets)) {
-        changeWithSecrets = {
-            yaml,
-            mappings: cloneDeep(mappings),
-            parsed: cloneDeep(parsed),
-            resources: cloneDeep(resources),
-            hiddenSecretsValues,
+    const filteredRows: number[] = []
+    let protectedRanges: any[] = []
+    if (!isEmpty(parsed)) {
+        // stuff secrets with '*******'
+        let allSecrets = []
+        if (secrets && !isEmpty(secrets)) {
+            allSecrets = getMatchingValues(secrets, paths)
+            allSecrets.forEach((value: { $p: string[]; $r: any; $l: any; $v: any }) => {
+                if (value.$v && typeof value.$v === 'string') {
+                    if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path: value.$p, value })
+                    set(parsed, value.$p, `${'*'.repeat(Math.min(20, value.$v.replace(/\n$/, '').length))}`)
+                }
+            })
         }
 
-        // expand wildcard secrets
-        const allSecrets: any = []
-        secrets.forEach((secret) => {
-            if (Array.isArray(secret)) {
-                if (mappings[secret[0]] && secret[1] === '*') {
-                    Array.from(Array(mappings[secret[0]].length)).forEach((_d, inx) => {
-                        allSecrets.push([secret[0], inx, ...secret.slice(2)])
-                    })
-                }
-            } else if (secret.includes('[*]')) {
-                const arr = secret.split('[*]')
-                if (mappings[arr[0]]) {
-                    Array.from(Array(mappings[arr[0]].length)).forEach((_d, inx) => {
-                        allSecrets.push(`${arr[0]}[${inx}]${arr[1]}`)
-                    })
-                }
-            } else {
-                allSecrets.push(secret)
+        // stuff filtered with '-filtered-'
+        let allFiltered = []
+        if (filters && !isEmpty(filters)) {
+            allFiltered = getMatchingValues(filters, paths)
+            if (!showFilters) {
+                allFiltered.forEach((value: { $p: string[]; $r: any; $l: any; $v: any }) => {
+                    if (value.$v && typeof value.$v === 'object') {
+                        if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path: value.$p, value: value.$v })
+                        set(parsed, value.$p, undefined)
+                    }
+                })
             }
-        })
+        }
 
-        // stuff secrets with '*******'
-        allSecrets.forEach((secret: PropertyPath) => {
-            const value = get(parsed, secret)
-            if (value) {
-                hiddenSecretsValues.push({ path: secret, value })
-                set(parsed, secret, `${'*'.repeat(Math.min(20, value.replace(/\n$/, '').length))}`)
-            }
-        })
-
-        // create yaml with '****'
+        // create redacted yaml, etc
         yaml = stringify(resources)
         documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
-        ;({ mappings, parsed, resources } = getMappings(documents))
+        ;({ mappings, parsed, resources, paths } = getMappings(documents))
 
-        // prevent typing on secrets
-        allSecrets.forEach((secret: string | string[]) => {
-            const value = get(mappings, getPathArray(secret))
-            if (value && value.$v) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
-                value.$s = true
-            }
+        // prevent typing on redacted yaml
+        ;[...allSecrets].forEach((value: { $r: any }) => {
+            protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
+            //value.$s = true
+        })
+
+        // add toggle button to filtered values
+        ;[...allFiltered].forEach((value: { $r: any }) => {
+            filteredRows.push(value.$r)
         })
     }
 
     // prevent typing on immutables
     if (immutables) {
-        immutables.forEach((immutable) => {
-            let allFlag = false
-            if (Array.isArray(immutable)) {
-                allFlag = immutable[immutable.length - 1] === '*'
-                if (allFlag) {
-                    immutable.pop()
-                }
-            } else {
-                allFlag = immutable.endsWith('*')
-                if (allFlag) {
-                    immutable = immutable.slice(0, -2)
-                }
-            }
-            const value = get(mappings, getPathArray(immutable))
-            if (value && value.$v) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + (allFlag ? value.$l : 1), 0))
-            }
+        const allImmutables = getMatchingValues(immutables, paths)
+        allImmutables.forEach((value: { $r: any; $l: any }) => {
+            protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0))
         })
     }
 
-    if (errors.length === 0 && validators) {
-        validate(validators, mappings, resources, errors)
+    // prevent typing on uid and its siblings
+    protectedRanges = [
+        ...protectedRanges,
+        ...getUidSiblings(paths).map((value) => {
+            return new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0)
+        }),
+    ]
+
+    const validationErrors: any[] = []
+    if (syntaxErrors.length === 0 && validators) {
+        validate(validators, mappings, resources, validationErrors, syntaxErrors, protectedRanges)
     }
 
-    return { yaml, protectedRanges, errors, change: { resources, mappings, parsed }, changeWithSecrets }
-}
+    if (syntaxErrors.length !== 0 && validationErrors.length !== 0 && cachedSecrets && cacheFiltered) {
+        unredactedChange.hiddenSecretsValues = cachedSecrets
+        unredactedChange.hiddenFilteredValues = cacheFiltered
+    }
 
-function validate(validators: any, mappings: { [name: string]: any[] }, resources: any[], errors: any[]) {
-    const kindMap = {}
-    const validatorMap = keyBy(validators, 'type')
-    resources.forEach((resource) => {
-        const kind = resource.kind
-        let d: number = get(kindMap, kind, 0)
-        // determine validation for this resource
-        let validator = validators[0].validator
-        if (validators.length > 1) {
-            validator = validatorMap[kind]?.validator
-            if (!validator && kind) {
-                const matches = stringSimilarity.findBestMatch(kind, Object.keys(validatorMap))
-                const {
-                    bestMatch: { rating, target },
-                } = matches
-                if (rating > 0.7) {
-                    validator = validatorMap[target]?.validator
-                }
-            }
-        }
-        if (validator) {
-            validateResource(validator, mappings, [resource.kind, d], resource, errors)
-            set(kindMap, resource.kind, d++)
-        }
-    })
-}
-
-function validateResource(
-    validator: any,
-    mappings: { [name: string]: any[] },
-    prefix: string[],
-    resource: any,
-    errors: any[]
-) {
-    const valid = validator(resource)
-    if (!valid) {
-        validator.errors.forEach((error: { instancePath: string; keyword: string; message: string; params: any }) => {
-            const { instancePath, keyword, message, params } = error
-            const errorMsg: ErrorMessageType = {
-                linePos: {
-                    end: { line: 1, col: 1 },
-                    start: { line: 1, col: 1 },
-                },
-                message,
-            }
-
-            // convert instance path to line
-            // for paths, lodash get hates periods, ajv hates forward slash
-            let path: string[] = prefix
-            if (!isEmpty(instancePath)) {
-                path = instancePath
-                    .substring(1)
-                    .split('/')
-                    .map((p) => {
-                        return p.replace(/~\d+/g, '/')
-                    })
-                path = [...prefix, ...path]
-                path = getPathArray(path)
-            }
-            let mapping = get(mappings, path)
-            if (mapping) {
-                errorMsg.linePos.start.line = errorMsg.linePos.end.line = mapping?.kind?.$r ?? mapping?.$r ?? 1
-                errorMsg.isWarning = true
-                let matches
-                switch (keyword) {
-                    // missing a key
-                    case 'required':
-                        // see if there's a misspelled key
-                        mapping = mapping.$v || mapping
-                        if (!isEmpty(mapping)) {
-                            matches = stringSimilarity.findBestMatch(params.missingProperty, Object.keys(mapping))
-                        }
-                        if (matches) {
-                            const {
-                                bestMatch: { rating, target },
-                            } = matches
-                            if (rating > 0.7) {
-                                const similar = mapping[target]
-                                errorMsg.linePos.start.line = errorMsg.linePos.end.line = similar.$r
-                                errorMsg.linePos.start.col = similar.$gk.start.col
-                                errorMsg.linePos.end.col = similar.$gk.end.col
-                            }
-                        }
-                        errorMsg.isWarning = false
-                        break
-                    case 'const':
-                        errorMsg.message = `${message}: ${params.allowedValue}`
-                        errorMsg.linePos.start.col = mapping.$gv.start.col
-                        errorMsg.linePos.end.col = mapping.$gv.end.col
-                        errorMsg.isWarning = false
-                        break
-                    // value wrong pattern
-                    case 'pattern':
-                        errorMsg.linePos.start.col = mapping.$gv.start.col
-                        errorMsg.linePos.end.col = mapping.$gv.end.col
-                        break
-                    // value wrong enum
-                    case 'enum':
-                        errorMsg.message = `${message}: ${params.allowedValues
-                            .map((val: any) => {
-                                return `"${val}"`
-                            })
-                            .join(', ')}`
-                        errorMsg.linePos.start.col = mapping.$gv.start.col
-                        errorMsg.linePos.end.col = mapping.$gv.end.col
-                        break
-                    case 'type':
-                        errorMsg.message = message
-                        errorMsg.linePos.start.col = mapping.$gv?.start?.col ?? 1
-                        errorMsg.linePos.end.col = mapping.$gv?.end?.col ?? 1
-                        errorMsg.isWarning = false
-                        break
-                    default:
-                        errorMsg.message = message
-                        errorMsg.linePos.start.col = mapping.$gv?.start?.col ?? 1
-                        errorMsg.linePos.end.col = mapping.$gv?.end?.col ?? 1
-                        break
-                }
-            }
-            errors.push(errorMsg)
-        })
+    return {
+        yaml,
+        protectedRanges,
+        filteredRows,
+        errors: { syntax: syntaxErrors, validation: validationErrors },
+        change: { resources, mappings, parsed },
+        unredactedChange,
     }
 }
 
@@ -340,43 +262,77 @@ function getMappings(documents: any[]) {
     const parsed: { [name: string]: any[] } = {}
     const mappings: { [name: string]: any[] } = {}
     const resources: any[] = []
+    const paths: { [name: string]: any[] } = {}
     documents.forEach((document) => {
         if (!document?.errors.length) {
             const json = document.toJSON()
             if (json) {
                 const key = json?.kind || 'root'
-                let arr = mappings[key] || []
-                const rangeObj: { [name: string]: { $k: string; $r: any; $l: any; $v: any; $gk: any; $gv: any } } = {}
-                const contents: any = document?.contents
-                getMappingItems(contents?.items, rangeObj)
-                arr.push(rangeObj)
-                mappings[key] = arr
-                arr = parsed[key] || []
+                let arr = parsed[key] || []
                 arr.push(json)
                 parsed[key] = arr
+                arr = mappings[key] || []
+                const rangeObj: { [name: string]: MappingType } = {}
+                const contents: any = document?.contents
+                getMappingItems(
+                    contents?.items,
+                    rangeObj,
+                    `${key}.${parsed[key].length - 1}`,
+                    [key, `${parsed[key].length - 1}`],
+                    paths
+                )
+                arr.push(rangeObj)
+                mappings[key] = arr
                 resources.push(json)
             }
         }
     })
-    return { mappings, parsed, resources }
+    return { mappings, parsed, resources, paths }
 }
 
 function getMappingItems(
     items: any[],
-    rangeObj: { [name: string]: { $k: string; $r: any; $l: any; $v: any; $gk: any; $gv: any } }
+    rangeObj: { [name: string]: MappingType } | MappingType[],
+    parentKey: string,
+    parentPath: string[],
+    paths: { [name: string]: any } = {}
 ) {
     items?.forEach((item: any) => {
         const key = item?.key?.value || 'unknown'
         let value
         if (item.items || item.value) {
             if (item.items ?? item.value.items) {
-                value = {}
-                getMappingItems(item.items ?? item.value.items, value)
+                value = item?.value?.type === 'SEQ' ? [] : {}
+                const pk = `${parentKey}${item?.key?.value ? `.${key}` : ''}`
+                const pa = [...parentPath]
+                if (item?.key?.value) {
+                    pa.push(key)
+                }
+                getMappingItems(item.items ?? item.value.items, value, pk, pa, paths)
             } else {
-                value = item?.value?.value
+                value = item?.value?.value ?? item?.value
             }
         }
-        if (item.key) {
+        if (Array.isArray(rangeObj)) {
+            const valuePos = item?.cstNode.rangeAsLinePos
+            const firstRow = valuePos?.start.line ?? 1
+            const lastRow = valuePos?.end.line ?? firstRow
+            const length = Math.max(1, lastRow - firstRow)
+            rangeObj.push({
+                $k: `${rangeObj.length}`,
+                $r: firstRow,
+                $l: length,
+                $v: value,
+                $gv: valuePos,
+            })
+            paths[`${parentKey}.${rangeObj.length}`] = {
+                $p: [...parentPath, rangeObj.length],
+                $r: firstRow,
+                $l: length,
+                $v: value,
+                $d: rangeObj,
+            }
+        } else if (item.key) {
             const keyPos = item.key.cstNode.rangeAsLinePos
             const valuePos = item?.value?.cstNode.rangeAsLinePos
             const firstRow = keyPos?.start.line ?? 1
@@ -390,63 +346,36 @@ function getMappingItems(
                 $gk: keyPos,
                 $gv: valuePos,
             }
+            paths[`${parentKey}.${key}`] = {
+                $p: [...parentPath, key],
+                $r: firstRow,
+                $l: length,
+                $v: value,
+                $d: rangeObj,
+            }
         }
     })
 }
 
-export const getPathArray = (path: string[] | string) => {
-    const pathArr: string[] = []
-    if (!Array.isArray(path)) {
-        path = path.split('.')
-        const convert = path[0].replace('[', '.').replace(']', '').split('.')
-        if (convert.length) {
-            path.shift()
-            path = [...convert, ...path]
-        }
-    }
-    path.forEach((seg: any, idx: number) => {
-        pathArr.push(seg)
-        if (idx > 1 && idx < path.length - 1) {
-            pathArr.push('$v')
-        }
-    })
-    return pathArr
-}
-
-const getErrors = (documents: any[]) => {
-    const errors: any[] = []
-    documents.forEach((document: { errors: any[] }) => {
-        document?.errors.forEach((error: { linePos: any; message: any }) => {
-            const { linePos, message } = error
-            errors.push({ linePos, message })
-        })
-    })
-    return errors
+// sort name/namespace to top
+const sort = ['name', 'namespace']
+const sortMapEntries = (a: { key: { value: string } }, b: { key: { value: string } }) => {
+    let ai = sort.indexOf(a.key.value)
+    if (ai < 0) ai = 5
+    let bi = sort.indexOf(b.key.value)
+    if (bi < 0) bi = 5
+    return ai - bi
 }
 
 export const stringify = (resources: any[]) => {
     const yamls: string[] = []
     resources.forEach((resource: any) => {
         if (!isEmpty(resource)) {
-            let yaml = YAML.stringify(resource)
+            let yaml = YAML.stringify(resource, { sortMapEntries })
             yaml = yaml.replace(/'\d+':(\s|$)\s*/gm, '- ')
             yaml = yaml.replace(/:\s*null$/gm, ':')
             yamls.push(yaml)
         }
     })
     return yamls.join('---\n')
-}
-
-export const formatErrors = (errors: ErrorMessageType[], warnings?: boolean) => {
-    return errors
-        .filter(({ isWarning }) => {
-            return warnings ? isWarning === true : isWarning !== true
-        })
-        .map((error) => {
-            return {
-                line: error.linePos.start.line,
-                col: error.linePos.start.col,
-                message: error.message,
-            }
-        })
 }

@@ -17,6 +17,7 @@ import {
     onChangeSNO,
     onChangeConnection,
     addSnoText,
+    architectureData,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
@@ -53,7 +54,7 @@ const mo48Cpu64Gib = '48 vCPU, 384 GiB RAM - Memory Optimized'
 const mo64Cpu64Gib = '64 vCPU, 512 GiB RAM - Memory Optimized'
 const mo96Cpu64Gib = '96 vCPU, 768 GiB RAM - Memory Optimized'
 
-export const awsRegions = {
+export let awsRegions = {
     'us-east-1': [usEast1a, usEast1b, usEast1c, usEast1d, usEast1e, usEast1f],
     'us-east-2': ['us-east-2a', 'us-east-2b', 'us-east-2c'],
     'us-west-1': ['us-west-1a', 'us-west-1c'],
@@ -75,6 +76,9 @@ export const awsRegions = {
     'eu-west-3': ['eu-west-3a', 'eu-west-3b', 'eu-west-3c'],
     'me-south-1': ['me-south-1a', 'me-south-1b', 'me-south-1c'],
     'sa-east-1': ['sa-east-1a', 'sa-east-1b', 'sa-east-1c'],
+}
+
+export const awsGovRegions = {
     'us-gov-west-1': ['us-gov-west-1a', 'us-gov-west-1b', 'us-gov-west-1c'],
     'us-gov-east-1': ['us-gov-east-1a', 'us-gov-east-1b', 'us-gov-east-1c'],
 }
@@ -83,14 +87,40 @@ const setAWSZones = (control, controlData) => {
     const setZones = (poolKey, zoneKey) => {
         const region = control.active
         const pool = controlData.find(({ id }) => id === poolKey)
-        const typeZones = pool.active[0].find(({ id }) => id === zoneKey)
-        const zones = awsRegions[region]
-        typeZones.available = zones || []
-        typeZones.active = []
+        pool.active.forEach((worker) => {
+            const typeZones = worker.find(({ id }) => id === zoneKey)
+            const zones = awsRegions[region]
+            typeZones.available = zones || []
+            typeZones.active = []
+        })
     }
 
     setZones('masterPool', 'masterZones')
     setZones('workerPools', 'workerZones')
+}
+
+const updateWorkerZones = (control, controlData) => {
+    const region = controlData.find(({ name }) => name === 'Region').active
+    const worker = control.active[control.active.length - 1]
+    const typeZones = worker.find(({ id }) => id === 'workerZones')
+    const zones = awsRegions[region]
+    typeZones.available = zones || []
+    typeZones.active = []
+}
+
+export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
+    if (includeSno) addSnoText(controlDataAWS)
+    let controlData = [...controlDataAWS]
+    if (includeAwsPrivate) {
+        controlData.push(...awsPrivateControlData)
+        const regionObject = controlData.find((object) => object.id === 'region')
+        if (regionObject && regionObject.available) {
+            awsRegions = { ...awsRegions, ...awsGovRegions }
+            regionObject.available = regionObject.available.concat(Object.keys(awsRegions))
+        }
+    }
+    if (includeAutomation) controlData.push(...automationControlData)
+    return controlData
 }
 
 const AWSmasterInstanceTypes = [
@@ -101,6 +131,39 @@ const AWSmasterInstanceTypes = [
     { value: 'm5.10xlarge', description: gp40Cpu160Gib },
     { value: 'm5.16xlarge', description: gp64Cpu256Gib },
 ]
+
+const onChangeAWSPrivate = (control, controlData) => {
+    const awsPrivateFields = []
+    const awsPrivateSections = []
+
+    controlData.forEach((controlItem) => {
+        const id = controlItem.id
+        if (id === 'amiID' || id === 'hostedZone') awsPrivateFields.push(controlItem)
+        if (id === 'privateLink' || id === 'serviceEndpoints') awsPrivateSections.push(controlItem)
+    })
+
+    awsPrivateFields.forEach((controlItem) => {
+        controlItem.disabled = !controlItem.disabled
+        controlItem.active = ''
+    })
+    awsPrivateSections.forEach((controlItem) => {
+        controlItem.active.forEach((section) => {
+            section.forEach((item) => {
+                if (item.controlId === 'subnetID') {
+                    item.active = []
+                }
+                if (item.id === 'endpointName') {
+                    controlItem.active.length = 1
+                    item.active = ''
+                }
+                if (item.id === 'endpointURL') {
+                    item.active = ''
+                }
+            })
+        })
+        controlItem.hidden = !controlItem.hidden
+    })
+}
 
 export const AWSworkerInstanceTypes = [
     {
@@ -594,14 +657,6 @@ export const AWSworkerInstanceTypes = [
     },
 ]
 
-export const getControlDataAWS = (includeAutomation = true, includeAwsPrivate = true, includeSno = false) => {
-    if (includeSno) addSnoText(controlDataAWS)
-    let controlData = [...controlDataAWS]
-    if (includeAwsPrivate) controlData.push(...awsPrivateControlData)
-    if (includeAutomation) controlData.push(...automationControlData)
-    return controlData
-}
-
 const controlDataAWS = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  connection  /////////////////////////////////////
@@ -686,6 +741,8 @@ const controlDataAWS = [
         onSelect: setAWSZones,
         reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
+    ///////////////////////  architecture  /////////////////////////////////////
+    ...architectureData,
     ///////////////////////  control plane pool  /////////////////////////////////////
     {
         id: 'masterPool',
@@ -752,6 +809,7 @@ const controlDataAWS = [
             addPrompt: 'creation.ocp.cluster.add.node.pool',
             deletePrompt: 'creation.ocp.cluster.delete.node.pool',
         },
+        onChange: updateWorkerZones,
         controlData: [
             {
                 id: 'workerPool',
@@ -835,7 +893,7 @@ const awsPrivateControlData = [
     {
         id: 'privateAWS',
         type: 'step',
-        title: 'AWS private configuration',
+        title: 'creation.aws.privateAWS',
     },
     {
         id: 'privateAWSTitle',
@@ -843,19 +901,28 @@ const awsPrivateControlData = [
         info: 'creation.aws.privateAWS.info',
     },
     {
-        name: 'amiID',
+        name: 'creation.aws.private.enable',
+        id: 'hasPrivateConfig',
+        type: 'checkbox',
+        active: false,
+        onSelect: onChangeAWSPrivate,
+    },
+    {
+        name: 'creation.aws.ami',
         tooltip: 'creation.aws.ami.tooltip',
         id: 'amiID',
         type: 'text',
+        disabled: true,
         placeholder: 'creation.aws.ami.placeholder',
         active: '',
         validation: VALIDATE_ALPHANUMERIC,
     },
     {
-        name: 'Hosted Zone',
+        name: 'creation.aws.hostedZone',
         tooltip: 'creation.aws.hostedZone.tooltip',
         id: 'hostedZone',
         type: 'text',
+        disabled: true,
         placeholder: 'creation.aws.hostedZone.placeholder',
         active: '',
         validation: VALIDATE_ALPHANUMERIC,
@@ -865,6 +932,7 @@ const awsPrivateControlData = [
         id: 'privateLink',
         type: 'group',
         onlyOne: true,
+        hidden: true,
         controlData: [
             {
                 id: 'subnetSection',
@@ -889,6 +957,7 @@ const awsPrivateControlData = [
         id: 'serviceEndpoints',
         type: 'group',
         onlyOne: false,
+        hidden: true,
         prompts: {
             nameId: 'tester',
             baseName: 'Subnet ID',
@@ -915,7 +984,7 @@ const awsPrivateControlData = [
                 validation: VALIDATE_ALPHANUMERIC,
             },
             {
-                name: 'Url',
+                name: 'URL',
                 tooltip: 'creation.aws.serviceEndpointUrl.tooltip',
                 id: 'endpointURL',
                 type: 'text',

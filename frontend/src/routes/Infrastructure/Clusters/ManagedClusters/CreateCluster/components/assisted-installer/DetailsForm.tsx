@@ -9,11 +9,10 @@ import { AcmLabelsInput, AcmSelect } from '@stolostron/ui-components'
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import { SelectOption, Text } from '@patternfly/react-core'
 import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-
+import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { Secret } from '../../../../../../../resources'
-import { clusterDeploymentsState } from '../../../../../../../atoms'
+import { clusterDeploymentsState, clusterImageSetsState } from '../../../../../../../atoms'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'
 import { useClusterImages } from './utils'
 
@@ -24,6 +23,7 @@ const {
     ACM_ENABLED_FEATURES,
     labelsToArray,
     LoadingState,
+    getVersionFromReleaseImage,
 } = CIM
 
 type FormControl = {
@@ -55,6 +55,7 @@ const fields: any = {
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
     const [clusterDeployments] = useRecoilState(clusterDeploymentsState)
+    const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
     const formRef = useRef<FormikProps<any>>(null)
     const { t } = useTranslation()
 
@@ -62,6 +63,11 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     const mustJoinClusterSet = useMustJoinClusterSet()
     const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
     const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
+
+    const getVersion = (versionName = '') => {
+        const clusterImage = clusterImageSets.find((clusterImageSet) => clusterImageSet.metadata?.name == versionName)
+        return getVersionFromReleaseImage(clusterImage?.spec?.releaseImage) || versionName
+    }
 
     useEffect(() => {
         if (control.disabled && formRef?.current) {
@@ -95,7 +101,10 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
             })
             if (!isEqual(active, control.active)) {
                 control.active = active
-                formRef?.current?.setValues(control.active)
+            }
+
+            if (formRef.current && !isEqual(active, formRef.current.values)) {
+                formRef.current.setValues(active)
             }
         }
         control.validate = () => {
@@ -105,9 +114,13 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
         }
         control.summary = () => {
             return Object.keys(fields).map((key) => {
+                let desc = get(control, `active.${key}`)
+                if (key === 'openshiftVersion') {
+                    desc = getVersion(get(control, `active.${key}`))
+                }
                 return {
                     term: startCase(camelCase(key)),
-                    desc: get(control, `active.${key}`),
+                    desc: desc,
                     exception: get(control, `errors.${key}`),
                 }
             })
@@ -131,7 +144,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
                 }
                 labelHelp={t('import.form.managedClusterSet.labelHelp')}
                 value={managedClusterSet}
-                onChange={(mcs) => setManagedClusterSet(mcs)}
+                onChange={setManagedClusterSet}
                 isDisabled={canJoinClusterSets === undefined || canJoinClusterSets.length === 0}
                 hidden={canJoinClusterSets === undefined}
                 helperText={
@@ -170,14 +183,16 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     }, [managedClusterSet])
 
     const onValuesChanged = useCallback(
-        debounce((formiValues) => {
+        debounce((formikValues, initRender) => {
             const values = {
-                ...formiValues,
+                ...formikValues,
                 managedClusterSet: control.active.managedClusterSet,
                 additionalLabels: control.active.additionalLabels,
             }
             if (!isEqual(values, control.active)) {
-                control.active = values
+                if (!initRender || control.active.name === '') {
+                    control.active = values
+                }
                 control.step.title.isComplete = false
                 handleChange(control)
             }

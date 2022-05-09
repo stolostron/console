@@ -14,25 +14,46 @@ import { ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useRecoilState } from 'recoil'
-import { ansibleJobState } from '../../../../../atoms'
+import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
+import { ansibleJobState, clusterImageSetsState } from '../../../../../atoms'
 import { RbacButton } from '../../../../../components/Rbac'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
+import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
+import { CIM } from 'openshift-assisted-ui-lib'
+
+const { getVersionFromReleaseImage } = CIM
 
 export function DistributionField(props: { cluster?: Cluster; clusterCurator?: ClusterCurator | undefined }) {
     const { t } = useTranslation()
     const [open, toggleOpen] = useState<boolean>(false)
     const toggle = () => toggleOpen(!open)
     const [ansibleJobs] = useRecoilState(ansibleJobState)
+    const [clusterImageSets] = useRecoilValue(waitForAll([clusterImageSetsState]))
+    const agentClusterInstall = useAgentClusterInstall({
+        name: props.cluster?.name,
+        namespace: props.cluster?.namespace,
+    })
     let latestAnsibleJob: { prehook: AnsibleJob | undefined; posthook: AnsibleJob | undefined }
     if (props.cluster?.namespace && ansibleJobs)
         latestAnsibleJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.namespace)
     else latestAnsibleJob = { prehook: undefined, posthook: undefined }
 
-    if (!props.cluster?.distribution) return <>-</>
-    // use display version directly for non-online clusters
+    if (!props.cluster?.distribution) {
+        //we try to get version from clusterimage
+        if (agentClusterInstall) {
+            const clusterImage = clusterImageSets.find(
+                (clusterImageSet) => clusterImageSet.metadata?.name === agentClusterInstall.spec?.imageSetRef?.name
+            )
+            const version = getVersionFromReleaseImage(clusterImage?.spec?.releaseImage)
 
+            if (version) {
+                return <>{version ? `OpenShift ${version}` : '-'}</>
+            }
+        }
+        return <>-</>
+    }
+    // use display version directly for non-online clusters
     // Pre/Post hook
     if (
         props.cluster?.distribution?.upgradeInfo?.isUpgradeCuration &&

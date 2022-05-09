@@ -11,7 +11,7 @@ import {
 import { Fragment, Suspense, useMemo } from 'react'
 import { Link, Route, Switch, useHistory, useLocation, useParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { channelsState, helmReleaseState, policiesState, subscriptionsState } from '../../../../atoms'
+import { channelsState, helmReleaseState, subscriptionsState, usePolicies } from '../../../../atoms'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { RbacDropdown } from '../../../../components/Rbac'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -26,7 +26,7 @@ export function PolicyDetailsPage() {
     const location = useLocation()
     const { t } = useTranslation()
     const history = useHistory()
-    const [policies] = useRecoilState(policiesState)
+    const policies = usePolicies()
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)

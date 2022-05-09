@@ -1,10 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Correctly returns CreateApplicationLink 1`] = `"-"`;
+exports[`Correctly returns CreateApplicationTopologyLink 1`] = `"-"`;
 
 exports[`Correctly returns CreateDetailsLink - ACM-Application 1`] = `
 <a
-  href="/multicloud/applications/testApplicationNamespace/testApplicationName?apiVersion=app.k8s.io%2Fapiversion&cluster=cluster"
+  href="/multicloud/applications/details/testApplicationNamespace/testApplicationName/topology?apiVersion=application.app.k8s.io&cluster=cluster"
 >
   testApplicationName
 </a>
@@ -36,7 +36,7 @@ exports[`Correctly returns CreateDetailsLink - Default 1`] = `
 
 exports[`Correctly returns CreateDetailsLink - HUB-Policy 1`] = `
 <a
-  href="/multicloud/governance/policies/testPolicyName"
+  href="/multicloud/governance/policies/details/testPolicyNamespace/testPolicyName"
 >
   testPolicyName
 </a>
@@ -125,8 +125,7 @@ Array [
   },
   Object {
     "cell": "-",
-    "header": "Dashboard",
-    "sort": "dashboard",
+    "header": "Topology",
   },
   Object {
     "cell": <AcmLabels
@@ -1840,7 +1839,7 @@ exports[`Correctly returns category components 1`] = `
 />
 `;
 
-exports[`Correctly returns empty CreateApplicationLink 1`] = `"-"`;
+exports[`Correctly returns empty CreateApplicationTopologyLink 1`] = `"-"`;
 
 exports[`Correctly returns empty CreateExternalLink 1`] = `"-"`;
 

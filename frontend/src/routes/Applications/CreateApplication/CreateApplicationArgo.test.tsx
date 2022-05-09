@@ -6,6 +6,7 @@ import {
     channelsState,
     gitOpsClustersState,
     managedClusterSetBindingsState,
+    managedClusterSetsState,
     namespacesState,
     placementsState,
     secretsState,
@@ -29,9 +30,12 @@ import {
     GitOpsCluster,
     GitOpsClusterApiVersion,
     GitOpsClusterKind,
+    ManagedClusterSet,
+    ManagedClusterSetApiVersion,
     ManagedClusterSetBinding,
     ManagedClusterSetBindingApiVersion,
     ManagedClusterSetBindingKind,
+    ManagedClusterSetKind,
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
@@ -69,9 +73,9 @@ const channelGit: Channel = {
     spec: {
         pathname: 'https://github.com/stolostron/application-lifecycle-samples',
         type: 'Git',
-        secretRef: {
-            name: 'secret-01',
-        },
+        // secretRef: {
+        //     name: 'secret-01',
+        // },
     },
 }
 
@@ -85,9 +89,21 @@ const channelHelm: Channel = {
     spec: {
         pathname: 'http://multiclusterhub-repo.open-cluster-management.svc.cluster.local:3000/charts',
         type: 'HelmRepo',
-        secretRef: {
-            name: 'secret-01',
-        },
+        // secretRef: {
+        //     name: 'secret-01',
+        // },
+    },
+}
+
+const clusterSet: ManagedClusterSet = {
+    apiVersion: ManagedClusterSetApiVersion,
+    kind: ManagedClusterSetKind,
+    metadata: {
+        name: 'cluster-set-01',
+        namespace: 'argo-server-1',
+    },
+    spec: {
+        clusterSet: 'cluster-set-01',
     },
 }
 
@@ -142,10 +158,10 @@ const argoAppSetGit: ApplicationSet = {
                 },
             },
         ],
-
         template: {
             metadata: {
                 name: 'application-01-{{name}}',
+                labels: { 'velero.io/exclude-from-backup': 'true' },
             },
             spec: {
                 project: 'default',
@@ -157,6 +173,10 @@ const argoAppSetGit: ApplicationSet = {
                 destination: {
                     namespace: 'gitops-ns',
                     server: '{{server}}',
+                },
+                syncPolicy: {
+                    automated: { selfHeal: true, prune: true },
+                    syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
                 },
             },
         },
@@ -190,6 +210,7 @@ const argoAppSetHelm: ApplicationSet = {
         template: {
             metadata: {
                 name: 'helm-application-01-{{name}}',
+                labels: { 'velero.io/exclude-from-backup': 'true' },
             },
             spec: {
                 project: 'default',
@@ -201,6 +222,10 @@ const argoAppSetHelm: ApplicationSet = {
                 destination: {
                     namespace: 'gitops-ns',
                     server: '{{server}}',
+                },
+                syncPolicy: {
+                    automated: { selfHeal: true, prune: true },
+                    syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
                 },
             },
         },
@@ -240,6 +265,7 @@ describe('Create Argo Application Set', () => {
                     snapshot.set(channelsState, [channelGit, channelHelm])
                     snapshot.set(namespacesState, [namespace])
                     snapshot.set(secretsState, [])
+                    snapshot.set(managedClusterSetsState, [clusterSet])
                     snapshot.set(managedClusterSetBindingsState, [clusterSetBinding])
                 }}
             >
@@ -250,69 +276,50 @@ describe('Create Argo Application Set', () => {
         )
     }
 
-    const initialNocks = [nockGet(gitSecret)]
-
     test('can create Argo Application Set with Git', async () => {
+        const initialNocks = [nockGet(gitSecret)]
         render(<AddApplicationSet />)
+        await waitForNocks(initialNocks)
 
-        // appset name
+        // General
         await typeByTestId('name', argoAppSetGit!.metadata!.name!)
-
-        // select argoServer
         await clickByText('Select the Argo server')
         await clickByText(gitOpsCluster!.spec!.argoServer!.argoNamespace)
-
-        // next - Source
         await clickByText('Next')
 
-        // repository type
+        // Template
         await clickByText('Git')
-
-        // channel
         await clickByText('Enter or select a Git URL')
-        await clickByText(channelGit.spec.pathname)
-        // nock.recorder.rec()
-        await waitForNocks(initialNocks)
-        const appBranchNock = nockArgoGitBranches(channelGit.spec.pathname, {
-            branchList: [{ name: 'branch-01' }],
-        })
 
-        // select branch
-        await waitForNocks([appBranchNock])
+        const appBranchNocks = [nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] })]
+        await clickByText(channelGit.spec.pathname)
+        await waitForNocks(appBranchNocks)
+
         await clickByText('Enter or select a tracking revision')
         const pathNocks = [
-            nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', {
-                commit: { sha: '01' },
-            }),
-            nockArgoGitPathTree(channelGit.spec.pathname, {
-                tree: [{ path: 'application-test', type: 'tree' }],
-            }),
+            nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
+            nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
         ]
-
         await clickByText('branch-01')
         await waitForNocks(pathNocks)
 
-        // select path
         await clickByText('Enter or select a repository path')
         await clickByText('application-test')
 
-        // remote namespace
         await typeByPlaceholderText('Enter the remote namespace', 'gitops-ns')
-
-        // sync policy
         await clickByText('Next')
 
-        // placement
+        // Sync policy
         await clickByText('Next')
+
+        // Placement
         await clickByText('Select the cluster sets')
         await clickByText(clusterSetBinding.spec.clusterSet)
-
-        // submit
-
-        const createGitAppSetNocks = [nockCreate(argoAppSetGit), nockCreate(placementGit)]
         await clickByText('Next')
-        await clickByText('Submit')
 
+        // Review
+        const createGitAppSetNocks = [nockCreate(argoAppSetGit), nockCreate(placementGit)]
+        await clickByText('Submit')
         await waitForNocks(createGitAppSetNocks)
     })
 

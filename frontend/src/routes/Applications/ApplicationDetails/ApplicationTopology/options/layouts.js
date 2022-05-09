@@ -18,18 +18,25 @@ import _ from 'lodash'
 
 export const getConnectedLayoutOptions = ({ elements }) => {
     // pre position elements to try to keep webcola from random layouts
+    let subscriptions = 0
     const typeToShapeMap = defaultShapes
     const nodes = elements.nodes()
+    nodes.forEach((n) => {
+        const ndata = n.data()
+        if (ndata.node.type === 'subscription' || ndata.node.type === 'ansiblejob') {
+            subscriptions++
+        }
+    })
     const roots = nodes
         .roots((n) => {
             // only have the application node as root
             const ndata = n.data()
-            return ndata.node.type === 'application'
+            return ndata.node.type === 'application' || ndata.node.type === 'applicationset'
         })
         .toArray()
     const leaves = nodes.leaves()
     positionApplicationRows(roots, typeToShapeMap)
-    if (nodes.length < 40 && roots.length === 1 && leaves.length > 2 && leaves.length < 20) {
+    if (subscriptions <= 1 && nodes.length < 40 && roots.length === 1 && leaves.length > 2 && leaves.length < 20) {
         return {
             name: 'preset',
         }
@@ -89,7 +96,9 @@ export const positionApplicationRows = (row, typeToShapeMap) => {
                     const subIncomers = subscription
                         .incomers((node) => {
                             const nodeData = node.data()
-                            return nodeData.node ? nodeData.node.type === 'application' : false
+                            return nodeData.node
+                                ? nodeData.node.type === 'application' || nodeData.node.type === 'applicationset'
+                                : false
                         })
                         .nodes()
                     const appNode = subIncomers[0]

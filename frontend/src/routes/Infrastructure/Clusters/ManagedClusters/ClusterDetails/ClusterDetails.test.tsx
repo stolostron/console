@@ -221,6 +221,7 @@ const mockClusterDeployment: ClusterDeployment = {
         cliImage:
             'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:8b8e08e498c61ccec5c446d6ab50c96792799c992c78cfce7bbb8481f04a64cb',
         conditions: [],
+        powerState: 'WaitingForMachines',
         installerImage:
             'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:a3ed2bf438dfa5a114aa94cb923103432cd457cac51d1c4814ae0ef7e6e9853b',
         provisionRef: {

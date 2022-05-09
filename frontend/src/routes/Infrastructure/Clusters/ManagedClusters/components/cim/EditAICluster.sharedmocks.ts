@@ -218,3 +218,46 @@ export const mockNMStateConfig = {
         ],
     },
 }
+
+export const pullSecretMock = {
+    kind: 'Secret',
+    apiVersion: 'v1',
+    metadata: {
+        name: `pullsecret-cluster-${clusterName}`,
+        namespace: clusterName,
+        labels: {
+            'agent-install.openshift.io/watch': 'true',
+            'cluster.open-cluster-management.io/backup': 'cluster',
+        },
+        data: {
+            '.dockerconfigjson': 'foo',
+            type: 'kubernetes.io/dockerconfigjson',
+        },
+    },
+}
+
+export const managedClusterMock = {
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: {
+        name: clusterName,
+        namespace: undefined,
+        labels: {
+            name: clusterName,
+        },
+    },
+    spec: {
+        hubAcceptsClient: true,
+        leaseDurationSeconds: 60,
+    },
+}
+
+export const klusterletMock = {
+    apiVersion: 'agent.open-cluster-management.io/v1',
+    kind: 'KlusterletAddonConfig',
+    metadata: {
+        name: clusterName,
+        namespace: clusterName,
+    },
+    spec: {},
+}

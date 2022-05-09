@@ -31,6 +31,9 @@ controlPlane:
 
 {{#each masterPool}}
 controlPlane:
+  {{#if ../architecture}}
+  architecture: {{{../architecture}}}
+  {{/if}}
   hyperthreading: Enabled
   name: master
 {{#if ../singleNode}}
@@ -90,6 +93,7 @@ controlPlane:
       memoryMB:  {{{../../masterMemoryMB}}} ##masterPool.{{@index}}.masterMemoryMB
       osDisk:
         sizeGB: {{{../../masterRootStorage}}} ##masterPool.{{@index}}.masterRootStorage
+      vmType: high_performance
   {{/case}}
 
   {{#case 'OpenStack'}}
@@ -119,6 +123,9 @@ compute:
 {{#if @first}}
 compute:
 - hyperthreading: Enabled
+  {{#if ../architecture}}
+  architecture: {{{../architecture}}}
+  {{/if}}
   name: '{{{workerName}}}'
   {{#if ../singleNode}}
   replicas: 0
@@ -183,6 +190,7 @@ compute:
       memoryMB:  {{{../../memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
         sizeGB: {{{../../diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+      vmType: server
   {{/case}}
 
   {{#case 'OpenStack'}}
@@ -256,7 +264,6 @@ platform:
     hosts:
 {{#each ../../hosts}}
       - name: '{{{hostName}}}'  ##hosts.{{@index}}.hostName
-        namespace: '{{{hostNamespace}}}'  ##hosts.{{@index}}.hostNamespace
         role: {{{role}}}  ##hosts.{{@index}}.role
         bmc:
           address: '{{{bmcAddress}}}'  ##hosts.{{@index}}.bmcAddress
@@ -330,8 +337,9 @@ publish: Internal
   ovirt:
     api_vip: {{{../../apiVIP}}}    ##apiVIP
     ingress_vip: {{{../../ingressVIP}}}  ##ingressVIP
-    ovirt_cluster_id: {{{../../ovirt_cluster_id}}} ##ovirt_cluster_id
     ovirt_network_name: {{{../../ovirt_network_name}}} ##ovirt_network_name
+    vnicProfileID: {{{../../vnicProfileID}}}
+    ovirt_cluster_id: {{{../../ovirt_cluster_id}}} ##ovirt_cluster_id
     ovirt_storage_domain_id: {{{../../ovirt_storage_domain_id}}} ##ovirt_storage_domain_id
 {{/case}}
 
