@@ -1,5 +1,5 @@
 {
     "viewportWidth": 1600,
     "viewportHeight": 1120,
-    "baseUrl": "https://multicloud-console.apps.cs-aws-410-bcwlw.dev02.red-chesterfield.com/"
+    "baseUrl": "https://localhost:3000/"
 }
