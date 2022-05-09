@@ -275,6 +275,9 @@ export const updateControlsForNS = (initiatingControl, nsControl, globalControl)
             selectedRuleNameControl && _.set(selectedRuleNameControl, 'active', '')
 
             updateNewRuleControlsData('', control)
+        } else {
+            const existingPlacementRuleCombo = _.get(control, 'placementrulecombo')
+            _.set(existingPlacementRuleCombo, 'isLoaded', false)
         }
     })
 
@@ -375,7 +378,7 @@ export const setAvailableRules = (control, result) => {
         if (error) {
             control.isFailed = true
             control.isLoaded = true
-        } else if (placementRules && placementRules.length > 0) {
+        } else if (placementRules) {
             control.isLoaded = true
             placementRules.forEach((item) => {
                 const { metadata } = item

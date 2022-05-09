@@ -36,7 +36,7 @@ const localClusterCheckbox = 'local-cluster-checkbox'
 const onlineClusterCheckbox = 'online-cluster-only-checkbox'
 
 export const loadExistingPlacementRules = () => {
-    let nsControl = ''
+    let nsControl = undefined
 
     return {
         query: () => {
