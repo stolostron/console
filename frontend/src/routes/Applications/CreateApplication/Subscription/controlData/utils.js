@@ -23,6 +23,7 @@ import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResou
 const onlineClustersCheckbox = 'online-cluster-only-checkbox'
 const existingRuleCheckbox = 'existingrule-checkbox'
 const localClusterCheckbox = 'local-cluster-checkbox'
+const specPathname = 'spec.pathname'
 
 export const loadExistingChannels = (type) => {
     return {
@@ -294,7 +295,7 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
 
         const selectedChannel = _.get(gitControl, 'availableData', {})[_.get(gitControl, 'active', '')]
         // get git repository path from channel object if this is an existing channel, use the combo value otherwise
-        const gitUrl = selectedChannel ? _.get(selectedChannel, 'spec.pathname', '') : _.get(gitControl, 'active', '')
+        const gitUrl = selectedChannel ? _.get(selectedChannel, specPathname, '') : _.get(gitControl, 'active', '')
         const namespace = _.get(selectedChannel, 'metadata.namespace', '')
         const secretRef = _.get(selectedChannel, 'secretRef', '')
         const accessToken = _.get(githubAccessIdCtrl, 'active')
@@ -555,7 +556,7 @@ export const channelSimplified = (value, control) => {
         return value
     }
     const mappedData = _.get(control, 'availableData', {})[value]
-    return (mappedData && _.get(mappedData, 'objectPath')) || value
+    return (mappedData && _.get(mappedData, specPathname)) || value
 }
 
 export const setAvailableChannelSpecs = (type, control, result) => {
@@ -576,7 +577,7 @@ export const setAvailableChannelSpecs = (type, control, result) => {
         } else if (channels) {
             control.isLoaded = true
             const keyFn = (channel) => {
-                return `${_.get(channel, 'spec.pathname', '')} [${_.get(channel, 'metadata.namespace', 'ns')}/${_.get(
+                return `${_.get(channel, specPathname, '')} [${_.get(channel, 'metadata.namespace', 'ns')}/${_.get(
                     channel,
                     'metadata.name',
                     'name'
