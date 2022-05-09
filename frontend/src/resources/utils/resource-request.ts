@@ -231,8 +231,9 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
                     (subscription) => !isLocalSubscription(subscription, existingSubscriptions)
                 )
             }
-            if (existingResource) {
-                await replaceResource(resource).promise
+            const patch = jsonpatch.compare(existingResource, resource)
+            if (patch.length) {
+                await patchResource(existingResource, patch)
             }
         } catch (err) {
             // if the resource does not exist, create the resource
