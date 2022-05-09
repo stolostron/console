@@ -233,6 +233,36 @@ export function CredentialsForm(props: {
         providerConnection?.stringData?.cloudName ?? CloudNames.AzurePublicCloud
     )
 
+    function getDisconnectedDocLink(credentialType: Provider) {
+        switch (credentialType) {
+            case Provider.vmware:
+                return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL_VMWARE
+            case Provider.openstack:
+                return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL_OPENSTACK
+            default:
+                return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL
+        }
+    }
+
+    function getProxyDocLink(credentialType: Provider) {
+        switch (credentialType) {
+            case Provider.redhatvirtualization:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_VIRTUALIZATION
+            case Provider.aws:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_AWS
+            case Provider.gcp:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_GCP
+            case Provider.azure:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_AZURE
+            case Provider.vmware:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_VMWARE
+            case Provider.openstack:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_OPENSTACK
+            default:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY
+        }
+    }
+
     let osServicePrincipalJson:
         | {
               clientId: string
@@ -1086,7 +1116,7 @@ export function CredentialsForm(props: {
                 title: t('Configuration for disconnected installation'),
                 wizardTitle: t('Enter the configuration for disconnected installation'),
                 description: (
-                    <a href={DOC_LINKS.CONFIG_DISCONNECTED_INSTALL} target="_blank" rel="noreferrer">
+                    <a href={getDisconnectedDocLink(credentialsType as Provider)} target="_blank" rel="noreferrer">
                         {t('How do I configure for disconnected installation?')}
                     </a>
                 ),
@@ -1169,7 +1199,7 @@ export function CredentialsForm(props: {
                 title: t('Proxy'),
                 wizardTitle: t('Proxy'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION_PROXY} target="_blank" rel="noreferrer">
+                    <a href={getProxyDocLink(credentialsType as Provider)} target="_blank" rel="noreferrer">
                         {t('How do I configure a proxy?')}
                     </a>
                 ),
