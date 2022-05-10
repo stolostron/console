@@ -13,6 +13,7 @@
         "plugins": "concurrently npm:backend npm:watch:plugins npm:serve:plugins -c green,blue,magenta",
         "backend": "cd backend && npm start",
         "frontend": "cd frontend && npm start",
+        "frontend:quiet": "cd frontend && npm run quiet",
         "watch:plugins": "cd frontend && npm run watch:plugins",
         "serve:plugins": "cd frontend && npm run serve:plugins",
         "test": "concurrently --kill-others-on-fail npm:frontend:test npm:backend:test npm:copyright:check -n frontend,backend -c green,blue",
@@ -39,7 +40,10 @@
         "podman:run": "npm run podman:build && podman run --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./backend/node_modules/.bin/pino-zen -i time && podman rm -f console",
         "podman:deploy": "npm run podman:build && podman tag console quay.io/$USER/console:latest && podman push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
         "setup": "./setup.sh",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "cypress:open": "cypress open",
+        "cypress:ci": "concurrently npm:frontend:quiet npm:backend npm:cypress:run --prefix-colors cyan,green,blue --kill-others --success first",
+        "cypress:run": "cypress run --config video=false"
     },
     "devDependencies": {
         "@types/node": "14.18.16",
@@ -54,5 +58,8 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
+    },
+    "dependencies": {
+        "cypress": "^9.6.1"
     }
 }

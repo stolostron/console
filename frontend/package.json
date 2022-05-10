@@ -4,6 +4,7 @@
     "private": true,
     "scripts": {
         "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children --open",
+        "quiet": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development",
         "build": "NODE_OPTIONS=--max-old-space-size=8192 TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
         "tsc": "tsc --noEmit",
         "build:plugins": "concurrently npm:build:plugin:* -c green,blue,cyan,magenta",
@@ -29,11 +30,7 @@
         "serve:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && npx http-server ./dist -p $PORT -c-1 --cors",
         "serve:plugin:acm": "PLUGIN=acm PORT=3002 npm run serve:plugin",
         "serve:plugin:mce": "PLUGIN=mce PORT=3001 npm run serve:plugin",
-        "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup",
-        "cypress:open": "cypress open",
-        "cypress": "concurrently npm:cypress:frontend npm:cypress:run --prefix-colors cyan,green --kill-others --success first",
-        "cypress:run": "cypress run --config video=false",
-        "cypress:frontend": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development"
+        "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup"
     },
     "dependencies": {
         "@apollo/client": "3.5.10",
@@ -129,7 +126,6 @@
         "crypto-browserify": "3.12.0",
         "css-loader": "6.7.1",
         "css-minimizer-webpack-plugin": "3.4.1",
-        "cypress": "^9.5.1",
         "eslint": "8.15.0",
         "eslint-config-prettier": "8.5.0",
         "eslint-plugin-import": "2.26.0",

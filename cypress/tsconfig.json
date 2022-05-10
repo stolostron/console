@@ -1,0 +1,37 @@
+{
+    "compilerOptions": {
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "module": "commonjs",
+        "target": "es5",
+        "jsx": "react-jsx",
+        "types": ["node", "jest", "cypress"],
+
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
+
+        "alwaysStrict": true,
+        "noImplicitThis": true,
+        "noImplicitAny": true,
+        "strict": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": true,
+
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": false,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        // "isolatedModules": true,
+        "noEmit": true
+    }
+}

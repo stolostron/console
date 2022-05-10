@@ -7,6 +7,8 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
+            - uses: redhat-actions/openshift-tools-installer@v1
+            - run: oc login -u ${{ secrets.USER }} -p ${{ secrets.PASSWORD }}
             - uses: actions/setup-node@v2
               with:
                   node-version: '14'
