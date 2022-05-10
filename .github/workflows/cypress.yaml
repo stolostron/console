@@ -23,6 +23,7 @@ jobs:
             - run: npm run setup
             - run: npm run cypress:ci
             - uses: actions/upload-artifact@v3
-                with:
-                    name: cypress-screenshots
-                    path: cypress/screenshots
+              if: failure()
+              with:
+                  name: cypress-screenshots
+                  path: cypress/screenshots
