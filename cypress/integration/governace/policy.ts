@@ -3,11 +3,13 @@
 
 import { createNamespace, deleteNamespace } from '../../support/governance/namespace'
 import { createPolicy, deletePolicy, editPolicy } from '../../support/governance/policy'
+import { login } from '../../support/utils/login'
 import { randomHex } from '../../support/utils/random-hex'
 
 describe('policy', () => {
     const name = `policy-${randomHex()}`
     const namespace = `cypress-${randomHex()}`
+    it('login', () => login())
     it('create namespace', () => createNamespace(namespace))
     it('create policy ', () => createPolicy(name, namespace))
     it('edit policy ', () => editPolicy(name))
