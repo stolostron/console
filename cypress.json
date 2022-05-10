@@ -3,5 +3,5 @@
     "viewportHeight": 1120,
     "baseUrl": "https://localhost:3000/",
     "pageLoadTimeout": 30000,
-    "defaultCommandTimeout": 8000
+    "defaultCommandTimeout": 30000
 }
