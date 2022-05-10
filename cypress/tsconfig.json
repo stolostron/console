@@ -4,7 +4,7 @@
         "module": "commonjs",
         "target": "es5",
         "jsx": "react-jsx",
-        "types": ["node", "jest", "cypress"],
+        "types": ["node", "cypress"],
 
         "sourceMap": true,
         "declaration": true,

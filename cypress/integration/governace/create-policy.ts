@@ -3,12 +3,12 @@
 
 import crypto from 'crypto'
 
-describe('create policy set', () => {
+describe('create policy', () => {
     const namespace: string = `cypress-${crypto.randomBytes(4).toString('hex')}`
     const name = `cypress-${crypto.randomBytes(4).toString('hex')}`
 
     before(() => {
-        cy.visit(`/multicloud/governance/policy-sets/create`)
+        cy.visit(`/multicloud/governance/policies/create`)
         cy.createNamespace(namespace)
     })
 
@@ -24,17 +24,31 @@ describe('create policy set', () => {
         cy.contains('Next').click()
     })
 
-    it('policies', () => {
+    it('templates', () => {
+        cy.get('.pf-c-wizard__main-body').within(() => {
+            cy.contains('Add policy template').click()
+            cy.contains('Limit cluster admin roles').click()
+        })
         cy.contains('Next').click()
     })
 
     it('placement', () => {
         cy.get('.pf-c-wizard__main-body').within(() => {
+            cy.contains('New placement').click()
             cy.get('#add-button').click()
             cy.get('#label-expressions').within(() => {
                 cy.get('#key').click().get('#local-cluster').scrollIntoView().click()
                 cy.get('#values').multiselect('true')
             })
+        })
+        cy.contains('Next').click()
+    })
+
+    it('annotations', () => {
+        cy.get('.pf-c-wizard__main-body').within(() => {
+            cy.get('#categories').within(() => {})
+            cy.get('#standards').within(() => {})
+            cy.get('#controls').within(() => {})
         })
         cy.contains('Next').click()
     })
@@ -45,9 +59,16 @@ describe('create policy set', () => {
         cy.contains('Submit').click()
     })
 
-    it('policy set page should show created policy set', () => {
+    it('policy details page should show created policy set', () => {
+        cy.url().should('include', name)
+        cy.contains(name)
+    })
+
+    it('policies page should show created policy set', () => {
+        cy.visit(`/multicloud/governance/policies`)
         cy.contains('Governance')
-        cy.contains('Policy sets')
+        cy.contains('Policies')
+        cy.get('.pf-c-search-input__text-input').type(name)
         cy.contains(name)
     })
 })

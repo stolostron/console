@@ -58,5 +58,8 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
+    },
+    "dependencies": {
+        "cypress": "^9.6.1"
     }
 }
