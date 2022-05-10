@@ -57,16 +57,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const [prohibited, setProhibited] = useState<any>([])
     const [filteredRows, setFilteredRows] = useState<number[]>([])
     const [userEdits, setUserEdits] = useState<any>([])
-    const [resourceChanges, setResourceChanges] = useState<{
-        unredactedChange: {
-            yaml: string
-            mappings: { [name: string]: any[] }
-            parsed: { [name: string]: any[] }
-            resources: any[]
-            hiddenSecretsValues: any[]
-            hiddenFilteredValues: any[]
-        }
-    }>()
+    const [resourceChanges, setResourceChanges] = useState<ProcessedType>()
     const [statusChanges, setStatusChanges] = useState<{
         changes: any[]
         errors: any[]
@@ -425,14 +416,15 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 lastChange?.parsed
             )
 
-            //
+            // using cross reference created in formchange, propagate any user change to
+            // a path that has cross references to those other references
             changes = updateReferences(changes, xreferences, unredactedChange)
 
             // report new resources/errors/useredits to form
             // if there are validation errors still pass it to form
             editorRef.current.customSyntaxErrors = allErrors.length > 0
             if (errors.syntax.length === 0) {
-                setResourceChanges(cloneDeep({ unredactedChange }))
+                setResourceChanges(cloneDeep(unredactedChange))
             }
             setStatusChanges(cloneDeep({ changes, redactedChange: change, errors: allErrors }))
 
@@ -492,17 +484,16 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     // report resource changes to form
     useEffect(() => {
         if (resourceChanges) {
-            const { unredactedChange } = resourceChanges
             const isArr = Array.isArray(resources)
-            let _resources = isArr ? unredactedChange.resources : unredactedChange.resources[0]
+            let _resources = isArr ? resourceChanges.resources : resourceChanges.resources[0]
 
             // if synceditor resources is different from form.wizard, report resources
             // if syncs defined, set values into form/wizard
-            setFormValues(syncs, unredactedChange)
+            setFormValues(syncs, resourceChanges)
             _resources = isArr ? resources : [resources]
-            if (onEditorChange && !isEqual(unredactedChange.resources, _resources)) {
+            if (onEditorChange && !isEqual(resourceChanges.resources, _resources)) {
                 const editChanges = {
-                    resources: isArr ? unredactedChange.resources : unredactedChange.resources[0],
+                    resources: isArr ? resourceChanges.resources : resourceChanges.resources[0],
                 }
                 setCustomYaml(editorRef.current.customYaml)
                 onEditorChange(editChanges)

@@ -1,20 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'lodash/get'
 import set from 'lodash/set'
-import { MappingType } from './process'
 
 // set form/wizard inputs to yaml changes
 export const setFormValues = (
     syncs: unknown,
     resources: {
-        mappings: { [x: string]: any[] }
+        parsed: { [x: string]: any[] }
     }
 ) => {
     if (Array.isArray(syncs)) {
         syncs.forEach(({ path, setState }) => {
-            path = getPathArray(path)
-            const value = get(resources.mappings, path, {}) as unknown as MappingType
-            setState(value.$v ?? '')
+            const value = get(resources.parsed, path, '')
+            setState(value ?? '')
         })
     }
 }
@@ -94,8 +92,8 @@ export const updateReferences = (
             if (xrefs.references[path]) {
                 const remaining = edit.$f.replace(xrefs.value, '')
                 const change = edit.$u.replace(remaining, '')
-                Object.entries(xrefs.references).forEach(([k, v]) => {
-                    set(unredactedChange.parsed, v, change)
+                Object.values(xrefs.references).forEach((path) => {
+                    set(unredactedChange.parsed, path, change)
                 })
                 return false
             }
