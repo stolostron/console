@@ -11,7 +11,7 @@ import { processForm, processUser, ProcessedType } from './process'
 import { compileAjvSchemas, formatErrors } from './validation'
 import { getFormChanges, getUserChanges, formatChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
-import { setFormValues } from './synchronize'
+import { setFormValues, updateReferences } from './synchronize'
 import './SyncEditor.css'
 
 export interface SyncEditorProps extends React.HTMLProps<HTMLPreElement> {
@@ -57,16 +57,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     const [prohibited, setProhibited] = useState<any>([])
     const [filteredRows, setFilteredRows] = useState<number[]>([])
     const [userEdits, setUserEdits] = useState<any>([])
-    const [resourceChanges, setResourceChanges] = useState<{
-        unredactedChange: {
-            yaml: string
-            mappings: { [name: string]: any[] }
-            parsed: { [name: string]: any[] }
-            resources: any[]
-            hiddenSecretsValues: any[]
-            hiddenFilteredValues: any[]
-        }
-    }>()
+    const [resourceChanges, setResourceChanges] = useState<ProcessedType>()
     const [statusChanges, setStatusChanges] = useState<{
         changes: any[]
         errors: any[]
@@ -88,6 +79,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         baseResources: any[]
         customResources: any[]
     }>()
+    const [xreferences, setXReferences] = useState<{ value: any; references: { [name: string]: any[] } }[]>([])
     const [mouseDownHandle, setMouseDownHandle] = useState<any>()
     const [keyDownHandle, setKeyDownHandle] = useState<any>()
     const [hoverProviderHandle, setHoverProviderHandle] = useState<any>()
@@ -289,6 +281,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 comparison: formComparison,
                 change,
                 unredactedChange,
+                xreferences,
             } = processForm(
                 monacoRef,
                 code,
@@ -298,12 +291,14 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 showFiltered,
                 filters,
                 immutables,
+                readonly === true,
                 userEdits,
                 validationRef.current
             )
             setProhibited(protectedRanges)
             setFilteredRows(filteredRows)
             setLastUnredactedChange(unredactedChange)
+            setXReferences(xreferences)
 
             const allErrors = [...errors.validation, ...errors.syntax]
             const { yamlChanges, remainingEdits } = getFormChanges(
@@ -402,6 +397,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 filters,
                 lastUnredactedChange?.hiddenFilteredValues,
                 immutables,
+                readonly === true,
                 validationRef.current
             )
             setLastUnredactedChange(unredactedChange)
@@ -411,7 +407,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             // determine what changes were made by user so we can decorate
             // and know what form changes to block
             const allErrors = [...errors.validation, ...errors.syntax]
-            const changes = getUserChanges(
+            let changes = getUserChanges(
                 allErrors,
                 change,
                 lastUserEdits,
@@ -420,11 +416,15 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
                 lastChange?.parsed
             )
 
+            // using cross reference created in formchange, propagate any user change to
+            // a path that has cross references to those other references
+            changes = updateReferences(changes, xreferences, unredactedChange)
+
             // report new resources/errors/useredits to form
             // if there are validation errors still pass it to form
             editorRef.current.customSyntaxErrors = allErrors.length > 0
             if (errors.syntax.length === 0) {
-                setResourceChanges(cloneDeep({ unredactedChange }))
+                setResourceChanges(cloneDeep(unredactedChange))
             }
             setStatusChanges(cloneDeep({ changes, redactedChange: change, errors: allErrors }))
 
@@ -484,17 +484,16 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     // report resource changes to form
     useEffect(() => {
         if (resourceChanges) {
-            const { unredactedChange } = resourceChanges
             const isArr = Array.isArray(resources)
-            let _resources = isArr ? unredactedChange.resources : unredactedChange.resources[0]
+            let _resources = isArr ? resourceChanges.resources : resourceChanges.resources[0]
 
             // if synceditor resources is different from form.wizard, report resources
             // if syncs defined, set values into form/wizard
-            setFormValues(syncs, unredactedChange)
+            setFormValues(syncs, resourceChanges)
             _resources = isArr ? resources : [resources]
-            if (onEditorChange && !isEqual(unredactedChange.resources, _resources)) {
+            if (onEditorChange && !isEqual(resourceChanges.resources, _resources)) {
                 const editChanges = {
-                    resources: isArr ? unredactedChange.resources : unredactedChange.resources[0],
+                    resources: isArr ? resourceChanges.resources : resourceChanges.resources[0],
                 }
                 setCustomYaml(editorRef.current.customYaml)
                 onEditorChange(editChanges)
