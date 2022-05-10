@@ -204,16 +204,20 @@ export function AnsibleAutomationsForm(props: {
                     prehook: upgradePreJobs,
                     posthook: upgradePostJobs,
                 },
-                scale: {
-                    towerAuthSecret: ansibleSelection,
-                    prehook: scalePreJobs,
-                    posthook: scalePostJobs,
-                },
-                destroy: {
-                    towerAuthSecret: ansibleSelection,
-                    prehook: destroyPreJobs,
-                    posthook: destroyPostJobs,
-                },
+                ...(settings.ansibleIntegration === 'enabled'
+                    ? {
+                          scale: {
+                              towerAuthSecret: ansibleSelection,
+                              prehook: scalePreJobs,
+                              posthook: scalePostJobs,
+                          },
+                          destroy: {
+                              towerAuthSecret: ansibleSelection,
+                              prehook: destroyPreJobs,
+                              posthook: destroyPostJobs,
+                          },
+                      }
+                    : {}),
             },
         }
         return curator
