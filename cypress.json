@@ -2,5 +2,5 @@
     "viewportWidth": 1600,
     "viewportHeight": 1120,
     "baseUrl": "https://localhost:3000/",
-    "pageLoadTimeout": 30000
+    "pageLoadTimeout": 300000
 }
