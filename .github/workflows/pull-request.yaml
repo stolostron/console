@@ -7,7 +7,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-            - uses: redhat-actions/openshift-tools-installer@v1
+            - name: Install CLI tools from OpenShift Mirror
+              uses: redhat-actions/openshift-tools-installer@v1
+              with:
+                  source: 'mirror'
             - run: oc login -u ${{ secrets.USERNAME }} -p ${{ secrets.PASSWORD }} -p ${{ secrets.APISERVER }} --insecure-skip-tls-verify=true
             - uses: actions/setup-node@v2
               with:
