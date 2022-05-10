@@ -12,7 +12,7 @@ jobs:
               with:
                   source: 'mirror'
                   oc: '3'
-            - run: oc login -u ${{ secrets.USERNAME }} -p ${{ secrets.PASSWORD }} ${{ secrets.APISERVER }} --insecure-skip-tls-verify=true
+            - run: oc login --token ${{ secrets.TOKEN }} ${{ secrets.APISERVER }} --insecure-skip-tls-verify=true
             - uses: actions/setup-node@v2
               with:
                   node-version: '14'
