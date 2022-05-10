@@ -1,4 +1,4 @@
-name: cypress
+name: Cypress
 on:
     pull_request:
         branches: main
@@ -7,8 +7,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-            - name: Install CLI tools from OpenShift Mirror
-              uses: redhat-actions/openshift-tools-installer@v1
+            - uses: redhat-actions/openshift-tools-installer@v1
               with:
                   source: 'mirror'
                   oc: '4'
