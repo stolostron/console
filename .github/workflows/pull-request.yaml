@@ -17,5 +17,7 @@ jobs:
               with:
                   node-version: '14'
                   cache: 'npm'
+                  cache-dependency-path: '**/package-lock.json'
             - run: npm ci
+            - run: npm run setup
             - run: npm run cypress:ci
