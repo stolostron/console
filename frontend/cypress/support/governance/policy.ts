@@ -2,19 +2,19 @@
 export function createPolicy(name: string, namespace: string) {
     cy.visit(`/multicloud/governance/policies/create`)
 
-    cy.get('#details').within(() => {
+    cy.get('.pf-c-wizard__main-body').within(() => {
         cy.get('#name').type(name)
         cy.get('#namespace').click().get(`#${namespace}`).click()
     })
     cy.contains('Next').click()
 
-    cy.get('#templates').within(() => {
+    cy.get('.pf-c-wizard__main-body').within(() => {
         cy.contains('Add policy template').click()
         cy.contains('Limit cluster admin roles').click()
     })
     cy.contains('Next').click()
 
-    cy.get('#placement').within(() => {
+    cy.get('.pf-c-wizard__main-body').within(() => {
         cy.contains('New placement').click()
         cy.get('#add-button').click()
         cy.get('#label-expressions').within(() => {
@@ -24,9 +24,11 @@ export function createPolicy(name: string, namespace: string) {
     })
     cy.contains('Next').click()
 
-    cy.get('#categories').within(() => {})
-    cy.get('#standards').within(() => {})
-    cy.get('#controls').within(() => {})
+    cy.get('.pf-c-wizard__main-body').within(() => {
+        cy.get('#categories').within(() => {})
+        cy.get('#standards').within(() => {})
+        cy.get('#controls').within(() => {})
+    })
     cy.contains('Next').click()
 
     cy.get('#nav-toggle').click()
