@@ -8,12 +8,16 @@ describe('create policy', () => {
     const name = `cypress-${crypto.randomBytes(4).toString('hex')}`
 
     before(() => {
-        cy.visit(`/multicloud/governance/policies/create`)
         cy.createNamespace(namespace)
     })
 
     after(() => {
         cy.deleteNamespace(namespace)
+    })
+
+    it('load page', () => {
+        cy.visit(`/multicloud/governance/policies/create`)
+        cy.get('.pf-c-page__main').contains('Create policy', { timeout: 5 * 60 * 1000 })
     })
 
     it('details', () => {
@@ -61,14 +65,6 @@ describe('create policy', () => {
 
     it('policy details page should show created policy set', () => {
         cy.url().should('include', name)
-        cy.contains(name)
-    })
-
-    it('policies page should show created policy set', () => {
-        cy.visit(`/multicloud/governance/policies`)
-        cy.contains('Governance')
-        cy.contains('Policies')
-        cy.get('.pf-c-search-input__text-input').type(name)
         cy.contains(name)
     })
 })

@@ -48,8 +48,12 @@ describe('delete policy', () => {
         cy.deleteNamespace(namespace)
     })
 
-    it('policy page should contain policy', () => {
+    it('load page', () => {
         cy.visit(`/multicloud/governance/policies`)
+        cy.get('.pf-c-page__main').contains('Governance', { timeout: 5 * 60 * 1000 })
+    })
+
+    it('policy page should contain policy', () => {
         cy.contains('Policies')
         cy.get('.pf-c-search-input__text-input').type(name)
         cy.contains(name)
