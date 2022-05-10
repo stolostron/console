@@ -276,11 +276,11 @@ const getAppHooks = async (hooks, isPreHooks) => {
 
             if (response) {
                 response.forEach((deployable) => {
-                    const name = get(deployable, 'metadata.name')
-                    const namespace = get(deployable, 'metadata.namespace')
+                    const hookName = get(deployable, 'metadata.name')
+                    const hookNamespace = get(deployable, 'metadata.namespace')
                     values.forEach(({ deployableName, subscription }) => {
                         const subNS = get(subscription, 'metadata.namespace')
-                        if (name === deployableName && namespace === subNS) {
+                        if (hookName === deployableName && hookNamespace === subNS) {
                             if (isPreHooks) {
                                 if (!subscription.prehooks) {
                                     subscription.prehooks = []
