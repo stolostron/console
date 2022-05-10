@@ -21,3 +21,8 @@ jobs:
             - run: npm ci
             - run: npm run setup
             - run: npm run cypress:ci
+            - name: 'Upload Artifact'
+                uses: actions/upload-artifact@v3
+                with:
+                    path: cypress/screenshots
+                    retention-days: 1    
