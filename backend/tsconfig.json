@@ -20,7 +20,7 @@
         "experimentalDecorators": true,
         "skipLibCheck": true,
         "esModuleInterop": true,
-        "isolatedModules": true
+        // "isolatedModules": true
     },
     "include": ["src"]
 }

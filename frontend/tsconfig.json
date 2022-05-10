@@ -4,7 +4,7 @@
         "module": "commonjs",
         "target": "es5",
         "jsx": "react-jsx",
-        "types": ["node", "jest"],
+        "types": ["node", "jest", "cypress"],
 
         "sourceMap": true,
         "declaration": true,
@@ -31,8 +31,8 @@
         "forceConsistentCasingInFileNames": true,
         "moduleResolution": "node",
         "resolveJsonModule": true,
-        "isolatedModules": true,
+        // "isolatedModules": true,
         "noEmit": true
     },
-    "include": ["src", "webpack.config.ts", "i18n-scripts"]
+    "include": ["src", "webpack.config.ts", "i18n-scripts", "cypress"]
 }

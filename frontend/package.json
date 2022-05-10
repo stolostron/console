@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
-        "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children",
+        "start": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --stats-children --open",
         "build": "NODE_OPTIONS=--max-old-space-size=8192 TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
         "tsc": "tsc --noEmit",
         "build:plugins": "concurrently npm:build:plugin:* -c green,blue,cyan,magenta",
@@ -30,7 +30,10 @@
         "serve:plugin:acm": "PLUGIN=acm PORT=3002 npm run serve:plugin",
         "serve:plugin:mce": "PLUGIN=mce PORT=3001 npm run serve:plugin",
         "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup",
-        "cypress:open": "cypress open"
+        "cypress:open": "cypress open",
+        "cypress": "concurrently npm:cypress:frontend npm:cypress:run --prefix-colors cyan,green --kill-others --success first",
+        "cypress:run": "cypress run --config video=false",
+        "cypress:frontend": "TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development"
     },
     "dependencies": {
         "@apollo/client": "3.5.10",
