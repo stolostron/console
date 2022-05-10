@@ -1,9 +1,9 @@
-name: Pull Request
+name: Cypress
 on:
     pull_request:
         branches: main
 jobs:
-    pull-request:
+    cypress:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
