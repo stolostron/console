@@ -1,19 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'lodash/get'
-import { MappingType } from './process'
+import set from 'lodash/set'
 
 // set form/wizard inputs to yaml changes
 export const setFormValues = (
     syncs: unknown,
     resources: {
-        mappings: { [x: string]: any[] }
+        parsed: { [x: string]: any[] }
     }
 ) => {
     if (Array.isArray(syncs)) {
         syncs.forEach(({ path, setState }) => {
-            path = getPathArray(path)
-            const value = get(resources.mappings, path, {}) as unknown as MappingType
-            setState(value.$v ?? '')
+            const value = get(resources.parsed, path, '')
+            setState(value ?? '')
         })
     }
 }
@@ -45,6 +44,62 @@ export const getUidSiblings = (paths: { [name: string]: any[] }) => {
         })
     })
     return uidSiblings
+}
+
+// for each user edit, update other values where it's referenced
+export const crossReference = (paths: { [name: string]: any }) => {
+    // create set of form paths that can't be overriden
+    const xreferences: { value: any; references: { [name: string]: any[] } }[] = []
+    const keys: string[] = ['name', 'namespace']
+    keys.forEach((key: string) => {
+        const matches = getMatchingValues([new RegExp(`.*\\.${key}$`)], paths)
+        let values = matches
+            .map((match: { $v: any }) => match.$v)
+            .filter((match: string | any[]) => typeof match === 'string' && match.length)
+        if (values.length) {
+            values = values.sort((a = '', b = '') => {
+                if (a.startsWith(b)) {
+                    return 1
+                } else if (b.startsWith(a)) {
+                    return -1
+                }
+                return 0
+            })
+            const references: { [name: string]: any[] } = {}
+            const set = { value: values[0], references }
+            Object.values(paths).forEach((path: { $v: string; $p: any[] }) => {
+                if (typeof path.$v === 'string' && path.$v.length && path.$v.startsWith(values[0])) {
+                    references[JSON.stringify(path.$p)] = path.$p
+                }
+            })
+            xreferences.push(set)
+        }
+    })
+    return xreferences
+}
+
+// for each user edit, update other values where it's referenced
+export const updateReferences = (
+    userEdits: any[],
+    xreferences: { value: any; references: { [name: string]: any[] } }[],
+    unredactedChange: {
+        parsed: { [name: string]: any[] }
+    }
+) => {
+    return userEdits.filter((edit) => {
+        const path = JSON.stringify(edit.$p)
+        return xreferences.every((xrefs) => {
+            if (xrefs.references[path]) {
+                const remaining = edit.$f.replace(xrefs.value, '')
+                const change = edit.$u.replace(remaining, '')
+                Object.values(xrefs.references).forEach((path) => {
+                    set(unredactedChange.parsed, path, change)
+                })
+                return false
+            }
+            return true
+        })
+    })
 }
 
 // if a path has a wildcard fill in the exact path
