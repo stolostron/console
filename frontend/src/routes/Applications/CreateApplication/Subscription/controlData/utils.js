@@ -381,18 +381,16 @@ export const setAvailableRules = (control, result) => {
             control.isLoaded = true
         } else if (placementRules) {
             control.isLoaded = true
-            placementRules.forEach((item) => {
-                const { metadata } = item
-                const name = metadata?.name
-                control.available.push(name)
-                control.available.sort()
-                //remove default placement rule name if this is not on the list of available placements
-                //in that case the name was set by the reverse function on control initialization
-                if (control.active && !control.available.includes(control.active)) {
-                    control.active = null
-                }
-            })
             control.availableData = placementRules
+            control.available = control.availableData
+                .map((pr) => pr?.metadata?.name)
+                .filter((name) => name)
+                .sort()
+            //remove default placement rule name if this is not on the list of available placements
+            //in that case the name was set by the reverse function on control initialization
+            if (control.active && !control.available.includes(control.active)) {
+                control.active = null
+            }
         }
     } else {
         control.isLoading = loading
