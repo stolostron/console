@@ -360,6 +360,8 @@ export default function CreateClusterPage() {
         switch (control.id) {
             case 'templateName':
                 setSelectedTemplate(control.active)
+                // if user selects an automation template, make the installAttemptsLimit readonly
+                control.immutable = control.active === '' ? undefined : 'ClusterDeployment[0].spec.installAttemptsLimit'
                 break
             case 'connection':
                 setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
