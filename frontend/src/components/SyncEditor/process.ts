@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
-import { isEmpty, set, cloneDeep, has } from 'lodash'
+import { isEmpty, set, get, cloneDeep, has } from 'lodash'
 import { getErrors, validate } from './validation'
 import { getMatchingValues, getUidSiblings, crossReference } from './synchronize'
 import { reconcile } from './reconcile'
@@ -189,10 +189,11 @@ const process = (
         let allSecrets = []
         if (secrets && !isEmpty(secrets)) {
             allSecrets = getMatchingValues(secrets, paths)
-            allSecrets.forEach((value: { $p: string[]; $r: any; $l: any; $v: any }) => {
-                if (value.$v && typeof value.$v === 'string') {
-                    if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path: value.$p, value })
-                    set(parsed, value.$p, `${'*'.repeat(Math.min(20, value.$v.replace(/\n$/, '').length))}`)
+            allSecrets.forEach((value: { $p: string[] }) => {
+                const v = get(parsed, value.$p)
+                if (v && typeof v === 'string') {
+                    if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path: value.$p, value: v })
+                    set(parsed, value.$p, `${'*'.repeat(Math.min(20, v.replace(/\n$/, '').length))}`)
                 }
             })
         }
@@ -202,9 +203,10 @@ const process = (
         if (filters && !isEmpty(filters)) {
             allFiltered = getMatchingValues(filters, paths)
             if (!showFilters) {
-                allFiltered.forEach((value: { $p: string[]; $r: any; $l: any; $v: any }) => {
-                    if (value.$v && typeof value.$v === 'object') {
-                        if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path: value.$p, value: value.$v })
+                allFiltered.forEach((value: { $p: string[] }) => {
+                    const v = get(parsed, value.$p)
+                    if (v && typeof v === 'object') {
+                        if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path: value.$p, value: v })
                         set(parsed, value.$p, undefined)
                     }
                 })
@@ -239,7 +241,7 @@ const process = (
     // prevent typing on uid and its siblings
     protectedRanges = [
         ...protectedRanges,
-        ...getUidSiblings(paths).map((value) => {
+        ...getUidSiblings(paths, mappings).map((value) => {
             return new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0)
         }),
     ]
@@ -329,7 +331,7 @@ function getMappingItems(
                 $r: firstRow,
                 $l: length,
                 $v: value,
-                $d: rangeObj,
+                $d: [...parentPath],
             }
         } else if (item.key) {
             const keyPos = item.key.cstNode.rangeAsLinePos
@@ -350,7 +352,7 @@ function getMappingItems(
                 $r: firstRow,
                 $l: length,
                 $v: value,
-                $d: rangeObj,
+                $d: [...parentPath],
             }
         }
     })

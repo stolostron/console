@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'lodash/get'
 import set from 'lodash/set'
+import { MappingType } from './process'
 
 // set form/wizard inputs to yaml changes
 export const setFormValues = (
@@ -33,15 +34,18 @@ export const getPathArray = (path: string[] | string) => {
 }
 
 // get all of the string siblings of a uid key
-export const getUidSiblings = (paths: { [name: string]: any[] }) => {
+export const getUidSiblings = (paths: { [name: string]: any[] }, mappings: { [name: string]: MappingType[] }) => {
     const uidSiblings: any[] = []
     getMatchingValues([/.*\.uid$/], paths).forEach((value: { $d: any[] }) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        Object.entries(value.$d).forEach(([_k, v]) => {
-            if (typeof v.$v !== 'object' || v.$k === 'managedFields') {
-                uidSiblings.push(v)
-            }
-        })
+        const parent = get(mappings, getPathArray(value?.$d))
+        if (parent?.$v) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            Object.entries(parent.$v as MappingType).forEach(([_k, v]) => {
+                if (typeof v.$v !== 'object' || v.$k === 'managedFields') {
+                    uidSiblings.push(v)
+                }
+            })
+        }
     })
     return uidSiblings
 }
