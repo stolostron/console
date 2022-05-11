@@ -33,18 +33,18 @@ import {
 } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { Policy } from '../../../resources'
+import { getProvider, Policy } from '../../../resources'
 import { ClusterManagementAddOn } from '../../../resources/cluster-management-add-on'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchResultCountLazyQuery, useSearchResultItemsLazyQuery } from '../Search/search-sdk/search-sdk'
-import { getProvider } from '../../../resources'
 
 function getClusterSummary(clusters: any, selectedCloud: string, setSelectedCloud: Dispatch<SetStateAction<string>>) {
     const clusterSummary = clusters.reduce(
         (prev: any, curr: any) => {
             // Data for Providers section.
-            const cloudLabel = curr.metadata?.labels?.cloud || ''
+            // Get cloud label. If not available set to Other until the label is present.
+            const cloudLabel = curr.metadata?.labels?.cloud || 'Other'
             const cloud = getProvider(curr) || Provider.other
             const provider = prev.providers.find((p: any) => p.provider === cloud)
             if (provider) {
