@@ -2162,7 +2162,7 @@
     "template.clusterCreate.name": "Ansible Automation Template",
     "template.clusterCreate.select.placeholder": "Select an Ansible job template",
     "template.clusterCreate.title": "Automation",
-    "template.clusterCreate.tooltip": "Only templates with valid Ansible Automation Platform credentials are listed.",
+    "template.clusterCreate.tooltip": "Only templates with valid Ansible Automation Platform credentials are listed. When an automation template is selected, installAttemptsLimit will be set to 1 after the pre-hook automation job is completed. InstallAttemptsLimit can be changed again manually when the automation job is completed.",
     "template.create": "Create Ansible template",
     "template.create.config.wizard.title": "Configure Ansible job template name and Ansible credential",
     "template.create.destroy": "Destroy",
