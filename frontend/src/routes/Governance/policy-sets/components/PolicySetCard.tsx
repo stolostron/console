@@ -201,9 +201,11 @@ export default function PolicySetCard(props: {
                                         </DescriptionListDescription>
                                     )}
                                     {policySet.status?.statusMessage && (
-                                        <DescriptionListDescription>
-                                            {policySet.status?.statusMessage}
-                                        </DescriptionListDescription>
+                                        <div>
+                                            {policySet.status?.statusMessage.split(';').map((statusMes) => (
+                                                <DescriptionListDescription>{statusMes}</DescriptionListDescription>
+                                            ))}
+                                        </div>
                                     )}
                                 </DescriptionListGroup>
                             )}
