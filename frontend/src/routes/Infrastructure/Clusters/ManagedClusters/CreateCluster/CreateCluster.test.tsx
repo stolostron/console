@@ -1022,6 +1022,7 @@ describe('CreateCluster', () => {
         await clickByText('Next')
 
         // step 4 -- the network
+        await clickByText('Use provisioning network')
         await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
         await clickByText('Next')
 
@@ -1113,6 +1114,7 @@ describe('CreateCluster', () => {
         await clickByText('Next')
 
         // step 4 -- the network
+        await clickByLabel('Use provisioning network')
         await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
         await clickByText('Next')
 
