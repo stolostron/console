@@ -243,9 +243,13 @@ platform:
 {{#case 'BMC'}}
   baremetal:
     libvirtURI: {{{../../libvirtURI}}}
+{{#if ../../hasProvisioningNetwork}}
     provisioningNetworkCIDR: {{{../../provisioningNetworkCIDR}}} ##provisioningNetworkCIDR
     provisioningNetworkInterface: {{{../../provisioningNetworkInterface}}} ##provisioningNetworkInterface
     provisioningBridge: {{{../../provisioningNetworkBridge }}}  ##provisioningNetworkBridge
+{{else}}
+    provisioningNetwork: Disabled
+{{/if}}
     externalBridge: {{{../../externalNetworkBridge }}}  ##externalNetworkBridge
     {{#if ../../showDNSVIP}}
     dnsVIP: {{{../../../dnsVIP}}} ##dnsVIP
