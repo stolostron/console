@@ -2,6 +2,21 @@
 
 # Console Architecture
 
+```mermaid
+flowchart TB
+    subgraph Client Browser
+    F(Console Frontend)
+    end
+    subgraph Cluster
+    A(APIServer)
+    B(Console Backend)
+    A -- Watch --> B
+    B -- REST --> A
+    end
+    B -- Server Side Events --> F
+    F -- REST --> B
+```
+
 ## Backend
 
 | Method | Path    | Description                                      |
