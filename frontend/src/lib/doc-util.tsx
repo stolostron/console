@@ -37,7 +37,7 @@ export const DOC_LINKS = {
     CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#managedclustersets`,
     CLUSTER_POOLS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#managing-cluster-pools`,
     CLUSTER_CLAIMS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#claiming-clusters-from-cluster-pools`,
-    SUBMARINER: `${DOC_BASE_PATH}/services/submariner/services-overview#submariner`,
+    SUBMARINER: `${DOC_BASE_PATH}/services/services-overview#submariner`,
     CONFIG_DISCONNECTED_INSTALL: `${DOC_BASE_PATH}/credentials/credentials#disconnected`,
     CONFIG_DISCONNECTED_INSTALL_VMWARE: `${DOC_BASE_PATH}/credentials/credentials#disconnected-vm`,
     CONFIG_DISCONNECTED_INSTALL_OPENSTACK: `${DOC_BASE_PATH}/credentials/credentials#disconnected-openstack`,

@@ -8,7 +8,7 @@ import {
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@stolostron/ui-components'
-import { Fragment, lazy, Suspense, useEffect } from 'react'
+import { Fragment, lazy, Suspense, useEffect, useState } from 'react'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { acmRouteState, discoveredApplicationsState } from '../../atoms'
@@ -29,6 +29,7 @@ export default function ApplicationsPage() {
 
     const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
     useEffect(startPolling, [startPolling])
+    const [timedOut, setTimedOut] = useState<boolean>()
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, setDiscoveredAppilcations] = useRecoilState(discoveredApplicationsState)
@@ -37,7 +38,18 @@ export default function ApplicationsPage() {
         setDiscoveredAppilcations(remoteArgoApps)
     }, [data, setDiscoveredAppilcations])
 
-    if (loading) {
+    // failsafe in case search api is sleeping
+    useEffect(() => {
+        const handle = setTimeout(() => {
+            setTimedOut(true)
+        }, 5000)
+
+        return () => {
+            clearInterval(handle)
+        }
+    }, [])
+
+    if (loading && !timedOut) {
         return <AcmLoadingPage />
     }
 

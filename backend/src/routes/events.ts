@@ -156,6 +156,12 @@ async function listAndWatch(options: IWatchOptions) {
                 // fall through to rerun the list function
             } else if (err instanceof HTTPError) {
                 switch (err.response.statusCode) {
+                    case 403:
+                        logger.error({ msg: 'watch', ...options, status: 'Forbidden' })
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
+                        )
+                        break
                     case 404:
                         logger.trace({ msg: 'watch', ...options, status: 'Not found' })
                         await new Promise((resolve) =>
