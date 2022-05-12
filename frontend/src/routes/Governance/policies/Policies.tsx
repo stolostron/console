@@ -899,7 +899,7 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                             <AcmAlert
                                 variant="danger"
                                 title={t('No policy set in given namespace')}
-                                message={t('There are no policy sets in "{{0}}" namespace.', [namespace])}
+                                message={t('To add a policy to a specific policy set, it must have the same namespace as that policy set.  There are no policy sets in "{{0}}" namespace.', [namespace])}
                                 isInline
                             />
                         )}
