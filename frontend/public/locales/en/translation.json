@@ -2284,7 +2284,7 @@
     "Timeout": "Timeout",
     "titleKey": "titleKey",
     "To": "To",
-    "To add a policy to a specific policy set, it must have the same namespace as that policy set.  There are no policy sets in \"{{0}}\" namespace.": "To add a policy to a specific policy set, it must have the same namespace as that policy set.  There are no policy sets in \"{{0}}\" namespace.",
+    "To add a policy to a policy set, they both must be in the same namespace.  There are no policy sets in \"{{0}}\" namespace.": "To add a policy to a policy set, they both must be in the same namespace.  There are no policy sets in \"{{0}}\" namespace.",
     "To add policies to a policy set, the namespaces must match.": "To add policies to a policy set, the namespaces must match.",
     "To complete these values, use the imageContentSources that you recorded during mirror registry creation.": "To complete these values, use the imageContentSources that you recorded during mirror registry creation.",
     "To search for a keyword, type the word in the search box.": "To search for a keyword, type the word in the search box.",
