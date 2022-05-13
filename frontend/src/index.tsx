@@ -1,7 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 
+
 import '@patternfly/react-core/dist/styles/base.css'
+import '@patternfly/patternfly/patternfly-theme-dark.css'
+
 import { AcmHeader, AcmRoute } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { StrictMode, Suspense } from 'react'
@@ -29,3 +32,5 @@ ReactDOM.render(
     </StrictMode>,
     document.getElementById('root')
 )
+
+document.documentElement.classList.add("pf-theme-dark")
