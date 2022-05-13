@@ -17,7 +17,8 @@ jobs:
             - uses: actions/setup-node@v2
               with:
                   node-version: '14'
-            - run: npx npm-check-updates --doctor --upgrade --target minor --reject $SKIP
+            - run: npx npm-check-updates "/^@patternfly.*$/" --doctor --upgrade --target latest --reject $SKIP
+            - run: npx npm-check-updates '/^(?!@patternfly).*$/' --doctor --upgrade --target minor --reject $SKIP
               env:
                   SKIP: '@openshift-console/dynamic-plugin-sdk,@openshift-console/dynamic-plugin-sdk-webpack,@apollo/client'
             - run: npm audit fix
