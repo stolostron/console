@@ -15,7 +15,7 @@ import { initTheme } from './theme'
 
 import '@patternfly/patternfly/patternfly-theme-dark.css'
 
-initTheme();
+initTheme()
 
 ReactDOM.render(
     <StrictMode>
@@ -35,5 +35,3 @@ ReactDOM.render(
     </StrictMode>,
     document.getElementById('root')
 )
-
-document.documentElement.classList.add("pf-theme-dark")
