@@ -1775,7 +1775,7 @@
     "Resource status": "Resource status",
     "Resource Types": "Resource Types",
     "resource.empty": "No available namespaces found",
-    "resource.error": "resource.error",
+    "resource.error": "Failed to load.",
     "resource.labels": "Labels",
     "resource.none": "None",
     "Resources with \"failed\" or \"pending\" status.": "Resources with \"failed\" or \"pending\" status.",
