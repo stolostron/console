@@ -42,6 +42,9 @@ export const VALIDATE_BMC_ADDR = {
     required: true,
 }
 
+const VALIDATE_CIDR_OPTIONAL = _.cloneDeep(VALIDATE_CIDR)
+VALIDATE_CIDR_OPTIONAL.required = false
+
 const isHidden_gt_OCP44 = (control, controlData) => {
     const imageSet = controlData.find(({ id }) => id === 'imageSet')
     if (imageSet && imageSet.active && imageSet.active.includes('release:4.4')) {
@@ -175,6 +178,33 @@ const getHostsTitle = (control, controlData, i18n) => {
 export const getControlDataBMC = (includeAutomation = true) => {
     if (includeAutomation) return [...controlDataBMC, ...automationControlData]
     return [...controlDataBMC]
+}
+
+const onChangeProvisioningNetwork = (control, controlData) => {
+    const infrastructure = controlData.find(({ id }) => {
+        return id === 'connection'
+    })
+    const { active, availableMap = {} } = infrastructure
+    const replacements = _.get(availableMap[active], 'replacements')
+    const useProvisioningNetwork = control.active
+    ;['provisioningNetworkCIDR', 'provisioningNetworkInterface', 'provisioningNetworkBridge'].forEach((pid) => {
+        const ctrl = controlData.find(({ id }) => id === pid)
+        if (ctrl) {
+            ctrl.disabled = !useProvisioningNetwork
+            if (ctrl.disabled) {
+                ctrl.saveActive = ctrl.active
+                ctrl.active = undefined
+                if (replacements) {
+                    delete replacements[ctrl.id]
+                }
+            } else {
+                ctrl.active = ctrl.saveActive
+                if (replacements) {
+                    replacements[ctrl.id] = ctrl.saveActive
+                }
+            }
+        }
+    })
 }
 
 const controlDataBMC = [
@@ -341,13 +371,21 @@ const controlDataBMC = [
         title: 'Networking',
     },
     {
+        name: 'Use provisioning network',
+        id: 'hasProvisioningNetwork',
+        type: 'checkbox',
+        active: false,
+        onSelect: onChangeProvisioningNetwork,
+    },
+    {
         id: 'provisioningNetworkCIDR',
         type: 'text',
         name: 'creation.ocp.network.cidr',
         tooltip: 'tooltip.creation.ocp.network.cidr',
         placeholder: 'creation.ocp.network.cidr.placeholder',
         active: '',
-        validation: VALIDATE_CIDR,
+        disabled: true,
+        validation: VALIDATE_CIDR_OPTIONAL,
     },
     {
         id: 'provisioningNetworkInterface',
@@ -355,7 +393,8 @@ const controlDataBMC = [
         name: 'creation.ocp.network.interface',
         tooltip: 'tooltip.creation.ocp.network.interface',
         placeholder: 'creation.ocp.network.interface.placeholder',
-        active: 'enp1s0',
+        saveActive: 'enp1s0',
+        disabled: true,
         validation: VALIDATE_ALPHANUMERIC,
     },
     {
@@ -364,7 +403,8 @@ const controlDataBMC = [
         name: 'creation.ocp.network.bridge',
         tooltip: 'tooltip.creation.ocp.network.bridge',
         placeholder: 'creation.ocp.network.bridge.placeholder',
-        active: 'provisioning',
+        saveActive: 'provisioning',
+        disabled: true,
         validation: VALIDATE_ALPHANUMERIC_PERIOD,
     },
     {

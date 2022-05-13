@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import i18next from 'i18next'
-import { SubscriptionApiVersion, SubscriptionKind } from '../../../resources'
+import { PlacementRuleKind, Subscription, SubscriptionApiVersion, SubscriptionKind } from '../../../resources'
 import { SyncResourceModal, ISyncResourceModalProps } from './SyncResourceModal'
 
 //////////////// Set up /////////////////
@@ -22,12 +22,36 @@ const mockResources = [
     },
 ]
 
+const mockSubscription0: Subscription = {
+    apiVersion: SubscriptionApiVersion,
+    kind: SubscriptionKind,
+    metadata: {
+        name: 'subscription-0',
+        namespace: 'namespace-0',
+        labels: {
+            app: 'application-0-app',
+        },
+    },
+    spec: {
+        channel: 'ch-namespace-0/channel-0',
+        placement: {
+            placementRef: {
+                kind: PlacementRuleKind,
+                name: 'placementrule-0',
+            },
+        },
+    },
+}
+
+const mockSubscriptions: Subscription[] = [mockSubscription0]
+
 const t = i18next.t.bind(i18next)
 const modalProps: ISyncResourceModalProps = {
     open: true,
     close: () => {},
     t: t,
     resources: mockResources,
+    subscriptions: mockSubscriptions,
 }
 
 //////////////// Test /////////////////
