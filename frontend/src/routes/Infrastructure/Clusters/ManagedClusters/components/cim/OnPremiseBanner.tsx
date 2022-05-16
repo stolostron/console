@@ -52,9 +52,9 @@ export function OnPremiseBanner({
     return (
         <WrappingComponent>
             <Card id={id}>
-                <Split hasGutter>
+                <Split>
                     <SplitItem>
-                        <CardBody style={{ width: '200px' }}>
+                        <CardBody style={{ width: 200 }}>
                             <Badge style={{ float: 'left' }}>New</Badge>
                             <MainIcon />
                         </CardBody>
