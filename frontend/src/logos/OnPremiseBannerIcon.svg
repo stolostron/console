@@ -8,82 +8,82 @@
         <defs>
             <linearGradient id="prefix__b" gradientUnits="userSpaceOnUse" gradientTransform="scale(11.89207)"
                 spreadMethod="pad" x1="-3.027" y1="12.445" x2="5.382" y2="20.854">
-                <stop offset="0" stop-color="#e00" stop-opacity="0" />
-                <stop offset="1" stop-color="#e00" stop-opacity=".267" />
+                <stop offset="0" stop-color="#e44" stop-opacity="0" />
+                <stop offset="1" stop-color="#e44" stop-opacity=".267" />
             </linearGradient>
         </defs>
         <path fill="url(#prefix__b)" d="M16 120l48-24 48 24v56l-48 24-48-24z" fill-rule="evenodd" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
             d="M16 120l48-24 48 24v56l-48 24-48-24z" />
         <path fill="none" d="M112 120l112-56" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M112 120l112-56" />
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M112 120l112-56" />
         <path fill="none" d="M64 200v112" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M64 200v112" />
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M64 200v112" />
         <path fill="red" d="M40 368c0-13.255 10.745-24 24-24a24 24 0 0124 24c0 13.255-10.745 24-24 24s-24-10.745-24-24z"
             fill-rule="evenodd" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
             d="M40 368h0c0-13.255 10.745-24 24-24h0a24 24 0 0124 24h0c0 13.255-10.745 24-24 24h0c-13.255 0-24-10.745-24-24z" />
-        <path fill="#e00"
+        <path fill="#e44"
             d="M248 40c0-13.255 10.745-24 24-24a24 24 0 0124 24c0 13.255-10.745 24-24 24s-24-10.745-24-24z"
             fill-rule="evenodd" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
             d="M248 40h0c0-13.255 10.745-24 24-24h0a24 24 0 0124 24h0c0 13.255-10.745 24-24 24h0c-13.255 0-24-10.745-24-24z" />
         <defs>
             <linearGradient id="prefix__c" gradientUnits="userSpaceOnUse" gradientTransform="scale(11.89207)"
                 spreadMethod="pad" x1="14.463" y1="40.699" x2="22.872" y2="49.108">
-                <stop offset="0" stop-color="#e00" stop-opacity="0" />
-                <stop offset="1" stop-color="#e00" stop-opacity=".267" />
+                <stop offset="0" stop-color="#e44" stop-opacity="0" />
+                <stop offset="1" stop-color="#e44" stop-opacity=".267" />
             </linearGradient>
         </defs>
         <path fill="url(#prefix__c)" d="M224 456l48-24 48 24v56l-48 24-48-24z" fill-rule="evenodd" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
             d="M224 456l48-24 48 24v56l-48 24-48-24z" />
         <path fill="none" d="M112 400l112 56" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M112 400l112 56" />
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M112 400l112 56" />
         <path fill="none" d="M432 400l-112 56" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M432 400l-112 56" />
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M432 400l-112 56" />
         <path fill="none" d="M112 176l48 24" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M112 176l48 24" />
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M112 176l48 24" />
         <path fill="none" d="M272 88v56" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M272 88v56" />
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M272 88v56" />
         <path fill="none" d="M272 376v56" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M272 376v56" />
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M272 376v56" />
         <path fill="none" d="M160 312l-48 24" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M160 312l-48 24" />
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M160 312l-48 24" />
         <path fill="none" d="M432 176l-48 24" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M432 176l-48 24" />
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M432 176l-48 24" />
         <path fill="none" d="M384 320l48 24" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M384 320l48 24" />
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M384 320l48 24" />
         <defs>
             <linearGradient id="prefix__d" gradientUnits="userSpaceOnUse" gradientTransform="scale(17.95663)"
                 spreadMethod="pad" x1="15.147" y1="27.177" x2="27.845" y2="14.479">
-                <stop offset="0" stop-color="#e00" stop-opacity=".533" />
-                <stop offset="1" stop-color="#e00" stop-opacity=".267" />
+                <stop offset="0" stop-color="#e44" stop-opacity=".533" />
+                <stop offset="1" stop-color="#e44" stop-opacity=".267" />
             </linearGradient>
         </defs>
         <path fill="url(#prefix__d)" d="M272 144l-112 56v112l112 64 112-56V200z" fill-rule="evenodd" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
             d="M272 144l-112 56v112l112 64 112-56V200z" />
         <defs>
             <linearGradient id="prefix__e" gradientUnits="userSpaceOnUse" gradientTransform="scale(11.89207)"
                 spreadMethod="pad" x1="31.954" y1="12.445" x2="40.363" y2="20.854">
-                <stop offset="0" stop-color="#e00" stop-opacity="0" />
-                <stop offset="1" stop-color="#e00" stop-opacity=".267" />
+                <stop offset="0" stop-color="#e44" stop-opacity="0" />
+                <stop offset="1" stop-color="#e44" stop-opacity=".267" />
             </linearGradient>
         </defs>
         <path fill="url(#prefix__e)" d="M432 120l48-24 48 24v56l-48 24-48-24z" fill-rule="evenodd" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
             d="M432 120l48-24 48 24v56l-48 24-48-24z" />
         <path fill="none" d="M432 120L320 64" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M432 120L320 64" />
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M432 120L320 64" />
         <path fill="none" d="M480 200v112" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M480 200v112" />
-        <path fill="red"
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt" d="M480 200v112" />
+        <path fill="#e44"
             d="M456 368c0-13.255 10.745-24 24-24a24 24 0 0124 24c0 13.255-10.745 24-24 24s-24-10.745-24-24z"
             fill-rule="evenodd" />
-        <path stroke="#e00" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
+        <path stroke="#e44" stroke-width="8" stroke-linejoin="round" stroke-linecap="butt"
             d="M456 368h0c0-13.255 10.745-24 24-24h0a24 24 0 0124 24h0c0 13.255-10.745 24-24 24h0c-13.255 0-24-10.745-24-24z" />
         <path fill="none" d="M160 200v112l112 64" />
-        <path stroke="#e00" stroke-width="16" stroke-linejoin="round" stroke-linecap="butt" d="M160 200v112l112 64" />
+        <path stroke="#e44" stroke-width="16" stroke-linejoin="round" stroke-linecap="butt" d="M160 200v112l112 64" />
     </g>
 </svg>
