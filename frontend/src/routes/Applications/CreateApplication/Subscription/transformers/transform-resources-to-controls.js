@@ -201,15 +201,23 @@ export const shiftTemplateObject = (templateObject, selfLinksControl) => {
         // remove that placement rule too
         name = _.get(subscription, '$synced.spec.$v.placement.$v.placementRef.$v.name.$v')
         if (name) {
-            const rules = templateObject.PlacementRule || []
-            const inx = rules.findIndex((rule) => {
-                return name === _.get(rule, '$synced.metadata.$v.name.$v')
+            const remainingSubscriptions = _.get(templateObject, 'Subscription')
+            const isReused = remainingSubscriptions.some((resource) => {
+                return name === _.get(resource, '$synced.spec.$v.placement.$v.placementRef.$v.name.$v')
             })
-            if (inx !== -1) {
-                const rule = templateObject.PlacementRule.splice(inx, 1)[0]
-                if (selfLinksControl) {
-                    const ruleSelfLink = getResourceID(rule.$raw)
-                    _.set(selfLinksControl, 'active.PlacementRule', ruleSelfLink)
+
+            // unless it's used in another subscription
+            if (!isReused) {
+                const rules = templateObject.PlacementRule || []
+                const inx = rules.findIndex((rule) => {
+                    return name === _.get(rule, '$synced.metadata.$v.name.$v')
+                })
+                if (inx !== -1) {
+                    const rule = templateObject.PlacementRule.splice(inx, 1)[0]
+                    if (selfLinksControl) {
+                        const ruleSelfLink = getResourceID(rule.$raw)
+                        _.set(selfLinksControl, 'active.PlacementRule', ruleSelfLink)
+                    }
                 }
             }
         }
