@@ -421,5 +421,6 @@
     "template.clusterCreate.select.placeholder": "Select an Ansible job template",
     "template.create.tooltip": "Create a job template to automatically run Ansible jobs at different stages of a cluster's life cycle",
     "template.edit.title": "Edit Ansible template",
-    "template.edit.tooltip": "Edit a job template to alter the order of Ansible jobs that run at different stages of a cluster's life cycle"
+    "template.edit.tooltip": "Edit a job template to alter the order of Ansible jobs that run at different stages of a cluster's life cycle",
+    "template.clusterCreate.tooltip": "Only templates with valid Ansible Automation Platform credentials are listed. When an automation template is selected, installAttemptsLimit will be set to 1 after the pre-hook automation job is completed. InstallAttemptsLimit can be changed again manually when the automation job is completed."
 }
