@@ -42,6 +42,11 @@ export function YAMLContainer(props: IYAMLContainerProps) {
         }
     }
 
+    if (!cluster) {
+        // default to local-cluster if we still don't have a cluster for resources like AnsibleJobs
+        cluster = 'local-cluster'
+    }
+
     if (!apiVersion) {
         const resourceModel = _.get(props.node, `specs.${kind}Model`)
         if (resourceModel && Object.keys(resourceModel).length > 0) {
