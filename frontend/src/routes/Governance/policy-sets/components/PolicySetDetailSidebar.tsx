@@ -220,15 +220,18 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         [policySet, placementDecisions, placementBindings, placements, placementRules]
     )
 
-    const getClusterContext = useCallback((policy: Policy) => {
-        return decision.length
-            ? policy?.status?.status?.filter((status) => {
-                  return decision[0].status.decisions.find(
-                      (decisionStatus) => decisionStatus.clusterName === status.clustername
-                  )
-              })
-            : []
-    }, [decision])
+    const getClusterContext = useCallback(
+        (policy: Policy) => {
+            return decision.length
+                ? policy?.status?.status?.filter((status) => {
+                      return decision[0].status.decisions.find(
+                          (decisionStatus) => decisionStatus.clusterName === status.clustername
+                      )
+                  })
+                : []
+        },
+        [decision]
+    )
 
     const policyColumnDefs = useMemo(
         () => [
