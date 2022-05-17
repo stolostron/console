@@ -14,7 +14,7 @@ import {
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -220,7 +220,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         [policySet, placementDecisions, placementBindings, placements, placementRules]
     )
 
-    const getClusterContext = (policy: Policy) => {
+    const getClusterContext = useCallback((policy: Policy) => {
         return decision.length
             ? policy?.status?.status?.filter((status) => {
                   return decision[0].status.decisions.find(
@@ -228,7 +228,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                   )
               })
             : []
-    }
+    }, [decision])
 
     const policyColumnDefs = useMemo(
         () => [
@@ -311,7 +311,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 },
             },
         ],
-        [decision, t]
+        [getClusterContext, t]
     )
 
     return (
