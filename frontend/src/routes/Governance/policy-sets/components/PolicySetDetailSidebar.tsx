@@ -265,11 +265,14 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 },
                 cell: (currentPolicy: Policy) => {
                     // Find the clusters in context of the PolicySet
-                    const policySetClusterContext = currentPolicy?.status?.status?.filter((status) => {
-                        return decision[0].status.decisions.find(
-                            (decisionStatus) => decisionStatus.clusterName === status.clustername
-                        )
-                    })
+                    const policySetClusterContext =
+                        decision.length
+                            ? currentPolicy?.status?.status?.filter((status) => {
+                                  return decision[0].status.decisions.find(
+                                      (decisionStatus) => decisionStatus.clusterName === status.clustername
+                                  )
+                              })
+                            : []
                     const violationCount =
                         policySetClusterContext?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
                     const compliantCount =
