@@ -102,7 +102,6 @@ import {
     NMStateConfigKind,
     NMStateConfigApiVersion,
     Placement,
-    PlacementApiVersionAlpha,
     PlacementBinding,
     PlacementBindingApiVersion,
     PlacementBindingKind,
@@ -140,6 +139,7 @@ import {
     SubscriptionReport,
     SubscriptionReportApiVersion,
     SubscriptionReportKind,
+    PlacementApiVersionBeta,
 } from './resources'
 
 let atomArrayKey = 0
@@ -293,7 +293,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
         addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
         addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
-        addSetter(PlacementApiVersionAlpha, PlacementKind, setPlacementsState)
+        addSetter(PlacementApiVersionBeta, PlacementKind, setPlacementsState)
         addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
         addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
         addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)

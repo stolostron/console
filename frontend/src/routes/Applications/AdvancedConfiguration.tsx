@@ -34,7 +34,7 @@ import {
     ChannelDefinition,
     ChannelKind,
     IResource,
-    PlacementApiVersionAlpha,
+    PlacementApiVersionBeta,
     PlacementDefinition,
     PlacementKind,
     PlacementRuleApiVersion,
@@ -234,6 +234,7 @@ export default function AdvancedConfiguration() {
     })
 
     const getRowActionResolver = (item: IResource) => {
+        debugger
         const kind = _.get(item, 'kind') == 'PlacementRule' ? 'placement rule' : _.get(item, 'kind').toLowerCase()
         const actions: IAcmRowAction<any>[] = []
 
@@ -556,7 +557,7 @@ export default function AdvancedConfiguration() {
                             return editLink({
                                 resource,
                                 kind: 'Placement',
-                                apiversion: PlacementApiVersionAlpha,
+                                apiversion: PlacementApiVersionBeta,
                             })
                         },
                         sort: 'metadata.name',

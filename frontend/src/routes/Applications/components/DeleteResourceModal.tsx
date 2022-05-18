@@ -8,7 +8,13 @@ import React, { ReactNode, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Trans } from '../../../lib/acm-i18next'
 import { deleteApplication } from '../../../lib/delete-application'
-import { ApplicationKind, ApplicationSetKind, IResource } from '../../../resources'
+import {
+    ApplicationKind,
+    ApplicationSetKind,
+    IResource,
+    PlacementApiVersionBeta,
+    PlacementKind,
+} from '../../../resources'
 import '../css/DeleteResourceModal.css'
 
 export interface IDeleteResourceModalProps {
@@ -62,8 +68,8 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
                 props.appSetsSharingPlacement?.length === 0 && removeAppSetResource
                     ? [
                           {
-                              apiVersion: 'cluster.open-cluster-management.io/v1alpha1', // replace when placement type is available
-                              kind: 'Placement',
+                              apiVersion: PlacementApiVersionBeta, // replace when placement type is available
+                              kind: PlacementKind,
                               name: props.appSetPlacement,
                               namespace: props.resource.metadata?.namespace,
                           },
