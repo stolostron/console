@@ -234,7 +234,6 @@ export default function AdvancedConfiguration() {
     })
 
     const getRowActionResolver = (item: IResource) => {
-        debugger
         const kind = _.get(item, 'kind') == 'PlacementRule' ? 'placement rule' : _.get(item, 'kind').toLowerCase()
         const actions: IAcmRowAction<any>[] = []
 
