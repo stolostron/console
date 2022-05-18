@@ -16,7 +16,7 @@ import {
     Stack,
     StackItem,
 } from '@patternfly/react-core'
-import { fitContent, TableGridBreakpoint } from '@patternfly/react-table'
+import { fitContent } from '@patternfly/react-table'
 import {
     AcmAlert,
     AcmButton,
@@ -79,12 +79,14 @@ export interface PolicyTableItem {
 
 export default function PoliciesPage() {
     const { t } = useTranslation()
+    const unauthorizedMessage = t('rbac.unauthorized')
     const presets = transformBrowserUrlToFilterPresets(window.location.search)
     const policies = usePolicies()
     const [helmReleases] = useRecoilState(helmReleaseState)
     const [subscriptions] = useRecoilState(subscriptionsState)
     const [channels] = useRecoilState(channelsState)
     const [policyAutomations] = useRecoilState(policyAutomationState)
+    const [namespaces] = useRecoilState(namespacesState)
     const { setDrawerContext } = useContext(AcmDrawerContext)
 
     const tableItems: PolicyTableItem[] = useMemo(() => {
@@ -117,12 +119,14 @@ export default function PoliciesPage() {
     const policyClusterViolationsColumn = usePolicyViolationsColumn(policyClusterViolationSummaryMap)
     const [modal, setModal] = useState<ReactNode | undefined>()
     const [canCreatePolicy, setCanCreatePolicy] = useState<boolean>(false)
-    const [canAutomatePolicy, setCanAutomatePolicy] = useState<boolean>(false)
+    const [canCreatePolicyAutomation, setCanCreatePolicyAutomation] = useState<boolean>(false)
+    const [canUpdatePolicyAutomation, setCanUpdatePolicyAutomation] = useState<boolean>(false)
 
     useEffect(() => {
-        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy)
-        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanAutomatePolicy)
-    }, [])
+        checkPermission(rbacCreate(PolicyDefinition), setCanCreatePolicy, namespaces)
+        checkPermission(rbacCreate(PolicyAutomationDefinition), setCanCreatePolicyAutomation, namespaces)
+        checkPermission(rbacUpdate(PolicyAutomationDefinition), setCanUpdatePolicyAutomation, namespaces)
+    }, [namespaces])
 
     const policyColumns = useMemo<IAcmTableColumn<PolicyTableItem>[]>(
         () => [
@@ -242,8 +246,8 @@ export default function PoliciesPage() {
                     if (policyAutomationMatch) {
                         return (
                             <AcmButton
-                                isDisabled={!canAutomatePolicy}
-                                tooltip={!canAutomatePolicy ? t('rbac.unauthorized') : ''}
+                                isDisabled={!canUpdatePolicyAutomation}
+                                tooltip={!canUpdatePolicyAutomation ? unauthorizedMessage : ''}
                                 isInline
                                 variant={ButtonVariant.link}
                                 onClick={() =>
@@ -273,8 +277,8 @@ export default function PoliciesPage() {
                     } else {
                         return (
                             <AcmButton
-                                isDisabled={!canAutomatePolicy}
-                                tooltip={!canAutomatePolicy ? t('rbac.unauthorized') : ''}
+                                isDisabled={!canCreatePolicyAutomation}
+                                tooltip={!canCreatePolicyAutomation ? unauthorizedMessage : ''}
                                 isInline
                                 variant={ButtonVariant.link}
                                 component={Link}
@@ -311,7 +315,16 @@ export default function PoliciesPage() {
                 cellTransforms: [fitContent],
             },
         ],
-        [policyClusterViolationsColumn, policySets, policyAutomations, setDrawerContext, canAutomatePolicy, t]
+        [
+            policyClusterViolationsColumn,
+            policySets,
+            policyAutomations,
+            setDrawerContext,
+            canCreatePolicyAutomation,
+            canUpdatePolicyAutomation,
+            unauthorizedMessage,
+            t,
+        ]
     )
 
     const bulkModalStatusColumns = useMemo(
@@ -557,7 +570,6 @@ export default function PoliciesPage() {
         return newOptions
     }, [tableItems, t])
 
-    const [namespaces] = useRecoilState(namespacesState)
     const filters = useMemo<ITableFilter<PolicyTableItem>[]>(
         () => [
             {
@@ -661,7 +673,7 @@ export default function PoliciesPage() {
     )
 
     if (tableItems.length === 0) {
-        return <GovernanceCreatePolicyEmptyState />
+        return <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
     }
 
     return (
@@ -674,7 +686,6 @@ export default function PoliciesPage() {
                 keyFn={policyKeyFn}
                 items={tableItems}
                 tableActions={tableActions}
-                gridBreakPoint={TableGridBreakpoint.none}
                 initialFilters={
                     presets.initialFilters.violations ? { violations: presets.initialFilters.violations } : undefined
                 }
@@ -682,7 +693,7 @@ export default function PoliciesPage() {
                 tableActionButtons={[
                     {
                         isDisabled: !canCreatePolicy,
-                        tooltip: !canCreatePolicy ? t('rbac.unauthorized') : '',
+                        tooltip: !canCreatePolicy ? unauthorizedMessage : '',
                         variant: ButtonVariant.primary,
                         id: 'create',
                         title: 'Create policy',
@@ -888,7 +899,10 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                             <AcmAlert
                                 variant="danger"
                                 title={t('No policy set in given namespace')}
-                                message={t('There are no policy sets in "{{0}}" namespace.', [namespace])}
+                                message={t(
+                                    'To add a policy to a policy set, they both must be in the same namespace.  There are no policy sets in "{{0}}" namespace.',
+                                    [namespace]
+                                )}
                                 isInline
                             />
                         )}
@@ -962,11 +976,11 @@ export function DeletePolicyModal(props: { item: PolicyTableItem; onClose: () =>
     return (
         <Modal
             title={t('policy.modal.title.delete')}
-            titleIconVariant={'danger'}
+            titleIconVariant={'warning'}
             isOpen
             onClose={props.onClose}
             actions={[
-                <Button key="confirm" variant="primary" onClick={onConfirm} isLoading={isDeleting}>
+                <Button key="confirm" variant="danger" onClick={onConfirm} isLoading={isDeleting}>
                     {isDeleting ? t('deleting') : t('delete')}
                 </Button>,
                 <Button key="cancel" variant="link" onClick={props.onClose}>

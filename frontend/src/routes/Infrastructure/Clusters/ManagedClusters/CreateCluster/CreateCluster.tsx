@@ -328,13 +328,15 @@ export default function CreateClusterPage() {
                                         resolve(status)
                                     } else {
                                         setTimeout(() => {
+                                            const params = new URLSearchParams({
+                                                initialStep: isAssistedFlow ? 'hosts-discovery' : 'hosts-selection',
+                                            })
                                             resolve(status)
                                             setCreationStatus(undefined)
                                             history.push(
-                                                NavigationPath.editCluster
+                                                `${NavigationPath.editCluster
                                                     .replace(':namespace', clusterNamespace as string)
-                                                    .replace(':name', clusterName as string),
-                                                { initialStep: isAssistedFlow ? 'hosts-discovery' : 'hosts-selection' }
+                                                    .replace(':name', clusterName as string)}?${params.toString()}`
                                             )
                                         }, 250)
                                     }
@@ -358,6 +360,8 @@ export default function CreateClusterPage() {
         switch (control.id) {
             case 'templateName':
                 setSelectedTemplate(control.active)
+                // if user selects an automation template, make the installAttemptsLimit readonly
+                control.immutable = control.active === '' ? undefined : 'ClusterDeployment[0].spec.installAttemptsLimit'
                 break
             case 'connection':
                 setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
@@ -373,6 +377,14 @@ export default function CreateClusterPage() {
                     text: t('cim.infra.missing.warning.text'),
                     linkText: t('cim.infra.manage.link'),
                     linkTo: NavigationPath.infraEnvironments,
+                })
+            } else if (control.active?.includes('BMC')) {
+                setWarning({
+                    title: t('bareMetalAsset.warning.title'),
+                    text: t('bareMetalAsset.warning.text'),
+                    linkText: t('Learn more'),
+                    linkTo: DOC_LINKS.CREATE_CLUSTER_ON_PREMISE,
+                    isExternalLink: true,
                 })
             } else {
                 setWarning(undefined)

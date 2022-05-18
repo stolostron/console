@@ -40,10 +40,9 @@ export function WizardSyncEditor() {
             editorTitle={'Policy YAML'}
             variant="toolbar"
             resources={resources}
-            immutables={['Policy[0].metadata.name', 'Policy[0].metadata.namespace']}
             schema={schema}
-            filterKube={true}
-            onEditorChange={(changes: { resources: any[]; errors: any[]; changes: any[] }): void => {
+            filters={['*.metadata.managedFields']}
+            onEditorChange={(changes: { resources: any[] }): void => {
                 update(changes?.resources)
             }}
         />
@@ -101,7 +100,6 @@ export function EditPolicy() {
             setGitSource(policySource?.pathName ?? '')
         }
 
-        setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
         setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
     }, [
         channels,

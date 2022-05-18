@@ -12,7 +12,7 @@ export const getTopology = (application, managedClusters, relatedResources, argo
     let topology
     if (application) {
         if (application.isArgoApp) {
-            topology = getArgoTopology(application, argoData)
+            topology = getArgoTopology(application, argoData, managedClusters)
         } else if (application.isAppSet) {
             topology = getAppSetTopology(application)
         } else {

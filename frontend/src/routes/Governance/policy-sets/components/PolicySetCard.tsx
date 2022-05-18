@@ -23,7 +23,7 @@ import {
     StackItem,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-import { AcmDrawerContext } from '@stolostron/ui-components'
+import { AcmDrawerContext, AcmDrawerProps } from '@stolostron/ui-components'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -153,6 +153,8 @@ export default function PolicySetCard(props: {
                                             <DeletePolicySetModal
                                                 item={policySet}
                                                 onClose={() => setModal(undefined)}
+                                                setDrawerContext={setDrawerContext}
+                                                setSelectedCardID={setSelectedCardID}
                                             />
                                         )
                                     }}
@@ -175,29 +177,39 @@ export default function PolicySetCard(props: {
                 <CardBody>
                     <Stack hasGutter>
                         {policySet.spec.description && <div>{policySet.spec.description ?? ''}</div>}
-                        {policySet.status?.compliant && (
-                            <DescriptionList>
+                        <DescriptionList>
+                            {(policySet.status?.compliant || policySet.status?.statusMessage) && (
                                 <DescriptionListGroup>
                                     <DescriptionListTerm>
                                         <strong>{t('Status')}</strong>
                                     </DescriptionListTerm>
-                                    <DescriptionListDescription>
-                                        {policySet.status?.compliant === 'Compliant' ? (
-                                            <div>
-                                                <CheckCircleIcon color="var(--pf-global--success-color--100)" /> &nbsp;
-                                                {t('No violations')}
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
-                                                &nbsp;
-                                                {t('Violations')}
-                                            </div>
-                                        )}
-                                    </DescriptionListDescription>
+                                    {policySet.status?.compliant && (
+                                        <DescriptionListDescription>
+                                            {policySet.status?.compliant === 'Compliant' ? (
+                                                <div>
+                                                    <CheckCircleIcon color="var(--pf-global--success-color--100)" />{' '}
+                                                    &nbsp;
+                                                    {t('No violations')}
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <ExclamationCircleIcon color="var(--pf-global--danger-color--100)" />{' '}
+                                                    &nbsp;
+                                                    {t('Violations')}
+                                                </div>
+                                            )}
+                                        </DescriptionListDescription>
+                                    )}
+                                    {policySet.status?.statusMessage && (
+                                        <div>
+                                            {policySet.status?.statusMessage.split(';').map((statusMes) => (
+                                                <DescriptionListDescription>{statusMes}</DescriptionListDescription>
+                                            ))}
+                                        </div>
+                                    )}
                                 </DescriptionListGroup>
-                            </DescriptionList>
-                        )}
+                            )}
+                        </DescriptionList>
                     </Stack>
                 </CardBody>
             </Card>
@@ -205,7 +217,12 @@ export default function PolicySetCard(props: {
     )
 }
 
-function DeletePolicySetModal(props: { item: PolicySet; onClose: () => void }) {
+function DeletePolicySetModal(props: {
+    item: PolicySet
+    onClose: () => void
+    setDrawerContext: React.Dispatch<React.SetStateAction<AcmDrawerProps | undefined>>
+    setSelectedCardID: React.Dispatch<React.SetStateAction<string>>
+}) {
     const { t } = useTranslation()
     const [deletePlacements, setDeletePlacements] = useState(true)
     const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
@@ -227,6 +244,9 @@ function DeletePolicySetModal(props: { item: PolicySet; onClose: () => void }) {
                 deletePlacementBindings
             ).promise
             props.onClose()
+            setIsDeleting(false)
+            props.setDrawerContext(undefined)
+            props.setSelectedCardID('')
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message)
@@ -242,11 +262,11 @@ function DeletePolicySetModal(props: { item: PolicySet; onClose: () => void }) {
                 type: props.item.kind,
                 name: '',
             })}
-            titleIconVariant={'danger'}
+            titleIconVariant={'warning'}
             isOpen
             onClose={props.onClose}
             actions={[
-                <Button key="confirm" variant="primary" onClick={onConfirm} isLoading={isDeleting}>
+                <Button key="confirm" variant="danger" onClick={onConfirm} isLoading={isDeleting}>
                     {isDeleting ? t('deleting') : t('delete')}
                 </Button>,
                 <Button key="cancel" variant="link" onClick={props.onClose}>

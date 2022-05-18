@@ -110,7 +110,7 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
             }
 
             const resourceMapForObject = Object.values(resourceMap).find(({ name, namespace, type, specs = {} }) => {
-                if (specs.resourceCount) {
+                if (specs.resources) {
                     if (type === relatedKind.kind && (specs.clustersNames || []).includes(relatedKind.cluster)) {
                         return (
                             (specs.resources || []).findIndex((spec) => {
@@ -125,7 +125,9 @@ export const addDiagramDetails = (resourceStatuses, resourceMap, isClusterGroupe
                         (kind === 'subscription' ? name === resourceName : name === nameNoHash) &&
                         namespace === relatedKind.namespace &&
                         type === relatedKind.kind &&
-                        (specs.clustersNames || []).includes(relatedKind.cluster)
+                        ((specs.clustersNames || []).includes(relatedKind.cluster) ||
+                            (specs.searchClusters || []).find((cls) => cls.name === relatedKind.cluster) ||
+                            relatedKind.cluster === 'local-cluster') // fallback to searchclusters if SubscriptionReport is not created
                     )
                 }
             })

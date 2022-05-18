@@ -13,15 +13,6 @@ const kube = [
     'generation',
 ]
 
-const keepKeys = [
-    'apps.open-cluster-management.io/github-branch',
-    'apps.open-cluster-management.io/github-path',
-    'apps.open-cluster-management.io/git-branch',
-    'apps.open-cluster-management.io/git-path',
-    'apps.open-cluster-management.io/reconcile-option',
-    'apps.open-cluster-management.io/deployables', //needed by the topology to show deployable information
-]
-
 const filter = (value, parentKey) => {
     if (typeof value === 'object') {
         return filterDeep(value, parentKey)
@@ -35,9 +26,6 @@ export const isFiltered = (value, key, parentKey, parentObj) => {
         return false
     }
     if (kube.includes(key)) {
-        return true
-    }
-    if (parentKey === 'annotations' && !keepKeys.includes(key)) {
         return true
     }
     return false

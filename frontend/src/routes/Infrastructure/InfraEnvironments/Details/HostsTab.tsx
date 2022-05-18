@@ -8,7 +8,6 @@ import { DOC_VERSION } from '../../../../lib/doc-util'
 import EditAgentModal from '../../Clusters/ManagedClusters/components/cim/EditAgentModal'
 import { useOnUnbindHost } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/unbindHost'
 import {
-    fetchNMState,
     fetchSecret,
     getClusterDeploymentLink,
     onApproveAgent,
@@ -16,7 +15,6 @@ import {
     onMassDeleteHost,
     onSaveAgent,
     onSaveBMH,
-    useNMStatesOfNamespace,
     useOnDeleteHost,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import { isBMPlatform } from '../utils'
@@ -36,6 +34,7 @@ type HostsTabProps = {
     agentClusterInstalls: CIM.AgentClusterInstallK8sResource[]
     bareMetalHosts: CIM.BareMetalHostK8sResource[]
     aiConfigMap: CIM.ConfigMapK8sResource
+    infraNMStates?: CIM.NMStateK8sResource[]
 }
 
 const HostsTab: React.FC<HostsTabProps> = ({
@@ -44,6 +43,7 @@ const HostsTab: React.FC<HostsTabProps> = ({
     agentClusterInstalls,
     bareMetalHosts,
     aiConfigMap,
+    infraNMStates = [],
 }) => {
     const [editBMH, setEditBMH] = useState<CIM.BareMetalHostK8sResource>()
     const [editAgent, setEditAgent] = useState<CIM.AgentK8sResource | undefined>()
@@ -51,8 +51,7 @@ const HostsTab: React.FC<HostsTabProps> = ({
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<CIM.AgentK8sResource> | { open: false }>(
         { open: false }
     )
-    const nmStates = useNMStatesOfNamespace(infraEnv.metadata.namespace)
-    const onDeleteHost = useOnDeleteHost(setBulkModalProps, bareMetalHosts, undefined, nmStates)
+    const onDeleteHost = useOnDeleteHost(setBulkModalProps, bareMetalHosts, undefined, infraNMStates)
     const onUnbindHost = useOnUnbindHost(setBulkModalProps, undefined, undefined)
 
     const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, bareMetalHosts), [bareMetalHosts, infraAgents])
@@ -91,6 +90,7 @@ const HostsTab: React.FC<HostsTabProps> = ({
                                 agentClusterInstalls={agentClusterInstalls}
                                 bareMetalHosts={bareMetalHosts}
                                 infraEnv={infraEnv}
+                                nmStates={infraNMStates}
                                 getClusterDeploymentLink={getClusterDeploymentLink}
                                 onEditHost={setEditAgent}
                                 onApprove={onApproveAgent}
@@ -105,11 +105,11 @@ const HostsTab: React.FC<HostsTabProps> = ({
                             <EditBMHModal
                                 infraEnv={infraEnv}
                                 bmh={editBMH}
+                                nmStates={infraNMStates}
                                 isOpen={!!editBMH}
                                 onClose={() => setEditBMH(undefined)}
                                 onEdit={onSaveBMH}
                                 fetchSecret={fetchSecret}
-                                fetchNMState={fetchNMState}
                                 usedHostnames={usedHostnames}
                             />
                             <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />

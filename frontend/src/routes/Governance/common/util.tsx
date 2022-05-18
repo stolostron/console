@@ -15,10 +15,15 @@ import {
     Policy,
     PolicySet,
     PolicyTemplate,
+    PolicyAutomation,
+    reconcileResources,
     Subscription,
+    IResource,
+    Secret,
 } from '../../../resources'
 import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
+import { IAlertContext } from '@stolostron/ui-components'
 
 export interface PolicyCompliance {
     policyName: string
@@ -213,25 +218,24 @@ export function getClustersComplianceForPolicySet(
             }
             for (const policy of policySetPolicies) {
                 if (policy.spec.disabled) {
+                    continue
+                }
+                const policyClusterStatus = policy.status?.status?.find(
+                    (clusterStatus) => clusterStatus.clustername === decision.clusterName
+                )
+                if (policyClusterStatus?.compliant === 'NonCompliant') {
+                    clustersCompliance[decision.clusterName] = 'NonCompliant'
+                } else if (
+                    !policyClusterStatus?.compliant &&
+                    clustersCompliance[decision.clusterName] !== 'NonCompliant'
+                ) {
+                    clustersCompliance[decision.clusterName] = 'Unknown'
+                } else if (
+                    policyClusterStatus?.compliant === 'Compliant' &&
+                    clustersCompliance[decision.clusterName] !== 'NonCompliant' &&
+                    clustersCompliance[decision.clusterName] !== 'Unknown'
+                ) {
                     clustersCompliance[decision.clusterName] = 'Compliant'
-                } else {
-                    const policyClusterStatus = policy.status?.status?.find(
-                        (clusterStatus) => clusterStatus.clustername === decision.clusterName
-                    )
-                    if (policyClusterStatus?.compliant === 'NonCompliant') {
-                        clustersCompliance[decision.clusterName] = 'NonCompliant'
-                    } else if (
-                        !policyClusterStatus?.compliant &&
-                        clustersCompliance[decision.clusterName] !== 'NonCompliant'
-                    ) {
-                        clustersCompliance[decision.clusterName] = 'Unknown'
-                    } else if (
-                        policyClusterStatus?.compliant === 'Compliant' &&
-                        clustersCompliance[decision.clusterName] !== 'NonCompliant' &&
-                        clustersCompliance[decision.clusterName] !== 'Unknown'
-                    ) {
-                        clustersCompliance[decision.clusterName] = 'Compliant'
-                    }
                 }
             }
         }
@@ -287,18 +291,18 @@ function getHelmReleaseMap(helmReleases: HelmRelease[]) {
     return resourceMap
 }
 function getSubscriptionMap(subscriptions: Subscription[]) {
-    const resourceMap = new Map()
+    const resourceMap: Record<string, Subscription | undefined> = {}
     subscriptions.forEach((subscription: Subscription) => {
-        resourceMap.set(`${subscription.metadata.namespace}/${subscription.metadata.name}`, subscription)
+        resourceMap[`${subscription.metadata.namespace}/${subscription.metadata.name}`] = subscription
     })
     return resourceMap
 }
 function getChannelMap(channels: Channel[]) {
-    const resourceMap = new Map()
+    const channelMap: Record<string, Channel | undefined> = {}
     channels.forEach((channel: Channel) => {
-        resourceMap.set(`${channel.metadata.namespace}/${channel.metadata.name}`, channel)
+        channelMap[`${channel.metadata.namespace}/${channel.metadata.name}`] = channel
     })
-    return resourceMap
+    return channelMap
 }
 
 // This function may need some revision/testing
@@ -327,8 +331,8 @@ export function resolveSource(
     if (hostingSubscription) {
         const subscriptionMap = getSubscriptionMap(subscriptions)
         const channelMap = getChannelMap(channels)
-        const subscription = subscriptionMap.get(hostingSubscription)
-        const channel = channelMap.get(subscription.spec.channel ?? '')
+        const subscription = subscriptionMap[hostingSubscription]
+        const channel = channelMap[subscription?.spec.channel ?? '']
         if (subscription && channel) {
             const subscriptionAnnotations = getAnnotations(subscription)
             const getGitAnnotation = (annotations: any, name: string) =>
@@ -479,4 +483,54 @@ export function getPolicyRemediation(policy: Policy | undefined) {
         }
     })
     return remediationAggregation
+}
+
+export function handlePolicyAutomationSubmit(
+    data: any,
+    secrets: Secret[],
+    history: any,
+    toast: IAlertContext,
+    t: TFunction,
+    currentPolicyAutomation?: PolicyAutomation
+) {
+    const resource = data as PolicyAutomation
+    const resources: IResource[] = [resource]
+
+    if (resource) {
+        // Copy the cedential to the namespace of the policy
+        const credToCopy: Secret[] = secrets.filter(
+            (secret: Secret) =>
+                secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
+                secret.metadata.name === resource.spec.automationDef.secret
+        )
+        const credExists = credToCopy.find((cred) => cred.metadata.namespace === resource.metadata.namespace)
+        if (!credExists) {
+            // unshift so secret is created before the PolicyAutomation
+            resources.unshift({
+                ...credToCopy[0],
+                metadata: {
+                    annotations: credToCopy[0].metadata.annotations,
+                    name: credToCopy[0].metadata.name,
+                    namespace: resource.metadata.namespace!,
+                    labels: {
+                        'cluster.open-cluster-management.io/type': 'ans',
+                        'cluster.open-cluster-management.io/copiedFromNamespace': credToCopy[0].metadata.namespace!,
+                        'cluster.open-cluster-management.io/copiedFromSecretName': credToCopy[0].metadata.name!,
+                    },
+                },
+            })
+        }
+    }
+    const currentResources = currentPolicyAutomation ? [currentPolicyAutomation] : []
+    return reconcileResources(resources, currentResources).then(() => {
+        if (resource) {
+            toast.addAlert({
+                title: t('Policy automation created'),
+                message: t('{{name}} was successfully created.', { name: resource.metadata?.name }),
+                type: 'success',
+                autoClose: true,
+            })
+        }
+        history.push(window.history?.state?.state?.from ?? NavigationPath.policies)
+    })
 }

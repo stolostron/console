@@ -11,9 +11,9 @@
                     "type": "object",
                     "properties": {
                         "name": {
-                            "validateDNSName": true
+                            "validateName": true
                         },
-                        "namespace": { "validateDNSName": true }
+                        "namespace": { "validateName": true }
                     },
                     "required": ["name", "namespace"]
                 },
@@ -21,7 +21,7 @@
                     "type": "object",
                     "properties": {
                         "policyRef": { "type": "string" },
-                        "mode": { "enum": ["once", "disabled", "manual"] },
+                        "mode": { "enum": ["once", "disabled"] },
                         "automationDef": {
                             "type": "object",
                             "properties": {

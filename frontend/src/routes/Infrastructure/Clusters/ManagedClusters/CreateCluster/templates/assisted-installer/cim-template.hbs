@@ -8,16 +8,16 @@ metadata:
   {{#if ai.managedClusterSet}}
     "cluster.open-cluster-management.io/clusterset": '{{{ai.managedClusterSet}}}'
   {{/if}}
-  name: {{{ai.name}}}
-  namespace: {{{ai.name}}}
+  name: '{{{ai.name}}}'
+  namespace: '{{{ai.name}}}'
 spec:
   baseDomain: {{{ai.baseDnsDomain}}}
   clusterInstallRef:
     group: extensions.hive.openshift.io
     kind: AgentClusterInstall
-    name: {{{ai.name}}}
+    name: '{{{ai.name}}}'
     version: v1beta1
-  clusterName: {{{ai.name}}}
+  clusterName: '{{{ai.name}}}'
   platform:
     agentBareMetal:
       agentSelector:
@@ -29,11 +29,11 @@ spec:
 apiVersion: extensions.hive.openshift.io/v1beta1
 kind: AgentClusterInstall
 metadata:
-  name: {{{ai.name}}}
-  namespace: {{{ai.name}}}
+  name: '{{{ai.name}}}'
+  namespace: '{{{ai.name}}}'
 spec:
   clusterDeploymentRef:
-    name: {{{ai.name}}}
+    name: '{{{ai.name}}}'
   holdInstallation: true
   provisionRequirements:
     workerAgents: 0
@@ -60,7 +60,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: pullsecret-cluster-{{{ai.name}}}
-  namespace: {{{ai.name}}}
+  namespace: '{{{ai.name}}}'
 data:
   '.dockerconfigjson': {{{ai.pullSecret}}}
 type: kubernetes.io/dockerconfigjson
@@ -71,14 +71,14 @@ kind: ManagedCluster
 metadata:
   labels:
     cloud: hybrid
-    name: {{{ai.name}}}
+    name: '{{{ai.name}}}'
     {{#if ai.managedClusterSet}}
     cluster.open-cluster-management.io/clusterset: '{{{ai.managedClusterSet}}}'
     {{/if}}
     {{#each ai.additionalLabels}}
     {{{key}}}: '{{{value}}}'
     {{/each}}
-  name: {{{ai.name}}}
+  name: '{{{ai.name}}}'
 spec:
   hubAcceptsClient: true
 
@@ -87,11 +87,11 @@ spec:
 apiVersion: agent.open-cluster-management.io/v1
 kind: KlusterletAddonConfig
 metadata:
-  name: {{{ai.name}}}
-  namespace: {{{ai.name}}}
+  name: '{{{ai.name}}}'
+  namespace: '{{{ai.name}}}'
 spec:
-  clusterName: {{{ai.name}}}
-  clusterNamespace: {{{ai.name}}}
+  clusterName: '{{{ai.name}}}'
+  clusterNamespace: '{{{ai.name}}}'
   clusterLabels:
     cloud: hybrid
   applicationManager:

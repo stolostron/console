@@ -7,7 +7,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 export const DOC_VERSION = '2.5'
 
 export const DOC_HOME = `https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/${DOC_VERSION}`
-export const DOC_BASE_PATH = `${DOC_HOME}/html`
+export const DOC_BASE_PATH = `${DOC_HOME}/html-single`
 export const OCP_DOC_BASE_PATH = 'https://docs.openshift.com/container-platform'
 
 export const DOC_LINKS = {
@@ -19,17 +19,28 @@ export const DOC_LINKS = {
     CREATE_CONNECTION_GCP: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-google-cloud-platform`,
     CREATE_CONNECTION_VMWARE: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-vmware-vsphere`,
     CREATE_CONNECTION_OPENSTACK: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-openstack`,
+    CREATE_CONNECTION_VIRTUALIZATION: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-virtualization`,
     CREATE_CONNECTION_BAREMETAL: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-bare-metal`,
     CREATE_CONNECTION_ANSIBLE: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-ansible`,
     CREATE_CONNECTION_REDHATCLOUD: `${DOC_BASE_PATH}/credentials/credentials#creating-a-credential-for-openshift-cluster-manager`,
     CREATE_CONNECTION_PROXY: `${DOC_BASE_PATH}/credentials/credentials#proxy`,
+    CREATE_CONNECTION_PROXY_VMWARE: `${DOC_BASE_PATH}/credentials/credentials#proxy-vm`,
+    CREATE_CONNECTION_PROXY_AWS: `${DOC_BASE_PATH}/credentials/credentials#proxy-aws`,
+    CREATE_CONNECTION_PROXY_AZURE: `${DOC_BASE_PATH}/credentials/credentials#proxy-azure`,
+    CREATE_CONNECTION_PROXY_BAREMETAL: `${DOC_BASE_PATH}/credentials/credentials#proxy-bare`,
+    CREATE_CONNECTION_PROXY_GCP: `${DOC_BASE_PATH}/credentials/credentials#proxy-google`,
+    CREATE_CONNECTION_PROXY_OPENSTACK: `${DOC_BASE_PATH}/credentials/credentials#proxy-openstack`,
+    CREATE_CONNECTION_PROXY_VIRTUALIZATION: `${DOC_BASE_PATH}/credentials/credentials#proxy-virtualization`,
     CREATE_CLUSTER: `${DOC_BASE_PATH}/clusters/managing-your-clusters#creating-a-cluster`,
+    CREATE_CLUSTER_ON_PREMISE: `${DOC_BASE_PATH}/clusters/managing-your-clusters#creating-a-cluster-on-premises`,
     IMPORT_CLUSTER: `${DOC_BASE_PATH}/clusters/managing-your-clusters#importing-a-target-managed-cluster-to-the-hub-cluster`,
     CLUSTER_SETS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#managedclustersets`,
     CLUSTER_POOLS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#managing-cluster-pools`,
     CLUSTER_CLAIMS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#claiming-clusters-from-cluster-pools`,
-    SUBMARINER: `${DOC_BASE_PATH}/services/submariner/services-overview#submariner`,
+    SUBMARINER: `${DOC_BASE_PATH}/services/services-overview#submariner`,
     CONFIG_DISCONNECTED_INSTALL: `${DOC_BASE_PATH}/credentials/credentials#disconnected`,
+    CONFIG_DISCONNECTED_INSTALL_VMWARE: `${DOC_BASE_PATH}/credentials/credentials#disconnected-vm`,
+    CONFIG_DISCONNECTED_INSTALL_OPENSTACK: `${DOC_BASE_PATH}/credentials/credentials#disconnected-openstack`,
     INFRASTRUCTURE_EVIRONMENTS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#creating-an-infrastructure-environment`,
     DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#discovery-intro`,
     MACHINE_POOLS: `${DOC_BASE_PATH}/clusters/managing-your-clusters#resizing-a-cluster`,

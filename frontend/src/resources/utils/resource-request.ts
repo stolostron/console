@@ -1,9 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import * as jsonpatch from 'fast-json-patch'
 import { noop } from 'lodash'
 import { getCookie } from '.'
 import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '..'
-import { subAnnotationStr } from '../../routes/Applications/helpers/resource-helper'
+import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
+import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'
 import { AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
@@ -103,7 +105,15 @@ export async function reconcileResources(
         await createResources(addedResources, { dryRun: true, abortController })
 
         // Dry Run - Modified Resources
-        await updateResources(modifiedResources, { dryRun: true, abortController })
+        for (const resource of modifiedResources) {
+            const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
+            if (existing) {
+                const patch = jsonpatch.compare(existing, resource)
+                if (patch.length) {
+                    await patchResource(existing, patch, { dryRun: true })
+                }
+            }
+        }
 
         // Dry Run - Deleted Resources
         await deleteResources(deletedResources, { dryRun: true, abortController })
@@ -113,7 +123,15 @@ export async function reconcileResources(
 
         // Update Resources
         try {
-            await updateResources(modifiedResources, { abortController })
+            for (const resource of modifiedResources) {
+                const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
+                if (existing) {
+                    const patch = jsonpatch.compare(existing, resource)
+                    if (patch.length) {
+                        await patchResource(existing, patch)
+                    }
+                }
+            }
         } catch (err) {
             // modifications failed, delete the previously created
             void deleteResources(addedResources).catch(noop)
@@ -207,14 +225,15 @@ export async function updateAppResources(resources: IResource[]): Promise<void> 
         try {
             const existingResource = await getResource(resource).promise
             if (existingResource.kind === ApplicationKind) {
-                const exisitngSubscriptions =
-                    existingResource.metadata?.annotations && existingResource.metadata?.annotations[subAnnotationStr]
-                subscriptions = exisitngSubscriptions
-                    ?.split(',')
-                    .filter((subscription) => !subscription.endsWith('-local')) as string[]
+                const existingSubscriptions = getSubscriptionsFromAnnotation(existingResource)
+
+                subscriptions = existingSubscriptions.filter(
+                    (subscription) => !isLocalSubscription(subscription, existingSubscriptions)
+                )
             }
-            if (existingResource) {
-                await replaceResource(resource).promise
+            const patch = jsonpatch.compare(existingResource, resource)
+            if (patch.length) {
+                await patchResource(existingResource, patch)
             }
         } catch (err) {
             // if the resource does not exist, create the resource
@@ -330,7 +349,7 @@ export function getResource<Resource extends IResource>(
 }
 
 export function listResources<Resource extends IResource>(
-    resource: { apiVersion: string; kind: string },
+    resource: { apiVersion: string; kind: string; metadata?: { namespace?: string } },
     labels?: string[],
     query?: Record<string, string>
 ): IRequestResult<Resource[]> {

@@ -6,12 +6,13 @@ import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useContext } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { IResource, reconcileResources } from '../../../resources'
+import { IResource, reconcileResources, Subscription } from '../../../resources'
 export interface ISyncResourceModalProps {
     close: () => void
     open: boolean
     resources: IResource[]
     t: TFunction
+    subscriptions: Subscription[]
 }
 
 export function SyncResourceModal(props: ISyncResourceModalProps | { open: false }) {
@@ -24,12 +25,17 @@ export function SyncResourceModal(props: ISyncResourceModalProps | { open: false
 
     const handleSubmit = () => {
         props.close()
-        const existingResources = props.resources
+        const { subscriptions } = props
+        const existingResources: any[] = []
         const subNames: (string | undefined)[] = []
         props.resources.forEach((sub) => {
             subNames.push(sub.metadata?.name)
             const annotations = _.get(sub, 'metadata.annotations', {})
             annotations['apps.open-cluster-management.io/manual-refresh-time'] = new Date()
+            const existingSubscription = subscriptions.find(
+                (s) => s.metadata.name === sub?.metadata?.name && s.metadata.namespace === sub?.metadata?.namespace
+            )
+            existingResources.push(existingSubscription)
         })
 
         reconcileResources(props.resources, existingResources).then(() => {

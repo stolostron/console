@@ -37,7 +37,7 @@ export const warningCode = 2
 export const pendingCode = 1
 export const failureCode = 0
 //pod state contains any of these strings
-const resErrorStates = ['err', 'off', 'invalid', 'kill', 'propagationfailed']
+const resErrorStates = ['err', 'off', 'invalid', 'kill', 'propagationfailed', 'imagepullbackoff', 'crashloopbackoff']
 const resWarningStates = [pendingStatus, 'creating', 'terminating']
 const apiVersionPath = 'specs.raw.apiVersion'
 
@@ -378,6 +378,7 @@ const getPulseStatusForGenericNode = (node, t) => {
 
     //go through all clusters to make sure all pods are counted, even if they are not deployed there
     let highestPulse = 3
+    let pendingPulseCount = 0
     clusterNames.forEach((clusterName) => {
         clusterName = R.trim(clusterName)
         //get target cluster namespaces
@@ -390,7 +391,8 @@ const getPulseStatusForGenericNode = (node, t) => {
         targetNSList.forEach((targetNS) => {
             const resourceItems = _.filter(resourcesForCluster, (obj) => _.get(obj, resourceNSString, '') === targetNS)
             if (resourceItems.length === 0) {
-                pulse = 'orange' // search didn't find this resource in this cluster so mark it unknown
+                pendingPulseCount++
+                //pulse = 'orange' // search didn't find this resource in this cluster so mark it unknown
             } else {
                 resourceItems.forEach((resourceItem) => {
                     // does resource have a desired resource count?
@@ -431,6 +433,13 @@ const getPulseStatusForGenericNode = (node, t) => {
             highestPulse = index
         }
     })
+
+    if (pendingPulseCount > 0 && pendingPulseCount < clusterNames.length) {
+        const index = pulseValueArr.indexOf('yellow')
+        if (index < highestPulse) {
+            highestPulse = index
+        }
+    }
     return pulseValueArr[highestPulse]
 }
 
@@ -794,7 +803,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
                               ['Propagated']
                           )
                         : t(
-                              'This subscription has no status. If the status does not change to {{0}} after waiting for initial creation, verify that the klusterlet-addon-appmgr pod is running on the remote cluster.',
+                              'This subscription has no status. If the status does not change to {{0}} after waiting for initial creation, verify that the application-manager pod is running on the remote cluster.',
                               ['Subscribed']
                           )
 
@@ -864,7 +873,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t) => 
         details.push({
             labelValue: t('Remote subscriptions'),
             value: t(
-                'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the klusterlet-addon-appmgr pod runs on the managed clusters.',
+                'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the application-manager pod runs on the managed clusters.',
                 [node.namespace]
             ),
             status: failureStatus,
@@ -1117,7 +1126,7 @@ export const setPodDeployStatus = (node, updatedNode, details, activeFilters, t)
         }
     })
 
-    if (!addedDetails) {
+    if (!addedDetails && node.type !== 'pod') {
         details.push({
             type: 'spacer',
         })
@@ -1190,9 +1199,14 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
     const nodeType = _.get(node, 'type', '')
     const name = _.get(node, 'name', '')
     const namespace = _.get(node, 'namespace', '')
+    const cluster = _.get(node, 'cluster', '')
 
     const isHookNode = _.get(node, 'specs.raw.hookType')
-    const clusterNames = isHookNode ? ['local-cluster'] : R.split(',', getClusterName(nodeId, node, true))
+    const clusterNames = isHookNode
+        ? ['local-cluster']
+        : cluster
+        ? [cluster]
+        : R.split(',', getClusterName(nodeId, node, true))
     const resourceMap = _.get(node, `specs.${node.type}Model`, {})
     const onlineClusters = getOnlineClusters(node)
 

@@ -20,17 +20,18 @@ export const getClusterName = (nodeId) => {
     return localClusterName
 }
 
-export const createChildNode = (parentObject, clustersNames, type, links, nodes) => {
+export const createChildNode = (parentObject, clustersNames, type, links, nodes, replicaCount = 1) => {
     const parentType = _.get(parentObject, 'type', '')
     const { name, namespace, id, specs = {} } = parentObject
     const parentId = id
-    const memberId = `member--member--deployable--member--clusters--${getClusterName(parentId)}--${type}--${name}`
+    const memberId = `${parentId}--${type}--${name}`
     let resources
     if (specs.resources) {
         resources = specs.resources.map((res) => {
             return { ...res, kind: type }
         })
     }
+    const resourceCount = specs.resourceCount === 0 ? replicaCount : specs.resourceCount * replicaCount
     const node = {
         name,
         namespace,
@@ -38,9 +39,10 @@ export const createChildNode = (parentObject, clustersNames, type, links, nodes)
         id: memberId,
         uid: memberId,
         specs: {
-            resourceCount: specs.resourceCount,
+            resourceCount,
             resources,
             clustersNames,
+            replicaCount,
             parent: {
                 parentId,
                 parentName: name,

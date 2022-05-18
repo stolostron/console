@@ -99,6 +99,8 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
+    NMStateConfigKind,
+    NMStateConfigApiVersion,
     Placement,
     PlacementApiVersionAlpha,
     PlacementBinding,
@@ -145,7 +147,11 @@ function AtomArray<T>() {
     return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
 }
 
+// throttle events delay
+export const THROTTLE_EVENTS_DELAY = 500
+
 export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
+export const discoveredApplicationsState = AtomArray<ArgoApplication>()
 
 export const agentClusterInstallsState = AtomArray<CIM.AgentClusterInstallK8sResource>()
 export const agentsState = AtomArray<CIM.AgentK8sResource>()
@@ -181,7 +187,7 @@ export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
 export const managedClustersState = AtomArray<ManagedCluster>()
 export const multiClusterHubState = AtomArray<MultiClusterHub>()
 export const namespacesState = AtomArray<Namespace>()
-export const nmStateConfigState = AtomArray<CIM.NMStateK8sResource>()
+export const nmStateConfigsState = AtomArray<CIM.NMStateK8sResource>()
 export const policiesState = AtomArray<Policy>()
 export const policyAutomationState = AtomArray<PolicyAutomation>()
 export const policySetsState = AtomArray<PolicySet>()
@@ -261,6 +267,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setManagedClusters] = useRecoilState(managedClustersState)
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
+    const [, setNMStateConfigs] = useRecoilState(nmStateConfigsState)
     const [, setPoliciesState] = useRecoilState(policiesState)
     const [, setPolicyAutomationState] = useRecoilState(policyAutomationState)
     const [, setPolicySetsState] = useRecoilState(policySetsState)
@@ -324,6 +331,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
         addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
         addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
+        addSetter(NMStateConfigApiVersion, NMStateConfigKind, setNMStateConfigs)
         addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
         addSetter(PolicyAutomationApiVersion, PolicyAutomationKind, setPolicyAutomationState)
         addSetter(PolicySetApiVersion, PolicySetKind, setPolicySetsState)
@@ -367,6 +375,7 @@ export function LoadData(props: { children?: ReactNode }) {
         setManagedClusters,
         setMultiClusterHubs,
         setNamespaces,
+        setNMStateConfigs,
         setPlacementBindingsState,
         setPlacementDecisionsState,
         setPlacementRulesState,
@@ -446,8 +455,12 @@ export function LoadData(props: { children?: ReactNode }) {
                             eventQueue.length = 0
                             break
                         case 'LOADED':
-                            processEventQueue()
-                            setLoading(false)
+                            setLoading((loading) => {
+                                if (loading) {
+                                    processEventQueue()
+                                }
+                                return false
+                            })
                             break
                         case 'SETTINGS':
                             setSettings(data.settings)
@@ -476,7 +489,7 @@ export function LoadData(props: { children?: ReactNode }) {
         }
         startWatch()
 
-        const timeout = setInterval(processEventQueue, 500)
+        const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
         return () => {
             clearInterval(timeout)
             if (evtSource) evtSource.close()
@@ -516,9 +529,11 @@ export function LoadData(props: { children?: ReactNode }) {
         checkLoggedIn()
     }, [])
 
+    const children = useMemo(() => <Fragment>{props.children}</Fragment>, [props.children])
+
     if (loading || getBackendUrl() === undefined) return <LoadingPage />
 
-    return <Fragment>{props.children}</Fragment>
+    return children
 }
 
 export function usePolicies() {

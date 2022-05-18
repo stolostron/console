@@ -229,7 +229,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                           text: t('managed.search'),
                           click: (cluster: Cluster) =>
                               window.location.assign(
-                                  `/multicloud/home/search?filters={"textsearch":"cluster%3A${cluster?.name}"}`
+                                  `${NavigationPath.search}?filters={"textsearch":"cluster%3A${cluster?.name}"}`
                               ),
                       },
                   ]

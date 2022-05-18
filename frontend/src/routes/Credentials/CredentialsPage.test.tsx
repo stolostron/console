@@ -37,6 +37,7 @@ const mockProviderConnection1: ProviderConnection = {
         namespace: 'provider-connection-namespace',
         labels: {
             'cluster.open-cluster-management.io/type': '',
+            'cluster.open-cluster-management.io/credentials': '',
         },
     },
     type: 'Opaque',
@@ -50,6 +51,7 @@ const mockProviderConnection2: ProviderConnection = {
         namespace: 'provider-connection-namespace',
         labels: {
             'cluster.open-cluster-management.io/type': '',
+            'cluster.open-cluster-management.io/credentials': '',
         },
     },
     type: 'Opaque',
@@ -63,6 +65,7 @@ const cloudRedHatProviderConnection: ProviderConnection = {
         namespace: 'ocm',
         labels: {
             'cluster.open-cluster-management.io/type': Provider.redhatcloud,
+            'cluster.open-cluster-management.io/credentials': '',
         },
     },
     type: 'Opaque',

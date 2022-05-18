@@ -11,9 +11,9 @@
                     "type": "object",
                     "properties": {
                         "name": {
-                            "validateDNSName": true
+                            "validateName": true
                         },
-                        "namespace": { "validateDNSName": true }
+                        "namespace": { "validateName": true }
                     },
                     "required": ["name", "namespace"]
                 },
@@ -39,8 +39,8 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "validateDNSName": true },
-                        "namespace": { "validateDNSName": true }
+                        "name": { "validateName": true },
+                        "namespace": { "validateName": true }
                     },
                     "required": ["name", "namespace"]
                 },
@@ -62,6 +62,33 @@
         }
     },
     {
+        "type": "Placement",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "apiVersion": { "type": "string" },
+                "kind": { "type": "string", "const": "Placement" },
+                "metadata": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "validateName": true },
+                        "namespace": { "validateName": true }
+                    },
+                    "required": ["name", "namespace"]
+                },
+                "spec": {
+                    "type": "object",
+                    "properties": {
+                        "clusterSets": { "type": "array" },
+                        "numberOfClusters": { "type": "number" },
+                        "predicates": { "type": "array" }
+                    }
+                }
+            },
+            "required": ["apiVersion", "kind", "metadata", "spec"]
+        }
+    },
+    {
         "type": "PlacementBinding",
         "schema": {
             "type": "object",
@@ -71,17 +98,17 @@
                 "metadata": {
                     "type": "object",
                     "properties": {
-                        "name": { "validateDNSName": true },
-                        "namespace": { "validateDNSName": true }
+                        "name": { "validateName": true },
+                        "namespace": { "validateName": true }
                     },
                     "required": ["name", "namespace"]
                 },
                 "placementRef": {
                     "type": "object",
                     "properties": {
-                        "name": { "validateDNSName": true },
+                        "name": { "validateName": true },
                         "apiGroup": { "type": "string" },
-                        "kind": { "type": "string", "const": "PlacementRule" }
+                        "kind": { "type": "string", "enum": ["Placement", "PlacementRule"] }
                     },
                     "required": ["name", "apiGroup", "kind"]
                 },
@@ -92,7 +119,7 @@
                         "properties": {
                             "apiGroup": { "type": "string" },
                             "kind": { "const": "PolicySet" },
-                            "name": { "validateDNSName": true }
+                            "name": { "validateName": true }
                         },
                         "required": ["apiGroup", "kind", "name"]
                     }

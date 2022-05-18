@@ -26,6 +26,7 @@ const policySet: PolicySet = {
     status: {
         compliant: 'Compliant',
         placement: [{ placement: 'policy-set-with-1-placement', placementBinding: 'policy-set-with-1-placement' }],
+        statusMessage: 'All policies are reporting status',
     },
 }
 
@@ -56,5 +57,7 @@ describe('Policy Set Card', () => {
         await waitForText('Policy set with a single Placement and PlacementBinding.')
         // wait card compliance status
         await waitForText('No violations')
+        // wait status message
+        await waitForText('All policies are reporting status')
     })
 })

@@ -6,11 +6,12 @@ import {
     argoApplicationsState,
     channelsState,
     managedClustersState,
+    namespacesState,
     placementRulesState,
     subscriptionsState,
 } from '../../../../atoms'
-import { nockIgnoreRBAC, nockList } from '../../../../lib/nock-util'
-import { waitForNocks, waitForText } from '../../../../lib/test-util'
+import { nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { waitForText } from '../../../../lib/test-util'
 
 import {
     ApplicationApiVersion,
@@ -26,13 +27,12 @@ import {
     ManagedCluster,
     ManagedClusterApiVersion,
     ManagedClusterKind,
+    Namespace,
+    NamespaceApiVersion,
+    NamespaceKind,
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
-    Project,
-    ProjectApiVersion,
-    ProjectDefinition,
-    ProjectKind,
     Subscription,
     SubscriptionApiVersion,
     SubscriptionKind,
@@ -395,9 +395,9 @@ const mockApplicationDataArgo: ApplicationDataType = {
     },
 }
 
-const mockNamespaces: Project[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
-    apiVersion: ProjectApiVersion,
-    kind: ProjectKind,
+const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
     metadata: { name },
 }))
 
@@ -425,6 +425,7 @@ describe('Overview Tab', () => {
                     snapshot.set(placementRulesState, mockPlacementrules)
                     snapshot.set(managedClustersState, mockManagedClusters)
                     snapshot.set(argoApplicationsState, mockArgoApplications)
+                    snapshot.set(namespacesState, mockNamespaces)
                 }}
             >
                 <MemoryRouter>
@@ -432,8 +433,6 @@ describe('Overview Tab', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-        const initialNocks = [nockList(ProjectDefinition, mockNamespaces)]
-        await waitForNocks(initialNocks)
         await waitForText('Name')
         // cluster
         await waitForText('Clusters')
@@ -458,9 +457,6 @@ describe('Overview Tab', () => {
                 </MemoryRouter>
             </RecoilRoot>
         )
-
-        const initialNocks = [nockList(ProjectDefinition, mockNamespaces)]
-        await waitForNocks(initialNocks)
         await waitForText('Name')
         // cluster
         await waitForText('Clusters')

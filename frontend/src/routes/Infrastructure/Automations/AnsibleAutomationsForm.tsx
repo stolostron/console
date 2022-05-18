@@ -112,8 +112,10 @@ export function AnsibleAutomationsForm(props: {
 
     const history = useHistory()
     const [editAnsibleJob, setEditAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
-    const [editAnsibleJobList, setEditAnsibleJobList] =
-        useState<{ jobs: ClusterCuratorAnsibleJob[]; setJobs: (jobs: ClusterCuratorAnsibleJob[]) => void }>()
+    const [editAnsibleJobList, setEditAnsibleJobList] = useState<{
+        jobs: ClusterCuratorAnsibleJob[]
+        setJobs: (jobs: ClusterCuratorAnsibleJob[]) => void
+    }>()
     const [templateName, setTemplateName] = useState(clusterCurator?.metadata.name ?? '')
     const [ansibleSelection, setAnsibleSelection] = useState(clusterCurator?.spec?.install?.towerAuthSecret ?? '')
     const [AnsibleTowerJobTemplateList, setAnsibleTowerJobTemplateList] = useState<string[]>()
@@ -202,16 +204,20 @@ export function AnsibleAutomationsForm(props: {
                     prehook: upgradePreJobs,
                     posthook: upgradePostJobs,
                 },
-                scale: {
-                    towerAuthSecret: ansibleSelection,
-                    prehook: scalePreJobs,
-                    posthook: scalePostJobs,
-                },
-                destroy: {
-                    towerAuthSecret: ansibleSelection,
-                    prehook: destroyPreJobs,
-                    posthook: destroyPostJobs,
-                },
+                ...(settings.ansibleIntegration === 'enabled'
+                    ? {
+                          scale: {
+                              towerAuthSecret: ansibleSelection,
+                              prehook: scalePreJobs,
+                              posthook: scalePostJobs,
+                          },
+                          destroy: {
+                              towerAuthSecret: ansibleSelection,
+                              prehook: destroyPreJobs,
+                              posthook: destroyPostJobs,
+                          },
+                      }
+                    : {}),
             },
         }
         return curator
@@ -515,9 +521,7 @@ export function AnsibleAutomationsForm(props: {
                 editorTitle={t('Ansible YAML')}
                 formData={formData}
                 schema={schema}
-                immutables={
-                    isEditing ? ['ClusterCurator[0].metadata.name', 'ClusterCurator[0].metadata.namespace'] : []
-                }
+                immutables={isEditing ? ['ClusterCurator.0.metadata.name', 'ClusterCurator.0.metadata.namespace'] : []}
                 mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
             />
             <EditAnsibleJobModal

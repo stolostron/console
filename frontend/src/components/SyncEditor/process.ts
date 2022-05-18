@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
-import { isEmpty, get, set, cloneDeep, has } from 'lodash'
+import { isEmpty, set, get, cloneDeep, has } from 'lodash'
 import { getErrors, validate } from './validation'
-import { getAllPaths, getPathArray } from './synchronize'
+import { getMatchingValues, getUidSiblings, crossReference } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 
@@ -16,6 +16,7 @@ export interface ProcessedType {
     resources: any[]
     yaml?: string
     hiddenSecretsValues?: any[]
+    hiddenFilteredValues?: any[]
 }
 
 export interface MappingType {
@@ -28,10 +29,7 @@ export interface MappingType {
     $gv?: any // what's the start/stop of the value in yaml
 }
 
-// remove the kube stuff
-const kube = ['managedFields', 'creationTimestamp', 'uid', 'livenessProbe', 'resourceVersion', 'generation']
-
-export interface SecretsValuesType {
+export interface CachedValuesType {
     path: string
     value: string
 }
@@ -40,15 +38,19 @@ export const processForm = (
     monacoRef: any,
     code: string | undefined,
     resourceArr: unknown,
-    changeStack?: {
-        baseResources: any[]
-        customResources: any[]
-    },
-    secrets?: (string | string[])[],
-    filterResources?: boolean,
-    immutables?: (string | string[])[],
-    userEdits?: ChangeType[],
-    validators?: any
+    changeStack:
+        | {
+              baseResources: any[]
+              customResources: any[]
+          }
+        | undefined,
+    secrets: (string | string[])[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    readonly: boolean,
+    userEdits: ChangeType[],
+    validators: any
 ) => {
     // get yaml, documents, resource, mapped
     let yaml = code || ''
@@ -61,41 +63,58 @@ export const processForm = (
         }
     }
 
-    // get initial parse errors
+    // get initial parse syntaxErrors
     let documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-    let errors = getErrors(documents)
-    const { parsed, resources } = getMappings(documents)
+    let syntaxErrors = getErrors(documents)
+    const { parsed, resources, paths } = getMappings(documents)
 
     // save a version of parsed for change comparison later in decorations--in this case for form changes
     const comparison = cloneDeep(parsed)
 
     // reconcile form changes with user changes
-    if (errors.length === 0 && changeStack && userEdits) {
+    if (syntaxErrors.length === 0 && changeStack && userEdits) {
         const customResources = reconcile(changeStack, userEdits, resources)
         yaml = stringify(customResources)
         documents = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-        errors = getErrors(documents)
+        syntaxErrors = getErrors(documents)
     }
 
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, [], filterResources, immutables, validators),
+        xreferences: crossReference(paths),
+        ...process(
+            monacoRef,
+            yaml,
+            documents,
+            syntaxErrors,
+            secrets,
+            [],
+            showFilters,
+            filters,
+            [],
+            immutables,
+            readonly,
+            validators
+        ),
     }
 }
 
 export const processUser = (
     monacoRef: any,
     yaml: string,
-    secrets?: (string | string[])[],
-    secretsValues?: SecretsValuesType[],
-    filterResources?: boolean,
-    immutables?: (string | string[])[],
-    validators?: any
+    secrets: (string | string[])[] | undefined,
+    cachedSecrets: CachedValuesType[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    cacheFiltered: CachedValuesType[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    readonly: boolean,
+    validators: any
 ) => {
     // get yaml, documents, resource, mapped
     const documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
-    const errors = getErrors(documents)
+    const syntaxErrors = getErrors(documents)
     const { parsed } = getMappings(documents)
 
     // save a version of parsed for change comparison later in decorations--in this case for user changes
@@ -104,7 +123,20 @@ export const processUser = (
     // and the rest
     return {
         comparison,
-        ...process(monacoRef, yaml, documents, errors, secrets, secretsValues, filterResources, immutables, validators),
+        ...process(
+            monacoRef,
+            yaml,
+            documents,
+            syntaxErrors,
+            secrets,
+            cachedSecrets,
+            showFilters,
+            filters,
+            cacheFiltered,
+            immutables,
+            readonly,
+            validators
+        ),
     }
 }
 
@@ -112,19 +144,19 @@ const process = (
     monacoRef: any,
     yaml: string,
     documents: any,
-    errors: any[],
-    secrets?: (string | string[])[],
-    secretsValues?: SecretsValuesType[],
-    filterResources?: boolean,
-    immutables?: (string | string[])[],
-    validators?: any
+    syntaxErrors: any[],
+    secrets: (string | string[])[] | undefined,
+    cachedSecrets: CachedValuesType[] | undefined,
+    showFilters: boolean,
+    filters: (string | string[])[] | undefined,
+    cacheFiltered: CachedValuesType[] | undefined,
+    immutables: (string | string[])[] | undefined,
+    readonly: boolean,
+    validators: any
 ) => {
-    // if parse errors, use previous hidden secrets
-    const hiddenSecretsValues: any[] = errors.length === 0 ? [] : secretsValues ?? []
-
     // restore hidden secret values
-    let { mappings, parsed, resources } = getMappings(documents)
-    secretsValues?.forEach(({ path, value }) => {
+    let { mappings, parsed, resources, paths } = getMappings(documents)
+    cachedSecrets?.forEach(({ path, value }) => {
         if (has(parsed, path)) {
             set(parsed, path, value)
         }
@@ -160,49 +192,64 @@ const process = (
             resources = filterKubeResources(resources)
         }
 
-        // create yaml with '****'
+        // create redacted yaml, etc
         yaml = stringify(resources)
         documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
-        ;({ mappings, parsed, resources } = getMappings(documents))
+        ;({ mappings, parsed, resources, paths } = getMappings(documents))
 
-        // prevent typing on secrets
-        allSecrets.forEach(({ path }) => {
-            const value = get(mappings, getPathArray(path))
-            if (value && value.$v) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
-                value.$s = true
-            }
+        // prevent typing on redacted yaml
+        ;[...allSecrets].forEach((value: { $r: any }) => {
+            protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + 1, 0))
+            //value.$s = true
         })
-    } else if (filterResources) {
-        // filter kube resources
-        resources = filterKubeResources(resources)
-        yaml = stringify(resources)
-        documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
-        ;({ mappings, parsed, resources } = getMappings(documents))
+
+        // add toggle button to filtered values
+        ;[...allFiltered].forEach((value: { $r: any }) => {
+            filteredRows.push(value.$r)
+        })
     }
 
     // prevent typing on immutables
     if (immutables) {
-        const allImmutables = getAllPaths(immutables, mappings, parsed)
-        allImmutables.forEach(({ path, isRange }) => {
-            const value = get(mappings, getPathArray(path))
-            if (value && value.$v !== undefined) {
-                protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + (isRange ? value.$l : 1), 0))
-            }
+        const allImmutables = getMatchingValues(immutables, paths)
+        allImmutables.forEach((value: { $r: any; $l: any }) => {
+            protectedRanges.push(new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0))
         })
     }
 
-    if (errors.length === 0 && validators) {
-        validate(validators, mappings, resources, errors)
+    // prevent typing on uid and its siblings
+    protectedRanges = [
+        ...protectedRanges,
+        ...getUidSiblings(paths, mappings).map((value) => {
+            return new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0)
+        }),
+    ]
+
+    const validationErrors: any[] = []
+    if (syntaxErrors.length === 0 && validators) {
+        validate(validators, mappings, resources, validationErrors, syntaxErrors, protectedRanges)
     }
 
-    return { yaml, protectedRanges, errors, change: { resources, mappings, parsed }, changeWithSecrets }
+    if (syntaxErrors.length !== 0 && validationErrors.length !== 0 && cachedSecrets && cacheFiltered) {
+        unredactedChange.hiddenSecretsValues = cachedSecrets
+        unredactedChange.hiddenFilteredValues = cacheFiltered
+    }
+
+    return {
+        yaml,
+        protectedRanges: readonly ? [] : protectedRanges,
+        filteredRows,
+        errors: { syntax: syntaxErrors, validation: validationErrors },
+        change: { resources, mappings, parsed, paths },
+        unredactedChange,
+    }
 }
 
 function getMappings(documents: any[]) {
     const parsed: { [name: string]: any[] } = {}
     const mappings: { [name: string]: any[] } = {}
     const resources: any[] = []
+    const paths: { [name: string]: any[] } = {}
     documents.forEach((document) => {
         if (!document?.errors.length) {
             const json = document.toJSON()
@@ -211,7 +258,7 @@ function getMappings(documents: any[]) {
                 let arr = mappings[key] || []
                 const rangeObj: { [name: string]: MappingType } = {}
                 const contents: any = document?.contents
-                getMappingItems(contents?.items, rangeObj)
+                getMappingItems(contents?.items, rangeObj, `${key}.${arr.length}`, [key, arr.length], false, paths)
                 arr.push(rangeObj)
                 mappings[key] = arr
                 arr = parsed[key] || []
@@ -221,17 +268,27 @@ function getMappings(documents: any[]) {
             }
         }
     })
-    return { mappings, parsed, resources }
+    return { mappings, parsed, resources, paths }
 }
 
-function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType } | MappingType[]) {
-    items?.forEach((item: any) => {
-        const key = item?.key?.value || 'unknown'
+function getMappingItems(
+    items: any[],
+    rangeObj: { [name: string]: MappingType } | MappingType[],
+    parentKey: string,
+    parentPath: string[],
+    parentIsArray: boolean,
+    paths: { [name: string]: any } = {}
+) {
+    items?.forEach((item: any, inx: number) => {
+        const key = parentIsArray ? inx : item?.key?.value
         let value
         if (item.items || item.value) {
             if (item.items ?? item.value.items) {
-                value = item?.value?.type === 'SEQ' ? [] : {}
-                getMappingItems(item.items ?? item.value.items, value)
+                const isArray = item?.value?.type === 'SEQ'
+                value = isArray ? [] : {}
+                const pk = `${parentKey}.${key}`
+                const pa = [...parentPath, key]
+                getMappingItems(item.items ?? item.value.items, value, pk, pa, isArray, paths)
             } else {
                 value = item?.value?.value ?? item?.value
             }
@@ -248,6 +305,13 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
                 $v: value,
                 $gv: valuePos,
             })
+            paths[`${parentKey}.${rangeObj.length - 1}`] = {
+                $p: [...parentPath, rangeObj.length - 1],
+                $r: firstRow,
+                $l: length,
+                $v: value,
+                $d: [...parentPath],
+            }
         } else if (item.key) {
             const keyPos = item.key.cstNode.rangeAsLinePos
             const valuePos = item?.value?.cstNode.rangeAsLinePos
@@ -262,56 +326,35 @@ function getMappingItems(items: any[], rangeObj: { [name: string]: MappingType }
                 $gk: keyPos,
                 $gv: valuePos,
             }
+            paths[`${parentKey}.${key}`] = {
+                $p: [...parentPath, key],
+                $r: firstRow,
+                $l: length,
+                $v: value,
+                $d: [...parentPath],
+            }
         }
     })
+}
+
+// sort name/namespace to top
+const sort = ['name', 'namespace']
+const sortMapEntries = (a: { key: { value: string } }, b: { key: { value: string } }) => {
+    let ai = sort.indexOf(a.key.value)
+    if (ai < 0) ai = 5
+    let bi = sort.indexOf(b.key.value)
+    if (bi < 0) bi = 5
+    return ai - bi
 }
 
 export const stringify = (resources: any[]) => {
     const yamls: string[] = []
     resources.forEach((resource: any) => {
         if (!isEmpty(resource)) {
-            let yaml = YAML.stringify(resource)
+            let yaml = YAML.stringify(resource, { sortMapEntries })
             yaml = yaml.replace(/'\d+':(\s|$)\s*/gm, '- ')
             yaml = yaml.replace(/:\s*null$/gm, ':')
             yamls.push(yaml)
         }
     })
     return yamls.join('---\n')
-}
-
-// filter kube resources
-export const filterKubeResources = (resources: any[]) => {
-    const _resources: any[] = []
-    resources.forEach((resource: any) => {
-        _resources.push(filterDeep(resource))
-    })
-    return _resources
-}
-
-const filterDeep = (resource: any) => {
-    let newResource: { [index: string]: any | any[] }
-    if (Array.isArray(resource)) {
-        newResource = []
-        Object.entries(resource || {}).forEach(([k, v]) => {
-            if (!kube.includes(k)) {
-                newResource.push(filter(v))
-            }
-        })
-        return newResource
-    } else {
-        newResource = {}
-        Object.entries(resource || {}).forEach(([k, v]) => {
-            if (!kube.includes(k)) {
-                newResource[k] = filter(v)
-            }
-        })
-    }
-    return newResource
-}
-
-const filter = (value: unknown) => {
-    if (typeof value === 'object') {
-        return filterDeep(value)
-    }
-    return value
-}

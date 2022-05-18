@@ -84,26 +84,34 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
                 ''
             source = source.split('/').pop()
 
-            // add cluster nodes
+            // add subscription node
             const filteredClusters = managedClusters.filter((cluster) => {
                 return ruleClusterNames.includes(cluster.name)
             })
-            clusterId = addClusters(appId, subscription, source, ruleClusterNames, filteredClusters, links, nodes)
-
-            const isRulePlaced = ruleClusterNames.length > 0
 
             // get clusters it was deployed to
             const clustersNames = get(subscription, 'report.results', []).map((result) => {
                 return result.source
             })
 
-            // add subscription node
-            const subscriptionId = addSubscription(clusterId, clustersNames, subscription, isRulePlaced, links, nodes)
+            const isRulePlaced = ruleClusterNames.length > 0
+            const subscriptionId = addSubscription(
+                appId,
+                clustersNames,
+                subscription,
+                source,
+                isRulePlaced,
+                links,
+                nodes
+            )
 
             // add rules node
             if (subscription.rules) {
-                addSubscriptionRules(clusterId, subscription, links, nodes)
+                addSubscriptionRules(subscriptionId, subscription, links, nodes)
             }
+
+            // add cluster nodes
+            clusterId = addClusters(subscriptionId, subscription, '', ruleClusterNames, filteredClusters, links, nodes)
 
             // add prehooks
             if (subscription.prehooks && subscription.prehooks.length > 0) {
@@ -115,7 +123,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
 
             // add deployed resource nodes using subscription report
             if (subscription.report) {
-                processReport(subscription.report, clustersNames, subscriptionId, links, nodes, relatedResources)
+                processReport(subscription.report, clustersNames, clusterId, links, nodes, relatedResources)
             }
         })
     }
@@ -123,7 +131,7 @@ export const getSubscriptionTopology = (application, managedClusters, relatedRes
     return { nodes: uniqBy(nodes, 'uid'), links }
 }
 
-const addSubscription = (appId, clustersNames, subscription, isPlaced, links, nodes) => {
+const addSubscription = (appId, clustersNames, subscription, source, isPlaced, links, nodes) => {
     const {
         metadata: { namespace, name },
     } = subscription
@@ -136,6 +144,7 @@ const addSubscription = (appId, clustersNames, subscription, isPlaced, links, no
         id: subscriptionId,
         uid: subscriptionId,
         specs: {
+            title: source,
             isDesign: true,
             hasRules: !!rule,
             isPlaced,
@@ -344,7 +353,7 @@ const addSubscriptionDeployedResource = (parentId, clustersNames, resource, link
             clustersNames,
             template,
             resources,
-            resourceCount,
+            resourceCount: resourceCount || 0 + clustersNames.length,
         },
     }
 
@@ -378,7 +387,12 @@ export const createReplicaChild = (parentObject, clustersNames, template, links,
             const relatedMap = keyBy(template.related, 'kind')
             if (relatedMap['replicaset'] || relatedMap['replicationcontroller']) {
                 const pNode = createChildNode(parentObject, clustersNames, type, links, nodes)
-                return createChildNode(pNode, clustersNames, 'pod', links, nodes)
+                const replicaCount = get(
+                    relatedMap['replicaset'] || relatedMap['replicationcontroller'],
+                    'items.0.desired',
+                    0
+                )
+                return createChildNode(pNode, clustersNames, 'pod', links, nodes, replicaCount)
             } else if (relatedMap['pod']) {
                 return createChildNode(parentObject, clustersNames, 'pod', links, nodes)
             }

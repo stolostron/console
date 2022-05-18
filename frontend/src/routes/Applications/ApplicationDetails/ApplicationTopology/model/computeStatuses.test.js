@@ -347,7 +347,7 @@ describe('setSubscriptionDeployStatus with no sub error', () => {
         {
             labelValue: 'Remote subscriptions',
             status: 'failure',
-            value: 'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the klusterlet-addon-appmgr pod runs on the managed clusters.',
+            value: 'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the application-manager pod runs on the managed clusters.',
         },
         {
             type: 'link',
@@ -495,7 +495,7 @@ describe('setSubscriptionDeployStatus with remote no status', () => {
         {
             labelValue: 'remote1',
             status: 'warning',
-            value: 'This subscription has no status. If the status does not change to {{0}} after waiting for initial creation, verify that the klusterlet-addon-appmgr pod is running on the remote cluster.',
+            value: 'This subscription has no status. If the status does not change to {{0}} after waiting for initial creation, verify that the application-manager pod is running on the remote cluster.',
         },
         { type: 'spacer' },
         { type: 'spacer' },
@@ -527,7 +527,7 @@ describe('setSubscriptionDeployStatus for details yellow', () => {
         {
             labelValue: 'Remote subscriptions',
             status: 'failure',
-            value: 'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the klusterlet-addon-appmgr pod runs on the managed clusters.',
+            value: 'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the application-manager pod runs on the managed clusters.',
         },
         {
             type: 'link',
@@ -1818,52 +1818,6 @@ describe('setPodDeployStatus  with pod less then desired', () => {
         { type: 'spacer' },
     ]
     it('setPodDeployStatus with pod less then desired', () => {
-        expect(setPodDeployStatus(node, node, [], {}, t)).toEqual(result)
-    })
-})
-
-describe('setPodDeployStatus  with pod but no pod model and no podStatusMap', () => {
-    const node = {
-        type: 'pod',
-        name: 'mortgage-app-deploy',
-        namespace: 'default',
-        id: 'member--member--deployable--member--clusters--possiblereptile--default--mortgage-app-subscription-mortgage-mortgage-app-deploy-deployment--deployment--mortgage-app-deploy',
-        clusters: {
-            specs: {
-                clusters: [
-                    {
-                        metadata: {
-                            name: 'possiblereptile',
-                        },
-                        status: 'ok',
-                    },
-                ],
-            },
-        },
-        specs: {
-            searchClusters: [],
-            clustersNames: ['possiblereptile'],
-            raw: {
-                spec: {
-                    metadata: 'default',
-                    replicas: 1,
-                    template: {
-                        spec: {
-                            containers: [{ c1: 'aa' }],
-                        },
-                    },
-                },
-            },
-        },
-    }
-    const result = [
-        { type: 'spacer' },
-        { labelKey: 'Cluster deploy status for pods', type: 'label' },
-        { labelValue: 'Cluster name', value: 'possiblereptile' },
-        { labelValue: 'default', status: 'pending', value: 'Not Deployed' },
-        { type: 'spacer' },
-    ]
-    it('setPodDeployStatus with pod but no pod podStatusMap', () => {
         expect(setPodDeployStatus(node, node, [], {}, t)).toEqual(result)
     })
 })

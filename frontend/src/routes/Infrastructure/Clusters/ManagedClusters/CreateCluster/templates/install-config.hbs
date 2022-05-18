@@ -243,9 +243,13 @@ platform:
 {{#case 'BMC'}}
   baremetal:
     libvirtURI: {{{../../libvirtURI}}}
+{{#if ../../hasProvisioningNetwork}}
     provisioningNetworkCIDR: {{{../../provisioningNetworkCIDR}}} ##provisioningNetworkCIDR
     provisioningNetworkInterface: {{{../../provisioningNetworkInterface}}} ##provisioningNetworkInterface
     provisioningBridge: {{{../../provisioningNetworkBridge }}}  ##provisioningNetworkBridge
+{{else}}
+    provisioningNetwork: Disabled
+{{/if}}
     externalBridge: {{{../../externalNetworkBridge }}}  ##externalNetworkBridge
     {{#if ../../showDNSVIP}}
     dnsVIP: {{{../../../dnsVIP}}} ##dnsVIP
@@ -330,7 +334,7 @@ publish: Internal
     cluster: {{{../../cluster}}}
     apiVIP: {{{../../apiVIP}}}    ##apiVIP
     ingressVIP: {{{../../ingressVIP}}}  ##ingressVIP
-    network: {{{../../networkType}}}
+    network: '{{{../../networkType}}}' ##networkType
 {{/case}}
 
 {{#case 'RHV'}}

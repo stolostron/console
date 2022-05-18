@@ -610,7 +610,7 @@ describe('getNodeDetails subscription', () => {
         { type: 'label', labelKey: 'Cluster deploy status' },
         {
             labelValue: 'Remote subscriptions',
-            value: 'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the klusterlet-addon-appmgr pod runs on the managed clusters.',
+            value: 'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the application-manager pod runs on the managed clusters.',
             status: 'failure',
         },
         {
@@ -640,6 +640,7 @@ describe('getNodeDetails helm node', () => {
         id: 'helmrelease1',
         uid: 'helmrelease1',
         name: 'mortgage-helmrelease',
+        namespace: 'default',
         cluster: null,
         clusterName: null,
         type: 'helmrelease',
@@ -791,6 +792,7 @@ describe('getNodeDetails placement rules node with error', () => {
         id: 'rule1',
         uid: 'rule1',
         name: 'mortgage-rule',
+        namespace: 'default',
         cluster: null,
         clusterName: null,
         type: 'placements',
@@ -883,6 +885,7 @@ describe('getNodeDetails placement rules node with success', () => {
         id: 'rule1',
         uid: 'rule1',
         name: 'mortgage-rule',
+        namespace: 'default',
         cluster: null,
         clusterName: null,
         type: 'placements',

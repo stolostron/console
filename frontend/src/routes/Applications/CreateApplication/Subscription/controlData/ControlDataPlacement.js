@@ -36,9 +36,14 @@ const localClusterCheckbox = 'local-cluster-checkbox'
 const onlineClusterCheckbox = 'online-cluster-only-checkbox'
 
 export const loadExistingPlacementRules = () => {
+    let nsControl = undefined
+
     return {
         query: () => {
-            return listPlacementRules().promise
+            return listPlacementRules(nsControl.active).promise
+        },
+        variables: (control, globalControl) => {
+            nsControl = globalControl.find(({ id: idCtrl }) => idCtrl === 'namespace')
         },
         loadingDesc: 'creation.app.loading.rules',
         setAvailable: setAvailableRules.bind(null),
@@ -48,7 +53,7 @@ export const updateNewRuleControls = (urlControl, controlGlobal) => {
     const controlList = getExistingPRControlsSection(urlControl, controlGlobal)
 
     const { active, availableData } = urlControl
-    const selectedPR = availableData[active]
+    const selectedPR = availableData.find((pr) => pr.metadata.name === active)
 
     controlList.forEach((control) => {
         const selectedRuleNameControl = _.get(control, 'selectedRuleName')
@@ -102,6 +107,8 @@ export const updateDisplayForPlacementControls = (urlControl, controlGlobal) => 
             clusterSelectorControl.active.mode = true
             delete clusterSelectorControl.showData
         }
+        const availablePlacementControl = existingRuleControl.available
+        if (!availablePlacementControl.includes(existingRuleControl.active)) existingRuleControl.active = ''
     })
     return controlGlobal
 }
@@ -182,15 +189,6 @@ export const reverseExistingRule = (control, templateObject) => {
     }
     return control
 }
-export const reverseExistingRuleName = (control, templateObject) => {
-    const active = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.name'))
-    if (active && control.type !== 'hidden' && control.active === undefined) {
-        const { groupControlData } = control
-        const selectedRuleName = groupControlData.find(({ id }) => id === 'selectedRuleName')
-        selectedRuleName.active = active.$v
-    }
-    return control
-}
 
 export const reverseOnline = (control, templateObject) => {
     const active = _.get(templateObject, getSourcePath('PlacementRule[0].spec.clusterConditions[0].type'))
@@ -260,7 +258,7 @@ const placementData = async () => [
         tooltip: 'tooltip.creation.app.existingRuleCombo',
         id: 'placementrulecombo',
         type: 'hidden',
-        placeholder: 'select.existing.placement.rule',
+        placeholder: 'creation.app.select.existing.placement.rule',
         reverse: reverseExistingRule,
         fetchAvailable: loadExistingPlacementRules(),
         onSelect: updateNewRuleControls,
@@ -269,7 +267,7 @@ const placementData = async () => [
     {
         id: 'selectedRuleName',
         type: 'hidden',
-        reverse: reverseExistingRuleName,
+        reverse: reverseExistingRule,
     },
     {
         type: 'custom',

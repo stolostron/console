@@ -278,7 +278,7 @@ const controlDataVMW = [
     {
         id: 'disconnectedInfo',
         type: 'title',
-        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS (RHCOS) image.',
+        info: 'Restricted networks which do not have direct access to the Internet require a mirror location of the Red Hat Enterprise Linux CoreOS image.',
     },
     {
         name: 'Create disconnected installation',
@@ -297,7 +297,7 @@ const controlDataVMW = [
     {
         id: 'disconnectedAdditionalTrustBundle',
         type: 'textarea',
-        name: 'Additional Trust Bundle',
+        name: 'Additional trust bundle',
         disabled: true,
         placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
         tip: 'The contents of the certificate file that you used for your mirror registry, which can be an existing, trusted certificate authority or the self-signed certificate that you generated for the mirror registry.',

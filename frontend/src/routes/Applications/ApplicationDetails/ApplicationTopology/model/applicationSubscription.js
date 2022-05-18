@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { cloneDeep, get, includes, isEmpty } from 'lodash'
+import { cloneDeep, get, isEmpty } from 'lodash'
 import { listResources } from '../../../../../resources/utils/resource-request'
+import { getSubscriptionAnnotations, isLocalSubscription } from '../../../helpers/subscriptions'
 
 const EVERYTHING_CHANNEL = '__ALL__/__ALL__//__ALL__/__ALL__'
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
@@ -9,11 +10,11 @@ const NAMESPACE = 'metadata.namespace'
 
 export const getSubscriptionApplication = async (model, app, selectedChannel, recoilStates) => {
     // get subscriptions to channels (pipelines)
-    let subscriptionNames = get(app, 'metadata.annotations["apps.open-cluster-management.io/subscriptions"]')
-    if (subscriptionNames && subscriptionNames.length > 0) {
+    const subscriptionNames = getSubscriptionAnnotations(app)
+    if (subscriptionNames.length > 0) {
         // filter local hub subscription
-        const filteredSubscriptions = subscriptionNames.split(',').filter((subscriptionName) => {
-            return !includes(subscriptionName, '-local')
+        const filteredSubscriptions = subscriptionNames.filter((subscriptionName) => {
+            return !isLocalSubscription(subscriptionName, subscriptionNames)
         })
         const subscriptions = cloneDeep(getResources(filteredSubscriptions, recoilStates.subscriptions))
 
@@ -99,11 +100,8 @@ const getAllChannels = (subscriptions, channels, selectedChannel) => {
 }
 
 const getChannelName = (subscription) => {
-    const {
-        metadata: { name: nm, namespace: ns },
-        deployablePaths: paths,
-        isChucked,
-    } = subscription
+    const { metadata = {}, deployablePaths: paths, isChucked } = subscription
+    const { name: nm, namespace: ns } = metadata
     const chn = get(subscription, 'spec.channel')
     return `${ns}/${nm}//${chn}${getSubChannelName(paths, isChucked)}`
 }
@@ -278,9 +276,11 @@ const getAppHooks = async (hooks, isPreHooks) => {
 
             if (response) {
                 response.forEach((deployable) => {
-                    const name = get(deployable, 'metadata.name')
+                    const hookName = get(deployable, 'metadata.name')
+                    const hookNamespace = get(deployable, 'metadata.namespace')
                     values.forEach(({ deployableName, subscription }) => {
-                        if (name === deployableName) {
+                        const subNS = get(subscription, 'metadata.namespace')
+                        if (hookName === deployableName && hookNamespace === subNS) {
                             if (isPreHooks) {
                                 if (!subscription.prehooks) {
                                     subscription.prehooks = []

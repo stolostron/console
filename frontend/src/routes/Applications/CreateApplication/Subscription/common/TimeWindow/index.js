@@ -227,7 +227,6 @@ export class TimeWindow extends React.Component {
                                                 variant={SelectVariant.typeahead}
                                                 aria-label="timezoneComboBox"
                                                 className="config-timezone-combo-box"
-                                                style={{ width: '290px', backgroundColor: '#f0f0f0' }}
                                                 placeholder={i18n('Choose a location')}
                                                 selections={timezone || ''}
                                                 isDisabled={!modeSelected}
@@ -324,19 +323,19 @@ export class TimeWindow extends React.Component {
                             {id === 0 ? (
                                 <div className="time-picker-title" style={{ display: 'flex' }}>
                                     <div className="config-title">
-                                        {i18n('Start Time')}
+                                        {i18n('Start time')}
                                         <div className="config-title-required">*</div>
                                     </div>
                                     <div className="config-title">
-                                        {i18n('End Time')}
+                                        {i18n('End time')}
                                         <div className="config-title-required">*</div>
                                     </div>
                                 </div>
                             ) : (
                                 ''
                             )}
-                            <div className="config-time-container" style={{ display: 'flex', marginBottom: '20px' }}>
-                                <div className="config-input-time" style={{ float: 'left', marginRight: '10px' }}>
+                            <div className="config-time-container">
+                                <div className="config-input-time">
                                     <TimePicker
                                         id={startTimeID}
                                         time={existingStart ? existingStart : ''}

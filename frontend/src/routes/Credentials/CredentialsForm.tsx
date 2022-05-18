@@ -233,6 +233,36 @@ export function CredentialsForm(props: {
         providerConnection?.stringData?.cloudName ?? CloudNames.AzurePublicCloud
     )
 
+    function getDisconnectedDocLink(credentialType: Provider) {
+        switch (credentialType) {
+            case Provider.vmware:
+                return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL_VMWARE
+            case Provider.openstack:
+                return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL_OPENSTACK
+            default:
+                return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL
+        }
+    }
+
+    function getProxyDocLink(credentialType: Provider) {
+        switch (credentialType) {
+            case Provider.redhatvirtualization:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_VIRTUALIZATION
+            case Provider.aws:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_AWS
+            case Provider.gcp:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_GCP
+            case Provider.azure:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_AZURE
+            case Provider.vmware:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_VMWARE
+            case Provider.openstack:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_OPENSTACK
+            default:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY
+        }
+    }
+
     let osServicePrincipalJson:
         | {
               clientId: string
@@ -649,9 +679,13 @@ export function CredentialsForm(props: {
                         type: 'Text',
                         label: t('Base DNS domain'),
                         placeholder: t('Enter the base DNS domain'),
-                        labelHelp: t(
-                            "Optional: The base domain of your provider, which is used to create routes to your OpenShift Container Platform cluster components. It is configured in your cloud provider's DNS as a Start Of Authority (SOA) record."
-                        ),
+                        labelHelp: [Provider.baremetal, Provider.hybrid].includes(credentialsType as Provider)
+                            ? t(
+                                  'Optional: The base domain of your network, which is used to create routes to your OpenShift Container Platform cluster components. It must contain the cluster name that you plan to create, and is configured in the DNS of your network as a Start Of Authority (SOA) record. You can also add this when you create the cluster.'
+                              )
+                            : t(
+                                  "Optional: The base domain of your provider, which is used to create routes to your OpenShift Container Platform cluster components. It is configured in your cloud provider's DNS as a Start Of Authority (SOA) record."
+                              ),
                         value: baseDomain,
                         onChange: setBaseDomain,
                         validation: (v) => validateBaseDomain(v, t),
@@ -972,7 +1006,7 @@ export function CredentialsForm(props: {
                 title: t('credentialsForm.rhvCredentials.title'),
                 wizardTitle: t('credentialsForm.rhvCredentials.wizardTitle'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION_OPENSTACK} target="_blank" rel="noreferrer">
+                    <a href={DOC_LINKS.CREATE_CONNECTION_VIRTUALIZATION} target="_blank" rel="noreferrer">
                         {t('credentialsForm.rhvCredentials.wizardDescription')}
                     </a>
                 ),
@@ -1087,7 +1121,7 @@ export function CredentialsForm(props: {
                 title: t('Configuration for disconnected installation'),
                 wizardTitle: t('Enter the configuration for disconnected installation'),
                 description: (
-                    <a href={DOC_LINKS.CONFIG_DISCONNECTED_INSTALL} target="_blank" rel="noreferrer">
+                    <a href={getDisconnectedDocLink(credentialsType as Provider)} target="_blank" rel="noreferrer">
                         {t('How do I configure for disconnected installation?')}
                     </a>
                 ),
@@ -1170,7 +1204,7 @@ export function CredentialsForm(props: {
                 title: t('Proxy'),
                 wizardTitle: t('Proxy'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION_PROXY} target="_blank" rel="noreferrer">
+                    <a href={getProxyDocLink(credentialsType as Provider)} target="_blank" rel="noreferrer">
                         {t('How do I configure a proxy?')}
                     </a>
                 ),
@@ -1187,10 +1221,10 @@ export function CredentialsForm(props: {
                             Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('HTTP Proxy'),
-                        placeholder: t('Enter the HTTP Proxy URL'),
+                        label: t('HTTP proxy'),
+                        placeholder: t('Enter the HTTP proxy URL'),
                         labelHelp: t(
-                            'A proxy URL to use for creating HTTP connections outside the cluster. The URL scheme must be http.'
+                            'A proxy URL to use for creating HTTP connections outside the cluster. The URL scheme must be HTTP.'
                         ),
                         value: httpProxy,
                         onChange: setHttpProxy,
@@ -1208,8 +1242,8 @@ export function CredentialsForm(props: {
                             Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('HTTPS Proxy'),
-                        placeholder: t('Enter the HTTPS Proxy URL'),
+                        label: t('HTTPS proxy'),
+                        placeholder: t('Enter the HTTPS proxy URL'),
                         labelHelp: t(
                             'A proxy URL to use for creating HTTPS connections outside the cluster. If this is not specified, then httpProxy is used for both HTTP and HTTPS connections.'
                         ),
@@ -1229,8 +1263,8 @@ export function CredentialsForm(props: {
                             Provider.redhatvirtualization,
                         ].includes(credentialsType as Provider),
                         type: 'Text',
-                        label: t('No Proxy'),
-                        placeholder: t('Enter the comma delimited list of urls that do not require a proxy'),
+                        label: t('No proxy'),
+                        placeholder: t('Enter the comma delimited list of URLs that do not require a proxy'),
                         labelHelp: t(
                             'A comma-separated list of destination domain names, domains, IP addresses or other network CIDRs to exclude proxying. Preface a domain with . to include all subdomains of that domain. Use * to bypass proxy for all destinations. Note that if you scale up workers not included in networking.machineCIDR from the installation configuration, you must add them to this list to prevent connection issues.'
                         ),
@@ -1276,11 +1310,11 @@ export function CredentialsForm(props: {
                         type: 'Text',
                         label: t('Ansible Tower host'),
                         placeholder: t('Enter the Ansible Tower host URL'),
-                        // labelHelp: t('credentialsForm.ansibleHost.labelHelp'), // TODO
+                        labelHelp: t('credentialsForm.ansibleHost.labelHelp'),
                         value: ansibleHost,
                         onChange: setAnsibleHost,
                         isRequired: true,
-                        validation: (host) => validateWebURL(host, t),
+                        validation: (host) => validateWebURL(host, t, ['https']),
                     },
                     {
                         id: 'ansibleToken',
@@ -1324,7 +1358,11 @@ export function CredentialsForm(props: {
                 title: t('Pull secret and SSH'),
                 wizardTitle: t('Enter the pull secret and SSH keys'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION} target="_blank" rel="noreferrer">
+                    <a
+                        href={'https://console.redhat.com/openshift/install/pull-secret'}
+                        target="_blank"
+                        rel="noreferrer"
+                    >
                         {t('How do I get the Red Hat OpenShift Container Platform pull secret?')}
                     </a>
                 ),
@@ -1451,32 +1489,22 @@ export function CredentialsForm(props: {
             schema={schema}
             mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
             secrets={[
-                'Secret[0].stringData.pullSecret',
-                'Secret[0].stringData.aws_secret_access_key',
-                'Secret[0].stringData.ssh-privatekey',
-                'Secret[0].stringData.ssh-publickey',
-                'Secret[0].stringData.password',
-                'Secret[0].stringData.token',
-                'Secret[0].stringData.ocmAPIToken',
-                'Secret[0].stringData.additionalTrustBundle',
-                'Secret[0].stringData.ovirt_ca_bundle',
-                'Secret[0].stringData.ovirt_password',
-                'Secret[0].stringData.ovirt-config.yaml',
-                ['Secret', '0', 'stringData', 'osServicePrincipal.json'],
-                ['Secret', '0', 'stringData', 'osServiceAccount.json'],
-                ['Secret', '0', 'stringData', 'clouds.yaml'],
+                '*.stringData.pullSecret',
+                '*.stringData.aws_secret_access_key',
+                '*.stringData.ssh-privatekey',
+                '*.stringData.ssh-publickey',
+                '*.stringData.password',
+                '*.stringData.token',
+                '*.stringData.ocmAPIToken',
+                '*.stringData.additionalTrustBundle',
+                '*.stringData.ovirt_ca_bundle',
+                '*.stringData.ovirt_password',
+                '*.stringData.ovirt-config.yaml',
+                '*.stringData.osServicePrincipal.json',
+                '*.stringData.osServiceAccount.json',
+                '*.stringData.clouds.yaml',
             ]}
-            immutables={
-                isEditing
-                    ? [
-                          'Secret[0].apiVersion',
-                          'Secret[0].kind',
-                          'Secret[0].type',
-                          'Secret[0].metadata.*',
-                          'Secret[0].stringData',
-                      ]
-                    : undefined
-            }
+            immutables={isEditing ? ['*.metadata.name', '*.metadata.namespace'] : []}
             edit={() => {
                 if (providerConnection) {
                     history.push(

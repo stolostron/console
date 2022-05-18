@@ -94,7 +94,7 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
                                             props.close()
                                         })
                                         .catch((err) => {
-                                            const errorInfo = getErrorInfo(err)
+                                            const errorInfo = getErrorInfo(err, t)
                                             alertContext.addAlert({
                                                 type: 'danger',
                                                 title: errorInfo.title,

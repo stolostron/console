@@ -18,7 +18,14 @@ import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } from '../../atoms'
+import {
+    applicationsState,
+    channelsState,
+    namespacesState,
+    placementRulesState,
+    placementsState,
+    subscriptionsState,
+} from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, viewDocumentation } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
@@ -40,7 +47,7 @@ import {
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { ToggleSelector } from './components/ToggleSelector'
-import { getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
+import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
 
 export default function AdvancedConfiguration() {
     const { t } = useTranslation()
@@ -49,6 +56,8 @@ export default function AdvancedConfiguration() {
     const [placementrules] = useRecoilState(placementRulesState)
     const [placements] = useRecoilState(placementsState)
     const [subscriptions] = useRecoilState(subscriptionsState)
+    const [namespaces] = useRecoilState(namespacesState)
+
     const subscriptionsWithoutLocal = subscriptions.filter((subscription) => {
         return !_.endsWith(subscription.metadata.name, '-local')
     })
@@ -99,7 +108,7 @@ export default function AdvancedConfiguration() {
     const getSubscriptionClusterCount = useCallback(
         function getSubscriptionClusterCount(
             resource: IResource,
-            clusterCount: { localPlacement: boolean; remoteCount: number },
+            clusterCount: ClusterCount,
             showSearchLink?: boolean
         ) {
             const namespace = _.get(resource, 'metadata.namespace')
@@ -128,14 +137,14 @@ export default function AdvancedConfiguration() {
                         })
                         return (
                             <Link style={{ color: '#0066cc' }} to={searchLink}>
-                                {getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)}
+                                {getClusterCountString(t, clusterCount)}
                             </Link>
                         )
                     }
                 }
             }
         },
-        [placementrules]
+        [placementrules, t]
     )
 
     // Cache cell text for sorting and searching
@@ -169,7 +178,7 @@ export default function AdvancedConfiguration() {
                     })
                 }
 
-                const clusterCountString = getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                const clusterCountString = getClusterCountString(t, clusterCount)
                 _.set(transformedObject.transformed, 'subscriptionCount', subscriptionCount)
                 _.set(transformedObject.transformed, 'clusterCount', clusterCountString)
                 break
@@ -196,7 +205,7 @@ export default function AdvancedConfiguration() {
                     })
 
                     getSubscriptionClusterCount(tableItem, clusterCount, true)
-                    const clusterString = getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                    const clusterString = getClusterCountString(t, clusterCount)
                     _.set(transformedObject.transformed, 'clusterCount', clusterString)
                     _.set(transformedObject.transformed, 'appCount', appCount)
                 }
@@ -204,7 +213,7 @@ export default function AdvancedConfiguration() {
             }
             case 'PlacementRule': {
                 clusterCount = getPlacementruleClusterCount(tableItem, clusterCount)
-                const clusterString = getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                const clusterString = getClusterCountString(t, clusterCount)
                 _.set(transformedObject.transformed, 'clusterCount', clusterString)
                 break
             }
@@ -231,6 +240,12 @@ export default function AdvancedConfiguration() {
         // edit
         actions.push({
             id: `edit${kind}`,
+            /*
+                t('Edit subscription')
+                t('Edit channel')
+                t('Edit placement')
+                t('Edit placement rule')
+                */
             title: t(`Edit ${kind}`),
             click: () => {
                 const searchParams: any = {
@@ -250,6 +265,12 @@ export default function AdvancedConfiguration() {
         // search
         actions.push({
             id: `search${kind}`,
+            /*
+                t('Search subscription')
+                t('Search channel')
+                t('Search placement')
+                t('Search placement rule')
+                */
             title: t(`Search ${kind}`),
             click: () => {
                 const [apigroup, apiversion] = item.apiVersion.split('/')
@@ -287,6 +308,12 @@ export default function AdvancedConfiguration() {
         //delete
         actions.push({
             id: `delete${kind}`,
+            /*
+                t('Delete subscription')
+                t('Delete channel')
+                t('Delete placement')
+                t('Delete placement rule')
+                */
             title: t(`Delete ${kind}`),
             click: () => {
                 setModalProps({
@@ -398,7 +425,7 @@ export default function AdvancedConfiguration() {
                                 return remoteContext
                             }
 
-                            return getClusterCountString(clusterCount.remoteCount, clusterCount.localPlacement)
+                            return getClusterCountString(t, clusterCount)
                         },
                         sort: 'transformed.clusterCount',
                         tooltip:
@@ -643,7 +670,10 @@ export default function AdvancedConfiguration() {
 
     function ApplicationDeploymentHighlights() {
         return (
-            <AcmExpandableCard title={t('Learn more about the terminology')}>
+            <AcmExpandableCard
+                title={t('Learn more about the terminology')}
+                id="ApplicationDeploymentHighlightsTerminology"
+            >
                 <Split hasGutter>
                     <TerminologyCard
                         title={t('Subsciptions')}
@@ -687,10 +717,7 @@ export default function AdvancedConfiguration() {
         )
     }
 
-    function getPlacementruleClusterCount(
-        resource: IResource,
-        clusterCount: { localPlacement: boolean; remoteCount: number }
-    ) {
+    function getPlacementruleClusterCount(resource: IResource, clusterCount: ClusterCount) {
         const clusterDecisions = _.get(resource, 'status.decisions')
         if (clusterDecisions) {
             clusterDecisions.forEach((clusterDecision: { clusterName: string; clusterNamespace: string }) => {
@@ -731,7 +758,17 @@ export default function AdvancedConfiguration() {
                 <StackItem>
                     <ApplicationDeploymentHighlights />
                 </StackItem>
-                <StackItem>{<ToggleSelector modalProps={modalProps} table={table} keyFn={keyFn} t={t} />}</StackItem>
+                <StackItem>
+                    {
+                        <ToggleSelector
+                            modalProps={modalProps}
+                            table={table}
+                            keyFn={keyFn}
+                            t={t}
+                            namespaces={namespaces}
+                        />
+                    }
+                </StackItem>
             </Stack>
         </PageSection>
     )

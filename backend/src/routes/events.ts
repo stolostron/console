@@ -55,6 +55,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'ManagedClusterAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
     { kind: 'Agent', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'InfraEnv', apiVersion: 'agent-install.openshift.io/v1beta1' },
+    { kind: 'NMStateConfig', apiVersion: 'agent-install.openshift.io/v1beta1' },
     { kind: 'Application', apiVersion: 'app.k8s.io/v1beta1' },
     { kind: 'Channel', apiVersion: 'apps.open-cluster-management.io/v1' },
     { kind: 'GitOpsCluster', apiVersion: 'apps.open-cluster-management.io/v1beta1' },
@@ -122,11 +123,6 @@ const definitions: IWatchOptions[] = [
         fieldSelector: { 'metadata.namespace': 'openshift-config-managed', 'metadata.name': 'console-public' },
     },
     { kind: 'Namespace', apiVersion: 'v1' },
-    {
-        kind: 'Secret',
-        apiVersion: 'v1',
-        labelSelector: { 'cluster.open-cluster-management.io/type': 'ans' },
-    },
     { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/credentials': '' } },
     { kind: 'Secret', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'auto-import-secret' } },
     { kind: 'PolicyReport', apiVersion: 'wgpolicyk8s.io/v1alpha2' },
@@ -160,10 +156,16 @@ async function listAndWatch(options: IWatchOptions) {
                 // fall through to rerun the list function
             } else if (err instanceof HTTPError) {
                 switch (err.response.statusCode) {
+                    case 403:
+                        logger.error({ msg: 'watch', ...options, status: 'Forbidden' })
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
+                        )
+                        break
                     case 404:
                         logger.trace({ msg: 'watch', ...options, status: 'Not found' })
                         await new Promise((resolve) =>
-                            setTimeout(resolve, 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
+                            setTimeout(resolve, 1 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
                         )
                         break
                 }
