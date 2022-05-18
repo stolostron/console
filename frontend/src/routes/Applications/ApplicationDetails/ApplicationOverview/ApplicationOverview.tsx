@@ -29,7 +29,13 @@ import {
 } from '@patternfly/react-icons'
 import { useRecoilState } from 'recoil'
 import { Fragment, useEffect, useState } from 'react'
-import { argoApplicationsState, channelsState, placementRulesState, subscriptionsState } from '../../../../atoms'
+import {
+    argoApplicationsState,
+    channelsState,
+    namespacesState,
+    placementRulesState,
+    subscriptionsState,
+} from '../../../../atoms'
 import { createClustersText, getShortDateTime } from '../../helpers/resource-helper'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
 import { getSearchLink } from '../../helpers/resource-helper'
