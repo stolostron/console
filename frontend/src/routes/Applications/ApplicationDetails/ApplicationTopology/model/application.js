@@ -84,11 +84,17 @@ export const getAppSetApplication = (model, app, recoilStates, clusters) => {
     const { argoApplications } = recoilStates
     const appSetApps = []
     const appSetClusters = []
+    const appSetNS = get(app, 'metadata.namespace')
 
     argoApplications.forEach((argoApp) => {
         const argoAppOwnerRef = get(argoApp, 'metadata.ownerReferences')
+        const argoAppNS = get(argoApp, 'metadata.namespace')
         if (argoAppOwnerRef) {
-            if (argoAppOwnerRef[0].kind === 'ApplicationSet' && argoAppOwnerRef[0].name === model.name) {
+            if (
+                argoAppOwnerRef[0].kind === 'ApplicationSet' &&
+                argoAppOwnerRef[0].name === model.name &&
+                argoAppNS === appSetNS
+            ) {
                 appSetApps.push(argoApp)
                 let serverName = get(argoApp, 'spec.destination.name')
                 let serverURL = get(argoApp, 'spec.destination.server')
