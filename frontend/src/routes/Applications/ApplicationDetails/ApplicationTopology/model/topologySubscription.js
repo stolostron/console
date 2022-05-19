@@ -349,6 +349,7 @@ const addSubscriptionDeployedResource = (parentId, clustersNames, resource, link
         id: memberId,
         uid: memberId,
         specs: {
+            isDesign: false,
             parent: parentObject,
             clustersNames,
             template,
