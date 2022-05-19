@@ -78,7 +78,8 @@ export function CreateApplicationArgo() {
     const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
     const ansibleCredentials = providerConnections.filter(
         (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
+            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
     )
     const availableAnsibleCredentials = ansibleCredentials
         .map((ansibleCredential) => ansibleCredential.metadata.name)

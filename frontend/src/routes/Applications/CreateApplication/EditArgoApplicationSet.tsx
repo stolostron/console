@@ -83,7 +83,8 @@ export function EditArgoApplicationSet() {
     const availableAnsibleCredentials = providerConnections
         .filter(
             (providerConnection) =>
-                providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+                providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
+                !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
         )
         .map((ansibleCredential) => ansibleCredential.metadata.name)
         .filter(isType)
