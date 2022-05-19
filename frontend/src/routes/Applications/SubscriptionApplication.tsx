@@ -91,7 +91,7 @@ export default function CreateSubscriptionApplicationPage() {
         >
             <AcmErrorBoundary>
                 <AcmPageContent id="create-cluster-pool">
-                    <PageSection className="pf-c-content" variant="light" type="wizard">
+                    <PageSection variant="light" type="wizard">
                         {CreateSubscriptionApplication(setTitle)}
                     </PageSection>
                 </AcmPageContent>
