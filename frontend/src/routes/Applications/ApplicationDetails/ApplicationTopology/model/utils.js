@@ -39,6 +39,7 @@ export const createChildNode = (parentObject, clustersNames, type, links, nodes,
         id: memberId,
         uid: memberId,
         specs: {
+            isDesign: false,
             resourceCount,
             resources,
             clustersNames,
