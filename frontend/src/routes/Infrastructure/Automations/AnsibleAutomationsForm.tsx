@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@stolostron/ui-components'
 import {
     ActionGroup,
     Button,
@@ -11,6 +10,19 @@ import {
     SelectOption,
     SelectVariant,
 } from '@patternfly/react-core'
+import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@stolostron/ui-components'
+import _ from 'lodash'
+import { Fragment, useEffect, useState } from 'react'
+import { RouteComponentProps, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { secretsState, settingsState } from '../../../atoms'
+import { AcmDataFormPage } from '../../../components/AcmDataForm'
+import { FormData, LinkType, Section } from '../../../components/AcmFormData'
+import { ErrorPage } from '../../../components/ErrorPage'
+import { LoadingPage } from '../../../components/LoadingPage'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { validateKubernetesDnsName } from '../../../lib/validation'
+import { NavigationPath } from '../../../NavigationPath'
 import {
     ClusterCurator,
     ClusterCuratorAnsibleJob,
@@ -19,24 +31,12 @@ import {
     createResource,
     getClusterCurator,
     IResource,
+    listAnsibleTowerJobs,
     ProviderConnection,
     replaceResource,
     unpackProviderConnection,
-    listAnsibleTowerJobs,
 } from '../../../resources'
-import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { RouteComponentProps, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { secretsState, settingsState } from '../../../atoms'
-import { AcmDataFormPage } from '../../../components/AcmDataForm'
-import { FormData, LinkType, Section } from '../../../components/AcmFormData'
-import { ErrorPage } from '../../../components/ErrorPage'
-import { LoadingPage } from '../../../components/LoadingPage'
-import { validateKubernetesDnsName } from '../../../lib/validation'
-import { NavigationPath } from '../../../NavigationPath'
 import schema from './schema.json'
-import _ from 'lodash'
 
 export default function AnsibleAutomationsFormPage({
     match,
@@ -57,7 +57,8 @@ export default function AnsibleAutomationsFormPage({
 
     const ansibleCredentials = providerConnections.filter(
         (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
+            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
     )
 
     useEffect(() => {

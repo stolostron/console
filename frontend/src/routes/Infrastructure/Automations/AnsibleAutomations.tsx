@@ -108,7 +108,8 @@ function AnsibleJobTemplateTable() {
     const templatedCurators = useMemo(() => filterForTemplatedCurators(clusterCurators), [clusterCurators])
     const ansibleCredentials = providerConnections.filter(
         (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
+            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
     )
 
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<ClusterCurator> | { open: false }>({
