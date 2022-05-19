@@ -124,6 +124,8 @@ const definitions: IWatchOptions[] = [
     },
     { kind: 'Namespace', apiVersion: 'v1' },
     { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/credentials': '' } },
+    // **Need to look for creds with: 'cluster.open-cluster-management.io/type': 'ans', for edit scenarios
+    { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/type': 'ans' } },
     { kind: 'Secret', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'auto-import-secret' } },
     { kind: 'PolicyReport', apiVersion: 'wgpolicyk8s.io/v1alpha2' },
 ]
