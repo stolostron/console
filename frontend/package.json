@@ -144,6 +144,7 @@
         "jest-sonar-reporter": "2.0.0",
         "jest-watch-typeahead": "1.1.0",
         "json-loader": "0.5.7",
+        "merge-jsons-webpack-plugin": "2.0.1",
         "mini-css-extract-plugin": "2.6.0",
         "monaco-editor-webpack-plugin": "7.0.1",
         "nock": "13.2.4",
