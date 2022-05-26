@@ -243,13 +243,16 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
 
     function stateToData() {
         const resources: any = []
+        let anyUnsupported = false
         selectedClusters?.forEach((selected) => {
             const cluster: Cluster = availableClusters.find((c) => c.displayName === selected)!
 
-            if (
+            const isSupported =
                 submarinerConfigProviders.includes(cluster.provider!) &&
                 (cluster.provider === Provider.vmware || providerSecretMap[cluster.displayName!] !== undefined)
-            ) {
+            anyUnsupported ||= !isSupported
+
+            if (isSupported) {
                 // ManagedClusterAddOn resource
                 resources.push({
                     apiVersion: ManagedClusterAddOnApiVersion,
@@ -325,6 +328,18 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     }
                 }
                 resources.push(submarinerConfig)
+            } else {
+                resources.push({
+                    apiVersion: ManagedClusterAddOnApiVersion,
+                    kind: ManagedClusterAddOnKind,
+                    metadata: {
+                        name: 'submariner',
+                        namespace: cluster?.namespace!,
+                    },
+                    spec: {
+                        installNamespace: 'submariner-operator',
+                    },
+                })
             }
         })
 
@@ -362,8 +377,31 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             })
         }
 
-        // if globalnet support create
-        if (!isGlobalnetAlreadyConfigured || !selectedClusters || !selectedClusters.length) {
+        if (anyUnsupported) {
+            resources.push({
+                apiVersion: ManagedClusterAddOnApiVersion,
+                kind: ManagedClusterAddOnKind,
+                metadata: {
+                    name: 'submariner',
+                    namespace: 'roks-cluster',
+                },
+                spec: {
+                    installNamespace: 'submariner-operator',
+                },
+            })
+            const broker: Broker = {
+                apiVersion: BrokerApiVersion,
+                kind: BrokerKind,
+                metadata: {
+                    name: 'submariner-broker',
+                    namespace: 'submariner-broker',
+                },
+                spec: {
+                    globalnetEnabled: false,
+                },
+            }
+            resources.push(broker)
+        } else if (!isGlobalnetAlreadyConfigured || !selectedClusters || !selectedClusters.length) {
             const broker: Broker = {
                 apiVersion: BrokerApiVersion,
                 kind: BrokerKind,
