@@ -1023,7 +1023,7 @@ describe('CreateCluster', () => {
 
         // step 4 -- the network
         await clickByText('Use provisioning network')
-        await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
+        await typeByTestId('provisioningNetworkCIDR', '10.4.5.3/14')
         await clickByText('Next')
 
         // skipping proxy
@@ -1115,7 +1115,7 @@ describe('CreateCluster', () => {
 
         // step 4 -- the network
         await clickByLabel('Use provisioning network')
-        await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
+        await typeByTestId('provisioningNetworkCIDR', '10.4.5.3/14')
         await clickByText('Next')
 
         // skipping proxy
