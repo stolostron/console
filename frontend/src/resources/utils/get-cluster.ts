@@ -872,7 +872,10 @@ export function getClusterStatus(
             const hasDegradedAddons = !!managedClusterAddOns?.some((mca) =>
                 checkForCondition(AddonStatus.Degraded, mca.status?.conditions!)
             )
-            mcStatus = hasDegradedAddons ? ClusterStatus.degraded : ClusterStatus.ready
+            const hasUnavailableAddons = !managedClusterAddOns?.every((mca) =>
+                checkForCondition(AddonStatus.Available, mca.status?.conditions!)
+            )
+            mcStatus = hasDegradedAddons || hasUnavailableAddons ? ClusterStatus.degraded : ClusterStatus.ready
         } else {
             const clusterUnavailable = checkForCondition('ManagedClusterConditionAvailable', mcConditions, 'False')
             const managedClusterAvailableConditionMessage = mcConditions.find(

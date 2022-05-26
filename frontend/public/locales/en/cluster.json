@@ -362,7 +362,7 @@
     "status.hibernating.message": "The cluster is powered down. Virtual machine and network resources are not being utilized.",
     "status.resuming.message": "The cluster is powering back on. Cluster operations and consumption of virtual machine and network resources resumes.",
     "status.stopping.message": "The cluster is powering down. Cluster operations and consumption of virtual machine and network resources will be suspended.",
-    "status.degraded.message": "One or more of the cluster's add-ons are in a degraded state.",
+    "status.degraded.message": "One or more of the cluster add-ons are not available or in a degraded state.",
     "status.prehookjob.message": "The cluster prehook jobs are currently in progress.",
     "status.prehookfailed.message": "One or more of the cluster prehook jobs failed.",
     "status.posthookjob.message": "The cluster posthook jobs are currently in progress.",
