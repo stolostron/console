@@ -414,6 +414,16 @@ export const proxyControlData = [
     },
 ]
 
+export const onChangeAutomationTemplate = (control, controlData) => {
+    var installAttemptsLimit = controlData.find(({ id }) => id === 'installAttemptsLimit')
+    if (control.active) {
+        installAttemptsLimit.active = 1
+        installAttemptsLimit.immutable = 'ClusterDeployment[0].spec.installAttemptsLimit'
+    } else {
+        delete installAttemptsLimit.immutable
+    }
+}
+
 export const automationControlData = [
     ///////////////////////  automation  /////////////////////////////////////
     {
@@ -431,6 +441,7 @@ export const automationControlData = [
         id: 'templateName',
         type: 'combobox',
         placeholder: 'template.clusterCreate.select.placeholder',
+        onSelect: onChangeAutomationTemplate,
         validation: {
             required: false,
         },
