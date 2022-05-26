@@ -148,6 +148,7 @@
         "monaco-editor-webpack-plugin": "7.0.1",
         "nock": "13.2.4",
         "node-util": "0.0.6",
+        "null-loader": "^3.0.0",
         "path-browserify": "1.0.1",
         "prettier": "2.6.2",
         "process": "0.11.10",
