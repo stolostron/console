@@ -24,7 +24,6 @@ import {
 } from '../../../../../atoms'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
-//import TemplateEditor from 'C:/Users/jswanke/git2/temptifly/src' //'temptifly'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -366,8 +365,6 @@ export default function CreateClusterPage() {
         switch (control.id) {
             case 'templateName':
                 setSelectedTemplate(control.active)
-                // if user selects an automation template, make the installAttemptsLimit readonly
-                control.immutable = control.active === '' ? undefined : 'ClusterDeployment[0].spec.installAttemptsLimit'
                 break
             case 'connection':
                 setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
