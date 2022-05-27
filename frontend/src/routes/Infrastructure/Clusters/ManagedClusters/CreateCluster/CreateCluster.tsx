@@ -24,7 +24,6 @@ import {
 } from '../../../../../atoms'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
-//import TemplateEditor from 'C:/Users/jswanke/git2/temptifly/src' //'temptifly'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { NavigationPath } from '../../../../../NavigationPath'
