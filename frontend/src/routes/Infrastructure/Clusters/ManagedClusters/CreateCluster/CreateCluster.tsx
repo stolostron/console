@@ -432,7 +432,7 @@ export default function CreateClusterPage() {
         >
             <AcmErrorBoundary>
                 <AcmPageContent id="create-cluster">
-                    <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
+                    <PageSection variant="light" isFilled type="wizard">
                         <WarningContext.Provider value={warning}>
                             <TemplateEditor
                                 wizardClassName={classes.wizardBody}

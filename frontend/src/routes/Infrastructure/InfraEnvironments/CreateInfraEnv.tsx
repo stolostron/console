@@ -120,7 +120,7 @@ const CreateInfraEnv: React.FC = () => {
         >
             <AcmErrorBoundary>
                 <AcmPageContent id="create-infra-env">
-                    <PageSection className="pf-c-content" variant="light" isFilled>
+                    <PageSection variant="light" isFilled>
                         <TemplateEditor
                             type="Infra env"
                             title="InfraEnv YAML"

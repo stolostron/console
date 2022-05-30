@@ -89,7 +89,7 @@ export default function CreateClusterPoolPage() {
         >
             <AcmErrorBoundary>
                 <AcmPageContent id="create-cluster-pool">
-                    <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
+                    <PageSection variant="light" isFilled type="wizard">
                         <CreateClusterPool />
                     </PageSection>
                 </AcmPageContent>
