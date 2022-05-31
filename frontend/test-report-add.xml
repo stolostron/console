@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testExecutions version="1">
+  <file path="/Users/kcormier/ocm/console/frontend/src/lib/math.test.ts">
+    <testCase name="math can add two numbers" duration="2"/>
+  </file>
+</testExecutions>
