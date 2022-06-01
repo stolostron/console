@@ -109,8 +109,7 @@ export function CreateSubscriptionApplication(setTitle: Dispatch<SetStateAction<
     const providerConnections = secrets.map(unpackProviderConnection)
     const ansibleCredentials = providerConnections.filter(
         (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
-            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
     )
     useEffect(() => {
         getControlData()
