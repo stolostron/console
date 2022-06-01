@@ -51,6 +51,11 @@ export const getControlData = (warning, onControlSelect, awsPrivateFeatureGate =
         type: 'custom',
         component: warning,
     },
+    {
+        active: 1,
+        id: 'installAttemptsLimit',
+        type: 'hidden',
+    },
     ///////////////////////  cloud  /////////////////////////////////////
     {
         id: 'infrastructure',
