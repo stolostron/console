@@ -2,7 +2,7 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC } from 'temptifly'
+import { VALIDATE_ALPHANUMERIC, VALIDATE_NUMERIC, VALIDATE_ALPHANUMERIC_PERIOD } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
     LOAD_OCP_IMAGES,
@@ -880,7 +880,7 @@ const awsPrivateControlData = [
         type: 'text',
         placeholder: 'creation.aws.hostedZone.placeholder',
         active: '',
-        validation: VALIDATE_ALPHANUMERIC,
+        validation: VALIDATE_ALPHANUMERIC_PERIOD,
     },
     ///////////////////////  subnets  /////////////////////////////////////
     {
@@ -943,7 +943,7 @@ const awsPrivateControlData = [
                 type: 'text',
                 placeholder: 'creation.aws.serviceEndpointUrl.placeholder',
                 active: '',
-                validation: VALIDATE_ALPHANUMERIC,
+                validation: VALIDATE_ALPHANUMERIC_PERIOD,
             },
         ],
     },
