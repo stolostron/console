@@ -1,17 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    AcmLoadingPage,
-    AcmPage,
-    AcmPageHeader,
-    AcmRoute,
-    AcmSecondaryNav,
-    AcmSecondaryNavItem,
-} from '@stolostron/ui-components'
+import { AcmLoadingPage, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 import { Fragment, lazy, Suspense, useEffect, useState } from 'react'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState, discoveredApplicationsState } from '../../atoms'
+import { discoveredApplicationsState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
 import { queryRemoteArgoApps } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
@@ -23,9 +16,6 @@ const AdvancedConfigurationPage = lazy(() => import('./AdvancedConfiguration'))
 export default function ApplicationsPage() {
     const location = useLocation()
     const { t } = useTranslation()
-
-    const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.Applications), [setRoute])
 
     const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
     useEffect(startPolling, [startPolling])

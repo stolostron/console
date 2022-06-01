@@ -1,4 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Button, ButtonVariant, Flex, FlexItem, PageSection, Popover, TextContent } from '@patternfly/react-core'
+import { InfoCircleIcon } from '@patternfly/react-icons'
+import { fitContent } from '@patternfly/react-table'
+import { global_palette_blue_300 as blueInfoColor } from '@patternfly/react-tokens/dist/js/global_palette_blue_300'
 import {
     AcmButton,
     AcmEmptyState,
@@ -7,27 +11,22 @@ import {
     AcmPage,
     AcmPageContent,
     AcmPageHeader,
-    AcmRoute,
     AcmTable,
 } from '@stolostron/ui-components'
-import { ButtonVariant, PageSection, TextContent, Button, Flex, FlexItem, Popover } from '@patternfly/react-core'
-import { fitContent } from '@patternfly/react-table'
 import isMatch from 'lodash/isMatch'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { InfraEnvK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'
-import { useEffect, useState } from 'react'
-import { Trans, useTranslation } from '../../../lib/acm-i18next'
+import { useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import { acmRouteState, agentsState, infraEnvironmentsState } from '../../../atoms'
+import { useRecoilValue, waitForAll } from 'recoil'
+import { agentsState, infraEnvironmentsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { RbacDropdown } from '../../../components/Rbac'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { deleteResources } from '../../../lib/delete-resources'
+import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
-import { InfoCircleIcon } from '@patternfly/react-icons'
-import { global_palette_blue_300 as blueInfoColor } from '@patternfly/react-tokens/dist/js/global_palette_blue_300'
 
 const { AGENT_LOCATION_LABEL_KEY, getAgentStatus } = CIM
 
@@ -90,9 +89,6 @@ const deleteInfraEnv = (
 }
 
 const InfraEnvironmentsPage: React.FC = () => {
-    const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
-
     const [infraEnvs, agents] = useRecoilValue(waitForAll([infraEnvironmentsState, agentsState]))
     const { t } = useTranslation()
 
