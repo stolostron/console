@@ -19,6 +19,7 @@ import {
     removeReleaseGeneratedSuffix,
     checkNotOrObjects,
     checkAndObjects,
+    parseApplicationNodeName,
 } from './diagram-helpers'
 import i18n from 'i18next'
 
@@ -1444,5 +1445,15 @@ describe('checkAndObjects', () => {
 
     it('should check objects', () => {
         expect(checkAndObjects(definedObj1, definedObj2)).toEqual(definedObj1)
+    })
+})
+
+describe('parseApplicationNodeName', () => {
+    it('can parse app node name from id', () => {
+        expect(parseApplicationNodeName('application--app-test')).toEqual('app-test')
+    })
+
+    it('returns id without parsing', () => {
+        expect(parseApplicationNodeName('app-test')).toEqual('app-test')
     })
 })
