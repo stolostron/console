@@ -1173,7 +1173,7 @@ describe('CreateCluster', () => {
         await clickByText('Next')
 
         // step 4 -- the network
-        await typeByTestId('provisioningNetworkCIDR', '10.4.5.3')
+        await typeByTestId('provisioningNetworkCIDR', '10.4.5.3/14')
         await clickByText('Next')
 
         // skipping proxy
