@@ -646,6 +646,35 @@ describe('createResourceSearchLink for details with model info, same names', () 
     })
 })
 
+describe('createResourceSearchLink for application node', () => {
+    const node = {
+        type: 'application',
+        id: 'application--app-test',
+        name: '',
+        namespace: 'ns',
+        specs: {
+            pulse: 'green'
+        },
+    }
+    const result = {
+        type: 'link',
+        value: {
+            data: {
+                action: 'show_search',
+                kind: 'application',
+                name: 'app-test',
+                namespace: '',
+            },
+            id: 'application--app-test',
+            indent: true,
+            label: 'Launch resource in Search',
+        },
+    }
+    it('createResourceSearchLink for app node', () => {
+        expect(createResourceSearchLink(node, t)).toEqual(result)
+    })
+})
+
 describe('addNodeOCPRouteLocationForCluster no host spec', () => {
     const node = {
         type: 'route',
