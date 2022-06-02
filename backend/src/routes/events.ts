@@ -74,7 +74,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'Infrastructure', apiVersion: 'config.openshift.io/v1' },
     {
         kind: 'CertificateSigningRequest',
-        apiVersion: 'certificates.k8s.io/v1beta1',
+        apiVersion: 'certificates.k8s.io/v1',
         labelSelector: { 'open-cluster-management.io/cluster-name': '' },
     },
     { kind: 'ManagedCluster', apiVersion: 'cluster.open-cluster-management.io/v1' },
