@@ -653,7 +653,7 @@ describe('createResourceSearchLink for application node', () => {
         name: '',
         namespace: 'ns',
         specs: {
-            pulse: 'green'
+            pulse: 'green',
         },
     }
     const result = {
