@@ -12,4 +12,3 @@
 .build-harness-bootstrap
 build-harness
 build-harness-extensions
-.vscode/tasks.json
