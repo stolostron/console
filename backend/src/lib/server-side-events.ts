@@ -41,7 +41,7 @@ export interface ServerSideEventClient {
 export class ServerSideEvents {
     private static eventID = 2
     private static lastLoadedID = 2
-    private static events: Record<number, ServerSideEvent> = {
+    public static events: Record<number, ServerSideEvent> = {
         1: { id: '1', data: { type: 'START' } },
         2: { id: '2', data: { type: 'LOADED' } },
     }

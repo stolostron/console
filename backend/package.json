@@ -19,17 +19,19 @@
         "update": "npx npm-check-updates --doctor --upgrade && npm audit fix && npm dedup"
     },
     "dependencies": {
+        "@types/socket.io": "^3.0.2",
         "abort-controller": "3.0.0",
         "dotenv": "16.0.0",
         "event-stream": "4.0.1",
+        "find-my-way": "5.6.0",
         "get-value": "3.0.1",
         "got": "11.8.3",
-        "pluralize": "8.0.0",
-        "find-my-way": "5.6.0",
         "node-fetch": "2.6.7",
         "pino": "7.11.0",
+        "pluralize": "8.0.0",
         "proxy-agent": "5.0.0",
-        "raw-body": "2.5.1"
+        "raw-body": "2.5.1",
+        "socket.io": "^4.5.1"
     },
     "devDependencies": {
         "@types/dotenv": "8.2.0",

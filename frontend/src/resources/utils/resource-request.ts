@@ -269,6 +269,8 @@ export function createResource<Resource extends IResource, ResultType = Resource
 ): IRequestResult<ResultType> {
     let url = getBackendUrl() + getResourceApiPath(resource)
     if (options?.dryRun) url += '?dryRun=All'
+
+    // socket.emit("post", url, resource)
     return postRequest<Resource, ResultType>(url, resource)
 }
 

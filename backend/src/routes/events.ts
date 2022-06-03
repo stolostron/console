@@ -11,6 +11,7 @@ import { promisify } from 'util'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { unauthorized } from '../lib/respond'
+import { io } from '../lib/server'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getToken } from '../lib/token'
 import { IResource } from '../resources/resource'
@@ -296,6 +297,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                                     apiVersion: watchEvent.object.apiVersion,
                                 })
                                 resourceVersion = watchEvent.object.metadata.resourceVersion
+                                io.emit(watchEvent.type, watchEvent.object)
                                 break
                             case 'MODIFIED':
                                 logger.debug({
@@ -306,6 +308,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                                     apiVersion: watchEvent.object.apiVersion,
                                 })
                                 resourceVersion = watchEvent.object.metadata.resourceVersion
+                                io.emit(watchEvent.type, watchEvent.object)
                                 break
                             case 'DELETED':
                                 logger.debug({
@@ -316,6 +319,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
                                     apiVersion: watchEvent.object.apiVersion,
                                 })
                                 resourceVersion = watchEvent.object.metadata.resourceVersion
+                                io.emit(watchEvent.type, watchEvent.object)
                                 break
                             case 'BOOKMARK':
                                 logger.trace({

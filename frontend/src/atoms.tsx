@@ -3,6 +3,7 @@ import { AcmRoute } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
+import { io } from 'socket.io-client'
 import { LoadingPage } from './components/LoadingPage'
 import {
     AgentClusterInstallApiVersion,
@@ -99,8 +100,8 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
-    NMStateConfigKind,
     NMStateConfigApiVersion,
+    NMStateConfigKind,
     Placement,
     PlacementApiVersionAlpha,
     PlacementBinding,
@@ -441,58 +442,80 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
 
-        function processMessage(event: MessageEvent) {
-            if (event.data) {
-                try {
-                    const data = JSON.parse(event.data) as ServerSideEventData
-                    switch (data.type) {
-                        case 'ADDED':
-                        case 'MODIFIED':
-                        case 'DELETED':
-                            eventQueue.push(data)
-                            break
-                        case 'START':
-                            eventQueue.length = 0
-                            break
-                        case 'LOADED':
-                            setLoading((loading) => {
-                                if (loading) {
-                                    processEventQueue()
-                                }
-                                return false
-                            })
-                            break
-                        case 'SETTINGS':
-                            setSettings(data.settings)
-                            break
-                    }
-                } catch (err) {
-                    console.error(err)
-                }
-            }
-        }
+        // function processMessage(event: MessageEvent) {
+        //     if (event.data) {
+        //         try {
+        //             const data = JSON.parse(event.data) as ServerSideEventData
+        //             switch (data.type) {
+        //                 case 'ADDED':
+        //                 case 'MODIFIED':
+        //                 case 'DELETED':
+        //                     eventQueue.push(data)
+        //                     break
+        //                 case 'START':
+        //                     eventQueue.length = 0
+        //                     break
+        //                 case 'LOADED':
+        //                     setLoading((loading) => {
+        //                         if (loading) {
+        //                             processEventQueue()
+        //                         }
+        //                         return false
+        //                     })
+        //                     break
+        //                 case 'SETTINGS':
+        //                     setSettings(data.settings)
+        //                     break
+        //             }
+        //         } catch (err) {
+        //             console.error(err)
+        //         }
+        //     }
+        // }
 
-        let evtSource: EventSource | undefined
-        function startWatch() {
-            evtSource = new EventSource(`${getBackendUrl()}/events`, { withCredentials: true })
-            evtSource.onmessage = processMessage
-            evtSource.onerror = function () {
-                console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
-                switch (evtSource?.readyState) {
-                    case EventSource.CLOSED:
-                        setTimeout(() => {
-                            startWatch()
-                        }, 1000)
-                        break
-                }
-            }
-        }
-        startWatch()
+        // let evtSource: EventSource | undefined
+        // function startWatch() {
+        //     evtSource = new EventSource(`${getBackendUrl()}/events`, { withCredentials: true })
+        //     evtSource.onmessage = processMessage
+        //     evtSource.onerror = function () {
+        //         console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
+        //         switch (evtSource?.readyState) {
+        //             case EventSource.CLOSED:
+        //                 setTimeout(() => {
+        //                     startWatch()
+        //                 }, 1000)
+        //                 break
+        //         }
+        //     }
+        // }
+        // startWatch()
+
+        const socket = io()
+        socket.on('connect', () => {
+            console.log(socket.id)
+            setLoading(false)
+            socket.on('ADDED', (resource: IResource) => {
+                eventQueue.push({ type: 'ADDED', object: resource as any })
+            })
+            socket.on('MODIFIED', (resource: IResource) => {
+                eventQueue.push({ type: 'MODIFIED', object: resource as any })
+            })
+            socket.on('DELETED', (resource: IResource) => {
+                eventQueue.push({ type: 'DELETED', object: resource as any })
+            })
+        })
+        socket.on('error', () => {
+            console.log('error') // undefined
+        })
+        socket.on('disconnect', () => {
+            console.log(socket.id) // undefined
+        })
 
         const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
         return () => {
             clearInterval(timeout)
-            if (evtSource) evtSource.close()
+            socket.disconnect()
+            // if (evtSource) evtSource.close()
         }
     }, [setSettings, setters])
 

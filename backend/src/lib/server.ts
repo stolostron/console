@@ -9,9 +9,14 @@ import {
     Http2ServerRequest,
     Http2ServerResponse,
 } from 'http2'
+import { Server } from 'https'
 import { Socket } from 'net'
+import { Server as SocketIoServer } from 'socket.io'
 import { TLSSocket } from 'tls'
 import { logger } from './logger'
+import { ServerSideEvents } from './server-side-events'
+
+export let io: SocketIoServer
 
 let server: Http2Server | undefined
 
@@ -22,6 +27,8 @@ interface ISocketRequests {
 
 let nextSocketID = 0
 const sockets: { [id: string]: Socket | TLSSocket | undefined } = {}
+
+// export function br
 
 export type ServerOptions = {
     requestHandler:
@@ -51,6 +58,50 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
             logger.debug({ msg: `server start`, secure: false })
             server = createServer(options.requestHandler as (req: Http2ServerRequest, res: Http2ServerResponse) => void)
         }
+
+        io = new SocketIoServer(server as unknown as Server)
+
+        io.on('connection', (socket) => {
+            logger.info({ msg: 'websocket connection', socketID: socket.id })
+
+            socket.onAny((event: string, args: unknown[]) => {
+                logger.info({ msg: 'websocket recieved event', event, args, socketID: socket.id })
+            })
+
+            socket.onAnyOutgoing((event: string, args: unknown[]) => {
+                logger.info({ msg: 'websocket sent event', event, socketID: socket.id })
+            })
+
+            socket.on('disconnect', () => {
+                logger.info({ msg: 'websocket disconnect', socketID: socket.id })
+            })
+
+            logger.info({ count: Object.keys(ServerSideEvents.events).length })
+
+            for (const eventID in ServerSideEvents.events) {
+                try {
+                    const event = ServerSideEvents.events[eventID]
+                    const data = event.data as {
+                        type: string
+                        object: unknown
+                    }
+                    if (!data.object) continue
+                    if (data.type === 'ADDED') {
+                        socket.emit('ADDED', data.object)
+                    }
+                    if (data.type === 'MODIFIED') {
+                        socket.emit('MODIFIED', data.object)
+                    }
+                    if (data.type === 'DELETED') {
+                        socket.emit('DELETED', data.object)
+                    }
+                } catch (err) {
+                    logger.error(err)
+                }
+                // socket.emit()
+            }
+        })
+
         return new Promise((resolve, reject) => {
             server
                 ?.listen(process.env.PORT, () => {

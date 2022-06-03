@@ -7,8 +7,16 @@ describe('create policy set', () => {
     const namespace: string = `cypress-${crypto.randomBytes(4).toString('hex')}`
     const name = `cypress-${crypto.randomBytes(4).toString('hex')}`
 
+    // const mockedPolling: unknown[] = []
+
     before(() => {
         cy.createNamespace(namespace)
+        // cy.intercept({ method: 'GET', url: '/socket.io' }, { fixture: 'polling.json' })
+        // cy.intercept({ method: 'GET', url: '/socket.io' }, (req, res) => {
+        //     if (mockedPolling.length) {
+        //         return mockedPolling.pop()
+        //     }
+        // })
     })
 
     after(() => {
@@ -23,7 +31,11 @@ describe('create policy set', () => {
     it('details', () => {
         cy.get('.pf-c-wizard__main-body').within(() => {
             cy.get('#name').type(name)
-            cy.get('#namespace').click().get(`#${namespace}`).click()
+            cy.get('#namespace').click()
+            cy.get('.pf-c-select__menu').within(() => {
+                cy.get('.pf-m-search').type(`${namespace}`)
+                cy.get('li').click()
+            })
         })
         cy.contains('Next').click()
     })
@@ -47,6 +59,7 @@ describe('create policy set', () => {
         cy.get('#nav-toggle').click()
         cy.get('#yaml-switch').click({ force: true })
         cy.contains('Submit').click()
+        // mockedPolling.push({ event: 'ADDED', object: { kind: 'PoliycSet' } })
     })
 
     it('policy set page should show created policy set', () => {
