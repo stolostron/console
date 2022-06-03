@@ -131,7 +131,7 @@
         "file-loader": "6.2.0",
         "handlebars-loader": "1.7.1",
         "html-webpack-plugin": "5.5.0",
-        "i18next-parser": "6.0.0",
+        "i18next-parser": "6.4.0",
         "identity-obj-proxy": "3.0.0",
         "jest": "27.5.1",
         "jest-fetch-mock": "3.0.3",
