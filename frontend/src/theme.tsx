@@ -11,7 +11,7 @@ if (theme === 'dark') {
     document.documentElement.classList.add('pf-theme-dark')
 }
 
-export function initTheme(){
+export function initTheme() {
     // Do nothing
 }
 
