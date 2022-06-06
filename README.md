@@ -130,3 +130,4 @@ Enabling this feature will allow the user to create a cluster that only contains
 ## References
 
 `console` is an add-on for the open-cluster-management community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io)
+

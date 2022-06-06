@@ -1,43 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useContext, useEffect, SetStateAction, Dispatch } from 'react'
-import { AcmPage, AcmPageContent, AcmPageHeader, AcmErrorBoundary, AcmToastContext } from '@stolostron/ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { NavigationPath } from '../../NavigationPath'
+import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, AcmToastContext } from '@stolostron/ui-components'
 import Handlebars from 'handlebars'
-import { useTranslation } from '../../lib/acm-i18next'
-import { useHistory, useLocation } from 'react-router-dom'
 import { Location } from 'history'
-import {
-    ApplicationKind,
-    IResource,
-    ProviderConnection,
-    SubscriptionKind,
-    unpackProviderConnection,
-    updateAppResources,
-    ProviderConnectionApiVersion,
-    ProviderConnectionKind,
-    reconcileResources,
-} from '../../resources'
-import '../Applications/CreateApplication/Subscription/style.css'
-
-// Template Data
-import { controlData as getControlData } from './CreateApplication/Subscription/controlData/ControlData'
-import createTemplate from './CreateApplication/Subscription/templates/template.hbs'
-import gitTemplate from './CreateApplication/Subscription/templates/templateGit.hbs'
-import helmTemplate from './CreateApplication/Subscription/templates/templateHelm.hbs'
-import ObjTemplate from './CreateApplication/Subscription/templates/templateObjectStore.hbs'
-import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
-import otherTemplate from './CreateApplication/Subscription/templates/templateOther.hbs'
-
-import TemplateEditor from 'temptifly'
-import 'temptifly/dist/styles.css'
-
+import _ from 'lodash'
+import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
+import 'monaco-editor/esm/vs/editor/editor.all.js'
+import { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import 'monaco-editor/esm/vs/editor/editor.all.js'
-import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-import _ from 'lodash'
+import { useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
+import TemplateEditor from 'temptifly'
+import 'temptifly/dist/styles.css'
 import {
     ansibleJobState,
     applicationsState,
@@ -46,11 +21,32 @@ import {
     secretsState,
     subscriptionsState,
 } from '../../atoms'
-
+import { getErrorInfo } from '../../components/ErrorPage'
+import { useTranslation } from '../../lib/acm-i18next'
+import { useSearchParams } from '../../lib/search'
+import { NavigationPath } from '../../NavigationPath'
+import {
+    ApplicationKind,
+    IResource,
+    ProviderConnection,
+    ProviderConnectionApiVersion,
+    ProviderConnectionKind,
+    reconcileResources,
+    SubscriptionKind,
+    unpackProviderConnection,
+    updateAppResources,
+} from '../../resources'
+import '../Applications/CreateApplication/Subscription/style.css'
 import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
 import { getApplication } from './ApplicationDetails/ApplicationTopology/model/application'
-import { getErrorInfo } from '../../components/ErrorPage'
-import { useSearchParams } from '../../lib/search'
+// Template Data
+import { controlData as getControlData } from './CreateApplication/Subscription/controlData/ControlData'
+import createTemplate from './CreateApplication/Subscription/templates/template.hbs'
+import gitTemplate from './CreateApplication/Subscription/templates/templateGit.hbs'
+import helmTemplate from './CreateApplication/Subscription/templates/templateHelm.hbs'
+import ObjTemplate from './CreateApplication/Subscription/templates/templateObjectStore.hbs'
+import otherTemplate from './CreateApplication/Subscription/templates/templateOther.hbs'
+import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
 
 interface CreationStatus {
     status: string
@@ -95,7 +91,7 @@ export default function CreateSubscriptionApplicationPage() {
         >
             <AcmErrorBoundary>
                 <AcmPageContent id="create-cluster-pool">
-                    <PageSection className="pf-c-content" variant="light" type="wizard">
+                    <PageSection variant="light" type="wizard">
                         {CreateSubscriptionApplication(setTitle)}
                     </PageSection>
                 </AcmPageContent>

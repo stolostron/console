@@ -14,7 +14,7 @@ import {
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -220,6 +220,19 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         [policySet, placementDecisions, placementBindings, placements, placementRules]
     )
 
+    const getClusterContext = useCallback(
+        (policy: Policy) => {
+            return decision.length
+                ? policy?.status?.status?.filter((status) => {
+                      return decision[0].status.decisions.find(
+                          (decisionStatus) => decisionStatus.clusterName === status.clustername
+                      )
+                  })
+                : []
+        },
+        [decision]
+    )
+
     const policyColumnDefs = useMemo(
         () => [
             {
@@ -246,17 +259,9 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 header: t('Cluster violation'),
                 sort: (policyA: Policy, policyB: Policy) => {
                     // Find the clusters in context of the PolicySet
-                    const policySetClusterContextA = policyA?.status?.status?.filter((status) => {
-                        return decision[0].status.decisions.find(
-                            (decisionStatus) => decisionStatus.clusterName === status.clustername
-                        )
-                    })
+                    const policySetClusterContextA = getClusterContext(policyA)
                     // Find the clusters in context of the PolicySet
-                    const policySetClusterContextB = policyB?.status?.status?.filter((status) => {
-                        return decision[0].status.decisions.find(
-                            (decisionStatus) => decisionStatus.clusterName === status.clustername
-                        )
-                    })
+                    const policySetClusterContextB = getClusterContext(policyB)
                     const violationACount =
                         policySetClusterContextA?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
                     const violationBCount =
@@ -265,11 +270,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 },
                 cell: (currentPolicy: Policy) => {
                     // Find the clusters in context of the PolicySet
-                    const policySetClusterContext = currentPolicy?.status?.status?.filter((status) => {
-                        return decision[0].status.decisions.find(
-                            (decisionStatus) => decisionStatus.clusterName === status.clustername
-                        )
-                    })
+                    const policySetClusterContext = getClusterContext(currentPolicy)
                     const violationCount =
                         policySetClusterContext?.filter((status) => status.compliant === 'NonCompliant').length ?? 0
                     const compliantCount =
@@ -313,7 +314,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
                 },
             },
         ],
-        [decision, t]
+        [getClusterContext, t]
     )
 
     return (

@@ -177,7 +177,11 @@ describe('validation', () => {
         test.each([
             [`should allow normal image mirror url`, 'abc:123/def', true],
             [`should allow '_' in path`, 'abc:123/a/d_ef', true],
-            [`should not allow '_' in first path`, 'abc:123/d_ef', false],
+            [`should allow '_' in first path`, 'abc:123/d_ef', true],
+            [`should allow '-' in first path`, 'abc:123/d-ef', true],
+            [`should allow single character paths`, 'abc:123/a/b/c/d', true],
+            [`should not allow path segment starting with .`, 'abc:123/.a', false],
+            [`should not allow path segment ending with .`, 'abc:123/a/boo.', false],
             [`should not allow without port`, 'abc/abc', false],
             [`should not allow if port is not number`, 'abc:d/efg', false],
             [`should not allow host with invalid dns name`, '.abc:123/def', false],
