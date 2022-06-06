@@ -75,6 +75,9 @@ Notes:
 
    The backend will proxy requests to the kubernetes cluster specified by CLUSTER_API_URL in backend/.env.
 
+## Running as an OpenShift console plugin-in
+See [Dynamic Plugins - Development](frontend/PLUGIN.md#development)
+
 ## Backend
 
 | Method | Path     | Description                                      |
