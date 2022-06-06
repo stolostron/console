@@ -218,6 +218,9 @@ export const createResourceSearchLink = (node, t) => {
         computedNameList.forEach((item) => {
             computedName = computedName.length === 0 ? item : `${computedName},${item}`
         })
+        if (!computedName && nodeType === 'application') {
+            computedName = parseApplicationNodeName(node.id)
+        }
         let computedNS = ''
         computedNSList.forEach((item) => {
             computedNS = computedNS.length === 0 ? item : `${computedNS},${item}`
@@ -246,6 +249,13 @@ export const createResourceSearchLink = (node, t) => {
         }
     }
     return result
+}
+
+export const parseApplicationNodeName = (id) => {
+    if (id.startsWith('application--')) {
+        return id.slice(13, id.length)
+    }
+    return id
 }
 
 export const createResourceURL = (node, t, isLogURL = false) => {

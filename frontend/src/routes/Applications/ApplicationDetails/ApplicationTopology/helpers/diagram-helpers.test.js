@@ -19,6 +19,7 @@ import {
     removeReleaseGeneratedSuffix,
     checkNotOrObjects,
     checkAndObjects,
+    parseApplicationNodeName,
 } from './diagram-helpers'
 import i18n from 'i18next'
 
@@ -641,6 +642,35 @@ describe('createResourceSearchLink for details with model info, same names', () 
         },
     }
     it('createResourceSearchLink for details with model info, same names', () => {
+        expect(createResourceSearchLink(node, t)).toEqual(result)
+    })
+})
+
+describe('createResourceSearchLink for application node', () => {
+    const node = {
+        type: 'application',
+        id: 'application--app-test',
+        name: '',
+        namespace: 'ns',
+        specs: {
+            pulse: 'green',
+        },
+    }
+    const result = {
+        type: 'link',
+        value: {
+            data: {
+                action: 'show_search',
+                kind: 'application',
+                name: 'app-test',
+                namespace: '',
+            },
+            id: 'application--app-test',
+            indent: true,
+            label: 'Launch resource in Search',
+        },
+    }
+    it('createResourceSearchLink for app node', () => {
         expect(createResourceSearchLink(node, t)).toEqual(result)
     })
 })
@@ -1444,5 +1474,15 @@ describe('checkAndObjects', () => {
 
     it('should check objects', () => {
         expect(checkAndObjects(definedObj1, definedObj2)).toEqual(definedObj1)
+    })
+})
+
+describe('parseApplicationNodeName', () => {
+    it('can parse app node name from id', () => {
+        expect(parseApplicationNodeName('application--app-test')).toEqual('app-test')
+    })
+
+    it('returns id without parsing', () => {
+        expect(parseApplicationNodeName('app-test')).toEqual('app-test')
     })
 })
