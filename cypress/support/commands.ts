@@ -24,6 +24,26 @@ Cypress.Commands.add('deleteNamespace', (namespace: string) => {
     cy.exec(`oc delete namespace ${namespace}`)
 })
 
+Cypress.Commands.add('mockResource', (resource: object) => {
+    if (process.env.CYPRESS_MODE === 'mock') {
+        //         mockedPollingQueue.push(['ADDED', resource])
+    }
+})
+
+Cypress.Commands.add('mockCreateResource', (resource: object) => {
+    if (process.env.CYPRESS_MODE === 'mock') {
+        // cy.intercept(
+        //     'POST',
+        //     `/multicloud/proxy/apis/polcy.open-cluster-management.io/v1/namespaced/${namespace}`,
+        //     (req) => {
+        //          expect(res.body).tobe(resource)
+        //         req.reply({ statusCode: 201 })
+        //         mockedPollingQueue.push(['ADDED', resource])
+        //     }
+        // )
+    }
+})
+
 // Cypress.Commands.add('login', () => {
 //     cy.visit(`/multicloud`, { failOnStatusCode: false })
 //     cy.getCookie('acm-access-token-cookie').then((cookie) => {

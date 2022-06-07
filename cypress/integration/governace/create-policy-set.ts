@@ -2,21 +2,57 @@
 /// <reference types="cypress" />
 
 import crypto from 'crypto'
+import { CyHttpMessages } from 'cypress/types/net-stubbing'
 
 describe('create policy set', () => {
     const namespace: string = `cypress-${crypto.randomBytes(4).toString('hex')}`
     const name = `cypress-${crypto.randomBytes(4).toString('hex')}`
 
-    // const mockedPolling: unknown[] = []
+    const sid = 'qKNAdUvgaMqOq4-ZAAAf'
+    const mockedPollingQueue: any[] = [
+        `0{"sid":"${sid}","upgrades":[""],"pingInterval":25000,"pingTimeout":20000,"maxPayload":1000000}`,
+        `40{"sid":"${sid}"}`,
+    ]
+
+    beforeEach(() => {
+        if (process.env.CYPRESS_MODE === 'mock') {
+            cy.intercept({ method: 'POST', url: '/socket.io/?*' }, (req: CyHttpMessages.IncomingHttpRequest) => {
+                req.reply('ok')
+            })
+            cy.intercept({ method: 'GET', url: '/socket.io/?*' }, (req: CyHttpMessages.IncomingHttpRequest) => {
+                async function handleResponse() {
+                    let count = 20 * 1000
+                    while (true) {
+                        if (mockedPollingQueue.length) {
+                            const pollItem = mockedPollingQueue.shift()
+                            switch (typeof pollItem) {
+                                case 'string':
+                                    req.reply(pollItem)
+                                    break
+                                case 'object':
+                                    req.reply('42' + JSON.stringify(pollItem))
+                                    break
+                            }
+
+                            break
+                        }
+                        await new Promise((resolve) => setTimeout(resolve, 500))
+                        count -= 500
+                        if (count == 0) {
+                            req.reply('2')
+                            break
+                        }
+                    }
+                }
+
+                return handleResponse()
+            })
+        }
+    })
 
     before(() => {
         cy.createNamespace(namespace)
-        // cy.intercept({ method: 'GET', url: '/socket.io' }, { fixture: 'polling.json' })
-        // cy.intercept({ method: 'GET', url: '/socket.io' }, (req, res) => {
-        //     if (mockedPolling.length) {
-        //         return mockedPolling.pop()
-        //     }
-        // })
+        mockedPollingQueue.push(['ADDED', { apiVersion: 'v1', kind: 'Namespace', metadata: { name: namespace } }])
     })
 
     after(() => {
@@ -58,8 +94,8 @@ describe('create policy set', () => {
     it('review', () => {
         cy.get('#nav-toggle').click()
         cy.get('#yaml-switch').click({ force: true })
+        cy.mockCreateResource({ apiVersion: 'v1', kind: 'Namespace', metadata: { name: namespace } })
         cy.contains('Submit').click()
-        // mockedPolling.push({ event: 'ADDED', object: { kind: 'PoliycSet' } })
     })
 
     it('policy set page should show created policy set', () => {

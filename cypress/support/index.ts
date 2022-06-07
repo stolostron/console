@@ -8,6 +8,8 @@ declare global {
             login(): Chainable<void>
             createNamespace(namespace: string): Chainable<void>
             deleteNamespace(namespace: string): Chainable<void>
+            mockResource(resource: object): Chainable<void>
+            mockCreateResource(resource: object): Chainable<void>
         }
     }
 }

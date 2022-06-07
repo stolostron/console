@@ -59,7 +59,7 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
             server = createServer(options.requestHandler as (req: Http2ServerRequest, res: Http2ServerResponse) => void)
         }
 
-        io = new SocketIoServer(server as unknown as Server)
+        io = new SocketIoServer(server as unknown as Server, { transports: ['polling'] })
 
         io.on('connection', (socket) => {
             logger.info({ msg: 'websocket connection', socketID: socket.id })
