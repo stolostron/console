@@ -15,9 +15,15 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
+    cronJobsState,
+    daemonSetsState,
+    deploymentsState,
     discoveredApplicationsState,
+    jobsState,
     namespacesState,
     placementRulesState,
+    podsState,
+    statefulSetsState,
     subscriptionsState,
 } from '../../atoms'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
@@ -36,6 +42,7 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
+    DeploymentDefinition,
     DiscoveredArgoApplicationDefinition,
     getApiVersionResourceGroup,
     IResource,
@@ -184,6 +191,45 @@ export default function ApplicationsOverview() {
     const [placementRules] = useRecoilState(placementRulesState)
     const [namespaces] = useRecoilState(namespacesState)
 
+    // Openshift Application resources
+    const [cronJobs] = useRecoilState(cronJobsState)
+    const [daemonSets] = useRecoilState(daemonSetsState)
+    const [deployments] = useRecoilState(deploymentsState)
+    const [jobs] = useRecoilState(jobsState)
+    const [pods] = useRecoilState(podsState)
+    const [statefulStates] = useRecoilState(statefulSetsState)
+
+    const applicationResources: IResource[] = [
+        ...cronJobs,
+        ...daemonSets,
+        ...deployments,
+        ...jobs,
+        ...pods,
+        ...statefulStates,
+    ]
+
+    const ocpApplicationResources: IResource[] = useMemo(
+        () =>
+            applicationResources.filter((item: any) => {
+                const labels = item.metadata.labels
+                return labels && ('app' in labels || 'app.kubernetes.io/part-of' in labels)
+            }),
+        [cronJobs, daemonSets, deployments, jobs, pods, statefulStates]
+    )
+
+    const fluxAppresources: IResource[] = useMemo(
+        () =>
+            applicationResources.filter((item: any) => {
+                const labels = item.metadata.labels
+                return (
+                    labels &&
+                    'kustomize.toolkit.fluxcd.io/name ' in labels &&
+                    'kustomize.toolkit.fluxcd.io/namespace' in labels
+                )
+            }),
+        [cronJobs, daemonSets, deployments, jobs, pods, statefulStates]
+    )
+
     const allClusters = useAllClusters()
     const managedClusters = useMemo(
         () =>
@@ -287,6 +333,16 @@ export default function ApplicationsOverview() {
         [applications, generateTransformData]
     )
 
+    const ocpApplicationTableItems = useMemo(
+        () => ocpApplicationResources.map(generateTransformData),
+        [ocpApplicationResources, generateTransformData]
+    )
+
+    const fluxApplicationTableItems = useMemo(
+        () => fluxAppresources.map(generateTransformData),
+        [fluxAppresources, generateTransformData]
+    )
+
     const applicationSetsTableItems = useMemo(
         () => applicationSets.map(generateTransformData),
         [applicationSets, generateTransformData]
@@ -344,8 +400,17 @@ export default function ApplicationsOverview() {
             ...applicationSetsTableItems,
             ...argoApplicationTableItems,
             ...discoveredApplicationsTableItems,
+            ...ocpApplicationTableItems,
+            ...fluxApplicationTableItems,
         ],
-        [applicationSetsTableItems, applicationTableItems, argoApplicationTableItems, discoveredApplicationsTableItems]
+        [
+            applicationSetsTableItems,
+            applicationTableItems,
+            argoApplicationTableItems,
+            discoveredApplicationsTableItems,
+            ocpApplicationTableItems,
+            fluxApplicationTableItems,
+        ]
     )
 
     const keyFn = useCallback(
@@ -608,6 +673,22 @@ export default function ApplicationsOverview() {
                     history.push(searchLink)
                 },
             })
+
+            if (isResourceTypeOf(resource, DeploymentDefinition)) {
+                actions.push({
+                    id: 'viewApplication',
+                    title: t('View application'),
+                    click: () => {
+                        history.push(
+                            NavigationPath.applicationOverview
+                                .replace(':namespace', resource.metadata?.namespace as string)
+                                .replace(':name', resource.metadata?.name as string) +
+                                '?' +
+                                `apiVersion=${resource.apiVersion}`
+                        )
+                    },
+                })
+            }
 
             if (
                 isResourceTypeOf(resource, ApplicationDefinition) ||
