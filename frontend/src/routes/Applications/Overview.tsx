@@ -3,13 +3,22 @@
 import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
-import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import {
+    AcmDropdown,
+    AcmEmptyState,
+    AcmLoadingPage,
+    AcmTable,
+    IAcmRowAction,
+    IAcmTableColumn,
+} from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
+import { useQuery } from '../../lib/useQuery'
+import { queryRemoteOCPAppResources } from '../../lib/search'
 import {
     applicationSetsState,
     applicationsState,
@@ -19,6 +28,7 @@ import {
     daemonSetsState,
     deploymentsState,
     discoveredApplicationsState,
+    discoveredOCPAppResourcesState,
     jobsState,
     namespacesState,
     placementRulesState,
@@ -196,6 +206,29 @@ export default function ApplicationsOverview() {
     const [deployments] = useRecoilState(deploymentsState)
     const [jobs] = useRecoilState(jobsState)
     const [statefulStates] = useRecoilState(statefulSetsState)
+
+    const { data, loading, startPolling } = useQuery(queryRemoteOCPAppResources)
+    useEffect(startPolling, [startPolling])
+    const [timedOut, setTimedOut] = useState<boolean>()
+    const [_, setDiscoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
+
+    useEffect(() => {
+        const remoteOCPAppResources = data?.[0]?.data?.searchResult?.[0]?.items || []
+        setDiscoveredOCPAppResources(remoteOCPAppResources)
+    }, [data, setDiscoveredOCPAppResources])
+
+    // failsafe in case search api is sleeping
+    useEffect(() => {
+        const handle = setTimeout(() => {
+            setTimedOut(true)
+        }, 5000)
+
+        return () => {
+            clearInterval(handle)
+        }
+    }, [])
+
+    const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
 
     const applicationResources: IResource[] = [...cronJobs, ...daemonSets, ...deployments, ...jobs, ...statefulStates]
 
@@ -385,12 +418,31 @@ export default function ApplicationsOverview() {
         )
     }, [discoveredApplications, generateTransformData])
 
+    const discoveredOCPAppResourceTableItems = useMemo(() => {
+        return discoveredOCPAppResources
+            .filter(({ label }) => {
+                return label && (label.includes('app=') || label.includes('app.kubernetes.io/part-of='))
+            })
+            .map((remoteOCPApp: any) =>
+                generateTransformData({
+                    apiVersion: remoteOCPApp.apiversion,
+                    kind: remoteOCPApp.kind,
+                    metadata: {
+                        name: remoteOCPApp.name,
+                        namespace: remoteOCPApp.namespace,
+                        creationTimestamp: remoteOCPApp.created,
+                    },
+                })
+            )
+    }, [discoveredOCPAppResources, generateTransformData])
+
     const tableItems: IResource[] = useMemo(
         () => [
             ...applicationTableItems,
             ...applicationSetsTableItems,
             ...argoApplicationTableItems,
             ...discoveredApplicationsTableItems,
+            ...discoveredOCPAppResourceTableItems,
             ...ocpApplicationTableItems,
             ...fluxApplicationTableItems,
         ],
@@ -399,6 +451,7 @@ export default function ApplicationsOverview() {
             applicationTableItems,
             argoApplicationTableItems,
             discoveredApplicationsTableItems,
+            discoveredOCPAppResourceTableItems,
             ocpApplicationTableItems,
             fluxApplicationTableItems,
         ]
@@ -796,6 +849,10 @@ export default function ApplicationsOverview() {
         ),
         [canCreateApplication, history, t]
     )
+
+    if (loading && !timedOut) {
+        return <AcmLoadingPage />
+    }
 
     return (
         <PageSection>

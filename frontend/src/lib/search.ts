@@ -74,6 +74,26 @@ export function queryRemoteArgoApps(): IRequestResult<ISearchResult> {
     })
 }
 
+export function queryRemoteOCPAppResources(): IRequestResult<ISearchResult> {
+    return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
+        operationName: 'searchResult',
+        variables: {
+            input: [
+                {
+                    filters: [
+                        {
+                            property: 'kind',
+                            values: ['cronjob', 'daemonset', 'deployment', 'deploymentconfig', 'job', 'statefulset'],
+                        },
+                        { property: 'cluster', values: ['!local-cluster'] },
+                    ],
+                },
+            ],
+        },
+        query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+    })
+}
+
 export function useSearchParams() {
     const { search } = useLocation()
     return useMemo(() => new URLSearchParams(search), [search])
