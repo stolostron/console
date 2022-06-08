@@ -61,6 +61,7 @@ import { getMCHVersion } from './lib/mchVersion'
 import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
 import { fetchGet, getBackendUrl } from './resources'
+import { ThemeSwitcher } from './theme'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -301,7 +302,7 @@ const useStyles = makeStyles({
         // 'justify-content': 'space-between',
         width: '100%',
         padding: 0,
-        // color: 'var(--pf-global--Color--light-100)',
+        color: 'var(--pf-global--Color--light-100)',
         minHeight: '24px',
 
         '& .pf-c-dropdown__toggle-icon': {
@@ -478,7 +479,7 @@ function AppHeader() {
             <ApplicationLauncherItem
                 key="ocp_launch"
                 isExternal
-                icon={<OpenshiftIcon />}
+                icon={<OpenshiftIcon style={{ color: '#EE0000' }} />}
                 component="button"
                 onClick={() => launchToOCP('', true)}
             >
@@ -569,7 +570,10 @@ function AppHeader() {
                 }}
             >
                 <PageHeaderToolsItem>
-                    <AppSwitcherTopBar></AppSwitcherTopBar>
+                    <ThemeSwitcher style={{ marginRight: 16 }} />
+                </PageHeaderToolsItem>
+                <PageHeaderToolsItem>
+                    <AppSwitcherTopBar />
                 </PageHeaderToolsItem>
                 <PageHeaderToolsItem>
                     <Button
