@@ -997,7 +997,7 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('BMC')
+        await clickByTestId('bare-metal')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -1091,7 +1091,7 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('BMC')
+        await clickByTestId('bare-metal')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -1184,7 +1184,7 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('AWS')
+        await clickByTestId('amazon-web-services')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -1253,7 +1253,7 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('AWS')
+        await clickByTestId('amazon-web-services')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
@@ -1326,7 +1326,7 @@ describe('CreateCluster', () => {
 
             // Create On Premise cluster
             // TODO(mlibra) Add specific test case for the ai flow (start by clicking cluster.create.ai.subtitle hear instead)
-            await clickByTestId('CIM')
+            await clickByTestId('use-existing-discovered-hosts')
             await clickByText('Next')
 
             // wait for tables/combos to fill in
@@ -1405,7 +1405,7 @@ describe('CreateCluster', () => {
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // step 1 -- the infrastructure
-        await clickByTestId('AWS')
+        await clickByTestId('amazon-web-services')
 
         // wait for tables/combos to fill in
         await waitForNocks(initialNocks)
