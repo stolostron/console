@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import './commands'
+import { IResource, setupWebsocketMock } from './websocket-mock'
 
 declare global {
     namespace Cypress {
@@ -8,8 +9,9 @@ declare global {
             login(): Chainable<void>
             createNamespace(namespace: string): Chainable<void>
             deleteNamespace(namespace: string): Chainable<void>
-            mockResource(resource: object): Chainable<void>
-            mockCreateResource(resource: object): Chainable<void>
+            mockWait(alias: string): Chainable<void>
+            mockResource(resource: IResource): Chainable<void>
+            mockCreateResource(resource: IResource, alias?: string): Chainable<void>
         }
     }
 }
@@ -20,3 +22,5 @@ before(() => {
     })
     cy.login()
 })
+
+beforeEach(setupWebsocketMock)
