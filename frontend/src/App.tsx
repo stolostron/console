@@ -27,6 +27,7 @@ import {
     TextList,
     TextListItem,
     Title,
+    TooltipPosition,
     Truncate,
 } from '@patternfly/react-core'
 import {
@@ -45,6 +46,8 @@ import {
     AcmToastGroup,
     AcmToastProvider,
 } from '@stolostron/ui-components'
+import { TooltipWrapper } from '@stolostron/ui-components/lib/utils'
+import { t } from 'i18next'
 import { noop } from 'lodash'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
@@ -527,34 +530,40 @@ function AppHeader() {
             count = count + 1
         }
         return (
-            <ApplicationLauncher
-                hidden={appSwitcherExists}
-                aria-label="app-menu"
-                data-test="app-dropdown"
-                className="co-app-launcher co-app-menu"
-                onSelect={() => setAppSwitcherOpen(false)}
-                onToggle={() => setAppSwitcherOpen(!appSwitcherOpen)}
-                isOpen={appSwitcherOpen}
-                items={[
-                    <ApplicationLauncherGroup label="Red Hat applications" key="ocp-group">
-                        <OCPButton />
-                        <ApplicationLauncherItem
-                            key="app_launch"
-                            isExternal
-                            icon={<AcmIcon icon={AcmIconVariant.redhat} />}
-                            component="button"
-                            onClick={() => window.open('https://console.redhat.com/openshift', '_blank')}
-                        >
-                            Openshift Cluster Manager
-                        </ApplicationLauncherItem>
-                        {Object.keys(extraItems).length > 0 && <ApplicationLauncherSeparator key="separator" />}
-                    </ApplicationLauncherGroup>,
-                    ...extraMenuItems,
-                ]}
-                data-quickstart-id="qs-masthead-appmenu"
-                position="right"
-                style={{ verticalAlign: '0.125em' }}
-            />
+            <TooltipWrapper
+                showTooltip={true}
+                tooltip={t('Red Hat applications')}
+                tooltipPosition={'bottom' as TooltipPosition}
+            >
+                <ApplicationLauncher
+                    hidden={appSwitcherExists}
+                    aria-label="app-menu"
+                    data-test="app-dropdown"
+                    className="co-app-launcher co-app-menu"
+                    onSelect={() => setAppSwitcherOpen(false)}
+                    onToggle={() => setAppSwitcherOpen(!appSwitcherOpen)}
+                    isOpen={appSwitcherOpen}
+                    items={[
+                        <ApplicationLauncherGroup label="Red Hat applications" key="ocp-group">
+                            <OCPButton />
+                            <ApplicationLauncherItem
+                                key="app_launch"
+                                isExternal
+                                icon={<AcmIcon icon={AcmIconVariant.redhat} />}
+                                component="button"
+                                onClick={() => window.open('https://console.redhat.com/openshift', '_blank')}
+                            >
+                                Openshift Cluster Manager
+                            </ApplicationLauncherItem>
+                            {Object.keys(extraItems).length > 0 && <ApplicationLauncherSeparator key="separator" />}
+                        </ApplicationLauncherGroup>,
+                        ...extraMenuItems,
+                    ]}
+                    data-quickstart-id="qs-masthead-appmenu"
+                    position="right"
+                    style={{ verticalAlign: '0.125em' }}
+                />
+            </TooltipWrapper>
         )
     }
 
@@ -572,13 +581,25 @@ function AppHeader() {
             >
                 <PageHeaderToolsItem>
                     <AppSwitcherTopBar></AppSwitcherTopBar>
-                    <Button
-                        aria-label="create-button"
-                        onClick={() => launchToOCP('k8s/all-namespaces/import', true)}
-                        variant="link"
-                        icon={<PlusCircleIcon style={{ color: '#EDEDED' }} />}
-                    />
-                    <AboutDropdown aboutClick={() => setAboutModalOpen(!aboutModalOpen)} />
+                    <TooltipWrapper
+                        showTooltip={true}
+                        tooltip={t('Add new resources')}
+                        tooltipPosition={'bottom' as TooltipPosition}
+                    >
+                        <Button
+                            aria-label="create-button"
+                            onClick={() => launchToOCP('k8s/all-namespaces/import', true)}
+                            variant="link"
+                            icon={<PlusCircleIcon style={{ color: '#EDEDED' }} />}
+                        />
+                    </TooltipWrapper>
+                    <TooltipWrapper
+                        showTooltip={true}
+                        tooltip={t('Help')}
+                        tooltipPosition={'bottom' as TooltipPosition}
+                    >
+                        <AboutDropdown aboutClick={() => setAboutModalOpen(!aboutModalOpen)} />
+                    </TooltipWrapper>
                     <AboutModal
                         isOpen={aboutModalOpen}
                         onClose={() => setAboutModalOpen(!aboutModalOpen)}
