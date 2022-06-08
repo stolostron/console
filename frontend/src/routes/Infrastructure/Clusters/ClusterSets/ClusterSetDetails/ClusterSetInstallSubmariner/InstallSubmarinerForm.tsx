@@ -50,7 +50,6 @@ import { NavigationPath } from '../../../../../../NavigationPath'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import schema from './schema.json'
 
-const submarinerBroker = 'submariner-broker'
 const installNamespace = 'submariner-operator'
 export function InstallSubmarinerFormPage() {
     const { t } = useTranslation()
@@ -379,12 +378,12 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             })
         }
 
-        if (anyUnsupported) {
+        if (anyUnsupported && !isGlobalnetAlreadyConfigured) {
             const broker: Broker = {
                 apiVersion: BrokerApiVersion,
                 kind: BrokerKind,
                 metadata: {
-                    name: submarinerBroker,
+                    name: defaultBrokerName,
                     namespace: clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
                 },
                 spec: {
@@ -397,7 +396,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 apiVersion: BrokerApiVersion,
                 kind: BrokerKind,
                 metadata: {
-                    name: submarinerBroker,
+                    name: defaultBrokerName,
                     namespace: clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
                 },
                 spec: {
