@@ -22,7 +22,6 @@ import {
     jobsState,
     namespacesState,
     placementRulesState,
-    podsState,
     statefulSetsState,
     subscriptionsState,
 } from '../../atoms'
@@ -196,17 +195,9 @@ export default function ApplicationsOverview() {
     const [daemonSets] = useRecoilState(daemonSetsState)
     const [deployments] = useRecoilState(deploymentsState)
     const [jobs] = useRecoilState(jobsState)
-    const [pods] = useRecoilState(podsState)
     const [statefulStates] = useRecoilState(statefulSetsState)
 
-    const applicationResources: IResource[] = [
-        ...cronJobs,
-        ...daemonSets,
-        ...deployments,
-        ...jobs,
-        ...pods,
-        ...statefulStates,
-    ]
+    const applicationResources: IResource[] = [...cronJobs, ...daemonSets, ...deployments, ...jobs, ...statefulStates]
 
     const ocpApplicationResources: IResource[] = useMemo(
         () =>
@@ -214,7 +205,7 @@ export default function ApplicationsOverview() {
                 const labels = item.metadata.labels
                 return labels && ('app' in labels || 'app.kubernetes.io/part-of' in labels)
             }),
-        [cronJobs, daemonSets, deployments, jobs, pods, statefulStates]
+        [cronJobs, daemonSets, deployments, jobs, statefulStates]
     )
 
     const fluxAppresources: IResource[] = useMemo(
@@ -227,7 +218,7 @@ export default function ApplicationsOverview() {
                     'kustomize.toolkit.fluxcd.io/namespace' in labels
                 )
             }),
-        [cronJobs, daemonSets, deployments, jobs, pods, statefulStates]
+        [cronJobs, daemonSets, deployments, jobs, statefulStates]
     )
 
     const allClusters = useAllClusters()

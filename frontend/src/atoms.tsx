@@ -128,9 +128,6 @@ import {
     PlacementRule,
     PlacementRuleApiVersion,
     PlacementRuleKind,
-    Pod,
-    PodApiVersion,
-    PodKind,
     Policy,
     PolicyApiVersion,
     PolicyAutomation,
@@ -221,7 +218,6 @@ export const placementBindingsState = AtomArray<PlacementBinding>()
 export const placementsState = AtomArray<Placement>()
 export const placementRulesState = AtomArray<PlacementRule>()
 export const placementDecisionsState = AtomArray<PlacementDecision>()
-export const podsState = AtomArray<Pod>()
 export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
 export const statefulSetsState = AtomArray<StatefulSet>()
@@ -301,7 +297,6 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setMultiClusterHubs] = useRecoilState(multiClusterHubState)
     const [, setNamespaces] = useRecoilState(namespacesState)
     const [, setNMStateConfigs] = useRecoilState(nmStateConfigsState)
-    const [, setPodsState] = useRecoilState(podsState)
     const [, setPoliciesState] = useRecoilState(policiesState)
     const [, setPolicyAutomationState] = useRecoilState(policyAutomationState)
     const [, setPolicySetsState] = useRecoilState(policySetsState)
@@ -372,7 +367,6 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
         addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
         addSetter(NMStateConfigApiVersion, NMStateConfigKind, setNMStateConfigs)
-        addSetter(PodApiVersion, PodKind, setPodsState)
         addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
         addSetter(PolicyAutomationApiVersion, PolicyAutomationKind, setPolicyAutomationState)
         addSetter(PolicySetApiVersion, PolicySetKind, setPolicySetsState)
@@ -427,7 +421,6 @@ export function LoadData(props: { children?: ReactNode }) {
         setPlacementDecisionsState,
         setPlacementRulesState,
         setPlacementsState,
-        setPodsState,
         setPoliciesState,
         setPolicyAutomationState,
         setPolicyReports,

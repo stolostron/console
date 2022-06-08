@@ -129,7 +129,6 @@ const definitions: IWatchOptions[] = [
     },
     { kind: 'DeploymentConfig', apiVersion: 'v1' },
     { kind: 'Namespace', apiVersion: 'v1' },
-    { kind: 'Pod', apiVersion: 'v1' },
     { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/credentials': '' } },
     // **Need to look for creds with: 'cluster.open-cluster-management.io/type': 'ans', for edit scenarios
     { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/type': 'ans' } },
