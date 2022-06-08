@@ -37,6 +37,8 @@ import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
 import { getInfraEnvNMStates, isBMPlatform } from '../utils'
 
+import './InfraEnvironmentDetailsPage.css'
+
 const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY, getAgentsHostsNames } = CIM
 
 type InfraEnvironmentDetailsPageProps = RouteComponentProps<{ namespace: string; name: string }>
