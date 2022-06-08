@@ -136,7 +136,7 @@ export default function WelcomePage() {
             <PageSection variant="default">
                 <AcmDynamicGrid minSize={600}>
                     {cards.map((card) => (
-                        <Link key={card.title} to={card.link} style={{ color: 'black', textDecoration: 'none' }}>
+                        <Link key={card.title} to={card.link} style={{ color: 'inherit', textDecoration: 'none' }}>
                             <Card
                                 isRounded
                                 isLarge
@@ -185,7 +185,7 @@ export default function WelcomePage() {
                                 key={card.title}
                                 href={card.link}
                                 target="_blank"
-                                style={{ color: 'black', textDecoration: 'none' }}
+                                style={{ color: 'inherit', textDecoration: 'none' }}
                             >
                                 <Card
                                     isRounded

@@ -61,6 +61,7 @@ import { getMCHVersion } from './lib/mchVersion'
 import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
 import { fetchGet, getBackendUrl } from './resources'
+import { ThemeSwitcher } from './theme'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -193,7 +194,7 @@ function AboutDropdown(props: AboutDropdownProps) {
             items={[<DocsButton key="docs" />, <AboutButton key="about_modal_button" />]}
             data-quickstart-id="qs-masthead-helpmenu"
             position="right"
-            toggleIcon={<QuestionCircleIcon style={{ color: '#EDEDED' }} />}
+            toggleIcon={<QuestionCircleIcon style={{ color: 'inherit' }} />}
         />
     )
 }
@@ -258,7 +259,6 @@ function UserDropdown() {
         <ApplicationLauncher
             aria-label="user-menu"
             data-test="user-dropdown"
-            className="co-app-launcher co-user-menu"
             onSelect={() => userSetOpen(false)}
             onToggle={() => userSetOpen(!userIsOpen)}
             isOpen={userIsOpen}
@@ -531,7 +531,6 @@ function AppHeader() {
                 hidden={appSwitcherExists}
                 aria-label="app-menu"
                 data-test="app-dropdown"
-                className="co-app-launcher co-app-menu"
                 onSelect={() => setAppSwitcherOpen(false)}
                 onToggle={() => setAppSwitcherOpen(!appSwitcherOpen)}
                 isOpen={appSwitcherOpen}
@@ -553,7 +552,7 @@ function AppHeader() {
                 ]}
                 data-quickstart-id="qs-masthead-appmenu"
                 position="right"
-                style={{ verticalAlign: '0.125em' }}
+                // style={{ verticalAlign: '0.125em' }}
             />
         )
     }
@@ -571,14 +570,24 @@ function AppHeader() {
                 }}
             >
                 <PageHeaderToolsItem>
-                    <AppSwitcherTopBar></AppSwitcherTopBar>
+                    <ThemeSwitcher style={{ marginRight: 16 }} />
+                </PageHeaderToolsItem>
+                <PageHeaderToolsItem>
+                    <AppSwitcherTopBar />
+                </PageHeaderToolsItem>
+                <PageHeaderToolsItem>
                     <Button
                         aria-label="create-button"
                         onClick={() => launchToOCP('k8s/all-namespaces/import', true)}
                         variant="link"
-                        icon={<PlusCircleIcon style={{ color: '#EDEDED' }} />}
+                        icon={<PlusCircleIcon />}
+                        style={{ color: 'inherit' }}
                     />
+                </PageHeaderToolsItem>
+                <PageHeaderToolsItem>
                     <AboutDropdown aboutClick={() => setAboutModalOpen(!aboutModalOpen)} />
+                </PageHeaderToolsItem>
+                <PageHeaderToolsItem>
                     <AboutModal
                         isOpen={aboutModalOpen}
                         onClose={() => setAboutModalOpen(!aboutModalOpen)}
@@ -670,12 +679,8 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                                         id="toggle-id"
                                         onToggle={onToggle}
                                         className={classes.perspective}
-                                        icon={
-                                            <span style={{ fill: 'currentColor' }}>
-                                                <ACMPerspectiveIcon />
-                                            </span>
-                                        }
-                                        style={{ fontSize: 'small' }}
+                                        icon={<ACMPerspectiveIcon />}
+                                        style={{ fontSize: 'small', backgroundColor: 'transparent' }}
                                     >
                                         Advanced Cluster Management
                                     </DropdownToggle>
