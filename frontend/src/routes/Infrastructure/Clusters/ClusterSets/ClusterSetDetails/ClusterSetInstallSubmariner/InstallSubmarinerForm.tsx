@@ -50,6 +50,7 @@ import { NavigationPath } from '../../../../../../NavigationPath'
 import { ClusterSetContext } from '../ClusterSetDetails'
 import schema from './schema.json'
 
+const installNamespace = 'submariner-operator'
 export function InstallSubmarinerFormPage() {
     const { t } = useTranslation()
     const history = useHistory()
@@ -262,7 +263,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         namespace: cluster?.namespace!,
                     },
                     spec: {
-                        installNamespace: 'submariner-operator',
+                        installNamespace,
                     },
                 })
 
@@ -337,7 +338,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                         namespace: cluster?.namespace!,
                     },
                     spec: {
-                        installNamespace: 'submariner-operator',
+                        installNamespace,
                     },
                 })
             }
@@ -353,7 +354,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                     namespace: '',
                 },
                 spec: {
-                    installNamespace: 'submariner-operator',
+                    installNamespace,
                 },
             })
             resources.push({
@@ -377,24 +378,13 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             })
         }
 
-        if (anyUnsupported) {
-            resources.push({
-                apiVersion: ManagedClusterAddOnApiVersion,
-                kind: ManagedClusterAddOnKind,
-                metadata: {
-                    name: 'submariner',
-                    namespace: 'roks-cluster',
-                },
-                spec: {
-                    installNamespace: 'submariner-operator',
-                },
-            })
+        if (anyUnsupported && !isGlobalnetAlreadyConfigured) {
             const broker: Broker = {
                 apiVersion: BrokerApiVersion,
                 kind: BrokerKind,
                 metadata: {
-                    name: 'submariner-broker',
-                    namespace: 'submariner-broker',
+                    name: defaultBrokerName,
+                    namespace: clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
                 },
                 spec: {
                     globalnetEnabled: false,
@@ -406,7 +396,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                 apiVersion: BrokerApiVersion,
                 kind: BrokerKind,
                 metadata: {
-                    name: 'submariner-broker',
+                    name: defaultBrokerName,
                     namespace: clusterSet?.metadata?.annotations?.[submarinerBrokerNamespaceAnnotation],
                 },
                 spec: {
