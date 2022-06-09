@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
+import {
+    ActionList,
+    ActionListItem,
+    Alert,
+    Bullseye,
+    ButtonVariant,
+    PageSection,
+    TextContent,
+} from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { AcmButton, AcmEmptyState, AcmPage, AcmPageContent, AcmPageHeader, AcmTable } from '@stolostron/ui-components'
 import { Fragment, useEffect, useState } from 'react'
@@ -37,6 +44,8 @@ export default function BareMetalAssetsPage() {
             header={
                 <AcmPageHeader
                     title={t('bmas')}
+                    label={t('deprecated')}
+                    labelColor="orange"
                     titleTooltip={
                         <>
                             {t('bmas.tooltip')}
@@ -55,6 +64,23 @@ export default function BareMetalAssetsPage() {
         >
             <AcmPageContent id="bare-metal-assets">
                 <PageSection>
+                    <Alert
+                        title={t('bareMetalAsset.warning.title')}
+                        variant="warning"
+                        actionLinks={
+                            <a
+                                href={DOC_LINKS.CREATE_CLUSTER_ON_PREMISE}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ paddingLeft: 0 }}
+                            >
+                                {t('Learn more')}
+                            </a>
+                        }
+                        isInline
+                    >
+                        {t('bareMetalAsset.warning.text')}
+                    </Alert>
                     <BareMetalAssetsTable bareMetalAssets={bareMetalAssets} deleteBareMetalAsset={deleteResource} />
                 </PageSection>
             </AcmPageContent>

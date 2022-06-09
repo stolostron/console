@@ -13,14 +13,14 @@ const kube = [
     'generation',
 ]
 
-const filter = (value, parentKey) => {
+const filter = (value: unknown) => {
     if (typeof value === 'object') {
-        return filterDeep(value, parentKey)
+        return filterDeep(value)
     }
     return value
 }
 
-export const isFiltered = (value, key, parentKey, parentObj) => {
+export const isFiltered = (key: string, parentObj: any) => {
     if (key === 'status' && parentObj && _.get(parentObj, 'type', '') === 'ManagedClusterConditionAvailable') {
         // for placement rule online option keep the status
         return false
@@ -31,11 +31,11 @@ export const isFiltered = (value, key, parentKey, parentObj) => {
     return false
 }
 
-const filterDeep = (obj, parentKey) => {
-    const newObj = {}
+const filterDeep = (obj: object | null) => {
+    const newObj: any = {}
     Object.entries(obj || {}).forEach(([k, v]) => {
-        const value = filter(v, k)
-        if (!isFiltered(value, k, parentKey, obj)) {
+        const value = filter(v)
+        if (!isFiltered(k, obj)) {
             if (k === 'apps.open-cluster-management.io/github-branch') {
                 k = 'apps.open-cluster-management.io/git-branch'
             }
@@ -48,7 +48,7 @@ const filterDeep = (obj, parentKey) => {
     return newObj
 }
 
-export const getApplicationResources = (application) => {
+export const getApplicationResources = (application: any) => {
     if (application) {
         const { app, subscriptions } = _.cloneDeep(application)
 

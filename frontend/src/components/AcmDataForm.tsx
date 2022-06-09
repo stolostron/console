@@ -259,7 +259,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                     >
                         <DrawerContentBody>
                             {mode === 'wizard' ? (
-                                <PageSection variant="light" isFilled type="wizard" style={{ height: '100%' }}>
+                                <PageSection isFilled type="wizard" style={{ height: '100%' }}>
                                     <AcmDataForm
                                         {...props}
                                         stateChanges={stateChanges}

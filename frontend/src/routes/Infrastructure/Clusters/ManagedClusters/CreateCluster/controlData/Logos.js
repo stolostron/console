@@ -4,7 +4,7 @@
 import React from 'react'
 
 export const RedHatLogo = () => (
-    <svg width="54px" height="40px" viewBox="0 0 54 40" version="1.1" role="presentation">
+    <svg width="54px" height="54px" viewBox="0 0 54 40" version="1.1" role="presentation">
         <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
             <g id="144_Create-Cluster" transform="translate(-129.000000, -361.000000)" fillRule="nonzero">
                 <g id="Group-23" transform="translate(74.000000, 299.000000)">
@@ -27,7 +27,7 @@ export const RedHatLogo = () => (
 )
 
 export const AwsLogo = () => (
-    <svg width="54px" height="40px" x="0px" y="0px" viewBox="0 0 304 182" xmlSpace="preserve" role="presentation">
+    <svg width="54px" height="54px" x="0px" y="0px" viewBox="0 0 304 182" xmlSpace="preserve" role="presentation">
         <g>
             <path
                 fill="#252F3E"
@@ -74,7 +74,7 @@ export const AwsLogo = () => (
 )
 
 export const GoogleLogo = () => (
-    <svg width="40px" height="33px" viewBox="0 0 40 33" role="presentation">
+    <svg width="54px" height="54px" viewBox="0 0 40 33" role="presentation">
         <title>Google Cloud Platform</title>
         <g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
             <g transform="translate(-338.000000, -204.000000)" fillRule="nonzero">
@@ -102,7 +102,7 @@ export const GoogleLogo = () => (
 )
 
 export const AzureLogo = () => (
-    <svg width="40px" height="32px" viewBox="0 0 40 32" role="presentation">
+    <svg width="54px" height="54px" viewBox="0 0 40 32" role="presentation">
         <g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
             <g transform="translate(-961.000000, -372.000000)" fill="#0089D6" fillRule="nonzero">
                 <g transform="translate(961.000000, 372.000000)">
@@ -114,7 +114,7 @@ export const AzureLogo = () => (
 )
 
 export const VMwareLogo = () => (
-    <svg width="38px" height="38px" viewBox="0 0 38 38" role="presentation">
+    <svg width="54px" height="54px" viewBox="0 0 38 38" role="presentation">
         <g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
             <g transform="translate(-422.000000, -1029.000000)">
                 <g transform="translate(71.000000, 573.000000)">
