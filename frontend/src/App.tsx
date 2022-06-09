@@ -583,7 +583,7 @@ function AppHeader() {
                     <AppSwitcherTopBar></AppSwitcherTopBar>
                     <TooltipWrapper
                         showTooltip={true}
-                        tooltip={t('Add new resources')}
+                        tooltip={t('Add new resource')}
                         tooltipPosition={'bottom' as TooltipPosition}
                     >
                         <Button
