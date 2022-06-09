@@ -187,7 +187,7 @@ function AboutDropdown(props: AboutDropdownProps) {
 
     return (
         <ApplicationLauncher
-            aria-label="about-menu"
+            aria-label={t('About dropdown')}
             data-test="about-dropdown"
             className="co-app-launcher co-about-menu"
             onSelect={() => aboutDDSetOpen(false)}
@@ -537,7 +537,7 @@ function AppHeader() {
             >
                 <ApplicationLauncher
                     hidden={appSwitcherExists}
-                    aria-label="app-menu"
+                    aria-label={t('Application menu')}
                     data-test="app-dropdown"
                     className="co-app-launcher co-app-menu"
                     onSelect={() => setAppSwitcherOpen(false)}
@@ -587,7 +587,7 @@ function AppHeader() {
                         tooltipPosition={'bottom' as TooltipPosition}
                     >
                         <Button
-                            aria-label="create-button"
+                            aria-label={t('Add new resource')}
                             onClick={() => launchToOCP('k8s/all-namespaces/import', true)}
                             variant="link"
                             icon={<PlusCircleIcon style={{ color: '#EDEDED' }} />}
