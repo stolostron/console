@@ -673,7 +673,11 @@ export default function PoliciesPage() {
     )
 
     if (tableItems.length === 0) {
-        return <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
+        return (
+            <PageSection isFilled>
+                <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
+            </PageSection>
+        )
     }
 
     return (

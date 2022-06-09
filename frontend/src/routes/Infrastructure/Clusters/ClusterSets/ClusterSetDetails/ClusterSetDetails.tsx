@@ -1,33 +1,32 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Page } from '@patternfly/react-core'
 import {
     AcmButton,
     AcmPage,
     AcmPageHeader,
     AcmPageProcess,
-    AcmRoute,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@stolostron/ui-components'
-import { Page } from '@patternfly/react-core'
-import { createContext, Fragment, Suspense, useContext, useEffect } from 'react'
-import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
+import { createContext, Fragment, Suspense, useContext } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
 import {
-    acmRouteState,
-    clusterPoolsState,
     clusterDeploymentsState,
+    clusterPoolsState,
     managedClusterAddonsState,
     managedClusterSetsState,
 } from '../../../../../atoms'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
+import { PluginContext } from '../../../../../lib/PluginContext'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
     Cluster,
-    ClusterPool,
     ClusterDeployment,
+    ClusterPool,
     ManagedClusterAddOn,
     ManagedClusterSet,
     ManagedClusterSetBinding,
@@ -44,7 +43,6 @@ import { InstallSubmarinerFormPage } from './ClusterSetInstallSubmariner/Install
 import { ClusterSetManageResourcesPage } from './ClusterSetManageResources/ClusterSetManageResources'
 import { ClusterSetOverviewPageContent } from './ClusterSetOverview/ClusterSetOverview'
 import { ClusterSetSubmarinerPageContent } from './ClusterSetSubmariner/ClusterSetSubmariner'
-import { PluginContext } from '../../../../../lib/PluginContext'
 
 export const ClusterSetContext = createContext<{
     readonly clusterSet: ManagedClusterSet | undefined
@@ -67,8 +65,6 @@ export default function ClusterSetDetailsPage({ match }: RouteComponentProps<{ i
     const history = useHistory()
     const { t } = useTranslation()
     const { isSubmarinerAvailable } = useContext(PluginContext)
-    const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
     const [managedClusterSets, managedClusterAddons] = useRecoilValue(
         waitForAll([managedClusterSetsState, managedClusterAddonsState])

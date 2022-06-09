@@ -2,26 +2,15 @@
 /* istanbul ignore file */
 
 import '@patternfly/react-core/dist/styles/base.css'
-import { AcmHeader, AcmRoute } from '@stolostron/ui-components'
-import { PageSection } from '@patternfly/react-core'
-import { StrictMode, Suspense } from 'react'
+import { Fragment, StrictMode, Suspense } from 'react'
 import ReactDOM from 'react-dom'
-import App from './App'
 import { RecoilRoot } from 'recoil'
-import { MemoryRouter } from 'react-router'
 import 'regenerator-runtime/runtime'
+import App from './App'
 
 ReactDOM.render(
     <StrictMode>
-        <Suspense
-            fallback={
-                <MemoryRouter>
-                    <AcmHeader route={AcmRoute.Clusters}>
-                        <PageSection variant="light" isFilled />
-                    </AcmHeader>
-                </MemoryRouter>
-            }
-        >
+        <Suspense fallback={<Fragment />}>
             <RecoilRoot>
                 <App />
             </RecoilRoot>

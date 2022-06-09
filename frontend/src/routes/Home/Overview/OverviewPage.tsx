@@ -15,7 +15,6 @@ import {
     AcmPage,
     AcmPageHeader,
     AcmRefreshTime,
-    AcmRoute,
     AcmScrollable,
     AcmSummaryList,
     Provider,
@@ -24,13 +23,7 @@ import _ from 'lodash'
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import {
-    acmRouteState,
-    applicationsState,
-    argoApplicationsState,
-    managedClustersState,
-    usePolicies,
-} from '../../../atoms'
+import { applicationsState, argoApplicationsState, managedClustersState, usePolicies } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { getProvider, Policy } from '../../../resources'
@@ -205,12 +198,10 @@ const PageActions = (props: { timestamp: string; reloading: boolean; refetch: ()
 
 export default function OverviewPage() {
     const { t } = useTranslation()
-    const [, setRoute] = useRecoilState(acmRouteState)
     const [managedClusters] = useRecoilState(managedClustersState)
     const policies = usePolicies()
     const [apps] = useRecoilState(applicationsState)
     const [argoApps] = useRecoilState(argoApplicationsState)
-    useEffect(() => setRoute(AcmRoute.Overview), [setRoute])
     const [clusters, setClusters] = useState<any[]>([])
     const [selectedCloud, setSelectedCloud] = useState<string>('')
     const [selectedClusterNames, setSelectedClusterNames] = useState<string[]>([])

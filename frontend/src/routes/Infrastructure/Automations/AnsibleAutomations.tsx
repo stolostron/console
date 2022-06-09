@@ -11,13 +11,12 @@ import {
     AcmPage,
     AcmPageContent,
     AcmPageHeader,
-    AcmRoute,
     AcmTable,
 } from '@stolostron/ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState, clusterCuratorsState, configMapsState, secretsState } from '../../../atoms'
+import { clusterCuratorsState, configMapsState, secretsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
@@ -35,10 +34,7 @@ import {
 } from '../../../resources'
 
 export default function AnsibleAutomationsPage() {
-    const [, setRoute] = useRecoilState(acmRouteState)
     const [configMaps] = useRecoilState(configMapsState)
-    useEffect(() => setRoute(AcmRoute.Automation), [setRoute])
-
     const alertContext = useContext(AcmAlertContext)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

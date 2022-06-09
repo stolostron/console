@@ -64,6 +64,7 @@ import { getMCHVersion } from './lib/mchVersion'
 import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
 import { fetchGet, getBackendUrl } from './resources'
+import { ThemeSwitcher } from './theme'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -160,9 +161,7 @@ function UserDropdownToggle() {
 
     return (
         <span className="pf-c-dropdown__toggle">
-            <span className="co-username" data-test="username">
-                {name}
-            </span>
+            <span data-test="username">{name}</span>
             <CaretDownIcon className="pf-c-dropdown__toggle-icon" />
         </span>
     )
@@ -189,14 +188,13 @@ function AboutDropdown(props: AboutDropdownProps) {
         <ApplicationLauncher
             aria-label={t('About dropdown')}
             data-test="about-dropdown"
-            className="co-app-launcher co-about-menu"
             onSelect={() => aboutDDSetOpen(false)}
             onToggle={() => aboutDDSetOpen(!aboutDDIsOpen)}
             isOpen={aboutDDIsOpen}
             items={[<DocsButton key="docs" />, <AboutButton key="about_modal_button" />]}
             data-quickstart-id="qs-masthead-helpmenu"
             position="right"
-            toggleIcon={<QuestionCircleIcon style={{ color: '#EDEDED' }} />}
+            toggleIcon={<QuestionCircleIcon />}
         />
     )
 }
@@ -261,7 +259,6 @@ function UserDropdown() {
         <ApplicationLauncher
             aria-label="user-menu"
             data-test="user-dropdown"
-            className="co-app-launcher co-user-menu"
             onSelect={() => userSetOpen(false)}
             onToggle={() => userSetOpen(!userIsOpen)}
             isOpen={userIsOpen}
@@ -530,40 +527,33 @@ function AppHeader() {
             count = count + 1
         }
         return (
-            <TooltipWrapper
-                showTooltip={true}
-                tooltip={t('Red Hat applications')}
-                tooltipPosition={'bottom' as TooltipPosition}
-            >
-                <ApplicationLauncher
-                    hidden={appSwitcherExists}
-                    aria-label={t('Application menu')}
-                    data-test="app-dropdown"
-                    className="co-app-launcher co-app-menu"
-                    onSelect={() => setAppSwitcherOpen(false)}
-                    onToggle={() => setAppSwitcherOpen(!appSwitcherOpen)}
-                    isOpen={appSwitcherOpen}
-                    items={[
-                        <ApplicationLauncherGroup label="Red Hat applications" key="ocp-group">
-                            <OCPButton />
-                            <ApplicationLauncherItem
-                                key="app_launch"
-                                isExternal
-                                icon={<AcmIcon icon={AcmIconVariant.redhat} />}
-                                component="button"
-                                onClick={() => window.open('https://console.redhat.com/openshift', '_blank')}
-                            >
-                                Openshift Cluster Manager
-                            </ApplicationLauncherItem>
-                            {Object.keys(extraItems).length > 0 && <ApplicationLauncherSeparator key="separator" />}
-                        </ApplicationLauncherGroup>,
-                        ...extraMenuItems,
-                    ]}
-                    data-quickstart-id="qs-masthead-appmenu"
-                    position="right"
-                    style={{ verticalAlign: '0.125em' }}
-                />
-            </TooltipWrapper>
+            <ApplicationLauncher
+                hidden={appSwitcherExists}
+                aria-label={t('Application menu')}
+                data-test="app-dropdown"
+                onSelect={() => setAppSwitcherOpen(false)}
+                onToggle={() => setAppSwitcherOpen(!appSwitcherOpen)}
+                isOpen={appSwitcherOpen}
+                items={[
+                    <ApplicationLauncherGroup label="Red Hat applications" key="ocp-group">
+                        <OCPButton />
+                        <ApplicationLauncherItem
+                            key="app_launch"
+                            isExternal
+                            icon={<AcmIcon icon={AcmIconVariant.redhat} />}
+                            component="button"
+                            onClick={() => window.open('https://console.redhat.com/openshift', '_blank')}
+                        >
+                            Openshift Cluster Manager
+                        </ApplicationLauncherItem>
+                        {Object.keys(extraItems).length > 0 && <ApplicationLauncherSeparator key="separator" />}
+                    </ApplicationLauncherGroup>,
+                    ...extraMenuItems,
+                ]}
+                data-quickstart-id="qs-masthead-appmenu"
+                position="right"
+                // style={{ verticalAlign: '0.125em' }}
+            />
         )
     }
 
@@ -579,27 +569,24 @@ function AppHeader() {
                     lg: 'visible',
                 }}
             >
+                {process.env.NODE_ENV === 'development' && (
+                    <PageHeaderToolsItem>
+                        <ThemeSwitcher />
+                    </PageHeaderToolsItem>
+                )}
                 <PageHeaderToolsItem>
-                    <AppSwitcherTopBar></AppSwitcherTopBar>
-                    <TooltipWrapper
-                        showTooltip={true}
-                        tooltip={t('Add new resource')}
-                        tooltipPosition={'bottom' as TooltipPosition}
-                    >
-                        <Button
-                            aria-label={t('Add new resource')}
-                            onClick={() => launchToOCP('k8s/all-namespaces/import', true)}
-                            variant="link"
-                            icon={<PlusCircleIcon style={{ color: '#EDEDED' }} />}
-                        />
-                    </TooltipWrapper>
-                    <TooltipWrapper
-                        showTooltip={true}
-                        tooltip={t('Help')}
-                        tooltipPosition={'bottom' as TooltipPosition}
-                    >
-                        <AboutDropdown aboutClick={() => setAboutModalOpen(!aboutModalOpen)} />
-                    </TooltipWrapper>
+                    <AppSwitcherTopBar />
+                </PageHeaderToolsItem>
+                <PageHeaderToolsItem>
+                    <Button
+                        aria-label={t('Add new resource')}
+                        onClick={() => launchToOCP('k8s/all-namespaces/import', true)}
+                        variant="plain"
+                        icon={<PlusCircleIcon />}
+                    />
+                </PageHeaderToolsItem>
+                <PageHeaderToolsItem>
+                    <AboutDropdown aboutClick={() => setAboutModalOpen(!aboutModalOpen)} />
                     <AboutModal
                         isOpen={aboutModalOpen}
                         onClose={() => setAboutModalOpen(!aboutModalOpen)}
@@ -691,12 +678,8 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                                         id="toggle-id"
                                         onToggle={onToggle}
                                         className={classes.perspective}
-                                        icon={
-                                            <span style={{ fill: 'currentColor' }}>
-                                                <ACMPerspectiveIcon />
-                                            </span>
-                                        }
-                                        style={{ fontSize: 'small' }}
+                                        icon={<ACMPerspectiveIcon />}
+                                        style={{ fontSize: 'small', backgroundColor: 'transparent' }}
                                     >
                                         Advanced Cluster Management
                                     </DropdownToggle>
