@@ -45,12 +45,9 @@ export function ThemeSwitcher(props: { style?: CSSProperties }) {
                 toggleTheme()
                 setLight(!document.documentElement.classList.contains('pf-theme-dark'))
             }}
-            variant="primary"
-            // variant="plain"
+            variant="plain"
             icon={light ? <SunIcon /> : <MoonIcon />}
-            style={{ ...props.style, minWidth: 100 }}
-        >
-            {light ? <span style={{ paddingLeft: 6 }}>Light</span> : <span style={{ paddingLeft: 6 }}>Dark</span>}
-        </Button>
+            style={{ ...props.style }}
+        />
     )
 }

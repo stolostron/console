@@ -158,9 +158,7 @@ function UserDropdownToggle() {
 
     return (
         <span className="pf-c-dropdown__toggle">
-            <span className="co-username" data-test="username">
-                {name}
-            </span>
+            <span data-test="username">{name}</span>
             <CaretDownIcon className="pf-c-dropdown__toggle-icon" />
         </span>
     )
@@ -187,14 +185,13 @@ function AboutDropdown(props: AboutDropdownProps) {
         <ApplicationLauncher
             aria-label="about-menu"
             data-test="about-dropdown"
-            className="co-app-launcher co-about-menu"
             onSelect={() => aboutDDSetOpen(false)}
             onToggle={() => aboutDDSetOpen(!aboutDDIsOpen)}
             isOpen={aboutDDIsOpen}
             items={[<DocsButton key="docs" />, <AboutButton key="about_modal_button" />]}
             data-quickstart-id="qs-masthead-helpmenu"
             position="right"
-            toggleIcon={<QuestionCircleIcon style={{ color: 'inherit' }} />}
+            toggleIcon={<QuestionCircleIcon />}
         />
     )
 }
@@ -569,9 +566,11 @@ function AppHeader() {
                     lg: 'visible',
                 }}
             >
-                <PageHeaderToolsItem>
-                    <ThemeSwitcher style={{ marginRight: 16 }} />
-                </PageHeaderToolsItem>
+                {process.env.NODE_ENV === 'development' && (
+                    <PageHeaderToolsItem>
+                        <ThemeSwitcher />
+                    </PageHeaderToolsItem>
+                )}
                 <PageHeaderToolsItem>
                     <AppSwitcherTopBar />
                 </PageHeaderToolsItem>
@@ -579,15 +578,12 @@ function AppHeader() {
                     <Button
                         aria-label="create-button"
                         onClick={() => launchToOCP('k8s/all-namespaces/import', true)}
-                        variant="link"
+                        variant="plain"
                         icon={<PlusCircleIcon />}
-                        style={{ color: 'inherit' }}
                     />
                 </PageHeaderToolsItem>
                 <PageHeaderToolsItem>
                     <AboutDropdown aboutClick={() => setAboutModalOpen(!aboutModalOpen)} />
-                </PageHeaderToolsItem>
-                <PageHeaderToolsItem>
                     <AboutModal
                         isOpen={aboutModalOpen}
                         onClose={() => setAboutModalOpen(!aboutModalOpen)}
