@@ -27,7 +27,6 @@ import {
     TextList,
     TextListItem,
     Title,
-    TooltipPosition,
     Truncate,
 } from '@patternfly/react-core'
 import {
@@ -46,7 +45,6 @@ import {
     AcmToastGroup,
     AcmToastProvider,
 } from '@stolostron/ui-components'
-import { TooltipWrapper } from '@stolostron/ui-components/lib/utils'
 import { t } from 'i18next'
 import { noop } from 'lodash'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
