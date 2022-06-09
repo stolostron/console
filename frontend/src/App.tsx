@@ -45,6 +45,7 @@ import {
     AcmToastGroup,
     AcmToastProvider,
 } from '@stolostron/ui-components'
+import { t } from 'i18next'
 import { noop } from 'lodash'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
@@ -183,7 +184,7 @@ function AboutDropdown(props: AboutDropdownProps) {
 
     return (
         <ApplicationLauncher
-            aria-label="about-menu"
+            aria-label={t('About dropdown')}
             data-test="about-dropdown"
             onSelect={() => aboutDDSetOpen(false)}
             onToggle={() => aboutDDSetOpen(!aboutDDIsOpen)}
@@ -526,7 +527,7 @@ function AppHeader() {
         return (
             <ApplicationLauncher
                 hidden={appSwitcherExists}
-                aria-label="app-menu"
+                aria-label={t('Application menu')}
                 data-test="app-dropdown"
                 onSelect={() => setAppSwitcherOpen(false)}
                 onToggle={() => setAppSwitcherOpen(!appSwitcherOpen)}
@@ -576,7 +577,7 @@ function AppHeader() {
                 </PageHeaderToolsItem>
                 <PageHeaderToolsItem>
                     <Button
-                        aria-label="create-button"
+                        aria-label={t('Add new resource')}
                         onClick={() => launchToOCP('k8s/all-namespaces/import', true)}
                         variant="plain"
                         icon={<PlusCircleIcon />}
