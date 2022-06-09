@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 
 import '@patternfly/react-core/dist/styles/base.css'
-import { StrictMode } from 'react'
+import { Fragment, StrictMode, Suspense } from 'react'
 import ReactDOM from 'react-dom'
 import { RecoilRoot } from 'recoil'
 import 'regenerator-runtime/runtime'
@@ -10,9 +10,11 @@ import App from './App'
 
 ReactDOM.render(
     <StrictMode>
-        <RecoilRoot>
-            <App />
-        </RecoilRoot>
+        <Suspense fallback={<Fragment />}>
+            <RecoilRoot>
+                <App />
+            </RecoilRoot>
+        </Suspense>
     </StrictMode>,
     document.getElementById('root')
 )

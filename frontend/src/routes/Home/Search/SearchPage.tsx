@@ -3,6 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { ApolloError } from '@apollo/client'
 import { makeStyles } from '@material-ui/styles'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import {
     AcmActionGroup,
     AcmAlert,
@@ -11,16 +12,13 @@ import {
     AcmIcon,
     AcmIconVariant,
     AcmPage,
-    AcmRoute,
     AcmScrollable,
     AcmSearchbar,
 } from '@stolostron/ui-components'
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import _ from 'lodash'
 import React, { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { useRecoilState } from 'recoil'
-import { acmRouteState } from '../../../atoms'
+import { NavigationPath } from '../../../NavigationPath'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
@@ -36,7 +34,6 @@ import {
     useSearchSchemaQuery,
 } from './search-sdk/search-sdk'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
-import { NavigationPath } from '../../../NavigationPath'
 
 const operators = ['=', '<', '>', '<=', '>=', '!=', '!']
 
@@ -242,8 +239,6 @@ function RenderDropDownAndNewTab(props: {
 }
 
 export default function SearchPage() {
-    const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.Search), [setRoute])
     // Only using setCurrentQuery to trigger a re-render
     // useEffect using window.location to trigger re-render doesn't work cause react hooks can't use window
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

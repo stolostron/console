@@ -3,18 +3,9 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { makeStyles } from '@material-ui/styles'
-import {
-    AcmButton,
-    AcmPage,
-    AcmPageHeader,
-    AcmRoute,
-    AcmSecondaryNav,
-    AcmSecondaryNavItem,
-} from '@stolostron/ui-components'
+import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 import { useEffect, useState } from 'react'
 import { Link, Route, Switch, useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { acmRouteState } from '../../../../atoms'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../resources/managedclusterview'
@@ -63,11 +54,9 @@ function getResourceData() {
 
 export default function DetailsPage() {
     const { t } = useTranslation()
-    const [, setRoute] = useRecoilState(acmRouteState)
     const [resource, setResource] = useState<any>(undefined)
     const [containers, setContainers] = useState<string[]>()
     const [resourceError, setResourceError] = useState('')
-    useEffect(() => setRoute(AcmRoute.Resources), [setRoute])
     const { cluster, kind, apiversion, namespace, name } = getResourceData()
     let resourceUrlParams = ''
     resourceUrlParams = `${resourceUrlParams}${cluster !== '' ? `cluster=${cluster}` : ''}`

@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmRoute } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
@@ -99,8 +98,8 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
-    NMStateConfigKind,
     NMStateConfigApiVersion,
+    NMStateConfigKind,
     Placement,
     PlacementApiVersionAlpha,
     PlacementBinding,
@@ -150,7 +149,6 @@ function AtomArray<T>() {
 // throttle events delay
 export const THROTTLE_EVENTS_DELAY = 500
 
-export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const discoveredApplicationsState = AtomArray<ArgoApplication>()
 
 export const agentClusterInstallsState = AtomArray<CIM.AgentClusterInstallK8sResource>()

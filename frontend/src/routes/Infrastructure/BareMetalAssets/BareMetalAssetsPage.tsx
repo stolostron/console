@@ -1,5 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+    ActionList,
+    ActionListItem,
+    Alert,
+    Bullseye,
+    ButtonVariant,
+    PageSection,
+    TextContent,
+} from '@patternfly/react-core'
+import { fitContent } from '@patternfly/react-table'
+import { AcmButton, AcmEmptyState, AcmPage, AcmPageContent, AcmPageHeader, AcmTable } from '@stolostron/ui-components'
+import { Fragment, useEffect, useState } from 'react'
+import { Link, useHistory } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+import { bareMetalAssetsState } from '../../../atoms'
+import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
+import { RbacDropdown } from '../../../components/Rbac'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
+import { importBMAs } from '../../../lib/bare-metal-assets'
+import { deleteResources } from '../../../lib/delete-resources'
+import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
+import { canUser, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
+import { NavigationPath } from '../../../NavigationPath'
+import {
     BareMetalAsset,
     BareMetalAssetConditionReasons,
     BareMetalAssetConditionTypes,
@@ -10,42 +33,8 @@ import {
     IRequestResult,
     ManagedClusterDefinition,
 } from '../../../resources'
-import {
-    AcmButton,
-    AcmEmptyState,
-    AcmPage,
-    AcmPageContent,
-    AcmPageHeader,
-    AcmRoute,
-    AcmTable,
-} from '@stolostron/ui-components'
-import {
-    ActionList,
-    ActionListItem,
-    Alert,
-    Bullseye,
-    ButtonVariant,
-    PageSection,
-    TextContent,
-} from '@patternfly/react-core'
-import { fitContent } from '@patternfly/react-table'
-import { Fragment, useEffect, useState } from 'react'
-import { Trans, useTranslation } from '../../../lib/acm-i18next'
-import { Link, useHistory } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { acmRouteState, bareMetalAssetsState } from '../../../atoms'
-import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
-import { RbacDropdown } from '../../../components/Rbac'
-import { importBMAs } from '../../../lib/bare-metal-assets'
-import { deleteResources } from '../../../lib/delete-resources'
-import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
-import { canUser, rbacDelete, rbacPatch } from '../../../lib/rbac-util'
-import { NavigationPath } from '../../../NavigationPath'
 
 export default function BareMetalAssetsPage() {
-    const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.BareMetalAssets), [setRoute])
-
     const [bareMetalAssets] = useRecoilState(bareMetalAssetsState)
     const { t } = useTranslation()
 
