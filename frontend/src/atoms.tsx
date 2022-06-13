@@ -90,6 +90,9 @@ import {
     Job,
     JobApiVersion,
     JobKind,
+    Kustomization,
+    KustomizationApiVersion,
+    KustomizationKind,
     MachinePool,
     MachinePoolApiVersion,
     MachinePoolKind,
@@ -203,6 +206,7 @@ export const helmReleaseState = AtomArray<HelmRelease>()
 export const infraEnvironmentsState = AtomArray<CIM.InfraEnvK8sResource>()
 export const infrastructuresState = AtomArray<CIM.InfrastructureK8sResource>()
 export const jobsState = AtomArray<Job>()
+export const kustomizationsState = AtomArray<Kustomization>()
 export const machinePoolsState = AtomArray<MachinePool>()
 export const managedClusterAddonsState = AtomArray<ManagedClusterAddOn>()
 export const managedClusterInfosState = AtomArray<ManagedClusterInfo>()
@@ -289,6 +293,7 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setInfraEnvironments] = useRecoilState(infraEnvironmentsState)
     const [, setInfrastructure] = useRecoilState(infrastructuresState)
     const [, setJobsState] = useRecoilState(jobsState)
+    const [, setKustomizationsState] = useRecoilState(kustomizationsState)
     const [, setMachinePools] = useRecoilState(machinePoolsState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
@@ -359,6 +364,7 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(InfraEnvApiVersion, InfraEnvKind, setInfraEnvironments)
         addSetter(InfrastructureApiVersion, InfrastructureKind, setInfrastructure)
         addSetter(JobApiVersion, JobKind, setJobsState)
+        addSetter(KustomizationApiVersion, KustomizationKind, setKustomizationsState)
         addSetter(MachinePoolApiVersion, MachinePoolKind, setMachinePools)
         addSetter(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons)
         addSetter(ManagedClusterApiVersion, ManagedClusterKind, setManagedClusters)
@@ -409,6 +415,7 @@ export function LoadData(props: { children?: ReactNode }) {
         setInfraEnvironments,
         setInfrastructure,
         setJobsState,
+        setKustomizationsState,
         setMachinePools,
         setManagedClusterAddons,
         setManagedClusterInfos,

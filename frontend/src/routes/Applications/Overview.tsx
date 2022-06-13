@@ -31,6 +31,7 @@ import {
     discoveredApplicationsState,
     discoveredOCPAppResourcesState,
     jobsState,
+    kustomizationsState,
     namespacesState,
     placementRulesState,
     statefulSetsState,
@@ -56,6 +57,7 @@ import {
     DiscoveredArgoApplicationDefinition,
     getApiVersionResourceGroup,
     IResource,
+    KustomizationApiVersion,
     OCPAppResource,
     Subscription,
 } from '../../resources'
@@ -96,8 +98,12 @@ function getApplicationType(resource: IResource, t: TFunction) {
         if (resource.kind === ArgoApplicationKind) {
             return t('Discovered')
         } else if (resource.kind === ApplicationSetKind) {
-            return 'ApplicationSet'
+            return t('ApplicationSet')
         }
+    } else if (['apps/v1', 'batch/v1', 'v1'].includes(resource.apiVersion)) {
+        return t('Openshift')
+    } else if (resource.apiVersion === KustomizationApiVersion) {
+        return t('Flux')
     }
     return '-'
 }
@@ -234,6 +240,7 @@ export default function ApplicationsOverview() {
     }, [])
 
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
+    const [kustomizations] = useRecoilState(kustomizationsState)
 
     const applicationResources: IResource[] = [
         ...cronJobs,
@@ -255,15 +262,15 @@ export default function ApplicationsOverview() {
 
     const fluxAppresources: IResource[] = useMemo(
         () =>
-            applicationResources.filter((item: any) => {
+            kustomizations.filter((item: any) => {
                 const labels = item.metadata.labels
                 return (
                     labels &&
-                    'kustomize.toolkit.fluxcd.io/name ' in labels &&
+                    'kustomize.toolkit.fluxcd.io/name' in labels &&
                     'kustomize.toolkit.fluxcd.io/namespace' in labels
                 )
             }),
-        [cronJobs, daemonSets, deployments, deploymentConfigs, jobs, statefulSets]
+        [kustomizations]
     )
 
     const allClusters = useAllClusters()

@@ -25,7 +25,6 @@ import {
     SubscriptionKind,
     ApplicationSetDefinition,
     ApplicationDefinition,
-    DeploymentApiVersion,
     DeploymentDefinition,
     JobDefinition,
     CronJobDefinition,
