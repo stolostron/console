@@ -22,6 +22,7 @@ i18n
         backend: {
             loadPath: '/multicloud/locales/{{lng}}/{{ns}}.json',
         },
+        compatibilityJSON: 'v3',
         fallbackLng: ['en'], // if language is not supported or string is missing, fallback to English
         keySeparator: false, // this repo will use single level json
         interpolation: {
