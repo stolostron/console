@@ -163,10 +163,10 @@ export function AnsibleAutomationsForm(props: {
         if (!isOperatorInstalled)
             return (
                 <div>
-                    {'The Ansible Automation Platform Resource Operator is required to create an Ansible job. '}
+                    {t('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')}
                     {openShiftConsoleUrl && openShiftConsoleUrl !== '' ? (
                         <div>
-                            {'Install the Operator through the following link: '}
+                            {t('Install the Operator through the following link: ')}
                             <Button
                                 isInline
                                 variant={ButtonVariant.link}
@@ -182,7 +182,7 @@ export function AnsibleAutomationsForm(props: {
                             </Button>
                         </div>
                     ) : (
-                        'Install the Operator through operator hub.'
+                        t('Install the Operator through operator hub.')
                     )}
                 </div>
             )

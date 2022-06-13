@@ -184,7 +184,6 @@ describe('add ansible job template page', () => {
     })
 
     it('should render warning when Ansible operator is not installed', async () => {
-        // mockSubscriptionOperator
         render(<AddAnsibleTemplateTest />)
         waitForText('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')
     })
