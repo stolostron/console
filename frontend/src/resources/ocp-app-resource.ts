@@ -19,12 +19,6 @@ export type OCPAppResourceApiVersionType = 'apps/v1' | 'batch/v1' | 'v1'
 export const OCPAppResourceKind =
     CronJobKind || DaemonSetKind || DeploymentKind || DeploymentConfigKind || JobKind || StatefulSetKind
 export type OCPAppResourceKindType = 'cronjob' | 'daemonSet' | 'deployment' | 'deploymentconfig' | 'job' | 'statefulset'
-
-export const OCPAppResourceDefinition: IResourceDefinition = {
-    apiVersion: OCPAppResourceApiVersion,
-    kind: OCPAppResourceKind,
-}
-
 export interface OCPAppResource extends IResource {
     apiVersion: OCPAppResourceApiVersionType
     kind: OCPAppResourceKindType

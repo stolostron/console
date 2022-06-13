@@ -54,14 +54,25 @@ import {
     ArgoApplicationKind,
     Channel,
     CronJobApiVersion,
+    CronJobDefinition,
     CronJobKind,
+    DaemonSetDefinition,
+    DaemonSetKind,
+    DeploymentConfigDefinition,
+    DeploymentConfigKind,
     DeploymentDefinition,
+    DeploymentKind,
     DiscoveredArgoApplicationDefinition,
     getApiVersionResourceGroup,
     IResource,
+    JobDefinition,
+    JobKind,
     KustomizationApiVersion,
+    KustomizationDefinition,
     KustomizationKind,
     OCPAppResource,
+    StatefulSetDefinition,
+    StatefulSetKind,
     Subscription,
 } from '../../resources'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -260,7 +271,7 @@ export default function ApplicationsOverview() {
                 const labels = item.metadata.labels
                 return labels && ('app' in labels || 'app.kubernetes.io/part-of' in labels)
             }),
-        [cronJobs, daemonSets, deployments, jobs, statefulSets]
+        [cronJobs, daemonSets, deployments, deploymentConfigs, jobs, statefulSets]
     )
 
     const fluxAppresources: IResource[] = useMemo(
@@ -752,7 +763,16 @@ export default function ApplicationsOverview() {
                 },
             })
 
-            if (isResourceTypeOf(resource, DeploymentDefinition)) {
+            if (
+                isResourceTypeOf(resource, [
+                    CronJobDefinition,
+                    DaemonSetDefinition,
+                    DeploymentDefinition,
+                    DeploymentConfigDefinition,
+                    JobDefinition,
+                    StatefulSetDefinition,
+                ])
+            ) {
                 actions.push({
                     id: 'viewApplication',
                     title: t('View application'),
@@ -762,7 +782,44 @@ export default function ApplicationsOverview() {
                                 .replace(':namespace', resource.metadata?.namespace as string)
                                 .replace(':name', resource.metadata?.name as string) +
                                 '?' +
-                                `apiVersion=${resource.apiVersion}`
+                                'apiVersion=ocp&cluster=local-cluster'
+                        )
+                    },
+                })
+            }
+
+            if (isResourceTypeOf(resource, KustomizationDefinition)) {
+                actions.push({
+                    id: 'viewApplication',
+                    title: t('View application'),
+                    click: () => {
+                        history.push(
+                            NavigationPath.applicationOverview
+                                .replace(':namespace', resource.metadata?.namespace as string)
+                                .replace(':name', resource.metadata?.name as string) +
+                                '?' +
+                                // TBD
+                                'apiVersion=flux&cluster=local-cluster'
+                        )
+                    },
+                })
+            }
+
+            if (
+                [CronJobKind, DaemonSetKind, DeploymentKind, DeploymentConfigKind, JobKind, StatefulSetKind]
+                    .map((kind) => kind.toLowerCase())
+                    .includes(resource.kind)
+            ) {
+                actions.push({
+                    id: 'viewApplication',
+                    title: t('View application'),
+                    click: () => {
+                        history.push(
+                            NavigationPath.applicationOverview
+                                .replace(':namespace', resource.metadata?.namespace as string)
+                                .replace(':name', resource.metadata?.name as string) +
+                                '?' +
+                                `apiVersion=ocp&cluster=${resource.status.cluster}`
                         )
                     },
                 })
