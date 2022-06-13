@@ -26,6 +26,7 @@ import {
     channelsState,
     cronJobsState,
     daemonSetsState,
+    deploymentConfigsState,
     deploymentsState,
     discoveredApplicationsState,
     discoveredOCPAppResourcesState,
@@ -55,6 +56,7 @@ import {
     DiscoveredArgoApplicationDefinition,
     getApiVersionResourceGroup,
     IResource,
+    OCPAppResource,
     Subscription,
 } from '../../resources'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -81,6 +83,8 @@ import { isLocalSubscription } from './helpers/subscriptions'
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
 const localClusterStr = 'local-cluster'
+
+type IApplicationResource = IResource | OCPAppResource
 
 // Map resource kind to type column
 function getApplicationType(resource: IResource, t: TFunction) {
@@ -204,8 +208,9 @@ export default function ApplicationsOverview() {
     const [cronJobs] = useRecoilState(cronJobsState)
     const [daemonSets] = useRecoilState(daemonSetsState)
     const [deployments] = useRecoilState(deploymentsState)
+    const [deploymentConfigs] = useRecoilState(deploymentConfigsState)
     const [jobs] = useRecoilState(jobsState)
-    const [statefulStates] = useRecoilState(statefulSetsState)
+    const [statefulSets] = useRecoilState(statefulSetsState)
 
     const { data, loading, startPolling } = useQuery(queryRemoteOCPAppResources)
     useEffect(startPolling, [startPolling])
@@ -230,7 +235,14 @@ export default function ApplicationsOverview() {
 
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
 
-    const applicationResources: IResource[] = [...cronJobs, ...daemonSets, ...deployments, ...jobs, ...statefulStates]
+    const applicationResources: IResource[] = [
+        ...cronJobs,
+        ...daemonSets,
+        ...deployments,
+        ...deploymentConfigs,
+        ...jobs,
+        ...statefulSets,
+    ]
 
     const ocpApplicationResources: IResource[] = useMemo(
         () =>
@@ -238,7 +250,7 @@ export default function ApplicationsOverview() {
                 const labels = item.metadata.labels
                 return labels && ('app' in labels || 'app.kubernetes.io/part-of' in labels)
             }),
-        [cronJobs, daemonSets, deployments, jobs, statefulStates]
+        [cronJobs, daemonSets, deployments, jobs, statefulSets]
     )
 
     const fluxAppresources: IResource[] = useMemo(
@@ -251,7 +263,7 @@ export default function ApplicationsOverview() {
                     'kustomize.toolkit.fluxcd.io/namespace' in labels
                 )
             }),
-        [cronJobs, daemonSets, deployments, jobs, statefulStates]
+        [cronJobs, daemonSets, deployments, deploymentConfigs, jobs, statefulSets]
     )
 
     const allClusters = useAllClusters()
@@ -432,7 +444,10 @@ export default function ApplicationsOverview() {
                         namespace: remoteOCPApp.namespace,
                         creationTimestamp: remoteOCPApp.created,
                     },
-                })
+                    status: {
+                        cluster: remoteOCPApp.cluster,
+                    },
+                } as OCPAppResource)
             )
     }, [discoveredOCPAppResources, generateTransformData])
 
@@ -461,7 +476,7 @@ export default function ApplicationsOverview() {
         (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
         []
     )
-    const columns = useMemo<IAcmTableColumn<IResource>[]>(
+    const columns = useMemo<IAcmTableColumn<IApplicationResource>[]>(
         () => [
             {
                 header: t('Name'),
@@ -474,7 +489,7 @@ export default function ApplicationsOverview() {
                         application.apiVersion === ArgoApplicationApiVersion &&
                         application.kind === ArgoApplicationKind
                     ) {
-                        const cluster = _.get(application, 'status.cluster')
+                        const cluster = application?.status?.cluster
                         clusterQuery = cluster ? `&cluster=${cluster}` : ''
                     }
                     return (

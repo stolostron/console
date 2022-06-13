@@ -25,11 +25,22 @@ import {
     SubscriptionKind,
     ApplicationSetDefinition,
     ApplicationDefinition,
+    DeploymentApiVersion,
+    DeploymentDefinition,
+    JobDefinition,
+    CronJobDefinition,
+    DeploymentKind,
+    StatefulSetKind,
+    DeploymentConfigKind,
+    JobKind,
+    CronJobKind,
+    DaemonSetKind,
+    DeploymentConfigDefinition,
+    DaemonSetDefinition,
+    StatefulSetDefinition,
 } from '../../../resources'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
-import { getAnnotation } from '../Overview'
-
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
 const localClusterStr = 'local-cluster'
 const appSetPlacementStr =
@@ -41,8 +52,18 @@ export function isArgoApp(item: IResource) {
     return item.apiVersion === ArgoApplicationApiVersion && item.kind === ArgoApplicationKind
 }
 
-export function isResourceTypeOf(resource: IResource, resourceType: IResourceDefinition) {
-    return resource.apiVersion === resourceType.apiVersion && resource.kind === resourceType.kind
+export function isResourceTypeOf(resource: IResource, resourceType: IResourceDefinition | IResourceDefinition[]) {
+    if (Array.isArray(resourceType)) {
+        let isTypeOf = false
+        resourceType.forEach((rt) => {
+            if (rt.apiVersion === resource.apiVersion && rt.kind === resource.kind) {
+                isTypeOf = true
+            }
+        })
+        return isTypeOf
+    } else {
+        return resource.apiVersion === resourceType.apiVersion && resource.kind === resourceType.kind
+    }
 }
 
 export function getSubscriptionsFromAnnotation(app: IResource) {
@@ -130,6 +151,22 @@ export const getClusterList = (
     localCluster: Cluster | undefined,
     managedClusters: Cluster[]
 ) => {
+    const ocpAppResourceKinds = [
+        CronJobKind,
+        DaemonSetKind,
+        DeploymentKind,
+        DeploymentConfigKind,
+        JobKind,
+        StatefulSetKind,
+    ].map((kind) => kind.toLowerCase())
+    if (ocpAppResourceKinds.includes(resource.kind)) {
+        const clusterSet = new Set<string>()
+        if (resource.status.cluster) {
+            clusterSet.add(resource.status.cluster)
+        }
+        return Array.from(clusterSet)
+    }
+
     if (isResourceTypeOf(resource, ArgoApplicationDefinition)) {
         return getArgoClusterList([resource as ArgoApplication], localCluster, managedClusters)
     } else if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
@@ -143,7 +180,21 @@ export const getClusterList = (
         )
     } else if (isResourceTypeOf(resource, ApplicationDefinition)) {
         return getSubscriptionsClusterList(resource as Application, placementRules, subscriptions)
+    } else if (
+        isResourceTypeOf(resource, [
+            CronJobDefinition,
+            DaemonSetDefinition,
+            DeploymentDefinition,
+            DeploymentConfigDefinition,
+            JobDefinition,
+            StatefulSetDefinition,
+        ])
+    ) {
+        const clusterSet = new Set<string>()
+        clusterSet.add(localClusterStr)
+        return Array.from(clusterSet)
     }
+
     return [] as string[]
 }
 
