@@ -464,7 +464,7 @@ export const proxyControlData = [
         type: 'values',
         name: 'No proxy',
         disabled: true,
-        tip: 'Add comma separated sites to bypass the proxy. By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs.',
+        tip: 'noProxyTip',
     },
     {
         id: 'additionalTrustBundle',
