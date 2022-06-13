@@ -177,7 +177,7 @@ export function AnsibleAutomationsForm(props: {
                                     )
                                 }
                             >
-                                {'Operator'}
+                                OperatorHub
                                 <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
                             </Button>
                         </div>
