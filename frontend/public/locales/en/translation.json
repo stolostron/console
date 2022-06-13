@@ -46,7 +46,7 @@
     "add": "Add",
     "Add": "Add",
     "Add another time range": "Add another time range",
-    "noProxyTip": "Add comma separated sites to bypass the proxy. Note that the Hub API Server address must be included here. By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs.",
+    "noProxyTip": "Add a comma-separated list of sites that bypass the proxy. The hub API server address must be included in this list. By default, all cluster egress traffic is sent through the proxy, including calls to hosting and cloud provider APIs.",
     "Add credential": "Add credential",
     "Add host": "Add host",
     "Add to policy set": "Add to policy set",
