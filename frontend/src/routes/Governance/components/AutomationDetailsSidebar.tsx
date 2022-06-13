@@ -26,7 +26,15 @@ import { ansibleJobState, configMapsState, secretsState, subscriptionOperatorsSt
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { AnsibleJob, deleteResource, Policy, PolicyAutomation, Secret, SubscriptionOperator } from '../../../resources'
+import {
+    AnsibleJob,
+    deleteResource,
+    isAnsibleOperatorInstalled,
+    Policy,
+    PolicyAutomation,
+    Secret,
+    SubscriptionOperator,
+} from '../../../resources'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../useGovernanceData'
 
@@ -63,16 +71,10 @@ export function AutomationDetailsSidebar(props: {
         open: false,
     })
 
-    const isOperatorInstalled = useMemo(() => {
-        const ansibleOp = subscriptionOperators.filter((op: SubscriptionOperator) => {
-            const conditions = op.status?.conditions[0]
-            return (
-                op.metadata.name === 'ansible-automation-platform-operator' &&
-                conditions?.reason === 'AllCatalogSourcesHealthy'
-            )
-        })
-        return ansibleOp.length > 0
-    }, [subscriptionOperators])
+    const isOperatorInstalled = useMemo(
+        () => isAnsibleOperatorInstalled(subscriptionOperators),
+        [subscriptionOperators]
+    )
 
     const credential = useMemo(
         () =>
