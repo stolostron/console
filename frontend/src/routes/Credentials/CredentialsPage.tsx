@@ -8,17 +8,16 @@ import {
     AcmPage,
     AcmPageContent,
     AcmPageHeader,
-    AcmRoute,
     AcmTable,
     compareStrings,
     Provider,
     ProviderLongTextMap,
 } from '@stolostron/ui-components'
 import moment from 'moment'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState, discoveryConfigState, secretsState } from '../../atoms'
+import { discoveryConfigState, secretsState } from '../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../components/BulkActionModel'
 import { RbacDropdown } from '../../components/Rbac'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
@@ -40,8 +39,7 @@ export default function CredentialsPage() {
 
     const providerConnections = secrets.map(unpackProviderConnection)
     const [discoveryConfigs] = useRecoilState(discoveryConfigState)
-    const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.Credentials), [setRoute])
+
     return (
         <AcmPage header={<AcmPageHeader title={t('Credentials')} />}>
             <AcmPageContent id="credentials">

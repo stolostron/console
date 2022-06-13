@@ -45,6 +45,7 @@ import {
     AcmToastGroup,
     AcmToastProvider,
 } from '@stolostron/ui-components'
+import { t } from 'i18next'
 import { noop } from 'lodash'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'
@@ -61,6 +62,7 @@ import { getMCHVersion } from './lib/mchVersion'
 import { getUsername } from './lib/username'
 import { NavigationPath } from './NavigationPath'
 import { fetchGet, getBackendUrl } from './resources'
+import { ThemeSwitcher } from './theme'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -157,9 +159,7 @@ function UserDropdownToggle() {
 
     return (
         <span className="pf-c-dropdown__toggle">
-            <span className="co-username" data-test="username">
-                {name}
-            </span>
+            <span data-test="username">{name}</span>
             <CaretDownIcon className="pf-c-dropdown__toggle-icon" />
         </span>
     )
@@ -184,16 +184,15 @@ function AboutDropdown(props: AboutDropdownProps) {
 
     return (
         <ApplicationLauncher
-            aria-label="about-menu"
+            aria-label={t('About dropdown')}
             data-test="about-dropdown"
-            className="co-app-launcher co-about-menu"
             onSelect={() => aboutDDSetOpen(false)}
             onToggle={() => aboutDDSetOpen(!aboutDDIsOpen)}
             isOpen={aboutDDIsOpen}
             items={[<DocsButton key="docs" />, <AboutButton key="about_modal_button" />]}
             data-quickstart-id="qs-masthead-helpmenu"
             position="right"
-            toggleIcon={<QuestionCircleIcon style={{ color: '#EDEDED' }} />}
+            toggleIcon={<QuestionCircleIcon />}
         />
     )
 }
@@ -258,7 +257,6 @@ function UserDropdown() {
         <ApplicationLauncher
             aria-label="user-menu"
             data-test="user-dropdown"
-            className="co-app-launcher co-user-menu"
             onSelect={() => userSetOpen(false)}
             onToggle={() => userSetOpen(!userIsOpen)}
             isOpen={userIsOpen}
@@ -529,9 +527,8 @@ function AppHeader() {
         return (
             <ApplicationLauncher
                 hidden={appSwitcherExists}
-                aria-label="app-menu"
+                aria-label={t('Application menu')}
                 data-test="app-dropdown"
-                className="co-app-launcher co-app-menu"
                 onSelect={() => setAppSwitcherOpen(false)}
                 onToggle={() => setAppSwitcherOpen(!appSwitcherOpen)}
                 isOpen={appSwitcherOpen}
@@ -553,7 +550,7 @@ function AppHeader() {
                 ]}
                 data-quickstart-id="qs-masthead-appmenu"
                 position="right"
-                style={{ verticalAlign: '0.125em' }}
+                // style={{ verticalAlign: '0.125em' }}
             />
         )
     }
@@ -570,14 +567,23 @@ function AppHeader() {
                     lg: 'visible',
                 }}
             >
+                {process.env.NODE_ENV === 'development' && (
+                    <PageHeaderToolsItem>
+                        <ThemeSwitcher />
+                    </PageHeaderToolsItem>
+                )}
                 <PageHeaderToolsItem>
-                    <AppSwitcherTopBar></AppSwitcherTopBar>
+                    <AppSwitcherTopBar />
+                </PageHeaderToolsItem>
+                <PageHeaderToolsItem>
                     <Button
-                        aria-label="create-button"
+                        aria-label={t('Add new resource')}
                         onClick={() => launchToOCP('k8s/all-namespaces/import', true)}
-                        variant="link"
-                        icon={<PlusCircleIcon style={{ color: '#EDEDED' }} />}
+                        variant="plain"
+                        icon={<PlusCircleIcon />}
                     />
+                </PageHeaderToolsItem>
+                <PageHeaderToolsItem>
                     <AboutDropdown aboutClick={() => setAboutModalOpen(!aboutModalOpen)} />
                     <AboutModal
                         isOpen={aboutModalOpen}
@@ -670,12 +676,8 @@ function AppSidebar(props: { routes: (IRoute | IRouteGroup)[] }) {
                                         id="toggle-id"
                                         onToggle={onToggle}
                                         className={classes.perspective}
-                                        icon={
-                                            <span style={{ fill: 'currentColor' }}>
-                                                <ACMPerspectiveIcon />
-                                            </span>
-                                        }
-                                        style={{ fontSize: 'small' }}
+                                        icon={<ACMPerspectiveIcon />}
+                                        style={{ fontSize: 'small', backgroundColor: 'transparent' }}
                                     >
                                         Advanced Cluster Management
                                     </DropdownToggle>

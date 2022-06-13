@@ -205,7 +205,6 @@ export class ClusterSelector extends React.Component {
                                     <AcmTextInput
                                         id={`labelName-${id}-${controlId}`}
                                         className="text-input"
-                                        style={{ backgroundColor: '#f0f0f0' }}
                                         label={id === 0 ? i18n('clusterSelector.label.field.ui') : ''}
                                         value={labelName === '' ? '' : labelName}
                                         placeholder={i18n('clusterSelector.label.placeholder.field')}
