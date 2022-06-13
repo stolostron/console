@@ -1,10 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageHeader, AcmRoute, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 import { createContext, ElementType, Fragment, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { acmRouteState } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -40,8 +38,6 @@ export function ClustersPage() {
     const location = useLocation()
     const { t } = useTranslation()
 
-    const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
     return (
         <AcmPage
             hasDrawer

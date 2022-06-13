@@ -1,23 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Page } from '@patternfly/react-core'
-import {
-    AcmButton,
-    AcmPage,
-    AcmPageHeader,
-    AcmRoute,
-    AcmSecondaryNav,
-    AcmSecondaryNavItem,
-} from '@stolostron/ui-components'
+import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 import { isMatch } from 'lodash'
 import { CIM } from 'openshift-assisted-ui-lib'
-import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
+import { Fragment, Suspense, useMemo, useState } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-
+import { useRecoilValue, waitForAll } from 'recoil'
 import {
-    acmRouteState,
-    agentsState,
     agentClusterInstallsState,
+    agentsState,
     bareMetalHostsState,
     configMapsState,
     infrastructuresState,
@@ -33,9 +24,9 @@ import {
     getOnSaveISOParams,
     useInfraEnv,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
+import { getInfraEnvNMStates, isBMPlatform } from '../utils'
 import DetailsTab from './DetailsTab'
 import HostsTab from './HostsTab'
-import { getInfraEnvNMStates, isBMPlatform } from '../utils'
 
 const { AddHostModal, InfraEnvHostsTabAgentsWarning, INFRAENV_AGENTINSTALL_LABEL_KEY, getAgentsHostsNames } = CIM
 
@@ -45,8 +36,6 @@ const InfraEnvironmentDetailsPage: React.FC<InfraEnvironmentDetailsPageProps> = 
     const { t } = useTranslation()
     const history = useHistory()
     const location = useLocation()
-    const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.InfraEnvironments), [setRoute])
     const [isoModalOpen, setISOModalOpen] = useState(false)
 
     const [agentClusterInstalls, agents, bareMetalHosts, configMaps, infrastructures, nmStateConfigs] = useRecoilValue(

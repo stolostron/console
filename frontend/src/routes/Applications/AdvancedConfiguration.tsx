@@ -650,20 +650,8 @@ export default function AdvancedConfiguration() {
     function TerminologyCard(props: { title: string; description: string }) {
         return (
             <Card isPlain isCompact>
-                <CardTitle
-                    style={{
-                        color: '#5a6872',
-                        fontSize: '16px',
-                        lineHeight: '18px',
-                        fontWeight: 600,
-                        marginBottom: '10px',
-                    }}
-                >
-                    {props.title}
-                </CardTitle>
-                <CardBody style={{ color: '#5a6872', fontSize: '12px', lineHeight: '20px' }}>
-                    {props.description}
-                </CardBody>
+                <CardTitle>{props.title}</CardTitle>
+                <CardBody>{props.description}</CardBody>
             </Card>
         )
     }
@@ -707,7 +695,6 @@ export default function AdvancedConfiguration() {
                             textAlign: 'right',
                             display: 'inline-block',
                             width: '100%',
-                            padding: '1.5rem 1rem 0',
                         }}
                     >
                         <TextContent>{viewDocumentation(DOC_LINKS.MANAGE_APPLICATIONS, t)}</TextContent>
