@@ -33,7 +33,6 @@ import {
     Policy,
     PolicyAutomation,
     Secret,
-    SubscriptionOperator,
 } from '../../../resources'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../useGovernanceData'
