@@ -37,6 +37,7 @@ import {
     DeploymentConfigDefinition,
     DaemonSetDefinition,
     StatefulSetDefinition,
+    KustomizationDefinition,
 } from '../../../resources'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
@@ -150,6 +151,7 @@ export const getClusterList = (
     localCluster: Cluster | undefined,
     managedClusters: Cluster[]
 ) => {
+    // managed resources using search to fetch
     const ocpAppResourceKinds = [
         CronJobKind,
         DaemonSetKind,
@@ -187,7 +189,8 @@ export const getClusterList = (
             DeploymentConfigDefinition,
             JobDefinition,
             StatefulSetDefinition,
-        ])
+        ]) ||
+        isResourceTypeOf(resource, KustomizationDefinition)
     ) {
         const clusterSet = new Set<string>()
         clusterSet.add(localClusterStr)

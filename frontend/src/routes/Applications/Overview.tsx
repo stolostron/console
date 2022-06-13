@@ -53,11 +53,14 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
+    CronJobApiVersion,
+    CronJobKind,
     DeploymentDefinition,
     DiscoveredArgoApplicationDefinition,
     getApiVersionResourceGroup,
     IResource,
     KustomizationApiVersion,
+    KustomizationKind,
     OCPAppResource,
     Subscription,
 } from '../../resources'
@@ -637,6 +640,15 @@ export default function ApplicationsOverview() {
                     {
                         label: t('Application Set'),
                         value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
+                    },
+                    {
+                        label: t('Flux'),
+                        value: `${getApiVersionResourceGroup(KustomizationApiVersion)}/${KustomizationKind}`,
+                    },
+                    // TBD
+                    {
+                        label: t('Openshift'),
+                        value: `${getApiVersionResourceGroup(CronJobApiVersion)}/${CronJobKind}`,
                     },
                 ],
                 tableFilterFn: (selectedValues: string[], item: IResource) => {
