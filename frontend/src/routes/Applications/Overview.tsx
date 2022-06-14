@@ -12,7 +12,6 @@ import {
     IAcmTableColumn,
 } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
-import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
@@ -235,6 +234,7 @@ export default function ApplicationsOverview() {
     const { data, loading, startPolling } = useQuery(queryRemoteOCPAppResources)
     useEffect(startPolling, [startPolling])
     const [timedOut, setTimedOut] = useState<boolean>()
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, setDiscoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
 
     useEffect(() => {
@@ -271,7 +271,7 @@ export default function ApplicationsOverview() {
                 const labels = item.metadata.labels
                 return labels && ('app' in labels || 'app.kubernetes.io/part-of' in labels)
             }),
-        [cronJobs, daemonSets, deployments, deploymentConfigs, jobs, statefulSets]
+        [applicationResources]
     )
 
     const fluxAppresources: IResource[] = useMemo(
@@ -752,6 +752,7 @@ export default function ApplicationsOverview() {
                 title: t('Search application'),
                 click: () => {
                     const [apigroup, apiversion] = resource.apiVersion.split('/')
+                    const { cluster } = resource.status
                     const searchLink = getSearchLink({
                         properties: {
                             name: resource.metadata?.name,
@@ -759,6 +760,7 @@ export default function ApplicationsOverview() {
                             kind: resource.kind.toLowerCase(),
                             apigroup,
                             apiversion,
+                            cluster: cluster ? cluster : 'local-cluster',
                         },
                     })
                     history.push(searchLink)

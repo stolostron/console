@@ -41,6 +41,7 @@ import {
 } from '../../../resources'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
+import { getAnnotation } from '../Overview'
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
 const localClusterStr = 'local-cluster'
 const appSetPlacementStr =

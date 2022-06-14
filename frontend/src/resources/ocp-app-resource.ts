@@ -5,7 +5,7 @@ import { DeploymentApiVersion, DeploymentKind } from './deployment'
 import { DeploymentConfigApiVersion, DeploymentConfigKind } from './deployment-config'
 import { JobApiVersion, JobKind } from './job'
 import { Metadata } from './metadata'
-import { IResource, IResourceDefinition } from './resource'
+import { IResource } from './resource'
 import { StatefulSetApiVersion, StatefulSetKind } from './stateful-set'
 
 export const OCPAppResourceApiVersion =
