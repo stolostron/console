@@ -35,7 +35,6 @@ module.exports = function (_env: any, argv: { hot?: boolean; mode: string | unde
         },
         module: {
             rules: [
-                { test: /\.s[ac]ss$/i, use: ['style-loader', 'css-loader', 'sass-loader'] },
                 { test: /\.(hbs|yaml)$/, type: 'asset/source' },
                 {
                     type: 'asset',
