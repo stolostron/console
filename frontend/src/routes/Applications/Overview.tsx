@@ -458,7 +458,9 @@ export default function ApplicationsOverview() {
             })
             .map((remoteOCPApp: any) =>
                 generateTransformData({
-                    apiVersion: remoteOCPApp.apiversion,
+                    apiVersion: remoteOCPApp.apigroup
+                        ? remoteOCPApp.apigroup + '/' + remoteOCPApp.apiversion
+                        : remoteOCPApp.apiversion,
                     kind: remoteOCPApp.kind,
                     metadata: {
                         name: remoteOCPApp.name,
