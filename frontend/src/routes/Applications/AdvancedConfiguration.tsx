@@ -34,7 +34,7 @@ import {
     ChannelDefinition,
     ChannelKind,
     IResource,
-    PlacementApiVersionAlpha,
+    PlacementApiVersionBeta,
     PlacementDefinition,
     PlacementKind,
     PlacementRuleApiVersion,
@@ -556,7 +556,7 @@ export default function AdvancedConfiguration() {
                             return editLink({
                                 resource,
                                 kind: 'Placement',
-                                apiversion: PlacementApiVersionAlpha,
+                                apiversion: PlacementApiVersionBeta,
                             })
                         },
                         sort: 'metadata.name',

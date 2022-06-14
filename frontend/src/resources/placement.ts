@@ -13,7 +13,7 @@ export const PlacementKind = 'Placement'
 export type PlacementKindType = 'Placement'
 
 export const PlacementDefinition: IResourceDefinition = {
-    apiVersion: PlacementApiVersionAlpha,
+    apiVersion: PlacementApiVersionBeta,
     kind: PlacementKind,
 }
 
