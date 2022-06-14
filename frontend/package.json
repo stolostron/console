@@ -32,6 +32,8 @@
         "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup"
     },
     "dependencies": {
+        "node-sass": "^4.14.1",
+        "sass-loader": "^12.1.0",
         "@apollo/client": "3.5.10",
         "@babel/runtime": "7.17.9",
         "@kubernetes/client-node": "0.16.3",
