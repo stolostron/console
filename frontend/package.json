@@ -170,7 +170,7 @@
         "stream-browserify": "3.0.0",
         "style-loader": "3.3.1",
         "swr": "1.3.0",
-        "temptifly": "^0.5.16",
+        "temptifly": "^0.5.17",
         "ts-import-plugin": "2.0.0",
         "ts-jest": "27.1.4",
         "ts-loader": "9.3.0",
