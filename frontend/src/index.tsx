@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom'
 import { RecoilRoot } from 'recoil'
 import 'regenerator-runtime/runtime'
 import App from './App'
+import '@patternfly/patternfly/patternfly-charts-theme-dark.css'
 
 ReactDOM.render(
     <StrictMode>
