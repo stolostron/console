@@ -437,6 +437,7 @@ export function LoadData(props: { children?: ReactNode }) {
 
         const socket = io()
         socket.on('connect', () => {
+            console.debug('websocket', 'connect')
             socket.on('ADDED', (resource: IResource) => {
                 eventQueue.push({ type: 'ADDED', object: resource as any })
             })
@@ -444,7 +445,6 @@ export function LoadData(props: { children?: ReactNode }) {
                 eventQueue.push({ type: 'MODIFIED', object: resource as any })
                 if (resource.kind === ConfigMapKind && resource.metadata?.name === 'console-config') {
                     setSettings((resource as ConfigMap).data as Settings)
-                    console.log(resource)
                 }
             })
             socket.on('DELETED', (resource: IResource) => {
@@ -454,12 +454,21 @@ export function LoadData(props: { children?: ReactNode }) {
                 setLoading(false)
             })
         })
-        // socket.on('error', () => {
-        //     console.log('error') // undefined
-        // })
-        // socket.on('disconnect', () => {
-        //     console.log(socket.id) // undefined
-        // })
+        socket.on('error', () => {
+            console.debug('websocket', 'error')
+        })
+        socket.on('reconnect', () => {
+            console.debug('websocket', 'reconnect')
+        })
+        socket.on('disconnect', () => {
+            console.debug('websocket', 'disconnect')
+            setLoading(true)
+            for (const setter of Object.values(setters)) {
+                for (const set of Object.values(setter)) {
+                    set([])
+                }
+            }
+        })
 
         const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
         return () => {
