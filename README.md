@@ -11,15 +11,7 @@
 
 ## What is console?
 
-The console provides a user interface for cluster related items such as:
-
-- Credentials management (For example, Cloud Providers)
-- Cluster management
-  - Creating
-  - Importing
-  - Upgrading
-  - Detaching
-  - Destroying
+The console provides the user interface for Red Hat Advanced Cluster Management (ACM) for Kubernetes and Red Hat MultiCluster Engine (MCE).
 
 Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
