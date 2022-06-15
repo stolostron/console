@@ -25,7 +25,7 @@ All data is stored in memory.
 All calls from the frontend to work with resources should use the resource utility functions. i.e. `createResource()`.
 The frontend should use PatternFly components without modifying the look and feel of the controls using CSS.
 
-The frontend has two builds. One for the stand alone version and one for the dynamic plugin version that is dynamically loading into the OCP Console.
+The frontend has two builds. One for the stand alone version and one for the dynamic plugin version that is dynamically loaded into the OCP Console.
 
 ## Console Backend
 
