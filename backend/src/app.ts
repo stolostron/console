@@ -3,7 +3,6 @@
 /* istanbul ignore file */
 import Router from 'find-my-way'
 import { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { loadSettings, stopSettingsWatch } from './lib/config'
 import { cors } from './lib/cors'
 import { delay } from './lib/delay'
 import { logger, stopLogger } from './lib/logger'
@@ -76,7 +75,6 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
 }
 
 export function start(): Promise<Http2Server | undefined> {
-    loadSettings()
     startWatching()
     return startServer({ requestHandler })
 }
@@ -88,7 +86,6 @@ export async function stop(): Promise<void> {
             process.exit(1)
         }, 0.5 * 1000).unref()
     }
-    stopSettingsWatch()
     stopWatching()
     await stopServer()
     stopLogger()

@@ -507,36 +507,6 @@ function matchesSelector(resource: IResource, selector?: Record<string, string>)
     return true
 }
 
-function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideEventData>): Promise<boolean> {
-    switch (serverSideEvent.data?.type) {
-        case 'START':
-        case 'LOADED':
-        case 'SETTINGS':
-            return Promise.resolve(true)
-
-        case 'DELETED':
-            // TODO - Security issue: Only send delete events to clients who can access that item
-            // - Problem is if the namespace goes away, access check will fail
-            // - Need to track what is sent to client and only send if they previously accessed this event
-            return Promise.resolve(true)
-        case 'ADDED':
-        case 'MODIFIED': {
-            const watchEvent = serverSideEvent.data
-            const resource = watchEvent.object
-            return canListClusterScopedKind(resource, token).then((allowed) => {
-                if (allowed) return true
-                return canListNamespacedScopedKind(resource, token).then((allowed) => {
-                    if (allowed) return true
-                    return canGetResource(resource, token)
-                })
-            })
-        }
-        default:
-            logger.warn({ msg: 'unhandled server side event data type', serverSideEvent })
-            return Promise.resolve(false)
-    }
-}
-
 export function canAccessResource(resource: IResource, token: string): Promise<boolean> {
     return canListClusterScopedKind(resource, token).then((allowed) => {
         if (allowed) return true
