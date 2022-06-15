@@ -474,7 +474,6 @@ export function LoadData(props: { children?: ReactNode }) {
         return () => {
             clearInterval(timeout)
             socket.disconnect()
-            // if (evtSource) evtSource.close()
         }
     }, [setSettings, setters])
 
