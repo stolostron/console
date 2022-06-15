@@ -225,13 +225,6 @@ interface WatchEvent {
     }
 }
 
-export interface SettingsEvent {
-    type: 'SETTINGS'
-    settings: Record<string, string>
-}
-
-type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
-
 export function LoadData(props: { children?: ReactNode }) {
     const [loading, setLoading] = useState(true)
     const [, setAgentClusterInstalls] = useRecoilState(agentClusterInstallsState)
@@ -442,74 +435,31 @@ export function LoadData(props: { children?: ReactNode }) {
             }
         }
 
-        // function processMessage(event: MessageEvent) {
-        //     if (event.data) {
-        //         try {
-        //             const data = JSON.parse(event.data) as ServerSideEventData
-        //             switch (data.type) {
-        //                 case 'ADDED':
-        //                 case 'MODIFIED':
-        //                 case 'DELETED':
-        //                     eventQueue.push(data)
-        //                     break
-        //                 case 'START':
-        //                     eventQueue.length = 0
-        //                     break
-        //                 case 'LOADED':
-        //                     setLoading((loading) => {
-        //                         if (loading) {
-        //                             processEventQueue()
-        //                         }
-        //                         return false
-        //                     })
-        //                     break
-        //                 case 'SETTINGS':
-        //                     setSettings(data.settings)
-        //                     break
-        //             }
-        //         } catch (err) {
-        //             console.error(err)
-        //         }
-        //     }
-        // }
-
-        // let evtSource: EventSource | undefined
-        // function startWatch() {
-        //     evtSource = new EventSource(`${getBackendUrl()}/events`, { withCredentials: true })
-        //     evtSource.onmessage = processMessage
-        //     evtSource.onerror = function () {
-        //         console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
-        //         switch (evtSource?.readyState) {
-        //             case EventSource.CLOSED:
-        //                 setTimeout(() => {
-        //                     startWatch()
-        //                 }, 1000)
-        //                 break
-        //         }
-        //     }
-        // }
-        // startWatch()
-
         const socket = io()
         socket.on('connect', () => {
-            console.log(socket.id)
-            setLoading(false)
             socket.on('ADDED', (resource: IResource) => {
                 eventQueue.push({ type: 'ADDED', object: resource as any })
             })
             socket.on('MODIFIED', (resource: IResource) => {
                 eventQueue.push({ type: 'MODIFIED', object: resource as any })
+                if (resource.kind === ConfigMapKind && resource.metadata?.name === 'console-config') {
+                    setSettings((resource as ConfigMap).data as Settings)
+                    console.log(resource)
+                }
             })
             socket.on('DELETED', (resource: IResource) => {
                 eventQueue.push({ type: 'DELETED', object: resource as any })
             })
+            socket.on('LOADED', () => {
+                setLoading(false)
+            })
         })
-        socket.on('error', () => {
-            console.log('error') // undefined
-        })
-        socket.on('disconnect', () => {
-            console.log(socket.id) // undefined
-        })
+        // socket.on('error', () => {
+        //     console.log('error') // undefined
+        // })
+        // socket.on('disconnect', () => {
+        //     console.log(socket.id) // undefined
+        // })
 
         const timeout = setInterval(processEventQueue, THROTTLE_EVENTS_DELAY)
         return () => {

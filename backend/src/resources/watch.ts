@@ -4,43 +4,33 @@
 import eventStream from 'event-stream'
 import get from 'get-value'
 import got, { CancelError, HTTPError, TimeoutError } from 'got'
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import pluralize from 'pluralize'
 import { Stream } from 'stream'
 import { promisify } from 'util'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
-import { unauthorized } from '../lib/respond'
 import { io } from '../lib/server'
-import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
-import { getToken } from '../lib/token'
-import { IResource } from '../resources/resource'
-import { getServiceAccountToken } from './liveness'
+import { getServiceAccountToken } from '../routes/liveness'
+import { broadcast } from './clients'
+import { IResource } from './resource'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
 
-export function events(req: Http2ServerRequest, res: Http2ServerResponse): void {
-    const token = getToken(req)
-    if (!token) return unauthorized(req, res)
-    ServerSideEvents.handleRequest(token, req, res)
-}
+// export function events(req: Http2ServerRequest, res: Http2ServerResponse): void {
+//     const token = getToken(req)
+//     if (!token) return unauthorized(req, res)
+//     ServerSideEvents.handleRequest(token, req, res)
+// }
 
 interface WatchEvent {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'ERROR'
     object: IResource
 }
 
-export interface SettingsEvent {
-    type: 'SETTINGS'
-    settings: Record<string, string>
-}
-
-type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
-
 let requests: { cancel: () => void }[] = []
 
-const resourceCache: {
+export const resourceCache: {
     [apiVersionKind: string]: {
         [uid: string]: {
             resource: IResource
@@ -116,7 +106,14 @@ const definitions: IWatchOptions[] = [
     {
         kind: 'ConfigMap',
         apiVersion: 'v1',
+        // TODO what is not in open-cluster-management?
         fieldSelector: { 'metadata.namespace': 'open-cluster-management', 'metadata.name': 'assisted-service' },
+    },
+    {
+        kind: 'ConfigMap',
+        apiVersion: 'v1',
+        // TODO what is not in open-cluster-management?
+        fieldSelector: { 'metadata.namespace': 'open-cluster-management', 'metadata.name': 'console-config' },
     },
     {
         kind: 'ConfigMap',
@@ -130,8 +127,6 @@ const definitions: IWatchOptions[] = [
 ]
 
 export function startWatching(): void {
-    ServerSideEvents.eventFilter = eventFilter
-
     for (const definition of definitions) {
         void listAndWatch(definition)
     }
@@ -467,11 +462,13 @@ function cacheResource(resource: IResource) {
     if (existing) {
         if (existing.resource.metadata.resourceVersion === resource.metadata.resourceVersion)
             return resource.metadata.resourceVersion
-        ServerSideEvents.removeEvent(existing.eventID)
+        // ServerSideEvents.removeEvent(existing.eventID)
     }
 
-    const eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
-    cache[uid] = { resource, eventID }
+    // const eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
+    cache[uid] = { resource, eventID: 0 }
+
+    broadcast('MODIFIED', resource)
 }
 
 function deleteResource(resource: IResource) {
@@ -481,19 +478,21 @@ function deleteResource(resource: IResource) {
 
     const uid = resource.metadata.uid
 
-    const existing = cache[uid]
-    if (existing) ServerSideEvents.removeEvent(existing.eventID)
+    // const existing = cache[uid]
+    // if (existing) ServerSideEvents.removeEvent(existing.eventID)
 
-    ServerSideEvents.pushEvent({
-        data: {
-            type: 'DELETED',
-            object: {
-                kind: resource.kind,
-                apiVersion: resource.apiVersion,
-                metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
-            },
-        },
-    })
+    // ServerSideEvents.pushEvent({
+    //     data: {
+    //         type: 'DELETED',
+    //         object: {
+    //             kind: resource.kind,
+    //             apiVersion: resource.apiVersion,
+    //             metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
+    //         },
+    //     },
+    // })
+
+    broadcast('DELETED', resource)
 
     delete cache[uid]
 }
@@ -538,11 +537,21 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
     }
 }
 
-function canListClusterScopedKind(resource: IResource, token: string): Promise<boolean> {
+export function canAccessResource(resource: IResource, token: string): Promise<boolean> {
+    return canListClusterScopedKind(resource, token).then((allowed) => {
+        if (allowed) return true
+        return canListNamespacedScopedKind(resource, token).then((allowed) => {
+            if (allowed) return true
+            return canGetResource(resource, token)
+        })
+    })
+}
+
+export function canListClusterScopedKind(resource: IResource, token: string): Promise<boolean> {
     return canAccess({ kind: resource.kind, apiVersion: resource.apiVersion }, 'list', token)
 }
 
-function canListNamespacedScopedKind(resource: IResource, token: string): Promise<boolean> {
+export function canListNamespacedScopedKind(resource: IResource, token: string): Promise<boolean> {
     if (!resource.metadata?.namespace) return Promise.resolve(false)
     return canAccess(
         {
@@ -555,7 +564,7 @@ function canListNamespacedScopedKind(resource: IResource, token: string): Promis
     )
 }
 
-function canGetResource(resource: IResource, token: string): Promise<boolean> {
+export function canGetResource(resource: IResource, token: string): Promise<boolean> {
     return canAccess(resource, 'get', token)
 }
 

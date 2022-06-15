@@ -1,16 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest } from 'http2'
+import { constants, Http2ServerRequest, IncomingHttpHeaders } from 'http2'
 import { Agent } from 'https'
-import { parseCookies } from '../lib/cookies'
+import { parseCookiesFromHeaders } from '../lib/cookies'
 import { fetchRetry } from '../lib/fetch-retry'
 
 const { HTTP2_HEADER_AUTHORIZATION } = constants
 const agent = new Agent({ rejectUnauthorized: false })
 
 export function getToken(req: Http2ServerRequest): string | undefined {
-    let token = parseCookies(req)['acm-access-token-cookie']
+    return getTokenFromHeaders(req.headers)
+}
+
+export function getTokenFromHeaders(headers: IncomingHttpHeaders): string | undefined {
+    let token = parseCookiesFromHeaders(headers)['acm-access-token-cookie']
     if (!token) {
-        const authorizationHeader = req.headers[HTTP2_HEADER_AUTHORIZATION]
+        const authorizationHeader = headers[HTTP2_HEADER_AUTHORIZATION]
         if (typeof authorizationHeader === 'string' && authorizationHeader.startsWith('Bearer ')) {
             token = authorizationHeader.slice(7)
         }
