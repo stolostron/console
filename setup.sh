@@ -28,7 +28,8 @@ echo FRONTEND_URL=$FRONTEND_URL >> ./backend/.env
 
 INSTALLATION_NAMESPACE=`oc get multiclusterhub -A -o jsonpath='{.items[0].metadata.namespace}'`
 
-SA_SECRET=$(oc get serviceaccounts -n $INSTALLATION_NAMESPACE --selector=app=console-chart,component=serviceaccount -o json | jq -r '.items[0].secrets[] | select (.name | test("-token-")).name')
+SA=$(oc get serviceaccounts -n $INSTALLATION_NAMESPACE --selector=app=console-chart,component=serviceaccount -o jsonpath='{.items[0].metadata.name}')
+SA_SECRET=$(oc get secrets -n $INSTALLATION_NAMESPACE -o json | jq -r "[.items[] | select(.metadata.annotations[\"kubernetes.io/service-account.name\"] == \"$SA\" and .type == \"kubernetes.io/service-account-token\")][0].metadata.name")
 SA_TOKEN=`oc get secret -n $INSTALLATION_NAMESPACE ${SA_SECRET} -o="jsonpath={.data.token}"`
 
 echo ${SA_TOKEN} > /tmp/tmp_SA_TOKEN
