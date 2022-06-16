@@ -423,7 +423,7 @@ export default function ApplicationsOverview() {
             .map((remoteOCPApp: any) =>
                 generateTransformData({
                     apiVersion: remoteOCPApp.apigroup
-                        ? remoteOCPApp.apigroup + '/' + remoteOCPApp.apiversion
+                        ? `${remoteOCPApp.apigroup}/${remoteOCPApp.apiversion}`
                         : remoteOCPApp.apiversion,
                     kind: remoteOCPApp.kind,
                     metadata: {
@@ -651,9 +651,11 @@ export default function ApplicationsOverview() {
                     title: t('View application'),
                     click: () => {
                         history.push(
-                            NavigationPath.applicationOverview
-                                .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(':name', resource.metadata?.name as string) + subscriptionAppQueryString
+                            `${
+                                NavigationPath.applicationOverview
+                                    .replace(':namespace', resource.metadata?.namespace as string)
+                                    .replace(':name', resource.metadata?.name as string) + subscriptionAppQueryString
+                            }`
                         )
                     },
                 })
@@ -676,9 +678,9 @@ export default function ApplicationsOverview() {
                     title: t('View application'),
                     click: () => {
                         history.push(
-                            NavigationPath.applicationOverview
+                            `${NavigationPath.applicationOverview
                                 .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(':name', resource.metadata?.name as string) + argoAppSetQueryString
+                                .replace(':name', resource.metadata?.name as string)}${argoAppSetQueryString}`
                         )
                     },
                 })
@@ -701,11 +703,12 @@ export default function ApplicationsOverview() {
                     title: t('View application'),
                     click: () => {
                         history.push(
-                            NavigationPath.applicationOverview
+                            `${NavigationPath.applicationOverview
                                 .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(':name', resource.metadata?.name as string) +
-                                '?' +
-                                'apiVersion=application.argoproj.io'
+                                .replace(
+                                    ':name',
+                                    resource.metadata?.name as string
+                                )}?apiVersion=application.argoproj.io`
                         )
                     },
                 })
@@ -746,11 +749,12 @@ export default function ApplicationsOverview() {
                     title: t('View application'),
                     click: () => {
                         history.push(
-                            NavigationPath.applicationOverview
+                            `${NavigationPath.applicationOverview
                                 .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(':name', resource.metadata?.name as string) +
-                                '?' +
-                                'apiVersion=ocp&cluster=local-cluster'
+                                .replace(
+                                    ':name',
+                                    resource.metadata?.name as string
+                                )}?apiVersion=ocp&cluster=local-cluster`
                         )
                     },
                 })
@@ -762,12 +766,13 @@ export default function ApplicationsOverview() {
                     title: t('View application'),
                     click: () => {
                         history.push(
-                            NavigationPath.applicationOverview
+                            // TBD - may need to refactor the url
+                            `${NavigationPath.applicationOverview
                                 .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(':name', resource.metadata?.name as string) +
-                                '?' +
-                                // TBD
-                                'apiVersion=flux&cluster=local-cluster'
+                                .replace(
+                                    ':name',
+                                    resource.metadata?.name as string
+                                )}?'apiVersion=flux&cluster=local-cluster'`
                         )
                     },
                 })
@@ -783,11 +788,11 @@ export default function ApplicationsOverview() {
                     title: t('View application'),
                     click: () => {
                         history.push(
-                            NavigationPath.applicationOverview
+                            `${NavigationPath.applicationOverview
                                 .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(':name', resource.metadata?.name as string) +
-                                '?' +
-                                `apiVersion=ocp&cluster=${resource.status.cluster}`
+                                .replace(':name', resource.metadata?.name as string)}?apiVersion=ocp&cluster=${
+                                resource.status.cluster
+                            }`
                         )
                     },
                 })
