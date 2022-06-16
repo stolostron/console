@@ -441,7 +441,7 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
     }
 
     const clustersList = _.get(node, 'specs.searchClusters', [])
-    let hostName = R.pathOr(undefined, ['specs', 'raw', 'spec', 'host'])(node)
+    let hostName = R.pathOr(undefined, ['specs', 'template', 'template', 'spec', 'host'])(node)
     if (typeObject && _.get(node, 'name', '') !== _.get(typeObject, 'name', '')) {
         //if route name on remote cluster doesn't match the main route name ( generated from Ingress ), show the name here
         //this is to cover the scenario when the Ingress object defines multiple routes,
@@ -500,7 +500,7 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
         })
         return details
     }
-    const transport = R.pathOr(undefined, ['specs', 'raw', 'spec', 'tls'])(node) ? 'https' : 'http'
+    const transport = R.pathOr(undefined, ['specs', 'template', 'template', 'spec', 'tls'])(node) ? 'https' : 'http'
     hostLink = `${transport}://${hostName}/`
 
     //argo app doesn't have spec info
@@ -527,7 +527,7 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
 
 //route
 export const addOCPRouteLocation = (node, clusterName, targetNS, details, t) => {
-    if (R.pathOr('', ['specs', 'raw', 'kind'])(node) === 'Route') {
+    if (R.pathOr('', ['specs', 'template', 'template', 'kind'])(node) === 'Route') {
         return addNodeInfoPerCluster(node, clusterName, targetNS, details, addNodeOCPRouteLocationForCluster, t)
     }
 
