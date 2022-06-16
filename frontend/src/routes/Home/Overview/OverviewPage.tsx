@@ -1,13 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
-import { ButtonVariant, PageSection, Stack } from '@patternfly/react-core'
+import { ButtonVariant, PageSection, Split, SplitItem, Stack } from '@patternfly/react-core'
 import { PlusIcon } from '@patternfly/react-icons'
 import {
     AcmActionGroup,
     AcmAlert,
     AcmAutoRefreshSelect,
     AcmButton,
-    AcmChartGroup,
     AcmDonutChart,
     AcmLaunchLink,
     AcmLoadingPage,
@@ -21,7 +20,7 @@ import {
     Provider,
 } from '@stolostron/ui-components'
 import _ from 'lodash'
-import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
+import { Dispatch, Fragment, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import {
@@ -196,7 +195,11 @@ const PageActions = (props: { timestamp: string; reloading: boolean; refetch: ()
                 >
                     {t('Add credential')}
                 </AcmButton>
-                <AcmAutoRefreshSelect refetch={props.refetch} refreshIntervals={[30, 60, 5 * 60, 30 * 60, 0]} />
+                <AcmAutoRefreshSelect
+                    refetch={props.refetch}
+                    initPollInterval={0}
+                    refreshIntervals={[30, 60, 5 * 60, 30 * 60, 0]}
+                />
             </AcmActionGroup>
             <AcmRefreshTime timestamp={props.timestamp} reloading={props.reloading} />
         </Fragment>
@@ -260,7 +263,7 @@ export default function OverviewPage() {
                 })
         }
     }, [fireSearchQuery, selectedClusterNames, searchCalled, searchRefetch])
-    const searchResult = searchData?.searchResult || []
+    const searchResult = useMemo(() => searchData?.searchResult || [], [searchData?.searchResult])
 
     // Process data from API.
     useEffect(() => {
@@ -344,12 +347,12 @@ export default function OverviewPage() {
         0
     )
 
-    const refetchData = () => {
+    const refetchData = useCallback(() => {
         searchRefetch && searchRefetch({ input: searchQueries(selectedClusterNames) })
         const clustersToSearch =
             selectedClusterNames.length > 0 ? selectedClusterNames : clusters.map((cluster) => cluster.metadata.name)
         searchPolicyReportRefetch && searchPolicyReportRefetch({ input: policyReportQuery(clustersToSearch) })
-    }
+    }, [clusters, searchPolicyReportRefetch, searchRefetch, selectedClusterNames])
 
     const { kubernetesTypes, regions, ready, offline, providers } = summaryData
     const provider = providers.find((p: any) => p.provider === selectedCloud)
@@ -359,14 +362,17 @@ export default function OverviewPage() {
             : `%20label%3a${Array.from(provider.cloudLabels)
                   .map((n) => `cloud=${n}`)
                   .join(',')}`
-    function buildSummaryLinks(kind: string, localCluster?: boolean) {
-        const localClusterFilter: string = localCluster === true ? `%20cluster%3Alocal-cluster` : ''
-        return selectedCloud === ''
-            ? `${NavigationPath.search}?filters={"textsearch":"kind%3A${kind}${localClusterFilter}"}`
-            : `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}&showrelated=${kind}`
-    }
-    const summary =
-        searchLoading || searchPolicyReportLoading
+    const buildSummaryLinks = useCallback(
+        (kind: string, localCluster?: boolean) => {
+            const localClusterFilter: string = localCluster === true ? `%20cluster%3Alocal-cluster` : ''
+            return selectedCloud === ''
+                ? `${NavigationPath.search}?filters={"textsearch":"kind%3A${kind}${localClusterFilter}"}`
+                : `${NavigationPath.search}?filters={"textsearch":"kind%3Acluster${cloudLabelFilter}"}&showrelated=${kind}`
+        },
+        [cloudLabelFilter, selectedCloud]
+    )
+    const summary = useMemo(() => {
+        let overviewSummary = searchLoading
             ? []
             : [
                   {
@@ -397,6 +403,24 @@ export default function OverviewPage() {
                       href: buildSummaryLinks('pod'),
                   },
               ]
+        if (searchError) {
+            // Hide node and pods if search is unavailable or throwing errors
+            overviewSummary = overviewSummary.slice(0, 4)
+        }
+        return overviewSummary
+    }, [
+        apps,
+        argoApps,
+        buildSummaryLinks,
+        cloudLabelFilter,
+        kubernetesTypes?.size,
+        managedClusters.length,
+        regions?.size,
+        searchError,
+        searchLoading,
+        searchResult,
+        selectedClusterNames.length,
+    ])
 
     // TODO: Breaks url if length of selectedClustersFilter is too big.
     // Issue: https://github.com/open-cluster-management/backlog/issues/7087
@@ -504,33 +528,6 @@ export default function OverviewPage() {
                   },
               ]
 
-    if (searchError || searchPolicyReportError) {
-        return (
-            <AcmPage
-                header={
-                    <AcmPageHeader
-                        title={t('overview')}
-                        actions={<PageActions timestamp={timestamp} reloading={searchLoading} refetch={refetchData} />}
-                    />
-                }
-            >
-                <PageSection>
-                    <AcmAlert
-                        noClose
-                        isInline
-                        variant={searchError?.graphQLErrors[0]?.message.includes('not enabled') ? 'info' : 'danger'}
-                        title={
-                            searchError?.graphQLErrors[0]?.message.includes('not enabled')
-                                ? t('Configuration alert')
-                                : t('An unexpected error occurred.')
-                        }
-                        subtitle={searchError?.graphQLErrors[0]?.message || t('The backend service is unavailable.')}
-                    />
-                </PageSection>
-            </AcmPage>
-        )
-    }
-
     return (
         <AcmPage
             header={
@@ -541,97 +538,137 @@ export default function OverviewPage() {
             }
         >
             <AcmScrollable>
+                {searchError && (
+                    <PageSection>
+                        <AcmAlert
+                            noClose
+                            isInline
+                            variant={searchError?.graphQLErrors[0]?.message.includes('not enabled') ? 'info' : 'danger'}
+                            title={
+                                searchError?.graphQLErrors[0]?.message.includes('not enabled')
+                                    ? t('Configuration alert')
+                                    : t('An unexpected error occurred.')
+                            }
+                            subtitle={
+                                searchError?.graphQLErrors[0]?.message ||
+                                t(
+                                    'The search service is unavailable or degraded. Some data might be missing from the page.'
+                                )
+                            }
+                        />
+                    </PageSection>
+                )}
                 <PageSection>
                     <Stack hasGutter>
-                        {searchLoading || searchPolicyReportLoading ? (
-                            <AcmLoadingPage />
-                        ) : (
-                            <AcmOverviewProviders providers={providers} />
-                        )}
+                        {searchLoading ? <AcmLoadingPage /> : <AcmOverviewProviders providers={providers} />}
 
-                        {searchLoading || searchPolicyReportLoading ? (
+                        {searchLoading ? (
                             <AcmSummaryList key="loading" loading title={t('Summary')} list={summary} />
                         ) : (
                             <AcmSummaryList title={t('Summary')} list={summary} />
                         )}
 
-                        {searchLoading || searchPolicyReportLoading ? (
-                            <AcmChartGroup>
-                                <AcmDonutChart
-                                    loading
-                                    key="chart-loading-1"
-                                    title="Cluster violations"
-                                    description={t('Overview of policy violation status')}
-                                    data={[]}
-                                />
-                                <AcmDonutChart
-                                    loading
-                                    key="chart-loading-2"
-                                    title="Pods"
-                                    description={t('Overview of pod count and status')}
-                                    data={[]}
-                                />
-                                <AcmDonutChart
-                                    loading
-                                    key="chart-loading-3"
-                                    title="Cluster status"
-                                    description={t('Overview of cluster status')}
-                                    data={[]}
-                                />
-                                <AcmDonutChart
-                                    loading
-                                    key="chart-loading-4"
-                                    title="Clusters with issues"
-                                    description={t('Overview of cluster issues')}
-                                    data={[]}
-                                />
-                            </AcmChartGroup>
+                        {searchLoading ? (
+                            <Split hasGutter isWrappable>
+                                <SplitItem isFilled>
+                                    <AcmDonutChart
+                                        loading
+                                        key="chart-loading-1"
+                                        title="Cluster violations"
+                                        description={t('Overview of policy violation status')}
+                                        data={[]}
+                                    />
+                                </SplitItem>
+                                {!searchError && (
+                                    <SplitItem isFilled>
+                                        <AcmDonutChart
+                                            loading
+                                            key="chart-loading-2"
+                                            title="Pods"
+                                            description={t('Overview of pod count and status')}
+                                            data={[]}
+                                        />
+                                    </SplitItem>
+                                )}
+                                <SplitItem isFilled>
+                                    <AcmDonutChart
+                                        loading
+                                        key="chart-loading-3"
+                                        title="Cluster status"
+                                        description={t('Overview of cluster status')}
+                                        data={[]}
+                                    />
+                                </SplitItem>
+                                {!searchPolicyReportError && (
+                                    <SplitItem isFilled>
+                                        <AcmDonutChart
+                                            loading
+                                            key="chart-loading-4"
+                                            title="Clusters with issues"
+                                            description={t('Overview of cluster issues')}
+                                            data={[]}
+                                        />
+                                    </SplitItem>
+                                )}
+                            </Split>
                         ) : (
-                            <AcmChartGroup>
-                                <AcmDonutChart
-                                    title="Cluster violations"
-                                    description={t('Overview of policy violation status')}
-                                    data={complianceData}
-                                    colorScale={[
-                                        'var(--pf-global--danger-color--100)',
-                                        'var(--pf-global--success-color--100)',
-                                    ]}
-                                />
-                                <AcmDonutChart
-                                    title="Pods"
-                                    description={t('Overview of pod count and status')}
-                                    data={podData}
-                                    colorScale={[
-                                        'var(--pf-global--danger-color--100)',
-                                        'var(--pf-global--info-color--100)',
-                                        'var(--pf-global--success-color--100)',
-                                    ]}
-                                />
-                                <AcmDonutChart
-                                    title="Cluster status"
-                                    description={t('Overview of cluster status')}
-                                    data={clusterData}
-                                    colorScale={[
-                                        'var(--pf-global--danger-color--100)',
-                                        'var(--pf-global--success-color--100)',
-                                    ]}
-                                />
-                                <AcmDonutChart
-                                    title="Cluster issues"
-                                    description={t('Overview of cluster issues')}
-                                    data={policyReportData}
-                                    donutLabel={{
-                                        title: `${policyReportItems.length}`,
-                                        subTitle: t('Clusters with issues'),
-                                    }}
-                                    colorScale={[
-                                        'var(--pf-global--danger-color--100)',
-                                        'var(--pf-global--palette--orange-300)',
-                                        'var(--pf-global--palette--orange-200)',
-                                        'var(--pf-global--warning-color--100)',
-                                    ]}
-                                />
-                            </AcmChartGroup>
+                            <Split hasGutter isWrappable>
+                                <SplitItem>
+                                    <AcmDonutChart
+                                        title="Cluster violations"
+                                        description={t('Overview of policy violation status')}
+                                        data={complianceData}
+                                        colorScale={[
+                                            'var(--pf-global--danger-color--100)',
+                                            'var(--pf-global--success-color--100)',
+                                        ]}
+                                    />
+                                </SplitItem>
+                                {!searchError && (
+                                    <SplitItem>
+                                        <AcmDonutChart
+                                            title="Pods"
+                                            description={t('Overview of pod count and status')}
+                                            data={podData}
+                                            colorScale={[
+                                                'var(--pf-global--danger-color--100)',
+                                                'var(--pf-global--info-color--100)',
+                                                'var(--pf-global--success-color--100)',
+                                            ]}
+                                        />
+                                    </SplitItem>
+                                )}
+                                <SplitItem>
+                                    <AcmDonutChart
+                                        title="Cluster status"
+                                        description={t('Overview of cluster status')}
+                                        data={clusterData}
+                                        colorScale={[
+                                            'var(--pf-global--danger-color--100)',
+                                            'var(--pf-global--success-color--100)',
+                                        ]}
+                                    />
+                                </SplitItem>
+                                {!searchPolicyReportError && (
+                                    <SplitItem>
+                                        <AcmDonutChart
+                                            title="Cluster issues"
+                                            description={t('Overview of cluster issues')}
+                                            data={policyReportData}
+                                            donutLabel={{
+                                                title: `${policyReportItems.length}`,
+                                                subTitle: t('Clusters with issues'),
+                                            }}
+                                            colorScale={[
+                                                'var(--pf-global--danger-color--100)',
+                                                'var(--pf-global--palette--orange-300)',
+                                                'var(--pf-global--palette--orange-200)',
+                                                'var(--pf-global--warning-color--100)',
+                                            ]}
+                                        />
+                                    </SplitItem>
+                                )}
+                            </Split>
                         )}
                     </Stack>
                 </PageSection>
