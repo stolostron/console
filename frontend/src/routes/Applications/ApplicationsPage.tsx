@@ -32,7 +32,7 @@ export default function ApplicationsPage() {
         setDiscoveredAppilcations(remoteArgoApps)
         const remoteOCPAppResources = dataOCPResources?.[0]?.data?.searchResult?.[0]?.items || []
         setDiscoveredOCPAppResources(remoteOCPAppResources)
-    }, [data, setDiscoveredAppilcations, setDiscoveredOCPAppResources])
+    }, [data, dataOCPResources, setDiscoveredAppilcations, setDiscoveredOCPAppResources])
 
     // failsafe in case search api is sleeping
     useEffect(() => {
