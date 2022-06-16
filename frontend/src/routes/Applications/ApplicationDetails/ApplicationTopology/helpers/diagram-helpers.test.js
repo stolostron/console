@@ -767,13 +767,15 @@ describe('addNodeOCPRouteLocationForCluster spec no route', () => {
                     },
                 ],
             },
-            raw: {
-                kind: 'Route',
-                spec: {
-                    metadata: {
-                        namespace: 'default',
+            template: {
+                template: {
+                    kind: 'Route',
+                    spec: {
+                        metadata: {
+                            namespace: 'default',
+                        },
+                        host: '1.1.1',
                     },
-                    host: '1.1.1',
                 },
             },
         },
@@ -836,14 +838,16 @@ describe('addNodeOCPRouteLocationForCluster', () => {
                     },
                 ],
             },
-            raw: {
-                kind: 'Route',
-                spec: {
-                    metadata: {
-                        namespace: 'default',
+            template: {
+                template: {
+                    kind: 'Route',
+                    spec: {
+                        metadata: {
+                            namespace: 'default',
+                        },
+                        tls: {},
+                        host: '1.1.1',
                     },
-                    tls: {},
-                    host: '1.1.1',
                 },
             },
         },
@@ -874,14 +878,16 @@ describe('addNodeOCPRouteLocationForCluster', () => {
                     },
                 ],
             },
-            raw: {
-                kind: 'Route',
-                spec: {
-                    metadata: {
-                        namespace: 'default',
+            template: {
+                template: {
+                    kind: 'Route',
+                    spec: {
+                        metadata: {
+                            namespace: 'default',
+                        },
+                        tls: {},
+                        host: '1.1.1',
                     },
-                    tls: {},
-                    host: '1.1.1',
                 },
             },
         },
