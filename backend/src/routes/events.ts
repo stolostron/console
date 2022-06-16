@@ -81,7 +81,12 @@ const definitions: IWatchOptions[] = [
     { kind: 'ManagedClusterSetBinding', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ManagedClusterSet', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
     { kind: 'ClusterCurator', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
+    { kind: 'CronJob', apiVersion: 'batch/v1' },
+    { kind: 'Job', apiVersion: 'batch/v1' },
     { kind: 'Subscription', apiVersion: 'operators.coreos.com/v1alpha1' },
+    { kind: 'DaemonSet', apiVersion: 'apps/v1' },
+    { kind: 'Deployment', apiVersion: 'apps/v1' },
+    { kind: 'StatefulSet', apiVersion: 'apps/v1' },
     { kind: 'DiscoveredCluster', apiVersion: 'discovery.open-cluster-management.io/v1' },
     { kind: 'DiscoveryConfig', apiVersion: 'discovery.open-cluster-management.io/v1' },
     { kind: 'AgentClusterInstall', apiVersion: 'extensions.hive.openshift.io/v1beta1' },
@@ -101,6 +106,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'PolicySet', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
     { kind: 'SubmarinerConfig', apiVersion: 'submarineraddon.open-cluster-management.io/v1alpha1' },
     { kind: 'AnsibleJob', apiVersion: 'tower.ansible.com/v1alpha1' },
+    { kind: 'Kustomization', apiVersion: 'kustomize.toolkit.fluxcd.io/v1beta2' },
     { kind: 'ConfigMap', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'insight-content-data' } },
     {
         kind: 'ConfigMap',
@@ -122,6 +128,7 @@ const definitions: IWatchOptions[] = [
         apiVersion: 'v1',
         fieldSelector: { 'metadata.namespace': 'openshift-config-managed', 'metadata.name': 'console-public' },
     },
+    { kind: 'DeploymentConfig', apiVersion: 'v1' },
     { kind: 'Namespace', apiVersion: 'v1' },
     { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/credentials': '' } },
     // **Need to look for creds with: 'cluster.open-cluster-management.io/type': 'ans', for edit scenarios
