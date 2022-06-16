@@ -74,7 +74,7 @@ function RenderRelatedTables(
                 )}
             />
         ),
-        []
+        [currentQuery, setDeleteResource, t]
     )
 
     if (loading === false && !error && !data) {
@@ -208,24 +208,31 @@ function RenderSearchTables(
         variables: { input: [convertStringToQuery(currentQuery)] },
     })
 
-    const renderContent = useCallback((kind: string, items: ISearchResult[]) => {
-        return (
-            <AcmTable
-                plural=""
-                items={items}
-                columns={_.get(searchDefinitions, `[${kind}].columns`, searchDefinitions['genericresource'].columns)}
-                keyFn={(item: any) => item._uid.toString()}
-                rowActions={GetRowActions(
-                    kind,
-                    // TODO - Handle interpolation
-                    t('Delete {{resourceKind}}', { resourceKind: kind }),
-                    currentQuery,
-                    false,
-                    setDeleteResource
-                )}
-            />
-        )
-    }, [])
+    const renderContent = useCallback(
+        (kind: string, items: ISearchResult[]) => {
+            return (
+                <AcmTable
+                    plural=""
+                    items={items}
+                    columns={_.get(
+                        searchDefinitions,
+                        `[${kind}].columns`,
+                        searchDefinitions['genericresource'].columns
+                    )}
+                    keyFn={(item: any) => item._uid.toString()}
+                    rowActions={GetRowActions(
+                        kind,
+                        // TODO - Handle interpolation
+                        t('Delete {{resourceKind}}', { resourceKind: kind }),
+                        currentQuery,
+                        false,
+                        setDeleteResource
+                    )}
+                />
+            )
+        },
+        [currentQuery, setDeleteResource, t]
+    )
 
     if (loading) {
         return (
@@ -324,7 +331,7 @@ export default function SearchResults(props: { currentQuery: string; preSelected
             />
             {RenderRelatedTiles(currentQuery, selected, setSelected)}
             {RenderRelatedTables(currentQuery, selected, setDeleteResource)}
-            {RenderSearchTables(currentQuery, setDeleteResource, selected)}
+            {RenderSearchTables(currentQuery, setDeleteResource)}
         </Fragment>
     )
 }
