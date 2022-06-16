@@ -4,9 +4,9 @@ import { AcmLoadingPage, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNa
 import { Fragment, lazy, Suspense, useEffect, useState } from 'react'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { discoveredApplicationsState } from '../../atoms'
+import { discoveredApplicationsState, discoveredOCPAppResourcesState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
-import { queryRemoteArgoApps } from '../../lib/search'
+import { queryRemoteArgoApps, queryRemoteOCPAppResources } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 
@@ -18,15 +18,21 @@ export default function ApplicationsPage() {
     const { t } = useTranslation()
 
     const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
+    const dataOCPResources = useQuery(queryRemoteOCPAppResources).data
+    const loadingOCPResources = useQuery(queryRemoteOCPAppResources).loading
+    const startPollingOCPResources = useQuery(queryRemoteOCPAppResources).startPolling
     useEffect(startPolling, [startPolling])
+    useEffect(startPollingOCPResources, [startPollingOCPResources])
     const [timedOut, setTimedOut] = useState<boolean>()
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_, setDiscoveredAppilcations] = useRecoilState(discoveredApplicationsState)
+    const [, setDiscoveredAppilcations] = useRecoilState(discoveredApplicationsState)
+    const [, setDiscoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
     useEffect(() => {
         const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
         setDiscoveredAppilcations(remoteArgoApps)
-    }, [data, setDiscoveredAppilcations])
+        const remoteOCPAppResources = dataOCPResources?.[0]?.data?.searchResult?.[0]?.items || []
+        setDiscoveredOCPAppResources(remoteOCPAppResources)
+    }, [data, setDiscoveredAppilcations, setDiscoveredOCPAppResources])
 
     // failsafe in case search api is sleeping
     useEffect(() => {
@@ -39,7 +45,7 @@ export default function ApplicationsPage() {
         }
     }, [])
 
-    if (loading && !timedOut) {
+    if (loading && loadingOCPResources && !timedOut) {
         return <AcmLoadingPage />
     }
 
