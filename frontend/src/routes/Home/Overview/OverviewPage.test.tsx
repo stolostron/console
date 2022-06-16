@@ -8,11 +8,11 @@ import { GraphQLError } from 'graphql'
 import { createBrowserHistory } from 'history'
 import { Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { managedClustersState, policiesState } from '../../../atoms'
+import { managedClustersState, policiesState, policyreportState } from '../../../atoms'
 import { nockGet } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind, Policy } from '../../../resources'
-import { SearchResultCountDocument, SearchResultItemsDocument } from '../Search/search-sdk/search-sdk'
+import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind, Policy, PolicyReport } from '../../../resources'
+import { SearchResultCountDocument } from '../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
 
 const getAddonRequest = {
@@ -220,6 +220,80 @@ const mockPolices: Policy[] = [
     },
 ]
 
+const mockPolicyReports: PolicyReport[] = [
+    {
+        apiVersion: 'wgpolicyk8s.io/v1alpha2',
+        kind: 'PolicyReport',
+        metadata: {
+            name: 'local-cluster-policyreport',
+            namespace: 'local-cluster',
+            uid: 'uid.report.risk.1',
+        },
+        scope: {
+            kind: 'cluster',
+            name: 'local-cluster',
+            namespace: 'local-cluster',
+        },
+        results: [
+            {
+                category: 'category,category1,category2',
+                scored: false,
+                source: 'insights',
+                properties: {
+                    created_at: '2021-03-02T21:26:04Z',
+                    total_risk: '4',
+                    component: 'rule.id.0',
+                },
+                message: 'policyreport testing risk 0',
+                policy: 'policyreport testing risk 0 policy',
+                result: 'policyreport testing risk 0 result',
+            },
+            {
+                category: 'category,category1,category2',
+                scored: false,
+                source: 'insights',
+                properties: {
+                    created_at: '2021-03-02T21:26:04Z',
+                    total_risk: '3',
+                    component: 'rule.id.1',
+                },
+                message: 'policyreport testing risk 1',
+                policy: 'policyreport testing risk 1 policy',
+                result: 'policyreport testing risk 1 result',
+            },
+        ],
+    },
+    {
+        apiVersion: 'wgpolicyk8s.io/v1alpha2',
+        kind: 'PolicyReport',
+        metadata: {
+            name: 'managed-cluster-policyreport',
+            namespace: 'managed-cluster',
+            uid: 'uid.report.risk.1',
+        },
+        scope: {
+            kind: 'cluster',
+            name: 'managed-cluster',
+            namespace: 'managed-cluster',
+        },
+        results: [
+            {
+                category: 'category,category1,category2',
+                scored: false,
+                source: 'insights',
+                properties: {
+                    created_at: '2021-03-02T21:26:04Z',
+                    total_risk: '4',
+                    component: 'rule.id.0',
+                },
+                message: 'policyreport testing risk 0',
+                policy: 'policyreport testing risk 0 policy',
+                result: 'policyreport testing risk 0 result',
+            },
+        ],
+    },
+]
+
 it('should render overview page in loading state', async () => {
     const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
 
@@ -375,61 +449,6 @@ it('should render overview page with expected data', async () => {
                 },
             },
         },
-        {
-            request: {
-                query: SearchResultItemsDocument,
-                variables: {
-                    input: [
-                        {
-                            keywords: [],
-                            filters: [
-                                {
-                                    property: 'kind',
-                                    values: ['policyreport'],
-                                },
-                                {
-                                    property: 'scope',
-                                    values: ['local-cluster', 'managed-cluster'],
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            result: {
-                data: {
-                    searchResult: [
-                        {
-                            items: [
-                                {
-                                    kind: 'policyreport',
-                                    name: 'local-cluster-policyreport',
-                                    namespace: 'local-cluster',
-                                    numRuleViolations: 1,
-                                    scope: 'local-cluster',
-                                    critical: 1,
-                                    important: 0,
-                                    moderate: 0,
-                                    low: 0,
-                                },
-                                {
-                                    kind: 'policyreport',
-                                    name: 'managed-cluster-policyreport',
-                                    namespace: 'managed-cluster',
-                                    numRuleViolations: 2,
-                                    scope: 'managed-cluster',
-                                    critical: 1,
-                                    important: 1,
-                                    moderate: 0,
-                                    low: 0,
-                                },
-                            ],
-                            __typename: 'SearchResult',
-                        },
-                    ],
-                },
-            },
-        },
     ]
 
     const { getAllByText, getByText } = render(
@@ -437,6 +456,7 @@ it('should render overview page with expected data', async () => {
             initializeState={(snapshot) => {
                 snapshot.set(managedClustersState, managedClusters)
                 snapshot.set(policiesState, mockPolices)
+                snapshot.set(policyreportState, mockPolicyReports)
             }}
         >
             <Router history={createBrowserHistory()}>
