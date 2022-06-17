@@ -780,9 +780,7 @@ describe('addNodeOCPRouteLocationForCluster spec no route', () => {
             },
         },
     }
-    const result = [
-        {type: 'spacer'}
-    ]
+    const result = [{ type: 'spacer' }]
     it('addNodeOCPRouteLocationForCluster no route', () => {
         expect(addNodeOCPRouteLocationForCluster(node, null, [], t)).toEqual(result)
     })
@@ -852,9 +850,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
         },
     }
 
-    const result = [
-        { type: 'spacer' }
-    ]
+    const result = [{ type: 'spacer' }]
     it('addNodeOCPRouteLocationForCluster with tls and host', () => {
         expect(addNodeOCPRouteLocationForCluster(node, null, [], t)).toEqual(result)
     })
@@ -891,9 +887,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
         },
     }
 
-    const result = [
-        { type: 'spacer' },
-    ]
+    const result = [{ type: 'spacer' }]
     it('addNodeOCPRouteLocationForCluster with tls and no obj', () => {
         expect(addNodeOCPRouteLocationForCluster(node, undefined, [], t)).toEqual(result)
     })

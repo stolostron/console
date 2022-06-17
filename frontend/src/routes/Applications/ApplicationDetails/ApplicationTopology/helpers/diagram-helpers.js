@@ -529,7 +529,10 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
 
 //route
 export const addOCPRouteLocation = (node, clusterName, targetNS, details, t) => {
-    if ((R.pathOr('', ['specs', 'template', 'template', 'kind'])(node)).toLowerCase() === 'route' || node.type === 'route') {
+    if (
+        R.pathOr('', ['specs', 'template', 'template', 'kind'])(node).toLowerCase() === 'route' ||
+        node.type === 'route'
+    ) {
         return addNodeInfoPerCluster(node, clusterName, targetNS, details, addNodeOCPRouteLocationForCluster, t)
     }
 
@@ -642,7 +645,7 @@ export const processResourceActionLink = (resource, toggleLoading, t) => {
         }
         case 'open_route_url': {
             const routeObject = R.pathOr('', ['routeObject'])(resource)
-            openRouteURL(routeObject, toggleLoading, t) // the route url opens here
+            openRouteURL(routeObject, toggleLoading) // the route url opens here
             break
         }
         default:

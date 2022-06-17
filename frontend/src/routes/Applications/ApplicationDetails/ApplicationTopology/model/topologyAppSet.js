@@ -199,7 +199,7 @@ const getArgoRoute = async (appName, appNamespace, cluster, managedclusterviewda
     }
 }
 
-export const openRouteURL = (routeObject, toggleLoading, t) => {
+export const openRouteURL = (routeObject, toggleLoading) => {
     const name = get(routeObject, 'name', '')
     const namespace = get(routeObject, 'namespace', '')
     const cluster = get(routeObject, 'cluster', '')
@@ -207,7 +207,7 @@ export const openRouteURL = (routeObject, toggleLoading, t) => {
     const apigroup = get(routeObject, 'apigroup', '')
     const apiversion = get(routeObject, 'apiversion', '')
     const apiVersion = `${apigroup}/${apiversion}`
-    
+
     toggleLoading()
     fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
         .then((viewResponse) => {
