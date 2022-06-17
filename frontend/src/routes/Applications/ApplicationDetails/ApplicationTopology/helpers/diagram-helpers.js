@@ -16,7 +16,7 @@ import moment from 'moment'
 import { getEditLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
 import { getURLSearchData } from './diagram-helpers-argo'
-import { openArgoCDEditor } from '../model/topologyAppSet'
+import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'
@@ -441,7 +441,7 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
     }
 
     const clustersList = _.get(node, 'specs.searchClusters', [])
-    let hostName = R.pathOr(undefined, ['specs', 'template', 'template', 'spec', 'host'])(node)
+    let hostName = R.pathOr(undefined, ['specs', 'raw', 'spec', 'host'])(node)
     if (typeObject && _.get(node, 'name', '') !== _.get(typeObject, 'name', '')) {
         //if route name on remote cluster doesn't match the main route name ( generated from Ingress ), show the name here
         //this is to cover the scenario when the Ingress object defines multiple routes,
@@ -469,7 +469,7 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
     let hostLink = 'NA'
     const linkId = typeObject ? _.get(typeObject, 'id', '0') : _.get(node, 'uid', '0')
 
-    if (!typeObject) {
+    if (!typeObject && clustersList.length === 1) {
         //this is called from the main details
         if (!hostName) {
             return details //return since there is no global host
@@ -504,18 +504,20 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
     hostLink = `${transport}://${hostName}/`
 
     //argo app doesn't have spec info
-    details.push({
-        type: 'link',
-        value: {
-            label: hostLink,
-            id: `${linkId}-location`,
-            data: {
-                action: 'open_link',
-                targetLink: hostLink,
+    if (hostName) {
+        details.push({
+            type: 'link',
+            value: {
+                label: hostLink,
+                id: `${linkId}-location`,
+                data: {
+                    action: 'open_link',
+                    targetLink: hostLink,
+                },
             },
-        },
-        indent: true,
-    })
+            indent: true,
+        })
+    }
 
     !typeObject &&
         details.push({
@@ -527,7 +529,7 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
 
 //route
 export const addOCPRouteLocation = (node, clusterName, targetNS, details, t) => {
-    if (R.pathOr('', ['specs', 'template', 'template', 'kind'])(node) === 'Route') {
+    if ((R.pathOr('', ['specs', 'template', 'template', 'kind'])(node)).toLowerCase() === 'route' || node.type === 'route') {
         return addNodeInfoPerCluster(node, clusterName, targetNS, details, addNodeOCPRouteLocationForCluster, t)
     }
 
@@ -639,7 +641,8 @@ export const processResourceActionLink = (resource, toggleLoading, t) => {
             break
         }
         case 'open_route_url': {
-            // czcz openRouteURL(routeObject, toggleLoading, handleErrorMsg) // the route url opens here
+            const routeObject = R.pathOr('', ['routeObject'])(resource)
+            openRouteURL(routeObject, toggleLoading, t) // the route url opens here
             break
         }
         default:
