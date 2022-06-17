@@ -27,7 +27,7 @@ import {
     IAcmTableAction,
     IAcmTableColumn,
     ITableFilter,
-} from '@stolostron/ui-components'
+} from '../../../ui-components'
 import moment from 'moment'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'

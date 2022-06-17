@@ -9,7 +9,7 @@ import {
     TextContent,
 } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
-import { AcmButton, AcmEmptyState, AcmPage, AcmPageContent, AcmPageHeader, AcmTable } from '@stolostron/ui-components'
+import { AcmButton, AcmEmptyState, AcmPage, AcmPageContent, AcmPageHeader, AcmTable } from '../../../ui-components'
 import { Fragment, useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'

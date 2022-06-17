@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useState, useMemo } from 'react'
 import { Card, CardBody, PageSection } from '@patternfly/react-core'
-import { AcmPageContent } from '@stolostron/ui-components'
+import { AcmPageContent } from '../../../../ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { BulkActionModel, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { DOC_VERSION } from '../../../../lib/doc-util'

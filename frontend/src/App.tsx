@@ -44,7 +44,7 @@ import {
     AcmTablePaginationContextProvider,
     AcmToastGroup,
     AcmToastProvider,
-} from '@stolostron/ui-components'
+} from './ui-components'
 import { noop } from 'lodash'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Redirect, Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom'

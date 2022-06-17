@@ -12,7 +12,7 @@ import {
     compareStrings,
     Provider,
     ProviderLongTextMap,
-} from '@stolostron/ui-components'
+} from '../../ui-components'
 import moment from 'moment'
 import { Fragment, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'

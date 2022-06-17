@@ -12,7 +12,7 @@ import {
     AcmPageContent,
     AcmPageHeader,
     AcmTable,
-} from '@stolostron/ui-components'
+} from '../../../ui-components'
 import isMatch from 'lodash/isMatch'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { InfraEnvK8sResource } from 'openshift-assisted-ui-lib/dist/src/cim'

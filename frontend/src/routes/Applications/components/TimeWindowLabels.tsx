@@ -2,7 +2,7 @@
 
 import { Fragment } from 'react'
 import LabelWithPopover from './LabelWithPopover'
-import { AcmButton } from '@stolostron/ui-components'
+import { AcmButton } from '../../../ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { PencilAltIcon } from '@patternfly/react-icons'
 import '../css/TimeWindowLabels.css'

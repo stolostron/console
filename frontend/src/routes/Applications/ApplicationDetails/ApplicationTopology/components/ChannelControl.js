@@ -14,7 +14,7 @@
 import React from 'react'
 import R from 'ramda'
 import PropTypes from 'prop-types'
-import { AcmDropdown } from '@stolostron/ui-components'
+import { AcmDropdown } from '../../../../../ui-components'
 import { Pagination, Tooltip } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'

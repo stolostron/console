@@ -11,10 +11,10 @@ import {
     AcmPageContent,
     StatusType,
     Provider,
-} from '@stolostron/ui-components'
+} from '../../../../../../ui-components'
 import { ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
-import React, { useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'
 import { CIM } from 'openshift-assisted-ui-lib'

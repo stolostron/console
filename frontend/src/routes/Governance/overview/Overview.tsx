@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, ButtonVariant, Card, CardBody, CardTitle, PageSection, Stack, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmDrawerContext, compareStrings } from '@stolostron/ui-components'
+import { AcmDrawerContext, compareStrings } from '../../../ui-components'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { managedClustersState, namespacesState, usePolicies } from '../../../atoms'

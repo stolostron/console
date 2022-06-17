@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { AcmInlineProvider, Provider } from '@stolostron/ui-components'
+import { AcmInlineProvider, Provider } from '../../../../../ui-components'
 import { useContext, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../../components/BulkActionModel'

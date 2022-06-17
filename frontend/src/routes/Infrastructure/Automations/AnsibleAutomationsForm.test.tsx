@@ -11,7 +11,7 @@ import {
     SecretApiVersion,
     SecretKind,
 } from '../../../resources'
-import { Provider } from '@stolostron/ui-components/lib/AcmProvider'
+import { Provider } from '../../../ui-components'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'

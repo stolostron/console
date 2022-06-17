@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { makeStyles } from '@material-ui/styles'
-import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
+import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 import { useEffect, useState } from 'react'
 import { Link, Route, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../../lib/acm-i18next'
