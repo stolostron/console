@@ -17,7 +17,7 @@ import {
     AcmRoute,
     AcmScrollable,
     AcmSummaryList,
-    Provider,
+    Provider
 } from '@stolostron/ui-components'
 import _ from 'lodash'
 import { Dispatch, Fragment, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react'
@@ -28,7 +28,7 @@ import {
     applicationsState,
     argoApplicationsState,
     managedClustersState,
-    usePolicies,
+    usePolicies
 } from '../../../atoms'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -543,7 +543,7 @@ export default function OverviewPage() {
                         <AcmAlert
                             noClose
                             isInline
-                            variant={searchError?.graphQLErrors[0]?.message.includes('not enabled') ? 'info' : 'danger'}
+                            variant={searchError?.graphQLErrors[0]?.message.includes('not enabled') ? 'info' : 'warning'}
                             title={
                                 searchError?.graphQLErrors[0]?.message.includes('not enabled')
                                     ? t('Configuration alert')
