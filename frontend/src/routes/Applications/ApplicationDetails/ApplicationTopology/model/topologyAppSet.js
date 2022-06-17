@@ -213,6 +213,7 @@ export const openRouteURL = (routeObject, toggleLoading) => {
         .then((viewResponse) => {
             toggleLoading()
             if (viewResponse.message) {
+                // should handle error in the future
             } else {
                 openRouteURLWindow(viewResponse.result)
             }

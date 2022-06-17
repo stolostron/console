@@ -476,7 +476,7 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
         return details // this info is in the main Location status since we have a spec host
     }
 
-    let hostLink = 'NA'
+    let hostLink
     const linkId = typeObject ? _.get(typeObject, 'id', '0') : _.get(node, 'uid', '0')
 
     if (!typeObject && clustersList.length === 1) {
