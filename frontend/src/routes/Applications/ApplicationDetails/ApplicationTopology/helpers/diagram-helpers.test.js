@@ -780,12 +780,9 @@ describe('addNodeOCPRouteLocationForCluster spec no route', () => {
             },
         },
     }
-    const obj = {
-        id: 'objID',
-    }
-    const result = []
+    const result = [{ type: 'spacer' }]
     it('addNodeOCPRouteLocationForCluster no route', () => {
-        expect(addNodeOCPRouteLocationForCluster(node, obj, [], t)).toEqual(result)
+        expect(addNodeOCPRouteLocationForCluster(node, null, [], t)).toEqual(result)
     })
 })
 
@@ -853,12 +850,9 @@ describe('addNodeOCPRouteLocationForCluster', () => {
         },
     }
 
-    const obj = {
-        id: 'objID',
-    }
-    const result = []
+    const result = [{ type: 'spacer' }]
     it('addNodeOCPRouteLocationForCluster with tls and host', () => {
-        expect(addNodeOCPRouteLocationForCluster(node, obj, [], t)).toEqual(result)
+        expect(addNodeOCPRouteLocationForCluster(node, null, [], t)).toEqual(result)
     })
 })
 
@@ -893,20 +887,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
         },
     }
 
-    const result = [
-        { type: 'spacer' },
-        { labelKey: 'Location', type: 'label' },
-        {
-            indent: true,
-            type: 'link',
-            value: {
-                data: { action: 'open_link', targetLink: 'https://1.1.1/' },
-                id: '0-location',
-                label: 'https://1.1.1/',
-            },
-        },
-        { type: 'spacer' },
-    ]
+    const result = [{ type: 'spacer' }]
     it('addNodeOCPRouteLocationForCluster with tls and no obj', () => {
         expect(addNodeOCPRouteLocationForCluster(node, undefined, [], t)).toEqual(result)
     })
