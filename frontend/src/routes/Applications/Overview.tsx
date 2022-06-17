@@ -5,7 +5,6 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
-import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
@@ -15,9 +14,17 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
+    cronJobsState,
+    daemonSetsState,
+    deploymentConfigsState,
+    deploymentsState,
     discoveredApplicationsState,
+    discoveredOCPAppResourcesState,
+    jobsState,
+    kustomizationsState,
     namespacesState,
     placementRulesState,
+    statefulSetsState,
     subscriptionsState,
 } from '../../atoms'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
@@ -36,9 +43,26 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
+    CronJobApiVersion,
+    CronJobDefinition,
+    CronJobKind,
+    DaemonSetDefinition,
+    DaemonSetKind,
+    DeploymentConfigDefinition,
+    DeploymentConfigKind,
+    DeploymentDefinition,
+    DeploymentKind,
     DiscoveredArgoApplicationDefinition,
     getApiVersionResourceGroup,
     IResource,
+    JobDefinition,
+    JobKind,
+    KustomizationApiVersion,
+    KustomizationDefinition,
+    KustomizationKind,
+    OCPAppResource,
+    StatefulSetDefinition,
+    StatefulSetKind,
     Subscription,
 } from '../../resources'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -66,6 +90,8 @@ const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
 const localClusterStr = 'local-cluster'
 
+type IApplicationResource = IResource | OCPAppResource
+
 // Map resource kind to type column
 function getApplicationType(resource: IResource, t: TFunction) {
     if (resource.apiVersion === ApplicationApiVersion) {
@@ -76,8 +102,12 @@ function getApplicationType(resource: IResource, t: TFunction) {
         if (resource.kind === ArgoApplicationKind) {
             return t('Discovered')
         } else if (resource.kind === ApplicationSetKind) {
-            return 'ApplicationSet'
+            return t('ApplicationSet')
         }
+    } else if (['apps/v1', 'batch/v1', 'v1'].includes(resource.apiVersion)) {
+        return t('Openshift')
+    } else if (resource.apiVersion === KustomizationApiVersion) {
+        return t('Flux')
     }
     return '-'
 }
@@ -184,6 +214,43 @@ export default function ApplicationsOverview() {
     const [placementRules] = useRecoilState(placementRulesState)
     const [namespaces] = useRecoilState(namespacesState)
 
+    // Openshift Application resources
+    const [cronJobs] = useRecoilState(cronJobsState)
+    const [daemonSets] = useRecoilState(daemonSetsState)
+    const [deployments] = useRecoilState(deploymentsState)
+    const [deploymentConfigs] = useRecoilState(deploymentConfigsState)
+    const [jobs] = useRecoilState(jobsState)
+    const [statefulSets] = useRecoilState(statefulSetsState)
+    const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
+    const [kustomizations] = useRecoilState(kustomizationsState)
+
+    const applicationResources: IResource[] = useMemo(
+        () => [...cronJobs, ...daemonSets, ...deployments, ...deploymentConfigs, ...jobs, ...statefulSets],
+        [cronJobs, daemonSets, deployments, deploymentConfigs, jobs, statefulSets]
+    )
+
+    const ocpApplicationResources: IResource[] = useMemo(
+        () =>
+            applicationResources.filter((item: any) => {
+                const labels = item.metadata.labels
+                return labels && ('app' in labels || 'app.kubernetes.io/part-of' in labels)
+            }),
+        [applicationResources]
+    )
+
+    const fluxAppresources: IResource[] = useMemo(
+        () =>
+            kustomizations.filter((item: any) => {
+                const labels = item.metadata.labels
+                return (
+                    labels &&
+                    'kustomize.toolkit.fluxcd.io/name' in labels &&
+                    'kustomize.toolkit.fluxcd.io/namespace' in labels
+                )
+            }),
+        [kustomizations]
+    )
+
     const allClusters = useAllClusters()
     const managedClusters = useMemo(
         () =>
@@ -287,6 +354,16 @@ export default function ApplicationsOverview() {
         [applications, generateTransformData]
     )
 
+    const ocpApplicationTableItems = useMemo(
+        () => ocpApplicationResources.map(generateTransformData),
+        [ocpApplicationResources, generateTransformData]
+    )
+
+    const fluxApplicationTableItems = useMemo(
+        () => fluxAppresources.map(generateTransformData),
+        [fluxAppresources, generateTransformData]
+    )
+
     const applicationSetsTableItems = useMemo(
         () => applicationSets.map(generateTransformData),
         [applicationSets, generateTransformData]
@@ -338,21 +415,55 @@ export default function ApplicationsOverview() {
         )
     }, [discoveredApplications, generateTransformData])
 
+    const discoveredOCPAppResourceTableItems = useMemo(() => {
+        return discoveredOCPAppResources
+            .filter(({ label }) => {
+                return label && (label.includes('app=') || label.includes('app.kubernetes.io/part-of='))
+            })
+            .map((remoteOCPApp: any) =>
+                generateTransformData({
+                    apiVersion: remoteOCPApp.apigroup
+                        ? `${remoteOCPApp.apigroup}/${remoteOCPApp.apiversion}`
+                        : remoteOCPApp.apiversion,
+                    kind: remoteOCPApp.kind,
+                    metadata: {
+                        name: remoteOCPApp.name,
+                        namespace: remoteOCPApp.namespace,
+                        creationTimestamp: remoteOCPApp.created,
+                    },
+                    status: {
+                        cluster: remoteOCPApp.cluster,
+                    },
+                } as OCPAppResource)
+            )
+    }, [discoveredOCPAppResources, generateTransformData])
+
     const tableItems: IResource[] = useMemo(
         () => [
             ...applicationTableItems,
             ...applicationSetsTableItems,
             ...argoApplicationTableItems,
             ...discoveredApplicationsTableItems,
+            ...discoveredOCPAppResourceTableItems,
+            ...ocpApplicationTableItems,
+            ...fluxApplicationTableItems,
         ],
-        [applicationSetsTableItems, applicationTableItems, argoApplicationTableItems, discoveredApplicationsTableItems]
+        [
+            applicationSetsTableItems,
+            applicationTableItems,
+            argoApplicationTableItems,
+            discoveredApplicationsTableItems,
+            discoveredOCPAppResourceTableItems,
+            ocpApplicationTableItems,
+            fluxApplicationTableItems,
+        ]
     )
 
     const keyFn = useCallback(
         (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
         []
     )
-    const columns = useMemo<IAcmTableColumn<IResource>[]>(
+    const columns = useMemo<IAcmTableColumn<IApplicationResource>[]>(
         () => [
             {
                 header: t('Name'),
@@ -365,7 +476,7 @@ export default function ApplicationsOverview() {
                         application.apiVersion === ArgoApplicationApiVersion &&
                         application.kind === ArgoApplicationKind
                     ) {
-                        const cluster = _.get(application, 'status.cluster')
+                        const cluster = application?.status?.cluster
                         clusterQuery = cluster ? `&cluster=${cluster}` : ''
                     }
                     return (
@@ -507,6 +618,15 @@ export default function ApplicationsOverview() {
                         label: t('Application Set'),
                         value: `${getApiVersionResourceGroup(ApplicationSetApiVersion)}/${ApplicationSetKind}`,
                     },
+                    {
+                        label: t('Flux'),
+                        value: `${getApiVersionResourceGroup(KustomizationApiVersion)}/${KustomizationKind}`,
+                    },
+                    // TBD
+                    {
+                        label: t('Openshift'),
+                        value: `${getApiVersionResourceGroup(CronJobApiVersion)}/${CronJobKind}`,
+                    },
                 ],
                 tableFilterFn: (selectedValues: string[], item: IResource) => {
                     return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
@@ -531,9 +651,11 @@ export default function ApplicationsOverview() {
                     title: t('View application'),
                     click: () => {
                         history.push(
-                            NavigationPath.applicationOverview
-                                .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(':name', resource.metadata?.name as string) + subscriptionAppQueryString
+                            `${
+                                NavigationPath.applicationOverview
+                                    .replace(':namespace', resource.metadata?.namespace as string)
+                                    .replace(':name', resource.metadata?.name as string) + subscriptionAppQueryString
+                            }`
                         )
                     },
                 })
@@ -556,9 +678,9 @@ export default function ApplicationsOverview() {
                     title: t('View application'),
                     click: () => {
                         history.push(
-                            NavigationPath.applicationOverview
+                            `${NavigationPath.applicationOverview
                                 .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(':name', resource.metadata?.name as string) + argoAppSetQueryString
+                                .replace(':name', resource.metadata?.name as string)}${argoAppSetQueryString}`
                         )
                     },
                 })
@@ -581,11 +703,12 @@ export default function ApplicationsOverview() {
                     title: t('View application'),
                     click: () => {
                         history.push(
-                            NavigationPath.applicationOverview
+                            `${NavigationPath.applicationOverview
                                 .replace(':namespace', resource.metadata?.namespace as string)
-                                .replace(':name', resource.metadata?.name as string) +
-                                '?' +
-                                'apiVersion=application.argoproj.io'
+                                .replace(
+                                    ':name',
+                                    resource.metadata?.name as string
+                                )}?apiVersion=application.argoproj.io`
                         )
                     },
                 })
@@ -596,6 +719,7 @@ export default function ApplicationsOverview() {
                 title: t('Search application'),
                 click: () => {
                     const [apigroup, apiversion] = resource.apiVersion.split('/')
+                    const { cluster } = resource.status
                     const searchLink = getSearchLink({
                         properties: {
                             name: resource.metadata?.name,
@@ -603,11 +727,76 @@ export default function ApplicationsOverview() {
                             kind: resource.kind.toLowerCase(),
                             apigroup,
                             apiversion,
+                            cluster: cluster ? cluster : 'local-cluster',
                         },
                     })
                     history.push(searchLink)
                 },
             })
+
+            if (
+                isResourceTypeOf(resource, [
+                    CronJobDefinition,
+                    DaemonSetDefinition,
+                    DeploymentDefinition,
+                    DeploymentConfigDefinition,
+                    JobDefinition,
+                    StatefulSetDefinition,
+                ])
+            ) {
+                actions.push({
+                    id: 'viewApplication',
+                    title: t('View application'),
+                    click: () => {
+                        history.push(
+                            `${NavigationPath.applicationOverview
+                                .replace(':namespace', resource.metadata?.namespace as string)
+                                .replace(
+                                    ':name',
+                                    resource.metadata?.name as string
+                                )}?apiVersion=ocp&cluster=local-cluster`
+                        )
+                    },
+                })
+            }
+
+            if (isResourceTypeOf(resource, KustomizationDefinition)) {
+                actions.push({
+                    id: 'viewApplication',
+                    title: t('View application'),
+                    click: () => {
+                        history.push(
+                            // TBD - may need to refactor the url
+                            `${NavigationPath.applicationOverview
+                                .replace(':namespace', resource.metadata?.namespace as string)
+                                .replace(
+                                    ':name',
+                                    resource.metadata?.name as string
+                                )}?'apiVersion=flux&cluster=local-cluster'`
+                        )
+                    },
+                })
+            }
+
+            if (
+                [CronJobKind, DaemonSetKind, DeploymentKind, DeploymentConfigKind, JobKind, StatefulSetKind]
+                    .map((kind) => kind.toLowerCase())
+                    .includes(resource.kind)
+            ) {
+                actions.push({
+                    id: 'viewApplication',
+                    title: t('View application'),
+                    click: () => {
+                        history.push(
+                            `${NavigationPath.applicationOverview
+                                .replace(':namespace', resource.metadata?.namespace as string)
+                                .replace(':name', resource.metadata?.name as string)}?apiVersion=ocp&cluster=${
+                                resource.status.cluster
+                            }`
+                        )
+                    },
+                })
+            }
 
             if (
                 isResourceTypeOf(resource, ApplicationDefinition) ||
