@@ -14,17 +14,11 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
-    cronJobsState,
-    daemonSetsState,
-    deploymentConfigsState,
-    deploymentsState,
     discoveredApplicationsState,
     discoveredOCPAppResourcesState,
-    jobsState,
     kustomizationsState,
     namespacesState,
     placementRulesState,
-    statefulSetsState,
     subscriptionsState,
 } from '../../atoms'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
@@ -214,29 +208,8 @@ export default function ApplicationsOverview() {
     const [placementRules] = useRecoilState(placementRulesState)
     const [namespaces] = useRecoilState(namespacesState)
 
-    // Openshift Application resources
-    const [cronJobs] = useRecoilState(cronJobsState)
-    const [daemonSets] = useRecoilState(daemonSetsState)
-    const [deployments] = useRecoilState(deploymentsState)
-    const [deploymentConfigs] = useRecoilState(deploymentConfigsState)
-    const [jobs] = useRecoilState(jobsState)
-    const [statefulSets] = useRecoilState(statefulSetsState)
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
     const [kustomizations] = useRecoilState(kustomizationsState)
-
-    const applicationResources: IResource[] = useMemo(
-        () => [...cronJobs, ...daemonSets, ...deployments, ...deploymentConfigs, ...jobs, ...statefulSets],
-        [cronJobs, daemonSets, deployments, deploymentConfigs, jobs, statefulSets]
-    )
-
-    const ocpApplicationResources: IResource[] = useMemo(
-        () =>
-            applicationResources.filter((item: any) => {
-                const labels = item.metadata.labels
-                return labels && ('app' in labels || 'app.kubernetes.io/part-of' in labels)
-            }),
-        [applicationResources]
-    )
 
     const fluxAppresources: IResource[] = useMemo(
         () =>
@@ -354,11 +327,6 @@ export default function ApplicationsOverview() {
         [applications, generateTransformData]
     )
 
-    const ocpApplicationTableItems = useMemo(
-        () => ocpApplicationResources.map(generateTransformData),
-        [ocpApplicationResources, generateTransformData]
-    )
-
     const fluxApplicationTableItems = useMemo(
         () => fluxAppresources.map(generateTransformData),
         [fluxAppresources, generateTransformData]
@@ -415,7 +383,7 @@ export default function ApplicationsOverview() {
         )
     }, [discoveredApplications, generateTransformData])
 
-    const discoveredOCPAppResourceTableItems = useMemo(() => {
+    const ocpAppResourceTableItems = useMemo(() => {
         return discoveredOCPAppResources
             .filter(({ label }) => {
                 return label && (label.includes('app=') || label.includes('app.kubernetes.io/part-of='))
@@ -444,8 +412,7 @@ export default function ApplicationsOverview() {
             ...applicationSetsTableItems,
             ...argoApplicationTableItems,
             ...discoveredApplicationsTableItems,
-            ...discoveredOCPAppResourceTableItems,
-            ...ocpApplicationTableItems,
+            ...ocpAppResourceTableItems,
             ...fluxApplicationTableItems,
         ],
         [
@@ -453,8 +420,7 @@ export default function ApplicationsOverview() {
             applicationTableItems,
             argoApplicationTableItems,
             discoveredApplicationsTableItems,
-            discoveredOCPAppResourceTableItems,
-            ocpApplicationTableItems,
+            ocpAppResourceTableItems,
             fluxApplicationTableItems,
         ]
     )

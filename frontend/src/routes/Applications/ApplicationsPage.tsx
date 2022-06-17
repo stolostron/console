@@ -1,14 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmLoadingPage, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
-import { Fragment, lazy, Suspense, useEffect, useState } from 'react'
+import { Fragment, lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { discoveredApplicationsState, discoveredOCPAppResourcesState } from '../../atoms'
+import { discoveredApplicationsState, discoveredOCPAppResourcesState, managedClustersState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
-import { queryRemoteArgoApps, queryRemoteOCPAppResources } from '../../lib/search'
+import { queryRemoteArgoApps, queryOCPAppResources, ISearchResult } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
+import { IRequestResult } from '../../resources'
 
 const ApplicationsOverviewPage = lazy(() => import('./Overview'))
 const AdvancedConfigurationPage = lazy(() => import('./AdvancedConfiguration'))
@@ -17,10 +18,17 @@ export default function ApplicationsPage() {
     const location = useLocation()
     const { t } = useTranslation()
 
+    const [managedClusters] = useRecoilState(managedClustersState)
+    const managedClusterNames = managedClusters.map((cluster) => cluster.metadata.name)
+
     const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
-    const dataOCPResources = useQuery(queryRemoteOCPAppResources).data
-    const loadingOCPResources = useQuery(queryRemoteOCPAppResources).loading
-    const startPollingOCPResources = useQuery(queryRemoteOCPAppResources).startPolling
+
+    const queryFunction = useCallback<() => IRequestResult<ISearchResult>>(() => {
+        return queryOCPAppResources(managedClusterNames as string[])
+    }, [managedClusterNames])
+    const dataOCPResources = useQuery(queryFunction).data
+    const loadingOCPResources = useQuery(queryFunction).loading
+    const startPollingOCPResources = useQuery(queryFunction).startPolling
     useEffect(startPolling, [startPolling])
     useEffect(startPollingOCPResources, [startPollingOCPResources])
     const [timedOut, setTimedOut] = useState<boolean>()
