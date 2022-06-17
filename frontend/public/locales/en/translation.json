@@ -580,6 +580,7 @@
     "creation.app.settings.timeWindow.config.timezone.title": "Time zone",
     "creation.app.settings.timeWindow.defaultMode": "Always active",
     "creation.app.settings.timeWindow.tooltip": "Define a time window if you want to activate or block resources deployment within a certain time interval.",
+    "creation.app.settings.placerule.tooltip": "Define a placement rule which will be used to determine where resources are deployed.",
     "creation.app.subReconcileRate": "Disable auto-reconciliation",
     "creation.aws.ami": "AMI ID",
     "creation.aws.ami.placeholder": "Enter AMI ID",

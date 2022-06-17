@@ -5,9 +5,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { AcmTextInput } from '@stolostron/ui-components'
-import { Checkbox, Accordion, AccordionItem, AccordionToggle, AccordionContent } from '@patternfly/react-core'
+import { Radio, FormGroup, Accordion, AccordionItem, AccordionContent, Popover, Button } from '@patternfly/react-core'
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
+import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Tooltip, getSourcePath, removeVs } from 'temptifly'
 import _ from 'lodash'
 import './style.css'
@@ -45,16 +46,12 @@ export class ClusterSelector extends React.Component {
     }
 
     render() {
-        const { isExpanded } = this.state
-        const onToggle = (toggleStatus) => {
-            this.setState({ isExpanded: !toggleStatus })
-        }
         const { controlId, locale, control, i18n } = this.props
         const { name, active, validation = {} } = control
         const modeSelected = active && active.mode === true
         const isExistingRule = _.get(this.props, 'control.showData', []).length > 0
         const isReadOnly = isExistingRule || !modeSelected
-        const showLabels = modeSelected && isExpanded
+        const hasLabels = _.get(active, 'clusterLabelsList.0.labelValue') !== ''
 
         return (
             <React.Fragment>
@@ -66,67 +63,80 @@ export class ClusterSelector extends React.Component {
                     </div>
 
                     <div className="clusterSelector-container" style={{ fontSize: '14px', position: 'relative' }}>
-                        <Checkbox
-                            className="clusterSelector-checkbox"
-                            style={{ fontWeight: '700', color: '#152935', fontSize: '14px' }}
-                            isChecked={modeSelected}
-                            isDisabled={isExistingRule}
-                            id={`clusterSelector-checkbox-${controlId}`}
-                            label={i18n('tooltip.creation.app.settings.clusterSelector')}
-                            onChange={this.handleMode}
-                        />
+                        <div style={{ display: 'flex', alignItems: 'center' }} onClick={this.handleMode}>
+                            <Radio
+                                className="clusterSelector-checkbox"
+                                isChecked={modeSelected}
+                                isDisabled={isExistingRule}
+                                id={`clusterSelector-checkbox-${controlId}`}
+                                onChange={this.handleMode}
+                            />
+                            <FormGroup
+                                id="clusterSelector-container"
+                                label={i18n('tooltip.creation.app.settings.clusterSelector')}
+                                labelIcon={
+                                    /* istanbul ignore next */
 
-                        <Accordion style={{ display: 'block' }}>
-                            <AccordionItem>
-                                <AccordionToggle
-                                    onClick={() => {
-                                        onToggle(showLabels)
-                                    }}
-                                    isExpanded={showLabels}
-                                    id="labels-header"
-                                >
-                                    {i18n('edit.app.labelClusters.summary')}
-                                </AccordionToggle>
-                                <AccordionContent isHidden={!showLabels}>
-                                    <div className="clusterSelector-labels-section">
-                                        <div
-                                            className="labels-descr"
-                                            style={{ fontSize: '14px', marginBottom: '30px' }}
+                                    <Popover
+                                        id={`${controlId}-label-help-popover`}
+                                        bodyContent={i18n('creation.app.settings.selectorClusters.config')}
+                                    >
+                                        <Button
+                                            variant="plain"
+                                            id={`${controlId}-label-help-button`}
+                                            aria-label="More info"
+                                            onClick={(e) => e.preventDefault()}
+                                            className="pf-c-form__group-label-help"
                                         >
-                                            {i18n('creation.app.settings.selectorClusters.config')}
-                                        </div>
-
-                                        <div
-                                            className="labels-section"
-                                            style={{ display: 'block' }}
-                                            id={`clusterSelector-labels-section-${controlId}`}
-                                        >
-                                            {this.renderClusterLabels(control, isReadOnly, controlId, i18n)}
+                                            <HelpIcon noVerticalAlign />
+                                        </Button>
+                                    </Popover>
+                                }
+                            />
+                        </div>
+                        <div style={!modeSelected ? { pointerEvents: 'none', opacity: 0.3 } : {}}>
+                            <Accordion style={{ display: 'block' }}>
+                                <AccordionItem>
+                                    <AccordionContent>
+                                        <div className="clusterSelector-labels-section">
                                             <div
-                                                className={`add-label-btn ${isReadOnly ? 'btn-disabled' : ''}`}
-                                                tabIndex="0"
-                                                role={'button'}
-                                                onClick={() => this.addLabelToList(control, !isReadOnly)}
-                                                onKeyPress={this.addLabelKeyPress.bind(this)}
+                                                className="labels-section"
+                                                style={{ display: 'block' }}
+                                                id={`clusterSelector-labels-section-${controlId}`}
                                             >
-                                                <PlusCircleIcon
-                                                    color="#06c"
-                                                    key="add-icon"
-                                                    className="add-label-btn-icon"
-                                                    style={{ float: 'left', marginLeft: '7px' }}
-                                                />
-                                                <div
-                                                    className="add-label-btn-text"
-                                                    style={{ fontWeight: '700', fontSize: '14px', color: '#06c' }}
-                                                >
-                                                    {i18n('creation.app.settings.selectorClusters.prop.add')}
-                                                </div>
+                                                {this.renderClusterLabels(control, isReadOnly, controlId, i18n)}
+                                                {hasLabels && (
+                                                    <div
+                                                        className={`add-label-btn ${isReadOnly ? 'btn-disabled' : ''}`}
+                                                        tabIndex="0"
+                                                        role={'button'}
+                                                        onClick={() => this.addLabelToList(control, !isReadOnly)}
+                                                        onKeyPress={this.addLabelKeyPress.bind(this)}
+                                                    >
+                                                        <PlusCircleIcon
+                                                            color="#06c"
+                                                            key="add-icon"
+                                                            className="add-label-btn-icon"
+                                                            style={{ float: 'left', marginLeft: '7px' }}
+                                                        />
+                                                        <div
+                                                            className="add-label-btn-text"
+                                                            style={{
+                                                                fontWeight: '700',
+                                                                fontSize: '14px',
+                                                                color: '#06c',
+                                                            }}
+                                                        >
+                                                            {i18n('creation.app.settings.selectorClusters.prop.add')}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+                        </div>
                     </div>
                 </div>
             </React.Fragment>
@@ -289,11 +299,11 @@ export class ClusterSelector extends React.Component {
         }
     }
 
-    handleMode = (checked) => {
+    handleMode = () => {
         const { control, handleChange } = this.props
         const { active } = control
         if (active) {
-            active.mode = checked
+            active.mode = true
         }
 
         handleChange(control)

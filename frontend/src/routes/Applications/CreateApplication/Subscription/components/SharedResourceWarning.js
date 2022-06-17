@@ -180,61 +180,70 @@ const SharedResourceWarning = ({ resourceType, control }) => {
         resourceType,
     ])
 
-    return deployingSubscription || siblingApplications.length || childResources.length ? (
-        <div className="shared-resource-warning">
+    return (
+        <>
             <div>
-                <ExclamationTriangleIcon />
+                {resourceType.name === 'HCMSubscription'
+                    ? t('creation.app.settings.timeWindow.tooltip')
+                    : t('creation.app.settings.placerule.tooltip')}
             </div>
-            <div>
-                {!!deployingSubscription && (
-                    <React.Fragment>
-                        <p
-                            dangerouslySetInnerHTML={{
-                                __html: `
+            {deployingSubscription || siblingApplications.length || childResources.length ? (
+                <div className="shared-resource-warning">
+                    <div>
+                        <ExclamationTriangleIcon />
+                    </div>
+                    <div>
+                        {!!deployingSubscription && (
+                            <React.Fragment>
+                                <p
+                                    dangerouslySetInnerHTML={{
+                                        __html: `
               ${getWarningSpan(t('Warning:'))}
               ${t(
                   'This application uses a {{0}} resource that is deployed by the subscription {{1}}. Changes to these settings might be reverted when resources are reconciled with the resource repository.',
                   [getCodeSpan(getResourceKind(resourceType)), getCodeSpan(deployingSubscription)]
               )}
               `,
-                            }}
-                        />
-                    </React.Fragment>
-                )}
-                {!!siblingApplications.length && (
-                    <React.Fragment>
-                        <p
-                            dangerouslySetInnerHTML={{
-                                __html: `
+                                    }}
+                                />
+                            </React.Fragment>
+                        )}
+                        {!!siblingApplications.length && (
+                            <React.Fragment>
+                                <p
+                                    dangerouslySetInnerHTML={{
+                                        __html: `
               ${getWarningSpan(t('Caution:'))}
               ${t(
                   'This application uses a shared {{0}} resource. Changes to these settings will also affect the following applications:',
                   [getCodeSpan(getResourceKind(resourceType))]
               )}
               `,
-                            }}
-                        />
-                        <p>{siblingApplications.join(', ')}</p>
-                    </React.Fragment>
-                )}
-                {!!childResources.length && (
-                    <React.Fragment>
-                        <p
-                            dangerouslySetInnerHTML={{
-                                __html: `
+                                    }}
+                                />
+                                <p>{siblingApplications.join(', ')}</p>
+                            </React.Fragment>
+                        )}
+                        {!!childResources.length && (
+                            <React.Fragment>
+                                <p
+                                    dangerouslySetInnerHTML={{
+                                        __html: `
               ${getWarningSpan(t('Caution:'))}
               ${t(
                   'Changes to these settings might also affect other applications or subscriptions. This subscription deploys the following resources:'
               )}
               `,
-                            }}
-                        />
-                        <p>{childResources.join(', ')}</p>
-                    </React.Fragment>
-                )}
-            </div>
-        </div>
-    ) : null
+                                    }}
+                                />
+                                <p>{childResources.join(', ')}</p>
+                            </React.Fragment>
+                        )}
+                    </div>
+                </div>
+            ) : null}
+        </>
+    )
 }
 
 SharedResourceWarning.propTypes = {
