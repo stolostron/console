@@ -16,7 +16,7 @@ import moment from 'moment'
 import { getEditLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
 import { getURLSearchData } from './diagram-helpers-argo'
-import { openArgoCDEditor } from '../model/topologyAppSet'
+import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'
@@ -476,10 +476,9 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
         return details // this info is in the main Location status since we have a spec host
     }
 
-    let hostLink = 'NA'
     const linkId = typeObject ? _.get(typeObject, 'id', '0') : _.get(node, 'uid', '0')
 
-    if (!typeObject) {
+    if (!typeObject && clustersList.length === 1) {
         //this is called from the main details
         if (!hostName) {
             return details //return since there is no global host
@@ -510,22 +509,24 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
         })
         return details
     }
-    const transport = R.pathOr(undefined, ['specs', 'raw', 'spec', 'tls'])(node) ? 'https' : 'http'
-    hostLink = `${transport}://${hostName}/`
+    const transport = R.pathOr(undefined, ['specs', 'template', 'template', 'spec', 'tls'])(node) ? 'https' : 'http'
+    const hostLink = `${transport}://${hostName}/`
 
     //argo app doesn't have spec info
-    details.push({
-        type: 'link',
-        value: {
-            label: hostLink,
-            id: `${linkId}-location`,
-            data: {
-                action: 'open_link',
-                targetLink: hostLink,
+    if (hostName) {
+        details.push({
+            type: 'link',
+            value: {
+                label: hostLink,
+                id: `${linkId}-location`,
+                data: {
+                    action: 'open_link',
+                    targetLink: hostLink,
+                },
             },
-        },
-        indent: true,
-    })
+            indent: true,
+        })
+    }
 
     !typeObject &&
         details.push({
@@ -537,7 +538,10 @@ export const addNodeOCPRouteLocationForCluster = (node, typeObject, details, t) 
 
 //route
 export const addOCPRouteLocation = (node, clusterName, targetNS, details, t) => {
-    if (R.pathOr('', ['specs', 'raw', 'kind'])(node) === 'Route') {
+    if (
+        R.pathOr('', ['specs', 'template', 'template', 'kind'])(node).toLowerCase() === 'route' ||
+        node.type === 'route'
+    ) {
         return addNodeInfoPerCluster(node, clusterName, targetNS, details, addNodeOCPRouteLocationForCluster, t)
     }
 
@@ -606,7 +610,7 @@ export const addNodeInfoPerCluster = (node, clusterName, targetNS, details, getD
     const resourcesForCluster = resourceMap[`${resourceName}-${clusterName}`] || []
     const typeObject = _.find(resourcesForCluster, (obj) => _.get(obj, 'namespace', '') === targetNS)
     if (typeObject) {
-        getDetailsFunction(node, typeObject, locationDetails, t)
+        getDetailsFunction(node, typeObject, locationDetails, t, clusterName)
     }
 
     locationDetails.forEach((locationDetail) => {
@@ -649,7 +653,8 @@ export const processResourceActionLink = (resource, toggleLoading, t) => {
             break
         }
         case 'open_route_url': {
-            // czcz openRouteURL(routeObject, toggleLoading, handleErrorMsg) // the route url opens here
+            const routeObject = R.pathOr('', ['routeObject'])(resource)
+            openRouteURL(routeObject, toggleLoading) // the route url opens here
             break
         }
         default:

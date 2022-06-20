@@ -199,6 +199,31 @@ const getArgoRoute = async (appName, appNamespace, cluster, managedclusterviewda
     }
 }
 
+export const openRouteURL = (routeObject, toggleLoading) => {
+    const name = get(routeObject, 'name', '')
+    const namespace = get(routeObject, 'namespace', '')
+    const cluster = get(routeObject, 'cluster', '')
+    const kind = get(routeObject, 'kind', '')
+    const apigroup = get(routeObject, 'apigroup', '')
+    const apiversion = get(routeObject, 'apiversion', '')
+    const apiVersion = `${apigroup}/${apiversion}`
+
+    toggleLoading()
+    fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
+        .then((viewResponse) => {
+            toggleLoading()
+            if (viewResponse.message) {
+                // should handle error in the future
+            } else {
+                openRouteURLWindow(viewResponse.result)
+            }
+        })
+        .catch((err) => {
+            toggleLoading()
+            console.error('Error getting resource: ', err)
+        })
+}
+
 const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t) => {
     const query = convertStringToQuery(
         `kind:route namespace:${appNamespace} cluster:${cluster} label:app.kubernetes.io/part-of=argocd`
@@ -264,4 +289,11 @@ const openArgoEditorWindow = (route, appName) => {
     const transport = get(route, 'spec.tls') ? 'https' : 'http'
     const argoURL = `${transport}://${hostName}/applications`
     window.open(`${argoURL}/${appName}`, '_blank')
+}
+
+const openRouteURLWindow = (route) => {
+    const hostName = get(route, 'spec.host', 'unknown')
+    const transport = get(route, 'spec.tls') ? 'https' : 'http'
+    const routeURL = `${transport}://${hostName}`
+    window.open(`${routeURL}`, '_blank')
 }
