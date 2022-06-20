@@ -154,6 +154,7 @@ export const THROTTLE_EVENTS_DELAY = 500
 
 export const discoveredApplicationsState = AtomArray<ArgoApplication>()
 export const discoveredOCPAppResourcesState = AtomArray<OCPAppResource>()
+export const discoveredKustomizationsState = AtomArray<Kustomization>()
 
 export const agentClusterInstallsState = AtomArray<CIM.AgentClusterInstallK8sResource>()
 export const agentsState = AtomArray<CIM.AgentK8sResource>()
@@ -181,7 +182,6 @@ export const gitOpsClustersState = AtomArray<GitOpsCluster>()
 export const helmReleaseState = AtomArray<HelmRelease>()
 export const infraEnvironmentsState = AtomArray<CIM.InfraEnvK8sResource>()
 export const infrastructuresState = AtomArray<CIM.InfrastructureK8sResource>()
-export const kustomizationsState = AtomArray<Kustomization>()
 export const machinePoolsState = AtomArray<MachinePool>()
 export const managedClusterAddonsState = AtomArray<ManagedClusterAddOn>()
 export const managedClusterInfosState = AtomArray<ManagedClusterInfo>()
@@ -262,7 +262,6 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setHelmReleases] = useRecoilState(helmReleaseState)
     const [, setInfraEnvironments] = useRecoilState(infraEnvironmentsState)
     const [, setInfrastructure] = useRecoilState(infrastructuresState)
-    const [, setKustomizationsState] = useRecoilState(kustomizationsState)
     const [, setMachinePools] = useRecoilState(machinePoolsState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
@@ -327,7 +326,6 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(HelmReleaseApiVersion, HelmReleaseKind, setHelmReleases)
         addSetter(InfraEnvApiVersion, InfraEnvKind, setInfraEnvironments)
         addSetter(InfrastructureApiVersion, InfrastructureKind, setInfrastructure)
-        addSetter(KustomizationApiVersion, KustomizationKind, setKustomizationsState)
         addSetter(MachinePoolApiVersion, MachinePoolKind, setMachinePools)
         addSetter(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons)
         addSetter(ManagedClusterApiVersion, ManagedClusterKind, setManagedClusters)
@@ -372,7 +370,6 @@ export function LoadData(props: { children?: ReactNode }) {
         setHelmReleases,
         setInfraEnvironments,
         setInfrastructure,
-        setKustomizationsState,
         setMachinePools,
         setManagedClusterAddons,
         setManagedClusterInfos,

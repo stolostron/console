@@ -15,8 +15,8 @@ import {
     argoApplicationsState,
     channelsState,
     discoveredApplicationsState,
+    discoveredKustomizationsState,
     discoveredOCPAppResourcesState,
-    kustomizationsState,
     namespacesState,
     placementRulesState,
     subscriptionsState,
@@ -37,7 +37,6 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
-    CronJobApiVersion,
     CronJobDefinition,
     CronJobKind,
     DaemonSetDefinition,
@@ -51,6 +50,7 @@ import {
     IResource,
     JobDefinition,
     JobKind,
+    Kustomization,
     KustomizationApiVersion,
     KustomizationDefinition,
     KustomizationKind,
@@ -209,16 +209,16 @@ export default function ApplicationsOverview() {
     const [namespaces] = useRecoilState(namespacesState)
 
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
-    const [kustomizations] = useRecoilState(kustomizationsState)
+    const [kustomizations] = useRecoilState(discoveredKustomizationsState)
 
     const fluxAppresources: IResource[] = useMemo(
         () =>
             kustomizations.filter((item: any) => {
-                const labels = item.metadata.labels
+                const labels = item.label
                 return (
                     labels &&
-                    'kustomize.toolkit.fluxcd.io/name' in labels &&
-                    'kustomize.toolkit.fluxcd.io/namespace' in labels
+                    labels.includes('kustomize.toolkit.fluxcd.io/name') &&
+                    labels.includes('kustomize.toolkit.fluxcd.io/namespace')
                 )
             }),
         [kustomizations]
@@ -327,11 +327,6 @@ export default function ApplicationsOverview() {
         [applications, generateTransformData]
     )
 
-    const fluxApplicationTableItems = useMemo(
-        () => fluxAppresources.map(generateTransformData),
-        [fluxAppresources, generateTransformData]
-    )
-
     const applicationSetsTableItems = useMemo(
         () => applicationSets.map(generateTransformData),
         [applicationSets, generateTransformData]
@@ -404,6 +399,23 @@ export default function ApplicationsOverview() {
                     },
                 } as OCPAppResource)
             )
+    }, [discoveredOCPAppResources, generateTransformData])
+
+    const fluxApplicationTableItems = useMemo(() => {
+        return fluxAppresources.map((fluxApp: any) =>
+            generateTransformData({
+                apiVersion: fluxApp.apigroup ? `${fluxApp.apigroup}/${fluxApp.apiversion}` : fluxApp.apiversion,
+                kind: fluxApp.kind,
+                metadata: {
+                    name: fluxApp.name,
+                    namespace: fluxApp.namespace,
+                    creationTimestamp: fluxApp.created,
+                },
+                status: {
+                    cluster: fluxApp.cluster,
+                },
+            } as Kustomization)
+        )
     }, [discoveredOCPAppResources, generateTransformData])
 
     const tableItems: IResource[] = useMemo(
@@ -588,11 +600,7 @@ export default function ApplicationsOverview() {
                         label: t('Flux'),
                         value: `${getApiVersionResourceGroup(KustomizationApiVersion)}/${KustomizationKind}`,
                     },
-                    // TBD
-                    {
-                        label: t('Openshift'),
-                        value: `${getApiVersionResourceGroup(CronJobApiVersion)}/${CronJobKind}`,
-                    },
+                    // TBD Openshift
                 ],
                 tableFilterFn: (selectedValues: string[], item: IResource) => {
                     return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)

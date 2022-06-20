@@ -1,15 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmLoadingPage, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
-import { Fragment, lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { Fragment, lazy, Suspense, useEffect, useState } from 'react'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { discoveredApplicationsState, discoveredOCPAppResourcesState, managedClustersState } from '../../atoms'
+import { discoveredApplicationsState, discoveredKustomizationsState, discoveredOCPAppResourcesState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
-import { queryRemoteArgoApps, queryOCPAppResources, ISearchResult } from '../../lib/search'
+import { queryRemoteArgoApps, queryOCPAppResources, queryKustomizations } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
-import { IRequestResult } from '../../resources'
 
 const ApplicationsOverviewPage = lazy(() => import('./Overview'))
 const AdvancedConfigurationPage = lazy(() => import('./AdvancedConfiguration'))
@@ -18,38 +17,30 @@ export default function ApplicationsPage() {
     const location = useLocation()
     const { t } = useTranslation()
 
-    const [managedClusters] = useRecoilState(managedClustersState)
-    const managedClusterNames = managedClusters.map((cluster) => cluster.metadata.name)
-
     const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
+    const dataOCPResources = useQuery(queryOCPAppResources).data
+    const loadingOCPResources = useQuery(queryOCPAppResources).loading
+    const startPollingOCPResources = useQuery(queryOCPAppResources).startPolling
 
-    const queryFunction = useCallback<() => IRequestResult<ISearchResult>>(() => {
-        if (managedClusterNames.length) {
-            return queryOCPAppResources(managedClusterNames as string[])
-        } else {
-            return {
-                promise: Promise.resolve({ data: { searchResult: [] } } as ISearchResult),
-                abort: () => {
-                    // nothing to abort
-                },
-            }
-        }
-    }, [managedClusterNames])
-    const dataOCPResources = useQuery(queryFunction).data
-    const loadingOCPResources = useQuery(queryFunction).loading
-    const startPollingOCPResources = useQuery(queryFunction).startPolling
+    const dataKustomizations = useQuery(queryKustomizations).data
+    const loadingFluxApps = useQuery(queryKustomizations).loading
+    const startPollingKustomizations = useQuery(queryKustomizations).startPolling
     useEffect(startPolling, [startPolling])
     useEffect(startPollingOCPResources, [startPollingOCPResources])
+    useEffect(startPollingKustomizations, [startPollingKustomizations])
     const [timedOut, setTimedOut] = useState<boolean>()
 
     const [, setDiscoveredAppilcations] = useRecoilState(discoveredApplicationsState)
     const [, setDiscoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
+    const [, setDiscoveredKustomizations] = useRecoilState(discoveredKustomizationsState)
     useEffect(() => {
         const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
         setDiscoveredAppilcations(remoteArgoApps)
-        const remoteOCPAppResources = dataOCPResources?.[0]?.data?.searchResult?.[0]?.items || []
-        setDiscoveredOCPAppResources(remoteOCPAppResources)
-    }, [data, dataOCPResources, setDiscoveredAppilcations, setDiscoveredOCPAppResources])
+        const ocpAppResources = dataOCPResources?.[0]?.data?.searchResult?.[0]?.items || []
+        setDiscoveredOCPAppResources(ocpAppResources)
+        const kustomizations = dataKustomizations?.[0]?.data?.searchResult?.[0]?.items || []
+        setDiscoveredKustomizations(kustomizations)
+    }, [data, dataKustomizations, dataOCPResources, setDiscoveredAppilcations, setDiscoveredOCPAppResources])
 
     // failsafe in case search api is sleeping
     useEffect(() => {
@@ -62,7 +53,7 @@ export default function ApplicationsPage() {
         }
     }, [])
 
-    if (loading && loadingOCPResources && !timedOut) {
+    if (loading && loadingOCPResources && loadingFluxApps && !timedOut) {
         return <AcmLoadingPage />
     }
 

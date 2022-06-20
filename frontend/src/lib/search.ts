@@ -74,7 +74,7 @@ export function queryRemoteArgoApps(): IRequestResult<ISearchResult> {
     })
 }
 
-export function queryOCPAppResources(cluster: string[]): IRequestResult<ISearchResult> {
+export function queryOCPAppResources(): IRequestResult<ISearchResult> {
     return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
         operationName: 'searchResult',
         variables: {
@@ -85,7 +85,25 @@ export function queryOCPAppResources(cluster: string[]): IRequestResult<ISearchR
                             property: 'kind',
                             values: ['cronjob', 'daemonset', 'deployment', 'deploymentconfig', 'job', 'statefulset'],
                         },
-                        { property: 'cluster', values: cluster },
+                    ],
+                },
+            ],
+        },
+        query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+    })
+}
+
+export function queryKustomizations(): IRequestResult<ISearchResult> {
+    return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
+        operationName: 'searchResult',
+        variables: {
+            input: [
+                {
+                    filters: [
+                        {
+                            property: 'kind',
+                            values: 'kustomization',
+                        },
                     ],
                 },
             ],
