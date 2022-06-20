@@ -5,6 +5,8 @@ import { useLocation } from 'react-router-dom'
 import { getBackendUrl, IRequestResult, postRequest } from '../resources'
 
 export const apiSearchUrl = '/proxy/search'
+export const searchFilterQuery =
+    'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}'
 
 export type ISearchResult = {
     data: {
@@ -70,7 +72,7 @@ export function queryRemoteArgoApps(): IRequestResult<ISearchResult> {
                 },
             ],
         },
-        query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+        query: searchFilterQuery,
     })
 }
 
@@ -89,7 +91,7 @@ export function queryOCPAppResources(): IRequestResult<ISearchResult> {
                 },
             ],
         },
-        query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+        query: searchFilterQuery,
     })
 }
 
@@ -108,7 +110,7 @@ export function queryKustomizations(): IRequestResult<ISearchResult> {
                 },
             ],
         },
-        query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+        query: searchFilterQuery,
     })
 }
 
