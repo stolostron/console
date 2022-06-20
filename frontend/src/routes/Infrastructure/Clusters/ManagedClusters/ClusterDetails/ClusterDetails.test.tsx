@@ -679,7 +679,7 @@ const mockOCMNamespace = {
     apiVersion: 'v1',
     kind: 'Namespace',
     metadata: {
-        name: 'open-cluster-management',
+        name: 'multicluster-engine',
     },
 }
 
