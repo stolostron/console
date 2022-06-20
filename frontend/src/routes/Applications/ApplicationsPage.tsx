@@ -24,7 +24,16 @@ export default function ApplicationsPage() {
     const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
 
     const queryFunction = useCallback<() => IRequestResult<ISearchResult>>(() => {
-        return queryOCPAppResources(managedClusterNames as string[])
+        if (managedClusterNames.length) {
+            return queryOCPAppResources(managedClusterNames as string[])
+        } else {
+            return {
+                promise: Promise.resolve({ data: { searchResult: [] } } as ISearchResult),
+                abort: () => {
+                    // nothing to abort
+                },
+            }
+        }
     }, [managedClusterNames])
     const dataOCPResources = useQuery(queryFunction).data
     const loadingOCPResources = useQuery(queryFunction).loading
