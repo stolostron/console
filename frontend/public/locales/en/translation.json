@@ -2130,6 +2130,7 @@
     "table.consoleUrl": "Console URL",
     "table.cpu": "CPU",
     "table.createdBy": "Created by",
+    "table.creationDate": "Creation date",
     "table.credentials": "Username & password",
     "table.currentReleaseImage": "Current release image",
     "table.details": "Details",
