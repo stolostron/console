@@ -19,7 +19,6 @@ import {
     managedClustersState,
     secretsState,
     settingsState,
-    agentsState,
 } from '../../../../../atoms'
 import { clusterCuratorTemplatesValue } from '../../../../../selectors'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -35,7 +34,6 @@ import {
     ProviderConnection,
     Secret,
     unpackProviderConnection,
-    patchResource,
 } from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
@@ -114,7 +112,6 @@ export default function CreateClusterPage() {
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
     const [infraEnvs] = useRecoilState(infraEnvironmentsState)
     const [warning, setWarning] = useState<WarningContextType>()
-    const [agents] = useRecoilState(agentsState)
     const hypershiftValues = useHypershiftContextValues()
 
     // Is there a way how to get this without fetching all InfraEnvs?
@@ -146,8 +143,8 @@ export default function CreateClusterPage() {
         if (resourceJSON) {
             const { createResources } = resourceJSON
             const map = keyBy(createResources, 'kind')
-            const clusterDeployment = get(map, 'ClusterDeployment')
-            const clusterName = clusterDeployment?.metadata?.name
+            const cluster = map?.ClusterDeployment || map?.HostedCluster
+            const clusterName = cluster?.metadata?.name
 
             // return error if cluster name is already used
             const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
@@ -160,32 +157,6 @@ export default function CreateClusterPage() {
                 })
                 return 'ERROR'
             } else {
-                // patch hypershift agents
-                const hypershiftAgentNs = get(map, 'HostedCluster.spec.platform.agent.agentNamespace')
-                if (hypershiftAgentNs) {
-                    setCreationStatus({ status: 'IN_PROGRESS', messages: ['Patching hosts...'] })
-                    const nodePoolPatches = hypershiftValues.nodePools?.map(
-                        ({ autoSelectHosts, autoSelectedAgentIDs, selectedAgentIDs, agentLabels }) => {
-                            const requestedAgentIDs = autoSelectHosts ? autoSelectedAgentIDs : selectedAgentIDs
-                            const agentsToPatch = agents.filter((a) => requestedAgentIDs.includes(a.metadata.uid))
-                            return agentsToPatch.map(
-                                (a) =>
-                                    patchResource(a, [
-                                        {
-                                            op: a.metadata.labels ? 'replace' : 'add',
-                                            path: '/metadata/labels',
-                                            value: {
-                                                ...(a.metadata.labels || {}),
-                                                ...agentLabels,
-                                            },
-                                        },
-                                    ]).promise
-                            )
-                        }
-                    )
-                    nodePoolPatches && (await Promise.allSettled(nodePoolPatches))
-                }
-
                 const isClusterCurator = (resource: any) => {
                     return resource.kind === 'ClusterCurator'
                 }

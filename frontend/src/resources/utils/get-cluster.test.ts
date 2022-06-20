@@ -703,7 +703,8 @@ describe('getClusterStatus', () => {
             [] /* managedClusterAddOns */,
             undefined /* clusterCurator */,
             undefined /* agentClusterInstall */,
-            undefined /* clusterClaim */
+            undefined /* clusterClaim */,
+            undefined /* hostedCluster */
         )
         expect(status.status).toBe(ClusterStatus.running)
         expect(status.statusMessage).toBeUndefined()
@@ -717,7 +718,8 @@ describe('getClusterStatus', () => {
             [] /* managedClusterAddOns */,
             undefined /* clusterCurator */,
             undefined /* agentClusterInstall */,
-            mockClusterClaim
+            mockClusterClaim,
+            undefined /* hostedCluster */
         )
         expect(status.status).toBe(ClusterStatus.detached)
         expect(status.statusMessage).toBeUndefined()
@@ -731,7 +733,8 @@ describe('getClusterStatus', () => {
             [] /* managedClusterAddOns */,
             undefined /* clusterCurator */,
             undefined /* agentClusterInstall */,
-            undefined /* clusterClaim */
+            undefined /* clusterClaim */,
+            undefined /* hostedCluster */
         )
         expect(status.status).toBe(ClusterStatus.hibernating)
         expect(status.statusMessage).toBeUndefined()
@@ -745,7 +748,8 @@ describe('getClusterStatus', () => {
             [] /* managedClusterAddOns */,
             undefined /* clusterCurator */,
             undefined /* agentClusterInstall */,
-            undefined /* clusterClaim */
+            undefined /* clusterClaim */,
+            undefined /* hostedCluster */
         )
         expect(status.status).toBe(ClusterStatus.resuming)
         expect(status.statusMessage).toBe(
@@ -761,7 +765,8 @@ describe('getClusterStatus', () => {
             [] /* managedClusterAddOns */,
             undefined /* clusterCurator */,
             undefined /* agentClusterInstall */,
-            undefined /* clusterClaim */
+            undefined /* clusterClaim */,
+            undefined /* hostedCluster */
         )
         expect(status.status).toBe(ClusterStatus.stopping)
         expect(status.statusMessage).toBe(
@@ -777,7 +782,8 @@ describe('getClusterStatus', () => {
             [] /* managedClusterAddOns */,
             undefined /* clusterCurator */,
             undefined /* agentClusterInstall */,
-            undefined /* clusterClaim */
+            undefined /* clusterClaim */,
+            undefined /* hostedCluster */
         )
         expect(status.status).toBe(ClusterStatus.unknown)
         expect(status.statusMessage).toBeUndefined()

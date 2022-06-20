@@ -52,3 +52,16 @@ metadata:
 data:
   '.dockerconfigjson': '{{{ai.pullSecret}}}'
 type: 'kubernetes.io/dockerconfigjson'
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: capi-provider-role
+  namespace: {{{ai.name}}}
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - agent-install.openshift.io
+    resources:
+      - agents

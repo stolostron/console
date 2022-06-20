@@ -347,8 +347,6 @@ describe('DistributionField', () => {
                 clusterPool: undefined,
                 secrets: {
                     installConfig: '',
-                    kubeadmin: '',
-                    kubeconfig: '',
                 },
             },
             isHive: false,
@@ -357,6 +355,9 @@ describe('DistributionField', () => {
             isHostedCluster: false,
             isSNOCluster: false,
             owner: {},
+            kubeadmin: '',
+            kubeconfig: '',
+            isHypershift: false,
         }
 
         const retResource = render(

@@ -24,6 +24,8 @@
     display: flex;
     flex-direction: column;
     row-gap: 0;
+    padding: var(--pf-c-wizard__main-body--PaddingTop) var(--pf-c-wizard__main-body--PaddingRight)
+        var(--pf-c-wizard__main-body--PaddingBottom) var(--pf-c-wizard__main-body--PaddingLeft);
 }
 .temptifly .creation-view-controls div:focus,
 .creation-view .creation-view-controls div:focus {
@@ -853,7 +855,7 @@
 
 .temptifly .pf-c-wizard .pf-c-wizard__main-body,
 .creation-view .pf-c-wizard .pf-c-wizard__main-body {
-    padding-bottom: 0;
+    padding: 0;
     height: 100%;
 }
 .temptifly .pf-c-wizard .creation-view-controls .creation-view-controls-title-main-name,

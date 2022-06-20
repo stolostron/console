@@ -45,7 +45,7 @@ const Component = () => {
     )
 }
 
-describe('Infrastructure Environment Details page', () => {
+describe.skip('Infrastructure Environment Details page', () => {
     test('can render', async () => {
         const initialNocks = [nockGet(mockPullSecret)]
         render(<Component />)
