@@ -12,6 +12,9 @@ import {
     managedClusterInfosState,
     managedClustersState,
     agentClusterInstallsState,
+    hostedClustersState,
+    nodePoolsState,
+    agentsState,
 } from '../../../../../atoms'
 
 export function useAllClusters() {
@@ -24,6 +27,9 @@ export function useAllClusters() {
         clusterClaims,
         clusterCurators,
         agentClusterInstalls,
+        hostedClusters,
+        nodePools,
+        agents,
     ] = useRecoilValue(
         waitForAll([
             managedClustersState,
@@ -34,6 +40,9 @@ export function useAllClusters() {
             clusterClaimsState,
             clusterCuratorsState,
             agentClusterInstallsState,
+            hostedClustersState,
+            nodePoolsState,
+            agentsState,
         ])
     )
     const clusters = useMemo(
@@ -46,7 +55,10 @@ export function useAllClusters() {
                 managedClusterAddons,
                 clusterClaims,
                 clusterCurators,
-                agentClusterInstalls
+                agentClusterInstalls,
+                hostedClusters,
+                nodePools,
+                agents
             ),
         [
             clusterDeployments,
@@ -57,6 +69,9 @@ export function useAllClusters() {
             clusterClaims,
             clusterCurators,
             agentClusterInstalls,
+            hostedClusters,
+            nodePools,
+            agents,
         ]
     )
     return clusters as Cluster[]

@@ -49,24 +49,16 @@ spec:
       type: NodePort
   - service: OAuthServer
     servicePublishingStrategy:
-      nodePort:
-        address: api.{{{hypershift.name}}}.{{{hypershift.baseDnsDomain}}}
-      type: NodePort
+      type: Route
   - service: OIDC
     servicePublishingStrategy:
-      nodePort:
-        address: api.{{{hypershift.name}}}.{{{hypershift.baseDnsDomain}}}
-      type: None
+      type: Route
   - service: Konnectivity
     servicePublishingStrategy:
-      nodePort:
-        address: api.{{{hypershift.name}}}.{{{hypershift.baseDnsDomain}}}
-      type: NodePort
+      type: Route
   - service: Ignition
     servicePublishingStrategy:
-      nodePort:
-        address: api.{{{hypershift.name}}}.{{{hypershift.baseDnsDomain}}}
-      type: NodePort
+      type: Route
 
 ---
 apiVersion: v1
@@ -96,10 +88,10 @@ metadata:
   namespace: '{{{this.clusterName}}}'
 spec:
   clusterName: '{{{this.clusterName}}}'
-  {{#if this.autoSelectHosts}}
-  replicas: {{{this.count}}}
-  {{else}}
+  {{#if this.manualHostSelect}}
   replicas: {{{this.selectedAgentIDs.length}}}
+  {{else}}
+  replicas: {{{this.count}}}
   {{/if}}
   management:
     autoRepair: false
@@ -109,7 +101,8 @@ spec:
     agent:
       agentLabelSelector:
         matchLabels:
-          'agentclusterinstalls.extensions.hive.openshift.io/hostedcluster': '{{{this.clusterName}}}/{{{this.name}}}'
+          'agentclusterinstalls.extensions.hive.openshift.io/nodePool': '{{{this.name}}}'
+          'agentclusterinstalls.extensions.hive.openshift.io/nodePoolNs': '{{{this.clusterName}}}'
   release:
     image: {{{this.releaseImage}}}
 

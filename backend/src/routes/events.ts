@@ -128,6 +128,8 @@ const definitions: IWatchOptions[] = [
     { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/type': 'ans' } },
     { kind: 'Secret', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'auto-import-secret' } },
     { kind: 'PolicyReport', apiVersion: 'wgpolicyk8s.io/v1alpha2' },
+    { kind: 'HostedCluster', apiVersion: 'hypershift.openshift.io/v1alpha1' },
+    { kind: 'NodePool', apiVersion: 'hypershift.openshift.io/v1alpha1' },
 ]
 
 export function startWatching(): void {

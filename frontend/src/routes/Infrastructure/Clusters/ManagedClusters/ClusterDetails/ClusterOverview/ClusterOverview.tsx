@@ -33,11 +33,14 @@ import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
 import { ClusterContext } from '../ClusterDetails'
 import AIClusterDetails from '../../components/cim/AIClusterDetails'
+import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
+import HypershiftKubeAPI from './HypershiftKubeAPI'
 
 const { getClusterProperties } = CIM
 
 export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
-    const { cluster, clusterCurator, clusterDeployment, agentClusterInstall } = useContext(ClusterContext)
+    const { cluster, clusterCurator, clusterDeployment, agentClusterInstall, hostedCluster } =
+        useContext(ClusterContext)
     const { t } = useTranslation()
     const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
     const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
@@ -151,7 +154,11 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             },
             kubeApiServer: {
                 key: t('table.kubeApiServer'),
-                value: cluster?.kubeApiServer && <AcmInlineCopy text={cluster?.kubeApiServer} id="kube-api-server" />,
+                value: cluster?.kubeApiServer ? (
+                    <AcmInlineCopy text={cluster?.kubeApiServer} id="kube-api-server" />
+                ) : cluster?.isHypershift && hostedCluster ? (
+                    <HypershiftKubeAPI hostedCluster={hostedCluster} />
+                ) : undefined,
             },
             consoleUrl: {
                 key: t('table.consoleUrl'),
@@ -229,9 +236,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
         leftItems.splice(5, 0, clusterProperties.channel)
     }
 
-    const isHybrid = cluster?.provider === Provider.hybrid
-
-    if (isHybrid && !!(clusterDeployment && agentClusterInstall)) {
+    if (cluster?.provider === Provider.hybrid && clusterDeployment && agentClusterInstall) {
         const aiClusterProperties = getClusterProperties(clusterDeployment, agentClusterInstall)
 
         leftItems = [
@@ -253,6 +258,14 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
             aiClusterProperties.serviceNetworkCidr,
         ]
     }
+
+    let details = <ProgressStepBar />
+    if (cluster?.provider === Provider.hybrid) {
+        details = <AIClusterDetails />
+    } else if (cluster?.provider === Provider.hypershift) {
+        details = <AIHypershiftClusterDetails />
+    }
+
     return (
         <AcmPageContent id="overview">
             <PageSection>
@@ -271,7 +284,7 @@ export function ClusterOverviewPageContent(props: { canGetSecret?: boolean }) {
                     displayName={cluster!.displayName}
                     close={() => setShowEditLabels(false)}
                 />
-                {isHybrid ? <AIClusterDetails /> : <ProgressStepBar />}
+                {details}
                 <AcmDescriptionList title={t('table.details')} leftItems={leftItems} rightItems={rightItems} />
                 {cluster!.isManaged &&
                     [

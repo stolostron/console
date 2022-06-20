@@ -147,8 +147,8 @@ export default function CreateClusterPage() {
         if (resourceJSON) {
             const { createResources } = resourceJSON
             const map = keyBy(createResources, 'kind')
-            const clusterDeployment = get(map, 'ClusterDeployment')
-            const clusterName = clusterDeployment?.metadata?.name
+            const cluster = get(map, 'ClusterDeployment') || get(map, 'HostedCluster')
+            const clusterName = cluster?.metadata?.name
 
             // return error if cluster name is already used
             const matchedManagedCluster = managedClusters.find((mc) => mc.metadata.name === clusterName)
@@ -166,8 +166,8 @@ export default function CreateClusterPage() {
                 if (hypershiftAgentNs) {
                     setCreationStatus({ status: 'IN_PROGRESS', messages: ['Patching hosts...'] })
                     const nodePoolPatches = hypershiftValues.nodePools?.map(
-                        ({ autoSelectHosts, autoSelectedAgentIDs, selectedAgentIDs, agentLabels }) => {
-                            const requestedAgentIDs = autoSelectHosts ? autoSelectedAgentIDs : selectedAgentIDs
+                        ({ manualHostSelect, autoSelectedAgentIDs, selectedAgentIDs, clusterName, name }) => {
+                            const requestedAgentIDs = manualHostSelect ? selectedAgentIDs : autoSelectedAgentIDs
                             const agentsToPatch = agents.filter((a) => requestedAgentIDs.includes(a.metadata.uid))
                             return agentsToPatch.map(
                                 (a) =>
@@ -177,7 +177,9 @@ export default function CreateClusterPage() {
                                             path: '/metadata/labels',
                                             value: {
                                                 ...(a.metadata.labels || {}),
-                                                ...agentLabels,
+                                                'agentclusterinstalls.extensions.hive.openshift.io/nodePool': name,
+                                                'agentclusterinstalls.extensions.hive.openshift.io/nodePoolNs':
+                                                    clusterName,
                                             },
                                         },
                                     ]).promise

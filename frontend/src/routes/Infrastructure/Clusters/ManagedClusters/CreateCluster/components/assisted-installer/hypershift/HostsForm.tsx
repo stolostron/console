@@ -34,8 +34,8 @@ const HostsAvailableValue = () => {
     const [agents] = useRecoilState(agentsState)
     const availableAgents = getAgentsForSelection(agents).map((a) => a.metadata.uid)
 
-    const agentsAvailable = nodePools?.every(({ selectedAgentIDs, autoSelectedAgentIDs, autoSelectHosts }) =>
-        (autoSelectHosts ? autoSelectedAgentIDs : selectedAgentIDs).every((id) => availableAgents.includes(id))
+    const agentsAvailable = nodePools?.every(({ selectedAgentIDs, autoSelectedAgentIDs, manualHostSelect }) =>
+        (manualHostSelect ? selectedAgentIDs : autoSelectedAgentIDs).every((id) => availableAgents.includes(id))
     )
     return agentsAvailable ? (
         <>
@@ -77,7 +77,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
 
     control.summary = () => [
         {
-            term: 'Infrastructure environment',
+            term: 'Hosts namespace',
             desc: control.active.agentNamespace,
         },
         {
@@ -87,7 +87,7 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
         {
             term: 'Hosts count',
             desc: control.active.nodePools.reduce((acc: number, nodePool: any) => {
-                acc += (nodePool.autoSelectHosts ? nodePool.autoSelectedAgentIDs : nodePool.selectedAgentIDs).length
+                acc += (nodePool.manualHostSelect ? nodePool.selectedAgentIDs : nodePool.autoSelectedAgentIDs).length
                 return acc
             }, 0),
         },

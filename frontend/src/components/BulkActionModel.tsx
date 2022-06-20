@@ -95,7 +95,7 @@ export function BulkActionModel<T = unknown>(props: IBulkActionModelProps<T> | {
             onClose={props.close}
         >
             <AcmForm style={{ gap: 0 }}>
-                {!errors ? (
+                {!errors?.length ? (
                     <Fragment>
                         {props.description}
                         {props.checkBox}

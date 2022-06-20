@@ -41,6 +41,7 @@ export function ImportCommandContainer() {
         if (
             cluster?.name &&
             !cluster?.isHive &&
+            !cluster?.isHypershift &&
             !error &&
             !loading &&
             !importSecret &&

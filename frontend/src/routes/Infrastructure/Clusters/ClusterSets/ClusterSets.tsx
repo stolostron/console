@@ -28,15 +28,18 @@ import { Link } from 'react-router-dom'
 import { useRecoilValue, waitForAll } from 'recoil'
 import {
     agentClusterInstallsState,
+    agentsState,
     certificateSigningRequestsState,
     clusterDeploymentsState,
     clusterManagementAddonsState,
     clusterPoolsState,
+    hostedClustersState,
     managedClusterAddonsState,
     managedClusterInfosState,
     managedClusterSetBindingsState,
     managedClusterSetsState,
     managedClustersState,
+    nodePoolsState,
 } from '../../../../atoms'
 import { BulkActionModel, errorIsNot, IBulkActionModelProps } from '../../../../components/BulkActionModel'
 import { DOC_LINKS, viewDocumentation } from '../../../../lib/doc-util'
@@ -75,6 +78,9 @@ export default function ClusterSetsPage() {
         certificateSigningRequests,
         managedClusterAddons,
         agentClusterInstalls,
+        agents,
+        hostedClusters,
+        nodePools,
     ] = useRecoilValue(
         waitForAll([
             managedClusterSetsState,
@@ -83,8 +89,10 @@ export default function ClusterSetsPage() {
             managedClusterInfosState,
             certificateSigningRequestsState,
             managedClusterAddonsState,
-            clusterPoolsState,
             agentClusterInstallsState,
+            agentsState,
+            hostedClustersState,
+            nodePoolsState,
         ])
     )
 
@@ -96,7 +104,10 @@ export default function ClusterSetsPage() {
         managedClusterAddons,
         undefined,
         undefined,
-        agentClusterInstalls
+        agentClusterInstalls,
+        hostedClusters,
+        nodePools,
+        agents
     )
     clusters = clusters.filter((cluster) => cluster?.clusterSet)
 

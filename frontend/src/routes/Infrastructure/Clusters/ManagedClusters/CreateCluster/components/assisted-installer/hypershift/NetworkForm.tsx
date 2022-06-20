@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
-import { CIM } from 'openshift-assisted-ui-lib'
+import { HostedClusterNetworkStep, LoadingState } from 'openshift-assisted-ui-lib/cim'
 import { agentsState } from '../../../../../../../../atoms'
 import { useRecoilValue, waitForAll } from 'recoil'
 import { FormikProps } from 'formik'
@@ -9,8 +9,6 @@ import isEqual from 'lodash/isEqual'
 import { onSaveAgent } from '../utils'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { Secret } from '../../../../../../../../resources'
-
-const { HostedClusterNetworkStep, LoadingState } = CIM
 
 type FormControl = {
     active: any
@@ -111,7 +109,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, contro
 
     const requestedAgentIDs =
         nodePools?.reduce<string[]>((ids, nodePool) => {
-            ids.push(...(nodePool.autoSelectHosts ? nodePool.autoSelectedAgentIDs : nodePool.selectedAgentIDs))
+            ids.push(...(nodePool.manualHostSelect ? nodePool.selectedAgentIDs : nodePool.autoSelectedAgentIDs))
             return ids
         }, []) || []
 
