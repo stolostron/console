@@ -40,7 +40,14 @@ export default function ApplicationsPage() {
         setDiscoveredOCPAppResources(ocpAppResources)
         const kustomizations = dataKustomizations?.[0]?.data?.searchResult?.[0]?.items || []
         setDiscoveredKustomizations(kustomizations)
-    }, [data, dataKustomizations, dataOCPResources, setDiscoveredAppilcations, setDiscoveredOCPAppResources])
+    }, [
+        data,
+        dataKustomizations,
+        dataOCPResources,
+        setDiscoveredAppilcations,
+        setDiscoveredKustomizations,
+        setDiscoveredOCPAppResources,
+    ])
 
     // failsafe in case search api is sleeping
     useEffect(() => {

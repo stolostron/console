@@ -75,8 +75,6 @@ import {
     InfrastructureKind,
     IResource,
     Kustomization,
-    KustomizationApiVersion,
-    KustomizationKind,
     MachinePool,
     MachinePoolApiVersion,
     MachinePoolKind,

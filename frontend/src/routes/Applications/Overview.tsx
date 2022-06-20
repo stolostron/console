@@ -416,7 +416,7 @@ export default function ApplicationsOverview() {
                 },
             } as Kustomization)
         )
-    }, [discoveredOCPAppResources, generateTransformData])
+    }, [fluxAppresources, generateTransformData])
 
     const tableItems: IResource[] = useMemo(
         () => [
