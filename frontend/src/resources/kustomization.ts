@@ -5,8 +5,8 @@ import { IResource, IResourceDefinition } from './resource'
 export const KustomizationApiVersion = 'kustomize.toolkit.fluxcd.io/v1beta2'
 export type KustomizationApiVersionType = 'kustomize.toolkit.fluxcd.io/v1beta2'
 
-export const KustomizationKind = 'Kustomization'
-export type KustomizationKindType = 'Kustomization'
+export const KustomizationKind = 'kustomization'
+export type KustomizationKindType = 'kustomization'
 
 export const KustomizationDefinition: IResourceDefinition = {
     apiVersion: KustomizationApiVersion,
@@ -17,4 +17,9 @@ export interface Kustomization extends IResource {
     apiVersion: KustomizationApiVersionType
     kind: KustomizationKindType
     metadata: Metadata
+    label: string
+    status?: any
+    transformed?: {
+        clusterCount?: string
+    }
 }

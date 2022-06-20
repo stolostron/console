@@ -56,18 +56,6 @@ import {
     ConfigMap,
     ConfigMapApiVersion,
     ConfigMapKind,
-    CronJob,
-    CronJobApiVersion,
-    CronJobKind,
-    DaemonSet,
-    DaemonSetApiVersion,
-    DaemonSetKind,
-    Deployment,
-    DeploymentApiVersion,
-    DeploymentKind,
-    DeploymentConfig,
-    DeploymentConfigApiVersion,
-    DeploymentConfigKind,
     DiscoveredCluster,
     DiscoveredClusterApiVersion,
     DiscoveredClusterKind,
@@ -86,12 +74,7 @@ import {
     InfrastructureApiVersion,
     InfrastructureKind,
     IResource,
-    Job,
-    JobApiVersion,
-    JobKind,
     Kustomization,
-    KustomizationApiVersion,
-    KustomizationKind,
     MachinePool,
     MachinePoolApiVersion,
     MachinePoolKind,
@@ -146,9 +129,6 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
-    StatefulSet,
-    StatefulSetApiVersion,
-    StatefulSetKind,
     SubmarinerConfig,
     SubmarinerConfigApiVersion,
     SubmarinerConfigKind,
@@ -172,6 +152,7 @@ export const THROTTLE_EVENTS_DELAY = 500
 
 export const discoveredApplicationsState = AtomArray<ArgoApplication>()
 export const discoveredOCPAppResourcesState = AtomArray<OCPAppResource>()
+export const discoveredKustomizationsState = AtomArray<Kustomization>()
 
 export const agentClusterInstallsState = AtomArray<CIM.AgentClusterInstallK8sResource>()
 export const agentsState = AtomArray<CIM.AgentK8sResource>()
@@ -193,18 +174,12 @@ export const clusterManagementAddonsState = AtomArray<ClusterManagementAddOn>()
 export const clusterPoolsState = AtomArray<ClusterPool>()
 export const clusterProvisionsState = AtomArray<ClusterProvision>()
 export const configMapsState = AtomArray<ConfigMap>()
-export const cronJobsState = AtomArray<CronJob>()
-export const daemonSetsState = AtomArray<DaemonSet>()
-export const deploymentsState = AtomArray<Deployment>()
-export const deploymentConfigsState = AtomArray<DeploymentConfig>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
 export const gitOpsClustersState = AtomArray<GitOpsCluster>()
 export const helmReleaseState = AtomArray<HelmRelease>()
 export const infraEnvironmentsState = AtomArray<CIM.InfraEnvK8sResource>()
 export const infrastructuresState = AtomArray<CIM.InfrastructureK8sResource>()
-export const jobsState = AtomArray<Job>()
-export const kustomizationsState = AtomArray<Kustomization>()
 export const machinePoolsState = AtomArray<MachinePool>()
 export const managedClusterAddonsState = AtomArray<ManagedClusterAddOn>()
 export const managedClusterInfosState = AtomArray<ManagedClusterInfo>()
@@ -223,7 +198,6 @@ export const placementRulesState = AtomArray<PlacementRule>()
 export const placementDecisionsState = AtomArray<PlacementDecision>()
 export const policyreportState = AtomArray<PolicyReport>()
 export const secretsState = AtomArray<Secret>()
-export const statefulSetsState = AtomArray<StatefulSet>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
 export const subscriptionsState = AtomArray<Subscription>()
 export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
@@ -280,18 +254,12 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setClusterPools] = useRecoilState(clusterPoolsState)
     const [, setClusterProvisions] = useRecoilState(clusterProvisionsState)
     const [, setConfigMaps] = useRecoilState(configMapsState)
-    const [, setCronJobsState] = useRecoilState(cronJobsState)
-    const [, setDeploymentsState] = useRecoilState(deploymentsState)
-    const [, setDeploymentConfigsState] = useRecoilState(deploymentConfigsState)
-    const [, setDaemonSetsState] = useRecoilState(daemonSetsState)
     const [, setDiscoveredClusters] = useRecoilState(discoveredClusterState)
     const [, setDiscoveryConfigs] = useRecoilState(discoveryConfigState)
     const [, setGitOpsClustersState] = useRecoilState(gitOpsClustersState)
     const [, setHelmReleases] = useRecoilState(helmReleaseState)
     const [, setInfraEnvironments] = useRecoilState(infraEnvironmentsState)
     const [, setInfrastructure] = useRecoilState(infrastructuresState)
-    const [, setJobsState] = useRecoilState(jobsState)
-    const [, setKustomizationsState] = useRecoilState(kustomizationsState)
     const [, setMachinePools] = useRecoilState(machinePoolsState)
     const [, setManagedClusterAddons] = useRecoilState(managedClusterAddonsState)
     const [, setManagedClusterInfos] = useRecoilState(managedClusterInfosState)
@@ -311,7 +279,6 @@ export function LoadData(props: { children?: ReactNode }) {
     const [, setPolicyReports] = useRecoilState(policyreportState)
     const [, setSecrets] = useRecoilState(secretsState)
     const [, setSettings] = useRecoilState(settingsState)
-    const [, setStatefulSetsState] = useRecoilState(statefulSetsState)
     const [, setSubmarinerConfigs] = useRecoilState(submarinerConfigsState)
     const [, setSubscriptionsState] = useRecoilState(subscriptionsState)
     const [, setSubscriptionOperatorsState] = useRecoilState(subscriptionOperatorsState)
@@ -352,17 +319,11 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(ClusterPoolApiVersion, ClusterPoolKind, setClusterPools)
         addSetter(ClusterProvisionApiVersion, ClusterProvisionKind, setClusterProvisions)
         addSetter(ConfigMapApiVersion, ConfigMapKind, setConfigMaps)
-        addSetter(CronJobApiVersion, CronJobKind, setCronJobsState)
-        addSetter(DaemonSetApiVersion, DaemonSetKind, setDaemonSetsState)
-        addSetter(DeploymentApiVersion, DeploymentKind, setDeploymentsState)
-        addSetter(DeploymentConfigApiVersion, DeploymentConfigKind, setDeploymentConfigsState)
         addSetter(DiscoveredClusterApiVersion, DiscoveredClusterKind, setDiscoveredClusters)
         addSetter(DiscoveryConfigApiVersion, DiscoveryConfigKind, setDiscoveryConfigs)
         addSetter(HelmReleaseApiVersion, HelmReleaseKind, setHelmReleases)
         addSetter(InfraEnvApiVersion, InfraEnvKind, setInfraEnvironments)
         addSetter(InfrastructureApiVersion, InfrastructureKind, setInfrastructure)
-        addSetter(JobApiVersion, JobKind, setJobsState)
-        addSetter(KustomizationApiVersion, KustomizationKind, setKustomizationsState)
         addSetter(MachinePoolApiVersion, MachinePoolKind, setMachinePools)
         addSetter(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons)
         addSetter(ManagedClusterApiVersion, ManagedClusterKind, setManagedClusters)
@@ -378,7 +339,6 @@ export function LoadData(props: { children?: ReactNode }) {
         addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
         addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
         addSetter(SecretApiVersion, SecretKind, setSecrets)
-        addSetter(StatefulSetApiVersion, StatefulSetKind, setStatefulSetsState)
         addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
         return setters
     }, [
@@ -402,18 +362,12 @@ export function LoadData(props: { children?: ReactNode }) {
         setClusterPools,
         setClusterProvisions,
         setConfigMaps,
-        setCronJobsState,
-        setDaemonSetsState,
-        setDeploymentsState,
-        setDeploymentConfigsState,
         setDiscoveredClusters,
         setDiscoveryConfigs,
         setGitOpsClustersState,
         setHelmReleases,
         setInfraEnvironments,
         setInfrastructure,
-        setJobsState,
-        setKustomizationsState,
         setMachinePools,
         setManagedClusterAddons,
         setManagedClusterInfos,
@@ -432,7 +386,6 @@ export function LoadData(props: { children?: ReactNode }) {
         setPolicyReports,
         setPolicySetsState,
         setSecrets,
-        setStatefulSetsState,
         setSubmarinerConfigs,
         setSubscriptionReportsState,
         setSubscriptionsState,

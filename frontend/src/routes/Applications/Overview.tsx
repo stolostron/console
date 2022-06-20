@@ -14,17 +14,11 @@ import {
     applicationsState,
     argoApplicationsState,
     channelsState,
-    cronJobsState,
-    daemonSetsState,
-    deploymentConfigsState,
-    deploymentsState,
     discoveredApplicationsState,
+    discoveredKustomizationsState,
     discoveredOCPAppResourcesState,
-    jobsState,
-    kustomizationsState,
     namespacesState,
     placementRulesState,
-    statefulSetsState,
     subscriptionsState,
 } from '../../atoms'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
@@ -43,7 +37,6 @@ import {
     ArgoApplicationApiVersion,
     ArgoApplicationKind,
     Channel,
-    CronJobApiVersion,
     CronJobDefinition,
     CronJobKind,
     DaemonSetDefinition,
@@ -57,6 +50,7 @@ import {
     IResource,
     JobDefinition,
     JobKind,
+    Kustomization,
     KustomizationApiVersion,
     KustomizationDefinition,
     KustomizationKind,
@@ -214,38 +208,17 @@ export default function ApplicationsOverview() {
     const [placementRules] = useRecoilState(placementRulesState)
     const [namespaces] = useRecoilState(namespacesState)
 
-    // Openshift Application resources
-    const [cronJobs] = useRecoilState(cronJobsState)
-    const [daemonSets] = useRecoilState(daemonSetsState)
-    const [deployments] = useRecoilState(deploymentsState)
-    const [deploymentConfigs] = useRecoilState(deploymentConfigsState)
-    const [jobs] = useRecoilState(jobsState)
-    const [statefulSets] = useRecoilState(statefulSetsState)
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
-    const [kustomizations] = useRecoilState(kustomizationsState)
-
-    const applicationResources: IResource[] = useMemo(
-        () => [...cronJobs, ...daemonSets, ...deployments, ...deploymentConfigs, ...jobs, ...statefulSets],
-        [cronJobs, daemonSets, deployments, deploymentConfigs, jobs, statefulSets]
-    )
-
-    const ocpApplicationResources: IResource[] = useMemo(
-        () =>
-            applicationResources.filter((item: any) => {
-                const labels = item.metadata.labels
-                return labels && ('app' in labels || 'app.kubernetes.io/part-of' in labels)
-            }),
-        [applicationResources]
-    )
+    const [kustomizations] = useRecoilState(discoveredKustomizationsState)
 
     const fluxAppresources: IResource[] = useMemo(
         () =>
             kustomizations.filter((item: any) => {
-                const labels = item.metadata.labels
+                const labels = item.label
                 return (
                     labels &&
-                    'kustomize.toolkit.fluxcd.io/name' in labels &&
-                    'kustomize.toolkit.fluxcd.io/namespace' in labels
+                    labels.includes('kustomize.toolkit.fluxcd.io/name') &&
+                    labels.includes('kustomize.toolkit.fluxcd.io/namespace')
                 )
             }),
         [kustomizations]
@@ -354,16 +327,6 @@ export default function ApplicationsOverview() {
         [applications, generateTransformData]
     )
 
-    const ocpApplicationTableItems = useMemo(
-        () => ocpApplicationResources.map(generateTransformData),
-        [ocpApplicationResources, generateTransformData]
-    )
-
-    const fluxApplicationTableItems = useMemo(
-        () => fluxAppresources.map(generateTransformData),
-        [fluxAppresources, generateTransformData]
-    )
-
     const applicationSetsTableItems = useMemo(
         () => applicationSets.map(generateTransformData),
         [applicationSets, generateTransformData]
@@ -415,7 +378,7 @@ export default function ApplicationsOverview() {
         )
     }, [discoveredApplications, generateTransformData])
 
-    const discoveredOCPAppResourceTableItems = useMemo(() => {
+    const ocpAppResourceTableItems = useMemo(() => {
         return discoveredOCPAppResources
             .filter(({ label }) => {
                 return label && (label.includes('app=') || label.includes('app.kubernetes.io/part-of='))
@@ -438,14 +401,30 @@ export default function ApplicationsOverview() {
             )
     }, [discoveredOCPAppResources, generateTransformData])
 
+    const fluxApplicationTableItems = useMemo(() => {
+        return fluxAppresources.map((fluxApp: any) =>
+            generateTransformData({
+                apiVersion: fluxApp.apigroup ? `${fluxApp.apigroup}/${fluxApp.apiversion}` : fluxApp.apiversion,
+                kind: fluxApp.kind,
+                metadata: {
+                    name: fluxApp.name,
+                    namespace: fluxApp.namespace,
+                    creationTimestamp: fluxApp.created,
+                },
+                status: {
+                    cluster: fluxApp.cluster,
+                },
+            } as Kustomization)
+        )
+    }, [fluxAppresources, generateTransformData])
+
     const tableItems: IResource[] = useMemo(
         () => [
             ...applicationTableItems,
             ...applicationSetsTableItems,
             ...argoApplicationTableItems,
             ...discoveredApplicationsTableItems,
-            ...discoveredOCPAppResourceTableItems,
-            ...ocpApplicationTableItems,
+            ...ocpAppResourceTableItems,
             ...fluxApplicationTableItems,
         ],
         [
@@ -453,8 +432,7 @@ export default function ApplicationsOverview() {
             applicationTableItems,
             argoApplicationTableItems,
             discoveredApplicationsTableItems,
-            discoveredOCPAppResourceTableItems,
-            ocpApplicationTableItems,
+            ocpAppResourceTableItems,
             fluxApplicationTableItems,
         ]
     )
@@ -622,11 +600,7 @@ export default function ApplicationsOverview() {
                         label: t('Flux'),
                         value: `${getApiVersionResourceGroup(KustomizationApiVersion)}/${KustomizationKind}`,
                     },
-                    // TBD
-                    {
-                        label: t('Openshift'),
-                        value: `${getApiVersionResourceGroup(CronJobApiVersion)}/${CronJobKind}`,
-                    },
+                    // TBD Openshift
                 ],
                 tableFilterFn: (selectedValues: string[], item: IResource) => {
                     return selectedValues.includes(`${getApiVersionResourceGroup(item.apiVersion)}/${item.kind}`)
