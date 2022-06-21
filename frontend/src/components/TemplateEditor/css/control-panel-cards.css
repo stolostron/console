@@ -1,0 +1,128 @@
+.tf--row {
+  display: flex;
+  flex-wrap: wrap;
+}
+.tf--grid-container .tf--grid {
+  margin-left: 0px;
+  margin-right: 5%;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+.tf--grid-container .tf--row {
+  margin: 0;
+}
+.tf--providers-container .tf--form-field {
+  min-width: 450px;
+  padding: 10px;
+  margin-right: 40px;
+}
+.tf--providers-container .tf--form-field__wrapper {
+  margin-bottom: 30px;
+}
+.tf--providers-container .tf--select {
+  min-width: 450px;
+  margin-bottom: 8px;
+  margin-right: 40px;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+.tf--providers-container .tf-placeholder {
+  min-width: 450px;
+}
+.tf--provider-card {
+  margin-top: 10px;
+  margin-right: 30px;
+  margin-bottom: 40px;
+  padding-left: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  text-align: center;
+}
+.tf--provider-card:focus {
+  outline: none;
+}
+.tf--provider-card-isSelected {
+  color: #3d70b2;
+}
+.tf--separator {
+  height: '1px';
+  width: '88vw';
+  background-color: #dfe3e6;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+.tf--provider-card-container {
+  width: 163px;
+}
+.tf--create-cluster-page .tf--progress-panel {
+  position: fixed;
+  top: 3.082rem;
+  right: 5px;
+  z-index: 1999;
+  background-color: #fff;
+  width: 350px;
+  height: 100%;
+  border: 1px solid #dfe3e6;
+}
+.tf--create-cluster-page .tf--progress-panel__footer {
+  background-color: #f0f0f0;
+  padding: 20px;
+  position: absolute;
+  bottom: 2.75rem;
+  width: 100%;
+  height: 90px;
+  display: flex;
+  justify-content: flex-end;
+}
+.tf--create-cluster-page .tf--progress-panel__step {
+  display: flex;
+  border-bottom: 1px solid #dfe3e6;
+}
+.tf--create-cluster-page .tf--progress-panel__step .step-title-icon {
+  height: 125px;
+  width: 100px;
+  padding: 55px 40px;
+}
+.tf--create-cluster-page .tf--progress-panel__step-content {
+  height: 125px;
+  padding-top: 30px;
+}
+.tf--create-cluster-page .tf--progress-panel__step-content-subtitle {
+  color: #3c6df0;
+  font-size: 0.825rem;
+}
+.tf--create-cluster-page .tf--export-link {
+  position: fixed;
+  width: 200px;
+  top: 7.082rem;
+  right: 375px;
+  z-index: 1999;
+  display: flex;
+  justify-content: space-around;
+}
+.tf--create-cluster-page .tf--export-link-label {
+  font-weight: 800;
+}
+.tf--create-cluster-page .tf--export-link-button {
+  background-color: transparent;
+  border-style: none;
+  color: #3d70b2;
+  height: 16px;
+}
+.tf--create-cluster-page .tf--export-link-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.tf--create-cluster-page .tf--export-link-button:disabled:hover {
+  background-color: transparent;
+}
+.tf--create-cluster-page__provider-card {
+  border: 1px solid #dfe3e6;
+  cursor: pointer;
+}
+.control-panel-cards__extra-text {
+  padding-bottom: var(--pf-global--spacer--sm);
+}
+.control-panel-cards__group-tooltip {
+  margin-left: var(--pf-global--spacer--xs);
+}

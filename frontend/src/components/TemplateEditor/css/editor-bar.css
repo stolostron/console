@@ -1,0 +1,122 @@
+.editor-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 14px;
+  position: relative;
+}
+.editor-bar .editor-bar-group {
+  height: 100%;
+  flex: auto;
+}
+.editor-bar .editor-bar-group > div {
+  height: 48px;
+}
+.editor-bar .editor-bar-group .editor-bar-title {
+  white-space: nowrap;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+}
+.editor-bar .editor-bar-group .editor-bar-toolbar {
+  display: flex;
+  border-top: 1px solid #55585c;
+}
+.editor-bar .editor-bar-group .editor-bar-toolbar .editor-bar-section {
+  display: flex;
+  padding: 0 10px;
+  border-left: 1px solid #55585c;
+  height: 100%;
+  align-items: center;
+}
+.editor-bar .editor-bar-group .editor-bar-toolbar .editor-bar-section > div {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+.editor-bar .editor-bar-group .editor-bar-toolbar .editor-bar-section:last-of-type {
+  padding: 10px;
+  margin-right: 50px;
+}
+.editor-bar .editor-bar-close {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+.editor-bar .editor-bar-search > div {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 6px;
+}
+.editor-bar .editor-bar-button {
+  padding: 0.125rem;
+  cursor: pointer;
+  color: #ededed;
+  padding: 0 6px;
+}
+.editor-bar .editor-bar-button svg {
+  width: 20px;
+  height: 20px;
+  fill: white;
+}
+.editor-bar .editor-bar-button:focus {
+  box-shadow: none;
+  outline: none;
+  border: none;
+}
+.editor-bar .editor-bar-button.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.editor-bar .editor-bar-button.failure {
+  cursor: default;
+  fill: #e0182d;
+}
+.editor-bar .editor-bar-button.restore {
+  color: #c6c6c6;
+}
+.editor-bar .editor-bar-button.close {
+  border-left: 1px solid #55585c;
+  padding: 16px;
+  height: 48px;
+}
+.editor-bar .editor-error-button {
+  fill: #e0182d;
+}
+.editor-bar .editor-bar-spacer {
+  width: 1rem;
+  height: 1rem;
+}
+.readonly-editor-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  justify-content: space-between;
+  border: 1px solid #c8c8c8;
+  background: #e0e0e0;
+  padding: 0 10px;
+}
+.readonly-editor-bar .pf-c-clipboard-copy {
+  background: #e0e0e0;
+}
+.editor-error-button-item {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  padding: 0.25rem;
+  width: 100%;
+  max-width: none;
+}
+.editor-error-button-item .item-container {
+  display: flex;
+}
+.editor-error-button-item .item-container .item-icon {
+  fill: #e0182d;
+  padding-right: 0.5rem;
+}
