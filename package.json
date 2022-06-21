@@ -40,10 +40,7 @@
         "podman:run": "npm run podman:build && podman run --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./backend/node_modules/.bin/pino-zen -i time && podman rm -f console",
         "podman:deploy": "npm run podman:build && podman tag console quay.io/$USER/console:latest && podman push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
         "setup": "./setup.sh",
-        "prepare": "husky install",
-        "cypress:open": "cypress open --env mock=true",
-        "cypress:ci": "concurrently npm:frontend:quiet npm:backend npm:cypress:run --prefix-colors cyan,green,blue --kill-others --success first",
-        "cypress:run": "cypress run  --env mock=true --config video=false"
+        "prepare": "husky install"
     },
     "devDependencies": {
         "@types/node": "14.18.16",
@@ -58,8 +55,5 @@
         "tabWidth": 4,
         "semi": false,
         "singleQuote": true
-    },
-    "dependencies": {
-        "cypress": "^9.6.1"
     }
 }

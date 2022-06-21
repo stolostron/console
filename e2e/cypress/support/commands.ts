@@ -44,11 +44,16 @@ Cypress.Commands.add('mockResource', (resource: IResource) => {
 Cypress.Commands.add('mockCreateResource', (resource: IResource, alias?: string) => {
     if (!Cypress.env('mock')) return
 
-    let url = `/multicloud/proxy/apis/${resource.apiVersion}`
+    let url = `/multicloud/apis/${resource.apiVersion}`
     if (resource.metadata.namespace) {
         url += `/namespaces/${resource.metadata.namespace}`
     }
     url += `/${resource.kind.toLowerCase()}s`
+
+    cy.intercept('POST', url + '?dryRun=All', (req) => {
+        req.reply({ statusCode: 200 })
+        websocketMockCreateResourceEvent(resource)
+    })
 
     const chainable = cy.intercept('POST', url, (req) => {
         // expect(req.body).to.contain(`name:${resource.metadata.name}`)

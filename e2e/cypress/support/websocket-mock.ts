@@ -7,6 +7,7 @@ export interface IResource {
     metadata: {
         name: string
         namespace?: string
+        labels?: Record<string, string>
     }
 }
 
@@ -25,7 +26,7 @@ export function setupWebsocketMock() {
 
     cy.intercept({ method: 'GET', url: '/socket.io/?*' }, (req: CyHttpMessages.IncomingHttpRequest) => {
         async function handleResponse() {
-            let count = 20 * 1000
+            let count = 10 * 1000
             while (true) {
                 if (websocketMockQueue.length) {
                     const pollItem = websocketMockQueue.shift()
@@ -36,13 +37,15 @@ export function setupWebsocketMock() {
                         case 'object':
                             req.reply('42' + JSON.stringify(pollItem))
                             break
+                        default:
+                            req.reply('2')
+                            break
                     }
-
                     break
                 }
                 await new Promise((resolve) => setTimeout(resolve, 500))
                 count -= 500
-                if (count == 0) {
+                if (count === 0) {
                     req.reply('2')
                     break
                 }
@@ -50,6 +53,8 @@ export function setupWebsocketMock() {
         }
         return handleResponse()
     })
+
+    websocketMockQueue.push(['LOADED'])
 }
 
 export function websocketMockCreateResourceEvent(resource: IResource) {

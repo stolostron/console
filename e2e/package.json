@@ -1,0 +1,16 @@
+{
+    "name": "console-cypress",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "cypress:open": "cypress open --env mock=true",
+        "cypress:ci": "concurrently npm:frontend:quiet npm:backend npm:cypress:run --prefix-colors cyan,green,blue --kill-others --success first",
+        "cypress:run": "cypress run  --env mock=true --config video=false"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "cypress": "^10.1.0"
+    }
+}

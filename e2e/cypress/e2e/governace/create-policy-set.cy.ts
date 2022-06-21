@@ -9,6 +9,11 @@ describe('create policy set', () => {
 
     before(() => {
         cy.createNamespace(namespace)
+        cy.mockResource({
+            apiVersion: 'cluster.open-cluster-management.io/v1',
+            kind: 'ManagedCluster',
+            metadata: { name: 'local-cluster', labels: { 'local-cluster': 'true' } },
+        })
     })
 
     after(() => {
@@ -18,9 +23,8 @@ describe('create policy set', () => {
     it('load page', () => {
         cy.visit(`/multicloud/governance/policy-sets/create`)
         cy.get('.pf-c-page__main').contains('Create policy set', { timeout: 5 * 60 * 1000 })
-    })
 
-    it('details', () => {
+        // it('details', () => {
         cy.get('.pf-c-wizard__main-body').within(() => {
             cy.get('#name').type(name)
             cy.get('#namespace').click()
@@ -30,13 +34,11 @@ describe('create policy set', () => {
             })
         })
         cy.contains('Next').click()
-    })
 
-    it('policies', () => {
+        // it('policies', () => {
         cy.contains('Next').click()
-    })
 
-    it('placement', () => {
+        // it('placement', () => {
         cy.get('.pf-c-wizard__main-body').within(() => {
             cy.get('#add-button').click()
             cy.get('#label-expressions').within(() => {
@@ -45,9 +47,8 @@ describe('create policy set', () => {
             })
         })
         cy.contains('Next').click()
-    })
 
-    it('review', () => {
+        // it('review', () => {
         cy.get('#nav-toggle').click()
         cy.get('#yaml-switch').click({ force: true })
         cy.mockCreateResource(
@@ -55,14 +56,24 @@ describe('create policy set', () => {
                 apiVersion: 'policy.open-cluster-management.io/v1beta1',
                 kind: 'PolicySet',
                 metadata: { name, namespace },
+                spec: {},
             },
             'createPolicySet'
         )
+        cy.mockCreateResource({
+            apiVersion: 'apps.open-cluster-management.io/v1',
+            kind: 'PlacementRule',
+            metadata: { name: name + '-placement', namespace },
+        })
+        cy.mockCreateResource({
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'PlacementBinding',
+            metadata: { name: name + '-placement', namespace },
+        })
         cy.contains('Submit').click()
-        cy.mockWait('@createPolicySet')
-    })
+        // cy.mockWait('@createPolicySet')
 
-    it('policy set page should show created policy set', () => {
+        // it('policy set page should show created policy set', () => {
         cy.contains('Governance')
         cy.contains('Policy sets')
         cy.contains(name)
