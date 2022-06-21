@@ -11,4 +11,5 @@ export interface IResource {
         selfLink?: string
         uid?: string
     }
+    label?: string
 }

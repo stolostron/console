@@ -74,7 +74,6 @@ import {
     InfrastructureApiVersion,
     InfrastructureKind,
     IResource,
-    Kustomization,
     MachinePool,
     MachinePoolApiVersion,
     MachinePoolKind,
@@ -152,7 +151,6 @@ export const THROTTLE_EVENTS_DELAY = 500
 
 export const discoveredApplicationsState = AtomArray<ArgoApplication>()
 export const discoveredOCPAppResourcesState = AtomArray<OCPAppResource>()
-export const discoveredKustomizationsState = AtomArray<Kustomization>()
 
 export const agentClusterInstallsState = AtomArray<CIM.AgentClusterInstallK8sResource>()
 export const agentsState = AtomArray<CIM.AgentK8sResource>()
