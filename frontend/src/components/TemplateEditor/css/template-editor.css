@@ -1,132 +1,132 @@
 .temptifly,
 .creation-view {
-  height: 100%;
-  display: flex;
-  position: relative;
+    height: 100%;
+    display: flex;
+    position: relative;
 }
 .temptifly .creation-view-split-container,
 .creation-view .creation-view-split-container {
-  width: 100%;
+    width: 100%;
 }
 .temptifly .creation-view-split-container .creation-view-controls-container {
-  height: 100%;
-  overflow-y: auto;
+    height: 100%;
+    overflow-y: auto;
 }
 .temptifly .creation-view-split-container.showEditor .creation-view-controls-container-blurr,
 .creation-view .creation-view-split-container.showEditor .creation-view-controls-container-blurr {
-  position: absolute;
-  z-index: 1;
-  right: 0;
-  left: 0;
-  pointer-events: none;
-  height: 1em;
+    position: absolute;
+    z-index: 1;
+    right: 0;
+    left: 0;
+    pointer-events: none;
+    height: 1em;
 }
 .temptifly .creation-view-split-container.showEditor .creation-view-controls-container-blurr.top,
 .creation-view .creation-view-split-container.showEditor .creation-view-controls-container-blurr.top {
-  top: 0;
-  background-image: linear-gradient(to top, rgba(244, 247, 251, 0), rgba(240, 240, 240, 1) 90%);
-  display: none;
+    top: 0;
+    background-image: linear-gradient(to top, rgba(244, 247, 251, 0), rgba(240, 240, 240, 1) 90%);
+    display: none;
 }
 .temptifly .creation-view-split-container.showEditor .creation-view-controls-container-blurr.bottom,
 .creation-view .creation-view-split-container.showEditor .creation-view-controls-container-blurr.bottom {
-  bottom: 0;
-  background-image: linear-gradient(to bottom, rgba(244, 247, 251, 0), rgba(240, 240, 240, 1) 90%);
+    bottom: 0;
+    background-image: linear-gradient(to bottom, rgba(244, 247, 251, 0), rgba(240, 240, 240, 1) 90%);
 }
 .temptifly .creation-view-split-container.showEditor .creation-view-yaml,
 .creation-view .creation-view-split-container.showEditor .creation-view-yaml {
-  position: relative;
+    position: relative;
 }
 .temptifly .creation-view-split-container.showEditor .creation-view-yaml.hasTabs,
 .creation-view .creation-view-split-container.showEditor .creation-view-yaml.hasTabs {
-  height: calc(100% - 30px);
+    height: calc(100% - 30px);
 }
 .temptifly .creation-view-split-container.showEditor .creation-view-yaml-notification,
 .creation-view .creation-view-split-container.showEditor .creation-view-yaml-notification {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 1000;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1000;
 }
 .temptifly .creation-view-split-container.showEditor .creation-view-yaml .yamlEditorContainer,
 .creation-view .creation-view-split-container.showEditor .creation-view-yaml .yamlEditorContainer {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 }
 .temptifly .Resizer,
 .creation-view .Resizer {
-  width: 0;
-  z-index: 1;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  -moz-background-clip: padding;
-  -webkit-background-clip: padding;
-  background-clip: padding-box;
-  border-left: 3px solid rgba(255, 255, 255, 0);
-  border-right: 3px solid rgba(255, 255, 255, 0);
-  cursor: col-resize;
-  margin: 0 0 0 5px;
-  background: var(--pf-c-drawer--m-inline--m-expanded__panel--after--BackgroundColor);
+    width: 0;
+    z-index: 1;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-background-clip: padding;
+    -webkit-background-clip: padding;
+    background-clip: padding-box;
+    border-left: 3px solid rgba(255, 255, 255, 0);
+    border-right: 3px solid rgba(255, 255, 255, 0);
+    cursor: col-resize;
+    margin: 0 0 0 5px;
+    background: var(--pf-c-drawer--m-inline--m-expanded__panel--after--BackgroundColor);
 }
 .pf-c-content .temptifly .pf-c-wizard__toggle-list {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .edit-button {
-  cursor: pointer;
-  margin-left: 30px;
-  font-size: 12px;
+    cursor: pointer;
+    margin-left: 30px;
+    font-size: 12px;
 }
 .edit-button .icon {
-  margin: 0 6px;
-  width: 9px;
-  height: 9px;
+    margin: 0 6px;
+    width: 9px;
+    height: 9px;
 }
 .editor-collapse-button {
-  font-size: 12px;
-  cursor: pointer;
-  color: #3d70b2;
-  display: flex;
-  align-items: center;
+    font-size: 12px;
+    cursor: pointer;
+    color: #3d70b2;
+    display: flex;
+    align-items: center;
 }
 .editor-collapse-button > svg {
-  margin-left: 8px;
-  width: 13px;
-  height: 13px;
-  stroke: #3d70b2;
+    margin-left: 8px;
+    width: 13px;
+    height: 13px;
+    stroke: #3d70b2;
 }
 .edit-template-switch {
-  display: flex;
-  margin-left: 16px;
-  align-items: center;
+    display: flex;
+    margin-left: 16px;
+    align-items: center;
 }
 .edit-template-switch .switch-label {
-  margin-left: 8px;
-  font-size: 12px;
+    margin-left: 8px;
+    font-size: 12px;
 }
 .monaco-editor .monaco-editor-hover {
-  color: #ccc;
-  padding: 6px 10px;
-  margin-left: 24px;
+    color: #ccc;
+    padding: 6px 10px;
+    margin-left: 24px;
 }
 .monaco-editor .monaco-editor-hover p {
-  font-size: 14px;
-  font-family: RedHatText;
+    font-size: 14px;
+    font-family: RedHatText;
 }
 .errorDecoration {
-  margin-left: 6px;
-  height: 14px !important;
-  width: 14px !important;
-  cursor: pointer;
-  z-index: 1000;
-  background: url("data:image/svg+xml; utf8, <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' width='14' height='14'><g fill='red'><circle cx='8' cy='8' r='8' fill='white' fill-opacity='1'/><path d='M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zM5.1 13.3L3.5 12 11 2.6l1.5 1.2-7.4 9.5z'/> </g></svg>");
+    margin-left: 6px;
+    height: 14px !important;
+    width: 14px !important;
+    cursor: pointer;
+    z-index: 1000;
+    background: url("data:image/svg+xml; utf8, <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' width='14' height='14'><g fill='red'><circle cx='8' cy='8' r='8' fill='white' fill-opacity='1'/><path d='M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zM5.1 13.3L3.5 12 11 2.6l1.5 1.2-7.4 9.5z'/> </g></svg>");
 }
 .insertedLineDecoration {
-  background: #87d4ec ab;
-  width: 6px !important;
-  margin-left: 12px;
+    background: #87d4ec ab;
+    width: 6px !important;
+    margin-left: 12px;
 }
 .protectedDecoration {
-  color: #b0b0b0 !important;
-  user-select: auto;
+    color: #b0b0b0 !important;
+    user-select: auto;
 }
