@@ -8,11 +8,14 @@ import {
     ProviderConnectionApiVersion,
     ProviderConnectionKind,
     Secret,
+    SubscriptionOperator,
+    SubscriptionOperatorApiVersion,
+    SubscriptionOperatorKind,
 } from '../../../resources'
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clusterCuratorsState, secretsState } from '../../../atoms'
+import { clusterCuratorsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import { mockBadRequestStatus, nockDelete, nockIgnoreRBAC } from '../../../lib/nock-util'
 import {
     clickBulkAction,
@@ -102,16 +105,43 @@ const clusterCurator2: ClusterCurator = {
     },
 }
 
+const subscriptionOperator: SubscriptionOperator = {
+    apiVersion: SubscriptionOperatorApiVersion,
+    kind: SubscriptionOperatorKind,
+    metadata: {
+        name: 'ansible-automation-platform-operator',
+        namespace: 'ansible-automation-platform-operator',
+    },
+    status: {
+        conditions: [
+            {
+                reason: 'AllCatalogSourcesHealthy',
+                lastTransitionTime: '',
+                message: '',
+                type: '',
+                status: '',
+            },
+        ],
+    },
+    spec: {},
+}
+
 const clusterCurators = [clusterCurator1, clusterCurator2]
 const mockProviderConnections = [mockAnsibleConnection1, mockAnsibleConnection2, mockAnsibleConnection3]
+const mockSubscription = [subscriptionOperator]
 let testLocation: Location
 
-function TestIntegrationPage(props: { providerConnections: ProviderConnection[]; clusterCurators?: ClusterCurator[] }) {
+function TestIntegrationPage(props: {
+    providerConnections: ProviderConnection[]
+    clusterCurators?: ClusterCurator[]
+    subscriptions?: SubscriptionOperator[]
+}) {
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(secretsState, props.providerConnections as Secret[])
                 snapshot.set(clusterCuratorsState, props.clusterCurators || [])
+                snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.ansibleAutomations]}>
@@ -188,5 +218,23 @@ describe('ansible job page', () => {
         await clickBulkAction('Delete templates')
         await clickByText('Cancel')
         await waitForNotText('Cancel')
+    })
+
+    test('should render hint when ansible operator is not installed', async () => {
+        render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
+        await waitForText(clusterCurator1.metadata!.name!)
+        await waitForText('OperatorHub')
+    })
+
+    test('should not render hint when ansible operator is installed', async () => {
+        render(
+            <TestIntegrationPage
+                providerConnections={mockProviderConnections}
+                clusterCurators={clusterCurators}
+                subscriptions={mockSubscription}
+            />
+        )
+        await waitForText(clusterCurator1.metadata!.name!)
+        await waitForNotText('OperatorHub')
     })
 })

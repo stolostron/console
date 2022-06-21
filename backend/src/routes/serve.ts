@@ -7,6 +7,7 @@ import { pipeline } from 'stream'
 import { logger } from '../lib/logger'
 
 const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=604800' : 'no-store'
+const localesCacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=3600' : 'no-store'
 
 export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
     try {
@@ -32,6 +33,8 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
             // res.setHeader('Content-Security-Policy', ["default-src 'self'"].join(';'))
         } else if (url === '/plugin/plugin-entry.js' || url === '/plugin/plugin-manifest.json') {
             res.setHeader('Cache-Control', 'no-cache')
+        } else if (url.includes('/locales/')) {
+            res.setHeader('Cache-Control', localesCacheControl)
         } else {
             res.setHeader('Cache-Control', cacheControl)
         }
@@ -51,6 +54,13 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
         } catch {
             res.writeHead(404).end()
             return
+        }
+
+        const modificationTime = stats.mtime.toUTCString()
+        res.setHeader(constants.HTTP2_HEADER_LAST_MODIFIED, modificationTime)
+        // Don't send content for cache revalidation
+        if (req.headers['if-modified-since'] === modificationTime) {
+            res.writeHead(constants.HTTP_STATUS_NOT_MODIFIED).end()
         }
 
         if (/\bbr\b/.test(acceptEncoding)) {

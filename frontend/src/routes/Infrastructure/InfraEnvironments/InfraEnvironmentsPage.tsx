@@ -12,6 +12,7 @@ import {
     AcmPageContent,
     AcmPageHeader,
     AcmTable,
+    compareStrings,
 } from '../../../ui-components'
 import isMatch from 'lodash/isMatch'
 import { CIM } from 'openshift-assisted-ui-lib'
@@ -27,6 +28,7 @@ import { deleteResources } from '../../../lib/delete-resources'
 import { DOC_LINKS, viewDocumentation } from '../../../lib/doc-util'
 import { rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
+import { getDateTimeCell } from '../helpers/table-row-helpers'
 
 const { AGENT_LOCATION_LABEL_KEY, getAgentStatus } = CIM
 
@@ -206,6 +208,29 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents }) =>
                                     )}
                                 </Link>
                             )
+                        },
+                    },
+                    {
+                        header: t('infraEnv.tableHeader.creationDate'),
+                        sort: (a: InfraEnvK8sResource, b: InfraEnvK8sResource) => {
+                            const dateTimeCellA = getDateTimeCell(
+                                a.metadata?.creationTimestamp ? new Date(a.metadata?.creationTimestamp).toString() : '-'
+                            )
+                            const dateTimeCellB = getDateTimeCell(
+                                b.metadata?.creationTimestamp ? new Date(b.metadata?.creationTimestamp).toString() : '-'
+                            )
+                            return compareStrings(
+                                dateTimeCellA.sortableValue == 0 ? '' : dateTimeCellA.sortableValue.toString(),
+                                dateTimeCellB.sortableValue == 0 ? '' : dateTimeCellB.sortableValue.toString()
+                            )
+                        },
+                        cell: (infraEnv) => {
+                            const dateTimeCell = getDateTimeCell(
+                                infraEnv.metadata?.creationTimestamp
+                                    ? new Date(infraEnv.metadata?.creationTimestamp).toString()
+                                    : '-'
+                            )
+                            return dateTimeCell.title === 'Invalid Date' ? '-' : dateTimeCell.title
                         },
                     },
                     {

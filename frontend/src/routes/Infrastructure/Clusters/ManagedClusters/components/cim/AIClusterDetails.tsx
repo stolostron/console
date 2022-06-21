@@ -69,9 +69,9 @@ const AIClusterDetails: React.FC = () => {
                 await getResource({
                     apiVersion: 'v1',
                     kind: 'namespace',
-                    metadata: { name: 'open-cluster-management' },
+                    metadata: { name: 'multicluster-engine' },
                 }).promise
-                setAiNamespace('open-cluster-management')
+                setAiNamespace('multicluster-engine')
             } catch {
                 try {
                     await getResource({ apiVersion: 'v1', kind: 'namespace', metadata: { name: 'rhacm' } }).promise
@@ -83,6 +83,7 @@ const AIClusterDetails: React.FC = () => {
         }
         checkNs()
     }, [])
+
     const [clusterAgents, cluster] = useMemo(() => {
         const clusterAgents = agents
             ? agents.filter(

@@ -1,28 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import {
-    AcmAlert,
-    AcmExpandableSection,
-    AcmExpandableWrapper,
-    AcmLoadingPage,
-    AcmPageCard,
-    AcmTable,
-    AcmTile,
-} from '../../../../ui-components'
-import { PageSection } from '@patternfly/react-core'
+import { Card, CardHeader, CardTitle, PageSection, Stack } from '@patternfly/react-core'
+import { AcmAlert, AcmExpandableWrapper, AcmLoadingPage, AcmTable, AcmTile } from '../../../../ui-components'
 import _ from 'lodash'
-import { Fragment, useState } from 'react'
+import { Fragment, ReactNode, useCallback, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { convertStringToQuery } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import {
     useSearchResultItemsQuery,
     useSearchResultRelatedCountQuery,
     useSearchResultRelatedItemsQuery,
 } from '../search-sdk/search-sdk'
-import { ClosedDeleteModalProps, DeleteResourceModal, IDeleteModalProps } from './Modals/DeleteResourceModal'
-import { convertStringToQuery } from '../search-helper'
 import searchDefinitions from '../searchDefinitions'
+import { ClosedDeleteModalProps, DeleteResourceModal, IDeleteModalProps } from './Modals/DeleteResourceModal'
 
 function GetRowActions(
     kind: string,
@@ -65,6 +57,26 @@ function RenderRelatedTables(
         },
     })
 
+    const renderContent = useCallback(
+        (kind: string, items: ISearchResult[]) => (
+            <AcmTable
+                plural=""
+                items={items}
+                columns={_.get(searchDefinitions, `[${kind}].columns`, searchDefinitions['genericresource'].columns)}
+                keyFn={(item: any) => item._uid.toString()}
+                rowActions={GetRowActions(
+                    kind,
+                    // TODO - Handle interpolation
+                    t('Delete {{resourceKind}}', { resourceKind: kind }),
+                    currentQuery,
+                    true,
+                    setDeleteResource
+                )}
+            />
+        ),
+        [currentQuery, setDeleteResource, t]
+    )
+
     if (loading === false && !error && !data) {
         // Query was skipped because no related resources have been selected
         return null
@@ -89,39 +101,29 @@ function RenderRelatedTables(
         )
     }
     const relatedResultItems = data.searchResult[0]?.related || []
-    return selectedKinds.map((kind) => {
-        const items = relatedResultItems.filter((item) => item?.kind === kind)
-        if (items && items[0]?.items && items.length > 0) {
-            return (
-                <AcmPageCard key={`related-table-${kind}`}>
-                    <AcmExpandableSection
-                        label={`Related ${kind.charAt(0).toUpperCase()}${kind.slice(1)} (${items[0]?.items.length})`}
-                        expanded={true}
-                    >
-                        <AcmTable
-                            plural=""
-                            items={items[0]?.items}
-                            columns={_.get(
-                                searchDefinitions,
-                                `[${kind}].columns`,
-                                searchDefinitions['genericresource'].columns
-                            )}
-                            keyFn={(item: any) => item._uid.toString()}
-                            rowActions={GetRowActions(
-                                kind,
-                                // TODO - Handle interpolation
-                                t('Delete {{resourceKind}}', { resourceKind: kind }),
-                                currentQuery,
-                                true,
-                                setDeleteResource
-                            )}
-                        />
-                    </AcmExpandableSection>
-                </AcmPageCard>
-            )
-        }
-        return null
-    })
+
+    return (
+        <PageSection>
+            <Stack hasGutter>
+                {selectedKinds.map((kind) => {
+                    const items = relatedResultItems.filter((item) => item?.kind === kind)
+                    if (items && items[0]?.items && items.length > 0) {
+                        return (
+                            <SearchResultExpandableCard
+                                key={`related-table-${kind}`}
+                                title={`Related ${kind.charAt(0).toUpperCase()}${kind.slice(1)} (${
+                                    items[0]?.items.length
+                                })`}
+                                renderContent={() => renderContent(kind, items[0]?.items)}
+                                defaultExpanded
+                            />
+                        )
+                    }
+                    return null
+                })}
+            </Stack>
+        </PageSection>
+    )
 }
 
 function RenderRelatedTiles(
@@ -190,18 +192,47 @@ function RenderRelatedTiles(
     return null
 }
 
+interface ISearchResult {
+    kind: string
+    __type: string
+}
+
 function RenderSearchTables(
     currentQuery: string,
-    setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>,
-    selectedRelatedKinds: string[]
+    setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+    // selectedRelatedKinds: string[]
 ) {
     const { t } = useTranslation()
     const { data, error, loading } = useSearchResultItemsQuery({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-        variables: {
-            input: [convertStringToQuery(currentQuery)],
-        },
+        variables: { input: [convertStringToQuery(currentQuery)] },
     })
+
+    const renderContent = useCallback(
+        (kind: string, items: ISearchResult[]) => {
+            return (
+                <AcmTable
+                    plural=""
+                    items={items}
+                    columns={_.get(
+                        searchDefinitions,
+                        `[${kind}].columns`,
+                        searchDefinitions['genericresource'].columns
+                    )}
+                    keyFn={(item: any) => item._uid.toString()}
+                    rowActions={GetRowActions(
+                        kind,
+                        // TODO - Handle interpolation
+                        t('Delete {{resourceKind}}', { resourceKind: kind }),
+                        currentQuery,
+                        false,
+                        setDeleteResource
+                    )}
+                />
+            )
+        },
+        [currentQuery, setDeleteResource, t]
+    )
 
     if (loading) {
         return (
@@ -209,7 +240,9 @@ function RenderSearchTables(
                 <AcmLoadingPage />
             </PageSection>
         )
-    } else if (error || !data || !data.searchResult) {
+    }
+
+    if (error || !data || !data.searchResult) {
         return (
             <PageSection>
                 <AcmAlert
@@ -222,9 +255,8 @@ function RenderSearchTables(
             </PageSection>
         )
     }
-    const searchResultItems = data.searchResult[0]?.items || []
-    const uniqueKinds: string[] = _.uniq(searchResultItems.map((item: { kind: string }) => item.kind))
 
+    const searchResultItems: ISearchResult[] = data.searchResult[0]?.items || []
     if (searchResultItems.length === 0) {
         return (
             <PageSection>
@@ -238,8 +270,20 @@ function RenderSearchTables(
         )
     }
 
+    const kindSearchResultItems: Record<string, ISearchResult[]> = {}
+    for (const searchResultItem of searchResultItems) {
+        const existing = kindSearchResultItems[searchResultItem.kind]
+        if (!existing) {
+            kindSearchResultItems[searchResultItem.kind] = [searchResultItem]
+        } else {
+            kindSearchResultItems[searchResultItem.kind].push(searchResultItem)
+        }
+    }
+
+    const kinds = Object.keys(kindSearchResultItems)
+
     return (
-        <div>
+        <Fragment>
             {searchResultItems.length >= 10000 ? (
                 <PageSection>
                     <AcmAlert
@@ -252,39 +296,22 @@ function RenderSearchTables(
                     />
                 </PageSection>
             ) : null}
-            {uniqueKinds.map((kind: string) => {
-                const items = searchResultItems.filter(
-                    (item: { kind: string; __type: string }) => item.kind === kind || item.__type === kind
-                )
-                return (
-                    <AcmPageCard key={`results-table-${kind}`}>
-                        <AcmExpandableSection
-                            label={`${kind.charAt(0).toUpperCase()}${kind.slice(1)} (${items.length})`}
-                            expanded={selectedRelatedKinds.length === 0}
-                        >
-                            <AcmTable
-                                plural=""
-                                items={items}
-                                columns={_.get(
-                                    searchDefinitions,
-                                    `[${kind}].columns`,
-                                    searchDefinitions['genericresource'].columns
-                                )}
-                                keyFn={(item: any) => item._uid.toString()}
-                                rowActions={GetRowActions(
-                                    kind,
-                                    // TODO - Handle interpolation
-                                    t('Delete {{resourceKind}}', { resourceKind: kind }),
-                                    currentQuery,
-                                    false,
-                                    setDeleteResource
-                                )}
+            <PageSection>
+                <Stack hasGutter>
+                    {kinds.sort().map((kind: string) => {
+                        const items = kindSearchResultItems[kind]
+                        return (
+                            <SearchResultExpandableCard
+                                key={`results-table-${kind}`}
+                                title={`${kind.charAt(0).toUpperCase()}${kind.slice(1)} (${items.length})`}
+                                renderContent={() => renderContent(kind, items)}
+                                defaultExpanded={kinds.length === 1}
                             />
-                        </AcmExpandableSection>
-                    </AcmPageCard>
-                )
-            })}
-        </div>
+                        )
+                    })}
+                </Stack>
+            </PageSection>
+        </Fragment>
     )
 }
 
@@ -304,7 +331,23 @@ export default function SearchResults(props: { currentQuery: string; preSelected
             />
             {RenderRelatedTiles(currentQuery, selected, setSelected)}
             {RenderRelatedTables(currentQuery, selected, setDeleteResource)}
-            {RenderSearchTables(currentQuery, setDeleteResource, selected)}
+            {RenderSearchTables(currentQuery, setDeleteResource)}
         </Fragment>
+    )
+}
+
+export function SearchResultExpandableCard(props: {
+    title: string
+    renderContent: () => ReactNode
+    defaultExpanded?: boolean
+}) {
+    const [open, setOpen] = useState(props.defaultExpanded !== undefined ? props.defaultExpanded : false)
+    return (
+        <Card isRounded isExpanded={open}>
+            <CardHeader onExpand={() => setOpen(!open)} onClick={() => setOpen(!open)}>
+                <CardTitle>{props.title}</CardTitle>
+            </CardHeader>
+            {open && props.renderContent()}
+        </Card>
     )
 }
