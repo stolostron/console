@@ -2194,7 +2194,7 @@
     "template.emptyStateHeader": "You don't have any Ansible job templates",
     "template.emptyStateMsg": "Click <bold>Create Ansible template</bold> to create your resource.",
     "template.hint": "Create an Ansible automation job template to automatically run Ansible jobs at different stages of the cluster life cycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed. Install the operator through the following link:",
-    "template.hint.noConsoleURL": "Create an Ansible automation job template to automatically run Ansible jobs at different stages of the cluster life cycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed. Install the Operator through operator hub.",
+    "template.hint.noConsoleURL": "Create an Ansible automation job template to automatically run Ansible jobs at different stages of the cluster life cycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed. Install the operator through OperatorHub.",
     "template.information.description": "The default job templates that you select appear automatically during cluster creation. To create a sequence of events, select multiple jobs. Drag and drop the job templates to reorder the sequence.",
     "template.information.title": "Basic information",
     "template.job.duplicate.error": "The job name already exists in this hook. The job list cannot contain duplicates.",
