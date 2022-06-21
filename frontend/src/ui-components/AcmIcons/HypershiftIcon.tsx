@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { createAcmIcon } from './createAcmIcon'
 
 export const HypershiftIcon = createAcmIcon({

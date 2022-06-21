@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { AcmCodeSnippet } from './AcmCodeSnippet'
 import { AcmPageCard } from '../AcmPage/AcmPage'
 

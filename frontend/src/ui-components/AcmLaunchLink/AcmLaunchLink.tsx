@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { ButtonVariant, Label } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton } from '../AcmButton/AcmButton'

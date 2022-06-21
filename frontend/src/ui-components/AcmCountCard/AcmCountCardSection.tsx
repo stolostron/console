@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { Grid, GridItem, Skeleton, gridItemSpanValueShape } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { AcmExpandableCard } from '../AcmExpandable'

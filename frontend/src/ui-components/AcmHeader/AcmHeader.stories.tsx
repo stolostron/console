@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { MemoryRouter } from 'react-router'
 import { Page as PageStory, PageStoryDefaults } from '../AcmPage/AcmPage.stories'
 import { AcmHeader, AcmRoute } from './AcmHeader'

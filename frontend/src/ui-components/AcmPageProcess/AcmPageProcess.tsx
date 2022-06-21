@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { EmptyState, EmptyStateBody, EmptyStateSecondaryActions, Title } from '@patternfly/react-core'
 import { makeStyles } from '@material-ui/styles'
 import { AcmPageCard } from '../AcmPage/AcmPage'

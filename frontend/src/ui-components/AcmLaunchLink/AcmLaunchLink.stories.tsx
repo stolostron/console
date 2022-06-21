@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { AcmLaunchLink, LaunchLink } from './AcmLaunchLink'
 import RedHatIcon from '../AcmIcons/RedHatIcon'
 

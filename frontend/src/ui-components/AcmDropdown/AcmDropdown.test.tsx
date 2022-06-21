@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'

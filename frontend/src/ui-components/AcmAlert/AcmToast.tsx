@@ -2,16 +2,7 @@
 
 import Slide from '@material-ui/core/Slide'
 import { Alert, AlertActionCloseButton, AlertGroup, Flex } from '@patternfly/react-core'
-import {
-    createContext,
-    CSSProperties,
-    Fragment,
-    ReactNode,
-    useCallback,
-    useContext,
-    useEffect,
-    useState,
-} from 'react'
+import { createContext, CSSProperties, Fragment, ReactNode, useCallback, useContext, useEffect, useState } from 'react'
 import { AcmAlertInfo, IAlertContext } from './AcmAlert'
 
 /* istanbul ignore next */

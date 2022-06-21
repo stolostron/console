@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { AcmLoadingPage } from './AcmLoadingPage'
 
 export default {

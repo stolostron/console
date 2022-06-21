@@ -2,16 +2,7 @@
 
 import Collapse from '@material-ui/core/Collapse'
 import { Alert, AlertActionCloseButton, AlertGroup, Flex } from '@patternfly/react-core'
-import {
-    createContext,
-    CSSProperties,
-    Fragment,
-    ReactNode,
-    useCallback,
-    useContext,
-    useEffect,
-    useState,
-} from 'react'
+import { createContext, CSSProperties, Fragment, ReactNode, useCallback, useContext, useEffect, useState } from 'react'
 
 export interface AcmAlertInfo {
     type?: 'success' | 'danger' | 'warning' | 'info' | 'default'

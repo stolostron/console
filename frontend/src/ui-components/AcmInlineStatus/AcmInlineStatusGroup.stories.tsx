@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { Card, CardBody } from '@patternfly/react-core'
 import { AcmInlineStatusGroup } from './AcmInlineStatusGroup'
 

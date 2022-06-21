@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-
 import { render } from '@testing-library/react'
 import { configureAxe } from 'jest-axe'
 import { AcmProgressTracker } from './AcmProgressTracker'
