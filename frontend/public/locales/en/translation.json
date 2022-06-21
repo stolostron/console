@@ -1369,6 +1369,7 @@
     "infraEnv.emptyStateHeader": "You don't have any infrastructure environments",
     "infraEnv.rowAction.delete.desc": "The infrastructure environment cannot be deleted because it contains hosts.",
     "infraEnv.rowAction.delete.title": "Delete infrastructure environment",
+    "infraEnv.tableHeader.creationDate": "Creation date",
     "infraEnv.tableHeader.hosts": "Hosts",
     "infraEnv.tableHeader.labels": "Labels",
     "infraEnv.tableHeader.location": "Location",
