@@ -2,7 +2,6 @@
 
 // eslint-disable-next-line no-use-before-define
 import React from 'react'
-import { Trans } from '../../../../../../lib/acm-i18next'
 
 import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -194,9 +193,6 @@ export const getControlData = (
                 section: 'Assisted installation',
             },
         ],
-        sectionTooltips: {
-            'Centrally managed': <Trans i18nKey="create:cluster.create.centrallymanaged.section.tooltip" />,
-        },
         active: getActiveCardID,
         validation: {
             notification: 'creation.ocp.cluster.must.select.infrastructure',
