@@ -43,7 +43,7 @@
         "prepare": "husky install",
         "cypress:open": "cypress open --env mock=true",
         "cypress:ci": "concurrently npm:frontend:quiet npm:backend npm:cypress:run --prefix-colors cyan,green,blue --kill-others --success first",
-        "cypress:run": "cypress run --config video=false"
+        "cypress:run": "cypress run  --env mock=true --config video=false"
     },
     "devDependencies": {
         "@types/node": "14.18.16",
