@@ -237,7 +237,7 @@ describe('SearchPage', () => {
         await waitFor(() => expect(screen.queryByText('Open new search tab')).toBeTruthy())
         await waitFor(() => expect(screen.queryByText('Saved searches')).toBeTruthy())
 
-        const searchbar = screen.getByText('Search items')
+        const searchbar = screen.getByRole('combobox') // getByText('Search items')
         expect(searchbar).toBeTruthy()
         userEvent.click(searchbar)
         userEvent.type(searchbar, 'kind ')

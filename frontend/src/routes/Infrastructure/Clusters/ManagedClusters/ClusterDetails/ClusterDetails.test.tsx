@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmRoute } from '@stolostron/ui-components'
 import { render } from '@testing-library/react'
 import _ from 'lodash'
 import { Scope } from 'nock/types'
@@ -8,7 +7,6 @@ import { CIM } from 'openshift-assisted-ui-lib'
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
-    acmRouteState,
     agentClusterInstallsState,
     certificateSigningRequestsState,
     clusterCuratorsState,
@@ -679,7 +677,7 @@ const mockOCMNamespace = {
     apiVersion: 'v1',
     kind: 'Namespace',
     metadata: {
-        name: 'open-cluster-management',
+        name: 'multicluster-engine',
     },
 }
 
@@ -693,7 +691,6 @@ const nockListHiveProvisionJobs = () =>
 const Component = ({ clusterDeployment = mockClusterDeployment }) => (
     <RecoilRoot
         initializeState={(snapshot) => {
-            snapshot.set(acmRouteState, AcmRoute.Clusters)
             snapshot.set(managedClusterAddonsState, mockManagedClusterAddOns)
             snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
             snapshot.set(managedClustersState, [mockManagedCluster])

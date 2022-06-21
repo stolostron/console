@@ -29,10 +29,18 @@ export default function GovernanceOverview() {
     }, [namespaces])
 
     if (policies.length === 0) {
-        return <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
+        return (
+            <PageSection isFilled>
+                <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
+            </PageSection>
+        )
     }
     if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant)) {
-        return <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
+        return (
+            <PageSection isFilled>
+                <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
+            </PageSection>
+        )
     }
     return (
         <PageSection isWidthLimited>

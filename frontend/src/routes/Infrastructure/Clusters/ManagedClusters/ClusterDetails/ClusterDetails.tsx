@@ -1,5 +1,38 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Page } from '@patternfly/react-core'
+import {
+    AcmActionGroup,
+    AcmButton,
+    AcmLaunchLink,
+    AcmPage,
+    AcmPageHeader,
+    AcmSecondaryNav,
+    AcmSecondaryNavItem,
+    Provider,
+} from '@stolostron/ui-components'
+import { AgentClusterInstallK8sResource, AgentK8sResource, InfraEnvK8sResource } from 'openshift-assisted-ui-lib/cim'
+import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
+import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
+import { useRecoilValue, waitForAll } from 'recoil'
+import {
+    agentClusterInstallsState,
+    agentsState,
+    certificateSigningRequestsState,
+    clusterClaimsState,
+    clusterCuratorsState,
+    clusterDeploymentsState,
+    clusterManagementAddonsState,
+    infraEnvironmentsState,
+    managedClusterAddonsState,
+    managedClusterInfosState,
+    managedClustersState,
+} from '../../../../../atoms'
+import { ErrorPage } from '../../../../../components/ErrorPage'
+import { usePrevious } from '../../../../../components/usePrevious'
+import { useTranslation } from '../../../../../lib/acm-i18next'
+import { canUser } from '../../../../../lib/rbac-util'
+import { NavigationPath } from '../../../../../NavigationPath'
 import {
     Addon,
     Cluster,
@@ -11,41 +44,6 @@ import {
     ResourceError,
     SecretDefinition,
 } from '../../../../../resources'
-import {
-    AcmActionGroup,
-    AcmButton,
-    AcmLaunchLink,
-    AcmPage,
-    AcmPageHeader,
-    AcmRoute,
-    AcmSecondaryNav,
-    AcmSecondaryNavItem,
-    Provider,
-} from '@stolostron/ui-components'
-import { Page } from '@patternfly/react-core'
-import { createContext, Fragment, Suspense, useEffect, useState } from 'react'
-import { useTranslation } from '../../../../../lib/acm-i18next'
-import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'
-import { AgentClusterInstallK8sResource, AgentK8sResource, InfraEnvK8sResource } from 'openshift-assisted-ui-lib/cim'
-import {
-    acmRouteState,
-    certificateSigningRequestsState,
-    clusterClaimsState,
-    clusterCuratorsState,
-    clusterDeploymentsState,
-    clusterManagementAddonsState,
-    managedClusterAddonsState,
-    managedClusterInfosState,
-    managedClustersState,
-    agentClusterInstallsState,
-    agentsState,
-    infraEnvironmentsState,
-} from '../../../../../atoms'
-import { ErrorPage } from '../../../../../components/ErrorPage'
-import { usePrevious } from '../../../../../components/usePrevious'
-import { canUser } from '../../../../../lib/rbac-util'
-import { NavigationPath } from '../../../../../NavigationPath'
 import { ClusterActionDropdown, getClusterActions } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
@@ -77,8 +75,6 @@ export default function ClusterDetailsPage({ match }: RouteComponentProps<{ id: 
     const location = useLocation()
     const history = useHistory()
     const { t } = useTranslation()
-    const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.Clusters), [setRoute])
 
     const [
         managedClusters,

@@ -11,35 +11,14 @@
 
 ## What is console?
 
-The console provides a user interface for cluster related items such as:
-
-- Credentials management (For example, Cloud Providers)
-- Cluster management
-  - Creating
-  - Importing
-  - Upgrading
-  - Detaching
-  - Destroying
+The console provides the user interface for Red Hat Advanced Cluster Management (ACM) for Kubernetes and Red Hat MultiCluster Engine (MCE).
 
 Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 ## Prerequisites
 
-- Node.js v14.x
-  - `node -v`
-- NPM
-
-## Workspaces
-
-The console repository is setup to use NPM 7 [workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces).
-This allows the projects with the console repository to reference each other.
-This enables the easy sharing of a common libraries.
-It also enables the decoupling of different projects but allows them to pulled together into a final product.
-
-Notes:
-
-- Workspaces are defined in the `package.json` at the root
-- While workspaces allow the sequential running of commands across all workspaces, console is using a project `workspaces-run` to run command across all workspaces concurrently.
+- [Node.js](https://nodejs.org) 14
+- NPM 6
 
 ## Running
 
@@ -54,14 +33,14 @@ Notes:
 3. Setup environment
 
    You need:
-   - to be connected to a OpenShift 4.x.x cluster
-   - to have Advanced Cluster Management installed on the cluster
+     - to be connected to a OpenShift 4.x.x cluster
+     - to have Advanced Cluster Management installed on the cluster
 
    ```
    npm run setup
    ```
 
-   This will create a `.env` file in the backend directory containing the environment variables.
+   This will create a `.env` file in the backend directory containing environment variables.
 
 4. Start the development services
 
@@ -71,37 +50,13 @@ Notes:
 
    This will start the frontend and the backend in parallel.  (It may take up to 30 seconds for the UI to appear)
 
-   The frontend will proxy requests to the backend using react scripts.
-
-   The backend will proxy requests to the kubernetes cluster specified by CLUSTER_API_URL in backend/.env.
-
 ## Running as an OpenShift console plugin-in
+
 See [Dynamic Plugins - Development](frontend/PLUGIN.md#development)
 
-## Backend
+## Architecture
 
-| Method | Path     | Description                                      |
-| -----: | -------- | ------------------------------------------------ |
-|    ALL | /api     | Proxy request to cluster /api                    |
-|    ALL | /apis    | Proxy request to cluster /apis                   |
-|    GET | /watch   | Server side event stream of kubernetes resources |
-|   POST | /upgrade | Upgrade a cluster                                |
-
-### Proxy Routes
-
-The backend proxies api calls to the kubernetes cluster api.
-Proxy calls will use the clients api token stored in `acm-access-token-cookie` cookie.
-This enforces user RBAC for proxy calls.
-
-### Watch Route
-
-The backend `/watch` route streams resource changes using [server side events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events).
-
-## Frontend
-
-The frontend is using react scripts to simplify dependencies.
-The react scripts internally handle all the webpacking of the frontend.
-The goal here is fewer dependencies of the frontend.
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ### Chrome
 

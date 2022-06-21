@@ -776,7 +776,7 @@ describe('addOCPRouteLocation spec no tls', () => {
     }
     const result = []
     it('addOCPRouteLocation no tls', () => {
-        expect(addOCPRouteLocation(node, 'possiblereptile', 'default', [])).toEqual(result)
+        expect(addOCPRouteLocation(node, 'possiblereptile', 'default', [], t)).toEqual(result)
     })
 })
 
@@ -797,23 +797,22 @@ describe('addNodeOCPRouteLocationForCluster spec no route', () => {
                     },
                 ],
             },
-            raw: {
-                kind: 'Route',
-                spec: {
-                    metadata: {
-                        namespace: 'default',
+            template: {
+                template: {
+                    kind: 'Route',
+                    spec: {
+                        metadata: {
+                            namespace: 'default',
+                        },
+                        host: '1.1.1',
                     },
-                    host: '1.1.1',
                 },
             },
         },
     }
-    const obj = {
-        id: 'objID',
-    }
-    const result = []
+    const result = [{ type: 'spacer' }]
     it('addNodeOCPRouteLocationForCluster no route', () => {
-        expect(addNodeOCPRouteLocationForCluster(node, obj, [], t)).toEqual(result)
+        expect(addNodeOCPRouteLocationForCluster(node, null, [], t)).toEqual(result)
     })
 })
 
@@ -846,7 +845,7 @@ describe('addOCPRouteLocation spec with tls', () => {
         },
     }
     it('addOCPRouteLocation with tls', () => {
-        expect(addOCPRouteLocation(node, 'possiblereptile', 'default', [])).toEqual([])
+        expect(addOCPRouteLocation(node, 'possiblereptile', 'default', [], t)).toEqual([])
     })
 })
 
@@ -866,25 +865,24 @@ describe('addNodeOCPRouteLocationForCluster', () => {
                     },
                 ],
             },
-            raw: {
-                kind: 'Route',
-                spec: {
-                    metadata: {
-                        namespace: 'default',
+            template: {
+                template: {
+                    kind: 'Route',
+                    spec: {
+                        metadata: {
+                            namespace: 'default',
+                        },
+                        tls: {},
+                        host: '1.1.1',
                     },
-                    tls: {},
-                    host: '1.1.1',
                 },
             },
         },
     }
 
-    const obj = {
-        id: 'objID',
-    }
-    const result = []
+    const result = [{ type: 'spacer' }]
     it('addNodeOCPRouteLocationForCluster with tls and host', () => {
-        expect(addNodeOCPRouteLocationForCluster(node, obj, [], t)).toEqual(result)
+        expect(addNodeOCPRouteLocationForCluster(node, null, [], t)).toEqual(result)
     })
 })
 
@@ -904,33 +902,22 @@ describe('addNodeOCPRouteLocationForCluster', () => {
                     },
                 ],
             },
-            raw: {
-                kind: 'Route',
-                spec: {
-                    metadata: {
-                        namespace: 'default',
+            template: {
+                template: {
+                    kind: 'Route',
+                    spec: {
+                        metadata: {
+                            namespace: 'default',
+                        },
+                        tls: {},
+                        host: '1.1.1',
                     },
-                    tls: {},
-                    host: '1.1.1',
                 },
             },
         },
     }
 
-    const result = [
-        { type: 'spacer' },
-        { labelKey: 'Location', type: 'label' },
-        {
-            indent: true,
-            type: 'link',
-            value: {
-                data: { action: 'open_link', targetLink: 'https://1.1.1/' },
-                id: '0-location',
-                label: 'https://1.1.1/',
-            },
-        },
-        { type: 'spacer' },
-    ]
+    const result = [{ type: 'spacer' }]
     it('addNodeOCPRouteLocationForCluster with tls and no obj', () => {
         expect(addNodeOCPRouteLocationForCluster(node, undefined, [], t)).toEqual(result)
     })

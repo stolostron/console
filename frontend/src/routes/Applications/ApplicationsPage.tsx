@@ -1,19 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-    AcmLoadingPage,
-    AcmPage,
-    AcmPageHeader,
-    AcmRoute,
-    AcmSecondaryNav,
-    AcmSecondaryNavItem,
-} from '@stolostron/ui-components'
+import { AcmLoadingPage, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '@stolostron/ui-components'
 import { Fragment, lazy, Suspense, useEffect, useState } from 'react'
 import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState, discoveredApplicationsState } from '../../atoms'
+import { discoveredApplicationsState, discoveredKustomizationsState, discoveredOCPAppResourcesState } from '../../atoms'
 import { useTranslation } from '../../lib/acm-i18next'
-import { queryRemoteArgoApps } from '../../lib/search'
+import { queryRemoteArgoApps, queryOCPAppResources, queryKustomizations } from '../../lib/search'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath } from '../../NavigationPath'
 
@@ -24,19 +17,37 @@ export default function ApplicationsPage() {
     const location = useLocation()
     const { t } = useTranslation()
 
-    const [, setRoute] = useRecoilState(acmRouteState)
-    useEffect(() => setRoute(AcmRoute.Applications), [setRoute])
-
     const { data, loading, startPolling } = useQuery(queryRemoteArgoApps)
+    const dataOCPResources = useQuery(queryOCPAppResources).data
+    const loadingOCPResources = useQuery(queryOCPAppResources).loading
+    const startPollingOCPResources = useQuery(queryOCPAppResources).startPolling
+
+    const dataKustomizations = useQuery(queryKustomizations).data
+    const loadingFluxApps = useQuery(queryKustomizations).loading
+    const startPollingKustomizations = useQuery(queryKustomizations).startPolling
     useEffect(startPolling, [startPolling])
+    useEffect(startPollingOCPResources, [startPollingOCPResources])
+    useEffect(startPollingKustomizations, [startPollingKustomizations])
     const [timedOut, setTimedOut] = useState<boolean>()
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_, setDiscoveredAppilcations] = useRecoilState(discoveredApplicationsState)
+    const [, setDiscoveredAppilcations] = useRecoilState(discoveredApplicationsState)
+    const [, setDiscoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
+    const [, setDiscoveredKustomizations] = useRecoilState(discoveredKustomizationsState)
     useEffect(() => {
         const remoteArgoApps = data?.[0]?.data?.searchResult?.[0]?.items || []
         setDiscoveredAppilcations(remoteArgoApps)
-    }, [data, setDiscoveredAppilcations])
+        const ocpAppResources = dataOCPResources?.[0]?.data?.searchResult?.[0]?.items || []
+        setDiscoveredOCPAppResources(ocpAppResources)
+        const kustomizations = dataKustomizations?.[0]?.data?.searchResult?.[0]?.items || []
+        setDiscoveredKustomizations(kustomizations)
+    }, [
+        data,
+        dataKustomizations,
+        dataOCPResources,
+        setDiscoveredAppilcations,
+        setDiscoveredKustomizations,
+        setDiscoveredOCPAppResources,
+    ])
 
     // failsafe in case search api is sleeping
     useEffect(() => {
@@ -49,7 +60,7 @@ export default function ApplicationsPage() {
         }
     }, [])
 
-    if (loading && !timedOut) {
+    if (loading && loadingOCPResources && loadingFluxApps && !timedOut) {
         return <AcmLoadingPage />
     }
 

@@ -8,7 +8,6 @@ import {
     AcmLoadingPage,
     AcmPage,
     AcmPageHeader,
-    AcmRoute,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
 } from '@stolostron/ui-components'
@@ -27,9 +26,8 @@ import {
     useState,
 } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
-import { useRecoilCallback, useRecoilState } from 'recoil'
+import { useRecoilCallback } from 'recoil'
 import {
-    acmRouteState,
     ansibleJobState,
     applicationSetsState,
     applicationsState,
@@ -114,7 +112,6 @@ function searchError(completeError: ApolloError | undefined, t: TFunction) {
 export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ name: string; namespace: string }>) {
     const location = useLocation()
     const { t } = useTranslation()
-    const [, setRoute] = useRecoilState(acmRouteState)
     const [waitForApplication, setWaitForApplication] = useState<boolean>(true)
     const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
     const [activeChannel, setActiveChannel] = useState<string>()
@@ -280,8 +277,6 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
             },
         },
     })
-
-    useEffect(() => setRoute(AcmRoute.Applications), [setRoute])
 
     useEffect(() => {
         const canDeleteApplicationPromise = canUser('delete', ApplicationDefinition)

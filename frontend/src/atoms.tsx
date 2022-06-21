@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmRoute } from '@stolostron/ui-components'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { atom, SetterOrUpdater, useRecoilState } from 'recoil'
@@ -75,6 +74,7 @@ import {
     InfrastructureApiVersion,
     InfrastructureKind,
     IResource,
+    Kustomization,
     MachinePool,
     MachinePoolApiVersion,
     MachinePoolKind,
@@ -99,8 +99,9 @@ import {
     Namespace,
     NamespaceApiVersion,
     NamespaceKind,
-    NMStateConfigKind,
     NMStateConfigApiVersion,
+    OCPAppResource,
+    NMStateConfigKind,
     Placement,
     PlacementApiVersionAlpha,
     PlacementBinding,
@@ -141,7 +142,6 @@ import {
     SubscriptionReportApiVersion,
     SubscriptionReportKind,
 } from './resources'
-
 let atomArrayKey = 0
 function AtomArray<T>() {
     return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
@@ -150,8 +150,9 @@ function AtomArray<T>() {
 // throttle events delay
 export const THROTTLE_EVENTS_DELAY = 500
 
-export const acmRouteState = atom<AcmRoute>({ key: 'acmRoute', default: '' as AcmRoute })
 export const discoveredApplicationsState = AtomArray<ArgoApplication>()
+export const discoveredOCPAppResourcesState = AtomArray<OCPAppResource>()
+export const discoveredKustomizationsState = AtomArray<Kustomization>()
 
 export const agentClusterInstallsState = AtomArray<CIM.AgentClusterInstallK8sResource>()
 export const agentsState = AtomArray<CIM.AgentK8sResource>()

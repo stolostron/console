@@ -143,6 +143,7 @@ describe('getNodeDetails application node', () => {
             value: 'No labels',
         },
         { type: 'spacer' },
+        { type: 'spacer' },
         {
             labelKey: 'Subscription Selector',
             status: true,
@@ -607,6 +608,7 @@ describe('getNodeDetails subscription', () => {
         },
         { type: 'spacer' },
         { type: 'spacer' },
+        { type: 'spacer' },
         { type: 'label', labelKey: 'Cluster deploy status' },
         {
             labelValue: 'Remote subscriptions',
@@ -718,6 +720,7 @@ describe('getNodeDetails helm node', () => {
             type: 'label',
             value: 'app=mortgage-app-mortgage',
         },
+        { type: 'spacer' },
         { type: 'spacer' },
         { type: 'spacer' },
         { labelKey: 'Cluster deploy status', type: 'label' },
@@ -869,6 +872,7 @@ describe('getNodeDetails placement rules node with error', () => {
             value: 0,
         },
         { type: 'spacer' },
+        { type: 'spacer' },
         {
             labelValue: 'Error',
             status: 'failure',
@@ -964,6 +968,7 @@ describe('getNodeDetails placement rules node with success', () => {
             type: 'label',
             value: 1,
         },
+        { type: 'spacer' },
         { type: 'spacer' },
     ]
 

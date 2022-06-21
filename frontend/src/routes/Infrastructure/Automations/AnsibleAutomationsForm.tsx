@@ -2,6 +2,7 @@
 import {
     ActionGroup,
     Button,
+    ButtonVariant,
     Chip,
     ChipGroup,
     Flex,
@@ -10,12 +11,13 @@ import {
     SelectOption,
     SelectVariant,
 } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@stolostron/ui-components'
 import _ from 'lodash'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { secretsState, settingsState } from '../../../atoms'
+import { configMapsState, secretsState, settingsState, subscriptionOperatorsState } from '../../../atoms'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { ErrorPage } from '../../../components/ErrorPage'
@@ -31,6 +33,7 @@ import {
     createResource,
     getClusterCurator,
     IResource,
+    isAnsibleOperatorInstalled,
     listAnsibleTowerJobs,
     ProviderConnection,
     replaceResource,
@@ -146,6 +149,44 @@ export function AnsibleAutomationsForm(props: {
     const [destroyPostJobs, setDestroyPostJobs] = useState<ClusterCuratorAnsibleJob[]>(
         clusterCurator?.spec?.destroy?.posthook ?? []
     )
+    const [configMaps] = useRecoilState(configMapsState)
+    const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
+
+    const isOperatorInstalled = useMemo(
+        () => isAnsibleOperatorInstalled(subscriptionOperators),
+        [subscriptionOperators]
+    )
+
+    function getOperatorError() {
+        const openShiftConsoleConfig = configMaps?.find((configmap) => configmap.metadata?.name === 'console-public')
+        const openShiftConsoleUrl: string = openShiftConsoleConfig?.data?.consoleURL
+        if (!isOperatorInstalled)
+            return (
+                <div>
+                    {t('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')}
+                    {openShiftConsoleUrl && openShiftConsoleUrl !== '' ? (
+                        <div>
+                            {t('Install the Operator through the following link: ')}
+                            <Button
+                                isInline
+                                variant={ButtonVariant.link}
+                                onClick={() =>
+                                    window.open(
+                                        openShiftConsoleUrl +
+                                            '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
+                                    )
+                                }
+                            >
+                                OperatorHub
+                                <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                            </Button>
+                        </div>
+                    ) : (
+                        t('Install the Operator through operator hub.')
+                    )}
+                </div>
+            )
+    }
 
     const resourceVersion: string | undefined = clusterCurator?.metadata.resourceVersion ?? undefined
 
@@ -524,6 +565,7 @@ export function AnsibleAutomationsForm(props: {
                 schema={schema}
                 immutables={isEditing ? ['ClusterCurator.0.metadata.name', 'ClusterCurator.0.metadata.namespace'] : []}
                 mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
+                operatorError={getOperatorError()}
             />
             <EditAnsibleJobModal
                 ansibleJob={editAnsibleJob}
