@@ -12,6 +12,11 @@ export interface PolicyReport {
     kind: PolicyReportKindType
     metadata: Metadata
     results: PolicyReportResults[]
+    scope?: {
+        kind: string
+        name: string
+        namespace: string
+    }
 }
 
 export interface PolicyReportResults {

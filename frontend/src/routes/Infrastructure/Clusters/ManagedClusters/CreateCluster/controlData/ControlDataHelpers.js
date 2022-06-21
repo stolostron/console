@@ -464,7 +464,7 @@ export const proxyControlData = [
         type: 'values',
         name: 'No proxy',
         disabled: true,
-        tip: 'Add comma separated sites to bypass the proxy. By default, all cluster egress traffic is proxied, including calls to hosting cloud provider APIs.',
+        tip: 'noProxyTip',
     },
     {
         id: 'additionalTrustBundle',
@@ -474,6 +474,15 @@ export const proxyControlData = [
         placeholder: '-----BEGIN CERTIFICATE-----\n<MY_TRUSTED_CA_CERT>\n-----END CERTIFICATE-----',
     },
 ]
+
+export const onChangeAutomationTemplate = (control, controlData) => {
+    var installAttemptsLimit = controlData.find(({ id }) => id === 'installAttemptsLimit')
+    if (control.active) {
+        installAttemptsLimit.immutable = { value: 1, path: 'ClusterDeployment[0].spec.installAttemptsLimit' }
+    } else {
+        delete installAttemptsLimit.immutable
+    }
+}
 
 export const automationControlData = [
     ///////////////////////  automation  /////////////////////////////////////
@@ -493,6 +502,7 @@ export const automationControlData = [
         type: 'combobox',
         tooltip: 'template.clusterCreate.tooltip',
         placeholder: 'template.clusterCreate.select.placeholder',
+        onSelect: onChangeAutomationTemplate,
         validation: {
             required: false,
         },

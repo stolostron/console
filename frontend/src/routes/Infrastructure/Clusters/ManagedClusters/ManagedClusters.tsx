@@ -50,6 +50,7 @@ import { ClusterActionDropdown } from './components/ClusterActionDropdown'
 import { DistributionField } from './components/DistributionField'
 import { StatusField } from './components/StatusField'
 import { useAllClusters } from './components/useAllClusters'
+import { getDateTimeCell } from '../../helpers/table-row-helpers'
 
 function InfraEnvLinkButton() {
     const { t } = useTranslation()
@@ -186,6 +187,7 @@ export function ClustersTable(props: {
     const clusterDistributionColumn = useClusterDistributionColumn(clusterCurators)
     const clusterLabelsColumn = useClusterLabelsColumn()
     const clusterNodesColumn = useClusterNodesColumn()
+    const clusterCreatedDataColumn = useClusterCreatedDateColumn()
 
     const modalColumns = useMemo(
         () => [clusterNameColumn, clusterStatusColumn, clusterProviderColumn],
@@ -200,6 +202,7 @@ export function ClustersTable(props: {
             clusterDistributionColumn,
             clusterLabelsColumn,
             clusterNodesColumn,
+            clusterCreatedDataColumn,
             {
                 header: '',
                 cell: (cluster: Cluster) => {
@@ -215,6 +218,7 @@ export function ClustersTable(props: {
             clusterDistributionColumn,
             clusterLabelsColumn,
             clusterNodesColumn,
+            clusterCreatedDataColumn,
         ]
     )
 
@@ -535,6 +539,7 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
     const { t } = useTranslation()
     return {
         header: t('table.nodes'),
+        sort: 'nodes',
         cell: (cluster) => {
             return cluster.nodes!.nodeList!.length > 0 ? (
                 <AcmInlineStatusGroup
@@ -545,6 +550,28 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
             ) : (
                 '-'
             )
+        },
+    }
+}
+
+export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
+    const { t } = useTranslation()
+    return {
+        header: t('table.creationDate'),
+        sort: (a: Cluster, b: Cluster) => {
+            const dateTimeCellA = getDateTimeCell(a.creationTimestamp ? new Date(a.creationTimestamp).toString() : '-')
+            const dateTimeCellB = getDateTimeCell(b.creationTimestamp ? new Date(b.creationTimestamp).toString() : '-')
+            return compareStrings(
+                dateTimeCellA.sortableValue == 0 ? '' : dateTimeCellA.sortableValue.toString(),
+                dateTimeCellB.sortableValue == 0 ? '' : dateTimeCellB.sortableValue.toString()
+            )
+        },
+        search: 'creationDate',
+        cell: (cluster) => {
+            const dateTimeCell = getDateTimeCell(
+                cluster.creationTimestamp ? new Date(cluster.creationTimestamp).toString() : '-'
+            )
+            return dateTimeCell.title === 'Invalid Date' ? '-' : dateTimeCell.title
         },
     }
 }

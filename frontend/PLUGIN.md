@@ -28,12 +28,13 @@ In the case of 4.10+ we will install addition [resources](https://github.com/ope
 
 ### Running console as OCP dynamic plugins
 
-From the root of the `console` repository run:
+From the root of the `console` repository make sure your kubecontext is set to a hub cluster, then run:
 ```
+npm run setup
 npm run plugins
 ```
 
-This will concurrently start the backend server, webpack build watching for updates, and http-server to serve the plugins for the OCP console.   
+This will concurrently start the backend server and frontend webpack development server.
 
 ### [OCP Console Git Repo](https://github.com/openshift/console)
 
@@ -42,6 +43,11 @@ git clone git@github.com:openshift/console.git
 ```
 
 ### Running OCP Console in development mode
+
+**Note:** With recent post-4.10 builds, you need to run OpenShift console with authentication for authorization to work with the proxied services. Follow [these instructions](https://github.com/openshift/console#openshift-with-authentication). Alternatively, you can revert a commit that regressed the ability to use proxies that require authorization when running without authentication and continue with these instructions.
+```
+git revert 1230920afbcd7cbc1d2f0c6b1e48744c72eb60be -m 1 -n
+```
 
 Build OCP Console
 

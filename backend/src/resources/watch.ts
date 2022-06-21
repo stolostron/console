@@ -92,6 +92,7 @@ const definitions: IWatchOptions[] = [
     { kind: 'PolicySet', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
     { kind: 'SubmarinerConfig', apiVersion: 'submarineraddon.open-cluster-management.io/v1alpha1' },
     { kind: 'AnsibleJob', apiVersion: 'tower.ansible.com/v1alpha1' },
+    { kind: 'Kustomization', apiVersion: 'kustomize.toolkit.fluxcd.io/v1beta2' },
     { kind: 'ConfigMap', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'insight-content-data' } },
     {
         kind: 'ConfigMap',
@@ -122,6 +123,8 @@ const definitions: IWatchOptions[] = [
     },
     { kind: 'Namespace', apiVersion: 'v1' },
     { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/credentials': '' } },
+    // **Need to look for creds with: 'cluster.open-cluster-management.io/type': 'ans', for edit scenarios
+    { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/type': 'ans' } },
     { kind: 'Secret', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'auto-import-secret' } },
     { kind: 'PolicyReport', apiVersion: 'wgpolicyk8s.io/v1alpha2' },
 ]
@@ -152,6 +155,12 @@ async function listAndWatch(options: IWatchOptions) {
                 // fall through to rerun the list function
             } else if (err instanceof HTTPError) {
                 switch (err.response.statusCode) {
+                    case 403:
+                        logger.error({ msg: 'watch', ...options, status: 'Forbidden' })
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref()
+                        )
+                        break
                     case 404:
                         logger.trace({ msg: 'watch', ...options, status: 'Not found' })
                         await new Promise((resolve) =>

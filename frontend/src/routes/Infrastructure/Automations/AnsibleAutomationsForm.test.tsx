@@ -10,14 +10,24 @@ import {
     Secret,
     SecretApiVersion,
     SecretKind,
+    SubscriptionOperator,
+    SubscriptionOperatorApiVersion,
+    SubscriptionOperatorKind,
 } from '../../../resources'
 import { Provider } from '@stolostron/ui-components/lib/AcmProvider'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { clusterCuratorsState, namespacesState, secretsState } from '../../../atoms'
+import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import { nockAnsibleTower, nockCreate, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { clickByPlaceholderText, clickByText, typeByPlaceholderText, waitForNock } from '../../../lib/test-util'
+import {
+    clickByPlaceholderText,
+    clickByText,
+    typeByPlaceholderText,
+    waitForNock,
+    waitForNotText,
+    waitForText,
+} from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleTowerJobTemplateList } from '../../../resources'
 import AnsibleAutomationsFormPage from './AnsibleAutomationsForm'
@@ -47,13 +57,14 @@ const mockSecret: Secret = {
     },
 }
 
-function AddAnsibleTemplateTest() {
+function AddAnsibleTemplateTest(props: { subscriptions?: SubscriptionOperator[] }) {
     return (
         <RecoilRoot
             initializeState={(snapshot) => {
                 snapshot.set(namespacesState, mockNamespaces)
                 snapshot.set(secretsState, [mockSecret])
                 snapshot.set(clusterCuratorsState, [mockClusterCurator])
+                snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
             }}
         >
             <MemoryRouter initialEntries={[NavigationPath.addAnsibleAutomation]}>
@@ -82,16 +93,6 @@ const mockClusterCurator: ClusterCurator = {
             prehook: [{ name: 'test-job-pre-upgrade', extra_vars: {} }],
             posthook: [{ name: 'test-job-post-upgrade', extra_vars: {} }],
         },
-        scale: {
-            towerAuthSecret: 'ansible-test-secret',
-            prehook: [],
-            posthook: [],
-        },
-        destroy: {
-            towerAuthSecret: 'ansible-test-secret',
-            prehook: [],
-            posthook: [],
-        },
     },
 }
 
@@ -115,6 +116,27 @@ const mockTemplateList: AnsibleTowerJobTemplateList = {
             name: 'test-job-post-upgrade',
         },
     ],
+}
+
+const mockSubscriptionOperator: SubscriptionOperator = {
+    apiVersion: SubscriptionOperatorApiVersion,
+    kind: SubscriptionOperatorKind,
+    metadata: {
+        name: 'ansible-automation-platform-operator',
+        namespace: 'ansible-automation-platform-operator',
+    },
+    status: {
+        conditions: [
+            {
+                reason: 'AllCatalogSourcesHealthy',
+                lastTransitionTime: '',
+                message: '',
+                type: '',
+                status: '',
+            },
+        ],
+    },
+    spec: {},
 }
 
 describe('add ansible job template page', () => {
@@ -159,5 +181,15 @@ describe('add ansible job template page', () => {
         nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
         await clickByText('Add')
         await waitForNock(createNock)
+    })
+
+    it('should render warning when Ansible operator is not installed', async () => {
+        render(<AddAnsibleTemplateTest />)
+        waitForText('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')
+    })
+
+    it('should not render warning when Ansible operator is installed', async () => {
+        render(<AddAnsibleTemplateTest subscriptions={[mockSubscriptionOperator]} />)
+        waitForNotText('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')
     })
 })

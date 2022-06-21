@@ -197,10 +197,22 @@ export const shiftTemplateObject = (templateObject, selfLinksControl) => {
             }
         }
 
-        // if this subscription pointed to a placement rule in this template
-        // remove that placement rule too
-        name = _.get(subscription, '$synced.spec.$v.placement.$v.placementRef.$v.name.$v')
-        if (name) {
+        removePlacementRule(subscription, templateObject, selfLinksControl)
+    }
+}
+
+// if this subscription pointed to a placement rule in this template
+// remove that placement rule too
+const removePlacementRule = (subscription, templateObject, selfLinksControl) => {
+    const name = _.get(subscription, '$synced.spec.$v.placement.$v.placementRef.$v.name.$v')
+    if (name) {
+        const remainingSubscriptions = _.get(templateObject, 'Subscription')
+        const isReused = remainingSubscriptions.some((resource) => {
+            return name === _.get(resource, '$synced.spec.$v.placement.$v.placementRef.$v.name.$v')
+        })
+
+        // unless it's used in another subscription
+        if (!isReused) {
             const rules = templateObject.PlacementRule || []
             const inx = rules.findIndex((rule) => {
                 return name === _.get(rule, '$synced.metadata.$v.name.$v')

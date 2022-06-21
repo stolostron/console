@@ -11,13 +11,12 @@ import {
     AcmPage,
     AcmPageContent,
     AcmPageHeader,
-    AcmRoute,
     AcmTable,
 } from '@stolostron/ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { acmRouteState, clusterCuratorsState, configMapsState, secretsState } from '../../../atoms'
+import { clusterCuratorsState, configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
@@ -32,14 +31,18 @@ import {
     getTemplateJobsNum,
     LinkAnsibleCredential,
     unpackProviderConnection,
+    isAnsibleOperatorInstalled,
 } from '../../../resources'
 
 export default function AnsibleAutomationsPage() {
-    const [, setRoute] = useRecoilState(acmRouteState)
     const [configMaps] = useRecoilState(configMapsState)
-    useEffect(() => setRoute(AcmRoute.Automation), [setRoute])
-
     const alertContext = useContext(AcmAlertContext)
+    const [subscriptionOperators] = useRecoilState(subscriptionOperatorsState)
+
+    const isOperatorInstalled = useMemo(
+        () => isAnsibleOperatorInstalled(subscriptionOperators),
+        [subscriptionOperators]
+    )
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => alertContext.clearAlerts, [])
@@ -72,27 +75,29 @@ export default function AnsibleAutomationsPage() {
         <AcmPage hasDrawer header={<AcmPageHeader title={t('template.title')} />}>
             <AcmPageContent id="clusters">
                 <PageSection>
-                    <Hint className={classes.hint}>
-                        <div>
-                            {t('template.hint')}{' '}
-                            <AcmButton
-                                onClick={() =>
-                                    window.open(
-                                        openShiftConsoleUrl +
-                                            '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
-                                    )
-                                }
-                                variant={ButtonVariant.link}
-                                role="link"
-                                id="view-logs"
-                                isInline
-                                isSmall
-                            >
-                                {t('template.operator.link')}
-                                <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
-                            </AcmButton>
-                        </div>
-                    </Hint>
+                    {!isOperatorInstalled && (
+                        <Hint className={classes.hint}>
+                            <div>
+                                {t('template.hint')}{' '}
+                                <AcmButton
+                                    onClick={() =>
+                                        window.open(
+                                            openShiftConsoleUrl +
+                                                '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
+                                        )
+                                    }
+                                    variant={ButtonVariant.link}
+                                    role="link"
+                                    id="view-logs"
+                                    isInline
+                                    isSmall
+                                >
+                                    {t('template.operator.link')}
+                                    <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                                </AcmButton>
+                            </div>
+                        </Hint>
+                    )}
                     <AnsibleJobTemplateTable />
                 </PageSection>
             </AcmPageContent>
@@ -108,7 +113,8 @@ function AnsibleJobTemplateTable() {
     const templatedCurators = useMemo(() => filterForTemplatedCurators(clusterCurators), [clusterCurators])
     const ansibleCredentials = providerConnections.filter(
         (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
+            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
     )
 
     const [bulkModalProps, setBulkModalProps] = useState<IBulkActionModelProps<ClusterCurator> | { open: false }>({

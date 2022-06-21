@@ -673,7 +673,11 @@ export default function PoliciesPage() {
     )
 
     if (tableItems.length === 0) {
-        return <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
+        return (
+            <PageSection isFilled>
+                <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
+            </PageSection>
+        )
     }
 
     return (
@@ -899,7 +903,10 @@ export function AddToPolicySetModal(props: { policyTableItems: PolicyTableItem[]
                             <AcmAlert
                                 variant="danger"
                                 title={t('No policy set in given namespace')}
-                                message={t('There are no policy sets in "{{0}}" namespace.', [namespace])}
+                                message={t(
+                                    'To add a policy to a policy set, they both must be in the same namespace.  There are no policy sets in "{{0}}" namespace.',
+                                    [namespace]
+                                )}
                                 isInline
                             />
                         )}

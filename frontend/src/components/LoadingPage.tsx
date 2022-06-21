@@ -28,7 +28,7 @@ export function LoadingPage(props: {
     const classes = useStyles()
     return (
         <Page>
-            <PageSection variant="light" isFilled>
+            <PageSection isFilled>
                 <Bullseye>
                     <EmptyState>
                         <EmptyStateIcon variant="container" component={Spinner} />

@@ -190,12 +190,16 @@ export default function PolicySetsPage() {
     const searchDataKeyNames: string[] = ['Name', 'Namespace']
 
     if (!policySets || policySets.length === 0) {
-        return <GovernanceCreatePolicysetEmptyState rbac={canCreatePolicySet} />
+        return (
+            <PageSection isFilled>
+                <GovernanceCreatePolicysetEmptyState rbac={canCreatePolicySet} />
+            </PageSection>
+        )
     }
 
     return (
         <Fragment>
-            <div style={{ overflowY: 'auto', height: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto', height: '100%' }}>
                 <Toolbar id="toolbar-group-types" isSticky>
                     <ToolbarContent>
                         <Fragment>

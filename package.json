@@ -10,7 +10,7 @@
         "frontend:reinstall": "cd frontend && npm reinstall",
         "backend:reinstall": "cd backend && npm reinstall",
         "start": "concurrently npm:frontend npm:backend -n frontend,backend -c green,blue",
-        "plugins": "concurrently npm:backend npm:watch:plugins npm:serve:plugins -c green,blue,magenta",
+        "plugins": "concurrently npm:backend npm:serve:plugins -c green,blue,magenta",
         "backend": "cd backend && npm start",
         "frontend": "cd frontend && npm start",
         "frontend:quiet": "cd frontend && npm run quiet",

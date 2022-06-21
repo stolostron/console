@@ -102,6 +102,7 @@ export interface AcmDataFormProps {
     mode?: 'form' | 'wizard' | 'details'
     isHorizontal?: boolean
     edit?: () => void
+    operatorError?: ReactNode
 }
 
 function generalValidationMessage() {
@@ -120,7 +121,7 @@ const EDITOR_CHANGES = 'Other YAML changes'
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
     const pageRef = useRef(null)
 
-    const { editorTitle, schema, secrets, immutables, formData } = props
+    const { editorTitle, schema, secrets, immutables, formData, operatorError } = props
     const [stateChanges, setStateChanges] = useState<any | undefined>([])
     const [showFormErrors, setShowFormErrors] = useState(false)
     const mode = props.mode ?? 'form'
@@ -259,7 +260,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                     >
                         <DrawerContentBody>
                             {mode === 'wizard' ? (
-                                <PageSection variant="light" isFilled type="wizard" style={{ height: '100%' }}>
+                                <PageSection isFilled type="wizard" style={{ height: '100%' }}>
                                     <AcmDataForm
                                         {...props}
                                         stateChanges={stateChanges}
@@ -267,6 +268,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                                         showFormErrors={showFormErrors}
                                         setShowFormErrors={setShowFormErrors}
                                         isHorizontal={isHorizontal}
+                                        operatorError={operatorError}
                                     />
                                 </PageSection>
                             ) : (
@@ -294,9 +296,10 @@ export function AcmDataForm(
         stateChanges: SyncDiffType
         showFormErrors: boolean
         setShowFormErrors: (showFormErrors: boolean) => void
+        operatorError?: ReactNode
     }
 ): JSX.Element {
-    const { formData, stateChanges, isHorizontal, showFormErrors, setShowFormErrors } = props
+    const { formData, stateChanges, isHorizontal, operatorError, showFormErrors, setShowFormErrors } = props
     switch (props.mode) {
         case 'wizard':
             return (
@@ -306,6 +309,7 @@ export function AcmDataForm(
                     isHorizontal={isHorizontal ?? false}
                     showFormErrors={showFormErrors}
                     setShowFormErrors={setShowFormErrors}
+                    operatorError={operatorError}
                 />
             )
 
@@ -441,11 +445,12 @@ export function AcmDataFormWizard(props: {
     formData: FormData
     stateChanges: SyncDiffType
     isHorizontal: boolean
+    operatorError?: ReactNode
     showFormErrors: boolean
     setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
     const { t } = useTranslation()
-    const { formData, stateChanges, isHorizontal, showFormErrors, setShowFormErrors } = props
+    const { formData, stateChanges, isHorizontal, operatorError, showFormErrors, setShowFormErrors } = props
     const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
     const [submitText, setSubmitText] = useState(formData.submitText)
     const [submitError, setSubmitError] = useState('')
@@ -469,6 +474,11 @@ export function AcmDataFormWizard(props: {
             ),
             component: section.type === 'Section' && (
                 <Form isHorizontal={isHorizontal}>
+                    {operatorError && (
+                        <AlertGroup>
+                            <Alert isInline variant="danger" title={operatorError} />
+                        </AlertGroup>
+                    )}
                     {(showFormErrors || showSectionErrors[section.title]) && hasError && (
                         <AlertGroup>
                             {sectionHasRequiredErrors(section) ? (

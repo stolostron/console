@@ -1,45 +1,49 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '@stolostron/ui-components'
+import { makeStyles } from '@material-ui/styles'
 import { PageSection } from '@patternfly/react-core'
+import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '@stolostron/ui-components'
 import Handlebars from 'handlebars'
 import { get, keyBy } from 'lodash'
-import { useContext, useState, useRef, useEffect } from 'react'
-import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useRecoilState } from 'recoil'
+import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
+import 'monaco-editor/esm/vs/editor/editor.all.js'
+import { CIM } from 'openshift-assisted-ui-lib'
+import { useContext, useEffect, useRef, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import 'monaco-editor/esm/vs/editor/editor.all.js'
-import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
 import { useHistory, useLocation } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
-//import TemplateEditor from 'C:/Users/jswanke/git2/temptifly/src' //'temptifly'
+import {
+    agentClusterInstallsState,
+    clusterCuratorsState,
+    infraEnvironmentsState,
+    managedClustersState,
+    secretsState,
+    settingsState,
+} from '../../../../../atoms'
+import { useTranslation } from '../../../../../lib/acm-i18next'
+import { createCluster } from '../../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
+import { PluginContext } from '../../../../../lib/PluginContext'
 import { NavigationPath } from '../../../../../NavigationPath'
+import {
+    ClusterCurator,
+    createClusterCurator,
+    createResource as createResourceTool,
+    filterForTemplatedCurators,
+    ProviderConnection,
+    Secret,
+    unpackProviderConnection,
+} from '../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import { getControlData } from './controlData/ControlData'
-import { setAvailableConnections, arrayItemHasKey } from './controlData/ControlDataHelpers'
+import { arrayItemHasKey, setAvailableConnections } from './controlData/ControlDataHelpers'
 import './style.css'
-import hiveTemplate from './templates/hive-template.hbs'
 import endpointTemplate from './templates/endpoints.hbs'
-import {
-    secretsState,
-    managedClustersState,
-    clusterCuratorsState,
-    agentClusterInstallsState,
-    infraEnvironmentsState,
-    settingsState,
-} from '../../../../../atoms'
-import { makeStyles } from '@material-ui/styles'
-import { ClusterCurator, filterForTemplatedCurators, createClusterCurator } from '../../../../../resources'
-import { createCluster } from '../../../../../lib/create-cluster'
-import { ProviderConnection, unpackProviderConnection } from '../../../../../resources'
-import { Secret } from '../../../../../resources'
-import { createResource as createResourceTool } from '../../../../../resources'
-import { WarningContext, WarningContextType, Warning } from './Warning'
-import { CIM } from 'openshift-assisted-ui-lib'
-import { PluginContext } from '../../../../../lib/PluginContext'
+import hiveTemplate from './templates/hive-template.hbs'
+import { Warning, WarningContext, WarningContextType } from './Warning'
 
 const { isAIFlowInfraEnv } = CIM
 
@@ -81,7 +85,8 @@ export default function CreateClusterPage() {
     const providerConnections = secrets.map(unpackProviderConnection)
     const ansibleCredentials = providerConnections.filter(
         (providerConnection) =>
-            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
+            providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans' &&
+            !providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/copiedFromSecretName']
     )
 
     const [settings] = useRecoilState(settingsState)
@@ -427,7 +432,7 @@ export default function CreateClusterPage() {
         >
             <AcmErrorBoundary>
                 <AcmPageContent id="create-cluster">
-                    <PageSection className="pf-c-content" variant="light" isFilled type="wizard">
+                    <PageSection variant="light" isFilled type="wizard">
                         <WarningContext.Provider value={warning}>
                             <TemplateEditor
                                 wizardClassName={classes.wizardBody}

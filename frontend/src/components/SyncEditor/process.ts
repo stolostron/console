@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
-import { isEmpty, set, cloneDeep, has } from 'lodash'
+import { isEmpty, set, get, cloneDeep, has } from 'lodash'
 import { getErrors, validate } from './validation'
-import { getMatchingValues, getUidSiblings } from './synchronize'
+import { getMatchingValues, getUidSiblings, crossReference } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 
@@ -48,6 +48,7 @@ export const processForm = (
     showFilters: boolean,
     filters: (string | string[])[] | undefined,
     immutables: (string | string[])[] | undefined,
+    readonly: boolean,
     userEdits: ChangeType[],
     validators: any
 ) => {
@@ -65,7 +66,7 @@ export const processForm = (
     // get initial parse syntaxErrors
     let documents: any[] = YAML.parseAllDocuments(yaml, { prettyErrors: true, keepCstNodes: true })
     let syntaxErrors = getErrors(documents)
-    const { parsed, resources } = getMappings(documents)
+    const { parsed, resources, paths } = getMappings(documents)
 
     // save a version of parsed for change comparison later in decorations--in this case for form changes
     const comparison = cloneDeep(parsed)
@@ -81,6 +82,7 @@ export const processForm = (
     // and the rest
     return {
         comparison,
+        xreferences: crossReference(paths),
         ...process(
             monacoRef,
             yaml,
@@ -92,6 +94,7 @@ export const processForm = (
             filters,
             [],
             immutables,
+            readonly,
             validators
         ),
     }
@@ -106,6 +109,7 @@ export const processUser = (
     filters: (string | string[])[] | undefined,
     cacheFiltered: CachedValuesType[] | undefined,
     immutables: (string | string[])[] | undefined,
+    readonly: boolean,
     validators: any
 ) => {
     // get yaml, documents, resource, mapped
@@ -130,6 +134,7 @@ export const processUser = (
             filters,
             cacheFiltered,
             immutables,
+            readonly,
             validators
         ),
     }
@@ -146,6 +151,7 @@ const process = (
     filters: (string | string[])[] | undefined,
     cacheFiltered: CachedValuesType[] | undefined,
     immutables: (string | string[])[] | undefined,
+    readonly: boolean,
     validators: any
 ) => {
     // restore hidden secret values
@@ -164,16 +170,16 @@ const process = (
     })
 
     // if parse syntaxErrors, use previous hidden secrets
+    const unredactedChange: ProcessedType = cloneDeep({
+        yaml,
+        mappings: mappings,
+        parsed: parsed,
+        resources: resources,
+    })
     const hiddenSecretsValues: any[] = []
     const hiddenFilteredValues: any[] = []
-    const unredactedChange = {
-        yaml,
-        mappings: cloneDeep(mappings),
-        parsed: cloneDeep(parsed),
-        resources: cloneDeep(resources),
-        hiddenSecretsValues,
-        hiddenFilteredValues,
-    }
+    unredactedChange.hiddenSecretsValues = hiddenSecretsValues
+    unredactedChange.hiddenFilteredValues = hiddenFilteredValues
 
     // hide and remember secret values
     const filteredRows: number[] = []
@@ -183,10 +189,11 @@ const process = (
         let allSecrets = []
         if (secrets && !isEmpty(secrets)) {
             allSecrets = getMatchingValues(secrets, paths)
-            allSecrets.forEach((value: { $p: string[]; $r: any; $l: any; $v: any }) => {
-                if (value.$v && typeof value.$v === 'string') {
-                    if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path: value.$p, value })
-                    set(parsed, value.$p, `${'*'.repeat(Math.min(20, value.$v.replace(/\n$/, '').length))}`)
+            allSecrets.forEach((value: { $p: string[] }) => {
+                const v = get(parsed, value.$p)
+                if (v && typeof v === 'string') {
+                    if (syntaxErrors.length === 0) hiddenSecretsValues.push({ path: value.$p, value: v })
+                    set(parsed, value.$p, `${'*'.repeat(Math.min(20, v.replace(/\n$/, '').length))}`)
                 }
             })
         }
@@ -196,9 +203,10 @@ const process = (
         if (filters && !isEmpty(filters)) {
             allFiltered = getMatchingValues(filters, paths)
             if (!showFilters) {
-                allFiltered.forEach((value: { $p: string[]; $r: any; $l: any; $v: any }) => {
-                    if (value.$v && typeof value.$v === 'object') {
-                        if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path: value.$p, value: value.$v })
+                allFiltered.forEach((value: { $p: string[] }) => {
+                    const v = get(parsed, value.$p)
+                    if (v && typeof v === 'object') {
+                        if (syntaxErrors.length === 0) hiddenFilteredValues.push({ path: value.$p, value: v })
                         set(parsed, value.$p, undefined)
                     }
                 })
@@ -233,7 +241,7 @@ const process = (
     // prevent typing on uid and its siblings
     protectedRanges = [
         ...protectedRanges,
-        ...getUidSiblings(paths).map((value) => {
+        ...getUidSiblings(paths, mappings).map((value) => {
             return new monacoRef.current.Range(value.$r, 0, value.$r + value.$l, 0)
         }),
     ]
@@ -250,10 +258,10 @@ const process = (
 
     return {
         yaml,
-        protectedRanges,
+        protectedRanges: readonly ? [] : protectedRanges,
         filteredRows,
         errors: { syntax: syntaxErrors, validation: validationErrors },
-        change: { resources, mappings, parsed },
+        change: { resources, mappings, parsed, paths },
         unredactedChange,
     }
 }
@@ -268,21 +276,15 @@ function getMappings(documents: any[]) {
             const json = document.toJSON()
             if (json) {
                 const key = json?.kind || 'root'
-                let arr = parsed[key] || []
-                arr.push(json)
-                parsed[key] = arr
-                arr = mappings[key] || []
+                let arr = mappings[key] || []
                 const rangeObj: { [name: string]: MappingType } = {}
                 const contents: any = document?.contents
-                getMappingItems(
-                    contents?.items,
-                    rangeObj,
-                    `${key}.${parsed[key].length - 1}`,
-                    [key, `${parsed[key].length - 1}`],
-                    paths
-                )
+                getMappingItems(contents?.items, rangeObj, `${key}.${arr.length}`, [key, arr.length], false, paths)
                 arr.push(rangeObj)
                 mappings[key] = arr
+                arr = parsed[key] || []
+                arr.push(json)
+                parsed[key] = arr
                 resources.push(json)
             }
         }
@@ -295,20 +297,19 @@ function getMappingItems(
     rangeObj: { [name: string]: MappingType } | MappingType[],
     parentKey: string,
     parentPath: string[],
+    parentIsArray: boolean,
     paths: { [name: string]: any } = {}
 ) {
-    items?.forEach((item: any) => {
-        const key = item?.key?.value || 'unknown'
+    items?.forEach((item: any, inx: number) => {
+        const key = parentIsArray ? inx : item?.key?.value
         let value
         if (item.items || item.value) {
             if (item.items ?? item.value.items) {
-                value = item?.value?.type === 'SEQ' ? [] : {}
-                const pk = `${parentKey}${item?.key?.value ? `.${key}` : ''}`
-                const pa = [...parentPath]
-                if (item?.key?.value) {
-                    pa.push(key)
-                }
-                getMappingItems(item.items ?? item.value.items, value, pk, pa, paths)
+                const isArray = item?.value?.type === 'SEQ'
+                value = isArray ? [] : {}
+                const pk = `${parentKey}.${key}`
+                const pa = [...parentPath, key]
+                getMappingItems(item.items ?? item.value.items, value, pk, pa, isArray, paths)
             } else {
                 value = item?.value?.value ?? item?.value
             }
@@ -325,12 +326,12 @@ function getMappingItems(
                 $v: value,
                 $gv: valuePos,
             })
-            paths[`${parentKey}.${rangeObj.length}`] = {
-                $p: [...parentPath, rangeObj.length],
+            paths[`${parentKey}.${rangeObj.length - 1}`] = {
+                $p: [...parentPath, rangeObj.length - 1],
                 $r: firstRow,
                 $l: length,
                 $v: value,
-                $d: rangeObj,
+                $d: [...parentPath],
             }
         } else if (item.key) {
             const keyPos = item.key.cstNode.rangeAsLinePos
@@ -351,7 +352,7 @@ function getMappingItems(
                 $r: firstRow,
                 $l: length,
                 $v: value,
-                $d: rangeObj,
+                $d: [...parentPath],
             }
         }
     })

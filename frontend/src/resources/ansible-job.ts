@@ -2,6 +2,7 @@
 import { Metadata } from './metadata'
 import { IResourceDefinition } from './resource'
 import { getLatest } from './utils/utils'
+import { SubscriptionOperator } from '.'
 
 export const AnsibleJobApiVersion = 'tower.ansible.com/v1alpha1'
 export type AnsibleJobApiVersionType = 'tower.ansible.com/v1alpha1'
@@ -65,6 +66,17 @@ export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string
         prehook: prehookJobs,
         posthook: posthookJobs,
     }
+}
+
+export function isAnsibleOperatorInstalled(subscriptionOperators: SubscriptionOperator[]) {
+    const ansibleOp = subscriptionOperators.filter((op: SubscriptionOperator) => {
+        const conditions = op.status?.conditions[0]
+        return (
+            op.metadata.name === 'ansible-automation-platform-operator' &&
+            conditions?.reason === 'AllCatalogSourcesHealthy'
+        )
+    })
+    return ansibleOp.length > 0
 }
 
 export interface AnsibleTowerJobTemplateList {

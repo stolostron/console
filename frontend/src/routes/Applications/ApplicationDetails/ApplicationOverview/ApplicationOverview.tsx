@@ -281,7 +281,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                                         applicationData.application.allSubscriptions,
                                         setModalProps,
                                         t,
-                                        hasSyncPermission
+                                        hasSyncPermission,
+                                        subscriptions
                                     )
                                 ) : (
                                     <Tooltip content={t('rbac.unauthorized')} isContentLeftAligned position="right">
@@ -289,7 +290,8 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
                                             applicationData.application.allSubscriptions,
                                             setModalProps,
                                             t,
-                                            hasSyncPermission
+                                            hasSyncPermission,
+                                            subscriptions
                                         )}
                                     </Tooltip>
                                 )
@@ -368,7 +370,13 @@ export function ApplicationOverviewPageContent(props: { applicationData: Applica
     )
 }
 
-function createSyncButton(resources: IResource[], setModalProps: any, t: TFunction, hasSyncPermission: boolean) {
+function createSyncButton(
+    resources: IResource[],
+    setModalProps: any,
+    t: TFunction,
+    hasSyncPermission: boolean,
+    subscriptions: Subscription[]
+) {
     const mutateStatus = ''
     const syncInProgress = mutateStatus === REQUEST_STATUS.IN_PROGRESS
     return (
@@ -391,6 +399,7 @@ function createSyncButton(resources: IResource[], setModalProps: any, t: TFuncti
                         },
                         resources,
                         t,
+                        subscriptions,
                     })
                 }}
             >

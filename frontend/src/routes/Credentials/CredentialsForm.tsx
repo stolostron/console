@@ -70,7 +70,6 @@ enum ProviderGroup {
     Automation = 'Automation & other credentials',
     Datacenter = 'Datacenter credentials',
     CloudProvider = 'Cloud provider credentials',
-    CentrallyManaged = 'Centrally managed',
 }
 
 const providerGroup: Record<string, string> = {
@@ -84,7 +83,7 @@ const providerGroup: Record<string, string> = {
     [Provider.redhatvirtualization]: ProviderGroup.Datacenter,
     [Provider.baremetal]: ProviderGroup.Datacenter,
     [Provider.vmware]: ProviderGroup.Datacenter,
-    [Provider.hybrid]: ProviderGroup.CentrallyManaged,
+    [Provider.hybrid]: ProviderGroup.Datacenter,
 }
 
 export default function CredentialsFormPage() {
@@ -232,6 +231,36 @@ export function CredentialsForm(props: {
     const [cloudName, setCloudName] = useState<CloudNames | string>(
         providerConnection?.stringData?.cloudName ?? CloudNames.AzurePublicCloud
     )
+
+    function getDisconnectedDocLink(credentialType: Provider) {
+        switch (credentialType) {
+            case Provider.vmware:
+                return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL_VMWARE
+            case Provider.openstack:
+                return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL_OPENSTACK
+            default:
+                return DOC_LINKS.CONFIG_DISCONNECTED_INSTALL
+        }
+    }
+
+    function getProxyDocLink(credentialType: Provider) {
+        switch (credentialType) {
+            case Provider.redhatvirtualization:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_VIRTUALIZATION
+            case Provider.aws:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_AWS
+            case Provider.gcp:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_GCP
+            case Provider.azure:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_AZURE
+            case Provider.vmware:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_VMWARE
+            case Provider.openstack:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY_OPENSTACK
+            default:
+                return DOC_LINKS.CREATE_CONNECTION_PROXY
+        }
+    }
 
     let osServicePrincipalJson:
         | {
@@ -575,19 +604,6 @@ export function CredentialsForm(props: {
                                 group: ProviderGroup.Automation,
                                 options: credentialProviders
                                     .filter((provider) => providerGroup[provider] === ProviderGroup.Automation)
-                                    .map((provider) => {
-                                        return {
-                                            id: provider,
-                                            value: provider,
-                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-                                            text: ProviderLongTextMap[provider],
-                                        }
-                                    }),
-                            },
-                            {
-                                group: ProviderGroup.CentrallyManaged,
-                                options: credentialProviders
-                                    .filter((provider) => providerGroup[provider] === ProviderGroup.CentrallyManaged)
                                     .map((provider) => {
                                         return {
                                             id: provider,
@@ -1086,7 +1102,7 @@ export function CredentialsForm(props: {
                 title: t('Configuration for disconnected installation'),
                 wizardTitle: t('Enter the configuration for disconnected installation'),
                 description: (
-                    <a href={DOC_LINKS.CONFIG_DISCONNECTED_INSTALL} target="_blank" rel="noreferrer">
+                    <a href={getDisconnectedDocLink(credentialsType as Provider)} target="_blank" rel="noreferrer">
                         {t('How do I configure for disconnected installation?')}
                     </a>
                 ),
@@ -1169,7 +1185,7 @@ export function CredentialsForm(props: {
                 title: t('Proxy'),
                 wizardTitle: t('Proxy'),
                 description: (
-                    <a href={DOC_LINKS.CREATE_CONNECTION_PROXY} target="_blank" rel="noreferrer">
+                    <a href={getProxyDocLink(credentialsType as Provider)} target="_blank" rel="noreferrer">
                         {t('How do I configure a proxy?')}
                     </a>
                 ),
