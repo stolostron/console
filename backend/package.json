@@ -19,7 +19,6 @@
         "update": "npx npm-check-updates --doctor --upgrade && npm audit fix && npm dedup"
     },
     "dependencies": {
-        "@types/socket.io": "^3.0.2",
         "abort-controller": "3.0.0",
         "dotenv": "16.0.0",
         "event-stream": "4.0.1",

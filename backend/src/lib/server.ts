@@ -28,8 +28,6 @@ interface ISocketRequests {
 let nextSocketID = 0
 const sockets: { [id: string]: Socket | TLSSocket | undefined } = {}
 
-// export function br
-
 export type ServerOptions = {
     requestHandler:
         | ((req: Http2ServerRequest, res: Http2ServerResponse) => void)

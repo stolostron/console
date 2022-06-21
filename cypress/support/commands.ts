@@ -59,16 +59,3 @@ Cypress.Commands.add('mockCreateResource', (resource: IResource, alias?: string)
         chainable.as(alias)
     }
 })
-
-// Cypress.Commands.add('login', () => {
-//     cy.visit(`/multicloud`, { failOnStatusCode: false })
-//     cy.getCookie('acm-access-token-cookie').then((cookie) => {
-//         if (!cookie) {
-//             cy.get('button').click()
-//             cy.contains('kube:admin').click()
-//             cy.contains('Username').type('kubeadmin')
-//             cy.contains('Password').type(Cypress.env('PASSWORD'))
-//             cy.get('.pf-c-button').click()
-//         }
-//     })
-// })

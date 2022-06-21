@@ -17,12 +17,6 @@ import { IResource } from './resource'
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
 
-// export function events(req: Http2ServerRequest, res: Http2ServerResponse): void {
-//     const token = getToken(req)
-//     if (!token) return unauthorized(req, res)
-//     ServerSideEvents.handleRequest(token, req, res)
-// }
-
 interface WatchEvent {
     type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'ERROR'
     object: IResource
@@ -471,12 +465,9 @@ function cacheResource(resource: IResource) {
     if (existing) {
         if (existing.resource.metadata.resourceVersion === resource.metadata.resourceVersion)
             return resource.metadata.resourceVersion
-        // ServerSideEvents.removeEvent(existing.eventID)
     }
 
-    // const eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
     cache[uid] = { resource, eventID: 0 }
-
     broadcast('MODIFIED', resource)
 }
 
@@ -484,26 +475,12 @@ function deleteResource(resource: IResource) {
     const apiVersionPlural = apiVersionPluralFn(resource)
     const cache = resourceCache[apiVersionPlural]
     if (!cache) return
-
     const uid = resource.metadata.uid
-
-    // const existing = cache[uid]
-    // if (existing) ServerSideEvents.removeEvent(existing.eventID)
-
-    // ServerSideEvents.pushEvent({
-    //     data: {
-    //         type: 'DELETED',
-    //         object: {
-    //             kind: resource.kind,
-    //             apiVersion: resource.apiVersion,
-    //             metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
-    //         },
-    //     },
-    // })
-
-    broadcast('DELETED', resource)
-
-    delete cache[uid]
+    const existing = cache[uid]
+    if (existing) {
+        delete cache[uid]
+        broadcast('DELETED', resource)
+    }
 }
 
 function matchesSelector(resource: IResource, selector?: Record<string, string>) {
