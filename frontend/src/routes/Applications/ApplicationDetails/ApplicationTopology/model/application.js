@@ -3,6 +3,7 @@
 import { get, set } from 'lodash'
 import { getSubscriptionApplication } from './applicationSubscription'
 import { fireManagedClusterView } from '../../../../../resources'
+import { openSync } from 'fs'
 
 export const getApplication = async (namespace, name, selectedChannel, recoilStates, cluster, apiversion, clusters) => {
     let app
@@ -13,6 +14,8 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
     // get application
     const apiVersion = apiversion || 'application.app.k8s.io' // defaults to ACM app
     const isAppSet = apiVersion === 'applicationset.argoproj.io'
+    const isOCPApp = apiVersion === 'ocp'
+    const isFluxApp = apiVersion === 'flux'
     const { applications, applicationSets, argoApplications } = recoilStates
 
     if (apiVersion === 'application.app.k8s.io') {
@@ -54,6 +57,34 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
         }
     }
 
+    // generate ocp app boiler plate
+    if (!app && isOCPApp) {
+        const clusterInfo = findCluster(clusters, cluster, false)
+        app = {
+            apiVersion: 'ocp',
+            kind: 'OCPApplication',
+            metadata: {
+                name,
+                namespace,
+            },
+            cluster: clusterInfo,
+        }
+    }
+
+    // generate ocp app boiler plate
+    if (!app && isFluxApp) {
+        const clusterInfo = findCluster(clusters, cluster, false)
+        app = {
+            apiVersion: 'flux',
+            kind: 'FluxApplication',
+            metadata: {
+                name,
+                namespace,
+            },
+            cluster: clusterInfo,
+        }
+    }
+
     // collect app resources
     if (app) {
         model = {
@@ -64,10 +95,12 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
             placement,
             isArgoApp: get(app, 'apiVersion', '').indexOf('argoproj.io') > -1 && !isAppSet,
             isAppSet: isAppSet,
+            isOCPApp,
+            isFluxApp,
         }
 
         // a short sweet ride for argo
-        if (model.isArgoApp) {
+        if (model.isArgoApp || model.isOCPApp || model.isFluxApp) {
             return model
         }
 

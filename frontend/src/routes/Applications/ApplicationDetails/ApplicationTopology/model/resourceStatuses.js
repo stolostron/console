@@ -11,6 +11,12 @@ export async function getResourceStatuses(application, appData, topology) {
         results = await getArgoResourceStatuses(application, appDataWithStatuses, topology)
     } else if (application.isAppSet) {
         results = await getAppSetResourceStatuses(application, appDataWithStatuses)
+    } else if (application.isOCPApp || application.isFluxApp) {
+        results = {
+            // reuse the search data we fetched before
+            resourceStatuses: topology.rawSearchData,
+            relatedResources: {},
+        }
     } else {
         results = await getSubscriptionResourceStatuses(application, appDataWithStatuses, topology)
     }

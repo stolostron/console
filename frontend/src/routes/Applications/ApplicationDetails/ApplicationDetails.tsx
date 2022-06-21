@@ -129,6 +129,8 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
     const history = useHistory()
     const isArgoApp = applicationData?.application?.isArgoApp
     const isAppSet = applicationData?.application?.isAppSet
+    const isOCPApp = applicationData?.application?.isOCPApp
+    const isFluxApp = applicationData?.application?.isFluxApp
     let clusters = useAllClusters()
     clusters = clusters.filter((cluster) => {
         // don't show clusters in cluster pools in table
@@ -198,7 +200,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
         },
     ]
 
-    if (!isArgoApp) {
+    if (!isArgoApp && !isOCPApp && !isFluxApp) {
         const selectedApp = applicationData?.application.app
         actions.push({
             id: 'edit-application',
@@ -340,9 +342,14 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                         setApplicationNotFound(true)
                     } else {
                         setApplicationNotFound(false)
-                        const topology = getTopology(application, clusters, lastRefreshRef?.current?.relatedResources, {
-                            cluster,
-                        })
+                        const topology = await getTopology(
+                            application,
+                            clusters,
+                            lastRefreshRef?.current?.relatedResources,
+                            {
+                                cluster,
+                            }
+                        )
                         const appData = getApplicationData(topology?.nodes)
 
                         // when first opened, refresh topology with wait statuses
@@ -363,7 +370,7 @@ export default function ApplicationDetailsPage({ match }: RouteComponentProps<{ 
                             appData,
                             topology
                         )
-                        const topologyWithRelated = getTopology(application, clusters, relatedResources, {
+                        const topologyWithRelated = await getTopology(application, clusters, relatedResources, {
                             topology,
                             cluster,
                         })

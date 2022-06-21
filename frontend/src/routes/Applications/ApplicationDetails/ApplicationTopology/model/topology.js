@@ -7,14 +7,20 @@ import R from 'ramda'
 import { getArgoTopology } from './topologyArgo'
 import { getSubscriptionTopology } from './topologySubscription'
 import { getAppSetTopology } from './topologyAppSet'
+import { getOCPAppTopology } from './topologyOCPApp'
+import { getFluxAppTopology } from './topologyFluxApp'
 
-export const getTopology = (application, managedClusters, relatedResources, argoData) => {
+export const getTopology = async (application, managedClusters, relatedResources, argoData) => {
     let topology
     if (application) {
         if (application.isArgoApp) {
             topology = getArgoTopology(application, argoData, managedClusters)
         } else if (application.isAppSet) {
             topology = getAppSetTopology(application)
+        } else if (application.isOCPApp) {
+            topology = await getOCPAppTopology(application)
+        } else if (application.isFluxApp) {
+            topology = await getFluxAppTopology(application)
         } else {
             topology = getSubscriptionTopology(application, managedClusters, relatedResources)
         }

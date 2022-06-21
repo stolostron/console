@@ -67,6 +67,10 @@ export const computeNodeStatus = (node, isSearchingStatusComplete, t) => {
 
     const isDeployable = isDeployableResource(node)
     switch (node.type) {
+        case 'fluxapplication':
+        case 'ocpapplication':
+            // ocp apps are always green
+            break
         case 'application':
             apiVersion = _.get(node, apiVersionPath)
             if (apiVersion && apiVersion.indexOf('argoproj.io') > -1 && !isDeployable) {
@@ -1193,6 +1197,8 @@ export const setResourceDeployStatus = (node, details, activeFilters, t) => {
                 'placement',
                 'cluster',
                 'subscription',
+                'ocpapplication',
+                'fluxapplication'
             ]))
     ) {
         //resource with pods info is processed separately
