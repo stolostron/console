@@ -19,9 +19,10 @@ jobs:
                   cache-dependency-path: '**/package-lock.json'
             - run: npm ci
             - run: npm run setup
-            - run: npm run cypress:ci
+            - run: cd e2e && npm ci
+            - run: cd e2e && npm run cypress:ci
             - uses: actions/upload-artifact@v3
               if: failure()
               with:
                   name: cypress-screenshots
-                  path: cypress/screenshots
+                  path: e2e/cypress/screenshots
