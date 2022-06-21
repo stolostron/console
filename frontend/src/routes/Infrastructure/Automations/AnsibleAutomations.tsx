@@ -77,25 +77,29 @@ export default function AnsibleAutomationsPage() {
                 <PageSection>
                     {!isOperatorInstalled && (
                         <Hint className={classes.hint}>
-                            <div>
-                                {t('template.hint')}{' '}
-                                <AcmButton
-                                    onClick={() =>
-                                        window.open(
-                                            openShiftConsoleUrl +
-                                                '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
-                                        )
-                                    }
-                                    variant={ButtonVariant.link}
-                                    role="link"
-                                    id="view-logs"
-                                    isInline
-                                    isSmall
-                                >
-                                    {t('template.operator.link')}
-                                    <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
-                                </AcmButton>
-                            </div>
+                            {openShiftConsoleUrl && openShiftConsoleUrl !== '' ? (
+                                <div>
+                                    {t('template.hint')}{' '}
+                                    <AcmButton
+                                        onClick={() =>
+                                            window.open(
+                                                openShiftConsoleUrl +
+                                                    '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
+                                            )
+                                        }
+                                        variant={ButtonVariant.link}
+                                        role="link"
+                                        id="view-logs"
+                                        isInline
+                                        isSmall
+                                    >
+                                        {t('template.operator.link')}
+                                        <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
+                                    </AcmButton>
+                                </div>
+                            ) : (
+                                t('template.hint.noConsoleURL')
+                            )}
                         </Hint>
                     )}
                     <AnsibleJobTemplateTable />
