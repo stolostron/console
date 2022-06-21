@@ -554,7 +554,7 @@ export default function OverviewPage() {
                             subtitle={
                                 searchError?.graphQLErrors[0]?.message ||
                                 t(
-                                    'The search service is unavailable or degraded. Some data might be missing from the page.'
+                                    'The search service is unavailable or degraded. Some data might be missing from this view.'
                                 )
                             }
                         />
