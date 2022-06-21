@@ -223,7 +223,9 @@ describe('ansible job page', () => {
     test('should render hint when ansible operator is not installed', async () => {
         render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
         await waitForText(clusterCurator1.metadata!.name!)
-        await waitForText('OperatorHub')
+        await waitForText(
+            'Create an Ansible automation job template to automatically run Ansible jobs at different stages of the cluster life cycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed. Install the Operator through operator hub.'
+        )
     })
 
     test('should not render hint when ansible operator is installed', async () => {
@@ -235,6 +237,8 @@ describe('ansible job page', () => {
             />
         )
         await waitForText(clusterCurator1.metadata!.name!)
-        await waitForNotText('OperatorHub')
+        await waitForNotText(
+            'Create an Ansible automation job template to automatically run Ansible jobs at different stages of the cluster life cycle. To use this feature, the Ansible Automation Platform Resource Operator must be installed. Install the Operator through operator hub.'
+        )
     })
 })
