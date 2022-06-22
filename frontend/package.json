@@ -25,8 +25,7 @@
         "serve:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack serve -c ../../webpack.plugin.ts --env plugin=$PLUGIN --env port=$PORT --mode development",
         "serve:plugin:acm": "PLUGIN=acm PORT=3002 npm run serve:plugin",
         "serve:plugin:mce": "PLUGIN=mce PORT=3001 npm run serve:plugin",
-        "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup",
-        "preinstall": "npx npm-force-resolutions"
+        "reinstall": "rm -rf node_modules package-lock.json && npm install && npm audit fix && npm dedup"
     },
     "dependencies": {
         "@apollo/client": "3.5.10",
@@ -47,7 +46,6 @@
         "@react-hook/resize-observer": "^1.2.5",
         "@redhat-cloud-services/rule-components": "3.2.5",
         "@reduxjs/toolkit": "1.8.x",
-        "@stolostron/ui-components": "^1.75.0",
         "ajv": "8.11.0",
         "axios": "0.27.2",
         "cytoscape": "3.21.1",
@@ -199,10 +197,6 @@
         "webpack-bundle-analyzer": "4.5.0",
         "webpack-cli": "^4.10.0",
         "webpack-dev-server": "4.9.0"
-    },
-    "resolutions": {
-        "@types/react": "17.0.44",
-        "@types/react-dom": "17.0.14"
     },
     "eslintConfig": {
         "parser": "@typescript-eslint/parser",
