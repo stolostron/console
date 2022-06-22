@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmButton, AcmModal } from '@stolostron/ui-components'
+import { AcmButton, AcmModal } from '../ui-components'
 import { useTranslation } from '../lib/acm-i18next'
 import { ModalVariant, ButtonVariant } from '@patternfly/react-core'
 import { ReactNode } from 'react'

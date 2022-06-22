@@ -11,7 +11,7 @@ import {
     compareStrings,
     IAcmTableColumn,
     Provider,
-} from '@stolostron/ui-components'
+} from '../../../../ui-components'
 import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection, TextContent } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import * as moment from 'moment'

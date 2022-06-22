@@ -13,7 +13,7 @@
 
 // seems to be an issue with this rule and redux
 
-import React from 'react'
+
 import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../common/TimeWindow'
 import ClusterSelector, {
     reverse as reverseClusterSelector,

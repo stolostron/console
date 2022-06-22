@@ -13,7 +13,7 @@ import {
     TextVariants,
 } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
-import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
+import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'

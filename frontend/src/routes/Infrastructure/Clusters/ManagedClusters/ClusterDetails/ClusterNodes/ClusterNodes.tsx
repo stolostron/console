@@ -1,14 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { NodeInfo } from '../../../../../../resources'
-import {
-    AcmInlineStatus,
-    AcmPageContent,
-    AcmTable,
-    compareNumbers,
-    IAcmTableColumn,
-    StatusType,
-} from '@stolostron/ui-components'
+import { AcmInlineStatus, AcmPageContent, AcmTable, compareNumbers, IAcmTableColumn, StatusType } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useContext } from 'react'

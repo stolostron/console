@@ -3,7 +3,7 @@
 import { makeStyles } from '@material-ui/styles'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { AcmTable, compareStrings } from '@stolostron/ui-components'
+import { AcmTable, compareStrings } from '../../../ui-components'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usePolicies } from '../../../atoms'

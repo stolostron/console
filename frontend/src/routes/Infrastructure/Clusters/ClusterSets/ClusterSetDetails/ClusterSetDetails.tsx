@@ -8,7 +8,7 @@ import {
     AcmPageProcess,
     AcmSecondaryNav,
     AcmSecondaryNavItem,
-} from '@stolostron/ui-components'
+} from '../../../../../ui-components'
 import { createContext, Fragment, Suspense, useContext } from 'react'
 import { Link, Redirect, Route, RouteComponentProps, Switch, useHistory, useLocation } from 'react-router-dom'
 import { useRecoilState, useRecoilValue, waitForAll } from 'recoil'

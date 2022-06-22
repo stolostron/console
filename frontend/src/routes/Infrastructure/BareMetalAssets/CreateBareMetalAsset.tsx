@@ -28,7 +28,7 @@ import {
     AcmSelect,
     AcmSubmit,
     AcmTextInput,
-} from '@stolostron/ui-components'
+} from '../../../ui-components'
 import { ActionGroup, Button, PageSection, SelectOption } from '@patternfly/react-core'
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'

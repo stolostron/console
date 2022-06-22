@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // eslint-disable-next-line no-use-before-define
-import React from 'react'
+
 import {
     VALIDATE_CIDR,
     VALIDATE_NUMERIC,

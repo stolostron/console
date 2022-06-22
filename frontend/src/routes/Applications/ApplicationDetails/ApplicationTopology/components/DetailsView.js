@@ -13,7 +13,7 @@
 
 import _ from 'lodash'
 import R from 'ramda'
-import React, { Fragment } from 'react'
+import { Fragment } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import { Button, Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'

@@ -2,14 +2,7 @@
 
 import { makeStyles } from '@material-ui/styles'
 import { getSecret, unpackSecret } from '../../../../../resources'
-import {
-    AcmButton,
-    AcmIcon,
-    AcmIconVariant,
-    AcmInlineCopy,
-    AcmInlineStatus,
-    StatusType,
-} from '@stolostron/ui-components'
+import { AcmButton, AcmIcon, AcmIconVariant, AcmInlineCopy, AcmInlineStatus, StatusType } from '../../../../../ui-components'
 import { ButtonVariant, Tooltip } from '@patternfly/react-core'
 import { Fragment, useContext, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'

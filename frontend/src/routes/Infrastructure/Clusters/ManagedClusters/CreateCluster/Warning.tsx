@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import React from 'react'
+
 import { Alert, AlertVariant, ButtonVariant } from '@patternfly/react-core'
-import { AcmButton } from '@stolostron/ui-components'
+import { AcmButton } from '../../../../../ui-components'
 import { Link } from 'react-router-dom'
 
 export type WarningContextType =

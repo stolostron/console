@@ -9,7 +9,7 @@ import {
     AcmLaunchLink,
     AcmPageContent,
     AcmTable,
-} from '@stolostron/ui-components'
+} from '../../../../ui-components'
 import {
     ButtonVariant,
     Flex,

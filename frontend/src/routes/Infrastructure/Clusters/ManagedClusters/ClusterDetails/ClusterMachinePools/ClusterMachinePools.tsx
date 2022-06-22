@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ClusterStatus, deleteResource, MachinePool } from '../../../../../../resources'
-import { AcmEmptyState, AcmPageContent, AcmTable, compareStrings, IAcmTableColumn } from '@stolostron/ui-components'
+import { AcmEmptyState, AcmPageContent, AcmTable, compareStrings, IAcmTableColumn } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { useContext, useState } from 'react'

@@ -12,7 +12,7 @@ import {
     SelectVariant,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@stolostron/ui-components'
+import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '../../../ui-components'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'

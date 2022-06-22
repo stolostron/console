@@ -5,7 +5,7 @@
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import PropTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { searchClient } from '../../../../Home/Search/search-sdk/search-client'
 import { SearchResultRelatedItemsDocument } from '../../../../Home/Search/search-sdk/search-sdk'

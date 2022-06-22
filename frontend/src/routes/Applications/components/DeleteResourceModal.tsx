@@ -2,9 +2,9 @@
 
 import { Button, Checkbox, ModalVariant } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmAlert, AcmModal } from '@stolostron/ui-components'
+import { AcmAlert, AcmModal } from '../../../ui-components'
 import { TFunction } from 'i18next'
-import React, { ReactNode, useState } from 'react'
+import { ReactNode, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Trans } from '../../../lib/acm-i18next'
 import { deleteApplication } from '../../../lib/delete-application'

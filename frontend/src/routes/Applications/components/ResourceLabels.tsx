@@ -3,7 +3,7 @@
 import { Divider, Split, SplitItem, Stack, StackItem } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import React from 'react'
+
 import { CHANNEL_TYPES, getResourceLabel, groupByRepoType } from '../helpers/resource-helper'
 import LabelWithPopover from './LabelWithPopover'
 import { TFunction } from 'i18next'

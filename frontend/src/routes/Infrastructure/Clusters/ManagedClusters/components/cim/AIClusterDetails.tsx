@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useMemo, useContext, useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { AcmExpandableCard } from '@stolostron/ui-components'
+import { AcmExpandableCard } from '../../../../../../ui-components'
 import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
 import { CIM } from 'openshift-assisted-ui-lib'
 import { ClusterContext } from '../../ClusterDetails/ClusterDetails'

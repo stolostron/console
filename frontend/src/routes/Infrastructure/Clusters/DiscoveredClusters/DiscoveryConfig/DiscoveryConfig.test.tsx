@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmToastProvider, AcmToastGroup } from '@stolostron/ui-components'
+import { AcmToastProvider, AcmToastGroup } from '../../../../../ui-components'
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'

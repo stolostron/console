@@ -2,9 +2,9 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import React from 'react'
+
 import PropTypes from 'prop-types'
-import { AcmTextInput } from '@stolostron/ui-components'
+import { AcmTextInput } from '../../../../../../ui-components'
 import { Checkbox, Accordion, AccordionItem, AccordionToggle, AccordionContent } from '@patternfly/react-core'
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'

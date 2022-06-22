@@ -14,9 +14,9 @@ import {
     AcmPage,
     AcmScrollable,
     AcmSearchbar,
-} from '@stolostron/ui-components'
+} from '../../../ui-components'
 import _ from 'lodash'
-import React, { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import HeaderWithNotification from './components/HeaderWithNotification'

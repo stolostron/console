@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmButton, AcmDropdown } from '@stolostron/ui-components'
+import { AcmButton, AcmDropdown } from '../../../../../ui-components'
 import { ActionList, ActionListItem, Bullseye, TextContent } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'

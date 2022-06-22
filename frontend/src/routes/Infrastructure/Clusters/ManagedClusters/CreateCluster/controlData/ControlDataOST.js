@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 // eslint-disable-next-line no-use-before-define
-import React from 'react'
+
 import { VALIDATE_NUMERIC, VALIDATE_IP, VALIDATE_IP_OPTIONAL, VALIDATE_URL } from 'temptifly'
 import {
     CREATE_CLOUD_CONNECTION,
