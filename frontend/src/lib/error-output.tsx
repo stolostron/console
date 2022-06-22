@@ -1,10 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { TFunction } from 'react-i18next'
 import { ConfigMap } from '../resources'
 
-export function getOperatorError(configMaps: ConfigMap[], isOperatorInstalled: boolean, t: TFunction) {
+export function getOperatorError(configMaps: ConfigMap[], isOperatorInstalled: boolean, t: any) {
     const openShiftConsoleConfig = configMaps?.find((configmap) => configmap.metadata?.name === 'console-public')
     const openShiftConsoleUrl: string = openShiftConsoleConfig?.data?.consoleURL
     if (!isOperatorInstalled)
