@@ -1,14 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getClusterName, isDeployableResource } from '../helpers/diagram-helpers-utils'
-import { addDiagramDetails } from '../model/computeRelated'
-import { computeNodeStatus } from '../model/computeStatuses'
+import { addDiagramDetails } from './computeRelated'
+import { computeNodeStatus } from './computeStatuses'
 import _ from 'lodash'
 import R from 'ramda'
 import { getArgoTopology } from './topologyArgo'
 import { getSubscriptionTopology } from './topologySubscription'
 import { getAppSetTopology } from './topologyAppSet'
-import { getOCPAppTopology } from './topologyOCPApp'
-import { getFluxAppTopology } from './topologyFluxApp'
+import { getOCPFluxAppTopology } from './topologyOCPFluxApp'
 
 export const getTopology = async (application, managedClusters, relatedResources, argoData) => {
     let topology
@@ -17,10 +16,8 @@ export const getTopology = async (application, managedClusters, relatedResources
             topology = getArgoTopology(application, argoData, managedClusters)
         } else if (application.isAppSet) {
             topology = getAppSetTopology(application)
-        } else if (application.isOCPApp) {
-            topology = await getOCPAppTopology(application)
-        } else if (application.isFluxApp) {
-            topology = await getFluxAppTopology(application)
+        } else if (application.isOCPApp || application.isFluxApp) {
+            topology = await getOCPFluxAppTopology(application)
         } else {
             topology = getSubscriptionTopology(application, managedClusters, relatedResources)
         }

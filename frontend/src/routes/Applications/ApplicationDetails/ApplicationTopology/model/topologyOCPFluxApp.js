@@ -9,7 +9,7 @@ import { createReplicaChild } from './topologySubscription'
 
 const excludedKindList = ['cluster', 'pod', 'replicaset', 'replicationcontroller']
 
-export async function getOCPAppTopology(application) {
+export async function getOCPFluxAppTopology(application) {
     let searchResults = {}
     // Need to get data from search first before we can generate the topology
     searchResults = await getResourcesWithAppLabel(application)
@@ -21,10 +21,12 @@ export async function getOCPAppTopology(application) {
 
 // Fetch data from search
 async function getResourcesWithAppLabel(application) {
-    let query
     const { name, namespace, app } = application
     const { cluster } = app
-    query = getQueryStringForLabel(name, namespace, cluster.name)
+    const label = application.isOCPApp
+        ? `label:app=${name},app.kubernetes.io/part-of=${name}`
+        : `label:kustomize.toolkit.fluxcd.io/name=${name},helm.toolkit.fluxcd.io/name=${name}`
+    const query = getQueryStringForLabel(label, namespace, cluster.name)
 
     return searchClient.query({
         query: SearchResultRelatedItemsDocument,
@@ -37,11 +39,10 @@ async function getResourcesWithAppLabel(application) {
 }
 
 export const getQueryStringForLabel = (label, namespace, cluster) => {
-    const labelQuery = `label:app=${label},app.kubernetes.io/part-of=${label}`
     const namespaceQuery = `namespace:${namespace}`
     const clusterQuery = `cluster:${cluster}`
 
-    return convertStringToQuery(`${labelQuery} ${namespaceQuery} ${clusterQuery}`)
+    return convertStringToQuery(`${label} ${namespaceQuery} ${clusterQuery}`)
 }
 
 // Use search results to generate the topology data model
@@ -62,7 +63,7 @@ export function generateTopology(application, resources, searchResults) {
     nodes.push({
         name,
         namespace,
-        type: 'ocpapplication',
+        type: application.isOCPApp ? 'ocpapplication' : 'fluxapplication',
         id: appId,
         uid: appId,
         specs: {
