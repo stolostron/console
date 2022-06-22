@@ -1,7 +1,6 @@
 'use strict'
 
 import React from 'react'
-import { Query } from 'react-apollo'
 import PropTypes from 'prop-types'
 import { Alert } from '@patternfly/react-core'
 import classNames from 'classnames'
@@ -339,33 +338,21 @@ class ControlPanel extends React.Component {
                     })
             }
 
-            if (typeof query === 'function') {
-                if (!control.isLoaded) {
-                    if (!control.isLoading) {
-                        setAvailable(control, { loading: true })
-                        query()
-                            .then((data) => {
-                                setAvailable(control, { loading: false, data })
-                                control.forceUpdate()
-                            })
-                            .catch((err) => {
-                                setAvailable(control, { loading: false, error: err })
-                                control.forceUpdate()
-                            })
-                    }
+            if (!control.isLoaded) {
+                if (!control.isLoading) {
+                    setAvailable(control, { loading: true })
+                    query()
+                        .then((data) => {
+                            setAvailable(control, { loading: false, data })
+                            control.forceUpdate()
+                        })
+                        .catch((err) => {
+                            setAvailable(control, { loading: false, error: err })
+                            control.forceUpdate()
+                        })
                 }
-                fetchAvailable.refetch = refetch.bind(this, query)
-            } else {
-                return (
-                    <Query query={query} key={id} variables={variables}>
-                        {(result) => {
-                            fetchAvailable.refetch = refetch.bind(this, result.refetch)
-                            setAvailable(control, result)
-                            return this.renderControlWithPrompt(id, type, control, grpId)
-                        }}
-                    </Query>
-                )
             }
+            fetchAvailable.refetch = refetch.bind(this, query)
         }
         return this.renderControlWithPrompt(id, type, control, grpId)
     }

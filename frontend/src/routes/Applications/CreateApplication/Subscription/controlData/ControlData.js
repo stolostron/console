@@ -115,7 +115,6 @@ export const controlData = async () => [
         id: 'channelSection',
         type: 'section',
         title: 'creation.app.channels',
-        overline: true,
         collapsable: true,
         collapsed: false,
     },
