@@ -2,7 +2,6 @@
 import {
     ActionGroup,
     Button,
-    ButtonVariant,
     Chip,
     ChipGroup,
     Flex,
@@ -11,7 +10,6 @@ import {
     SelectOption,
     SelectVariant,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmForm, AcmLabelsInput, AcmModal, AcmSelect, AcmSubmit } from '@stolostron/ui-components'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'

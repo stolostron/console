@@ -11,12 +11,7 @@ import {
     Stack,
     Text,
 } from '@patternfly/react-core'
-import {
-    CheckCircleIcon,
-    ExclamationCircleIcon,
-    ExclamationTriangleIcon,
-    ExternalLinkAltIcon,
-} from '@patternfly/react-icons'
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmTable } from '@stolostron/ui-components'
 import moment from 'moment'
 import { useMemo, useState } from 'react'
