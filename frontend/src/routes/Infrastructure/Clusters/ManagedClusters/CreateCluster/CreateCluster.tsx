@@ -40,7 +40,7 @@ import {
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
 import { getControlData } from './controlData/ControlData'
-import { arrayItemHasKey, setAvailableConnections } from './controlData/ControlDataHelpers'
+import { append, arrayItemHasKey, setAvailableConnections } from './controlData/ControlDataHelpers'
 import endpointTemplate from './templates/endpoints.hbs'
 import hiveTemplate from './templates/hive-template.hbs'
 import { Warning, WarningContext, WarningContextType } from './Warning'
@@ -297,6 +297,7 @@ export default function CreateClusterPage() {
     const template = Handlebars.compile(hiveTemplate)
     Handlebars.registerPartial('endpoints', Handlebars.compile(endpointTemplate))
     Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
+    Handlebars.registerHelper('append', append)
 
     // if opened from bma page, pass selected bma's to editor
     const urlParams = new URLSearchParams(location.search.substring(1))
@@ -332,15 +333,21 @@ export default function CreateClusterPage() {
                     })
                 })
                 break
-            case 'templateName':
-                control.available = curatorTemplates.map((template) => {
+            case 'templateName': {
+                const availableData = curatorTemplates.filter((template) => {
                     const ansibleSecret = ansibleCredentials.find(
                         (secret) => secret.metadata.name === template?.spec?.install?.towerAuthSecret
                     )
-                    if (ansibleSecret !== undefined) {
-                        return template.metadata.name
-                    }
+                    return ansibleSecret !== undefined
                 })
+                // TODO: Need to keep namespace information
+                control.available = availableData.map((template) => template.metadata.name)
+                control.availableData = availableData
+                control.availableSecrets = ansibleCredentials
+                break
+            }
+            case 'supportedCurations':
+                control.active = ['install', 'upgrade', ...(settings.ansibleIntegration === 'enabled' ? ['scale', 'destroy'] : [])]
                 break
             case 'singleNodeFeatureFlag':
                 if (settings.singleNodeOpenshift === 'enabled') {

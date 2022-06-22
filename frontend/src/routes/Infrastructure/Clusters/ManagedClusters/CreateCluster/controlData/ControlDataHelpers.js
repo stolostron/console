@@ -13,6 +13,7 @@ import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { listClusterImageSets } from '../../../../../../resources'
 import { unpackProviderConnection } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
+import jsYaml from 'js-yaml'
 import _ from 'lodash'
 
 const OpenNewTab = () => (
@@ -467,10 +468,45 @@ export const proxyControlData = [
 ]
 
 export const onChangeAutomationTemplate = (control, controlData) => {
-    var installAttemptsLimit = getControlByID(controlData, 'installAttemptsLimit')
-    if (control.active) {
+    const clusterCuratorSpec = getControlByID(controlData, 'clusterCuratorSpec')
+    const installAttemptsLimit = getControlByID(controlData, 'installAttemptsLimit')
+    // TODO: include namespace in key
+    const clusterCuratorTemplate = control.availableData.find((cc) => cc.metadata.name === control.active)
+    const curations = getControlByID(controlData, 'supportedCurations')?.active
+    if (control.active && clusterCuratorTemplate) {
+        const clusterCurator = _.cloneDeep(clusterCuratorTemplate)
+        if (clusterCurator.spec?.install?.prehook?.length || clusterCurator.spec?.install?.posthook?.length) {
+            clusterCurator.spec.desiredCuration = 'install'
+        }
+        const spec = clusterCurator?.spec
+        if (spec) {
+            curations.forEach((curation) => {
+                if (spec[curation]?.towerAuthSecret) {
+                    // Create copies of each Ansible secret
+                    const secretName = `toweraccess-${curation}`
+                    const secretControl = getControlByID(controlData, secretName)
+                    const matchingSecret = control.availableSecrets.find(
+                        (s) =>
+                            s.metadata.name === spec[curation].towerAuthSecret &&
+                            s.metadata.namespace === clusterCuratorTemplate.metadata.namespace
+                    )
+                    if (matchingSecret) {
+                        secretControl.active = _.cloneDeep(matchingSecret)
+                    }
+                    spec[curation].towerAuthSecret = secretName
+                }
+            })
+            clusterCuratorSpec.active = jsYaml.dump({ spec: clusterCurator.spec })
+        }
         installAttemptsLimit.immutable = { value: 1, path: 'ClusterDeployment[0].spec.installAttemptsLimit' }
     } else {
+        // Clear Ansible secrets
+        curations.forEach((curation) => {
+            const secretName = `toweraccess-${curation}`
+            const secretControl = getControlByID(controlData, secretName)
+            secretControl.active = ''
+        })
+        clusterCuratorSpec.active = ''
         delete installAttemptsLimit.immutable
     }
 }
@@ -498,6 +534,37 @@ export const automationControlData = [
             required: false,
         },
         prompts: CREATE_AUTOMATION_TEMPLATE,
+    },
+    {
+        id: 'clusterCuratorSpec',
+        type: 'hidden',
+        active: '',
+    },
+    {
+        id: 'supportedCurations',
+        type: 'values',
+        hidden: true,
+        active: [],
+    },
+    {
+        id: 'toweraccess-install',
+        type: 'hidden',
+        active: '',
+    },
+    {
+        id: 'toweraccess-upgrade',
+        type: 'hidden',
+        active: '',
+    },
+    {
+        id: 'toweraccess-scale',
+        type: 'hidden',
+        active: '',
+    },
+    {
+        id: 'toweraccess-destroy',
+        type: 'hidden',
+        active: '',
     },
 ]
 
@@ -561,4 +628,8 @@ export const addSnoText = (controlData) => {
 
 export const arrayItemHasKey = (options, key) => {
     return options && options.some((o) => o[key])
+}
+
+export function append() {
+    return Array.prototype.slice.call(arguments, 0, -1).join('');
 }
