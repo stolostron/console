@@ -17,7 +17,7 @@ import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
-import { clusterCuratorTemplatesValue } from "../../../selectors"
+import { clusterCuratorTemplatesValue } from '../../../selectors'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { DropdownActionModal, IDropdownActionModalProps } from '../../../components/DropdownActionModal'
 import { RbacDropdown } from '../../../components/Rbac'

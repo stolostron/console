@@ -19,6 +19,7 @@ import {
     addSnoText,
     architectureData,
 } from './ControlDataHelpers'
+import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 
 // Ideally, we should use aws-sdk and the connection credentials to fetch this information,
@@ -86,7 +87,7 @@ export const awsGovRegions = {
 const setAWSZones = (control, controlData) => {
     const setZones = (poolKey, zoneKey) => {
         const region = control.active
-        const pool = controlData.find(({ id }) => id === poolKey)
+        const pool = getControlByID(controlData, poolKey)
         pool.active.forEach((worker) => {
             const typeZones = worker.find(({ id }) => id === zoneKey)
             const zones = awsRegions[region]

@@ -22,7 +22,7 @@ import {
     settingsState,
     agentsState,
 } from '../../../../../atoms'
-import { clusterCuratorTemplatesValue } from "../../../../../selectors"
+import { clusterCuratorTemplatesValue } from '../../../../../selectors'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -249,7 +249,9 @@ export default function CreateClusterPage() {
                         setCreationStatus({
                             status: 'ERROR',
                             messages: [
-                                t('One or more Ansible Automation Platform credentials was not found. Create a new automation template.'),
+                                t(
+                                    'One or more Ansible Automation Platform credentials was not found. Create a new automation template.'
+                                ),
                             ],
                         })
                         return status

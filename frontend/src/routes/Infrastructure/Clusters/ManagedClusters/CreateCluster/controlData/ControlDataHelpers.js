@@ -9,6 +9,7 @@ import {
     VALIDATE_URL,
     VALIDATE_ALPHANUMERIC,
 } from 'temptifly'
+import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { listClusterImageSets } from '../../../../../../resources'
 import { unpackProviderConnection } from '../../../../../../resources'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -197,16 +198,12 @@ export const setAvailableTemplates = (control, templates) => {
 }
 
 const onChangeProxy = (control, controlData) => {
-    const infrastructure = controlData.find(({ id }) => {
-        return id === 'connection'
-    })
+    const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
-    const useProxy = controlData.find(({ id }) => {
-        return id === 'hasProxy'
-    }).active
+    const useProxy = getControlByID(controlData, 'hasProxy').active
     ;['httpProxy', 'httpsProxy', 'noProxy', 'additionalTrustBundle'].forEach((pid) => {
-        const ctrl = controlData.find(({ id }) => id === pid)
+        const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !useProxy
             if (ctrl.disabled) {
@@ -256,9 +253,7 @@ export const onChangeConnection = (control, controlData) => {
         })
     }
     setTimeout(() => {
-        const control = controlData.find(({ id }) => {
-            return id === 'disconnectedAdditionalTrustBundle'
-        })
+        const control = getControlByID(controlData, 'disconnectedAdditionalTrustBundle')
         if (control) {
             control.active = replacements['additionalTrustBundle']
             control.disabled = !control.active
@@ -267,16 +262,12 @@ export const onChangeConnection = (control, controlData) => {
 }
 
 export const onChangeDisconnect = (control, controlData) => {
-    const infrastructure = controlData.find(({ id }) => {
-        return id === 'connection'
-    })
+    const infrastructure = getControlByID(controlData, 'connection')
     const { active, availableMap = {} } = infrastructure
     const replacements = _.get(availableMap[active], 'replacements')
-    const isDisconnected = controlData.find(({ id }) => {
-        return id === 'isDisconnected'
-    }).active
+    const isDisconnected = getControlByID(controlData, 'isDisconnected').active
     ;['clusterOSImage', 'pullSecret', 'imageContentSources', 'disconnectedAdditionalTrustBundle'].forEach((pid) => {
-        const ctrl = controlData.find(({ id }) => id === pid)
+        const ctrl = getControlByID(controlData, pid)
         if (ctrl) {
             ctrl.disabled = !isDisconnected
             if (ctrl.disabled) {
@@ -476,7 +467,7 @@ export const proxyControlData = [
 ]
 
 export const onChangeAutomationTemplate = (control, controlData) => {
-    var installAttemptsLimit = controlData.find(({ id }) => id === 'installAttemptsLimit')
+    var installAttemptsLimit = getControlByID(controlData, 'installAttemptsLimit')
     if (control.active) {
         installAttemptsLimit.immutable = { value: 1, path: 'ClusterDeployment[0].spec.installAttemptsLimit' }
     } else {
@@ -523,8 +514,8 @@ export const architectureData = [
 ]
 
 export const isHidden_lt_OCP48 = (control, controlData) => {
-    const singleNodeFeatureFlag = controlData.find(({ id }) => id === 'singleNodeFeatureFlag')
-    const imageSet = controlData.find(({ id }) => id === 'imageSet')
+    const singleNodeFeatureFlag = getControlByID(controlData, 'singleNodeFeatureFlag')
+    const imageSet = getControlByID(controlData, 'imageSet')
     //NOTE: We will need to adjust this in the future for new OCP versions!
     if (
         singleNodeFeatureFlag &&
@@ -541,17 +532,17 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
 }
 
 export const isHidden_gt_OCP46 = (control, controlData) => {
-    const imageSet = controlData.find(({ id }) => id === 'imageSet')
+    const imageSet = getControlByID(controlData, 'imageSet')
     return !(imageSet && imageSet.active && imageSet.active.includes('release:4.6'))
 }
 
 export const isHidden_SNO = (control, controlData) => {
-    const singleNode = controlData.find(({ id }) => id === 'singleNode')
+    const singleNode = getControlByID(controlData, 'singleNode')
     return singleNode && singleNode.active && !isHidden_lt_OCP48(control, controlData)
 }
 
 export const onChangeSNO = (control, controlData) => {
-    var groupDataArray = controlData.find(({ id }) => id === 'workerPools').active
+    var groupDataArray = getControlByID(controlData, 'workerPools').active
     groupDataArray.forEach((group) => {
         var computeNodeCount = group.find(({ id }) => id === 'computeNodeCount')
         if (!control.active) {
