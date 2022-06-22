@@ -25,6 +25,7 @@ import { useRecoilState } from 'recoil'
 import { ansibleJobState, configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import { BulkActionModel, IBulkActionModelProps } from '../../../components/BulkActionModel'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
+import { getOperatorError } from '../../../lib/error-output'
 import { NavigationPath } from '../../../NavigationPath'
 import {
     AnsibleJob,
@@ -195,40 +196,16 @@ export function AutomationDetailsSidebar(props: {
         []
     )
 
-    function getOperatorError() {
-        const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
-        const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
-        return (
-            <div>
-                {t('The Ansible Automation Platform Resource Operator is required to create an Ansible job. ')}
-                {openShiftConsoleUrl && openShiftConsoleUrl !== '' ? (
-                    <div>
-                        {t('Install the Operator through the following link: ')}
-                        <Button
-                            isInline
-                            variant={ButtonVariant.link}
-                            onClick={() =>
-                                window.open(
-                                    openShiftConsoleUrl +
-                                        '/operatorhub/all-namespaces?keyword=ansible+automation+platform'
-                                )
-                            }
-                        >
-                            OperatorHub
-                            <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
-                        </Button>
-                    </div>
-                ) : (
-                    t('Install the Operator through operator hub.')
-                )}
-            </div>
-        )
-    }
-
     return (
         <div>
             <BulkActionModel<PolicyAutomation> {...modalProps} />
-            {!isOperatorInstalled && <Alert isInline title={getOperatorError()} variant={AlertVariant.danger} />}
+            {!isOperatorInstalled && (
+                <Alert
+                    isInline
+                    title={getOperatorError(configMaps, isOperatorInstalled, t)}
+                    variant={AlertVariant.danger}
+                />
+            )}
             <Stack hasGutter>
                 <DescriptionList>
                     <DescriptionListGroup>
