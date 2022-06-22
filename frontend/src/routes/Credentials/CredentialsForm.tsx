@@ -70,7 +70,6 @@ enum ProviderGroup {
     Automation = 'Automation & other credentials',
     Datacenter = 'Datacenter credentials',
     CloudProvider = 'Cloud provider credentials',
-    CentrallyManaged = 'Centrally managed',
 }
 
 const providerGroup: Record<string, string> = {
@@ -84,7 +83,7 @@ const providerGroup: Record<string, string> = {
     [Provider.redhatvirtualization]: ProviderGroup.Datacenter,
     [Provider.baremetal]: ProviderGroup.Datacenter,
     [Provider.vmware]: ProviderGroup.Datacenter,
-    [Provider.hybrid]: ProviderGroup.CentrallyManaged,
+    [Provider.hybrid]: ProviderGroup.Datacenter,
 }
 
 export default function CredentialsFormPage() {
@@ -605,19 +604,6 @@ export function CredentialsForm(props: {
                                 group: ProviderGroup.Automation,
                                 options: credentialProviders
                                     .filter((provider) => providerGroup[provider] === ProviderGroup.Automation)
-                                    .map((provider) => {
-                                        return {
-                                            id: provider,
-                                            value: provider,
-                                            icon: <AcmIcon icon={ProviderIconMap[provider]} />,
-                                            text: ProviderLongTextMap[provider],
-                                        }
-                                    }),
-                            },
-                            {
-                                group: ProviderGroup.CentrallyManaged,
-                                options: credentialProviders
-                                    .filter((provider) => providerGroup[provider] === ProviderGroup.CentrallyManaged)
                                     .map((provider) => {
                                         return {
                                             id: provider,
