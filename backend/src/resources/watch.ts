@@ -468,7 +468,7 @@ function cacheResource(resource: IResource) {
     }
 
     cache[uid] = { resource, eventID: 0 }
-    broadcast('MODIFIED', resource)
+    void broadcast('MODIFIED', resource)
 }
 
 function deleteResource(resource: IResource) {
@@ -479,7 +479,7 @@ function deleteResource(resource: IResource) {
     const existing = cache[uid]
     if (existing) {
         delete cache[uid]
-        broadcast('DELETED', resource)
+        void broadcast('DELETED', resource)
     }
 }
 
