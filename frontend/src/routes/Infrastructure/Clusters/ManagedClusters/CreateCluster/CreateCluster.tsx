@@ -11,18 +11,18 @@ import { useContext, useEffect, useRef, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useHistory, useLocation } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
+import { useRecoilState, useRecoilValue } from 'recoil'
 import TemplateEditor from 'temptifly'
 import 'temptifly/dist/styles.css'
 import {
     agentClusterInstallsState,
-    clusterCuratorsState,
     infraEnvironmentsState,
     managedClustersState,
     secretsState,
     settingsState,
     agentsState,
 } from '../../../../../atoms'
+import { clusterCuratorTemplatesValue } from "../../../../../selectors"
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -32,7 +32,6 @@ import {
     ClusterCurator,
     createClusterCurator,
     createResource as createResourceTool,
-    filterForTemplatedCurators,
     ProviderConnection,
     Secret,
     unpackProviderConnection,
@@ -105,8 +104,7 @@ export default function CreateClusterPage() {
     const [settings] = useRecoilState(settingsState)
 
     const [managedClusters] = useRecoilState(managedClustersState)
-    const [clusterCurators] = useRecoilState(clusterCuratorsState)
-    const curatorTemplates = filterForTemplatedCurators(clusterCurators)
+    const curatorTemplates = useRecoilValue(clusterCuratorTemplatesValue)
     const [selectedTemplate, setSelectedTemplate] = useState('')
     const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
     const [agentClusterInstalls] = useRecoilState(agentClusterInstallsState)
