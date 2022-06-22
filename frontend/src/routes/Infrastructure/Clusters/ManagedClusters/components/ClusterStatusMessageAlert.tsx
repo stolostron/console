@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmAlert } from '@stolostron/ui-components'
+import { AcmAlert } from '../../../../../ui-components'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Cluster, clusterDangerStatuses } from '../../../../../resources'
 

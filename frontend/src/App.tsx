@@ -44,7 +44,7 @@ import {
     AcmTablePaginationContextProvider,
     AcmToastGroup,
     AcmToastProvider,
-} from '@stolostron/ui-components'
+} from './ui-components'
 import { t } from 'i18next'
 import { noop } from 'lodash'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'

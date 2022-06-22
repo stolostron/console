@@ -11,7 +11,7 @@ import {
     getHivePod,
     getLatest,
 } from '../../../../../resources'
-import { AcmAlert, AcmButton, Provider } from '@stolostron/ui-components'
+import { AcmAlert, AcmButton, Provider } from '../../../../../ui-components'
 import { AlertVariant, ButtonVariant } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useContext } from 'react'

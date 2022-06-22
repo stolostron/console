@@ -9,7 +9,7 @@ import {
     AcmModal,
     AcmNumberInput,
     AcmSubmit,
-} from '@stolostron/ui-components'
+} from '../../../../../../../ui-components'
 import { ActionGroup, ModalVariant } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'

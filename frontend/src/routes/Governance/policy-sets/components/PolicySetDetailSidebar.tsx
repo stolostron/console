@@ -12,7 +12,7 @@ import {
     ToggleGroupItem,
 } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
-import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '@stolostron/ui-components'
+import { AcmLabels, AcmTable, compareNumbers, compareStrings } from '../../../../ui-components'
 import { TFunction } from 'i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'

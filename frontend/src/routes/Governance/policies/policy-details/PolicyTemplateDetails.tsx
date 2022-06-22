@@ -17,7 +17,7 @@ import {
     AcmTable,
     AcmTablePaginationContextProvider,
     compareStrings,
-} from '@stolostron/ui-components'
+} from '../../../../ui-components'
 import jsYaml from 'js-yaml'
 import { useEffect, useMemo, useState } from 'react'
 import YamlEditor from '../../../../components/YamlEditor'

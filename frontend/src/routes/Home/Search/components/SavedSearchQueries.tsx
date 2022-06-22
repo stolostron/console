@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { searchClient } from '../search-sdk/search-client'
 import { useSavedSearchesQuery, useSearchResultCountQuery, UserSearch } from '../search-sdk/search-sdk'
 import { convertStringToQuery } from '../search-helper'
 import SuggestQueryTemplates from './SuggestedQueryTemplates'
-import { AcmAlert, AcmExpandableWrapper, AcmCountCard } from '@stolostron/ui-components'
+import { AcmAlert, AcmExpandableWrapper, AcmCountCard } from '../../../../ui-components'
 import { updateBrowserUrl } from '../urlQuery'
 import { SaveAndEditSearchModal } from './Modals/SaveAndEditSearchModal'
 import { DeleteSearchModal } from './Modals/DeleteSearchModal'

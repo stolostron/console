@@ -7,7 +7,7 @@ import Handlebars from 'handlebars'
 import installConfigHbs from '../templates/install-config.hbs'
 import cimTemplateHbs from '../templates/assisted-installer/cim-template.hbs'
 import aiTemplateHbs from '../templates/assisted-installer/ai-template.hbs'
-import { AcmIconVariant, AcmIcon } from '@stolostron/ui-components'
+import { AcmIconVariant, AcmIcon } from '../../../../../../ui-components'
 import { ConnectedIcon } from '@patternfly/react-icons'
 
 import getControlDataAWS from './ControlDataAWS'

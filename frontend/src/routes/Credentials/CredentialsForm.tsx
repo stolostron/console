@@ -9,7 +9,7 @@ import {
     Provider,
     ProviderIconMap,
     ProviderLongTextMap,
-} from '@stolostron/ui-components'
+} from '../../ui-components'
 import _ from 'lodash'
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { useHistory, useLocation, useParams } from 'react-router'

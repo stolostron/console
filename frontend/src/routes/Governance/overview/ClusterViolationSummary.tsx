@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { IAcmTableColumn } from '@stolostron/ui-components'
+import { IAcmTableColumn } from '../../../ui-components'
 import { Fragment, useMemo } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Policy } from '../../../resources'

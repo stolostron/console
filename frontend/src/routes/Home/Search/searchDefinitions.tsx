@@ -4,7 +4,7 @@
 
 import { Label, LabelGroup } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-import { AcmLabels } from '@stolostron/ui-components'
+import { AcmLabels } from '../../../ui-components'
 import _ from 'lodash'
 import moment from 'moment'
 import queryString from 'query-string'

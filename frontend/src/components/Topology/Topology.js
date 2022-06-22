@@ -13,7 +13,7 @@
 
 import React, { createRef } from 'react'
 import PropTypes from 'prop-types'
-import { AcmAlert } from '@stolostron/ui-components'
+import { AcmAlert } from '../../ui-components'
 import ResourceFilterView from './components/ResourceFilterView'
 import { DiagramShapes } from './shapes/DiagramShapes'
 import { DiagramIcons } from './shapes/DiagramIcons'

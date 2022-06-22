@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ManagedClusterSet } from '../../../../../resources'
-import { AcmButton, AcmInlineStatus, StatusType } from '@stolostron/ui-components'
+import { AcmButton, AcmInlineStatus, StatusType } from '../../../../../ui-components'
 import { Popover } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom'

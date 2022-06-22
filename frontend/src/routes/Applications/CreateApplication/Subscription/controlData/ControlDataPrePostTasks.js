@@ -13,7 +13,7 @@
 
 import { loadExistingAnsibleProviders, getSharedSubscriptionWarning } from './utils'
 import React from 'react'
-import { AcmIcon, AcmIconVariant } from '@stolostron/ui-components'
+import { AcmIcon, AcmIconVariant } from '../../../../../ui-components'
 
 const prePostTasks = [
     ////////////////////////////////////////////////////////////////////////////////////

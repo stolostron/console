@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { isHrefNavItem, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
-import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '@stolostron/ui-components'
+import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 
