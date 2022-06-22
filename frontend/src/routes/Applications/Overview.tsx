@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PageSection, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { PageSection, Switch, Text, TextContent, TextVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { AcmDropdown, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '@stolostron/ui-components'
 import { TFunction } from 'i18next'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -86,6 +86,10 @@ const fluxAnnotations = {
 
 type IApplicationResource = IResource | OCPAppResource
 
+function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource {
+    return 'label' in resource
+}
+
 // Map resource kind to type column
 function getApplicationType(resource: IApplicationResource, t: TFunction) {
     if (resource.apiVersion === ApplicationApiVersion) {
@@ -98,9 +102,9 @@ function getApplicationType(resource: IApplicationResource, t: TFunction) {
         } else if (resource.kind === ApplicationSetKind) {
             return t('ApplicationSet')
         }
-    } else if (['apps/v1', 'batch/v1', 'v1'].includes(resource.apiVersion)) {
+    } else if (isOCPAppResource(resource)) {
         const label = resource.label
-        let isFlux: boolean = false
+        let isFlux = false
         Object.entries(fluxAnnotations).forEach(([, values]) => {
             const [nameAnnotation, namespaceAnnotation] = values
             if (label.includes(nameAnnotation) && label.includes(namespaceAnnotation)) {
@@ -219,18 +223,7 @@ export default function ApplicationsOverview() {
 
     const [discoveredOCPAppResources] = useRecoilState(discoveredOCPAppResourcesState)
 
-    // const fluxAppresources: IResource[] = useMemo(
-    //     () =>
-    //         kustomizations.filter((item: any) => {
-    //             const labels = item.label
-    //             return (
-    //                 labels &&
-    //                 labels.includes('kustomize.toolkit.fluxcd.io/name') &&
-    //                 labels.includes('kustomize.toolkit.fluxcd.io/namespace')
-    //             )
-    //         }),
-    //     [kustomizations]
-    // )
+    const [isSwitchProjectButtonChecked, setIsSwitchProjectButtonChecked] = useState(false)
 
     const allClusters = useAllClusters()
     const managedClusters = useMemo(
@@ -411,22 +404,31 @@ export default function ApplicationsOverview() {
     }, [discoveredOCPAppResources, generateTransformData])
 
     const tableItems: IResource[] = useMemo(
-        () => [
-            ...applicationTableItems,
-            ...applicationSetsTableItems,
-            ...argoApplicationTableItems,
-            ...discoveredApplicationsTableItems,
-            ...ocpAppResourceTableItems,
-        ],
+        () =>
+            isSwitchProjectButtonChecked
+                ? [
+                      ...applicationTableItems,
+                      ...applicationSetsTableItems,
+                      ...argoApplicationTableItems,
+                      ...discoveredApplicationsTableItems,
+                      ...ocpAppResourceTableItems,
+                  ]
+                : [
+                      ...applicationTableItems,
+                      ...applicationSetsTableItems,
+                      ...argoApplicationTableItems,
+                      ...discoveredApplicationsTableItems,
+                      ...ocpAppResourceTableItems,
+                  ].filter((item) => !item.metadata?.namespace?.startsWith('openshift')),
         [
             applicationSetsTableItems,
             applicationTableItems,
             argoApplicationTableItems,
             discoveredApplicationsTableItems,
             ocpAppResourceTableItems,
+            isSwitchProjectButtonChecked,
         ]
     )
-
     const keyFn = useCallback(
         (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
         []
@@ -856,6 +858,32 @@ export default function ApplicationsOverview() {
         [canCreateApplication, history, t]
     )
 
+    const toggleProjectSwitch = useCallback(() => {
+        setIsSwitchProjectButtonChecked((isSwitchProjectButtonChecked) => !isSwitchProjectButtonChecked)
+    }, [])
+
+    const switchProjectButton = useMemo(
+        () => (
+            <Switch
+                style={{ margin: '20px' }}
+                id="show-default-projects"
+                label="Show default projects"
+                isChecked={isSwitchProjectButtonChecked}
+                onChange={() => toggleProjectSwitch()}
+            />
+        ),
+        [isSwitchProjectButtonChecked, toggleProjectSwitch]
+    )
+
+    const custom = useMemo(() => {
+        return (
+            <Fragment>
+                {switchProjectButton}
+                {appCreationButton}
+            </Fragment>
+        )
+    }, [appCreationButton, switchProjectButton])
+
     return (
         <PageSection>
             <DeleteResourceModal {...modalProps} />
@@ -866,7 +894,7 @@ export default function ApplicationsOverview() {
                 keyFn={keyFn}
                 items={tableItems}
                 filters={filters}
-                customTableAction={appCreationButton}
+                customTableAction={custom}
                 emptyState={
                     <AcmEmptyState
                         key="appOverviewEmptyState"
