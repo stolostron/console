@@ -29,7 +29,7 @@ export function getOperatorError(configMaps: ConfigMap[], isOperatorInstalled: b
                         </Button>
                     </div>
                 ) : (
-                    t('Install the Operator through operator hub.')
+                    t('Install the operator through OperatorHub.')
                 )}
             </div>
         )
